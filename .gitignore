@@ -1,0 +1,17 @@
+# Secrets — 절대 커밋 금지 (네이버 검색광고 API 토큰 등)
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+
+# Astro / 빌드 산출물
+dist/
+.astro/
+.wrangler/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
