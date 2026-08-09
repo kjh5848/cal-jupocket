@@ -1,0 +1,28 @@
+{
+  "year": 2026,
+  "verifiedOn": "2026-08-10",
+  "sources": [
+    { "item": "종합소득세 누진세율표 (2023~2025년 귀속)", "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=2227&cntntsId=7667" },
+    { "item": "사업소득 원천징수세율 3% (소득세법 제129조)", "url": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%86%8C%EB%93%9D%EC%84%B8%EB%B2%95/%EC%A0%9C129%EC%A1%B0" },
+    { "item": "기본공제(인적공제) 150만원 (소득세법 제50조)", "url": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%86%8C%EB%93%9D%EC%84%B8%EB%B2%95/%EC%A0%9C50%EC%A1%B0" },
+    { "item": "기타소득(필요경비 60% 인정 유형, 예: 원고료·강연료) 원천징수: (총수입×40%)에 20% 적용 + 지방소득세(그 세액의 10%) = 총수입 기준 실효 8.8% - 국세청 안내", "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=6457&cntntsId=7893" },
+    { "item": "지방소득세 = 소득세액의 10% (원천징수 시 함께 징수) - 국세청 안내", "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=6457&cntntsId=7893" },
+    { "item": "표준세액공제 연 7만원 (근로소득 없는 종합소득자, 소득세법 제59조의4 제9항)", "url": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%86%8C%EB%93%9D%EC%84%B8%EB%B2%95/%EC%A0%9C59%EC%A1%B0%EC%9D%984" }
+  ],
+  "withholding": { "business": 0.033, "other": 0.088 },
+  "localTaxRate": 0.1,
+  "incomeTaxBrackets": [
+    { "upTo": 14000000, "rate": 0.06, "deduction": 0 },
+    { "upTo": 50000000, "rate": 0.15, "deduction": 1260000 },
+    { "upTo": 88000000, "rate": 0.24, "deduction": 5760000 },
+    { "upTo": 150000000, "rate": 0.35, "deduction": 15440000 },
+    { "upTo": 300000000, "rate": 0.38, "deduction": 19940000 },
+    { "upTo": 500000000, "rate": 0.40, "deduction": 25940000 },
+    { "upTo": 1000000000, "rate": 0.42, "deduction": 35940000 },
+    { "upTo": null, "rate": 0.45, "deduction": 65940000 }
+  ],
+  "personalDeductionPerHead": 1500000,
+  "standardTaxCredit": 70000,
+  "simpleExpenseRateDefault": 0.6,
+  "simpleExpenseRateDefaultNote": "실제 업종별 단순경비율은 국세청이 매년 고시하며 업종코드마다 다르다. 이 값은 계산기 예시 입력의 기본값일 뿐, 검증된 보편 수치가 아니다."
+}
