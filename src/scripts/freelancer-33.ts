@@ -12,8 +12,14 @@ const netLabel = document.getElementById("net-label")!;
 const tabGross = document.getElementById("tab-gross") as HTMLButtonElement;
 const tabNet = document.getElementById("tab-net") as HTMLButtonElement;
 
+function currentValueOrDefault(defaultValue: string): string {
+  const raw = amountInput.value;
+  const parsed = parseFloat(raw);
+  return raw !== "" && !isNaN(parsed) && parsed >= 0 ? raw : defaultValue;
+}
+
 function compute() {
-  const value = parseFloat(amountInput.value) || 0;
+  const value = Math.max(0, parseFloat(amountInput.value) || 0);
   if (mode === "gross") {
     const r = fromGross(value);
     outWithholding.textContent = formatWon(r.withholding);
@@ -30,7 +36,7 @@ function compute() {
 tabGross.addEventListener("click", () => {
   mode = "gross";
   inputLabel.textContent = "계약금액";
-  amountInput.value = "1000000";
+  amountInput.value = currentValueOrDefault("1000000");
   tabGross.setAttribute("aria-pressed", "true");
   tabNet.setAttribute("aria-pressed", "false");
   compute();
@@ -39,7 +45,7 @@ tabGross.addEventListener("click", () => {
 tabNet.addEventListener("click", () => {
   mode = "net";
   inputLabel.textContent = "실수령액";
-  amountInput.value = "967000";
+  amountInput.value = currentValueOrDefault("967000");
   tabNet.setAttribute("aria-pressed", "true");
   tabGross.setAttribute("aria-pressed", "false");
   compute();
