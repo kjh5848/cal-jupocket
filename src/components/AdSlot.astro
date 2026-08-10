@@ -1,0 +1,35 @@
+---
+import { PUBLISHER_ID } from "./AdSenseHead.astro";
+
+/**
+ * 개별 광고 단위. slot이 비어 있으면 자리표시자만 렌더링하고 광고 요청은
+ * 나가지 않는다 — cal.jupocket.com은 아직 애드센스에 사이트로 등록 전이라
+ * (Task 10에서 등록) 지금은 전부 빈 slot이다.
+ */
+interface Props {
+  slot?: string;
+  label?: string;
+}
+
+const { slot, label } = Astro.props;
+---
+
+{
+  slot ? (
+    <div class="ad-slot" data-ad={label}>
+      <ins
+        class="adsbygoogle"
+        style="display:block"
+        data-ad-client={PUBLISHER_ID}
+        data-ad-slot={slot}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+      <script is:inline>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+  ) : (
+    <div class="ad-slot" data-ad={label} data-ad-pending="true" />
+  )
+}
