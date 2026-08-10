@@ -163,6 +163,12 @@ hr {
   font-size: 1rem;
 }
 
+.field input[type="number"]:focus,
+.field input[type="text"]:focus {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
+}
+
 button,
 .btn {
   font: inherit;
@@ -183,6 +189,21 @@ button,
 button.secondary {
   background: transparent;
   color: var(--link);
+}
+
+button:hover,
+.btn:hover {
+  filter: brightness(1.1);
+}
+
+button.secondary:hover {
+  background: var(--accent-bg);
+}
+
+button:focus-visible,
+.btn:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
 }
 
 button:active,
