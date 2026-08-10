@@ -1,0 +1,18 @@
+---
+/**
+ * 사이트 공통 푸터. 모든 페이지 맨 아래에 같은 모양으로 들어간다.
+ * 연도는 하드코딩하지 않고 빌드 시점 연도를 쓴다.
+ */
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <nav class="site-footer-nav" aria-label="Site">
+    <a href="/privacy/">개인정보처리방침</a>
+  </nav>
+  <p class="site-footer-note">
+    이 사이트의 계산 결과는 참고용 예상치이며 법적 효력이 없습니다. 정확한
+    세액은 홈택스 또는 세무 전문가를 통해 확인하세요.
+  </p>
+  <p class="site-footer-copy">© {year} 쥬포켓 계산기</p>
+</footer>
