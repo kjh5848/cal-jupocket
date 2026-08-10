@@ -87,9 +87,8 @@ btnShare.addEventListener("click", async () => {
 
 btnCopy.addEventListener("click", async () => {
   const text = `계약금액 ${formatWon(lastResult.gross)} / 원천징수액 ${formatWon(lastResult.withholding)} / 실수령액 ${formatWon(lastResult.net)}`;
-  if (navigator.clipboard) {
-    await navigator.clipboard.writeText(text);
-  }
+  if (!navigator.clipboard) return;
+  await navigator.clipboard.writeText(text);
   copyToast.style.display = "block";
   setTimeout(() => {
     copyToast.style.display = "none";
