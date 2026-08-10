@@ -1,5 +1,6 @@
 ---
 import BaseHead from "../../components/BaseHead.astro";
+import ClarityHead from "../../components/ClarityHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import Disclaimer from "../../components/Disclaimer.astro";
@@ -13,6 +14,7 @@ const description =
 <html lang="ko">
   <head>
     <BaseHead title={title} description={description} />
+    <ClarityHead />
   </head>
   <body>
     <SiteHeader />

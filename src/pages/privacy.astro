@@ -1,5 +1,6 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
+import ClarityHead from "../components/ClarityHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 
@@ -11,6 +12,7 @@ const description =
 <html lang="ko">
   <head>
     <BaseHead title={title} description={description} />
+    <ClarityHead />
   </head>
   <body>
     <SiteHeader />
@@ -48,7 +50,7 @@ const description =
       <h2>광고</h2>
 
       <p>
-        일부 페이지에 <strong>Google AdSense</strong> 광고가 표시됩니다.
+        일부 페이지에 <strong>Google AdSense</strong> 광고가 표시될 수 있습니다.
         Google과 파트너사는 광고 제공과 맞춤화를 위해 쿠키를 사용할 수
         있습니다.
         <a href="https://myadcenter.google.com/" rel="nofollow noopener">
