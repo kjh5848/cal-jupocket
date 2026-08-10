@@ -1,0 +1,74 @@
+---
+import BaseHead from "../../components/BaseHead.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import Disclaimer from "../../components/Disclaimer.astro";
+import "../../styles/global.css";
+
+const title = "프리랜서 3.3% 원천징수 계산기";
+const description =
+  "계약금액을 입력하면 3.3% 원천징수액과 실수령액을 바로 계산합니다. 실수령액으로 계약금액을 역산할 수도 있습니다.";
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+  </head>
+  <body>
+    <SiteHeader />
+    <main>
+      <h1>{title}</h1>
+      <p>
+        프리랜서·사업소득 3.3% 원천징수를 계산합니다. 계약금액을 넣으면
+        실수령액을, 실수령액을 넣으면 원래 계약금액을 역산합니다.
+      </p>
+
+      <div class="actions" role="group" aria-label="계산 방식">
+        <button id="tab-gross" type="button" aria-pressed="true">
+          계약금액으로 계산
+        </button>
+        <button
+          id="tab-net"
+          type="button"
+          class="secondary"
+          aria-pressed="false"
+        >
+          실수령액으로 역산
+        </button>
+      </div>
+
+      <div class="field">
+        <label id="input-label" for="amount">계약금액</label>
+        <input type="number" id="amount" value="1000000" step="10000" min="0" />
+      </div>
+
+      <div class="result-out">
+        <p>원천징수액 (3.3%)</p>
+        <p class="big" id="out-withholding">33,000원</p>
+        <p id="net-label">실수령액</p>
+        <p class="big" id="out-net">967,000원</p>
+      </div>
+
+      <details>
+        <summary>3.3%는 정확히 뭔가요?</summary>
+        <p>
+          사업소득 원천징수 3.3%는 <strong>소득세 3%</strong>와
+          <strong>지방소득세 0.3%</strong>(소득세의 10%)를 더한 값입니다.
+          이 금액은 미리 뗀 세금(예납)이며, 다음 해 5월 종합소득세 신고에서
+          실제 세액과 비교해 정산됩니다.
+        </p>
+      </details>
+
+      <p>
+        <a href="/income-tax-refund/">종합소득세 환급 예상 계산기 보기</a> ·
+        <a href="/guide/33-settlement/">3.3%가 내년에 어떻게 정산되는지 보기</a>
+      </p>
+
+      <div class="ad-slot" data-ad="freelancer-33-result"></div>
+
+      <Disclaimer />
+    </main>
+    <SiteFooter />
+    <script src="../../scripts/freelancer-33.ts"></script>
+  </body>
+</html>
