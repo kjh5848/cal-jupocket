@@ -13,6 +13,7 @@ export function estimateRefund(input: RefundInput) {
     0,
     income - input.dependents * rates.personalDeductionPerHead
   );
+  // Safe: last bracket has upTo: null, so find() always matches
   const bracket = rates.incomeTaxBrackets.find(
     (b) => b.upTo === null || taxableBase <= b.upTo
   )!;
