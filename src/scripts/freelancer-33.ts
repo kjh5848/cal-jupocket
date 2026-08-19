@@ -63,23 +63,22 @@ function buildCard() {
   });
 }
 
-tabGross.addEventListener("click", () => {
-  mode = "gross";
-  inputLabel.textContent = "계약금액";
-  amountInput.value = currentValueOrDefault(amountInput.value, 1000000);
+function setMode(next: Mode) {
+  mode = next;
+  if (mode === "gross") {
+    inputLabel.textContent = "계약금액";
+    amountInput.value = currentValueOrDefault(amountInput.value, 1000000);
+  } else {
+    inputLabel.textContent = "실수령액";
+    amountInput.value = currentValueOrDefault(amountInput.value, 967000);
+  }
   tabGross.setAttribute("aria-pressed", String(mode === "gross"));
   tabNet.setAttribute("aria-pressed", String(mode === "net"));
   compute();
-});
+}
 
-tabNet.addEventListener("click", () => {
-  mode = "net";
-  inputLabel.textContent = "실수령액";
-  amountInput.value = currentValueOrDefault(amountInput.value, 967000);
-  tabNet.setAttribute("aria-pressed", String(mode === "net"));
-  tabGross.setAttribute("aria-pressed", String(mode === "gross"));
-  compute();
-});
+tabGross.addEventListener("click", () => setMode("gross"));
+tabNet.addEventListener("click", () => setMode("net"));
 
 amountInput.addEventListener("input", () => {
   const value = parseAmount(amountInput.value);

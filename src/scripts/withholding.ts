@@ -103,10 +103,12 @@ function setIncomeType(next: IncomeType) {
     // otherIncome()은 gross만 받는 단방향 함수라 역산 모드가 성립하지 않는다.
     tabNet.disabled = true;
     tabNet.setAttribute("aria-disabled", "true");
+    tabNet.title = "기타소득은 실수령액 역산을 지원하지 않습니다.";
     setMode("gross");
   } else {
     tabNet.disabled = false;
     tabNet.removeAttribute("aria-disabled");
+    tabNet.removeAttribute("title");
     compute();
   }
 }
@@ -161,7 +163,7 @@ btnShare.addEventListener("click", async () => {
 });
 
 btnCopy.addEventListener("click", async () => {
-  const text = `소득유형 ${incomeLabel()}(${rateLabel()}) / 계약금액 ${formatWon(
+  const text = `소득유형 ${incomeLabel()}(${rateLabel()}) / ${netLabel("계약금액")} ${formatWon(
     lastResult.gross,
   )} / 원천징수액 ${formatWon(lastResult.withholding)} / 실수령액 ${formatWon(
     lastResult.net,
