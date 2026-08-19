@@ -19,7 +19,7 @@ const amountInput = document.getElementById("amount") as HTMLInputElement;
 const inputLabel = document.getElementById("input-label")!;
 const outWithholding = document.getElementById("out-withholding")!;
 const outNet = document.getElementById("out-net")!;
-const netLabel = document.getElementById("net-label")!;
+const netLabelEl = document.getElementById("net-label")!;
 const tabGross = document.getElementById("tab-gross") as HTMLButtonElement;
 const tabNet = document.getElementById("tab-net") as HTMLButtonElement;
 const btnDownload = document.getElementById("btn-download") as HTMLButtonElement;
@@ -30,6 +30,11 @@ const presetButtons = document.querySelectorAll<HTMLButtonElement>(
   ".preset-chip[data-add]",
 );
 
+// 역산 모드(실수령액 -> 계약금액)일 때만 "계약금액 (역산)"을 쓰고, 그 외엔 fallback을 쓴다.
+function netLabel(fallback: string): string {
+  return mode === "net" ? "계약금액 (역산)" : fallback;
+}
+
 function compute() {
   const value = parseAmount(amountInput.value);
   if (mode === "gross") {
@@ -37,21 +42,20 @@ function compute() {
     lastResult = r;
     outWithholding.textContent = formatWon(r.withholding);
     outNet.textContent = formatWon(r.net);
-    netLabel.textContent = "실수령액";
   } else {
     const r = fromNet(value);
     lastResult = r;
     outWithholding.textContent = formatWon(r.withholding);
     outNet.textContent = formatWon(r.gross);
-    netLabel.textContent = "계약금액 (역산)";
   }
+  netLabelEl.textContent = netLabel("실수령액");
 }
 
 function buildCard() {
   return renderCard({
     title: "3.3% 원천징수 계산 결과",
     lines: [
-      ["계약금액", formatWon(lastResult.gross)],
+      [netLabel("계약금액"), formatWon(lastResult.gross)],
       ["원천징수액(3.3%)", formatWon(lastResult.withholding)],
       ["실수령액", formatWon(lastResult.net)],
     ],
@@ -63,8 +67,8 @@ tabGross.addEventListener("click", () => {
   mode = "gross";
   inputLabel.textContent = "계약금액";
   amountInput.value = currentValueOrDefault(amountInput.value, 1000000);
-  tabGross.setAttribute("aria-pressed", "true");
-  tabNet.setAttribute("aria-pressed", "false");
+  tabGross.setAttribute("aria-pressed", String(mode === "gross"));
+  tabNet.setAttribute("aria-pressed", String(mode === "net"));
   compute();
 });
 
@@ -72,8 +76,8 @@ tabNet.addEventListener("click", () => {
   mode = "net";
   inputLabel.textContent = "실수령액";
   amountInput.value = currentValueOrDefault(amountInput.value, 967000);
-  tabNet.setAttribute("aria-pressed", "true");
-  tabGross.setAttribute("aria-pressed", "false");
+  tabNet.setAttribute("aria-pressed", String(mode === "net"));
+  tabGross.setAttribute("aria-pressed", String(mode === "gross"));
   compute();
 });
 
@@ -103,7 +107,7 @@ btnShare.addEventListener("click", async () => {
 });
 
 btnCopy.addEventListener("click", async () => {
-  const text = `계약금액 ${formatWon(lastResult.gross)} / 원천징수액 ${formatWon(lastResult.withholding)} / 실수령액 ${formatWon(lastResult.net)}`;
+  const text = `${netLabel("계약금액")} ${formatWon(lastResult.gross)} / 원천징수액 ${formatWon(lastResult.withholding)} / 실수령액 ${formatWon(lastResult.net)}`;
   if (!navigator.clipboard) return;
   await navigator.clipboard.writeText(text);
   copyToast.style.display = "block";
