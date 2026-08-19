@@ -284,6 +284,158 @@ details[open] summary {
   }
 }
 
+/*
+ * 계산기 도구 카드 — 콘텐츠 글과 시각적으로 구분되는 "도구" 화면.
+ * 동일 키워드 상위 경쟁 계산기(withholding.kr 등) 벤치마킹: 큰 입력 →
+ * 결과 강조 카드 → 보조 수치 칩 순서가 스캔하기 가장 쉬웠다.
+ */
+.calc-card {
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin: 1.5rem 0 2rem;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 8px 24px -12px rgba(0, 0, 0, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  .calc-card {
+    box-shadow: none;
+  }
+}
+
+/* 모드 전환 세그먼트 컨트롤 (계약금액 ↔ 실수령액 등) */
+.segmented {
+  display: inline-flex;
+  padding: 0.25rem;
+  background: var(--accent-bg);
+  border-radius: 999px;
+  gap: 0.25rem;
+  margin: 0 0 1.5rem;
+}
+
+.segmented button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.segmented button:hover {
+  filter: none;
+  color: var(--text);
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--bg);
+  color: var(--link);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.segmented button:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
+}
+
+/* 큰 금액 입력 — 계산기에서 가장 먼저 만지는 요소라 눈에 띄게 키운다 */
+.calc-input-wrap {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.calc-input-wrap label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin-bottom: 0.5rem;
+}
+
+.calc-input-wrap input[type="number"] {
+  width: 100%;
+  padding: 1rem 3.25rem 1rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--accent-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-input-wrap input[type="number"]:focus {
+  outline: 3px solid var(--link);
+  outline-offset: 1px;
+}
+
+.calc-input-wrap .unit {
+  position: absolute;
+  right: 1.1rem;
+  bottom: 1.05rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* 결과 강조 카드 — 이 계산기가 답해야 할 단 하나의 숫자 */
+.result-hero {
+  background: #14213d;
+  color: #fff;
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  margin: 0 0 1rem;
+}
+
+.result-hero .label {
+  font-size: 0.9375rem;
+  opacity: 0.75;
+  margin: 0 0 0.35rem;
+}
+
+.result-hero .big {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+/* 보조 결과 — 원천징수액 등 강조 카드 아래 나열하는 세부 수치 */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+}
+
+.stat-chip {
+  background: var(--accent-bg);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+}
+
+.stat-chip .label {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+.stat-chip .value {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 /* 광고 슬롯 */
 .ad-slot {
   margin: 3rem 0;
