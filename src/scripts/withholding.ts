@@ -1,5 +1,10 @@
 import { fromGross, fromNet, otherIncome } from "../lib/withholding";
-import { formatWon } from "../lib/money";
+import {
+  formatWon,
+  parseAmount,
+  formatAmountInput,
+  currentValueOrDefault,
+} from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 
 type IncomeType = "business" | "other";
@@ -18,7 +23,7 @@ const inputLabel = document.getElementById("input-label")!;
 const outWithholding = document.getElementById("out-withholding")!;
 const outRate = document.getElementById("out-rate")!;
 const outNet = document.getElementById("out-net")!;
-const netLabel = document.getElementById("net-label")!;
+const netLabelEl = document.getElementById("net-label")!;
 const tabIncomeBusiness = document.getElementById(
   "tab-income-business",
 ) as HTMLButtonElement;
@@ -35,21 +40,6 @@ const presetButtons = document.querySelectorAll<HTMLButtonElement>(
   ".preset-chip[data-add]",
 );
 
-// 입력창은 콤마 표시를 위해 type="text"를 쓴다 — 숫자만 뽑아 파싱한다.
-function parseAmount(raw: string): number {
-  const digits = raw.replace(/[^0-9]/g, "");
-  return digits === "" ? 0 : parseInt(digits, 10);
-}
-
-function formatAmountInput(value: number): string {
-  return value.toLocaleString("ko-KR");
-}
-
-function currentValueOrDefault(defaultValue: number): string {
-  const hasDigits = /[0-9]/.test(amountInput.value);
-  return formatAmountInput(hasDigits ? parseAmount(amountInput.value) : defaultValue);
-}
-
 function rateLabel(): string {
   return incomeType === "business" ? "3.3%" : "8.8%";
 }
@@ -58,29 +48,32 @@ function incomeLabel(): string {
   return incomeType === "business" ? "사업소득" : "기타소득";
 }
 
+// 역산 모드(실수령액 -> 계약금액)일 때만 "계약금액 (역산)"을 쓰고, 그 외엔 fallback을 쓴다.
+function netLabel(fallback: string): string {
+  return mode === "net" && incomeType === "business" ? "계약금액 (역산)" : fallback;
+}
+
 function compute() {
-  const value = Math.max(0, parseAmount(amountInput.value));
+  const value = parseAmount(amountInput.value);
 
   if (incomeType === "other") {
     const r = otherIncome(value);
     lastResult = r;
     outWithholding.textContent = formatWon(r.withholding);
     outNet.textContent = formatWon(r.net);
-    netLabel.textContent = "실수령액";
   } else if (mode === "gross") {
     const r = fromGross(value);
     lastResult = r;
     outWithholding.textContent = formatWon(r.withholding);
     outNet.textContent = formatWon(r.net);
-    netLabel.textContent = "실수령액";
   } else {
     const r = fromNet(value);
     lastResult = r;
     outWithholding.textContent = formatWon(r.withholding);
     outNet.textContent = formatWon(r.gross);
-    netLabel.textContent = "계약금액 (역산)";
   }
 
+  netLabelEl.textContent = netLabel("실수령액");
   outRate.textContent = rateLabel();
 }
 
@@ -88,15 +81,13 @@ function setMode(next: Mode) {
   mode = next;
   if (mode === "gross") {
     inputLabel.textContent = "계약금액";
-    amountInput.value = currentValueOrDefault(1000000);
-    tabGross.setAttribute("aria-pressed", "true");
-    tabNet.setAttribute("aria-pressed", "false");
+    amountInput.value = currentValueOrDefault(amountInput.value, 1000000);
   } else {
     inputLabel.textContent = "실수령액";
-    amountInput.value = currentValueOrDefault(967000);
-    tabNet.setAttribute("aria-pressed", "true");
-    tabGross.setAttribute("aria-pressed", "false");
+    amountInput.value = currentValueOrDefault(amountInput.value, 967000);
   }
+  tabGross.setAttribute("aria-pressed", String(mode === "gross"));
+  tabNet.setAttribute("aria-pressed", String(mode === "net"));
   compute();
 }
 
@@ -124,7 +115,7 @@ function buildCard() {
   return renderCard({
     title: `원천징수 계산 결과 (${incomeLabel()} ${rateLabel()})`,
     lines: [
-      [mode === "net" && incomeType === "business" ? "계약금액 (역산)" : "계약금액", formatWon(lastResult.gross)],
+      [netLabel("계약금액"), formatWon(lastResult.gross)],
       [`원천징수액(${rateLabel()})`, formatWon(lastResult.withholding)],
       ["실수령액", formatWon(lastResult.net)],
     ],

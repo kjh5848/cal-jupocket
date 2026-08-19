@@ -1,5 +1,10 @@
 import { fromGross, fromNet } from "../lib/withholding";
-import { formatWon } from "../lib/money";
+import {
+  formatWon,
+  parseAmount,
+  formatAmountInput,
+  currentValueOrDefault,
+} from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 
 type Mode = "gross" | "net";
@@ -25,23 +30,8 @@ const presetButtons = document.querySelectorAll<HTMLButtonElement>(
   ".preset-chip[data-add]",
 );
 
-// 입력창은 콤마 표시를 위해 type="text"를 쓴다 — 숫자만 뽑아 파싱한다.
-function parseAmount(raw: string): number {
-  const digits = raw.replace(/[^0-9]/g, "");
-  return digits === "" ? 0 : parseInt(digits, 10);
-}
-
-function formatAmountInput(value: number): string {
-  return value.toLocaleString("ko-KR");
-}
-
-function currentValueOrDefault(defaultValue: number): string {
-  const hasDigits = /[0-9]/.test(amountInput.value);
-  return formatAmountInput(hasDigits ? parseAmount(amountInput.value) : defaultValue);
-}
-
 function compute() {
-  const value = Math.max(0, parseAmount(amountInput.value));
+  const value = parseAmount(amountInput.value);
   if (mode === "gross") {
     const r = fromGross(value);
     lastResult = r;
@@ -72,7 +62,7 @@ function buildCard() {
 tabGross.addEventListener("click", () => {
   mode = "gross";
   inputLabel.textContent = "계약금액";
-  amountInput.value = currentValueOrDefault(1000000);
+  amountInput.value = currentValueOrDefault(amountInput.value, 1000000);
   tabGross.setAttribute("aria-pressed", "true");
   tabNet.setAttribute("aria-pressed", "false");
   compute();
@@ -81,7 +71,7 @@ tabGross.addEventListener("click", () => {
 tabNet.addEventListener("click", () => {
   mode = "net";
   inputLabel.textContent = "실수령액";
-  amountInput.value = currentValueOrDefault(967000);
+  amountInput.value = currentValueOrDefault(amountInput.value, 967000);
   tabNet.setAttribute("aria-pressed", "true");
   tabGross.setAttribute("aria-pressed", "false");
   compute();
