@@ -40,13 +40,21 @@ const description =
         <div class="calc-input-wrap">
           <label id="input-label" for="amount">계약금액</label>
           <input
-            type="number"
+            type="text"
+            inputmode="numeric"
             id="amount"
-            value="1000000"
-            step="10000"
-            min="0"
+            value="1,000,000"
           />
           <span class="unit">원</span>
+        </div>
+
+        <div class="amount-presets" role="group" aria-label="금액 빠르게 올리기">
+          <button type="button" class="preset-chip" data-add="100000">
+            +10만
+          </button>
+          <button type="button" class="preset-chip" data-add="1000000">
+            +100만
+          </button>
         </div>
 
         <div class="result-hero" aria-live="polite" aria-atomic="true">
