@@ -21,15 +21,27 @@ const btnDownload = document.getElementById("btn-download") as HTMLButtonElement
 const btnShare = document.getElementById("btn-share") as HTMLButtonElement;
 const btnCopy = document.getElementById("btn-copy") as HTMLButtonElement;
 const copyToast = document.getElementById("copy-toast")!;
+const presetButtons = document.querySelectorAll<HTMLButtonElement>(
+  ".preset-chip[data-add]",
+);
 
-function currentValueOrDefault(defaultValue: string): string {
-  const raw = amountInput.value;
-  const parsed = parseFloat(raw);
-  return raw !== "" && !isNaN(parsed) && parsed >= 0 ? raw : defaultValue;
+// 입력창은 콤마 표시를 위해 type="text"를 쓴다 — 숫자만 뽑아 파싱한다.
+function parseAmount(raw: string): number {
+  const digits = raw.replace(/[^0-9]/g, "");
+  return digits === "" ? 0 : parseInt(digits, 10);
+}
+
+function formatAmountInput(value: number): string {
+  return value.toLocaleString("ko-KR");
+}
+
+function currentValueOrDefault(defaultValue: number): string {
+  const hasDigits = /[0-9]/.test(amountInput.value);
+  return formatAmountInput(hasDigits ? parseAmount(amountInput.value) : defaultValue);
 }
 
 function compute() {
-  const value = Math.max(0, parseFloat(amountInput.value) || 0);
+  const value = Math.max(0, parseAmount(amountInput.value));
   if (mode === "gross") {
     const r = fromGross(value);
     lastResult = r;
@@ -60,7 +72,7 @@ function buildCard() {
 tabGross.addEventListener("click", () => {
   mode = "gross";
   inputLabel.textContent = "계약금액";
-  amountInput.value = currentValueOrDefault("1000000");
+  amountInput.value = currentValueOrDefault(1000000);
   tabGross.setAttribute("aria-pressed", "true");
   tabNet.setAttribute("aria-pressed", "false");
   compute();
@@ -69,13 +81,28 @@ tabGross.addEventListener("click", () => {
 tabNet.addEventListener("click", () => {
   mode = "net";
   inputLabel.textContent = "실수령액";
-  amountInput.value = currentValueOrDefault("967000");
+  amountInput.value = currentValueOrDefault(967000);
   tabNet.setAttribute("aria-pressed", "true");
   tabGross.setAttribute("aria-pressed", "false");
   compute();
 });
 
-amountInput.addEventListener("input", compute);
+amountInput.addEventListener("input", () => {
+  const value = parseAmount(amountInput.value);
+  amountInput.value = value === 0 ? "" : formatAmountInput(value);
+  const end = amountInput.value.length;
+  amountInput.setSelectionRange(end, end);
+  compute();
+});
+
+presetButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const add = parseInt(btn.dataset.add ?? "0", 10);
+    const next = parseAmount(amountInput.value) + add;
+    amountInput.value = formatAmountInput(next);
+    compute();
+  });
+});
 
 btnDownload.addEventListener("click", () => {
   downloadCard(buildCard(), "freelancer-33-result.png");

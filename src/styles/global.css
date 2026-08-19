@@ -357,7 +357,7 @@ details[open] summary {
   margin-bottom: 0.5rem;
 }
 
-.calc-input-wrap input[type="number"] {
+.calc-input-wrap input {
   width: 100%;
   padding: 1rem 3.25rem 1rem 1rem;
   border: 1px solid var(--rule);
@@ -370,7 +370,7 @@ details[open] summary {
   font-variant-numeric: tabular-nums;
 }
 
-.calc-input-wrap input[type="number"]:focus {
+.calc-input-wrap input:focus {
   outline: 3px solid var(--link);
   outline-offset: 1px;
 }
@@ -383,6 +383,35 @@ details[open] summary {
   font-weight: 600;
   color: var(--muted);
   pointer-events: none;
+}
+
+/* 금액 빠르게 올리기 프리셋 (+10만/+100만 등) */
+.amount-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+}
+
+.preset-chip {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  background: var(--accent-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.preset-chip:hover {
+  background: var(--rule);
+}
+
+.preset-chip:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
 }
 
 /* 결과 강조 카드 — 이 계산기가 답해야 할 단 하나의 숫자 */
