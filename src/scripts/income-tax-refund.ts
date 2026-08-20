@@ -1,3 +1,4 @@
+import rates from "../rates/2026.json";
 import { estimateRefund } from "../lib/income-tax";
 import {
   formatWon,
@@ -8,7 +9,7 @@ import {
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 
 const DEFAULT_GROSS_INCOME = 30000000;
-const DEFAULT_EXPENSE_RATE_PERCENT = 60;
+const DEFAULT_EXPENSE_RATE_PERCENT = rates.simpleExpenseRateDefault * 100;
 const DEFAULT_DEPENDENTS = 1;
 
 let lastResult: {
