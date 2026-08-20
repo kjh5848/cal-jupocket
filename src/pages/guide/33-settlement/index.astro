@@ -1,13 +1,7 @@
 ---
-import BaseHead from "../../../components/BaseHead.astro";
-import ClarityHead from "../../../components/ClarityHead.astro";
-import AdSenseHead from "../../../components/AdSenseHead.astro";
-import SiteHeader from "../../../components/SiteHeader.astro";
-import SiteFooter from "../../../components/SiteFooter.astro";
-import Disclaimer from "../../../components/Disclaimer.astro";
+import GuideLayout from "../../../layouts/GuideLayout.astro";
 import rates from "../../../rates/2026.json";
 import { round1, splitWithholdingRate } from "../../../lib/rate-display";
-import "../../../styles/global.css";
 
 const title = "3.3% 원천징수, 종합소득세에서 정산됩니다";
 const description =
@@ -23,15 +17,7 @@ const lowestBracketPercent = round1(lowestBracket.rate * 100); // 6
 const highestBracketPercent = round1(highestBracket.rate * 100); // 45
 ---
 
-<html lang="ko">
-  <head>
-    <BaseHead title={title} description={description} />
-    <ClarityHead />
-    <AdSenseHead />
-  </head>
-  <body>
-    <SiteHeader />
-    <main>
+<GuideLayout title={title} description={description}>
       <h1>{title}</h1>
 
       <div class="callout">
@@ -174,9 +160,4 @@ const highestBracketPercent = round1(highestBracket.rate * 100); // 45
       </p>
 
       <div class="ad-slot" data-ad="guide-33-settlement-bottom"></div>
-
-      <Disclaimer variant="guide" />
-    </main>
-    <SiteFooter />
-  </body>
-</html>
+</GuideLayout>

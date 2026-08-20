@@ -1,0 +1,44 @@
+---
+/**
+ * 가이드 글(설명형 콘텐츠) 공통 레이아웃.
+ *
+ * head(BaseHead/ClarityHead/AdSenseHead)·SiteHeader·SiteFooter·
+ * <Disclaimer variant="guide" />를 여기서 한 번만 배선하고, 각 글은
+ * <GuideLayout title={title} description={description}>에 <h1>부터
+ * CTA까지 본문만 slot으로 넘긴다. Disclaimer는 이 레이아웃이 </main>
+ * 직전에 자동으로 넣으므로 글 쪽에서 다시 쓰지 않는다.
+ *
+ * 본문 안의 .ad-slot 위치·개수는 글마다 다르므로 레이아웃이 강제하지
+ * 않고, 각 글의 slot 콘텐츠 안에 그대로 둔다.
+ */
+import BaseHead from "../components/BaseHead.astro";
+import ClarityHead from "../components/ClarityHead.astro";
+import AdSenseHead from "../components/AdSenseHead.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import Disclaimer from "../components/Disclaimer.astro";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <AdSenseHead />
+  </head>
+  <body>
+    <SiteHeader />
+    <main>
+      <slot />
+      <Disclaimer variant="guide" />
+    </main>
+    <SiteFooter />
+  </body>
+</html>
