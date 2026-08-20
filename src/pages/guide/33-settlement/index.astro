@@ -62,8 +62,9 @@ const highestBracketPercent = round1(highestBracket.rate * 100); // 45
       </p>
       <p>
         반면 실제로 내야 할 세금(종합소득세)은 총수입에서 필요경비를 뺀
-        소득에, 인적공제 등을 다시 뺀 <strong>과세표준</strong>에 누진세율
-        (최저 {lowestBracketPercent}%~최고 {highestBracketPercent}%)을
+        소득에, 인적공제 등을 다시 뺀 <strong>과세표준</strong>에{" "}
+        <a href="/guide/income-tax-brackets/">누진세율
+        (최저 {lowestBracketPercent}%~최고 {highestBracketPercent}%)</a>을
         적용해 계산합니다. 소득 규모와 공제 항목에 따라 세율 자체가
         달라지므로, 누구에게나 똑같이 적용되는 {businessRatePercent}% 예납액과
         실제 세액이 정확히 일치할 가능성은 거의 없습니다. 그래서 다음 해 5월
@@ -166,6 +167,9 @@ const highestBracketPercent = round1(highestBracket.rate * 100); // 45
       <p class="actions">
         <a class="btn" href="/income-tax-refund/"
           >내 환급/추가납부 예상액 계산하기</a
+        >
+        <a class="btn" href="/guide/income-tax-brackets/"
+          >종소세 세율 구간 보기</a
         >
       </p>
 
