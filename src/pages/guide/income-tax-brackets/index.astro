@@ -139,8 +139,9 @@ const insightExtraPayment = -insight.refund; // refund가 음수면 추가납부
 
       <div class="callout warn">
         <p>
-          ⚠️ 총수입 {insightGrossIncome.toLocaleString("ko-KR")}원인 프리랜서가
-          업종 단순경비율 20%만 인정받는다고 가정하면(인적공제 1명 기준),
+          ⚠️ 총수입 {insightGrossIncome.toLocaleString("ko-KR")}원인 프리랜서가{" "}
+          <a href="/guide/expense-rate/">업종 단순경비율</a> 20%만
+          인정받는다고 가정하면(인적공제 1명 기준),
           결정세액은 {insight.computedTax.toLocaleString("ko-KR")}원입니다.
           총수입 대비 <strong>실효세율 약 {insightEffectiveRatePercent}%</strong>로,{" "}
           {businessRatePercent}%로 예납한 {insight.prepaid.toLocaleString(

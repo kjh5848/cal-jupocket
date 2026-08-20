@@ -1,0 +1,190 @@
+---
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import rates from "../../../rates/2026.json";
+import { round1 } from "../../../lib/rate-display";
+import { estimateRefund } from "../../../lib/income-tax";
+
+const title = "단순경비율 vs 기준경비율, 세금이 왜 달라질까";
+const description =
+  "단순경비율과 기준경비율은 인정해주는 필요경비의 폭이 다릅니다. 같은 총수입이라도 어느 방식이 적용되느냐에 따라 과세표준과 실제 세액이 크게 달라지는 이유를 계산 예시로 설명합니다.";
+
+// 단순경비율 예시 기본값 — rates/2026.json에서 그대로 가져온다. 이 값은
+// "이 계산기의 예시 기본값"일 뿐 모든 업종에 적용되는 고정 수치가 아니다.
+const simpleRatePercent = round1(rates.simpleExpenseRateDefault * 100); // 60
+
+// 절세 레버 예시 — 같은 총수입, 같은 인적공제 수를 두고 경비율만 바꿔
+// estimateRefund()로 세액이 실제로 얼마나 달라지는지 보여준다. 두 경비율
+// 모두 과세표준이 14,000,000원 초과 50,000,000원 이하 구간(세율 15%) 안에
+// 들어오도록 골라, "세율 구간이 아니라 경비율 자체"가 차이를 만든다는
+// 점을 분리해서 보여준다.
+const compareGrossIncome = 60000000;
+const highExpenseRate = 0.6;
+const lowExpenseRate = 0.3;
+
+const highCase = estimateRefund({
+  grossIncome: compareGrossIncome,
+  expenseRate: highExpenseRate,
+  dependents: 1,
+});
+const lowCase = estimateRefund({
+  grossIncome: compareGrossIncome,
+  expenseRate: lowExpenseRate,
+  dependents: 1,
+});
+
+const highRatePercent = round1(highExpenseRate * 100); // 60
+const lowRatePercent = round1(lowExpenseRate * 100); // 30
+const taxDifference = lowCase.computedTax - highCase.computedTax;
+const highEffectiveRatePercent = round1(
+  (highCase.computedTax / compareGrossIncome) * 100,
+);
+const lowEffectiveRatePercent = round1(
+  (lowCase.computedTax / compareGrossIncome) * 100,
+);
+
+// 두 경우가 실제로 같은 세율 구간에 속하는지 데이터로 확인해 그 구간의
+// 세율을 프로즈에 인용한다(하드코딩하지 않는다).
+const bracketForLowCase = rates.incomeTaxBrackets.find(
+  (b) => b.upTo === null || lowCase.taxableBase <= b.upTo,
+)!;
+const bracketRatePercent = round1(bracketForLowCase.rate * 100);
+---
+
+<GuideLayout title={title} description={description}>
+      <h1>{title}</h1>
+
+      <div class="callout">
+        <p>
+          총수입이 똑같아도 <strong>얼마나 많은 필요경비를 인정받느냐</strong>에
+          따라 실제로 내는 세금은 크게 달라집니다. 경비를 인정받는 방식에는{" "}
+          <strong>단순경비율</strong>과 <strong>기준경비율</strong> 두 가지가
+          있고, 어느 쪽이 적용되느냐가 그대로 절세의 갈림길이 됩니다.
+        </p>
+      </div>
+
+      <p>
+        <a href="/guide/income-tax-brackets/">지난 글</a>에서 과세표준에
+        누진세율을 적용해 세액이 정해지는 과정을 살펴봤습니다. 그런데 그
+        과세표준 자체가 총수입에서 얼마를 경비로 빼느냐에 따라 달라집니다.
+        이번 글은 그 경비를 인정받는 두 가지 방식과, 그 차이가 세금에 얼마나
+        영향을 주는지를 다룹니다.
+      </p>
+
+      <h2>단순경비율이란</h2>
+      <p>
+        단순경비율은 국세청이 업종별로 미리 정해둔 비율만큼, 실제 지출을
+        증빙하지 않아도 <strong>필요경비로 인정</strong>해 주는 방식입니다.
+        총수입에 이 비율을 곱한 금액만큼은 영수증이나 증빙 없이도 경비로
+        처리됩니다.
+      </p>
+      <p>
+        이 계산기가 예시 입력값으로 쓰는 단순경비율 기본값은{" "}
+        {simpleRatePercent}%입니다. 다만 <em>{rates.simpleExpenseRateDefaultNote}</em>{" "}
+        즉 {simpleRatePercent}%는 <strong>이 계산기의 예시값일 뿐 모든 업종에
+        적용되는 고정 수치가 아닙니다</strong>. 본인 업종의 정확한 단순경비율은
+        홈택스 신고 안내에서 업종코드로 조회해 확인해야 합니다.
+      </p>
+
+      <h2>기준경비율이란</h2>
+      <p>
+        기준경비율은 단순경비율과 달리, <strong>매입비용·인건비·임차료 같은
+        주요경비는 실제 지출을 증빙해야 경비로 인정</strong>받고, 나머지
+        부분만 정해진 비율만큼 추가로 인정받는 방식입니다. 증빙이 없으면
+        그만큼 경비로 인정받지 못하기 때문에, 같은 총수입이라도 단순경비율보다
+        인정되는 경비 폭이 좁아지는 경우가 일반적입니다.
+      </p>
+
+      <div class="callout warn">
+        <p>
+          ⚠️ 기준경비율의 구체적인 수치는 이 계산기가 갖고 있지 않습니다.
+          업종별 기준경비율은 국세청이 별도로 고시하며, 단순경비율보다 낮게
+          정해지는 게 보통이라는 원리만 알아두고, 정확한 %는 반드시{" "}
+          <strong>홈택스에서 본인 업종코드로 직접 확인</strong>하세요.
+        </p>
+      </div>
+
+      <div class="ad-slot" data-ad="guide-expense-rate-mid"></div>
+
+      <h2>왜 경비율이 절세 레버가 되는가</h2>
+      <p>
+        경비율이 세금에 영향을 주는 경로는 단순합니다. 인정받는 경비가
+        많을수록 소득(총수입 − 경비)이 줄고, 소득이 줄면 과세표준도 줄어들어
+        결국 세액이 낮아집니다. 반대로 인정받는 경비가 적으면 소득과 과세표준,
+        세액이 모두 늘어납니다.
+      </p>
+      <p>
+        같은 총수입 {compareGrossIncome.toLocaleString("ko-KR")}원, 인적공제
+        1명을 그대로 두고 경비율만 {highRatePercent}%와 {lowRatePercent}%로
+        바꿔보면 그 차이를 숫자로 확인할 수 있습니다.
+      </p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>경비율</th>
+              <th>과세표준</th>
+              <th>결정세액</th>
+              <th>실효세율</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{highRatePercent}%</td>
+              <td>{highCase.taxableBase.toLocaleString("ko-KR")}원</td>
+              <td>{highCase.computedTax.toLocaleString("ko-KR")}원</td>
+              <td>약 {highEffectiveRatePercent}%</td>
+            </tr>
+            <tr>
+              <td>{lowRatePercent}%</td>
+              <td>{lowCase.taxableBase.toLocaleString("ko-KR")}원</td>
+              <td>{lowCase.computedTax.toLocaleString("ko-KR")}원</td>
+              <td>약 {lowEffectiveRatePercent}%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <p>
+          ⚠️ 총수입은 {compareGrossIncome.toLocaleString("ko-KR")}원으로 똑같은데
+          경비율만 {highRatePercent}%에서 {lowRatePercent}%로 낮아졌을 뿐인데도,
+          결정세액은 {highCase.computedTax.toLocaleString("ko-KR")}원에서{" "}
+          {lowCase.computedTax.toLocaleString("ko-KR")}원으로{" "}
+          <strong>{taxDifference.toLocaleString("ko-KR")}원</strong>이나
+          늘었습니다. 두 경우 모두 같은 세율 구간(세율 {bracketRatePercent}%)
+          안에 있는데도 이만큼 차이가 나는 건, 오직{" "}
+          <strong>경비를 얼마나 인정받았는가</strong>의 차이 때문입니다.
+          단순경비율과 기준경비율 중 어느 쪽이 적용되느냐가 바로 이만큼의
+          세금을 가르는 갈림길입니다.
+        </p>
+      </div>
+
+      <h2>나는 어느 쪽이 적용될까</h2>
+      <p>
+        일반적으로 신규사업자이거나 직전연도 수입금액이 일정 기준에 못 미치면
+        단순경비율이, 그 기준을 넘어서면 기준경비율이 적용됩니다. 다만 그
+        기준 금액은 이 계산기가 보유한 값이 아니므로 여기서 특정 숫자를
+        제시하지 않습니다. 본인이 단순경비율 대상인지 기준경비율 대상인지는{" "}
+        <strong>홈택스 종합소득세 신고 안내</strong>에서 확인하는 것이
+        정확합니다.
+      </p>
+
+      <p>
+        내가 적용받는 경비율이 얼마인지 알고 있다면, 그 값을 직접 넣어{" "}
+        <a href="/income-tax-refund/"
+          ><strong>종소세 환급 예상 계산기</strong></a
+        >로 세액이 어떻게 나오는지 바로 확인해볼 수 있습니다.{" "}
+        <a href="/guide/33-settlement/">3.3% 예납과 정산의 관계</a>나{" "}
+        <a href="/guide/income-tax-brackets/">종소세 세율 구간</a>을 아직 안
+        보셨다면 함께 읽어보시길 권합니다.
+      </p>
+
+      <p class="actions">
+        <a class="btn" href="/income-tax-refund/"
+          >내 경비율로 예상 세액 계산하기</a
+        >
+      </p>
+
+      <div class="ad-slot" data-ad="guide-expense-rate-bottom"></div>
+</GuideLayout>
