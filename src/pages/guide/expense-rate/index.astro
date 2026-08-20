@@ -43,11 +43,20 @@ const lowEffectiveRatePercent = round1(
 );
 
 // 두 경우가 실제로 같은 세율 구간에 속하는지 데이터로 확인해 그 구간의
-// 세율을 프로즈에 인용한다(하드코딩하지 않는다).
+// 세율을 프로즈에 인용한다(하드코딩하지 않는다). highCase와 lowCase는
+// expenseRate만 다르고 grossIncome·dependents가 같아 taxableBase가
+// 달라질 수 있으므로, 두 구간을 각각 찾아 실제로 같은지 비교한다 —
+// rates/2026.json의 구간 경계나 위 예시 값이 바뀌어도 "같은 세율
+// 구간"이라는 문장이 검증 없이 남아있지 않도록 하기 위함이다.
 const bracketForLowCase = rates.incomeTaxBrackets.find(
   (b) => b.upTo === null || lowCase.taxableBase <= b.upTo,
 )!;
-const bracketRatePercent = round1(bracketForLowCase.rate * 100);
+const bracketForHighCase = rates.incomeTaxBrackets.find(
+  (b) => b.upTo === null || highCase.taxableBase <= b.upTo,
+)!;
+const sameBracket = bracketForLowCase.rate === bracketForHighCase.rate;
+const lowBracketRatePercent = round1(bracketForLowCase.rate * 100);
+const highBracketRatePercent = round1(bracketForHighCase.rate * 100);
 ---
 
 <GuideLayout title={title} description={description}>
@@ -152,9 +161,22 @@ const bracketRatePercent = round1(bracketForLowCase.rate * 100);
           결정세액은 {highCase.computedTax.toLocaleString("ko-KR")}원에서{" "}
           {lowCase.computedTax.toLocaleString("ko-KR")}원으로{" "}
           <strong>{taxDifference.toLocaleString("ko-KR")}원</strong>이나
-          늘었습니다. 두 경우 모두 같은 세율 구간(세율 {bracketRatePercent}%)
-          안에 있는데도 이만큼 차이가 나는 건, 오직{" "}
-          <strong>경비를 얼마나 인정받았는가</strong>의 차이 때문입니다.
+          늘었습니다.{" "}
+          {sameBracket ? (
+            <>
+              두 경우 모두 같은 세율 구간(세율 {lowBracketRatePercent}%) 안에
+              있는데도 이만큼 차이가 나는 건, 오직{" "}
+              <strong>경비를 얼마나 인정받았는가</strong>의 차이 때문입니다.
+            </>
+          ) : (
+            <>
+              경비율 {highRatePercent}%일 때는 세율 {highBracketRatePercent}%
+              구간, {lowRatePercent}%일 때는 세율 {lowBracketRatePercent}%
+              구간으로 세율 구간 자체가 다른데, 그 구간 차이를 감안하더라도{" "}
+              <strong>경비를 얼마나 인정받았는가</strong>가 이 차이의 핵심
+              원인입니다.
+            </>
+          )}{" "}
           단순경비율과 기준경비율 중 어느 쪽이 적용되느냐가 바로 이만큼의
           세금을 가르는 갈림길입니다.
         </p>
