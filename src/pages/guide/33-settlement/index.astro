@@ -6,24 +6,17 @@ import SiteHeader from "../../../components/SiteHeader.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
 import Disclaimer from "../../../components/Disclaimer.astro";
 import rates from "../../../rates/2026.json";
+import { round1, splitWithholdingRate } from "../../../lib/rate-display";
 import "../../../styles/global.css";
 
 const title = "3.3% 원천징수, 종합소득세에서 정산됩니다";
 const description =
   "방금 뗀 3.3%는 세금을 다 낸 게 아니라 예납입니다. 실제 세액은 다음 해 5월 종합소득세 신고로 확정되고, 예납보다 많으면 환급, 적으면 추가납부입니다.";
 
-// 부동소수점 연산 오차(예: 0.033 * 100 === 3.3000000000000003)가 화면에
-// 그대로 노출되지 않도록 소수 첫째 자리에서 반올림한다.
-const round1 = (n: number) => Math.round(n * 10) / 10;
-
 const businessRatePercent = round1(rates.withholding.business * 100); // 3.3
 const localTaxRatePercent = round1(rates.localTaxRate * 100); // 10
-const incomeTaxRatePercent = round1(
-  businessRatePercent / (1 + rates.localTaxRate)
-); // 3
-const localSurchargePercent = round1(
-  businessRatePercent - incomeTaxRatePercent
-); // 0.3
+const { incomeTaxPercent: incomeTaxRatePercent, localSurchargePercent } =
+  splitWithholdingRate(rates.withholding.business, rates.localTaxRate); // 3, 0.3
 const lowestBracket = rates.incomeTaxBrackets[0];
 const highestBracket = rates.incomeTaxBrackets[rates.incomeTaxBrackets.length - 1];
 const lowestBracketPercent = round1(lowestBracket.rate * 100); // 6
@@ -178,7 +171,7 @@ const highestBracketPercent = round1(highestBracket.rate * 100); // 45
 
       <div class="ad-slot" data-ad="guide-33-settlement-bottom"></div>
 
-      <Disclaimer />
+      <Disclaimer variant="guide" />
     </main>
     <SiteFooter />
   </body>
