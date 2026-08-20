@@ -285,6 +285,29 @@ details[open] summary {
 }
 
 /*
+ * 브릿지 카드 — 계산기 결과와 정산 설명 글을 잇는 도선.
+ * .callout을 베이스로 쓰되 계산기 카드(.calc-card) 내부에 붙어야 해서
+ * 여백을 좁히고 모서리를 다른 내부 요소(.stat-chip 등)와 맞춘다.
+ */
+.bridge-card {
+  border-radius: 12px;
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+}
+
+.bridge-card p {
+  margin: 0 0 0.5rem;
+}
+
+.bridge-card p:last-child {
+  margin-bottom: 0;
+}
+
+.bridge-card a {
+  font-weight: 600;
+}
+
+/*
  * 계산기 도구 카드 — 콘텐츠 글과 시각적으로 구분되는 "도구" 화면.
  * 동일 키워드 상위 경쟁 계산기(withholding.kr 등) 벤치마킹: 큰 입력 →
  * 결과 강조 카드 → 보조 수치 칩 순서가 스캔하기 가장 쉬웠다.
