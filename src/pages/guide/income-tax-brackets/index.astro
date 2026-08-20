@@ -74,7 +74,7 @@ const insightExtraPayment = -insight.refund; // refund가 음수면 추가납부
       <div class="callout">
         <p>
           "나는 {businessRatePercent}%만 떼였으니 세율이 낮은 사람"이라고
-          생각하기 쉽지만, 종합소득세 신고 때 실제로 적용되는 건 이
+          생각하기 쉽지만, 종합소득세 신고 때 실제로 적용되는 건 이{" "}
           {businessRatePercent}%가 아니라 <strong>과세표준 구간별로 다른
           누진세율표</strong>입니다. 소득이 많아질수록 이 표 때문에 실제
           세율이 크게 달라집니다.
@@ -92,7 +92,7 @@ const insightExtraPayment = -insight.refund; // refund가 음수면 추가납부
 
       <h2>누진세율이란 무엇인가</h2>
       <p>
-        누진세율은 소득 전체에 하나의 세율을 곱하는 방식이 아닙니다.
+        누진세율은 소득 전체에 하나의 세율을 곱하는 방식이 아닙니다.{" "}
         <strong>과세표준을 구간으로 나누고, 각 구간을 넘어가는 부분에만 그
         구간의 세율을 적용</strong>합니다. 예를 들어 과세표준이 6천만원이면
         6천만원 전부에 24%를 곱하는 게 아니라, 1,400만원까지는 6%,
@@ -156,7 +156,7 @@ const insightExtraPayment = -insight.refund; // refund가 음수면 추가납부
           ⚠️ 총수입 {insightGrossIncome.toLocaleString("ko-KR")}원인 프리랜서가
           업종 단순경비율 20%만 인정받는다고 가정하면(인적공제 1명 기준),
           결정세액은 {insight.computedTax.toLocaleString("ko-KR")}원입니다.
-          총수입 대비 <strong>실효세율 약 {insightEffectiveRatePercent}%</strong>로,
+          총수입 대비 <strong>실효세율 약 {insightEffectiveRatePercent}%</strong>로,{" "}
           {businessRatePercent}%로 예납한 {insight.prepaid.toLocaleString(
             "ko-KR",
           )}원보다 <strong>{insightExtraPayment.toLocaleString(
