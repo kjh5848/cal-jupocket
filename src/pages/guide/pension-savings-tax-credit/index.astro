@@ -1,0 +1,193 @@
+---
+/**
+ * 연금저축·IRP 세액공제 한도·공제율.
+ *
+ * 이 글의 숫자(한도 600만/900만원, 공제율 15%/12%)는 rates/2026.json이
+ * 아니라 소득세법 제59조의3(연금계좌세액공제)에서 직접 온다 — 종합소득세
+ * 세율표와는 별개 법조항이라 이 프로젝트의 다른 rates 파일에 없다.
+ * 확인 출처(2026-08-20 확인):
+ * - https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7875 (국세청, 연금계좌 세액공제)
+ * - https://law.go.kr (소득세법 제59조의3, 연금계좌세액공제)
+ * 지방소득세 10%(rates/2026.json의 localTaxRate와 동일 원리)를 얹은
+ * 실효율 16.5%/13.2%는 이 페이지에서 직접 계산해 표시한다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import rates from "../../../rates/2026.json";
+import { round1 } from "../../../lib/rate-display";
+
+const title = "프리랜서 연금저축·IRP 세액공제 한도 (2026)";
+const description =
+  "프리랜서(사업소득자)도 근로소득자와 똑같이 연금저축·IRP 세액공제를 받을 수 있습니다. 한도 900만원, 공제율 12~15%, 최대 환급액까지 정리했습니다.";
+
+const SAVINGS_LIMIT = 6_000_000; // 연금저축 단독 한도
+const COMBINED_LIMIT = 9_000_000; // 연금저축 + IRP 합산 한도
+const INCOME_THRESHOLD = 45_000_000; // 종합소득금액 기준선
+
+const localTaxRate = rates.localTaxRate; // 0.1, 기존 rates.json과 동일한 지방소득세율
+const lowRateNational = 15;
+const highRateNational = 12;
+const lowRateEffective = round1(lowRateNational * (1 + localTaxRate)); // 16.5
+const highRateEffective = round1(highRateNational * (1 + localTaxRate)); // 13.2
+
+const maxRefundLow = Math.round((COMBINED_LIMIT * lowRateEffective) / 100);
+const maxRefundHigh = Math.round((COMBINED_LIMIT * highRateEffective) / 100);
+---
+
+<GuideLayout title={title} description={description}>
+  <h1>{title}</h1>
+
+  <div class="callout">
+    <p>
+      "연금저축 세액공제는 회사 다니는 사람만 받는 거 아닌가?"라고 생각하기
+      쉽지만, <strong>사업소득으로 종합소득세를 신고하는 프리랜서도 근로소득자와
+      똑같이</strong> 연금저축·IRP 세액공제를 받을 수 있습니다. 오히려 퇴직연금이
+      따로 없는 프리랜서에게는 노후 준비와 절세를 한 번에 챙기는 몇 안 되는
+      수단입니다.
+    </p>
+  </div>
+
+  <p>
+    <a href="/guide/33-settlement/">3.3% 원천징수는 예납일 뿐</a>이고 실제
+    세액은 다음 해 5월 종합소득세 신고로 정산된다는 점, 그리고{" "}
+    <a href="/guide/income-tax-brackets/">그 세액이 누진세율표로 계산된다</a>는
+    점을 지난 글들에서 살펴봤습니다. 이번 글은 그 결정세액을 직접 줄이는{" "}
+    <strong>세액공제</strong> 항목 중 하나인 연금계좌 세액공제를 다룹니다.
+  </p>
+
+  <h2>한도: 연금저축 단독 600만원, IRP 합치면 900만원</h2>
+  <p>
+    연금계좌 세액공제는 연금저축계좌와 퇴직연금계좌(IRP)에 낸 돈에 대해
+    적용됩니다. 소득세법 제59조의3에 따른 한도는 두 단계입니다.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>계좌</th>
+          <th>연간 세액공제 대상 한도</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>연금저축계좌만 있는 경우</td>
+          <td>{SAVINGS_LIMIT.toLocaleString("ko-KR")}원</td>
+        </tr>
+        <tr>
+          <td>연금저축 + IRP를 합친 경우</td>
+          <td>{COMBINED_LIMIT.toLocaleString("ko-KR")}원</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    즉 연금저축만으로는 {SAVINGS_LIMIT.toLocaleString("ko-KR")}원까지만
+    공제 대상이 되고, 그 이상을 채우려면 나머지{" "}
+    {(COMBINED_LIMIT - SAVINGS_LIMIT).toLocaleString("ko-KR")}원을 IRP에
+    넣어야 {COMBINED_LIMIT.toLocaleString("ko-KR")}원 전액이 공제 대상이
+    됩니다.
+  </p>
+
+  <div class="ad-slot" data-ad="guide-pension-savings-tax-credit-mid"></div>
+
+  <h2>공제율: 종합소득금액 4,500만원이 기준선</h2>
+  <p>
+    한도만큼 채운다고 전액을 돌려받는 게 아니라, 그 금액에{" "}
+    <strong>공제율</strong>을 곱한 만큼만 결정세액에서 빠집니다. 공제율은
+    소득 수준에 따라 두 단계입니다 — 근로소득자는 총급여, 프리랜서는{" "}
+    <strong>종합소득금액</strong>(총수입에서 필요경비를 뺀 금액)이 기준입니다.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>종합소득금액</th>
+          <th>공제율(소득세)</th>
+          <th>지방소득세 포함 실효율</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{INCOME_THRESHOLD.toLocaleString("ko-KR")}원 이하</td>
+          <td>{lowRateNational}%</td>
+          <td>{lowRateEffective}%</td>
+        </tr>
+        <tr>
+          <td>{INCOME_THRESHOLD.toLocaleString("ko-KR")}원 초과</td>
+          <td>{highRateNational}%</td>
+          <td>{highRateEffective}%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p>
+      한도 {COMBINED_LIMIT.toLocaleString("ko-KR")}원을 전부 채우면, 종합소득금액{" "}
+      {INCOME_THRESHOLD.toLocaleString("ko-KR")}원 이하인 경우 최대{" "}
+      <strong>{maxRefundLow.toLocaleString("ko-KR")}원</strong>, 초과인 경우
+      최대 <strong>{maxRefundHigh.toLocaleString("ko-KR")}원</strong>이
+      결정세액에서 줄어듭니다. 지방소득세까지 포함한 실효율 기준입니다.
+    </p>
+  </div>
+
+  <h2>프리랜서에게 특히 중요한 이유</h2>
+  <p>
+    근로소득자는 회사가 퇴직연금(DB·DC)을 대신 넣어주지만, 사업소득자인
+    프리랜서는 이런 퇴직급여 제도가 없습니다. 연금저축·IRP는 프리랜서가{" "}
+    <strong>스스로 노후 자금을 쌓으면서 동시에 그해 종합소득세를
+    줄이는</strong> 몇 안 되는 합법적 수단입니다. 3.3%로 예납한 세금과는
+    완전히 별개로, 신고 시 결정세액 자체를 낮추는 항목이라는 점이
+    핵심입니다.
+  </p>
+
+  <div class="callout warn">
+    <p>
+      ⚠️ 이 사이트의 <a href="/income-tax-refund/">종소세 환급 예상
+      계산기</a>는 아직 표준세액공제(연 7만원)만 반영하고, 연금저축·IRP
+      세액공제는 포함하지 않습니다. 연금계좌를 활용하고 있다면 계산기가
+      보여주는 결정세액보다 <strong>실제 환급액이 이 글의 계산만큼 더 클
+      수 있습니다</strong>. 정확한 금액은 홈택스 신고 시 직접 반영해
+      확인하세요.
+    </p>
+  </div>
+
+  <h2>실제로 적용하려면</h2>
+  <ol class="doc-checks">
+    <li>
+      <strong>연금저축계좌 또는 IRP를 개설합니다.</strong> 은행·증권사·보험사
+      어디서든 가능하며, 연금저축은 여러 금융사에 나눠 가입해도 합산
+      한도가 적용됩니다.
+    </li>
+    <li>
+      <strong>연간 납입액을 한도에 맞춰 관리합니다.</strong> 연금저축
+      {SAVINGS_LIMIT.toLocaleString("ko-KR")}원을 먼저 채우고, 여유가
+      있으면 IRP에 추가로 넣어 {COMBINED_LIMIT.toLocaleString("ko-KR")}원까지
+      맞추는 방식이 일반적입니다.
+    </li>
+    <li>
+      <strong>연말정산이 아니라 종합소득세 신고에서 반영합니다.</strong>{" "}
+      프리랜서는 5월 종합소득세 신고 때 연금계좌 납입증명서 금액을 세액공제
+      항목에 입력해 반영합니다.
+    </li>
+    <li>
+      <strong>중도 해지는 불이익이 있습니다.</strong> 공제받은 후 연금
+      외의 형태로 중도 인출하면 그동안 받은 공제·운용수익에 대해 기타소득세
+      (지방소득세 포함 16.5%) 등이 부과될 수 있으니, 당장 쓸 자금은 넣지
+      않는 것이 안전합니다.
+    </li>
+  </ol>
+
+  <p>
+    내 종합소득금액이 {INCOME_THRESHOLD.toLocaleString("ko-KR")}원 기준
+    어느 쪽인지, 그리고 3.3% 예납액과 결정세액의 차이가 얼마인지는{" "}
+    <a href="/income-tax-refund/"
+      ><strong>종소세 환급 예상 계산기</strong></a
+    >로 먼저 가늠해볼 수 있습니다.
+  </p>
+
+  <p class="actions">
+    <a class="btn" href="/income-tax-refund/">내 환급/추가납부 예상액 계산하기</a>
+  </p>
+
+  <div class="ad-slot" data-ad="guide-pension-savings-tax-credit-bottom"></div>
+</GuideLayout>
