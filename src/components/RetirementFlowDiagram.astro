@@ -1,0 +1,113 @@
+---
+/**
+ * 노후자금 계산 "구조도" — 단정적인 필요 총액을 던지는 대신,
+ * 어떤 단계를 거쳐 그 숫자가 나오는지를 보여준다.
+ *
+ * 노후자금 글들은 대개 "○억 필요"라는 결론만 던진다. 그 숫자가
+ * 어떤 가정에서 나왔는지 보이지 않으면 독자는 자기 상황에 대입할
+ * 수 없다. 이 도표는 계산의 뼈대를 드러내 독자가 자기 숫자를
+ * 끼워넣게 만드는 것이 목적이다.
+ */
+import { formatWon } from "../lib/money";
+import {
+  monthlyGap,
+  totalShortfall,
+  monthlySavingNeeded,
+} from "../lib/retirement";
+
+interface Props {
+  /** 목표 월 생활비 */
+  targetMonthly: number;
+  /** 국민연금 등으로 이미 확보된 월 수령액 */
+  pensionMonthly: number;
+  /** 노후 기간(년) */
+  retirementYears: number;
+  /** 은퇴까지 남은 준비 기간(년) */
+  yearsToPrepare: number;
+}
+
+const { targetMonthly, pensionMonthly, retirementYears, yearsToPrepare } =
+  Astro.props;
+
+const gap = monthlyGap(targetMonthly, pensionMonthly);
+const shortfall = totalShortfall(gap, retirementYears);
+const saving = monthlySavingNeeded(shortfall, yearsToPrepare);
+
+/** 단계 = [연산기호, 라벨, 값, 강조여부] */
+const steps = [
+  {
+    op: null,
+    label: "목표 월 생활비",
+    value: formatWon(targetMonthly),
+    tone: "neutral" as const,
+  },
+  {
+    op: "−",
+    label: "연금으로 채워지는 월 수령액",
+    value: formatWon(pensionMonthly),
+    tone: "gain" as const,
+  },
+  {
+    op: "=",
+    label: "매월 부족한 금액",
+    value: formatWon(gap),
+    tone: "loss" as const,
+  },
+  {
+    op: "×",
+    label: `노후 기간 ${retirementYears}년 (12개월 × ${retirementYears})`,
+    value: `${retirementYears * 12}개월`,
+    tone: "neutral" as const,
+  },
+  {
+    op: "=",
+    label: "따로 준비해야 하는 총액",
+    value: formatWon(shortfall),
+    tone: "loss" as const,
+    emphasis: true,
+  },
+  {
+    op: "÷",
+    label: `은퇴까지 남은 ${yearsToPrepare}년 (${yearsToPrepare * 12}개월)`,
+    value: `${yearsToPrepare * 12}개월`,
+    tone: "neutral" as const,
+  },
+  {
+    op: "=",
+    label: "지금부터 매월 모아야 하는 금액",
+    value: formatWon(saving),
+    tone: "base" as const,
+    emphasis: true,
+  },
+];
+
+const toneColor = (tone: "neutral" | "gain" | "loss" | "base") =>
+  tone === "gain"
+    ? "var(--chart-gain)"
+    : tone === "loss"
+      ? "var(--chart-loss)"
+      : tone === "base"
+        ? "var(--chart-base)"
+        : "var(--muted)";
+---
+
+<figure class="chart-figure">
+  <ol class="flow-diagram">
+    {
+      steps.map((step) => (
+        <li class:list={["flow-step", { "is-result": step.emphasis }]}>
+          <span class="flow-op" aria-hidden="true">{step.op}</span>
+          <span class="flow-label">{step.label}</span>
+          <span class="flow-value" style={`color:${toneColor(step.tone)}`}>
+            {step.value}
+          </span>
+        </li>
+      ))
+    }
+  </ol>
+  <figcaption>
+    숫자를 본인 것으로 바꿔 넣으면 그대로 계산됩니다. 물가상승과 투자
+    수익률은 반영하지 않았습니다 — 가정값 하나로 결과가 크게 흔들려
+    오히려 오해를 만들기 때문입니다. 뼈대를 먼저 잡는 용도로 쓰세요.
+  </figcaption>
+</figure>

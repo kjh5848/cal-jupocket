@@ -1,0 +1,17 @@
+{
+  "year": 2026,
+  "verifiedOn": "2026-08-21",
+  "sources": [
+    {
+      "label": "국민연금공단 국민연금연구원 — 국민노후보장패널조사 제10차 부가조사(2024)",
+      "url": "https://www.nps.or.kr/pnsgdnc/nscvrgdata/getOHAE0002M1.do?hmpgBbsCd=BS20240145&hmpgCd=01&menuId=MN24000898&pstId=ZZ202500000000001624"
+    }
+  ],
+  "surveyLabel": "국민노후보장패널조사 제10차 부가조사(2024)",
+  "surveyNote": "전국 50세 이상 가구원이 있는 5,138가구와 그에 속한 50세 이상 가구원 및 배우자 8,394명을 조사한 국가승인통계다. '최소생활비'는 최저 생활을 유지하는 데 필요한 금액, '적정생활비'는 표준적인 생활을 하는 데 흡족한 금액으로 응답자가 인식한 액수다.",
+
+  "monthlyLivingCost": {
+    "single": { "minimum": 1392000, "adequate": 1976000 },
+    "couple": { "minimum": 2166000, "adequate": 2981000 }
+  }
+}

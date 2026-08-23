@@ -1,0 +1,136 @@
+---
+/**
+ * 노후 생활비 대비 "연금이 채우는 부분 / 따로 준비할 부분" 스택 막대.
+ *
+ * 국민연금연구원의 최소·적정 생활비(국가승인통계)를 기준선으로 깔고,
+ * 그 위에 연금 수령액을 얹어 부족분을 시각적으로 드러낸다. 숫자 표만
+ * 보면 "그래서 얼마나 부족한가"가 안 보이는데, 이 도표는 그 비율을
+ * 길이로 보여준다.
+ */
+import retirement from "../rates/retirement-2026.json";
+import { monthlyGap } from "../lib/retirement";
+
+interface Props {
+  /** 개인 기준 월 연금 수령액(예시값) */
+  pensionMonthly: number;
+}
+
+const { pensionMonthly } = Astro.props;
+const cost = retirement.monthlyLivingCost;
+
+// 부부 행은 두 사람 몫의 연금이 들어온다고 가정한다(캡션에 명시).
+const rows = [
+  { label: "개인 최소", target: cost.single.minimum, pension: pensionMonthly },
+  { label: "개인 적정", target: cost.single.adequate, pension: pensionMonthly },
+  { label: "부부 최소", target: cost.couple.minimum, pension: pensionMonthly * 2 },
+  { label: "부부 적정", target: cost.couple.adequate, pension: pensionMonthly * 2 },
+].map((r) => ({
+  ...r,
+  covered: Math.min(r.pension, r.target),
+  gap: monthlyGap(r.target, r.pension),
+}));
+
+const maxTarget = Math.max(...rows.map((r) => r.target));
+
+// --- 좌표계 ---
+const W = 720;
+const rowH = 56;
+const topPad = 18;
+const H = topPad + rows.length * rowH + 46;
+const plotLeft = 92;
+const plotRight = 596; // 우측은 총액 라벨 자리
+const plotWidth = plotRight - plotLeft;
+const barH = 26;
+
+const w = (v: number) => (v / maxTarget) * plotWidth;
+const manwon = (v: number) => `${Math.round(v / 10000).toLocaleString("ko-KR")}만`;
+---
+
+<figure class="chart-figure">
+  <div class="chart-scroll">
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label={`노후 월 생활비 대비 연금 충족 정도. ${rows
+        .map(
+          (r) =>
+            `${r.label} 생활비 ${manwon(r.target)}원 중 연금 ${manwon(
+              r.covered,
+            )}원, 부족 ${manwon(r.gap)}원`,
+        )
+        .join("; ")}.`}
+    >
+      {
+        rows.map((r, i) => {
+          const cy = topPad + i * rowH + rowH / 2;
+          const barY = cy - barH / 2;
+          const coveredW = w(r.covered);
+          const gapW = w(r.gap);
+          return (
+            <g>
+              <text
+                class="tick-label"
+                x={plotLeft - 10}
+                y={cy + 4}
+                text-anchor="end"
+              >
+                {r.label}
+              </text>
+
+              {/* 연금이 채우는 부분 */}
+              <rect
+                x={plotLeft}
+                y={barY}
+                width={coveredW}
+                height={barH}
+                fill="var(--chart-gain)"
+                rx="3"
+              />
+              {/* 따로 준비해야 하는 부분 */}
+              <rect
+                x={plotLeft + coveredW}
+                y={barY}
+                width={gapW}
+                height={barH}
+                fill="var(--chart-loss)"
+                rx="3"
+              />
+
+              {/* 부족분 금액 — 막대 오른쪽 끝에 붙인다 */}
+              <text
+                class="value-label"
+                x={plotLeft + coveredW + gapW + 8}
+                y={cy + 4}
+                fill="var(--chart-loss)"
+              >
+                부족 {manwon(r.gap)}원
+              </text>
+            </g>
+          );
+        })
+      }
+
+      <text class="axis-label" x={plotLeft} y={H - 16}>
+        가로 길이 = 월 생활비 (국민노후보장패널 최소·적정 생활비 기준)
+      </text>
+    </svg>
+  </div>
+
+  <ul class="chart-legend">
+    <li>
+      <span class="swatch" style="background:var(--chart-gain)"></span>
+      연금으로 채워지는 부분
+    </li>
+    <li>
+      <span class="swatch" style="background:var(--chart-loss)"></span>
+      따로 준비해야 하는 부분
+    </li>
+  </ul>
+
+  <figcaption>
+    연금 수령액은 <strong>월 {manwon(pensionMonthly)}원 예시</strong>이며 실제
+    금액은 가입기간에 따라 사람마다 다릅니다. 부부 행은 두 사람이 각각 이
+    금액을 받는다고 가정했습니다. 생활비 기준은{" "}
+    {retirement.surveyLabel}입니다.
+  </figcaption>
+</figure>

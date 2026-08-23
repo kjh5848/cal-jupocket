@@ -1,0 +1,189 @@
+---
+/**
+ * "노후자금 얼마 있어야 하나" — 단정적 총액을 던지지 않는 글.
+ *
+ * 이 주제의 경쟁 글들은 대개 "○억 필요"라는 결론부터 던진다. 그 숫자가
+ * 어떤 가정에서 나왔는지 안 보이면 독자는 자기 상황에 대입할 수 없고,
+ * 근거 없는 겁주기가 된다. 여기서는 (1) 생활비 기준은 국가승인통계로
+ * 고정하고, (2) 나머지는 독자 숫자를 넣는 계산 구조도로 보여준다.
+ *
+ * 수치 출처: rates/retirement-2026.json (국민연금연구원 국민노후보장패널
+ * 조사 제10차 부가조사, 2026-08-21 확인)
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import retirement from "../../../rates/retirement-2026.json";
+import { formatWon } from "../../../lib/money";
+import {
+  monthlyGap,
+  totalShortfall,
+  monthlySavingNeeded,
+} from "../../../lib/retirement";
+import RetirementFlowDiagram from "../../../components/RetirementFlowDiagram.astro";
+import RetirementGapChart from "../../../components/RetirementGapChart.astro";
+
+const title = "노후자금 얼마 있어야 하나, 직접 계산하는 법";
+const description =
+  "'○억 필요'라는 숫자는 가정이 다르면 무의미합니다. 국민노후보장패널 기준 생활비에서 연금으로 채워지는 부분을 빼는 방식으로, 본인 부족분을 직접 계산하는 구조를 정리했습니다.";
+
+const cost = retirement.monthlyLivingCost;
+
+// 도표·본문 예시에 쓰는 가정값. 실제 숫자는 독자가 바꿔 넣는다.
+const EXAMPLE_PENSION = 800_000;
+const EXAMPLE_RETIREMENT_YEARS = 25;
+const EXAMPLE_YEARS_TO_PREPARE = 20;
+
+const exampleTarget = cost.single.adequate;
+const exampleGap = monthlyGap(exampleTarget, EXAMPLE_PENSION);
+const exampleShortfall = totalShortfall(exampleGap, EXAMPLE_RETIREMENT_YEARS);
+const exampleSaving = monthlySavingNeeded(
+  exampleShortfall,
+  EXAMPLE_YEARS_TO_PREPARE,
+);
+
+const costRows = [
+  { who: "개인", kind: "최소생활비", amount: cost.single.minimum },
+  { who: "개인", kind: "적정생활비", amount: cost.single.adequate },
+  { who: "부부", kind: "최소생활비", amount: cost.couple.minimum },
+  { who: "부부", kind: "적정생활비", amount: cost.couple.adequate },
+];
+
+const sourceUrl = retirement.sources[0].url;
+const eok = (v: number) => `${(v / 100_000_000).toFixed(1)}억`;
+---
+
+<GuideLayout title={title} description={description}>
+  <h1>{title}</h1>
+
+  <div class="callout">
+    <p>
+      "노후자금 10억은 있어야 한다"는 말을 자주 듣지만, 그 숫자는{" "}
+      <strong>생활비를 얼마로 잡았고, 연금을 얼마 받고, 몇 년을 살지</strong>{" "}
+      가정에 따라 완전히 달라집니다. 남의 가정으로 만든 총액을 외우는 대신,
+      본인 숫자로 계산하는 방법을 알면 됩니다.
+    </p>
+  </div>
+
+  <h2>1단계: 생활비 기준을 정합니다</h2>
+  <p>
+    출발점은 "노후에 매달 얼마가 필요한가"입니다. 여기엔 국가승인통계가
+    있습니다. 국민연금연구원의 {retirement.surveyLabel}에서 50세 이상
+    응답자들이 답한 금액입니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>대상</th>
+          <th>구분</th>
+          <th>월 금액</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          costRows.map((row) => (
+            <tr>
+              <td>{row.who}</td>
+              <td>{row.kind}</td>
+              <td>{formatWon(row.amount)}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p class="meta">
+    최소생활비는 최저 생활을 유지하는 데 필요한 금액, 적정생활비는 표준적인
+    생활을 하는 데 흡족한 금액으로 응답자가 인식한 액수입니다.
+  </p>
+
+  <h2>2단계: 연금이 채우는 부분을 빼봅니다</h2>
+  <p>
+    위 금액을 전부 저축으로 마련해야 하는 게 아닙니다. 국민연금이 일부를
+    채워주기 때문입니다. 문제는 <strong>얼마나 채워주는지</strong>인데, 아래
+    도표를 보면 왜 "국민연금만으로 충분하다"는 말이 성립하기 어려운지 바로
+    보입니다.
+  </p>
+
+  <RetirementGapChart pensionMonthly={EXAMPLE_PENSION} />
+
+  <p>
+    주황색이 <strong>따로 준비해야 하는 부분</strong>입니다. 연금을 월{" "}
+    {formatWon(EXAMPLE_PENSION)} 받는다고 가정하면, 개인 적정생활비 기준으로
+    매달 {formatWon(exampleGap)}이 빕니다. 본인의 실제 연금액은{" "}
+    <a href="/guide/national-pension-estimate/"
+      >국민연금 예상수령액 조회</a
+    >로 확인해 이 자리에 넣어보세요.
+  </p>
+
+  <div class="ad-slot" data-ad="guide-retirement-fund-mid"></div>
+
+  <h2>3단계: 부족분을 총액으로, 다시 월 저축액으로</h2>
+  <p>
+    매달 부족한 금액을 노후 기간만큼 곱하면 필요한 총액이 나오고, 그걸 은퇴까지
+    남은 기간으로 나누면 <strong>지금부터 매월 모아야 하는 금액</strong>이
+    나옵니다. 계산의 뼈대는 이렇습니다.
+  </p>
+
+  <RetirementFlowDiagram
+    targetMonthly={exampleTarget}
+    pensionMonthly={EXAMPLE_PENSION}
+    retirementYears={EXAMPLE_RETIREMENT_YEARS}
+    yearsToPrepare={EXAMPLE_YEARS_TO_PREPARE}
+  />
+
+  <p>
+    이 예시에서는 총 {eok(exampleShortfall)}원가량이 필요하고, 20년에 걸쳐
+    모으려면 매월 {formatWon(exampleSaving)}씩 저축해야 합니다. 숫자가 크게
+    느껴진다면, 그게 바로 이 계산을 일찍 해봐야 하는 이유입니다.
+  </p>
+
+  <div class="callout warn">
+    <p>
+      ⚠️ 이 계산은 <strong>물가상승과 투자수익률을 반영하지 않은</strong> 뼈대
+      계산입니다. 둘 다 넣으면 가정값 하나로 결과가 몇 배씩 흔들려서, 오히려
+      잘못된 확신을 주게 됩니다. 실제로는 물가가 오르면 필요액이 커지고,
+      투자수익이 나면 저축 부담이 줄어듭니다 — 방향이 반대라 어느 정도
+      상쇄되지만, 정확한 설계는 전문가와 상담해 하시길 권합니다.
+    </p>
+  </div>
+
+  <h2>프리랜서가 특히 챙겨야 할 두 가지</h2>
+  <ol class="doc-checks">
+    <li>
+      <strong>연금 확보액이 직장인보다 낮을 가능성이 큽니다.</strong>{" "}
+      프리랜서는 국민연금 지역가입자라 소득이 없는 달에 납부예외를 신청하는
+      경우가 많은데, 그 기간은 가입기간에 들어가지 않습니다. 도표의 초록색
+      부분이 예시보다 짧아질 수 있다는 뜻입니다.
+    </li>
+    <li>
+      <strong>퇴직금이라는 목돈이 없습니다.</strong> 직장인은 은퇴 시점에
+      퇴직급여가 한 번 들어오지만 프리랜서는 그 항목이 아예 없습니다. 그
+      자리를{" "}
+      <a href="/guide/pension-savings-tax-credit/">연금저축·IRP</a>로 채우면
+      세액공제까지 함께 받을 수 있어, 부족분을 메우는 가장 효율적인 수단입니다.
+    </li>
+  </ol>
+
+  <p>
+    노후 준비의 재원은 결국 지금의 소득에서 나옵니다. 세금을 덜 내는 만큼
+    저축 여력이 생기므로,{" "}
+    <a href="/income-tax-refund/"><strong>종소세 환급 예상 계산기</strong></a>로
+    올해 환급·추가납부를 먼저 확인해두는 것도 노후 준비의 일부입니다.
+  </p>
+
+  <p class="actions">
+    <a class="btn" href="/guide/pension-savings-tax-credit/"
+      >연금저축·IRP로 부족분 채우기</a
+    >
+  </p>
+
+  <p class="meta">
+    생활비 수치는 국민연금공단{" "}
+    <a href={sourceUrl} rel="nofollow noopener">{retirement.surveyLabel}</a>{" "}
+    자료에서 확인한 값입니다({retirement.verifiedOn} 확인).
+  </p>
+
+  <div class="ad-slot" data-ad="guide-retirement-fund-bottom"></div>
+</GuideLayout>
