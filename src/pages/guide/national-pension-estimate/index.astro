@@ -1,0 +1,289 @@
+---
+/**
+ * 국민연금 예상수령액 — 조회 후 "수령 시점 선택"으로 각도를 잡은 글.
+ *
+ * 이 키워드의 SERP 상단은 국민연금공단·정부24가 점유하고 있다(2026-08-21
+ * 확인). 조회 방법 자체로는 공식 사이트를 이길 수 없으므로, 공식 사이트가
+ * 다루지 않는 "조회한 숫자를 받고 나서 무엇을 판단해야 하는가"로 승부한다.
+ * 도표(지급률·손익분기)가 그 판단을 눈으로 보여주는 차별점이다.
+ *
+ * 수치 출처: rates/pension-2026.json (국민연금공단, 2026-08-21 확인)
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import pension from "../../../rates/pension-2026.json";
+import {
+  earlyRate,
+  deferredRate,
+  breakevenAge,
+  startAgeForBirthYear,
+} from "../../../lib/pension-timing";
+import { round1 } from "../../../lib/rate-display";
+import PensionRateChart from "../../../components/PensionRateChart.astro";
+import PensionCumulativeChart from "../../../components/PensionCumulativeChart.astro";
+
+const title = "국민연금 예상수령액 조회 후, 수령 시점 정하기";
+const description =
+  "공단에서 조회한 예상수령액은 여러 시나리오 중 하나입니다. 언제 받기 시작하느냐로 평생 지급률이 70%~136%까지 갈리고, 손익분기 나이가 언제인지 도표로 정리했습니다.";
+
+// 1969년 이후 출생 기준(현재 대다수 프리랜서가 여기 해당)
+const REFERENCE_BIRTH_YEAR = 1990;
+const { startAge, earliestAge } = startAgeForBirthYear(REFERENCE_BIRTH_YEAR);
+
+const maxShift = pension.earlyPension.maxYearsEarly;
+const minRatePercent = round1(earlyRate(maxShift) * 100); // 70
+const maxRatePercent = round1(deferredRate(maxShift) * 100); // 136
+const reductionPerYearPercent = round1(
+  pension.earlyPension.reductionPerYear * 100,
+); // 6
+const increasePerYearPercent = round1(
+  pension.deferredPension.increasePerYear * 100,
+); // 7.2
+
+const deferredAge = startAge + maxShift;
+const breakEarly = breakevenAge(
+  { age: earliestAge, rate: earlyRate(maxShift) },
+  { age: startAge, rate: 1 },
+);
+const breakDeferred = breakevenAge(
+  { age: startAge, rate: 1 },
+  { age: deferredAge, rate: deferredRate(maxShift) },
+);
+
+// 월 100만원(정상 기준)을 받는 사람의 실제 금액 예시
+const EXAMPLE_MONTHLY = 1_000_000;
+const exampleEarly = Math.round(EXAMPLE_MONTHLY * earlyRate(maxShift));
+const exampleDeferred = Math.round(EXAMPLE_MONTHLY * deferredRate(maxShift));
+
+// 조기·연기 지급률 표 (조기 5년 → 연기 5년)
+const shiftRows = [
+  ...Array.from({ length: maxShift }, (_, i) => {
+    const years = maxShift - i;
+    return {
+      label: `${years}년 앞당김`,
+      age: startAge - years,
+      percent: round1(earlyRate(years) * 100),
+      kind: "early" as const,
+    };
+  }),
+  { label: "그대로 수령", age: startAge, percent: 100, kind: "base" as const },
+  ...Array.from({ length: maxShift }, (_, i) => {
+    const years = i + 1;
+    return {
+      label: `${years}년 연기`,
+      age: startAge + years,
+      percent: round1(deferredRate(years) * 100),
+      kind: "deferred" as const,
+    };
+  }),
+];
+
+const startAgeRows = pension.startAgeByBirthYear.map((row) => ({
+  birthLabel:
+    row.birthFrom === null
+      ? `${row.birthTo}년생 이전`
+      : row.birthTo === null
+        ? `${row.birthFrom}년생 이후`
+        : `${row.birthFrom}~${row.birthTo}년생`,
+  startAge: row.startAge,
+  earliestAge: row.earliestAge,
+}));
+
+const sourceUrl = pension.sources[0].url;
+---
+
+<GuideLayout title={title} description={description}>
+  <h1>{title}</h1>
+
+  <div class="callout">
+    <p>
+      국민연금공단에서 조회한 예상수령액은 <strong>"정해진 나이에 그대로
+      받는다"는 한 가지 시나리오</strong>의 금액입니다. 실제로는 언제 받기
+      시작하느냐에 따라 그 금액이 <strong>{minRatePercent}%까지 깎이거나{" "}
+      {maxRatePercent}%까지 늘어난 상태로 평생 고정</strong>됩니다. 조회보다
+      중요한 건 그 다음 판단입니다.
+    </p>
+  </div>
+
+  <h2>먼저, 조회는 공단에서 하세요</h2>
+  <p>
+    예상수령액 조회는 국민연금공단이 가장 정확합니다. 이 사이트가 대신 계산할
+    수 없는 <strong>실제 가입기간과 납부 이력</strong>에 기반하기 때문입니다.
+    경로는 세 가지입니다.
+  </p>
+  <ol class="doc-checks">
+    <li>
+      <strong>공단 홈페이지 전자민원</strong> — 로그인 후 개인서비스에서
+      가입내역·예상연금액을 조회합니다. 실제 납부 이력이 반영된 가장 정확한
+      금액입니다.
+    </li>
+    <li>
+      <strong>'내 곁에 국민연금' 앱</strong> — 간편인증(카카오·네이버 등)으로
+      로그인하면 메인 화면에서 바로 확인됩니다.
+    </li>
+    <li>
+      <strong>모의계산(로그인 없이)</strong> — 소득과 가입기간을 직접 넣어
+      대략적인 금액을 봅니다. 아직 가입 초기거나 앞으로의 소득을 가정해보고
+      싶을 때 씁니다.
+    </li>
+  </ol>
+  <p class="meta">
+    조회 자체는 위 공식 경로에서 하고, 이 글은 그렇게 받은 숫자를 어떻게 읽을지
+    다룹니다.
+  </p>
+
+  <h2>조회한 금액은 "{startAge}세부터 받을 때"의 금액입니다</h2>
+  <p>
+    노령연금은 가입기간이 <strong>{pension.minCoverageYears}년 이상</strong>일 때
+    받을 수 있고, 지급개시연령은 출생연도에 따라 다릅니다. 그리고 그 나이보다{" "}
+    <strong>최대 {maxShift}년 앞당기거나 {maxShift}년 미룰 수</strong> 있습니다.
+    문제는 이 선택이 한 번 정해지면 평생 따라온다는 점입니다.
+  </p>
+
+  <PensionRateChart startAge={startAge} />
+
+  <p>
+    앞당기면 1년당 {reductionPerYearPercent}%씩 깎이고, 미루면 1년당{" "}
+    {increasePerYearPercent}%씩 붙습니다. {maxShift}년을 꽉 채우면 양쪽 끝의
+    차이가 {minRatePercent}%와 {maxRatePercent}% — 거의 두 배입니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>선택</th>
+          <th>받기 시작하는 나이</th>
+          <th>지급률</th>
+          <th>월 {EXAMPLE_MONTHLY.toLocaleString("ko-KR")}원 기준</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          shiftRows.map((row) => (
+            <tr>
+              <td>
+                {row.kind === "base" ? <strong>{row.label}</strong> : row.label}
+              </td>
+              <td>{row.age}세</td>
+              <td>{row.percent}%</td>
+              <td>
+                {Math.round(
+                  (EXAMPLE_MONTHLY * row.percent) / 100,
+                ).toLocaleString("ko-KR")}원
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ad-slot" data-ad="guide-national-pension-estimate-mid"></div>
+
+  <h2>그래서 언제 받는 게 유리한가</h2>
+  <p>
+    "일찍 받으면 적게, 늦게 받으면 많이"는 알겠는데, 결국 총액으로는 어느 쪽이
+    나은지가 궁금할 겁니다. 답은 <strong>얼마나 오래 받느냐</strong>에 달려
+    있습니다. 아래 도표는 세 선택의 누적 수령액이 나이에 따라 어떻게
+    역전되는지를 보여줍니다.
+  </p>
+
+  <PensionCumulativeChart startAge={startAge} />
+
+  <div class="callout warn">
+    <p>
+      ⚠️ 계산해보면 <strong>{earliestAge}세 조기수령</strong>과{" "}
+      <strong>{startAge}세 정상수령</strong>의 누적액은 약{" "}
+      <strong>{breakEarly}세</strong>에 같아지고, 정상수령과{" "}
+      <strong>{deferredAge}세 연기수령</strong>은 약{" "}
+      <strong>{breakDeferred}세</strong>에 같아집니다. 즉{" "}
+      {breakEarly}세보다 오래 살 것 같으면 조기수령은 총액에서 손해이고,{" "}
+      {breakDeferred}세를 넘길 것 같으면 연기가 이득입니다. 다만 이건 명목
+      금액만 비교한 결과이며, 물가에 따른 연금액 인상은 반영하지 않았습니다.
+    </p>
+  </div>
+
+  <h2>총액 말고 함께 봐야 할 세 가지</h2>
+  <ol class="doc-checks">
+    <li>
+      <strong>지금 당장의 생활비.</strong> 총액이 유리하다고 해도 그때까지
+      버틸 소득이 없으면 의미가 없습니다. 손익분기 나이는 참고선일 뿐, 당장
+      생계가 급하면 조기수령이 합리적인 선택일 수 있습니다.
+    </li>
+    <li>
+      <strong>소득이 있는 업무에 종사하는지.</strong> 조기노령연금은{" "}
+      <strong>소득이 있는 업무에 종사하지 않는 경우</strong>에만 신청할 수
+      있고, 받는 중에 소득 활동을 시작하면 지급이 정지됩니다. 일을 계속할
+      계획이라면 조기수령은 애초에 선택지가 아닙니다.
+    </li>
+    <li>
+      <strong>건강과 가족력.</strong> 손익분기점은 결국 "얼마나 오래 받을지"의
+      문제입니다. 이건 계산기가 답할 수 없는 부분이고, 본인이 가장 잘 아는
+      정보입니다.
+    </li>
+  </ol>
+
+  <h2>출생연도별 지급개시연령</h2>
+  <p>
+    위 도표는 {startAge}세 개시 기준입니다. 본인 나이가 어디에 해당하는지 아래
+    표에서 확인하세요.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>출생연도</th>
+          <th>노령연금 개시</th>
+          <th>조기수령 최저</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          startAgeRows.map((row) => (
+            <tr>
+              <td>{row.birthLabel}</td>
+              <td>{row.startAge}세</td>
+              <td>{row.earliestAge}세</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <h2>프리랜서라면 여기서 한 가지 더</h2>
+  <p>
+    프리랜서·사업소득자는 국민연금 <strong>지역가입자</strong>입니다. 회사가
+    절반을 부담해주는 직장가입자와 달리 보험료 전액을 본인이 냅니다. 소득이
+    불규칙해 납부예외를 신청한 기간은 <strong>가입기간에 들어가지 않기</strong>{" "}
+    때문에, {pension.minCoverageYears}년 요건과 예상수령액이 생각보다 낮게
+    나오는 경우가 많습니다.
+  </p>
+  <p>
+    그래서 프리랜서에게는 국민연금 하나만으로 노후를 채우기 어렵고,{" "}
+    <a href="/guide/pension-savings-tax-credit/"
+      >연금저축·IRP 세액공제</a
+    >를 함께 쓰는 게 사실상 필수입니다. 퇴직연금이 없는 대신, 그 자리를
+    스스로 채우면서 그해 종합소득세까지 줄일 수 있습니다.
+  </p>
+
+  <p>
+    당장의 세금부터 정리하고 싶다면{" "}
+    <a href="/income-tax-refund/"><strong>종소세 환급 예상 계산기</strong></a>로
+    올해 환급인지 추가납부인지 먼저 확인해보세요.
+  </p>
+
+  <p class="actions">
+    <a class="btn" href="/guide/pension-savings-tax-credit/"
+      >연금저축·IRP 세액공제 한도 보기</a
+    >
+  </p>
+
+  <p class="meta">
+    지급률·지급개시연령 등 이 글의 제도 수치는 국민연금공단{" "}
+    <a href={sourceUrl} rel="nofollow noopener">노령연금 안내</a>에서 확인한
+    값입니다({pension.verifiedOn} 확인).
+  </p>
+
+  <div class="ad-slot" data-ad="guide-national-pension-estimate-bottom"></div>
+</GuideLayout>

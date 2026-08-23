@@ -1,0 +1,40 @@
+{
+  "year": 2026,
+  "verifiedOn": "2026-08-21",
+  "sources": [
+    {
+      "label": "국민연금공단 — 노령연금(조기노령연금·연기연금 지급률, 지급개시연령)",
+      "url": "https://www.nps.or.kr/pnsinfo/ntpsklg/getOHAF0056M0.do"
+    }
+  ],
+  "minCoverageYears": 10,
+  "minCoverageYearsNote": "노령연금을 받기 위한 최소 가입기간(년).",
+
+  "earlyPension": {
+    "maxYearsEarly": 5,
+    "reductionPerYear": 0.06,
+    "note": "지급개시연령보다 최대 5년 앞당겨 받을 수 있고, 1년당 6%(월 0.5%) 감액된 지급률이 평생 고정된다. 소득이 있는 업무에 종사하지 않는 경우에만 신청 가능하다.",
+    "ratesByYearsEarly": {
+      "5": 0.7,
+      "4": 0.76,
+      "3": 0.82,
+      "2": 0.88,
+      "1": 0.94
+    }
+  },
+
+  "deferredPension": {
+    "maxYearsDeferred": 5,
+    "increasePerYear": 0.072,
+    "increasePerMonth": 0.006,
+    "note": "지급개시연령부터 최대 5년 이내로 연기할 수 있고, 연기한 1년당 7.2%(월 0.6%)가 가산된다."
+  },
+
+  "startAgeByBirthYear": [
+    { "birthFrom": null, "birthTo": 1956, "startAge": 61, "earliestAge": 56 },
+    { "birthFrom": 1957, "birthTo": 1960, "startAge": 62, "earliestAge": 57 },
+    { "birthFrom": 1961, "birthTo": 1964, "startAge": 63, "earliestAge": 58 },
+    { "birthFrom": 1965, "birthTo": 1968, "startAge": 64, "earliestAge": 59 },
+    { "birthFrom": 1969, "birthTo": null, "startAge": 65, "earliestAge": 60 }
+  ]
+}

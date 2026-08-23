@@ -14,6 +14,13 @@
   --bg: #ffffff;
   --accent-bg: #f5f7fa;
   --measure: 68ch;
+
+  /* 도표 색 — 손실(감액)/기준/이득(가산) 세 방향을 색으로 구분한다.
+     경쟁 사이트들이 스크린샷·숫자표만 쓰는 자리에서 이 사이트는
+     "판단이 보이는 그림"을 쓰기 위한 팔레트다. */
+  --chart-loss: #b3541e;
+  --chart-base: #0b5cad;
+  --chart-gain: #1f7a4d;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,6 +31,10 @@
     --link: #6fb3ff;
     --bg: #16181c;
     --accent-bg: #1e2127;
+
+    --chart-loss: #e08a4c;
+    --chart-base: #6fb3ff;
+    --chart-gain: #4cc38a;
   }
 }
 
@@ -486,6 +497,91 @@ details[open] summary {
   font-size: 1.125rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 도표(figure) — 인라인 SVG 차트를 감싸는 틀.
+ *
+ * 외부 차트 라이브러리를 쓰지 않는다: SVG를 직접 그려 네트워크 요청 0,
+ * CWV 유지(계산기 사이트의 기존 원칙과 동일). 좁은 화면에서는 도표만
+ * 가로 스크롤되게 하고 본문은 절대 넘치지 않게 한다.
+ */
+.chart-figure {
+  margin: 2rem 0;
+}
+
+.chart-figure figcaption {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin-top: 0.6rem;
+}
+
+.chart-scroll {
+  overflow-x: auto;
+  /* 좁은 화면에서 도표가 찌그러지지 않도록 최소 폭을 준다 */
+  -webkit-overflow-scrolling: touch;
+}
+
+.chart-scroll svg {
+  display: block;
+  min-width: 34rem;
+  width: 100%;
+  height: auto;
+}
+
+/* 도표 안 텍스트 — 폰트는 본문과 같은 스택을 쓰고 크기만 조정 */
+.chart-scroll svg text {
+  font-family: inherit;
+  fill: var(--text);
+}
+
+.chart-scroll svg .axis-label,
+.chart-scroll svg .tick-label {
+  fill: var(--muted);
+  font-size: 12px;
+}
+
+.chart-scroll svg .value-label {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-scroll svg .grid-line {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+.chart-scroll svg .base-line {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+/* 도표 범례 — SVG 밖에 HTML로 두어 줄바꿈·번역에 유연하게 */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.chart-legend .swatch {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 3px;
+  flex: none;
 }
 
 /* 광고 슬롯 */

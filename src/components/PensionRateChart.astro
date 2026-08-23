@@ -1,0 +1,169 @@
+---
+/**
+ * 국민연금 수령 시작 나이별 지급률 막대 도표.
+ *
+ * 지급률은 lib/pension-timing(=국민연금공단 고시값)에서만 가져온다.
+ * SVG 좌표는 여기서 계산하고 하드코딩하지 않는다 — 값이 바뀌면 도표도
+ * 따라 바뀌어야 하기 때문이다.
+ */
+import pension from "../rates/pension-2026.json";
+import { earlyRate, deferredRate } from "../lib/pension-timing";
+import { round1 } from "../lib/rate-display";
+
+interface Props {
+  /** 지급개시연령(정상 수령 나이). 출생연도에 따라 다르다. */
+  startAge: number;
+}
+
+const { startAge } = Astro.props;
+
+const maxEarly = pension.earlyPension.maxYearsEarly; // 5
+const maxDeferred = pension.deferredPension.maxYearsDeferred; // 5
+
+// 조기 5년 → 정상 → 연기 5년까지 한 줄로 세운다.
+const bars = [
+  ...Array.from({ length: maxEarly }, (_, i) => {
+    const yearsEarly = maxEarly - i; // 5,4,3,2,1
+    return {
+      age: startAge - yearsEarly,
+      rate: earlyRate(yearsEarly),
+      kind: "early" as const,
+    };
+  }),
+  { age: startAge, rate: 1, kind: "base" as const },
+  ...Array.from({ length: maxDeferred }, (_, i) => {
+    const yearsDeferred = i + 1; // 1..5
+    return {
+      age: startAge + yearsDeferred,
+      rate: deferredRate(yearsDeferred),
+      kind: "deferred" as const,
+    };
+  }),
+];
+
+// --- 좌표계 ---
+const W = 720;
+const H = 340;
+const plotLeft = 44;
+const plotRight = 706;
+const plotTop = 26;
+const plotBottom = 284;
+const plotWidth = plotRight - plotLeft;
+const plotHeight = plotBottom - plotTop;
+
+const yMax = 1.4; // 140%까지 그린다(최대 지급률 136%)
+const y = (v: number) => plotBottom - (v / yMax) * plotHeight;
+
+const slot = plotWidth / bars.length;
+const barWidth = Math.round(slot * 0.56);
+
+const colorOf = (kind: "early" | "base" | "deferred") =>
+  kind === "early"
+    ? "var(--chart-loss)"
+    : kind === "deferred"
+      ? "var(--chart-gain)"
+      : "var(--chart-base)";
+
+const gridValues = [0.25, 0.5, 0.75, 1.0, 1.25];
+---
+
+<figure class="chart-figure">
+  <div class="chart-scroll">
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label={`수령 시작 나이별 국민연금 지급률. ${bars[0].age}세에 받기 시작하면 ${round1(bars[0].rate * 100)}%, 지급개시연령인 ${startAge}세는 100%, ${bars[bars.length - 1].age}세까지 연기하면 ${round1(bars[bars.length - 1].rate * 100)}%.`}
+    >
+      {/* 가로 격자 */}
+      {
+        gridValues.map((v) => (
+          <line
+            class="grid-line"
+            x1={plotLeft}
+            x2={plotRight}
+            y1={y(v)}
+            y2={y(v)}
+          />
+        ))
+      }
+
+      {/* 100% 기준선 — 정상 수령이 기준이라는 걸 시각적으로 못박는다 */}
+      <line class="base-line" x1={plotLeft} x2={plotRight} y1={y(1)} y2={y(1)} />
+      <text class="tick-label" x={plotLeft - 8} y={y(1) + 4} text-anchor="end">
+        100%
+      </text>
+
+      {/* 막대 */}
+      {
+        bars.map((bar, i) => {
+          const cx = plotLeft + slot * i + slot / 2;
+          const top = y(bar.rate);
+          const percent = round1(bar.rate * 100);
+          return (
+            <g>
+              <rect
+                x={cx - barWidth / 2}
+                y={top}
+                width={barWidth}
+                height={plotBottom - top}
+                rx="3"
+                fill={colorOf(bar.kind)}
+              />
+              <text
+                class="value-label"
+                x={cx}
+                y={top - 7}
+                text-anchor="middle"
+                fill={colorOf(bar.kind)}
+              >
+                {percent}
+              </text>
+              <text
+                class="tick-label"
+                x={cx}
+                y={plotBottom + 18}
+                text-anchor="middle"
+                style={bar.kind === "base" ? "font-weight:700" : undefined}
+              >
+                {bar.age}
+              </text>
+            </g>
+          );
+        })
+      }
+
+      {/* 축 */}
+      <line
+        class="grid-line"
+        x1={plotLeft}
+        x2={plotRight}
+        y1={plotBottom}
+        y2={plotBottom}
+      />
+      <text class="axis-label" x={plotLeft} y={plotBottom + 38}>
+        받기 시작하는 나이(세) · 세로축은 평생 받는 지급률(%)
+      </text>
+    </svg>
+  </div>
+
+  <ul class="chart-legend">
+    <li>
+      <span class="swatch" style="background:var(--chart-loss)"></span>
+      조기수령 — 평생 감액
+    </li>
+    <li>
+      <span class="swatch" style="background:var(--chart-base)"></span>
+      정상수령 {startAge}세 — 기준 100%
+    </li>
+    <li>
+      <span class="swatch" style="background:var(--chart-gain)"></span>
+      연기수령 — 평생 가산
+    </li>
+  </ul>
+
+  <figcaption>
+    한 번 정해진 지급률은 <strong>평생 고정</strong>됩니다. 1년 앞당기면 6%씩
+    깎이고, 1년 미루면 7.2%씩 붙습니다. 지급개시연령 {startAge}세 기준(출생연도에
+    따라 다름).
+  </figcaption>
+</figure>

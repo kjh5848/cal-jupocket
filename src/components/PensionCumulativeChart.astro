@@ -1,0 +1,227 @@
+---
+/**
+ * 조기 / 정상 / 연기 수령의 "누적 수령액이 역전되는 지점" 도표.
+ *
+ * 이 도표가 이 사이트의 차별점이다. 경쟁 페이지들은 감액률·가산률만
+ * 나열하고 "그래서 언제가 유리한가"는 독자에게 떠넘긴다. 여기서는
+ * 누적선이 교차하는 나이를 lib/pension-timing의 breakevenAge()로
+ * 계산해 도표에 직접 찍는다.
+ *
+ * 가정(도표 캡션에도 밝힌다): 물가상승에 따른 연금액 인상·세금·
+ * 건강보험료를 반영하지 않은 명목 누적 비교다.
+ */
+import { earlyRate, deferredRate, breakevenAge } from "../lib/pension-timing";
+
+interface Props {
+  /** 지급개시연령(정상 수령 나이) */
+  startAge: number;
+  /** 몇 살까지 그릴지 */
+  untilAge?: number;
+}
+
+const { startAge, untilAge = 90 } = Astro.props;
+
+const YEARS_SHIFT = 5; // 조기·연기 모두 최대 5년
+const earlyAge = startAge - YEARS_SHIFT;
+const deferredAge = startAge + YEARS_SHIFT;
+
+const rEarly = earlyRate(YEARS_SHIFT); // 0.7
+const rBase = 1;
+const rDeferred = deferredRate(YEARS_SHIFT); // 1.36
+
+// 손익분기 나이 — 테스트로 고정된 순수 함수에서 가져온다.
+const breakEarlyVsBase = breakevenAge(
+  { age: earlyAge, rate: rEarly },
+  { age: startAge, rate: rBase },
+);
+const breakBaseVsDeferred = breakevenAge(
+  { age: startAge, rate: rBase },
+  { age: deferredAge, rate: rDeferred },
+);
+
+// --- 좌표계 ---
+const W = 720;
+const H = 380;
+const plotLeft = 46;
+const plotRight = 606; // 우측 114px은 선 끝 라벨 자리(잘리지 않게 넉넉히)
+const plotTop = 26;
+const plotBottom = 300;
+const plotWidth = plotRight - plotLeft;
+const plotHeight = plotBottom - plotTop;
+
+const minAge = earlyAge;
+const maxAge = untilAge;
+
+/** 나이 age에 각 선택이 그때까지 받은 누적액(정상 월액=1 기준) */
+const cumulative = (fromAge: number, rate: number, age: number) =>
+  age <= fromAge ? 0 : rate * (age - fromAge);
+
+const endEarly = cumulative(earlyAge, rEarly, maxAge);
+const endBase = cumulative(startAge, rBase, maxAge);
+const endDeferred = cumulative(deferredAge, rDeferred, maxAge);
+const yMax = Math.ceil(Math.max(endEarly, endBase, endDeferred) + 1);
+
+const x = (age: number) =>
+  plotLeft + ((age - minAge) / (maxAge - minAge)) * plotWidth;
+const y = (v: number) => plotBottom - (v / yMax) * plotHeight;
+
+const lines = [
+  {
+    label: `조기 ${earlyAge}세`,
+    fromAge: earlyAge,
+    rate: rEarly,
+    end: endEarly,
+    color: "var(--chart-loss)",
+  },
+  {
+    label: `정상 ${startAge}세`,
+    fromAge: startAge,
+    rate: rBase,
+    end: endBase,
+    color: "var(--chart-base)",
+  },
+  {
+    label: `연기 ${deferredAge}세`,
+    fromAge: deferredAge,
+    rate: rDeferred,
+    end: endDeferred,
+    color: "var(--chart-gain)",
+  },
+];
+
+// 라벨은 마커 원 위로 두 줄 쌓는다(원과 겹치지 않게 -28 / -14).
+const markers = [
+  {
+    age: breakEarlyVsBase,
+    value: cumulative(earlyAge, rEarly, breakEarlyVsBase),
+    text: `${breakEarlyVsBase}세`,
+    sub: "조기 = 정상",
+  },
+  {
+    age: breakBaseVsDeferred,
+    value: cumulative(startAge, rBase, breakBaseVsDeferred),
+    text: `${breakBaseVsDeferred}세`,
+    sub: "정상 = 연기",
+  },
+];
+
+// x축 눈금 — 5년 단위
+const ageTicks: number[] = [];
+for (let a = minAge; a <= maxAge; a += 5) ageTicks.push(a);
+---
+
+<figure class="chart-figure">
+  <div class="chart-scroll">
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label={`누적 수령액 비교. ${earlyAge}세부터 조기수령한 경우와 ${startAge}세 정상수령의 누적액은 ${breakEarlyVsBase}세에 같아지고, 정상수령과 ${deferredAge}세 연기수령의 누적액은 ${breakBaseVsDeferred}세에 같아진다.`}
+    >
+      {/* 세로 격자 = 나이 눈금 */}
+      {
+        ageTicks.map((a) => (
+          <g>
+            <line
+              class="grid-line"
+              x1={x(a)}
+              x2={x(a)}
+              y1={plotTop}
+              y2={plotBottom}
+            />
+            <text
+              class="tick-label"
+              x={x(a)}
+              y={plotBottom + 18}
+              text-anchor="middle"
+            >
+              {a}
+            </text>
+          </g>
+        ))
+      }
+
+      {/* 누적선 — 각 선택은 시작 나이 이후 일정 기울기의 직선 */}
+      {
+        lines.map((l) => (
+          <g>
+            <line
+              x1={x(l.fromAge)}
+              y1={y(0)}
+              x2={x(maxAge)}
+              y2={y(l.end)}
+              stroke={l.color}
+              stroke-width="3"
+              stroke-linecap="round"
+            />
+            <text
+              class="value-label"
+              x={plotRight + 8}
+              y={y(l.end) + 4}
+              fill={l.color}
+            >
+              {l.label}
+            </text>
+          </g>
+        ))
+      }
+
+      {/* 손익분기 지점 — 이 도표의 핵심 */}
+      {
+        markers.map((m) => (
+          <g>
+            <line
+              class="base-line"
+              x1={x(m.age)}
+              x2={x(m.age)}
+              y1={y(m.value)}
+              y2={plotBottom}
+            />
+            <circle
+              cx={x(m.age)}
+              cy={y(m.value)}
+              r="5"
+              fill="var(--bg)"
+              stroke="var(--text)"
+              stroke-width="2.5"
+            />
+            <text
+              class="value-label"
+              x={x(m.age)}
+              y={y(m.value) - 28}
+              text-anchor="middle"
+            >
+              {m.text}
+            </text>
+            <text
+              class="tick-label"
+              x={x(m.age)}
+              y={y(m.value) - 14}
+              text-anchor="middle"
+            >
+              {m.sub}
+            </text>
+          </g>
+        ))
+      }
+
+      {/* 축 */}
+      <line
+        class="grid-line"
+        x1={plotLeft}
+        x2={plotRight}
+        y1={plotBottom}
+        y2={plotBottom}
+      />
+      <text class="axis-label" x={plotLeft} y={plotBottom + 40}>
+        나이(세) · 세로축은 그때까지 받은 누적 수령액
+      </text>
+    </svg>
+  </div>
+
+  <figcaption>
+    선이 교차하는 나이가 <strong>손익분기점</strong>입니다. 그 나이보다 오래
+    살면 늦게 받기 시작한 쪽이 총액에서 앞섭니다. 물가상승에 따른 연금액
+    인상·세금·건강보험료는 반영하지 않은 명목 누적 비교이며, 실제 판단에는
+    건강 상태와 지금 당장의 생활비 필요성이 함께 들어가야 합니다.
+  </figcaption>
+</figure>
