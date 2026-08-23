@@ -655,6 +655,84 @@ details[open] summary {
   }
 }
 
+/*
+ * 3층 노후소득보장 구조도 — 층을 위에서 아래로 쌓아 보여준다.
+ * 프리랜서의 빈 2층은 점선 테두리로 "채워지지 않았음"을 드러낸다.
+ */
+.pension-pillars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pillar {
+  display: grid;
+  grid-template-columns: 3.25rem 1fr;
+  gap: 0.25rem 0.9rem;
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--pillar-color, var(--rule));
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+/* 비어 있는 층 — 점선으로 "아직 없음"을 표현한다 */
+.pillar.is-empty {
+  border-style: dashed;
+  border-left-style: solid;
+  background: transparent;
+}
+
+.pillar-tier {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--pillar-color, var(--muted));
+  padding-top: 0.1rem;
+}
+
+.pillar-body p {
+  margin: 0;
+}
+
+.pillar-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.6rem;
+  font-size: 1.0625rem;
+}
+
+.pillar-detail {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.pillar-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  color: var(--bg);
+  background: var(--pillar-color, var(--muted));
+}
+
+.pillar-who {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--pillar-color, var(--text));
+  margin-top: 0.2rem !important;
+}
+
+.pillar-note {
+  font-size: 0.875rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: 0.3rem !important;
+}
+
 /* 광고 슬롯 */
 .ad-slot {
   margin: 3rem 0;

@@ -2,30 +2,31 @@
 /**
  * 연금저축·IRP 세액공제 한도·공제율.
  *
- * 이 글의 숫자(한도 600만/900만원, 공제율 15%/12%)는 rates/2026.json이
- * 아니라 소득세법 제59조의3(연금계좌세액공제)에서 직접 온다 — 종합소득세
- * 세율표와는 별개 법조항이라 이 프로젝트의 다른 rates 파일에 없다.
- * 확인 출처(2026-08-20 확인):
- * - https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7875 (국세청, 연금계좌 세액공제)
- * - https://law.go.kr (소득세법 제59조의3, 연금계좌세액공제)
+ * 한도(600만/900만원)와 공제율(15%/12%)은 종합소득세 세율표와 별개
+ * 법조항(소득세법 제59조의3)이라 rates/pension-account-2026.json에
+ * 출처·확인일과 함께 따로 둔다. 이 글과 노후대비 허브 글이 같은 파일을
+ * 참조하므로 값이 어긋날 수 없다.
  * 지방소득세 10%(rates/2026.json의 localTaxRate와 동일 원리)를 얹은
  * 실효율 16.5%/13.2%는 이 페이지에서 직접 계산해 표시한다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import rates from "../../../rates/2026.json";
+import pensionAccount from "../../../rates/pension-account-2026.json";
 import { round1 } from "../../../lib/rate-display";
 
 const title = "프리랜서 연금저축·IRP 세액공제 한도 (2026)";
 const description =
   "프리랜서(사업소득자)도 근로소득자와 똑같이 연금저축·IRP 세액공제를 받을 수 있습니다. 한도 900만원, 공제율 12~15%, 최대 환급액까지 정리했습니다.";
 
-const SAVINGS_LIMIT = 6_000_000; // 연금저축 단독 한도
-const COMBINED_LIMIT = 9_000_000; // 연금저축 + IRP 합산 한도
-const INCOME_THRESHOLD = 45_000_000; // 종합소득금액 기준선
+// 한도·공제율은 rates/pension-account-2026.json 한 곳에서만 가져온다
+// (연도가 바뀌면 그 파일만 고치면 되도록).
+const SAVINGS_LIMIT = pensionAccount.savingsOnlyLimit;
+const COMBINED_LIMIT = pensionAccount.combinedLimit;
+const INCOME_THRESHOLD = pensionAccount.incomeThreshold;
 
 const localTaxRate = rates.localTaxRate; // 0.1, 기존 rates.json과 동일한 지방소득세율
-const lowRateNational = 15;
-const highRateNational = 12;
+const lowRateNational = pensionAccount.creditRatePercentBelowThreshold;
+const highRateNational = pensionAccount.creditRatePercentAboveThreshold;
 const lowRateEffective = round1(lowRateNational * (1 + localTaxRate)); // 16.5
 const highRateEffective = round1(highRateNational * (1 + localTaxRate)); // 13.2
 

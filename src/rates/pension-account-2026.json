@@ -1,0 +1,20 @@
+{
+  "year": 2026,
+  "verifiedOn": "2026-08-20",
+  "sources": [
+    {
+      "label": "국세청 — 연금계좌 세액공제(한도·공제율)",
+      "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7875"
+    },
+    {
+      "label": "소득세법 제59조의3 연금계좌세액공제",
+      "url": "https://www.law.go.kr/LSW/lsLinkCommonInfo.do?lsJoLnkSeq=1021863203"
+    }
+  ],
+  "savingsOnlyLimit": 6000000,
+  "combinedLimit": 9000000,
+  "incomeThreshold": 45000000,
+  "creditRatePercentBelowThreshold": 15,
+  "creditRatePercentAboveThreshold": 12,
+  "note": "연금저축계좌 단독 납입액은 연 600만원, 연금저축과 퇴직연금계좌(IRP)를 합한 납입액은 연 900만원까지 세액공제 대상이다. 공제율은 종합소득금액 4,500만원(근로소득만 있으면 총급여 5,500만원) 기준으로 나뉜다. 지방소득세를 포함한 실효 공제율은 이 값에 localTaxRate(10%)를 얹어 계산한다."
+}

@@ -1,0 +1,78 @@
+---
+/**
+ * 3층 노후소득보장 구조도.
+ *
+ * "3층 연금"은 정부가 쓰는 공식 프레임(대한민국 정책브리핑)이지만, 대개
+ * 직장인 기준으로 설명된다. 프리랜서는 2층(퇴직연금)이 회사에서 채워지지
+ * 않고 비어 있는데, 그 공백을 눈에 보이게 만드는 것이 이 도표의 목적이다.
+ *
+ * SVG가 아니라 목록으로 만든다: 층마다 설명 문장이 길고, 좁은 화면에서
+ * 줄바꿈이 필요하며, 스크린리더가 "3층/2층/1층"을 순서로 읽어야 한다.
+ */
+interface Props {
+  /** 2층을 "비어 있음"으로 표시할지(프리랜서 관점) */
+  highlightEmptySecondTier?: boolean;
+}
+
+const { highlightEmptySecondTier = true } = Astro.props;
+
+const tiers = [
+  {
+    tier: "3층",
+    name: "개인연금",
+    detail: "연금저축 · IRP",
+    who: "내가 직접 넣는다",
+    note: "넣은 만큼 세액공제를 받는다. 프리랜서가 가장 먼저 손댈 수 있는 층.",
+    tone: "gain" as const,
+    empty: false,
+  },
+  {
+    tier: "2층",
+    name: "퇴직연금",
+    detail: "DB · DC · IRP",
+    who: "직장인은 회사가 넣는다",
+    note: "프리랜서는 이 층을 채워주는 회사가 없다. 스스로 IRP로 채우지 않으면 빈칸으로 남는다.",
+    tone: "loss" as const,
+    empty: highlightEmptySecondTier,
+  },
+  {
+    tier: "1층",
+    name: "국민연금",
+    detail: "공적연금",
+    who: "국가가 운영, 보험료는 본인 부담",
+    note: "프리랜서는 지역가입자라 보험료 전액을 본인이 낸다. 물가에 연동돼 평생 나오는 기반.",
+    tone: "base" as const,
+    empty: false,
+  },
+];
+
+const toneVar = (tone: "gain" | "loss" | "base") => `var(--chart-${tone})`;
+---
+
+<figure class="chart-figure">
+  <ol class="pension-pillars">
+    {
+      tiers.map((t) => (
+        <li
+          class:list={["pillar", { "is-empty": t.empty }]}
+          style={`--pillar-color:${toneVar(t.tone)}`}
+        >
+          <span class="pillar-tier">{t.tier}</span>
+          <div class="pillar-body">
+            <p class="pillar-name">
+              <strong>{t.name}</strong>
+              <span class="pillar-detail">{t.detail}</span>
+              {t.empty && <span class="pillar-badge">프리랜서는 빈칸</span>}
+            </p>
+            <p class="pillar-who">{t.who}</p>
+            <p class="pillar-note">{t.note}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+  <figcaption>
+    아래층이 기반, 위층이 보완입니다. 직장인은 1·2층이 자동으로 쌓이지만
+    프리랜서는 1층도 전액 본인 부담이고 2층은 아무것도 쌓이지 않습니다.
+  </figcaption>
+</figure>
