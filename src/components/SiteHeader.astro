@@ -1,15 +1,46 @@
 ---
 /**
  * 사이트 공통 마스트헤드. 모든 페이지 상단에 같은 모양으로 들어간다.
- * 로고 이미지 없이 워드마크(텍스트)만 — 이미지 요청 0, Core Web Vitals에
- * 유리하고 다국어·리브랜딩 시 재작업이 없다.
+ * 심볼은 인라인 SVG(B안 — 포켓 라인 + ₩)라 네트워크 요청이 0이고
+ * currentColor를 써서 라이트/다크에 맞춰 색이 바뀐다. 파비콘은
+ * public/favicon.svg(A안 채움형)로 분리한다.
  */
 ---
 
 <header class="site-header">
   <a href="/" class="brand">
-    <span class="brand-name">주포켓 계산기</span>
-    <span class="brand-tag">프리랜서 세금 계산기</span>
+    <svg
+      class="brand-mark"
+      viewBox="0 0 64 64"
+      role="img"
+      aria-label="주포켓 계산기 로고"
+    >
+      <path
+        d="M12 24 L32 32 L52 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3.5"
+        stroke-linejoin="round"
+        stroke-linecap="round"></path>
+      <path
+        d="M12 24 L12 50 Q12 54 16 54 L48 54 Q52 54 52 50 L52 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3.5"
+        stroke-linejoin="round"
+        stroke-linecap="round"></path>
+      <text
+        x="32"
+        y="49"
+        text-anchor="middle"
+        font-size="17"
+        font-weight="600"
+        fill="currentColor">₩</text>
+    </svg>
+    <span class="brand-text">
+      <span class="brand-name">주포켓 계산기</span>
+      <span class="brand-tag">프리랜서 세금 계산기</span>
+    </span>
   </a>
   <nav class="site-nav" aria-label="Primary">
     <a href="/privacy/">개인정보처리방침</a>

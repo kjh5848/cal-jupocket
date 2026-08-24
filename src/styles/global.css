@@ -1017,6 +1017,16 @@ details[open] summary {
 .brand {
   text-decoration: none;
   color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.brand-mark {
+  flex: none;
+  width: 2.1rem;
+  height: 2.1rem;
+  color: var(--link); /* currentColor로 라이트/다크 브랜드 파랑 */
 }
 
 .brand-name {
