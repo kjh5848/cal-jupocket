@@ -1093,3 +1093,96 @@ details[open] summary {
     padding: 0;
   }
 }
+/* ── 가이드 2단 레이아웃 + 관련 콘텐츠 사이드바 ───────────────── */
+/* 모바일 우선: 단일 컬럼(본문 아래 사이드바가 쌓인다). 데스크톱에서만
+   본문 오른쪽에 고정 사이드바를 붙인다. main의 68ch 읽기폭은 유지하고
+   사이드바 폭만 오른쪽에 더한다. */
+.guide-body {
+  min-width: 0; /* 표·차트 등 넓은 자식이 그리드 셀을 밀어내지 않도록 */
+}
+
+.related {
+  border: 1px solid var(--rule);
+  padding: 1rem 1.1rem 1.15rem;
+  margin-top: 3rem;
+}
+
+.related-heading {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.related-kicker {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.related-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.related-item {
+  border-top: 1px solid var(--rule);
+}
+
+.related-item a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.65rem 0;
+  color: var(--text);
+  text-decoration: none;
+  line-height: 1.45;
+}
+
+.related-item a:hover .related-link-text {
+  text-decoration: underline;
+}
+
+.related-badge {
+  flex: none;
+  padding: 0 0.35rem;
+  border: 1px solid var(--chart-base);
+  color: var(--chart-base);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  transform: translateY(-0.05em);
+}
+
+.related-item.is-calc a {
+  font-weight: 600;
+}
+
+.related-link-text {
+  font-size: 0.9375rem;
+}
+
+@media (min-width: 64rem) {
+  .guide-main {
+    max-width: calc(68ch + 2.5rem + 15rem);
+    display: grid;
+    grid-template-columns: minmax(0, 68ch) 15rem;
+    gap: 2.5rem;
+    align-items: start;
+  }
+  .related {
+    position: sticky;
+    top: 1.5rem;
+    margin-top: 2rem; /* 본문 h1 상단 여백과 시각적으로 맞춘다 */
+  }
+}
+
+@media print {
+  .related {
+    display: none;
+  }
+}

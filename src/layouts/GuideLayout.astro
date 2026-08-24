@@ -17,6 +17,7 @@ import AdSenseHead from "../components/AdSenseHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import Disclaimer from "../components/Disclaimer.astro";
+import RelatedContent from "../components/RelatedContent.astro";
 import "../styles/global.css";
 
 interface Props {
@@ -35,9 +36,12 @@ const { title, description } = Astro.props;
   </head>
   <body>
     <SiteHeader />
-    <main>
-      <slot />
-      <Disclaimer variant="guide" />
+    <main class="guide-main">
+      <article class="guide-body">
+        <slot />
+        <Disclaimer variant="guide" />
+      </article>
+      <RelatedContent path={Astro.url.pathname} />
     </main>
     <SiteFooter />
   </body>

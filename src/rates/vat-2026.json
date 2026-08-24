@@ -17,8 +17,21 @@
     {
       "label": "국세청 — 사업장현황신고 개요(면세 인적용역·2월 10일)",
       "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7699&mi=2283"
+    },
+    {
+      "label": "국세청 — 부가가치세 신고납부기간",
+      "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=2273&cntntsId=7694"
     }
   ],
+  "filing": {
+    "period1": { "coverage": "1월 1일~6월 30일", "finalReturn": "7월 1일~7월 25일" },
+    "period2": { "coverage": "7월 1일~12월 31일", "finalReturn": "다음 해 1월 1일~1월 25일" },
+    "individualGeneralNote": "개인 일반과세자는 예정신고 의무가 없고, 대신 직전 과세기간 납부세액의 50%를 예정고지로 4월·10월에 납부한다.",
+    "prepaymentRate": 0.5,
+    "prepaymentMonths": "4월·10월",
+    "simplifiedNote": "간이과세자는 과세기간이 1월 1일~12월 31일 한 번이며, 다음 해 1월 1일~1월 25일에 연 1회 신고·납부한다.",
+    "filingSourceNote": "신고·납부 기간은 국세청 부가가치세 신고납부기간 원문에서 확인(2026-08-24)."
+  },
   "simplifiedInvoiceThreshold": 48000000,
   "simplifiedInvoiceNote": "간이과세자 중 직전연도 공급대가(매출)가 4,800만원 미만이거나 신규사업자는 세금계산서를 발급할 수 없다(국세청 부가가치세 기본정보). 4,800만원 이상 간이과세자는 발급 대상이다.",
   "closingReportDeadline": "다음 해 2월 10일",
