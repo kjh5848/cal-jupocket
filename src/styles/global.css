@@ -760,6 +760,99 @@ details[open] summary {
   }
 }
 
+/*
+ * 퇴사 전후 대조 격자 — 항목 / 이전 / 이후 세 칸을 한 줄에 놓는다.
+ * 표(table)를 쓰지 않는 이유: 좁은 화면에서 세로로 접혀야 읽히는데
+ * table은 그 재배치가 자유롭지 않다. 각진 네모 격자로 통일한다.
+ */
+.compare-grid {
+  border: 1px solid var(--text);
+  font-size: 0.9375rem;
+}
+
+.compare-head,
+.compare-row {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr 1fr;
+}
+
+.compare-row {
+  border-top: 1px solid var(--rule);
+}
+
+.compare-head {
+  background: var(--accent-bg);
+  font-weight: 700;
+}
+
+.compare-head span,
+.compare-row span {
+  padding: 0.7rem 0.8rem;
+  min-width: 0;
+}
+
+.compare-label {
+  font-weight: 700;
+  border-right: 1px solid var(--rule);
+}
+
+.compare-col {
+  border-right: 1px solid var(--rule);
+}
+
+.compare-col-after {
+  border-right: 0;
+}
+
+.compare-cell {
+  border-right: 1px solid var(--rule);
+  line-height: 1.55;
+}
+
+.compare-after {
+  border-right: 0;
+}
+
+/* 부담이 커지는 칸 — 왼쪽에 굵은 선 하나로만 표시(색 남용 방지) */
+.compare-cell.is-heavier {
+  box-shadow: inset 3px 0 0 var(--chart-loss);
+  font-weight: 600;
+}
+
+/* 좁은 화면 — 항목명을 머리줄로 올리고 전/후를 세로로 쌓는다 */
+@media (max-width: 34rem) {
+  .compare-head {
+    display: none;
+  }
+  .compare-row {
+    grid-template-columns: 1fr;
+  }
+  .compare-label {
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+    background: var(--accent-bg);
+  }
+  .compare-cell {
+    border-right: 0;
+  }
+  /* 머리줄이 사라지므로 각 칸이 스스로 전/후를 밝힌다.
+     :first-of-type은 같은 태그(span)인 .compare-label에 걸려 매칭되지
+     않으므로 명시 클래스를 쓴다. */
+  .compare-before::before {
+    content: "퇴사 전 · ";
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .compare-after {
+    border-top: 1px dashed var(--rule);
+  }
+  .compare-after::before {
+    content: "퇴사 후 · ";
+    color: var(--muted);
+    font-weight: 600;
+  }
+}
+
 /* 광고 슬롯 */
 .ad-slot {
   margin: 3rem 0;

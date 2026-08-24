@@ -1,0 +1,80 @@
+---
+/**
+ * 퇴사 전후 대조 도표 — 직장인에서 프리랜서로 바뀌는 순간 무엇이
+ * 달라지는지를 항목별로 나란히 놓는다.
+ *
+ * 이 전환을 다루는 글은 대개 한쪽만 설명한다(퇴직금 처리만, 또는
+ * 프리랜서 세금만). 정작 당사자에게 필요한 건 "무엇이 어떻게 바뀌는지"의
+ * 대조표다. 네모 격자로 만들어 왼쪽(이전)과 오른쪽(이후)을 한 줄에서
+ * 비교하게 한다.
+ */
+interface Row {
+  label: string;
+  before: string;
+  after: string;
+  /** 이후 쪽이 부담이 커지는 항목이면 표시 */
+  heavier?: boolean;
+}
+
+const rows: Row[] = [
+  {
+    label: "국민연금",
+    before: "직장가입자 — 회사가 절반 부담",
+    after: "지역가입자 — 보험료 전액 본인 부담",
+    heavier: true,
+  },
+  {
+    label: "건강보험",
+    before: "직장가입자 — 회사가 절반 부담",
+    after: "지역가입자 — 소득·재산으로 산정, 전액 본인 부담",
+    heavier: true,
+  },
+  {
+    label: "퇴직연금(2층)",
+    before: "회사가 적립",
+    after: "쌓아주는 곳이 없음 — IRP로 직접",
+    heavier: true,
+  },
+  {
+    label: "세금 납부 방식",
+    before: "매달 원천징수 + 2월 연말정산",
+    after: "건별 3.3% 원천징수 + 5월 종합소득세 신고",
+  },
+  {
+    label: "소득 증빙",
+    before: "재직증명서 · 원천징수영수증",
+    after: "계약서 · 사업소득 원천징수영수증",
+  },
+];
+---
+
+<figure class="chart-figure">
+  <div class="compare-grid">
+    <div class="compare-head">
+      <span class="compare-label" aria-hidden="true"></span>
+      <span class="compare-col">퇴사 전 (직장인)</span>
+      <span class="compare-col compare-col-after">퇴사 후 (프리랜서)</span>
+    </div>
+    {
+      rows.map((r) => (
+        <div class="compare-row">
+          <span class="compare-label">{r.label}</span>
+          <span class="compare-cell compare-before">{r.before}</span>
+          <span
+            class:list={[
+              "compare-cell",
+              "compare-after",
+              { "is-heavier": r.heavier },
+            ]}
+          >
+            {r.after}
+          </span>
+        </div>
+      ))
+    }
+  </div>
+  <figcaption>
+    부담이 늘어나는 항목에 표시를 두었습니다. 국민연금·건강보험은 회사가
+    내주던 절반이 없어지고, 퇴직연금은 쌓아주는 주체 자체가 사라집니다.
+  </figcaption>
+</figure>

@@ -1,0 +1,41 @@
+{
+  "year": 2026,
+  "verifiedOn": "2026-08-21",
+  "sources": [
+    {
+      "label": "고용노동부 — 퇴직급여 IRP 의무이전(근로자퇴직급여보장법)",
+      "url": "https://www.moel.go.kr/retirementpay.do"
+    },
+    {
+      "label": "국세청 — 퇴직소득세의 이연",
+      "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=6602&cntntsId=7882"
+    },
+    {
+      "label": "국민건강보험공단 — 임의계속가입자 가입안내",
+      "url": "https://www.nhis.or.kr/nhis/policy/wbhada05500m01.do"
+    }
+  ],
+
+  "severanceToIrp": {
+    "mandatorySince": "2022-04-14",
+    "rule": "퇴직금은 근로자가 지정한 개인형퇴직연금(IRP) 계정으로 지급해야 한다.",
+    "exceptionNote": "55세 이후 퇴직하여 급여를 받는 경우 등 대통령령으로 정한 사유는 예외다."
+  },
+
+  "severanceTaxDeferral": {
+    "depositWindowDays": 60,
+    "rule": "퇴직일 현재 연금계좌에 있거나 연금계좌로 지급되는 경우, 또는 퇴직하여 지급받은 날부터 60일 이내에 연금계좌에 입금되는 경우 연금외수령 전까지 퇴직소득세를 원천징수하지 않는다.",
+    "rateNote": "연금으로 수령할 때 적용되는 구체적 감액률은 국세청 해당 안내 원문에 수치로 제시돼 있지 않아 이 데이터에 넣지 않는다. 단정적으로 인용하지 말 것."
+  },
+
+  "healthInsuranceContinuation": {
+    "name": "임의계속가입",
+    "eligibilityMonthsWindow": 18,
+    "eligibilityMinDays": 365,
+    "eligibilityNote": "퇴직 이전 18개월 기간 동안 직장가입자 자격을 유지한 기간이 통산 1년(365일) 이상인 사람",
+    "durationMonths": 36,
+    "applyDeadlineNote": "지역가입자가 된 이후 최초로 고지받은 지역보험료의 납부기한에서 2개월이 지나기 이전까지",
+    "premiumFormula": "퇴직 월을 포함하여 보수월액보험료가 산정된 최근 12개월간의 보수월액의 평균 × 연도별 직장가입자 보험료율 + 보수 외 소득월액보험료",
+    "applyChannels": ["지사 방문", "FAX", "우편", "고객센터 1577-1000", "온라인(홈페이지·The건강보험 앱)"]
+  }
+}
