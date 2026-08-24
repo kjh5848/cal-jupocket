@@ -13,8 +13,16 @@
     {
       "label": "부가가치세법 제69조(간이과세자 납부의무 면제)",
       "url": "https://www.law.go.kr/법령/부가가치세법/제69조"
+    },
+    {
+      "label": "국세청 — 사업장현황신고 개요(면세 인적용역·2월 10일)",
+      "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7699&mi=2283"
     }
   ],
+  "simplifiedInvoiceThreshold": 48000000,
+  "simplifiedInvoiceNote": "간이과세자 중 직전연도 공급대가(매출)가 4,800만원 미만이거나 신규사업자는 세금계산서를 발급할 수 없다(국세청 부가가치세 기본정보). 4,800만원 이상 간이과세자는 발급 대상이다.",
+  "closingReportDeadline": "다음 해 2월 10일",
+  "closingReportNote": "부가가치세 면세사업자(면세 인적용역 제공자 등)는 부가세 신고 대신 다음 해 2월 10일까지 사업장현황신고를 한다(국세청 사업장현황신고 개요).",
 
   "standardRate": 0.1,
   "standardRateNote": "일반과세자 부가가치세율 10%. 공급대가 = 공급가액 + 부가세이므로 공급대가 = 공급가액 × 1.1.",

@@ -1,0 +1,153 @@
+---
+/**
+ * 간이과세 vs 일반과세 항목별 대조표.
+ *
+ * 전역 .compare-grid는 모바일 라벨(::before)이 "퇴사 전/후"로 고정돼
+ * 있어 재사용할 수 없다. 그래서 이 컴포넌트는 같은 각진 네모 격자를
+ * scoped 스타일로 직접 구현하고, 모바일 라벨은 data-side 속성에서
+ * 뽑아 쓴다(전역 CSS를 건드리지 않는다).
+ *
+ * 값은 전부 rates/vat-2026.json(국세청 원문 확인값)에서 온다.
+ */
+interface Props {
+  eligibility: number; // 1억 400만
+  exemption: number; // 4,800만 (납부의무 면제 = 세금계산서 발급 기준)
+  ratePercent: number; // 10
+}
+const { eligibility, exemption, ratePercent } = Astro.props;
+const fmt = (n: number) => n.toLocaleString("ko-KR");
+
+interface Row {
+  label: string;
+  simple: string;
+  general: string;
+}
+const rows: Row[] = [
+  {
+    label: "대상 매출",
+    simple: `연 매출(공급대가) ${fmt(eligibility)}원 미만`,
+    general: `${fmt(eligibility)}원 이상, 또는 본인이 선택한 경우`,
+  },
+  {
+    label: "세액 계산",
+    simple: `공급대가 × 업종별 부가가치율(15~40%) × ${ratePercent}%`,
+    general: `매출세액(공급가액×${ratePercent}%) − 매입세액`,
+  },
+  {
+    label: "매입세액 공제",
+    simple: "매입액(공급대가)의 0.5%만 공제",
+    general: "매입 세금계산서 세액을 전액 공제",
+  },
+  {
+    label: "세금계산서 발급",
+    simple: `직전연도 매출 ${fmt(exemption)}원 미만이면 발급 불가`,
+    general: "발급 가능",
+  },
+  {
+    label: "환급",
+    simple: "원칙적으로 환급 없음",
+    general: "매입세액 > 매출세액이면 환급 가능",
+  },
+  {
+    label: "납부의무 면제",
+    simple: `공급대가 ${fmt(exemption)}원 미만이면 면제`,
+    general: "없음",
+  },
+];
+---
+
+<figure class="chart-figure">
+  <div class="vc-grid">
+    <div class="vc-head" role="row">
+      <span class="vc-corner" aria-hidden="true"></span>
+      <span class="vc-col">간이과세</span>
+      <span class="vc-col vc-col-last">일반과세</span>
+    </div>
+    {
+      rows.map((r) => (
+        <div class="vc-row" role="row">
+          <span class="vc-label">{r.label}</span>
+          <span class="vc-cell" data-side="간이과세">{r.simple}</span>
+          <span class="vc-cell vc-cell-last" data-side="일반과세">
+            {r.general}
+          </span>
+        </div>
+      ))
+    }
+  </div>
+  <figcaption>
+    한쪽이 무조건 유리한 게 아니라, 매출 규모와 매입 구조에 따라 갈립니다.
+    매입(경비 세금계산서)이 많고 환급이 필요하면 일반과세가, 매출이 작고
+    매입이 적으면 간이과세가 유리한 편입니다.
+  </figcaption>
+</figure>
+
+<style>
+  .vc-grid {
+    border: 1px solid var(--rule);
+    font-size: 0.9375rem;
+  }
+  .vc-head,
+  .vc-row {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr 1fr;
+  }
+  .vc-row {
+    border-top: 1px solid var(--rule);
+  }
+  .vc-head {
+    background: var(--accent-bg);
+    font-weight: 700;
+  }
+  .vc-head span,
+  .vc-row span {
+    padding: 0.7rem 0.8rem;
+    min-width: 0;
+  }
+  .vc-label {
+    font-weight: 700;
+    border-right: 1px solid var(--rule);
+  }
+  .vc-col {
+    border-right: 1px solid var(--rule);
+  }
+  .vc-col-last {
+    border-right: 0;
+  }
+  .vc-cell {
+    border-right: 1px solid var(--rule);
+    line-height: 1.55;
+    color: var(--muted);
+  }
+  .vc-cell-last {
+    border-right: 0;
+  }
+
+  /* 좁은 화면 — 머리줄을 숨기고 항목명을 위로, 두 과세를 세로로 쌓는다.
+     라벨은 data-side에서 뽑아 붙인다(전역 compare-grid와 달리 고정
+     문자열을 쓰지 않는다). */
+  @media (max-width: 34rem) {
+    .vc-head {
+      display: none;
+    }
+    .vc-row {
+      grid-template-columns: 1fr;
+    }
+    .vc-label {
+      border-right: 0;
+      border-bottom: 1px solid var(--rule);
+      background: var(--accent-bg);
+    }
+    .vc-cell {
+      border-right: 0;
+    }
+    .vc-cell::before {
+      content: attr(data-side) " · ";
+      color: var(--text);
+      font-weight: 600;
+    }
+    .vc-cell-last {
+      border-top: 1px dashed var(--rule);
+    }
+  }
+</style>

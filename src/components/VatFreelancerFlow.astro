@@ -1,0 +1,88 @@
+---
+/**
+ * "프리랜서인 나는 부가세를 내야 하나(과세) 아니면 면세인가" 판단 흐름도.
+ *
+ * 이 주제의 경쟁 글들은 "프리랜서는 면세다"라고 단정하거나, 반대로
+ * "부가세 내야 한다"라고 겁을 준다. 실제로는 재화 판매·과세 용역으로
+ * 등록했는지, 물적시설·직원이 있는지에 따라 갈린다. 그래서 질문을
+ * 순서대로 따라가는 형태로 만들었다.
+ *
+ * SVG 대신 ol/li: 조건 문장이 길고 스크린리더가 순서대로 읽어야 하며
+ * 좁은 화면에서 줄바꿈이 자유로워야 한다. 각진 네모로 통일하고,
+ * 결론 색은 기존 flow-tree와 동일하게 왼쪽 선으로만 구분한다
+ * (is-file=과세=주황, is-skip=면세=초록, is-next=계속).
+ */
+interface Step {
+  q: string;
+  branches: { answer: string; result: string; verdict: "file" | "skip" | "next" }[];
+}
+
+const steps: Step[] = [
+  {
+    q: "물건(재화)을 팔거나, 부가세가 붙는 과세 용역으로 사업자등록을 했나요? (예: 온라인 판매, 음식점, 과세 서비스업)",
+    branches: [
+      {
+        answer: "그렇다",
+        result:
+          "과세사업자입니다. 매출에 부가세를 붙여 받고, 분기·반기마다 부가세를 신고·납부합니다.",
+        verdict: "file",
+      },
+      { answer: "아니다 (순수하게 내 노동으로 용역만 제공)", result: "다음 질문으로", verdict: "next" },
+    ],
+  },
+  {
+    q: "사업장·설비 같은 물적시설을 갖췄거나, 직원(근로자)을 고용했나요?",
+    branches: [
+      {
+        answer: "하나라도 그렇다",
+        result:
+          "면세 인적용역의 요건(물적시설 없음·근로자 미고용)을 벗어나므로, 과세사업자로 등록해 신고해야 할 수 있습니다.",
+        verdict: "file",
+      },
+      {
+        answer: "둘 다 아니다 (혼자, 독립된 자격으로)",
+        result:
+          "부가가치세 면세 인적용역에 해당합니다. 부가세를 붙이지 않고, 대신 2월 10일까지 사업장현황신고를 합니다.",
+        verdict: "skip",
+      },
+    ],
+  },
+];
+
+const verdictLabel = {
+  file: "과세",
+  skip: "면세",
+  next: "계속",
+} as const;
+---
+
+<figure class="chart-figure">
+  <ol class="flow-tree">
+    {
+      steps.map((s, i) => (
+        <li class="flow-node">
+          <p class="flow-q">
+            <span class="flow-num">{i + 1}</span>
+            {s.q}
+          </p>
+          <ul class="flow-branches">
+            {s.branches.map((b) => (
+              <li class:list={["flow-branch", `is-${b.verdict}`]}>
+                <span class="flow-answer">{b.answer}</span>
+                <span class="flow-result">
+                  <span class="flow-verdict">{verdictLabel[b.verdict]}</span>
+                  {b.result}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))
+    }
+  </ol>
+  <figcaption>
+    위에서부터 답해 내려가면 됩니다. 3.3%가 떼이는 프리랜서 상당수는 두 번째
+    질문에서 <strong>면세</strong>로 갈립니다. 다만 면세여도 종합소득세는 따로
+    신고해야 합니다. 애매하면 국세상담센터(126)나 세무 전문가에게 확인하세요.
+  </figcaption>
+</figure>

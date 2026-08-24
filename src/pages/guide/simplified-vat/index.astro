@@ -1,0 +1,115 @@
+---
+/**
+ * "간이과세 vs 일반과세, 뭐가 유리한가" — 판단 글.
+ *
+ * 과세사업자가 된 사람만의 질문이다(면세 인적용역은 애초에 해당 없음).
+ * 그래서 맨 위에 "이 글은 과세사업자 기준" 다리 문장을 두고, 면세인지
+ * 먼저 확인하려면 vat-freelancer 글로 보낸다.
+ *
+ * 경쟁 글은 세율만 나열한다. 정작 필요한 건 "내 경우 어느 쪽이 유리한가"
+ * 라서, 항목별 대조표(VatCompareDiagram)로 차이를 한눈에 보이게 하고
+ * 그 아래에 유불리 판단 기준을 붙였다.
+ *
+ * 값·규정 출처: rates/vat-2026.json (국세청 원문, 2026-08-21 확인).
+ * 세금계산서 발급 기준(4,800만원)·매입세액 전액공제는 국세청 부가가치세
+ * 기본정보에서 확인한 값이다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import vat from "../../../rates/vat-2026.json";
+import VatCompareDiagram from "../../../components/VatCompareDiagram.astro";
+
+const title = "간이과세 vs 일반과세, 뭐가 유리한가";
+const description =
+  "과세사업자라면 매출 규모와 매입 구조에 따라 간이과세·일반과세 유불리가 갈립니다. 세액 계산·매입세액 공제·세금계산서·환급 차이를 대조표로 정리했습니다.";
+
+const eligibility = vat.simplified.eligibilityRevenueUnder; // 104,000,000
+const exemption = vat.simplified.paymentExemptionUnder; // 48,000,000
+const ratePercent = Math.round(vat.standardRate * 100); // 10
+const fmt = (n: number) => n.toLocaleString("ko-KR");
+
+const srcBasic = vat.sources.find((s) => s.url.includes("7693"))!;
+const srcLaw = vat.sources.find((s) => s.url.includes("제69조"))!;
+---
+
+<GuideLayout title={title} description={description}>
+  <h1>{title}</h1>
+
+  <div class="callout">
+    <p>
+      이 글은 <strong>과세사업자 기준</strong>입니다. 3.3%가 떼이는
+      프리랜서 상당수는 애초에 부가세 <strong>면세</strong>라 이 선택
+      자체가 없습니다. 내가 과세인지 면세인지부터 확인하려면{" "}
+      <a href="/guide/vat-freelancer/">프리랜서도 부가세를 내야
+      하나요?</a>를 먼저 보세요.
+    </p>
+  </div>
+
+  <p>
+    과세사업자로 등록하기로 했다면, 다음 갈림길은 <strong>간이과세</strong>와{" "}
+    <strong>일반과세</strong>입니다. 연 매출(공급대가)이{" "}
+    {fmt(eligibility)}원 미만이면 간이과세를 선택할 수 있고, 그 이상이면
+    일반과세입니다. 세율만 보면 간이가 무조건 유리해 보이지만, 매입세액
+    공제와 환급까지 따지면 이야기가 달라집니다.
+  </p>
+
+  <h2>항목별로 나란히 보기</h2>
+  <VatCompareDiagram
+    eligibility={eligibility}
+    exemption={exemption}
+    ratePercent={ratePercent}
+  />
+
+  <div class="ad-slot" data-ad="guide-simplified-vat-mid"></div>
+
+  <h2>어느 쪽이 유리한가 — 판단 기준</h2>
+  <ul class="doc-checks">
+    <li>
+      <strong>매입이 많다면 일반과세가 유리할 수 있습니다.</strong>{" "}
+      일반과세는 매입 세금계산서 세액을 전액 공제하고, 매입세액이 매출세액
+      보다 크면 환급까지 받습니다. 초기 설비 투자나 재료 매입이 큰 경우가
+      대표적입니다.
+    </li>
+    <li>
+      <strong>매출이 작고 매입이 적으면 간이과세가 유리한 편입니다.</strong>{" "}
+      간이과세는 업종별 부가가치율만큼만 세액이 잡히고, 공급대가 합계가{" "}
+      {fmt(exemption)}원 미만이면 납부의무 자체가 면제됩니다. 순수 서비스
+      업종처럼 매입이 거의 없는 경우에 부담이 작습니다.
+    </li>
+    <li>
+      <strong>거래처가 세금계산서를 요구하면 주의하세요.</strong> 직전연도
+      매출이 {fmt(exemption)}원 미만인 간이과세자는 세금계산서를 발급할 수
+      없습니다. 세금계산서 발급이 꼭 필요한 거래가 많다면 일반과세가
+      맞을 수 있습니다.
+    </li>
+  </ul>
+
+  <div class="callout warn">
+    <p>
+      ⚠️ 간이과세는 <strong>환급이 나오지 않습니다.</strong> 매입세액이
+      매출세액보다 커도 그 차액을 돌려받지 못합니다. 큰 투자·매입을
+      앞두고 있다면 이 점이 결정적일 수 있습니다.
+    </p>
+  </div>
+
+  <h2>내 세액부터 계산해보기</h2>
+  <p>
+    간이과세로 냈을 때와 일반과세로 냈을 때 매출 기준 세액이 각각 얼마인지
+    계산기로 바로 비교해볼 수 있습니다. 일반과세는 공급가액↔합계금액
+    양방향, 간이과세는 업종별 부가가치율을 골라 계산합니다.
+  </p>
+
+  <p class="actions">
+    <a class="btn" href="/vat/">부가세 계산기 열기</a>
+  </p>
+
+  <p class="meta">
+    세금계산서 발급 기준·매입세액 전액공제·업종별 부가가치율은 국세청{" "}
+    <a href={srcBasic.url} rel="nofollow noopener">부가가치세 기본정보</a>,
+    간이과세 납부의무 면제 기준은{" "}
+    <a href={srcLaw.url} rel="nofollow noopener">부가가치세법 제69조</a>에서
+    확인한 값입니다({vat.verifiedOn} 확인). 개별 사안의 유불리는
+    국세상담센터(126)나 세무 전문가에게 확인하세요.
+  </p>
+
+  <div class="ad-slot" data-ad="guide-simplified-vat-bottom"></div>
+</GuideLayout>
