@@ -1,0 +1,261 @@
+---
+/**
+ * IRP란 무엇이고 어떻게 여는가 — 세액공제 글의 실행편.
+ *
+ * 이 주제에서 사람들이 가장 헷갈리는 두 가지를 정면으로 다룬다.
+ * (1) 납입한도 1,800만원과 세액공제 한도 900만원을 같은 것으로 오해
+ * (2) 연금저축과 IRP의 차이(특히 중도인출 제약)를 모른 채 가입
+ *
+ * 모든 수치·규정은 rates/pension-account-2026.json에서 오고, 그 값은
+ * 금융감독원 통합연금포털과 국세청 원문에서 확인했다(2026-08-21).
+ * 금융사별 수수료·상품 구성은 확인 대상이 아니므로 단정하지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import pensionAccount from "../../../rates/pension-account-2026.json";
+import { formatWon } from "../../../lib/money";
+import PensionLimitChart from "../../../components/PensionLimitChart.astro";
+
+const title = "IRP란? 프리랜서도 열 수 있는 계좌, 개설 전에 알아야 할 것";
+const description =
+  "IRP는 소득이 있으면 누구나 열 수 있는 퇴직연금 계좌입니다. 납입한도 1,800만원과 세액공제 한도 900만원의 차이, 연금저축과의 결정적 차이, 개설 경로를 정리했습니다.";
+
+const irp = pensionAccount.irp;
+const annuity = pensionAccount.annuityRequirement;
+const savingsOnly = pensionAccount.savingsOnlyLimit;
+const combined = pensionAccount.combinedLimit;
+
+// 중도인출 사유 — 금감원 원문의 세율 구분을 그대로 옮긴다.
+const withdrawalReasons = [
+  {
+    reason: "무주택자가 본인 명의로 주택을 구입",
+    tax: "기타소득세 16.5%",
+    heavy: true,
+  },
+  {
+    reason: "무주택자가 주거 목적 전세금·보증금 부담 (한 사업장 근로 중 1회)",
+    tax: "기타소득세 16.5%",
+    heavy: true,
+  },
+  {
+    reason:
+      "본인·배우자·부양가족의 6개월 이상 요양 의료비를 본인 연간 임금총액의 1,000분의 125를 넘게 부담",
+    tax: "연금소득세 5.5~3.3%",
+    heavy: false,
+  },
+  {
+    reason: "신청일부터 5년 이내에 파산선고를 받은 경우",
+    tax: "연금소득세 5.5~3.3%",
+    heavy: false,
+  },
+  {
+    reason: "신청일부터 5년 이내에 개인회생절차 개시결정을 받은 경우",
+    tax: "연금소득세 5.5~3.3%",
+    heavy: false,
+  },
+  {
+    reason: "천재지변에 해당하는 재난 피해",
+    tax: "연금소득세 5.5~3.3%",
+    heavy: false,
+  },
+];
+
+const fssSource = pensionAccount.sources.find((s) =>
+  s.url.includes("bnacCncltn"),
+)!;
+const fssJoinSource = pensionAccount.sources.find((s) =>
+  s.url.includes("bnacJoin"),
+)!;
+---
+
+<GuideLayout title={title} description={description}>
+  <h1>{title}</h1>
+
+  <div class="callout">
+    <p>
+      IRP는 이름에 "퇴직연금"이 들어가서 회사원만 쓰는 제도로 보이지만,{" "}
+      <strong>소득이 있으면 누구나 직접 열 수 있는 계좌</strong>입니다. 퇴직금
+      제도가 없는 프리랜서에게는 비어 있는 2층을 스스로 채우는 수단이면서,
+      동시에 세액공제를 받는 통로입니다.
+    </p>
+  </div>
+
+  <p>
+    <a href="/guide/pension-savings-tax-credit/">세액공제 한도 글</a>에서 연금저축
+    {formatWon(savingsOnly)}을 채운 뒤 남은 금액을 IRP에 넣으면 합산{" "}
+    {formatWon(combined)}까지 공제받는다고 정리했습니다. 이번 글은 그 IRP가
+    구체적으로 어떤 계좌이고, 열기 전에 무엇을 알아야 하는지를 다룹니다.
+  </p>
+
+  <h2>IRP는 어떤 계좌인가</h2>
+  <p>
+    정식 명칭은 <strong>개인형 퇴직연금(IRP, Individual Retirement Pension)</strong>
+    입니다. 원래는 퇴직할 때 받은 퇴직급여를 넣어두고 계속 운용하는 계좌인데,
+    재직·소득 중에 본인이 자유롭게 납입할 수도 있습니다. 운용하는 동안 발생한
+    수익에는 <strong>수급 시점까지 세금이 붙지 않습니다</strong>.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th>내용</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>가입 자격</td>
+          <td>{irp.eligibility}</td>
+        </tr>
+        <tr>
+          <td>연간 납입한도</td>
+          <td>{formatWon(irp.annualContributionLimit)}</td>
+        </tr>
+        <tr>
+          <td>세액공제 한도</td>
+          <td>
+            연금저축과 합산 {formatWon(combined)}
+            (연금저축은 그중 {formatWon(savingsOnly)}까지)
+          </td>
+        </tr>
+        <tr>
+          <td>연금 수령 조건</td>
+          <td>
+            만 {annuity.minAge}세 이후 수령 개시를 신청하고, 계좌 가입일부터{" "}
+            {annuity.minYearsSinceOpening}년 경과
+          </td>
+        </tr>
+        <tr>
+          <td>개설 가능 기관</td>
+          <td>
+            {irp.providerCategories.join(" · ")}
+            {irp.alsoViaKcomwel && " (근로복지공단을 통해서도 가능)"}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>가장 흔한 오해: 1,800만원 넣으면 다 공제된다?</h2>
+  <p>
+    아닙니다. <strong>넣을 수 있는 금액</strong>과{" "}
+    <strong>세금이 줄어드는 금액</strong>은 다른 층위입니다. 납입한도는{" "}
+    {formatWon(irp.annualContributionLimit)}이지만, 세액공제 대상은 그중{" "}
+    {formatWon(combined)}까지입니다.
+  </p>
+
+  <PensionLimitChart />
+
+  <p>
+    그럼 공제 한도를 넘겨 넣는 건 의미가 없느냐 하면, 그건 목적에 따라
+    다릅니다. 공제는 못 받지만 운용 수익에 대한 과세가 수령 시점까지
+    미뤄지는 효과는 그대로 남습니다. 다만 뒤에서 볼 <strong>인출
+    제약</strong>도 함께 따라오므로, 공제 한도를 넘기는 납입은 그 제약을
+    감수할 자금인지 먼저 따져야 합니다.
+  </p>
+
+  <div class="ad-slot" data-ad="guide-irp-account-mid"></div>
+
+  <h2>연금저축과의 결정적 차이: 중도인출</h2>
+  <p>
+    세액공제 한도를 공유하니 둘이 비슷해 보이지만, <strong>돈을 빼는
+    조건</strong>이 다릅니다. IRP는 아무 때나 일부만 꺼낼 수 없고, 법으로
+    정해진 사유에 해당해야 중도인출이 됩니다({irp.legalBasis}).
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>중도인출이 가능한 사유</th>
+          <th>적용 세율</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          withdrawalReasons.map((r) => (
+            <tr>
+              <td>{r.reason}</td>
+              <td>{r.tax}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p class="meta">
+    재난 피해는 사유에 따라 갈립니다 — 천재지변은 연금소득세, 그 외 재난은
+    기타소득세가 적용됩니다. 본인 사유가 인출 가능 사유에 해당하는지는
+    고용노동부(1350), 절차는 가입한 금융기관에 확인하는 것이 정확합니다.
+  </p>
+
+  <div class="callout warn">
+    <p>
+      ⚠️ 위 사유에 해당하지 않으면 <strong>계좌를 해지</strong>하는 수밖에
+      없고, 이때 세액공제를 받은 납입원금과 운용수익에{" "}
+      <strong>기타소득세 {irp.withdrawalPenaltyRatePercent}%</strong>(지방소득세
+      포함)가 원천징수됩니다. 공제로 돌려받은 돈을 사실상 반납하는 셈이라,
+      <strong>당장 쓸 가능성이 있는 자금은 IRP에 넣지 않는 것</strong>이
+      원칙입니다.
+    </p>
+  </div>
+
+  <h2>개설 절차</h2>
+  <ol class="doc-checks">
+    <li>
+      <strong>기관을 고릅니다.</strong> {irp.providerCategories.join(" · ")}{" "}
+      네 권역에서 열 수 있고, 근로복지공단을 통한 가입도 가능합니다. 같은
+      IRP라도 기관마다 수수료와 담을 수 있는 상품 구성이 다르므로, 가입 전에
+      해당 기관에 직접 확인하세요.
+    </li>
+    <li>
+      <strong>비대면으로 개설합니다.</strong> 대부분 앱·홈페이지에서 신분증과
+      본인인증만으로 열립니다. 온라인 가입 환경을 갖추지 않은 기관은 영업점을
+      방문해야 합니다.
+    </li>
+    <li>
+      <strong>납입 금액을 정합니다.</strong> 공제 한도를 목표로 한다면 연금저축{" "}
+      {formatWon(savingsOnly)}을 먼저 채우고 IRP에{" "}
+      {formatWon(combined - savingsOnly)}을 넣는 조합이 기본입니다. 소득이
+      불규칙한 프리랜서라면 매달 고정보다 <strong>연말에 여유를 보고 한 번에
+      넣는 방식</strong>도 가능합니다 — 공제는 그 해에 넣은 총액 기준입니다.
+    </li>
+    <li>
+      <strong>5월 신고 때 반영합니다.</strong> 프리랜서는 연말정산이 아니라
+      종합소득세 신고에서 납입액을 세액공제로 넣습니다. →{" "}
+      <a href="/guide/33-settlement/">5월 신고와 정산 구조</a>
+    </li>
+  </ol>
+
+  <div class="callout">
+    <p>
+      계좌를 여는 것과 그 안에서 무엇을 운용할지는 별개의 결정입니다. 이 글은
+      제도와 절차만 다루며, 어떤 상품을 담을지는 개인의 위험 감수 수준에 따라
+      달라지므로 권하지 않습니다.
+    </p>
+  </div>
+
+  <p>
+    한도와 공제율부터 다시 확인하고 싶다면{" "}
+    <a href="/guide/pension-savings-tax-credit/">세액공제 한도 글</a>을, 노후
+    준비 전체 순서가 궁금하다면{" "}
+    <a href="/guide/retirement-planning/">순서 정리 글</a>을 보세요.
+  </p>
+
+  <p class="actions">
+    <a class="btn" href="/guide/pension-savings-tax-credit/"
+      >세액공제로 얼마 돌려받는지 보기</a
+    >
+  </p>
+
+  <p class="meta">
+    가입 자격·납입한도·개설 경로는 금융감독원{" "}
+    <a href={fssJoinSource.url} rel="nofollow noopener">통합연금포털 IRP 가입 안내</a>,
+    해지·중도인출 사유와 세율은{" "}
+    <a href={fssSource.url} rel="nofollow noopener">해지 유의사항</a>, 연금수령
+    요건은 국세청 자료에서 확인한 값입니다({pensionAccount.verifiedOn} 확인).
+  </p>
+
+  <div class="ad-slot" data-ad="guide-irp-account-bottom"></div>
+</GuideLayout>

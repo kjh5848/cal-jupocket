@@ -1,0 +1,138 @@
+---
+/**
+ * 연금계좌 한도 구조도 — "납입한도"와 "세액공제 한도"가 다른 층위임을
+ * 길이로 보여준다.
+ *
+ * 이 둘을 같은 것으로 착각해 "1,800만원 넣으면 다 공제되는 줄" 아는
+ * 오해가 흔하다. 두 축을 위아래로 겹쳐 그려 포함 관계를 드러낸다.
+ *
+ * 값은 rates/pension-account-2026.json 한 곳에서만 온다.
+ */
+import pensionAccount from "../rates/pension-account-2026.json";
+
+const contributionLimit = pensionAccount.irp.annualContributionLimit; // 1,800만
+const combined = pensionAccount.combinedLimit; // 900만
+const savingsOnly = pensionAccount.savingsOnlyLimit; // 600만
+const irpPortion = combined - savingsOnly; // 300만
+
+const manwon = (v: number) =>
+  `${Math.round(v / 10000).toLocaleString("ko-KR")}만원`;
+
+// --- 좌표계 ---
+const W = 720;
+const H = 250;
+const plotLeft = 12;
+const plotRight = 708;
+const plotWidth = plotRight - plotLeft;
+const w = (v: number) => (v / contributionLimit) * plotWidth;
+
+const barH = 40;
+const rowA = 44; // 납입한도 막대 y
+const rowB = 138; // 세액공제 한도 막대 y
+---
+
+<figure class="chart-figure">
+  <div class="chart-scroll">
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label={`연금계좌 한도 구조. 연간 납입한도는 ${manwon(
+        contributionLimit,
+      )}이지만 세액공제 대상은 그중 ${manwon(
+        combined,
+      )}까지이며, 그 ${manwon(combined)} 안에서 연금저축은 ${manwon(
+        savingsOnly,
+      )}까지만 인정된다.`}
+    >
+      {/* 1) 연간 납입한도 */}
+      <text class="tick-label" x={plotLeft} y={rowA - 12}>
+        연간 납입한도 — 여기까지 넣을 수는 있다
+      </text>
+      <rect
+        x={plotLeft}
+        y={rowA}
+        width={w(contributionLimit)}
+        height={barH}
+        fill="var(--accent-bg)"
+        stroke="var(--rule)"
+      />
+      <text
+        class="value-label"
+        x={plotLeft + w(contributionLimit) - 10}
+        y={rowA + barH / 2 + 5}
+        text-anchor="end"
+      >
+        {manwon(contributionLimit)}
+      </text>
+
+      {/* 납입한도 중 공제되는 구간을 잇는 안내선 */}
+      <line
+        class="base-line"
+        x1={plotLeft + w(combined)}
+        x2={plotLeft + w(combined)}
+        y1={rowA + barH}
+        y2={rowB}
+      />
+
+      {/* 2) 세액공제 한도 = 연금저축 + IRP */}
+      <text class="tick-label" x={plotLeft} y={rowB - 12}>
+        세액공제 대상 — 이 안에서만 세금이 줄어든다
+      </text>
+      <rect
+        x={plotLeft}
+        y={rowB}
+        width={w(savingsOnly)}
+        height={barH}
+        fill="var(--chart-base)"
+      />
+      <text
+        class="value-label"
+        x={plotLeft + 10}
+        y={rowB + barH / 2 + 5}
+        fill="#fff"
+      >
+        연금저축 {manwon(savingsOnly)}
+      </text>
+
+      <rect
+        x={plotLeft + w(savingsOnly)}
+        y={rowB}
+        width={w(irpPortion)}
+        height={barH}
+        fill="var(--chart-gain)"
+      />
+      <text
+        class="value-label"
+        x={plotLeft + w(savingsOnly) + 10}
+        y={rowB + barH / 2 + 5}
+        fill="#fff"
+      >
+        IRP {manwon(irpPortion)}
+      </text>
+
+      {/* 공제 한도 끝을 표시 */}
+      <text
+        class="value-label"
+        x={plotLeft + w(combined) + 10}
+        y={rowB + barH / 2 + 5}
+      >
+        합계 {manwon(combined)}
+      </text>
+
+      {/* 공제 안 되는 구간 라벨 */}
+      <text
+        class="tick-label"
+        x={plotLeft + w(combined) + 10}
+        y={rowB + barH + 26}
+      >
+        {manwon(combined)}을 넘겨 넣은 금액은 세액공제 대상이 아니다
+      </text>
+    </svg>
+  </div>
+
+  <figcaption>
+    납입할 수 있는 금액과 세금이 줄어드는 금액은 다릅니다. 연금저축을{" "}
+    {manwon(savingsOnly)} 채운 뒤 IRP에 {manwon(irpPortion)}을 더 넣으면
+    공제 한도 {manwon(combined)}을 꽉 채우게 됩니다.
+  </figcaption>
+</figure>

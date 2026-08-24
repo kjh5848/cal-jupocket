@@ -9,6 +9,18 @@
     {
       "label": "소득세법 제59조의3 연금계좌세액공제",
       "url": "https://www.law.go.kr/LSW/lsLinkCommonInfo.do?lsJoLnkSeq=1021863203"
+    },
+    {
+      "label": "금융감독원 통합연금포털 — 개인형 IRP 계좌안내(가입)",
+      "url": "https://www.fss.or.kr/fss/lifeplan/bnacJoin/list.do?menuNo=200954"
+    },
+    {
+      "label": "금융감독원 통합연금포털 — 개인형 IRP 해지·중도인출 유의사항",
+      "url": "https://www.fss.or.kr/fss/lifeplan/bnacCncltn/list.do?menuNo=200956"
+    },
+    {
+      "label": "국세청 — 연금소득의 범위(연금수령 요건)",
+      "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7885"
     }
   ],
   "savingsOnlyLimit": 6000000,
@@ -16,5 +28,24 @@
   "incomeThreshold": 45000000,
   "creditRatePercentBelowThreshold": 15,
   "creditRatePercentAboveThreshold": 12,
-  "note": "연금저축계좌 단독 납입액은 연 600만원, 연금저축과 퇴직연금계좌(IRP)를 합한 납입액은 연 900만원까지 세액공제 대상이다. 공제율은 종합소득금액 4,500만원(근로소득만 있으면 총급여 5,500만원) 기준으로 나뉜다. 지방소득세를 포함한 실효 공제율은 이 값에 localTaxRate(10%)를 얹어 계산한다."
+  "note": "연금저축계좌 단독 납입액은 연 600만원, 연금저축과 퇴직연금계좌(IRP)를 합한 납입액은 연 900만원까지 세액공제 대상이다. 공제율은 종합소득금액 4,500만원(근로소득만 있으면 총급여 5,500만원) 기준으로 나뉜다. 지방소득세를 포함한 실효 공제율은 이 값에 localTaxRate(10%)를 얹어 계산한다.",
+  "irp": {
+    "annualContributionLimit": 18000000,
+    "eligibility": "소득이 있는 모든 취업자(2017년 7월 26일부터). 자영업자·프리랜서도 포함된다.",
+    "providerCategories": [
+      "은행",
+      "금융투자(증권)",
+      "생명보험",
+      "손해보험"
+    ],
+    "alsoViaKcomwel": true,
+    "withdrawalPenaltyRatePercent": 16.5,
+    "withdrawalPenaltyNote": "해지 시 세액공제 받은 납입원금과 운용수익에 기타소득세 16.5%(지방소득세 포함)가 원천징수된다.",
+    "legalBasis": "근로자퇴직급여보장법 시행령 제2조 및 제14조"
+  },
+  "annuityRequirement": {
+    "minAge": 55,
+    "minYearsSinceOpening": 5,
+    "note": "가입자가 55세 이후 연금수령 개시를 신청하고, 연금계좌 가입일부터 5년이 지난 뒤 인출해야 연금소득으로 본다(이연퇴직소득은 5년 요건 제외)."
+  }
 }
