@@ -1,0 +1,25 @@
+{
+  "year": 2026,
+  "verifiedOn": "2026-08-24",
+  "sources": [
+    {
+      "label": "국민연금공단 — 2026년 기준소득월액 상·하한액 조정 안내",
+      "url": "https://www.nps.or.kr/pnsgdnc/newgdnc/getOHAE0001M1.do?pstId=ZZ202600000000000147"
+    },
+    {
+      "label": "국민연금공단 — 연금개혁 FAQ(보험료율 인상)",
+      "url": "https://www.nps.or.kr/pnsinfo/ntpsklg/getOHAF0104M0.do"
+    }
+  ],
+
+  "rate": 0.095,
+  "rateNote": "2026년 국민연금 보험료율 9.5%. 2026년부터 매년 0.5%p씩 8년간 단계적으로 인상되어 2033년 13%에 도달한다(2025년 연금개혁). 지역가입자는 인상분을 포함해 전액 본인이 부담한다.",
+
+  "standardIncomeCeiling": 6590000,
+  "standardIncomeFloor": 410000,
+  "standardIncomePeriod": "2026.7.1~2027.6.30",
+  "standardIncomeNote": "기준소득월액 상한 6,590,000원·하한 410,000원(2026.7.1~2027.6.30 적용). 신고소득이 이 범위를 벗어나면 상·하한으로 조정된다. 기준소득월액은 천원 미만을 절사한다.",
+
+  "premiumRoundUnit": 10,
+  "premiumRoundNote": "연금보험료는 10원 미만을 절사한다."
+}

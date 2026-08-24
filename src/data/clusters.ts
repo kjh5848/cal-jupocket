@@ -48,6 +48,7 @@ export const clusters: Cluster[] = [
     id: "retirement",
     title: "프리랜서 노후·연금",
     links: [
+      { href: "/national-pension-premium/", title: "국민연금 보험료 계산기 (지역가입)", kind: "calc" },
       { href: "/guide/retirement-planning/", title: "프리랜서 노후대비, 순서대로 정리", kind: "guide" },
       { href: "/guide/national-pension-estimate/", title: "국민연금 예상수령액 조회 후 시점 정하기", kind: "guide" },
       { href: "/guide/pension-savings-tax-credit/", title: "연금저축·IRP 세액공제 한도(2026)", kind: "guide" },
