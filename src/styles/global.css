@@ -180,6 +180,23 @@ hr {
   outline-offset: 2px;
 }
 
+/* 업종 선택 등 드롭다운 — 입력 필드와 같은 톤으로 */
+.field select {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.field select:focus {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
+}
+
 button,
 .btn {
   font: inherit;

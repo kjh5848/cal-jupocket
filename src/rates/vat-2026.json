@@ -1,0 +1,39 @@
+{
+  "year": 2026,
+  "verifiedOn": "2026-08-21",
+  "sources": [
+    {
+      "label": "국세청 — 부가가치세 세율",
+      "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=2275&cntntsId=7696"
+    },
+    {
+      "label": "국세청 — 부가가치세 기본정보(납부세액 계산)",
+      "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7693&mi=2272"
+    },
+    {
+      "label": "부가가치세법 제69조(간이과세자 납부의무 면제)",
+      "url": "https://www.law.go.kr/법령/부가가치세법/제69조"
+    }
+  ],
+
+  "standardRate": 0.1,
+  "standardRateNote": "일반과세자 부가가치세율 10%. 공급대가 = 공급가액 + 부가세이므로 공급대가 = 공급가액 × 1.1.",
+
+  "simplified": {
+    "eligibilityRevenueUnder": 104000000,
+    "eligibilityNote": "연간 매출(공급대가)이 1억 400만원 미만이면 간이과세 적용 대상이다.",
+    "paymentExemptionUnder": 48000000,
+    "paymentExemptionNote": "해당 과세기간 공급대가 합계가 4,800만원 미만이면 납부의무가 면제된다(12개월 환산 기준).",
+    "creditRate": 0.005,
+    "creditRateNote": "간이과세자는 매입액(공급대가)의 0.5%를 공제한다.",
+    "valueAddedRates": [
+      { "label": "소매업·음식점업·재생용 재료수집판매업", "rate": 0.15 },
+      { "label": "제조업·농업·임업·어업·소화물 전문 운송업", "rate": 0.2 },
+      { "label": "숙박업", "rate": 0.25 },
+      { "label": "건설업·운수창고업·정보통신업", "rate": 0.3 },
+      { "label": "그 밖의 서비스업", "rate": 0.3 },
+      { "label": "금융·보험·전문과학기술·사업시설관리 등", "rate": 0.4 }
+    ],
+    "valueAddedRatesNote": "2021.7.1 이후 적용되는 업종별 부가가치율."
+  }
+}
