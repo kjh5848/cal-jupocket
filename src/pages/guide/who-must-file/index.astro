@@ -1,0 +1,181 @@
+---
+/**
+ * "나는 종합소득세를 신고해야 하나" — 판단 글.
+ *
+ * 검증된 GKP 데이터에서 이 주제(종합소득세 신고 대상 5,000 / 종소세
+ * 신고 대상 500, CPC 1,715~2,419)가 아직 안 다룬 것 중 가치가 가장
+ * 높았다.
+ *
+ * 경쟁 글은 신고 대상을 나열로 던진다. 조건이 겹치면 독자가 자기가
+ * 어디 해당하는지 못 고른다. 그래서 질문을 순서대로 따라가는 흐름도로
+ * 만들었다 — 이 사이트가 도표로 판단을 돕는 방식의 연장이다.
+ *
+ * 수치·기한 출처: rates/filing-2026.json (국세청 원문, 2026-08-21 확인).
+ * 원문에서 확인되지 않은 무신고 가산세율은 쓰지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import filing from "../../../rates/filing-2026.json";
+import rates from "../../../rates/2026.json";
+import { round1 } from "../../../lib/rate-display";
+import { formatWon } from "../../../lib/money";
+import FilingDecisionFlow from "../../../components/FilingDecisionFlow.astro";
+
+const title = "종합소득세 신고 대상, 나는 해야 하나";
+const description =
+  "3.3%를 뗐다면 신고 대상입니다. 근로소득만 있는 경우·기타소득 300만원 이하인 경우는 다릅니다. 질문을 따라가면 본인이 신고 대상인지 판단할 수 있게 정리했습니다.";
+
+const d = filing.deadline;
+const otherThreshold = filing.otherIncomeSeparateTaxationThreshold;
+const businessRate = round1(rates.withholding.business * 100); // 3.3
+const otherRate = round1(rates.withholding.other * 100); // 8.8
+
+const srcDeadline = filing.sources.find((s) => s.url.includes("7665"))!;
+const srcSeparate = filing.sources.find((s) => s.url.includes("7896"))!;
+---
+
+<GuideLayout title={title} description={description}>
+  <h1>{title}</h1>
+
+  <div class="callout">
+    <p>
+      결론부터 말하면, <strong>{businessRate}%가 떼인 소득이 있었다면 신고
+      대상</strong>입니다. 떼인 세금이 실제 세액보다 많아서 돌려받을 게 있는
+      경우에도 <strong>신고를 해야 받습니다</strong>. 반대로 근로소득만 있고
+      연말정산을 마쳤다면 하지 않아도 되는 경우에 해당할 수 있습니다.
+    </p>
+  </div>
+
+  <h2>질문을 따라가며 확인하세요</h2>
+  <p>
+    신고 대상은 "이런 사람, 저런 사람" 목록으로 외우기 어렵습니다. 소득이
+    여러 종류 섞이면 목록만 봐서는 자기가 어디에 해당하는지 알 수 없기
+    때문입니다. 위에서부터 답해 내려가는 편이 빠릅니다.
+  </p>
+
+  <FilingDecisionFlow />
+
+  <h2>{businessRate}%를 뗐으면 왜 무조건 신고인가</h2>
+  <p>
+    거래처가 떼어간 {businessRate}%는 <strong>세금을 확정한 게 아니라 미리
+    걷어둔 것</strong>입니다. 실제 세액은 총수입에서 필요경비를 빼고 각종
+    공제를 반영해 계산해야 나오는데, 그 계산을 하는 절차가 5월 종합소득세
+    신고입니다. →{" "}
+    <a href="/guide/33-settlement/">{businessRate}%는 예납, 정산은 5월</a>
+  </p>
+  <p>
+    그래서 두 방향 모두 신고가 필요합니다. 예납이 실제 세액보다 많았다면{" "}
+    <strong>신고해야 환급</strong>이 나오고, 적었다면{" "}
+    <strong>신고해서 차액을 납부</strong>해야 합니다. 어느 쪽인지 미리 가늠하려면{" "}
+    <a href="/income-tax-refund/">종소세 환급 예상 계산기</a>에 숫자를 넣어보면
+    됩니다.
+  </p>
+
+  <div class="ad-slot" data-ad="guide-who-must-file-mid"></div>
+
+  <h2>기타소득 {formatWon(otherThreshold)} 기준은 따로 있습니다</h2>
+  <p>
+    강연료·원고료처럼 <strong>{otherRate}%가 떼인 기타소득</strong>은 규칙이
+    다릅니다. 무조건 분리과세·종합과세 대상을 제외한 기타소득금액의 합계가{" "}
+    {formatWon(otherThreshold)} 이하이고 원천징수가 됐다면,{" "}
+    <strong>종합소득에 합산할지 원천징수로 끝낼지 선택</strong>할 수 있습니다.
+  </p>
+  <div class="callout">
+    <p>
+      선택할 수 있다는 건 <strong>합산하는 쪽이 유리할 수도 있다</strong>는
+      뜻입니다. 소득이 적어 적용 세율이 낮은 사람은 합산신고로 떼인 세금 일부를
+      돌려받을 수 있습니다. 반대로 소득이 많아 높은 세율 구간이면 분리과세로
+      끝내는 편이 유리할 수 있습니다. →{" "}
+      <a href="/guide/income-tax-brackets/">내 세율 구간 확인하기</a>
+    </p>
+  </div>
+  <p class="meta">
+    사업소득({businessRate}%)과 기타소득({otherRate}%)의 차이가 헷갈리면{" "}
+    <a href="/withholding/">원천징수 계산기</a>에서 두 경우를 비교해볼 수
+    있습니다.
+  </p>
+
+  <h2>신고 기간</h2>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>구분</th>
+          <th>기간</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>일반</td>
+          <td>
+            다음 연도 {d.generalFrom} ~ {d.generalTo}
+            <span class="meta"> ({d.generalNote})</span>
+          </td>
+        </tr>
+        <tr>
+          <td>성실신고확인대상자</td>
+          <td>다음 연도 {d.generalFrom} ~ {d.diligentFilerTo}</td>
+        </tr>
+        <tr>
+          <td>사망한 경우</td>
+          <td>{d.deceasedNote}</td>
+        </tr>
+        <tr>
+          <td>국외 이전으로 출국하는 경우</td>
+          <td>{d.departureNote}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p>
+      ⚠️ 신고 대상인데 하지 않으면 <strong>무신고가산세</strong>가 붙고,
+      돌려받을 환급금이 있었더라도 받지 못합니다. 특히 환급이 나오는 경우에는
+      신고하지 않아 손해만 보는 셈이 됩니다. 애매하면 국세상담센터(126)에
+      물어보는 편이 확실합니다.
+    </p>
+  </div>
+
+  <h2>이런 경우가 특히 헷갈립니다</h2>
+  <ol class="doc-checks">
+    <li>
+      <strong>연중에 퇴사하고 프리랜서로 전향한 첫 해.</strong> 근로소득과
+      사업소득이 한 해에 같이 생기므로 합산해서 신고합니다. →{" "}
+      <a href="/guide/severance-to-freelance/">퇴사 후 전향 정리</a>
+    </li>
+    <li>
+      <strong>여러 거래처에서 {businessRate}%를 뗀 경우.</strong> 각각
+      원천징수됐더라도 <strong>합산해서 한 번</strong> 신고합니다. 거래처별로
+      따로 신고하는 게 아닙니다.
+    </li>
+    <li>
+      <strong>직장을 다니면서 부수입이 있었던 경우.</strong> 연말정산을 했더라도
+      사업소득·기타소득이 있으면 별도로 확정신고 대상이 될 수 있습니다.
+    </li>
+    <li>
+      <strong>소득이 아주 적었던 경우.</strong> 금액이 작아도 신고 의무는
+      남습니다. 오히려 이런 경우 세율이 낮아 환급 가능성이 큽니다.
+    </li>
+  </ol>
+
+  <p>
+    본인이 신고 대상이라는 게 확인됐다면, 다음은 환급인지 추가납부인지
+    가늠해보는 순서입니다.
+  </p>
+
+  <p class="actions">
+    <a class="btn" href="/income-tax-refund/">내 환급/추가납부 예상액 계산하기</a>
+  </p>
+
+  <p class="meta">
+    신고 기간은 국세청{" "}
+    <a href={srcDeadline.url} rel="nofollow noopener">종합소득세 신고납부기한</a>,
+    기타소득 분리과세 선택 기준은{" "}
+    <a href={srcSeparate.url} rel="nofollow noopener">종합과세와 분리과세</a>{" "}
+    자료에서 확인한 값입니다({filing.verifiedOn} 확인). 무신고가산세의 구체적인
+    세율은 원문에서 확인하지 못해 이 글에 넣지 않았습니다. 개별 사안은
+    국세상담센터(126)나 세무 전문가에게 확인하세요.
+  </p>
+
+  <div class="ad-slot" data-ad="guide-who-must-file-bottom"></div>
+</GuideLayout>

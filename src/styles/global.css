@@ -853,6 +853,113 @@ details[open] summary {
   }
 }
 
+/*
+ * 판단 흐름도 — 질문 하나에 답 여러 개가 달리는 트리.
+ *
+ * 나열식 목록과 다른 점은 "답을 고르면 결론이 나온다"는 구조가 보이는
+ * 것이다. 질문 블록을 네모로 두고, 답은 왼쪽 선으로 결론 성격(신고 /
+ * 제외 / 계속)을 구분한다.
+ */
+.flow-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--text);
+}
+
+.flow-node {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.flow-node:first-child {
+  border-top: 0;
+}
+
+.flow-q {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  margin: 0;
+  padding: 0.8rem 1rem;
+  background: var(--accent-bg);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.flow-num {
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--text);
+  font-size: 0.8125rem;
+}
+
+.flow-branches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.flow-branch {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: 0.25rem 0.9rem;
+  margin: 0;
+  padding: 0.7rem 1rem 0.7rem 0.75rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.9375rem;
+  box-shadow: inset 4px 0 0 var(--rule);
+}
+
+/* 결론 성격 — 왼쪽 선 색으로만 구분한다 */
+.flow-branch.is-file {
+  box-shadow: inset 4px 0 0 var(--chart-loss);
+}
+
+.flow-branch.is-skip {
+  box-shadow: inset 4px 0 0 var(--chart-gain);
+}
+
+.flow-answer {
+  font-weight: 600;
+}
+
+.flow-result {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.flow-verdict {
+  display: inline-block;
+  margin-right: 0.4rem;
+  padding: 0 0.35rem;
+  border: 1px solid currentColor;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text);
+  vertical-align: 0.05em;
+}
+
+.flow-branch.is-file .flow-verdict {
+  color: var(--chart-loss);
+}
+
+.flow-branch.is-skip .flow-verdict {
+  color: var(--chart-gain);
+}
+
+@media (max-width: 34rem) {
+  .flow-branch {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* 광고 슬롯 */
 .ad-slot {
   margin: 3rem 0;
