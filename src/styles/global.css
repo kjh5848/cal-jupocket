@@ -656,41 +656,46 @@ details[open] summary {
 }
 
 /*
- * 3층 노후소득보장 구조도 — 층을 위에서 아래로 쌓아 보여준다.
- * 프리랜서의 빈 2층은 점선 테두리로 "채워지지 않았음"을 드러낸다.
+ * 3층 노후소득보장 구조도 — 건물 층처럼 하나로 붙은 네모 블록.
+ *
+ * 층은 서로 떨어진 카드가 아니라 맞붙은 구조여야 "쌓여 있다"는 뜻이
+ * 전달된다. 그래서 바깥 테두리 하나에 내부를 얇은 선으로 나누고,
+ * 모서리는 각지게 둔다. 색은 의미가 있는 곳(빈 층 표시)에만 쓴다.
  */
 .pension-pillars {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 0.5rem;
+  border: 1px solid var(--text);
 }
 
 .pillar {
   display: grid;
-  grid-template-columns: 3.25rem 1fr;
-  gap: 0.25rem 0.9rem;
+  grid-template-columns: 4.5rem 1fr;
   margin: 0;
-  padding: 0.9rem 1rem;
-  border: 1px solid var(--rule);
-  border-left: 5px solid var(--pillar-color, var(--rule));
-  border-radius: 10px;
-  background: var(--bg);
+  border-top: 1px solid var(--rule);
 }
 
-/* 비어 있는 층 — 점선으로 "아직 없음"을 표현한다 */
-.pillar.is-empty {
-  border-style: dashed;
-  border-left-style: solid;
-  background: transparent;
+.pillar:first-child {
+  border-top: 0;
 }
 
+/* 층 번호 칸 — 오른쪽 얇은 선으로 본문과 나눈다 */
 .pillar-tier {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0.9rem 0.5rem;
+  border-right: 1px solid var(--rule);
+  background: var(--accent-bg);
   font-weight: 700;
   font-size: 0.9375rem;
-  color: var(--pillar-color, var(--muted));
-  padding-top: 0.1rem;
+  letter-spacing: -0.01em;
+}
+
+.pillar-body {
+  padding: 0.9rem 1rem;
+  min-width: 0;
 }
 
 .pillar-body p {
@@ -701,7 +706,7 @@ details[open] summary {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.4rem 0.6rem;
+  gap: 0.35rem 0.55rem;
   font-size: 1.0625rem;
 }
 
@@ -710,27 +715,49 @@ details[open] summary {
   font-size: 0.875rem;
 }
 
+/* 빈 층 표시 — 유일하게 색을 쓰는 자리. 알약이 아닌 네모로 둔다 */
 .pillar-badge {
   font-size: 0.75rem;
   font-weight: 700;
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-  color: var(--bg);
-  background: var(--pillar-color, var(--muted));
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--chart-loss);
+  color: var(--chart-loss);
+  white-space: nowrap;
 }
 
 .pillar-who {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--pillar-color, var(--text));
-  margin-top: 0.2rem !important;
+  margin-top: 0.35rem !important;
 }
 
 .pillar-note {
   font-size: 0.875rem;
   color: var(--muted);
   line-height: 1.6;
-  margin-top: 0.3rem !important;
+  margin-top: 0.25rem !important;
+}
+
+/* 비어 있는 층 — 층 번호 칸을 사선 무늬로 채워 "없음"을 드러낸다 */
+.pillar.is-empty .pillar-tier {
+  color: var(--muted);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      var(--rule) 4px,
+      var(--rule) 5px
+    );
+}
+
+@media (max-width: 26rem) {
+  .pillar {
+    grid-template-columns: 3.25rem 1fr;
+  }
+  .pillar-body {
+    padding: 0.8rem 0.75rem;
+  }
 }
 
 /* 광고 슬롯 */

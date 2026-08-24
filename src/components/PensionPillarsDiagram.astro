@@ -23,7 +23,6 @@ const tiers = [
     detail: "연금저축 · IRP",
     who: "내가 직접 넣는다",
     note: "넣은 만큼 세액공제를 받는다. 프리랜서가 가장 먼저 손댈 수 있는 층.",
-    tone: "gain" as const,
     empty: false,
   },
   {
@@ -32,7 +31,6 @@ const tiers = [
     detail: "DB · DC · IRP",
     who: "직장인은 회사가 넣는다",
     note: "프리랜서는 이 층을 채워주는 회사가 없다. 스스로 IRP로 채우지 않으면 빈칸으로 남는다.",
-    tone: "loss" as const,
     empty: highlightEmptySecondTier,
   },
   {
@@ -41,22 +39,17 @@ const tiers = [
     detail: "공적연금",
     who: "국가가 운영, 보험료는 본인 부담",
     note: "프리랜서는 지역가입자라 보험료 전액을 본인이 낸다. 물가에 연동돼 평생 나오는 기반.",
-    tone: "base" as const,
     empty: false,
   },
 ];
 
-const toneVar = (tone: "gain" | "loss" | "base") => `var(--chart-${tone})`;
 ---
 
 <figure class="chart-figure">
   <ol class="pension-pillars">
     {
       tiers.map((t) => (
-        <li
-          class:list={["pillar", { "is-empty": t.empty }]}
-          style={`--pillar-color:${toneVar(t.tone)}`}
-        >
+        <li class:list={["pillar", { "is-empty": t.empty }]}>
           <span class="pillar-tier">{t.tier}</span>
           <div class="pillar-body">
             <p class="pillar-name">
