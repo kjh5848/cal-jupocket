@@ -1196,3 +1196,64 @@ details[open] summary {
     display: none;
   }
 }
+
+/* ── 가이드 상단 브랜드 썸네일 ──────────────────────────────── */
+.article-thumb {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 0.5px solid var(--rule);
+  background: var(--tb);
+  height: 132px;
+  display: flex;
+  align-items: flex-end;
+  padding: 1rem 1.25rem;
+  margin: 0 0 0.5rem;
+}
+.thumb-wm {
+  position: absolute;
+  right: -6px;
+  bottom: -16px;
+  width: 132px;
+  height: 132px;
+  color: var(--tw);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.thumb-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.thumb-mark {
+  display: inline-flex;
+  width: 1.55rem;
+  height: 1.55rem;
+  flex: none;
+  border-radius: 5px;
+  background: var(--tm);
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.thumb-cluster {
+  color: var(--ti);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+/* 썸네일 바로 아래 h1은 위 여백을 줄여 붙인다 */
+.article-thumb + h1 {
+  margin-top: 1.25rem;
+}
+@media print {
+  .article-thumb {
+    display: none;
+  }
+}
