@@ -1292,3 +1292,225 @@ details[open] summary {
     display: none;
   }
 }
+
+/* ── 홈(블로그형 2단) ──────────────────────────────────────── */
+.home {
+  max-width: calc(68ch + 2.5rem + 15rem);
+}
+.home-h {
+  font-size: 1.375rem;
+  padding-top: 0;
+  border-top: 0;
+  margin: 0 0 1rem;
+}
+.home-hero {
+  background: var(--accent-bg);
+  border-radius: 16px;
+  padding: 2.25rem 1.75rem;
+  margin: 0.5rem 0 2.5rem;
+}
+.home-hero h1 {
+  margin: 0 0 0.6rem;
+  font-size: 1.9rem;
+}
+.home-hero p {
+  margin: 0 0 1.1rem;
+  color: var(--muted);
+  max-width: 46ch;
+}
+.home-hero .actions {
+  margin: 0;
+}
+
+/* 계산기 카드 그리드 */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.85rem;
+  margin: 0 0 2.75rem;
+}
+.tool-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--bg);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.12s;
+}
+.tool-card:hover {
+  border-color: var(--cm);
+}
+.tool-icon {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  background: var(--cb);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tool-icon svg,
+.post-icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--cm);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tool-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.tool-title {
+  font-weight: 700;
+  font-size: 0.9875rem;
+  line-height: 1.3;
+}
+.tool-blurb {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* 2단 본문 */
+.home-main {
+  display: block;
+}
+.cluster-block {
+  margin: 0 0 1.75rem;
+}
+.cluster-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.cluster-heading::before {
+  content: "";
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 3px;
+  background: var(--cm);
+  flex: none;
+}
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.6rem;
+}
+.post-card {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--bg);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.12s;
+}
+.post-card:hover {
+  border-color: var(--cm);
+}
+.post-icon {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  background: var(--cb);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.post-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* 사이드바 */
+.home-aside {
+  margin-top: 2rem;
+}
+.aside-box,
+.aside-cta {
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+.aside-title,
+.aside-cta-title {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.recent-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.recent-list li {
+  margin: 0;
+  border-top: 1px solid var(--rule);
+}
+.recent-list li:first-child {
+  border-top: 0;
+}
+.recent-list a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.recent-list a:hover {
+  text-decoration: underline;
+}
+.recent-dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 2px;
+  background: var(--cm);
+  transform: translateY(-0.1em);
+}
+.aside-cta {
+  background: var(--accent-bg);
+}
+.aside-cta-text {
+  margin: 0 0 0.9rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+@media (min-width: 64rem) {
+  .home-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 15rem;
+    gap: 2.5rem;
+    align-items: start;
+  }
+  .home-aside {
+    margin-top: 0;
+    position: sticky;
+    top: 1.5rem;
+  }
+}

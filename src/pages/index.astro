@@ -1,14 +1,41 @@
 ---
+/**
+ * 홈 — 블로그형 2단 레이아웃.
+ *
+ * 히어로 → 인기 계산기 카드 → (본문: 주제별 글 카드) + (사이드바: 새 글·
+ * 계산기 CTA). 계산기·글·색·아이콘은 전부 data/clusters.ts 한 곳에서
+ * 가져오므로, 글을 추가하면 홈도 자동으로 갱신된다.
+ */
 import BaseHead from "../components/BaseHead.astro";
 import ClarityHead from "../components/ClarityHead.astro";
 import AdSenseHead from "../components/AdSenseHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import { clusters, clusterColor, recent, linkByHref } from "../data/clusters";
+import { icons } from "../data/icons";
 import "../styles/global.css";
 
 const title = "주포켓 계산기 — 프리랜서 세금 계산기";
 const description =
-  "프리랜서·사업소득 3.3% 원천징수 계산기. 계약금액과 실수령액을 바로 계산하고 결과를 저장·공유할 수 있습니다.";
+  "프리랜서·사업소득자를 위한 세금 계산기. 3.3% 원천징수, 부가세, 국민연금 보험료를 바로 계산하고, 종합소득세·노후까지 주제별 가이드로 정리했습니다.";
+
+const calcCards = clusters.flatMap((c) =>
+  c.links
+    .filter((l) => l.kind === "calc")
+    .map((l) => ({ l, color: clusterColor[c.id] })),
+);
+
+const sections = clusters.map((c) => ({
+  id: c.id,
+  title: c.title,
+  color: clusterColor[c.id],
+  guides: c.links.filter((l) => l.kind === "guide"),
+}));
+
+const recentCards = recent
+  .map((h) => linkByHref(h))
+  .filter((x): x is NonNullable<typeof x> => x !== null)
+  .slice(0, 5);
 ---
 
 <html lang="ko">
@@ -19,145 +46,99 @@ const description =
   </head>
   <body>
     <SiteHeader />
-    <main>
-      <h1>주포켓 계산기</h1>
-      <p>
-        프리랜서와 사업소득자를 위한 세금 계산기입니다. 계약금액을 넣으면
-        3.3% 원천징수액과 실수령액을 바로 계산합니다.
-      </p>
+    <main class="home">
+      <section class="home-hero">
+        <h1>프리랜서 세금, 계산부터 판단까지</h1>
+        <p>
+          3.3% 원천징수·부가세·국민연금 보험료를 바로 계산하고, 종합소득세와
+          노후까지 주제별 가이드로 정리했습니다.
+        </p>
+        <p class="actions">
+          <a class="btn" href="#tools">계산기 바로가기</a>
+        </p>
+      </section>
 
-      <h2>계산기</h2>
-      <ul>
-        <li>
-          <a href="/freelancer-33/">
-            <strong>프리랜서 3.3% 원천징수 계산기</strong>
-          </a>
-          — 계약금액 → 실수령액, 실수령액 → 계약금액 역산
-        </li>
-        <li>
-          <a href="/withholding/">
-            <strong>원천징수 계산기 (3.3% / 8.8%)</strong>
-          </a>
-          — 사업소득 3.3%와 기타소득 8.8% 원천징수액·실수령액 계산
-        </li>
-        <li>
-          <a href="/income-tax-refund/">
-            <strong>종합소득세 환급 예상 계산기</strong>
-          </a>
-          — 총수입·단순경비율·인적공제로 다음 해 5월 환급/추가납부 예상액 계산
-        </li>
-        <li>
-          <a href="/vat/">
-            <strong>부가세 계산기 (공급가액·합계·간이과세)</strong>
-          </a>
-          — 공급가액↔합계금액 양방향 계산과 간이과세 업종별 납부세액 계산
-        </li>
-        <li>
-          <a href="/national-pension-premium/">
-            <strong>국민연금 보험료 계산기 (지역가입자)</strong>
-          </a>
-          — 월소득으로 2026년 요율(9.5%) 기준 월·연 보험료 계산
-        </li>
-      </ul>
+      <section id="tools" aria-labelledby="tools-h">
+        <h2 id="tools-h" class="home-h">계산기</h2>
+        <div class="tool-grid">
+          {
+            calcCards.map(({ l, color }) => (
+              <a
+                class="tool-card"
+                href={l.href}
+                style={`--cm:${color.mark};--cb:${color.bg};--ci:${color.ink}`}
+              >
+                <span class="tool-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[l.icon]} />
+                </span>
+                <span class="tool-body">
+                  <span class="tool-title">{l.title}</span>
+                  <span class="tool-blurb">{l.blurb}</span>
+                </span>
+              </a>
+            ))
+          }
+        </div>
+      </section>
 
-      <p class="actions">
-        <a class="btn" href="/freelancer-33/">계산기 바로 열기</a>
-      </p>
+      <div class="home-main">
+        <div class="home-articles">
+          <h2 class="home-h">주제별 읽을거리</h2>
+          {
+            sections.map((s) => (
+              <section class="cluster-block" aria-label={s.title}>
+                <p
+                  class="cluster-heading"
+                  style={`--cm:${s.color.mark};--ci:${s.color.ink};--cb:${s.color.bg}`}
+                >
+                  {s.title}
+                </p>
+                <div class="post-grid">
+                  {s.guides.map((g) => (
+                    <a
+                      class="post-card"
+                      href={g.href}
+                      style={`--cm:${s.color.mark};--cb:${s.color.bg};--ci:${s.color.ink}`}
+                    >
+                      <span class="post-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[g.icon]} />
+                      </span>
+                      <span class="post-title">{g.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            ))
+          }
+        </div>
 
-      <h2>읽을거리</h2>
-      <ul>
-        <li>
-          <a href="/guide/retirement-planning/">
-            <strong>프리랜서 노후대비, 순서대로 정리하면 이렇습니다</strong>
-          </a>
-          — 3층 연금 구조에서 프리랜서에게 비어 있는 칸을 확인하고, 국민연금
-          조회부터 연금저축까지 할 일을 순서로 묶었습니다.
-        </li>
-        <li>
-          <a href="/guide/33-settlement/">
-            <strong>3.3% 원천징수, 종합소득세에서 정산됩니다</strong>
-          </a>
-          — 방금 뗀 3.3%는 예납일 뿐, 실제 세액은 다음 해 5월 신고로
-          확정됩니다. 환급과 추가납부의 갈림길을 정리했습니다.
-        </li>
-        <li>
-          <a href="/guide/vat-freelancer/">
-            <strong>프리랜서도 부가세를 내야 하나요?</strong>
-          </a>
-          — 3.3%가 떼이는 프리랜서 상당수는 부가세 면세입니다. 언제 면세이고
-          언제 과세로 넘어가는지 판단 흐름도로 정리했습니다.
-        </li>
-        <li>
-          <a href="/guide/simplified-vat/">
-            <strong>간이과세 vs 일반과세, 뭐가 유리한가</strong>
-          </a>
-          — 과세사업자라면 매출·매입 구조에 따라 유불리가 갈립니다. 세액·
-          매입공제·세금계산서·환급 차이를 대조표로 정리했습니다.
-        </li>
-        <li>
-          <a href="/guide/vat-filing/">
-            <strong>부가세 신고, 언제 어떻게 하나</strong>
-          </a>
-          — 개인 일반은 7월·1월 연 2회, 간이는 1월 연 1회. 예정신고와
-          예정고지 차이를 연간 일정 타임라인으로 정리했습니다.
-        </li>
-        <li>
-          <a href="/guide/who-must-file/">
-            <strong>종합소득세 신고 대상, 나는 해야 하나</strong>
-          </a>
-          — 3.3%를 뗐다면 신고 대상입니다. 질문을 따라가며 본인이 신고
-          대상인지 판단하는 흐름도로 정리했습니다.
-        </li>
-        <li>
-          <a href="/guide/income-tax-brackets/">
-            <strong>종합소득세 세율 구간(2026), 왜 이렇게 나올까</strong>
-          </a>
-          — 2026년 누진세율표를 정리하고, 소득이 많아지면 실효세율이
-          3.3%보다 훨씬 높아질 수 있는 이유를 설명합니다.
-        </li>
-        <li>
-          <a href="/guide/expense-rate/">
-            <strong>단순경비율 vs 기준경비율, 세금이 왜 달라질까</strong>
-          </a>
-          — 경비를 인정받는 두 가지 방식이 무엇이 다른지, 그 차이가 실제
-          세액을 얼마나 바꾸는지 계산 예시로 정리했습니다.
-        </li>
-        <li>
-          <a href="/guide/pension-savings-tax-credit/">
-            <strong>프리랜서 연금저축·IRP 세액공제 한도 (2026)</strong>
-          </a>
-          — 프리랜서도 근로소득자와 똑같이 받을 수 있는 연금계좌 세액공제의
-          한도·공제율·최대 환급액을 정리했습니다.
-        </li>
-        <li>
-          <a href="/guide/irp-account/">
-            <strong>IRP란? 프리랜서도 열 수 있는 계좌</strong>
-          </a>
-          — 납입한도 1,800만원과 세액공제 한도 900만원은 다릅니다. 연금저축과의
-          차이(중도인출 제약)와 개설 절차를 정리했습니다.
-        </li>
-        <li>
-          <a href="/guide/severance-to-freelance/">
-            <strong>퇴사하고 프리랜서 시작할 때, 퇴직금과 4대보험 정리</strong>
-          </a>
-          — 퇴직금은 IRP로 들어옵니다. 60일 이내 입금, 건강보험 임의계속가입처럼
-          놓치면 손해인 기한을 모아 정리했습니다.
-        </li>
-        <li>
-          <a href="/guide/national-pension-estimate/">
-            <strong>국민연금 예상수령액 조회 후, 수령 시점 정하기</strong>
-          </a>
-          — 언제 받기 시작하느냐로 평생 지급률이 70%~136%까지 갈립니다.
-          손익분기 나이를 도표로 계산해 정리했습니다.
-        </li>
-        <li>
-          <a href="/guide/retirement-fund/">
-            <strong>노후자금 얼마 있어야 하나, 직접 계산하는 법</strong>
-          </a>
-          — "○억 필요"는 가정이 다르면 무의미합니다. 국가승인통계 생활비에서
-          연금을 뺀 부족분을 구조도로 계산합니다.
-        </li>
-      </ul>
+        <aside class="home-aside">
+          <div class="aside-box">
+            <p class="aside-title">새로 올라온 글</p>
+            <ul class="recent-list">
+              {
+                recentCards.map(({ link, color }) => (
+                  <li>
+                    <a href={link.href} style={`--cm:${color.mark}`}>
+                      <span class="recent-dot" aria-hidden="true" />
+                      {link.title}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+          <div class="aside-cta">
+            <p class="aside-cta-title">계산기부터 써보세요</p>
+            <p class="aside-cta-text">
+              계약금액을 넣으면 3.3% 실수령액이 바로 나옵니다.
+            </p>
+            <a class="btn" href="/freelancer-33/">3.3% 계산기 열기</a>
+          </div>
+        </aside>
+      </div>
+
+      <div class="ad-slot" data-ad="home-bottom"></div>
     </main>
     <SiteFooter />
   </body>
