@@ -39,7 +39,7 @@ const { title, description } = Astro.props;
     <SiteHeader />
     <main class="guide-main">
       <article class="guide-body">
-        <ArticleThumb path={Astro.url.pathname} />
+        <ArticleThumb path={Astro.url.pathname} title={title} />
         <slot />
         <Disclaimer variant="guide" />
       </article>

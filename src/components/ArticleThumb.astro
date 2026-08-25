@@ -2,20 +2,19 @@
 /**
  * 가이드 글 상단 브랜드 썸네일(배너).
  *
- * 스톡 사진 대신, 클러스터 색 + 주제 아이콘(워터마크) + 포켓 ₩ 마크(CI)로
- * 통일된 그래픽을 만든다. 요청 0(인라인 SVG), 라이선스 무관, 주제별로
- * 통일돼 브랜드가 각인된다. 경로가 클러스터에 없으면 렌더하지 않는다.
- *
- * 제목은 넣지 않는다 — 바로 아래 h1과 중복되지 않게, 홈 카드에서도
- * 재사용할 수 있게 한다.
+ * 스톡 사진 대신, 클러스터 색 + 주제 아이콘(워터마크, Tabler) + 포켓 ₩
+ * 마크(CI) + 글 제목으로 통일된 그래픽을 만든다. 요청 0(인라인 SVG),
+ * 라이선스 무관(MIT), 주제별로 통일돼 브랜드가 각인된다. 경로가
+ * 클러스터에 없으면 렌더하지 않는다.
  */
 import { thumbFor } from "../data/clusters";
 import { icons } from "../data/icons";
 
 interface Props {
   path: string;
+  title: string;
 }
-const { path } = Astro.props;
+const { path, title } = Astro.props;
 const t = thumbFor(path);
 const iconInner = t ? icons[t.icon] : "";
 ---
@@ -25,12 +24,14 @@ const iconInner = t ? icons[t.icon] : "";
     <div
       class="article-thumb"
       style={`--tb:${t.color.bg};--tw:${t.color.wm};--ti:${t.color.ink};--tm:${t.color.mark}`}
-      aria-hidden="true"
     >
-      <svg class="thumb-wm" viewBox="0 0 24 24" set:html={iconInner} />
-      <div class="thumb-head">
-        <span class="thumb-mark">₩</span>
-        <span class="thumb-cluster">{t.clusterTitle}</span>
+      <svg class="thumb-wm" viewBox="0 0 24 24" aria-hidden="true" set:html={iconInner} />
+      <div class="thumb-body">
+        <span class="thumb-tag">
+          <span class="thumb-mark" aria-hidden="true">₩</span>
+          {t.clusterTitle}
+        </span>
+        <p class="thumb-title">{title}</p>
       </div>
     </div>
   )
