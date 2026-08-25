@@ -14,6 +14,7 @@
   --bg: #ffffff;
   --accent-bg: #f5f7fa;
   --measure: 68ch;
+  --wide: 72rem; /* 홈·사이트 크롬(헤더/푸터)용 넓은 폭. 읽기 글은 --measure 유지 */
 
   /* 도표 색 — 손실(감액)/기준/이득(가산) 세 방향을 색으로 구분한다.
      경쟁 사이트들이 스크린샷·숫자표만 쓰는 자리에서 이 사이트는
@@ -1003,7 +1004,7 @@ details[open] summary {
 
 /* 사이트 공통 마스트헤드 / 푸터 */
 .site-header {
-  max-width: var(--measure);
+  max-width: var(--wide);
   margin: 0 auto;
   padding: 1.1rem 1.25rem;
   display: flex;
@@ -1064,7 +1065,7 @@ details[open] summary {
 }
 
 .site-footer {
-  max-width: var(--measure);
+  max-width: var(--wide);
   margin: 4rem auto 0;
   padding: 1.5rem 1.25rem 3rem;
   border-top: 1px solid var(--rule);
@@ -1295,7 +1296,7 @@ details[open] summary {
 
 /* ── 홈(블로그형 2단) ──────────────────────────────────────── */
 .home {
-  max-width: calc(68ch + 2.5rem + 15rem);
+  max-width: var(--wide);
 }
 .home-h {
   font-size: 1.375rem;
