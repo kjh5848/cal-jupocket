@@ -1309,6 +1309,33 @@ details[open] summary {
   border-radius: 16px;
   padding: 2.25rem 1.75rem;
   margin: 0.5rem 0 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: center;
+}
+.home-hero-art img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+.cluster-banner-img {
+  width: 100%;
+  height: 116px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+  margin: 0 0 0.85rem;
+}
+@media (min-width: 48rem) {
+  .home-hero {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 2.25rem;
+    padding: 2.5rem 2.25rem;
+  }
 }
 .home-hero h1 {
   margin: 0 0 0.6rem;
@@ -1514,4 +1541,14 @@ details[open] summary {
     position: sticky;
     top: 1.5rem;
   }
+}
+
+/* 계산기 페이지 상단 배너 사진 */
+.calc-banner-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+  margin: 0.25rem 0 1.5rem;
 }

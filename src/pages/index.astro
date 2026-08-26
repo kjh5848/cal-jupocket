@@ -48,14 +48,26 @@ const recentCards = recent
     <SiteHeader />
     <main class="home">
       <section class="home-hero">
-        <h1>프리랜서 세금, 계산부터 판단까지</h1>
-        <p>
-          3.3% 원천징수·부가세·국민연금 보험료를 바로 계산하고, 종합소득세와
-          노후까지 주제별 가이드로 정리했습니다.
-        </p>
-        <p class="actions">
-          <a class="btn" href="#tools">계산기 바로가기</a>
-        </p>
+        <div class="home-hero-text">
+          <h1>프리랜서 세금, 계산부터 판단까지</h1>
+          <p>
+            3.3% 원천징수·부가세·국민연금 보험료를 바로 계산하고, 종합소득세와
+            노후까지 주제별 가이드로 정리했습니다.
+          </p>
+          <p class="actions">
+            <a class="btn" href="#tools">계산기 바로가기</a>
+          </p>
+        </div>
+        <div class="home-hero-art">
+          <img
+            src="/photos/hero.webp"
+            alt=""
+            width="940"
+            height="627"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </div>
       </section>
 
       <section id="tools" aria-labelledby="tools-h">
@@ -87,6 +99,15 @@ const recentCards = recent
           {
             sections.map((s) => (
               <section class="cluster-block" aria-label={s.title}>
+                <img
+                  class="cluster-banner-img"
+                  src={`/photos/banner-${s.id}.webp`}
+                  alt=""
+                  width="940"
+                  height="360"
+                  loading="lazy"
+                  decoding="async"
+                />
                 <p
                   class="cluster-heading"
                   style={`--cm:${s.color.mark};--ci:${s.color.ink};--cb:${s.color.bg}`}
