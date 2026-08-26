@@ -15,6 +15,7 @@
   --accent-bg: #f5f7fa;
   --measure: 68ch;
   --wide: 72rem; /* 홈·사이트 크롬(헤더/푸터)용 넓은 폭. 읽기 글은 --measure 유지 */
+  --img-outline: rgba(0, 0, 0, 0.1); /* 이미지 가장자리 아웃라인(라이트) */
 
   /* 도표 색 — 손실(감액)/기준/이득(가산) 세 방향을 색으로 구분한다.
      경쟁 사이트들이 스크린샷·숫자표만 쓰는 자리에서 이 사이트는
@@ -36,6 +37,7 @@
     --chart-loss: #e08a4c;
     --chart-base: #6fb3ff;
     --chart-gain: #4cc38a;
+    --img-outline: rgba(255, 255, 255, 0.12); /* 다크에선 흰색 저투명 */
   }
 }
 
@@ -1314,20 +1316,33 @@ details[open] summary {
   gap: 1.5rem;
   align-items: center;
 }
-.home-hero-art img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
+/* 사진 프레임 — 아웃라인 + 어두운 UI에 녹이는 하단 스크림 + 크롭 위치 보정 */
+.photo-frame {
+  position: relative;
+  overflow: hidden;
   border-radius: 12px;
-  display: block;
+  outline: 1px solid var(--img-outline);
+  outline-offset: -1px;
 }
-.cluster-banner-img {
-  width: 100%;
-  height: 116px;
-  object-fit: cover;
-  border-radius: 12px;
+.photo-frame img {
   display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%; /* 인물 얼굴이 위쪽에 있어 상단 쪽을 남긴다 */
+}
+.photo-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.22), transparent 48%);
+  pointer-events: none;
+}
+.home-hero-art {
+  aspect-ratio: 3 / 2;
+}
+.cluster-banner {
+  height: 120px;
   margin: 0 0 0.85rem;
 }
 @media (min-width: 48rem) {
@@ -1544,11 +1559,8 @@ details[open] summary {
 }
 
 /* 계산기 페이지 상단 배너 사진 */
-.calc-banner-img {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
+.calc-banner {
+  height: 190px;
   border-radius: 14px;
-  display: block;
   margin: 0.25rem 0 1.5rem;
 }
