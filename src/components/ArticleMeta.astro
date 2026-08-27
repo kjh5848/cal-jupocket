@@ -1,0 +1,24 @@
+---
+/**
+ * 가이드 글 상단 메타 — 클러스터 태그 + 기준 날짜.
+ *
+ * 블로그 편집형 레퍼런스의 "제목 아래 #태그·작성일" 패턴. 태그는 별도
+ * 필드 없이 clusters의 클러스터명을 재사용한다. 날짜는 글이 참조하는
+ * 원문 확인일(rates verifiedOn)을 그대로 넘겨 받는다 — 가짜 최신화 금지.
+ */
+import { thumbFor } from "../data/clusters";
+
+interface Props {
+  path: string;
+  updated: string; // YYYY-MM-DD
+}
+const { path, updated } = Astro.props;
+const t = thumbFor(path);
+---
+
+<p class="article-meta">
+  {t && <span class="meta-tag">#{t.clusterTitle}</span>}
+  <span class="meta-date">
+    <time datetime={updated}>{updated}</time> 기준
+  </span>
+</p>

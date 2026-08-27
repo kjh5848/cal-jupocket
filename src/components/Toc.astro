@@ -1,0 +1,64 @@
+---
+/**
+ * 목차(TOC) — 본문 <h2>를 클라이언트에서 스캔해 생성한다.
+ * (Astro는 slot 내용을 빌드 시 못 읽으므로 클라이언트 생성이 정답)
+ *
+ * variant="side"  → 데스크톱 사이드바용 sticky nav
+ * variant="inline"→ 모바일 본문 상단 접이식 details
+ * 둘 다 .toc-list를 가지며, 아래 스크립트가 모든 .toc-list를 채운다.
+ * h2가 없으면 컨테이너는 계속 hidden.
+ */
+interface Props {
+  variant?: "inline" | "side";
+}
+const { variant = "side" } = Astro.props;
+---
+
+{
+  variant === "inline" ? (
+    <details class="toc toc-inline" hidden>
+      <summary>목차</summary>
+      <ol class="toc-list" />
+    </details>
+  ) : (
+    <nav class="toc toc-side" aria-label="목차" hidden>
+      <p class="toc-title">목차</p>
+      <ol class="toc-list" />
+    </nav>
+  )
+}
+
+<script>
+  (function () {
+    const body = document.querySelector(".guide-body");
+    const lists = Array.from(document.querySelectorAll<HTMLElement>(".toc-list"));
+    if (!body || !lists.length) return;
+    const hs = Array.from(body.querySelectorAll("h2"));
+    if (!hs.length) return;
+
+    const slug = (t: string) =>
+      (t.trim().toLowerCase().replace(/[^0-9a-z가-힣]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50) || "sec");
+
+    const seen: Record<string, number> = {};
+    const items = hs.map((h) => {
+      let id = h.id || slug(h.textContent || "");
+      if (seen[id]) id = id + "-" + ++seen[id];
+      else seen[id] = 1;
+      h.id = id;
+      return { id, text: (h.textContent || "").trim() };
+    });
+
+    lists.forEach((list) => {
+      list.textContent = "";
+      items.forEach((it) => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = "#" + it.id;
+        a.textContent = it.text;
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+    });
+    document.querySelectorAll(".toc").forEach((el) => el.removeAttribute("hidden"));
+  })();
+</script>

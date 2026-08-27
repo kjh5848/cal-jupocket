@@ -19,14 +19,20 @@ import SiteFooter from "../components/SiteFooter.astro";
 import Disclaimer from "../components/Disclaimer.astro";
 import RelatedContent from "../components/RelatedContent.astro";
 import ArticleThumb from "../components/ArticleThumb.astro";
+import ArticleMeta from "../components/ArticleMeta.astro";
+import ShareButtons from "../components/ShareButtons.astro";
+import Toc from "../components/Toc.astro";
 import "../styles/global.css";
 
 interface Props {
   title: string;
   description: string;
+  /** 원문 확인일(YYYY-MM-DD). 상단 메타의 "기준" 날짜로 표시 */
+  updated: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, updated } = Astro.props;
+const path = Astro.url.pathname;
 ---
 
 <html lang="ko">
@@ -39,11 +45,17 @@ const { title, description } = Astro.props;
     <SiteHeader />
     <main class="guide-main">
       <article class="guide-body">
-        <ArticleThumb path={Astro.url.pathname} title={title} />
+        <ArticleThumb path={path} title={title} />
+        <ArticleMeta path={path} updated={updated} />
+        <ShareButtons title={title} />
+        <Toc variant="inline" />
         <slot />
         <Disclaimer variant="guide" />
       </article>
-      <RelatedContent path={Astro.url.pathname} />
+      <div class="guide-side">
+        <Toc variant="side" />
+        <RelatedContent path={path} />
+      </div>
     </main>
     <SiteFooter />
   </body>
