@@ -62,6 +62,10 @@ body {
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 한국어는 띄어쓰기 단위로만 줄바꿈(단어 중간 끊김 방지). 긴 토큰(URL 등)은
+     overflow-wrap으로 예외 허용 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 p {
@@ -363,6 +367,7 @@ details[open] summary {
 /* 모드 전환 세그먼트 컨트롤 (계약금액 ↔ 실수령액 등) */
 .segmented {
   display: inline-flex;
+  max-width: 100%;
   padding: 0.25rem;
   background: var(--accent-bg);
   border-radius: 999px;
@@ -379,7 +384,22 @@ details[open] summary {
   font: inherit;
   font-weight: 600;
   font-size: 0.9375rem;
+  white-space: nowrap;
   cursor: pointer;
+}
+
+/* 좁은 화면: 탭이 3개여도 폭에 맞게 균등 분할(넘침 방지) */
+@media (max-width: 28rem) {
+  .segmented {
+    display: flex;
+    width: 100%;
+  }
+  .segmented button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.55rem 0.4rem;
+    font-size: 0.875rem;
+  }
 }
 
 .segmented button:hover {
