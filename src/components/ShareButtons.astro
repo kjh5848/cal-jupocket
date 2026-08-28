@@ -38,28 +38,56 @@ const fbHref = `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`;
     const title = box.dataset.shareTitle || document.title;
     const nativeBtn = document.getElementById("share-native");
     const copyBtn = document.getElementById("share-copy");
-    const copyLabel = document.getElementById("share-copy-label");
+    const copyLabel = document.getElementById("share-copy-label") as
+      | (HTMLElement & { _t?: number })
+      | null;
 
-    if (!(navigator as any).share) nativeBtn?.setAttribute("hidden", "");
+    if (!navigator.share) nativeBtn?.setAttribute("hidden", "");
+
+    function flash(msg: string) {
+      if (!copyLabel) return;
+      if (!copyLabel.dataset.base) copyLabel.dataset.base = copyLabel.textContent || "";
+      copyLabel.textContent = msg;
+      clearTimeout(copyLabel._t);
+      copyLabel._t = window.setTimeout(() => {
+        copyLabel.textContent = copyLabel.dataset.base || "링크 복사";
+      }, 1600);
+    }
+
+    async function copyLink() {
+      const url = location.href;
+      try {
+        await navigator.clipboard.writeText(url);
+        flash("복사됨 ✓");
+        return true;
+      } catch {
+        try {
+          const ta = document.createElement("textarea");
+          ta.value = url;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          flash(ok ? "복사됨 ✓" : "복사 실패");
+          return ok;
+        } catch {
+          flash("복사 실패");
+          return false;
+        }
+      }
+    }
+
+    copyBtn?.addEventListener("click", copyLink);
 
     nativeBtn?.addEventListener("click", async () => {
       try {
-        await (navigator as any).share({ title, url: location.href });
-      } catch {
-        /* 취소/미지원 무시 */
-      }
-    });
-
-    copyBtn?.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(location.href);
-        if (copyLabel) {
-          const prev = copyLabel.textContent;
-          copyLabel.textContent = "복사됨";
-          setTimeout(() => (copyLabel.textContent = prev), 1600);
-        }
-      } catch {
-        /* 무시 */
+        await navigator.share({ title, url: location.href });
+      } catch (e) {
+        if (e instanceof Error && e.name === "AbortError") return;
+        copyLink();
       }
     });
   }
