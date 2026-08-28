@@ -89,16 +89,6 @@ const recentCards = recent
           {
             sections.map((s) => (
               <section class="cluster-block" aria-label={s.title}>
-                <div class="photo-frame cluster-banner">
-                  <img
-                    src={`/photos/banner-${s.id}.webp`}
-                    alt=""
-                    width="940"
-                    height="360"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
                 <p
                   class="cluster-heading"
                   style={`--cm:${s.color.mark};--ci:${s.color.ink};--cb:${s.color.bg}`}
