@@ -2,6 +2,6 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 export default defineConfig({
-  site: "https://cal.jupocket.com",
+  site: "https://jupocket.com",
   integrations: [sitemap()],
 });

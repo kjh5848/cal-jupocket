@@ -59,7 +59,7 @@ function buildCard() {
       ["원천징수액(3.3%)", formatWon(lastResult.withholding)],
       ["실수령액", formatWon(lastResult.net)],
     ],
-    footer: "cal.jupocket.com",
+    footer: "jupocket.com",
   });
 }
 
@@ -102,7 +102,7 @@ btnDownload.addEventListener("click", () => {
 });
 
 btnShare.addEventListener("click", async () => {
-  await shareCard(buildCard(), "3.3% 원천징수 계산 결과 - cal.jupocket.com");
+  await shareCard(buildCard(), "3.3% 원천징수 계산 결과 - jupocket.com");
 });
 
 btnCopy.addEventListener("click", async () => {

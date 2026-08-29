@@ -121,7 +121,7 @@ function buildCard() {
       [`원천징수액(${rateLabel()})`, formatWon(lastResult.withholding)],
       ["실수령액", formatWon(lastResult.net)],
     ],
-    footer: "cal.jupocket.com",
+    footer: "jupocket.com",
   });
 }
 
@@ -158,7 +158,7 @@ btnDownload.addEventListener("click", () => {
 btnShare.addEventListener("click", async () => {
   await shareCard(
     buildCard(),
-    `원천징수(${rateLabel()}) 계산 결과 - cal.jupocket.com`,
+    `원천징수(${rateLabel()}) 계산 결과 - jupocket.com`,
   );
 });
 

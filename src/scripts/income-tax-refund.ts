@@ -102,7 +102,7 @@ function buildCard() {
       ["결정세액", formatWon(lastResult.computedTax)],
       ["기납부세액(3.3%)", formatWon(lastResult.prepaid)],
     ],
-    footer: "cal.jupocket.com",
+    footer: "jupocket.com",
   });
 }
 
@@ -144,7 +144,7 @@ btnShare.addEventListener("click", async () => {
   const statusLabel = lastResult.refund >= 0 ? "환급 예상액" : "추가납부 예상액";
   await shareCard(
     buildCard(),
-    `종합소득세 ${statusLabel} ${formatWon(Math.abs(lastResult.refund))} - cal.jupocket.com`,
+    `종합소득세 ${statusLabel} ${formatWon(Math.abs(lastResult.refund))} - jupocket.com`,
   );
 });
 

@@ -108,7 +108,7 @@ function buildCard() {
   return renderCard({
     title: lastTitle,
     lines: lastLines,
-    footer: "cal.jupocket.com",
+    footer: "jupocket.com",
   });
 }
 
@@ -139,7 +139,7 @@ btnDownload.addEventListener("click", () => {
 });
 
 btnShare.addEventListener("click", async () => {
-  await shareCard(buildCard(), "부가세 계산 결과 - cal.jupocket.com");
+  await shareCard(buildCard(), "부가세 계산 결과 - jupocket.com");
 });
 
 btnCopy.addEventListener("click", async () => {

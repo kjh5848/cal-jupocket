@@ -51,7 +51,7 @@ function buildCard() {
   return renderCard({
     title: "국민연금 보험료 (지역가입자)",
     lines: lastLines,
-    footer: "cal.jupocket.com",
+    footer: "jupocket.com",
   });
 }
 
@@ -77,7 +77,7 @@ btnDownload.addEventListener("click", () => {
 });
 
 btnShare.addEventListener("click", async () => {
-  await shareCard(buildCard(), "국민연금 보험료 계산 결과 - cal.jupocket.com");
+  await shareCard(buildCard(), "국민연금 보험료 계산 결과 - jupocket.com");
 });
 
 btnCopy.addEventListener("click", async () => {
