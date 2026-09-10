@@ -1,46 +1,43 @@
 ---
 /**
- * 주포켓 마크를 동전처럼 세운 3D 표현.
+ * 주포켓 마크를 3D 로 세운 표현. 받침 원 없이 마크만 크게 보여준다.
  *
  * three.js 를 쓰지 않는다. 이 자리는 인스타에서 넘어온 사람이 모바일에서
  * 처음 보는 화면이라 150KB 짜리 런타임을 얹을 이유가 없다. CSS transform
- * 은 0KB 에 GPU 가속이고, 우리가 필요한 "물체처럼 보이기"에는 충분하다.
+ * 은 추가 JS 0KB 에 GPU 가속이고, 필요한 만큼은 충분히 나온다.
  *
- * 계속 돌리지 않는다. 링크를 눌러야 하는 화면에서 배경이 쉬지 않고 움직이면
- * 시선을 뺏는다. 등장할 때 한 번 돌고 멈춘 뒤, 만졌을 때만 기울어진다.
+ * 계속 돌리지 않는다. 링크를 눌러야 하는 화면에서 로고가 쉬지 않고 움직이면
+ * 정작 찾아야 할 번호에서 시선을 뺏는다. 등장할 때 한 번 돌고 멈춘 뒤,
+ * 만졌을 때만 살짝 기울어진다.
  *
- * prefers-reduced-motion 이 켜져 있으면 등장 회전과 기울기를 모두 끈다 —
- * 전정기관 문제가 있는 사람에게 회전은 실제로 불편을 준다.
+ * prefers-reduced-motion 이면 회전과 기울기를 모두 끈다 — 전정기관 문제가
+ * 있는 사람에게 회전은 실제로 불편을 준다.
  */
 import BrandMark from "./BrandMark.astro";
 
 interface Props {
-  /** 지름(px). */
+  /** 마크 가로 크기(px). */
   size?: number;
-  /** 마크 크기. 기본은 지름의 절반쯤. */
-  mark?: number;
 }
-const { size = 76, mark = Math.round(size * 0.52) } = Astro.props;
+const { size = 104 } = Astro.props;
+const height = Math.round((size * 34) / 44);
 ---
 
-<span
-  class="coin"
-  style={`--size:${size}px`}
-  aria-hidden="true"
->
+<span class="coin" style={`--w:${size}px;--h:${height}px`} aria-hidden="true">
   <span class="coin-inner">
-    <span class="coin-face coin-front"><BrandMark size={mark} /></span>
-    <span class="coin-face coin-back"><BrandMark size={mark} /></span>
+    <span class="coin-face"><BrandMark size={size} tight /></span>
+    <span class="coin-face coin-back"><BrandMark size={size} tight /></span>
   </span>
 </span>
 
 <style>
   .coin {
     display: inline-block;
-    width: var(--size);
-    height: var(--size);
+    width: var(--w);
+    height: var(--h);
     /* 원근이 있어야 회전이 평면 찌그러짐이 아니라 두께로 읽힌다. */
-    perspective: 520px;
+    perspective: 620px;
+    color: var(--brand);
   }
 
   .coin-inner {
@@ -49,10 +46,8 @@ const { size = 76, mark = Math.round(size * 0.52) } = Astro.props;
     width: 100%;
     height: 100%;
     transform-style: preserve-3d;
-    /* 등장 회전이 끝난 자세를 기본값으로 둔다. */
     transform: rotateY(0deg);
-    transition:
-      transform 420ms cubic-bezier(0.2, 0.7, 0.3, 1);
+    transition: transform 420ms cubic-bezier(0.2, 0.7, 0.3, 1);
     animation: coin-in 900ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
   }
 
@@ -62,21 +57,14 @@ const { size = 76, mark = Math.round(size * 0.52) } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    background: var(--brand);
-    color: #fff;
     backface-visibility: hidden;
-    /* 가장자리 안쪽 밝은 테 — 금속 원반처럼 두께를 암시한다. */
-    box-shadow:
-      inset 0 2px 0 rgb(255 255 255 / 0.22),
-      inset 0 -3px 6px rgb(0 0 0 / 0.18);
   }
+  /* 뒷면은 빛이 덜 드는 쪽 — 넘어올 때 앞뒤가 구분된다. */
   .coin-back {
     transform: rotateY(180deg);
-    filter: brightness(0.88);
+    opacity: 0.72;
   }
 
-  /* 만졌을 때만 기울어진다. 각도는 작게 — 물체감만 주면 된다. */
   .coin:hover .coin-inner,
   .coin:focus-visible .coin-inner {
     transform: rotateY(-16deg) rotateX(8deg);

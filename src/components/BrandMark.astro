@@ -4,24 +4,35 @@
  *
  * 같은 그림이 헤더·파비콘·카드 아트보드·OG 이미지에 따로 그려져 있었고,
  * 그래서 허브에는 주머니 없이 ₩ 글자만 들어가 있었다. 웹에서 쓰는 곳은
- * 전부 이 컴포넌트를 쓴다. (파비콘과 OG 는 SVG 파일·문자열이라 별도지만
- * 좌표는 여기와 같은 64 격자를 쓴다.)
+ * 전부 이 컴포넌트를 쓴다.
  *
  * 색은 currentColor 를 따른다 — 감싸는 쪽에서 color 만 정하면 된다.
  */
 interface Props {
-  /** 픽셀 크기. 정사각이다. */
+  /** 가로 크기(px). */
   size?: number;
+  /**
+   * 여백을 걷어낸 viewBox 를 쓴다.
+   *
+   * 그림은 64 격자 안에서 y 24~54 에만 있어서 위쪽 37.5% 가 비어 있다.
+   * 헤더처럼 작게 쓸 때는 티가 안 나지만 크게 키우면 마크가 아래로
+   * 가라앉아 보인다. 크게 쓰는 자리에서는 이걸 켠다.
+   */
+  tight?: boolean;
   class?: string;
 }
-const { size = 28, class: cls = "" } = Astro.props;
+const { size = 28, tight = false, class: cls = "" } = Astro.props;
+
+// 실측 경계 x 12~52, y 24~54 에 선 굵기(3.5)의 절반씩 여유를 준다.
+const VIEW = tight ? "10 22 44 34" : "0 0 64 64";
+const ratio = tight ? 34 / 44 : 1;
 ---
 
 <svg
   class={cls}
-  viewBox="0 0 64 64"
+  viewBox={VIEW}
   width={size}
-  height={size}
+  height={Math.round(size * ratio)}
   aria-hidden="true"
   fill="none"
   stroke="currentColor"
