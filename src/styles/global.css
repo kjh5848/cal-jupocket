@@ -1811,3 +1811,23 @@ details[open] summary {
   margin-top: 3.25rem;
   padding-top: 1.75rem;
 }
+
+/*
+ * 질감 배경 — 위쪽에 브랜드색을 깔고 그 위에 미세한 알갱이를 덮는다.
+ * 알갱이는 SVG feTurbulence 를 데이터 URI 로 넣는다: 외부 요청 0,
+ * 타일이라 용량도 거의 없고, 색이 토큰에서 오므로 다크에서도 같은
+ * 공식이 그대로 돈다.
+ *
+ * 훑어보는 화면(홈·링크 허브)에만 쓴다. 긴 글을 읽는 화면에서는
+ * 본문 뒤에 질감이 깔리면 눈이 빨리 피로해진다.
+ */
+.bg-texture {
+  background-color: var(--surface-2);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E"),
+    radial-gradient(135% 72% at 50% -6%, var(--brand-wash) 0%, var(--surface-2) 72%);
+  background-repeat: repeat, no-repeat;
+  background-size: 160px 160px, 100% 100%;
+  background-attachment: fixed, scroll;
+  min-height: 100vh;
+}
