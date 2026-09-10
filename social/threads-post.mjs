@@ -9,6 +9,9 @@
  * 전부 검증된다. 게시하지 않은 컨테이너는 그냥 만료되므로 밖으로 나가는
  * 영향이 0이다. 실제 게시는 --publish 를 명시해야만 일어난다.
  *
+ * 본문에 링크를 달면 도달이 줄어든다. 그래서 링크·프로필 안내는 본문이
+ * 아니라 첫 답글로 보낸다(frontmatter 의 reply). 본문은 내용만 담는다.
+ *
  * 토큰 갱신도 여기서 한다. 장기 토큰은 24시간 이상 됐고 아직 안 죽었을 때만
  * 연장할 수 있고, 60일 방치하면 영영 못 살린다. 갱신을 별도 스케줄러로
  * 빼면 비밀값 쓰기 권한이 있는 인프라가 필요해지므로, 글 올릴 때 겸사
@@ -23,11 +26,14 @@ import { readEnv, updateEnv, requireEnv } from "./env.mjs";
 import {
   parsePost,
   resolveImage,
+  resolveImages,
   resolveLink,
   textLength,
   parseArgs,
   TEXT_WARN,
   TEXT_HARD,
+  CAROUSEL_MIN,
+  CAROUSEL_MAX,
 } from "./parse.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -37,6 +43,8 @@ const LEDGER = join(HERE, "posted.json");
 const API = "https://graph.threads.net/v1.0";
 /** 문서 권장: 컨테이너 생성 후 게시까지 평균 30초 대기. */
 const PUBLISH_DELAY_MS = 30_000;
+/** 답글은 본문보다 가볍다. 짧게 기다린다. */
+const REPLY_DELAY_MS = 8_000;
 
 const { publish: doPublish, file: pickFile, error: argError } = parseArgs(
   process.argv.slice(2),
@@ -66,6 +74,15 @@ async function callJson(url, init) {
   return body;
 }
 
+const post = (path, params) =>
+  callJson(`${API}/${path}`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(params),
+  });
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 /** 토큰이 24시간 이상 됐으면 60일 더 연장하고 .env 에 다시 쓴다. */
 async function refreshTokenIfDue(token) {
   const at = env.THREADS_TOKEN_REFRESHED_AT
@@ -94,6 +111,18 @@ async function refreshTokenIfDue(token) {
   }
 }
 
+/** 이미지가 실제로 공개돼 있는지 먼저 본다 — Threads 가 못 받아오면 실패한다. */
+async function assertReachable(urls) {
+  for (const u of urls) {
+    const head = await fetch(u, { method: "HEAD" });
+    if (!head.ok) {
+      console.error(`\n✖ 이미지 접근 불가 (${head.status}): ${u}\n`);
+      process.exit(1);
+    }
+  }
+  console.log(`· 이미지 ${urls.length}장 확인 ✓`);
+}
+
 const ledger = existsSync(LEDGER) ? JSON.parse(readFileSync(LEDGER, "utf8")) : [];
 const posted = new Set(ledger.map((e) => e.file));
 
@@ -116,8 +145,10 @@ if (!pickFile && posted.has(file)) {
 }
 
 const { meta, text } = parsePost(readFileSync(join(QUEUE_DIR, file), "utf8"));
-const imageUrl = resolveImage(meta.image);
+const images = resolveImages(meta);
+const single = images.length === 0 ? resolveImage(meta.image) : null;
 const linkAttachment = resolveLink(meta);
+const reply = meta.reply ?? null;
 const len = textLength(text);
 
 if (!text) {
@@ -133,61 +164,85 @@ if (len > TEXT_WARN) {
     `⚠ 본문 ${len}자 — 상한(${TEXT_HARD}자)에 근접. 한글/이모지 계산 방식이 문서상 모호하니 거절되면 줄이세요.`,
   );
 }
-if (meta.image && meta.link) {
-  console.warn("⚠ 링크 카드는 텍스트 전용 글에만 붙습니다 — image가 있어 link는 무시합니다.");
+if (images.length === 1) {
+  console.error(
+    `\n✖ 캐러셀은 ${CAROUSEL_MIN}장 이상이어야 합니다. 한 장이면 image: 로 쓰세요.\n`,
+  );
+  process.exit(1);
+}
+if (images.length > CAROUSEL_MAX) {
+  console.error(`\n✖ 캐러셀은 ${CAROUSEL_MAX}장까지입니다 (지금 ${images.length}장).\n`);
+  process.exit(1);
+}
+if (reply && textLength(reply) > TEXT_HARD) {
+  console.error(`\n✖ 답글 ${textLength(reply)}자 — 상한 ${TEXT_HARD}자를 넘습니다.\n`);
+  process.exit(1);
 }
 
-console.log(`\n▶ ${file}${imageUrl ? "  (이미지 포함)" : ""}`);
+const kind = images.length ? `캐러셀 ${images.length}장` : single ? "이미지" : "텍스트";
+console.log(`\n▶ ${file}  (${kind})`);
 console.log("─".repeat(56));
 console.log(text);
 console.log("─".repeat(56));
-if (imageUrl) console.log(`이미지: ${imageUrl}`);
+for (const u of images) console.log(`  이미지: ${u}`);
+if (single) console.log(`이미지: ${single}`);
 if (linkAttachment) console.log(`링크 카드: ${linkAttachment}`);
+if (reply) console.log(`답글: ${reply}`);
 console.log(`${len}자\n`);
 
 const token = await refreshTokenIfDue(env.THREADS_ACCESS_TOKEN);
 const userId = env.THREADS_USER_ID;
 
-// Threads가 이미지를 못 받아와 실패하기 전에 우리가 먼저 확인한다.
-if (imageUrl) {
-  const head = await fetch(imageUrl, { method: "HEAD" });
-  if (!head.ok) {
-    console.error(`\n✖ 이미지 URL이 공개 접근 불가 (${head.status}): ${imageUrl}\n`);
-    process.exit(1);
-  }
-  console.log(`· 이미지 확인 ✓ (${head.headers.get("content-type")})`);
-}
+if (images.length) await assertReachable(images);
+else if (single) await assertReachable([single]);
 
 console.log("· 컨테이너 생성 중…");
-const params = new URLSearchParams({
-  media_type: imageUrl ? "IMAGE" : "TEXT",
-  text,
-  access_token: token,
-});
-if (imageUrl) params.set("image_url", imageUrl);
-if (linkAttachment) params.set("link_attachment", linkAttachment);
+let containerId;
 
-const container = await callJson(`${API}/${userId}/threads`, {
-  method: "POST",
-  headers: { "content-type": "application/x-www-form-urlencoded" },
-  body: params,
-});
-console.log(`· 컨테이너 ✓ id=${container.id}`);
+if (images.length) {
+  // 캐러셀: 낱장 컨테이너를 먼저 만들고, 그 id 들을 children 으로 묶는다.
+  const children = [];
+  for (const [i, url] of images.entries()) {
+    const item = await post(`${userId}/threads`, {
+      media_type: "IMAGE",
+      image_url: url,
+      is_carousel_item: "true",
+      access_token: token,
+    });
+    children.push(item.id);
+    console.log(`  · ${i + 1}/${images.length} ✓`);
+  }
+  const carousel = await post(`${userId}/threads`, {
+    media_type: "CAROUSEL",
+    children: children.join(","),
+    text,
+    access_token: token,
+  });
+  containerId = carousel.id;
+} else {
+  const params = {
+    media_type: single ? "IMAGE" : "TEXT",
+    text,
+    access_token: token,
+  };
+  if (single) params.image_url = single;
+  if (linkAttachment) params.link_attachment = linkAttachment;
+  const c = await post(`${userId}/threads`, params);
+  containerId = c.id;
+}
+console.log(`· 컨테이너 ✓ id=${containerId}`);
 
 if (!doPublish) {
   console.log("\n드라이런 종료 — 실제 게시하지 않았습니다. (컨테이너는 두면 만료됩니다)");
   console.log("실제로 올리려면 --publish 를 붙여 다시 실행하세요.\n");
 } else {
-  // process.exit() 로 일찍 끊지 않고 분기로 감싼다 — 진행 중인 fetch 핸들이
-  // 남은 채 종료하면 Windows 의 libuv 가 어설션으로 시끄럽게 군다.
   console.log(`· 게시 전 ${PUBLISH_DELAY_MS / 1000}초 대기 (문서 권장)…`);
-  await new Promise((r) => setTimeout(r, PUBLISH_DELAY_MS));
+  await sleep(PUBLISH_DELAY_MS);
 
   console.log("· 게시 중…");
-  const published = await callJson(`${API}/${userId}/threads_publish`, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ creation_id: container.id, access_token: token }),
+  const published = await post(`${userId}/threads_publish`, {
+    creation_id: containerId,
+    access_token: token,
   });
 
   let permalink = null;
@@ -201,7 +256,32 @@ if (!doPublish) {
     // permalink 조회 실패는 게시 성공에 영향이 없다.
   }
 
-  ledger.push({ file, id: published.id, permalink, at: new Date().toISOString() });
+  // 링크·프로필 안내는 본문이 아니라 답글로 — 본문에 링크를 달면 도달이 준다.
+  let replyId = null;
+  if (reply) {
+    console.log(`· 답글 준비 ${REPLY_DELAY_MS / 1000}초 대기…`);
+    await sleep(REPLY_DELAY_MS);
+    const rc = await post(`${userId}/threads`, {
+      media_type: "TEXT",
+      text: reply,
+      reply_to_id: published.id,
+      access_token: token,
+    });
+    const rp = await post(`${userId}/threads_publish`, {
+      creation_id: rc.id,
+      access_token: token,
+    });
+    replyId = rp.id;
+    console.log(`· 답글 ✓ id=${replyId}`);
+  }
+
+  ledger.push({
+    file,
+    id: published.id,
+    replyId,
+    permalink,
+    at: new Date().toISOString(),
+  });
   writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + "\n", "utf8");
 
   console.log(`\n✓ 게시 완료  id=${published.id}`);

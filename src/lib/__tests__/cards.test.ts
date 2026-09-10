@@ -11,6 +11,7 @@ import { compute } from "../pension-premium";
 import { parseMarkup } from "../card-markup";
 import { entryByNo } from "../../data/linkhub";
 import rates from "../../rates/pension-premium-2026.json";
+import vat from "../../rates/vat-2026.json";
 
 /** "28만 5,000원" 같은 표기를 숫자로 되돌린다. */
 function parseWon(label: string): number {
@@ -116,5 +117,46 @@ describe("카드가 지목하는 번호", () => {
     const cta = cardSetBySlug("pension-2026")!.cards.find((c) => c.kind === "cta");
     if (cta?.kind !== "cta") throw new Error("cta 없음");
     expect(entryByNo(cta.refNo!)?.href).toBe("/guide/pension-premium-2026/");
+  });
+});
+
+describe("vat-filing 카드", () => {
+  const set = cardSetBySlug("vat-filing");
+  const all = JSON.stringify(set);
+
+  it("세트가 존재한다", () => {
+    expect(set).toBeDefined();
+  });
+
+  it("납부의무 면제 기준이 rates 값과 같다", () => {
+    const man = vat.simplified.paymentExemptionUnder / 10000;
+    expect(all).toContain(`${man.toLocaleString()}만원`);
+  });
+
+  it("현황신고 기한이 rates 값과 같다", () => {
+    // "다음 해 2월 10일" 에서 날짜 부분만 대조한다.
+    expect(vat.closingReportDeadline).toContain("2월 10일");
+    expect(all).toContain("2월 10일");
+  });
+
+  it("확정신고 기간이 rates 값과 같다", () => {
+    expect(vat.filing.period2.finalReturn).toContain("1월 1일~1월 25일");
+    expect(all).toContain("1월 1일~25일");
+    expect(vat.filing.period1.finalReturn).toContain("7월 1일~7월 25일");
+    expect(all).toContain("7월 1일~25일");
+  });
+
+  it("예정고지 달이 rates 값과 같다", () => {
+    expect(all).toContain(vat.filing.prepaymentMonths);
+  });
+
+  it("예정고지 비율을 퍼센트로 옮겨 적었다", () => {
+    expect(all).toContain(`${vat.filing.prepaymentRate * 100}%`);
+  });
+
+  it("12번 글(부가세 신고)을 가리킨다", () => {
+    const cta = set!.cards.find((c) => c.kind === "cta");
+    if (cta?.kind !== "cta") throw new Error("cta 없음");
+    expect(entryByNo(cta.refNo!)?.href).toBe("/guide/vat-filing/");
   });
 });

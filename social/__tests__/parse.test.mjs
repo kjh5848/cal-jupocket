@@ -16,6 +16,7 @@ import {
   textLength,
   TEXT_HARD,
   parseArgs,
+  resolveImages,
   SITE,
 } from "../parse.mjs";
 
@@ -141,5 +142,54 @@ describe("parseArgs", () => {
       file: null,
       error: null,
     });
+  });
+});
+
+describe("frontmatter 목록", () => {
+  const withImages = [
+    "---",
+    "images:",
+    "  - /cards/pension-2026/1.jpg",
+    "  - /cards/pension-2026/2.jpg",
+    "reply: 프로필 링크에서 13번 글",
+    "---",
+    "본문입니다.",
+  ].join("\n");
+
+  it("목록을 배열로 모은다", () => {
+    const { meta } = parsePost(withImages);
+    expect(meta.images).toEqual([
+      "/cards/pension-2026/1.jpg",
+      "/cards/pension-2026/2.jpg",
+    ]);
+  });
+
+  it("목록 다음의 일반 키도 읽는다", () => {
+    expect(parsePost(withImages).meta.reply).toBe("프로필 링크에서 13번 글");
+  });
+
+  it("본문을 잃지 않는다", () => {
+    expect(parsePost(withImages).text).toBe("본문입니다.");
+  });
+
+  it("목록이 없으면 images 는 없다", () => {
+    expect(parsePost("---\nlink: x\n---\n본문").meta.images).toBeUndefined();
+  });
+});
+
+describe("resolveImages", () => {
+  it("상대경로를 전부 절대 URL로 바꾼다", () => {
+    const meta = { images: ["/a.jpg", "b.jpg"] };
+    expect(resolveImages(meta)).toEqual([`${SITE}/a.jpg`, `${SITE}/b.jpg`]);
+  });
+
+  it("images 가 없으면 빈 배열", () => {
+    expect(resolveImages({})).toEqual([]);
+  });
+});
+
+describe("resolveLink — 이미지가 여러 장일 때", () => {
+  it("캐러셀에는 링크 카드를 붙이지 않는다", () => {
+    expect(resolveLink({ link: "https://a.com/", images: ["/a.jpg"] })).toBeNull();
   });
 });

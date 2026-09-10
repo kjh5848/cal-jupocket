@@ -1,5 +1,5 @@
 ---
-link: https://jupocket.com/guide/vat-freelancer/
+reply: 내가 과세인지 면세인지 확인하는 기준을 정리해 뒀어요. 프로필 링크에서 10번 글입니다 → jupocket.com
 ---
 3.3% 떼고 받는 프리랜서인데
 부가세 신고하라는 말에 당황하셨나요?

@@ -119,6 +119,62 @@ export const cardSets: CardSet[] = [
       },
     ],
   },
+  {
+    slug: "vat-filing",
+    cluster: "vat",
+    link: "https://jupocket.com/guide/vat-filing/",
+    cards: [
+      {
+        kind: "list",
+        badge: "부가세 신고",
+        title: "놓치면 안 되는 날짜",
+        items: [
+          {
+            text: "2기 확정신고 [[1월 1일~25일]]",
+            detail: "작년 하반기(7~12월) 매출분",
+          },
+          {
+            text: "1기 확정신고 [[7월 1일~25일]]",
+            detail: "올해 상반기(1~6월) 매출분",
+          },
+          {
+            text: "예정고지 납부 4월·10월",
+            detail: "직전 과세기간 납부세액의 50%",
+          },
+          {
+            text: "면세사업자는 {{2월 10일}}",
+            detail: "부가세 신고가 아니라 사업장현황신고",
+          },
+        ],
+        footnote: "개인사업자 기준 · 출처 국세청",
+      },
+      {
+        kind: "table",
+        title: "유형별 신고 시기",
+        sub: "개인사업자 기준",
+        rows: [
+          { label: "일반과세", value: "1월·7월" },
+          { label: "간이과세", value: "1월", tone: "mark" },
+          { label: "면세사업자", value: "2월 10일", tone: "warn" },
+        ],
+        footnote: "간이과세는 연 1회 · 면세는 사업장현황신고 · 출처 국세청",
+      },
+      {
+        kind: "note",
+        badge: "놓치기 쉬운 것",
+        title: "4,800만원 미만이면",
+        body:
+          "간이과세자는 해당 과세기간 공급대가가 4,800만원 미만이면 [[납부의무가 면제]]됩니다.\n\n다만 면제되는 건 '납부'이지 '신고'가 아닙니다. 신고는 그대로 해야 합니다.\n\n이 둘을 헷갈려서 {{신고까지 건너뛰면}} 문제가 됩니다.",
+        footnote: "출처 국세청 · 부가가치세법 제69조",
+      },
+      {
+        kind: "cta",
+        title: "내 부가세는\n얼마일까?",
+        sub: "공급가액만 넣으면 바로 나와요",
+        refNo: 12,
+      },
+    ],
+  },
 ];
 
 export function cardSetBySlug(slug: string): CardSet | undefined {
