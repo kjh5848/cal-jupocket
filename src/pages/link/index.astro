@@ -1,0 +1,219 @@
+---
+/**
+ * 프로필 링크 허브 — 인스타 바이오에서 들어오는 사람이 착지하는 곳.
+ *
+ * 카드가 "더 자세한 내용은 13번 글" 이라고 지목하면, 여기서 13번을 눈으로
+ * 찾아 누른다. 그래서 번호가 가장 크고 먼저 읽혀야 하고, 목록은 스크롤
+ * 한 번에 훑을 수 있어야 한다. 번호는 data/linkhub.ts 가 고정한다.
+ *
+ * 검색용 페이지가 아니라 유입 착지용이라 noindex다 — 홈과 브랜드 검색어를
+ * 두고 경쟁시킬 이유가 없다. follow는 남겨 링크는 타고 가게 둔다.
+ *
+ * 광고는 넣지 않는다. 인스타에서 막 넘어온 사람이 처음 보는 화면이라
+ * 글로 넘어가는 걸 방해하지 않는 편이 낫다.
+ */
+import BaseHead from "../../components/BaseHead.astro";
+import ClarityHead from "../../components/ClarityHead.astro";
+import { calcEntries, guideEntries } from "../../data/linkhub";
+import { clusters, clusterColor } from "../../data/clusters";
+import "../../styles/global.css";
+
+const title = "주포켓 — 계산기와 글 전체 목록";
+const description =
+  "3.3% 원천징수·부가세·국민연금 계산기와 세금 가이드 전체를 번호로 정리했습니다. 인스타에서 본 번호를 여기서 찾으세요.";
+
+/** 번호 배지를 주제 색으로 물들여 목록을 눈으로 훑기 쉽게 한다. */
+const clusterOf = new Map<string, string>();
+for (const c of clusters) {
+  for (const l of c.links) clusterOf.set(l.href, c.id);
+}
+const tint = (href: string) =>
+  clusterColor[clusterOf.get(href) ?? "income"]?.mark ?? "#0b5cad";
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <meta name="robots" content="noindex, follow" />
+    <ClarityHead />
+  </head>
+  <body>
+    <main class="hub">
+      <header class="hub-head">
+        <span class="hub-mark" aria-hidden="true">₩</span>
+        <h1>주포켓</h1>
+        <p>세금 계산기와 가이드. 직장인·사장님·프리랜서 누구나.</p>
+      </header>
+
+      <p class="hub-hint">
+        인스타에서 본 <strong>번호</strong>를 아래에서 찾으세요.
+      </p>
+
+      <section aria-labelledby="hub-calc">
+        <h2 id="hub-calc" class="hub-h">계산기</h2>
+        <ul class="hub-list">
+          {
+            calcEntries.map((e) => (
+              <li>
+                <a href={e.href} style={`--tint:${tint(e.href)}`}>
+                  <span class="hub-no">{e.no}</span>
+                  <span class="hub-label">{e.label}</span>
+                  <span class="hub-go" aria-hidden="true">›</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section aria-labelledby="hub-guide">
+        <h2 id="hub-guide" class="hub-h">읽을거리</h2>
+        <ul class="hub-list">
+          {
+            guideEntries.map((e) => (
+              <li>
+                <a href={e.href} style={`--tint:${tint(e.href)}`}>
+                  <span class="hub-no">{e.no}</span>
+                  <span class="hub-label">{e.label}</span>
+                  <span class="hub-go" aria-hidden="true">›</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <p class="hub-foot">
+        <a href="/">주포켓 홈</a> · 세금 수치는 국세청·국민연금공단 원문을
+        확인해 씁니다.
+      </p>
+    </main>
+  </body>
+</html>
+
+<style>
+  .hub {
+    max-width: 30rem;
+    margin: 0 auto;
+    padding: 2rem 1.1rem 3rem;
+  }
+
+  .hub-head {
+    text-align: center;
+    margin-bottom: 1.6rem;
+  }
+  .hub-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 17px;
+    background: #0b5cad;
+    color: #fff;
+    font-size: 1.9rem;
+    font-weight: 700;
+  }
+  .hub-head h1 {
+    font-size: 1.5rem;
+    margin: 0.7rem 0 0.3rem;
+  }
+  .hub-head p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+
+  .hub-hint {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--muted);
+    background: var(--accent-bg);
+    border-radius: 10px;
+    padding: 0.65rem 0.9rem;
+    margin: 0 0 1.8rem;
+  }
+
+  .hub-h {
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 0.6rem;
+    border: 0;
+    padding: 0;
+  }
+
+  .hub-list {
+    list-style: none;
+    margin: 0 0 1.8rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .hub-list a {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    /* 손가락으로 누르는 목록이라 세로 여백을 넉넉히 준다. */
+    min-height: 60px;
+    padding: 0.6rem 0.9rem;
+    border-radius: 13px;
+    background: var(--accent-bg);
+    box-shadow:
+      0 1px 2px rgb(16 24 40 / 0.05),
+      0 1px 3px rgb(16 24 40 / 0.08);
+    color: var(--text);
+    text-decoration: none;
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  .hub-list a:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 2px rgb(16 24 40 / 0.06);
+  }
+
+  .hub-no {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--tint);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .hub-label {
+    flex: 1;
+    font-size: 0.97rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .hub-go {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+
+  .hub-foot {
+    margin: 2rem 0 0;
+    text-align: center;
+    font-size: 0.84rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .hub-list a {
+      box-shadow: none;
+      border: 1px solid var(--rule);
+    }
+  }
+</style>

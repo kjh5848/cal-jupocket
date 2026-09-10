@@ -42,6 +42,9 @@ export interface CtaCard {
   kind: "cta";
   title: string;
   sub: string;
+  /** 프로필 링크 허브(data/linkhub.ts)의 번호. 카드가 "13번 글"이라고
+   *  지목하면 독자가 허브에서 그 번호를 찾는다. 번호는 고정이라 안전하다. */
+  refNo?: number;
 }
 
 export type Card = ListCard | TableCard | NoteCard | CtaCard;
@@ -111,7 +114,8 @@ export const cardSets: CardSet[] = [
       {
         kind: "cta",
         title: "표에 없는\n내 소득은?",
-        sub: "금액만 넣으면 바로 나와요\n3.3% · 부가세 · 연금 계산기 전부 무료",
+        sub: "계산기에 금액만 넣으면 바로 나와요",
+        refNo: 13,
       },
     ],
   },

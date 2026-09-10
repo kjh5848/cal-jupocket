@@ -92,6 +92,11 @@ const accent = clusterColor[cluster].mark;
         <div class="mark">₩</div>
         <h2 class="h-cta">{card.title}</h2>
         <p class="cta-sub">{card.sub}</p>
+        {card.refNo && (
+          <p class="refno">
+            더 자세한 내용은 <strong>{card.refNo}번 글</strong>
+          </p>
+        )}
         <p class="pill">프로필 링크 jupocket.com</p>
       </div>
     )
@@ -294,8 +299,19 @@ const accent = clusterColor[cluster].mark;
     color: rgba(255, 255, 255, 0.86);
     white-space: pre-line;
   }
+  .refno {
+    margin: 30px 0 0;
+    font-size: 38px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.16);
+    padding: 16px 30px;
+    border-radius: 14px;
+  }
+  .refno strong {
+    font-weight: 800;
+  }
   .pill {
-    margin: 56px 0 0;
+    margin: 26px 0 0;
     background: #ffe97a;
     color: #12161c;
     font-size: 40px;

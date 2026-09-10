@@ -9,6 +9,7 @@ import { describe, it, expect } from "vitest";
 import { cardSets, cardSetBySlug } from "../../data/cards";
 import { compute } from "../pension-premium";
 import { parseMarkup } from "../card-markup";
+import { entryByNo } from "../../data/linkhub";
 import rates from "../../rates/pension-premium-2026.json";
 
 /** "28만 5,000원" 같은 표기를 숫자로 되돌린다. */
@@ -98,5 +99,22 @@ describe("모든 카드 세트 공통", () => {
         expect(rendered).not.toMatch(/\[\[|\]\]|\{\{|\}\}/);
       }
     }
+  });
+});
+
+describe("카드가 지목하는 번호", () => {
+  it("refNo 는 허브에 실제로 있는 번호다 — 없는 번호를 가리키면 독자가 길을 잃는다", () => {
+    for (const set of cardSets) {
+      for (const card of set.cards) {
+        if (card.kind !== "cta" || card.refNo === undefined) continue;
+        expect(entryByNo(card.refNo)).toBeDefined();
+      }
+    }
+  });
+
+  it("pension-2026 은 국민연금 보험료 글을 가리킨다", () => {
+    const cta = cardSetBySlug("pension-2026")!.cards.find((c) => c.kind === "cta");
+    if (cta?.kind !== "cta") throw new Error("cta 없음");
+    expect(entryByNo(cta.refNo!)?.href).toBe("/guide/pension-premium-2026/");
   });
 });
