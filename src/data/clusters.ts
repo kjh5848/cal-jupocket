@@ -143,3 +143,79 @@ export function thumbFor(path: string): {
     color: clusterColor[cluster.id],
   };
 }
+
+export interface NextRead {
+  link: ClusterLink;
+  clusterId: string;
+  clusterTitle: string;
+  /** 지금 글과 다른 주제인가 — 화면에서 "다른 주제" 배지로 구분한다. */
+  crossCluster: boolean;
+}
+
+/**
+ * 본문을 다 읽은 사람에게 다음에 볼 것을 고른다.
+ *
+ * 사이드바(relatedFor)는 같은 클러스터를 전부 나열하지만, 글 끝에서 필요한
+ * 건 "다음 한 걸음"이다. 그래서 세 자리를 정해두고 채운다.
+ *
+ *   1. 같은 주제의 다음 글  — 순환하므로 마지막 글에서도 비지 않는다
+ *   2. 같은 주제의 계산기    — 읽고 나면 자기 숫자를 넣어보게 된다
+ *   3. 다른 주제의 글        — 이게 없으면 독자가 한 클러스터에 갇힌다
+ *
+ * 무작위를 쓰지 않는다. 글마다 다른 곳을 가리키되 같은 글은 늘 같은 곳을
+ * 가리켜야 테스트할 수 있고, 정적 빌드에서도 결과가 흔들리지 않는다.
+ */
+export function nextReads(path: string, limit = 3): NextRead[] {
+  const here = norm(path);
+  const ci = clusters.findIndex((c) =>
+    c.links.some((l) => norm(l.href) === here),
+  );
+  if (ci < 0) return [];
+
+  const cluster = clusters[ci];
+  const idx = cluster.links.findIndex((l) => norm(l.href) === here);
+
+  const out: NextRead[] = [];
+  const seen = new Set<string>([here]);
+  const push = (link: ClusterLink, c: Cluster) => {
+    const key = norm(link.href);
+    if (seen.has(key) || out.length >= limit) return;
+    seen.add(key);
+    out.push({
+      link,
+      clusterId: c.id,
+      clusterTitle: c.title,
+      crossCluster: c.id !== cluster.id,
+    });
+  };
+
+  // 1) 같은 주제의 다음 글 (순환)
+  const guides = cluster.links.filter((l) => l.kind === "guide");
+  if (guides.length > 0) {
+    const gi = guides.findIndex((l) => norm(l.href) === here);
+    for (let k = 1; k <= guides.length && out.length < 1; k++) {
+      push(guides[(gi + k + guides.length) % guides.length], cluster);
+    }
+  }
+
+  // 2) 같은 주제의 계산기
+  const calc = cluster.links.find((l) => l.kind === "calc");
+  if (calc) push(calc, cluster);
+
+  // 3) 다른 주제의 글 — 시작점을 현재 위치로 돌려 글마다 달라지게 한다
+  for (let k = 1; k < clusters.length && out.length < limit; k++) {
+    const other = clusters[(ci + k) % clusters.length];
+    const pick = other.links.filter((l) => l.kind === "guide");
+    if (pick.length > 0) {
+      push(pick[(Math.max(idx, 0) + k) % pick.length], other);
+    }
+  }
+
+  // 4) 그래도 모자라면 같은 주제에서 채운다
+  for (const l of cluster.links) {
+    if (out.length >= limit) break;
+    push(l, cluster);
+  }
+
+  return out;
+}

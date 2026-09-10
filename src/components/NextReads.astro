@@ -1,0 +1,148 @@
+---
+/**
+ * 본문 끝 "이어서 볼 글" — 독자를 다음 글로 넘기는 장치.
+ *
+ * 사이드바(RelatedContent)는 데스크톱에서 옆에 붙어 있지만 모바일에서는
+ * 면책조항 아래 맨 끝으로 밀린다. 다 읽은 직후 눈이 닿는 자리에 한 번 더
+ * 둔다. 고르는 규칙은 data/clusters.ts 의 nextReads 가 갖는다.
+ *
+ * 허브 번호(linkhub)를 같이 보여준다 — 인스타 카드가 "13번 글"이라고
+ * 부르는 그 번호와 같은 번호라, 독자가 두 곳을 같은 체계로 읽게 된다.
+ */
+import { nextReads, clusterColor } from "../data/clusters";
+import { hubEntries } from "../data/linkhub";
+
+interface Props {
+  path: string;
+}
+const { path } = Astro.props;
+const picks = nextReads(path);
+
+const noByHref = new Map(hubEntries.map((e) => [e.href, e.no]));
+---
+
+{
+  picks.length > 0 && (
+    <nav class="next-reads" aria-labelledby="next-reads-h">
+      <p id="next-reads-h" class="nr-h">이어서 볼 글</p>
+      <ul class="nr-list">
+        {picks.map((p) => (
+          <li>
+            <a
+              href={p.link.href}
+              style={`--nr:${clusterColor[p.clusterId]?.mark ?? "#0b5cad"}`}
+            >
+              <span class="nr-top">
+                {noByHref.has(p.link.href) && (
+                  <span class="nr-no">{noByHref.get(p.link.href)}</span>
+                )}
+                {p.link.kind === "calc" && <span class="nr-tag">계산기</span>}
+                {p.crossCluster && <span class="nr-cross">{p.clusterTitle}</span>}
+              </span>
+              <span class="nr-title">{p.link.title}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .next-reads {
+    margin: 2.75rem 0 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .nr-h {
+    margin: 0 0 0.85rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .nr-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .nr-list a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    /* 손가락으로 누르는 카드라 세로 여백을 넉넉히 준다. */
+    min-height: 76px;
+    padding: 0.85rem 0.95rem;
+    border-radius: 12px;
+    background: var(--accent-bg);
+    border-left: 3px solid var(--nr);
+    color: var(--text);
+    text-decoration: none;
+    transition:
+      transform 0.12s ease,
+      background-color 0.12s ease;
+  }
+  .nr-list a:hover {
+    background: var(--bg);
+  }
+  .nr-list a:active {
+    transform: scale(0.985);
+  }
+
+  .nr-top {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .nr-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 0.35rem;
+    border-radius: 6px;
+    background: var(--nr);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .nr-tag,
+  .nr-cross {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 5px;
+    letter-spacing: 0.01em;
+  }
+  .nr-tag {
+    background: var(--nr);
+    color: #fff;
+  }
+  .nr-cross {
+    border: 1px solid var(--rule);
+    color: var(--muted);
+  }
+
+  .nr-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 48rem) {
+    .nr-list {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
