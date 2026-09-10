@@ -5,12 +5,12 @@
  * currentColor를 써서 라이트/다크에 맞춰 색이 바뀐다. 파비콘은
  * public/favicon.svg(A안 채움형)로 분리한다.
  */
-import BrandMark from "./BrandMark.astro";
+import BrandCoin from "./BrandCoin.astro";
 ---
 
 <header class="site-header">
   <a href="/" class="brand" aria-label="주포켓 계산기 홈">
-    <BrandMark class="brand-mark" />
+    <BrandCoin size={38} animate={false} shadow={false} layers={3} />
   </a>
   <nav class="site-nav" aria-label="Primary">
     <a href="/privacy/">개인정보처리방침</a>

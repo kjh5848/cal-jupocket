@@ -22,18 +22,31 @@ import BrandMark from "./BrandMark.astro";
 interface Props {
   /** 마크 가로 크기(px). */
   size?: number;
+  /** 등장 회전. 헤더처럼 늘 떠 있는 자리에서는 끈다. */
+  animate?: boolean;
+  /** 바닥 그림자. 작게 쓸 때는 지저분해서 끈다. */
+  shadow?: boolean;
+  /** 두께 겹 수. 작게 쓰면 적게 쌓아야 뭉치지 않는다. */
+  layers?: number;
 }
-const { size = 124 } = Astro.props;
+const {
+  size = 124,
+  animate = true,
+  shadow = true,
+  layers = 7,
+} = Astro.props;
 const height = Math.round((size * 34) / 44);
-/** 두께를 만드는 겹 수. 많을수록 두꺼워 보이지만 DOM 도 늘어난다. */
-const LAYERS = 7;
 ---
 
-<span class="coin" style={`--w:${size}px;--h:${height}px`} aria-hidden="true">
+<span
+  class:list={["coin", { "is-still": !animate, "has-shadow": shadow }]}
+  style={`--w:${size}px;--h:${height}px`}
+  aria-hidden="true"
+>
   <span class="coin-stage">
     <span class="coin-inner">
       {
-        Array.from({ length: LAYERS }, (_, i) => (
+        Array.from({ length: layers }, (_, i) => (
           <span class="coin-layer" style={`--i:${i}`}>
             <BrandMark size={size} tight />
           </span>
@@ -42,7 +55,7 @@ const LAYERS = 7;
       <span class="coin-layer coin-front"><BrandMark size={size} tight /></span>
     </span>
   </span>
-  <span class="coin-shadow"></span>
+  {shadow && <span class="coin-shadow"></span>}
 </span>
 
 <style>
@@ -50,6 +63,11 @@ const LAYERS = 7;
     position: relative;
     display: inline-grid;
     place-items: center;
+    width: var(--w);
+    height: var(--h);
+  }
+  /* 그림자와 기울기가 삐져나갈 자리는 그림자를 쓸 때만 잡는다. */
+  .coin.has-shadow {
     width: calc(var(--w) * 1.4);
     height: calc(var(--h) * 1.7);
   }
@@ -116,6 +134,10 @@ const LAYERS = 7;
   .coin:hover .coin-shadow {
     width: calc(var(--w) * 0.56);
     opacity: 0.7;
+  }
+
+  .is-still .coin-inner {
+    animation: none;
   }
 
   @keyframes coin-in {
