@@ -69,9 +69,34 @@ async function callJson(url, init) {
     throw new Error(`${res.status} 응답이 JSON이 아님: ${text.slice(0, 300)}`);
   }
   if (!res.ok || body.error) {
-    throw new Error(`${res.status} ${body.error?.message ?? JSON.stringify(body)}`);
+    // Meta 는 message 만으로는 원인을 알기 어렵게 답할 때가 많다.
+    // error 객체를 통째로 남겨야 무엇이 잘못됐는지 추적할 수 있다.
+    const e = body.error ?? body;
+    throw new Error(`${res.status} ${e.message ?? ""} ${JSON.stringify(e)}`);
   }
   return body;
+}
+
+/**
+ * 낱장 컨테이너가 준비될 때까지 기다린다.
+ *
+ * 캐러셀로 묶기 전에 각 장이 FINISHED 여야 한다. 바로 되는 경우가
+ * 대부분이지만 이미지를 막 배포한 직후에는 Threads 가 아직 받아오는 중일
+ * 수 있고, 그때 묶으면 "Invalid parameter" 로 떨어진다.
+ */
+async function waitReady(id, token, tries = 10) {
+  for (let i = 0; i < tries; i++) {
+    const s = await callJson(
+      `${API}/${id}?` +
+        new URLSearchParams({ fields: "status,error_message", access_token: token }),
+    );
+    if (s.status === "FINISHED") return;
+    if (s.status === "ERROR") {
+      throw new Error(`컨테이너 ${id} 처리 실패: ${s.error_message ?? "(사유 없음)"}`);
+    }
+    await sleep(2000);
+  }
+  throw new Error(`컨테이너 ${id} 가 준비되지 않았습니다`);
 }
 
 const post = (path, params) =>
@@ -209,6 +234,7 @@ if (images.length) {
       is_carousel_item: "true",
       access_token: token,
     });
+    await waitReady(item.id, token);
     children.push(item.id);
     console.log(`  · ${i + 1}/${images.length} ✓`);
   }
