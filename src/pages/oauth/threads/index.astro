@@ -1,0 +1,107 @@
+---
+/**
+ * Threads OAuth 리다이렉트 수신 페이지 (일회성 유틸리티).
+ *
+ * Threads는 리다이렉트 URI로 HTTPS만 허용하고 localhost를 받지 않는다.
+ * 우리 도메인을 소유하고 있으므로 이 페이지를 App Dashboard의
+ * "Redirect Callback URL"로 등록하고, 인증 후 여기 표시되는 code를
+ * social/threads-auth.mjs 에 붙여넣는다.
+ *
+ * code는 쿼리스트링(?code=...)으로 오고 1시간 뒤 만료·1회용이다.
+ * (Threads가 URI 끝에 붙이는 #_ 은 프래그먼트라 서버로 오지 않는다.)
+ *
+ * 색인 금지 — noindex + 사이트맵 제외(astro.config.mjs filter) + 어디서도
+ * 링크하지 않는다.
+ */
+---
+
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Threads 인증 코드</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 1.5rem;
+        background: #f6f7f9;
+        color: #12161c;
+        font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+        word-break: keep-all;
+      }
+      .box {
+        width: min(100%, 40rem);
+        background: #fff;
+        border-radius: 14px;
+        padding: 1.75rem;
+        box-shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 8px 24px rgb(16 24 40 / 0.08);
+      }
+      h1 { font-size: 1.15rem; margin: 0 0 0.75rem; }
+      p { margin: 0 0 1rem; color: #4a5461; }
+      code {
+        display: block;
+        padding: 0.9rem 1rem;
+        background: #0f1720;
+        color: #e6f1fb;
+        border-radius: 10px;
+        font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+        word-break: break-all;
+        user-select: all;
+      }
+      button {
+        margin-top: 0.9rem;
+        padding: 0.7rem 1.1rem;
+        min-height: 44px;
+        border: 0;
+        border-radius: 10px;
+        background: #0b5cad;
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.12s ease, background-color 0.12s ease;
+      }
+      button:active { transform: scale(0.96); }
+      .err { color: #a3320f; }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <h1>Threads 인증 코드</h1>
+      <p id="hint">아래 코드를 복사해 터미널에 붙여넣으세요. 1시간 뒤 만료되고 한 번만 쓸 수 있습니다.</p>
+      <code id="code">…</code>
+      <button id="copy" type="button">코드 복사</button>
+    </div>
+
+    <script is:inline>
+      (function () {
+        var q = new URLSearchParams(location.search);
+        var code = q.get("code");
+        var error = q.get("error_description") || q.get("error");
+        var el = document.getElementById("code");
+        var hint = document.getElementById("hint");
+        var btn = document.getElementById("copy");
+
+        if (!code) {
+          el.textContent = error || "코드가 없습니다. 인증 URL로 다시 접속하세요.";
+          hint.className = "err";
+          hint.textContent = error ? "인증이 거부되었거나 실패했습니다." : "쿼리스트링에 code가 없습니다.";
+          btn.hidden = true;
+          return;
+        }
+
+        el.textContent = code;
+        btn.addEventListener("click", function () {
+          navigator.clipboard.writeText(code).then(
+            function () { btn.textContent = "복사됨 ✓"; },
+            function () { btn.textContent = "복사 실패 — 직접 선택하세요"; }
+          );
+        });
+      })();
+    </script>
+  </body>
+</html>

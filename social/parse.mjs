@@ -1,0 +1,44 @@
+/**
+ * 큐 파일(.md) 파서 — frontmatter + 본문.
+ *
+ * 게시 직전에 조용히 틀리면 곤란한 부분(본문이 잘리거나, 링크와 이미지가
+ * 동시에 붙거나, 상대경로가 절대 URL로 안 바뀌거나)이라 게시 코드에서
+ * 떼어내 테스트로 묶어둔다.
+ */
+
+export const SITE = "https://jupocket.com";
+/** Threads 문서상 500자. 한글·이모지 계산이 모호해 여유를 두고 경고한다. */
+export const TEXT_WARN = 450;
+export const TEXT_HARD = 500;
+
+/** frontmatter는 `key: value` 한 줄짜리만 받는다. 없으면 전부 본문. */
+export function parsePost(raw) {
+  const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if (!m) return { meta: {}, text: raw.trim() };
+  const meta = {};
+  for (const line of m[1].split(/\r?\n/)) {
+    const kv = line.match(/^\s*([a-z_]+)\s*:\s*(.*)$/);
+    if (kv) meta[kv[1]] = kv[2].trim().replace(/^["']|["']$/g, "");
+  }
+  return { meta, text: m[2].trim() };
+}
+
+/** 상대경로 이미지는 공개 URL로 바꾼다. 이미 절대 URL이면 그대로. */
+export function resolveImage(image) {
+  if (!image) return null;
+  if (image.startsWith("http")) return image;
+  return SITE + (image.startsWith("/") ? "" : "/") + image;
+}
+
+/**
+ * 링크 카드는 텍스트 전용 글에만 붙는다(문서). 이미지가 있으면 link는 버린다 —
+ * 둘 다 보내면 API가 거절하므로 여기서 미리 정리한다.
+ */
+export function resolveLink(meta) {
+  return !meta.image && meta.link ? meta.link : null;
+}
+
+/** 코드포인트 기준 길이. 이모지를 서러게이트 쌍으로 두 번 세지 않기 위해. */
+export function textLength(text) {
+  return [...text].length;
+}
