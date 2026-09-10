@@ -9,7 +9,9 @@
     "social:auth": "node social/threads-auth.mjs",
     "social:post": "node social/threads-post.mjs",
     "social:setup": "node social/threads-setup.mjs",
-    "og": "node social/render-og.mjs"
+    "og": "node social/render-og.mjs",
+    "ig:setup": "node social/ig-setup.mjs",
+    "ig:post": "node social/ig-post.mjs"
   },
   "dependencies": {
     "astro": "^7.0.0",

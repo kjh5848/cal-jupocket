@@ -136,3 +136,36 @@ image: /photos/calc-vat.webp             # 선택. 있으면 이미지 글이 �
 - 게시: 프로필당 24시간에 250건
 - 본문: 500자 (문서상 이모지는 UTF-8 바이트로 계산 — 450자 넘으면 경고한다)
 - 이미지: JPEG/PNG, 8MB, 가로 320~1440px
+
+---
+
+## 인스타그램
+
+같은 Meta 앱의 Instagram 이용 사례를 쓴다. 스레드와 큐(social/queue)를
+공유하되 기록은 따로 남긴다(ig-posted.json) — 같은 글을 두 플랫폼에 올리는
+게 정상이라 한쪽 기록으로 다른 쪽을 막으면 안 된다.
+
+### 준비 (완료된 것)
+- `@jupocket.money` 프로페셔널 계정 ✓
+- 앱 역할에 **Instagram 테스터** 지정 ✓
+- `instagram_business_basic`, `instagram_business_content_publish` 권한 ✓
+
+### 남은 것 — 토큰 발급
+App Dashboard > 이용 사례 > Instagram >
+**Instagram 로그인이 포함된 API 설정** > **2. 액세스 토큰 생성** > **계정 추가**
+
+인스타 로그인 승인이 필요해 계정 소유자가 직접 눌러야 한다. 발급된 토큰을
+`.env` 의 `IG_ACCESS_TOKEN` 에 넣고:
+
+```bash
+npm run ig:setup                # 토큰 확인 + user_id 저장
+npm run ig:post                 # 드라이런
+npm run ig:post -- --publish    # 게시
+```
+
+### 인스타에서 다른 점
+- **이미지가 필수**다. 텍스트 전용 큐 글은 자동으로 건너뛴다.
+- **JPEG 만** 받는다. 게시 전에 content-type 을 확인한다.
+- 캡션의 URL 은 클릭되지 않는다. 그래서 링크를 본문에서 빼는 스레드 전략이
+  여기서는 자동으로 성립하고, `reply` 문구가 캡션 끝에 붙는다.
+- 캐러셀은 2~20장, 첫 장 비율로 전부 잘린다.
