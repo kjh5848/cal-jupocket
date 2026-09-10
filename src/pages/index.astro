@@ -13,6 +13,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import { clusters, clusterColor, recent, linkByHref } from "../data/clusters";
 import { icons } from "../data/icons";
+import { liveSocials } from "../data/social";
 import "../styles/global.css";
 
 const title = "주포켓 — 세금 계산기 (프리랜서·자영업자·직장인)";
@@ -136,6 +137,27 @@ const recentCards = recent
               계약금액을 넣으면 3.3% 실수령액이 바로 나옵니다.
             </p>
             <a class="btn" href="/freelancer-33/">3.3% 계산기 열기</a>
+          </div>
+
+          <div class="aside-box">
+            <p class="aside-title">카드뉴스</p>
+            <p class="aside-social-text">
+              세금 한 편을 카드 몇 장으로 정리합니다.
+              {
+                liveSocials.length > 0 && (
+                  <>
+                    새 카드는{" "}
+                    {liveSocials.map((s) => (
+                      <a href={s.url} rel="me noopener" target="_blank">
+                        {s.label} {s.handle}
+                      </a>
+                    ))}
+                    에 먼저 올라옵니다.
+                  </>
+                )
+              }
+            </p>
+            <a class="aside-social-link" href="/cards/">카드뉴스 모아보기 →</a>
           </div>
         </aside>
       </div>

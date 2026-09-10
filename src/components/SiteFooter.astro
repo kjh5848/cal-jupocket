@@ -2,13 +2,26 @@
 /**
  * 사이트 공통 푸터. 모든 페이지 맨 아래에 같은 모양으로 들어간다.
  * 연도는 하드코딩하지 않고 빌드 시점 연도를 쓴다.
+ *
+ * 계정 링크는 data/social.ts 에서 온다. 아직 글이 없는 계정(live: false)은
+ * 여기 나오지 않는다 — 빈 계정으로 보내면 신뢰가 깎인다.
  */
+import { liveSocials } from "../data/social";
+
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
   <nav class="site-footer-nav" aria-label="Site">
+    <a href="/cards/">카드뉴스</a>
     <a href="/privacy/">개인정보처리방침</a>
+    {
+      liveSocials.map((s) => (
+        <a href={s.url} rel="me noopener" target="_blank">
+          {s.label}
+        </a>
+      ))
+    }
   </nav>
   <p class="site-footer-note">
     이 사이트의 계산 결과는 참고용 예상치이며 법적 효력이 없습니다. 정확한

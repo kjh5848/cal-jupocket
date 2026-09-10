@@ -1831,3 +1831,18 @@ details[open] summary {
   background-attachment: fixed, scroll;
   min-height: 100vh;
 }
+
+/* 홈 사이드바의 계정 안내 — 카드뉴스와 소셜을 한 덩어리로 묶는다. */
+.aside-social-text {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.aside-social-text a {
+  font-weight: 700;
+}
+.aside-social-link {
+  font-size: 0.9rem;
+  font-weight: 700;
+}

@@ -1,0 +1,163 @@
+---
+/**
+ * 카드뉴스 갤러리 — 인스타·스레드에 올린 카드를 사이트에서도 본다.
+ *
+ * 이미 뽑아둔 발행본 JPEG(public/cards/<slug>/<n>.jpg)를 그대로 쓴다.
+ * 아트보드를 다시 렌더하지 않는 이유는, 갤러리가 보여줘야 하는 것이
+ * "지금 디자인"이 아니라 "실제로 나간 그림"이기 때문이다.
+ *
+ * 아직 이미지를 뽑지 않은 세트는 목록에서 뺀다 — 깨진 이미지가 나가는 것보다
+ * 없는 편이 낫다.
+ */
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import BaseHead from "../../components/BaseHead.astro";
+import ClarityHead from "../../components/ClarityHead.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import { cardSets } from "../../data/cards";
+import { clusterColor } from "../../data/clusters";
+import { liveSocials } from "../../data/social";
+import "../../styles/global.css";
+
+const title = "카드뉴스 — 주포켓";
+const description =
+  "세금 계산기 주포켓이 인스타그램·스레드에 올린 카드뉴스 모음. 국민연금 보험료, 부가세 신고 일정 등을 한 장씩 정리했습니다.";
+
+const publicDir = new URL("../../../public/", import.meta.url);
+const has = (slug: string, n: number) =>
+  existsSync(fileURLToPath(new URL(`cards/${slug}/${n}.jpg`, publicDir)));
+
+const sets = cardSets
+  .map((s) => ({
+    set: s,
+    shots: s.cards.map((_, i) => i + 1).filter((n) => has(s.slug, n)),
+  }))
+  .filter((x) => x.shots.length > 0);
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main class="gallery">
+      <h1>카드뉴스</h1>
+      <p class="gallery-lead">
+        인스타그램·스레드에 올린 카드를 여기서도 볼 수 있습니다. 숫자는 전부
+        국세청·국민연금공단 원문을 확인해 씁니다.
+      </p>
+
+      {
+        sets.map(({ set, shots }) => (
+          <section class="gallery-set" aria-labelledby={`set-${set.slug}`}>
+            <div class="gallery-head">
+              <h2 id={`set-${set.slug}`}>{set.cards[0].kind === "list" ? set.cards[0].title : set.slug}</h2>
+              <a
+                class="gallery-more"
+                href={set.link}
+                style={`--cm:${clusterColor[set.cluster]?.mark}`}
+              >
+                자세히 읽기
+              </a>
+            </div>
+            <ul class="gallery-strip">
+              {shots.map((n) => (
+                <li>
+                  <img
+                    src={`/cards/${set.slug}/${n}.jpg`}
+                    alt={`${set.slug} 카드 ${n}`}
+                    width="1080"
+                    height="1350"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+
+      {
+        liveSocials.length > 0 && (
+          <p class="gallery-follow">
+            새 카드는 {liveSocials.map((s) => (
+              <a href={s.url} rel="me noopener" target="_blank">
+                {s.label} {s.handle}
+              </a>
+            ))}
+            에 먼저 올라옵니다.
+          </p>
+        )
+      }
+    </main>
+    <SiteFooter />
+  </body>
+</html>
+
+<style>
+  .gallery {
+    max-width: var(--wide);
+  }
+  .gallery-lead {
+    color: var(--muted);
+    max-width: var(--measure);
+  }
+
+  .gallery-set {
+    margin-top: var(--s-6);
+  }
+  .gallery-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+  .gallery-head h2 {
+    margin: 0;
+    border: 0;
+    padding: 0;
+    font-size: var(--t-xl);
+  }
+  .gallery-more {
+    font-size: var(--t-sm);
+    font-weight: 700;
+    color: var(--cm);
+    white-space: nowrap;
+  }
+
+  .gallery-strip {
+    list-style: none;
+    display: grid;
+    /* 카드는 4:5 세로라 좁은 화면에서 두 장, 넓으면 네 장까지 간다. */
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: var(--s-3);
+    margin: var(--s-3) 0 0;
+    padding: 0;
+  }
+  .gallery-strip img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--r-md);
+    border: 1px solid var(--img-outline);
+    background: var(--surface);
+  }
+
+  .gallery-follow {
+    margin-top: var(--s-7);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: var(--t-sm);
+  }
+  .gallery-follow a {
+    font-weight: 700;
+  }
+</style>
