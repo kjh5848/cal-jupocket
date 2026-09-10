@@ -9,17 +9,32 @@
     {
       "label": "국민연금공단 — 연금개혁 FAQ(보험료율 인상)",
       "url": "https://www.nps.or.kr/pnsinfo/ntpsklg/getOHAF0104M0.do"
+    },
+    {
+      "label": "국민연금공단 — 알기쉬운 국민연금(지역가입자·납부예외)",
+      "url": "https://www.nps.or.kr/pnsinfo/ntpsklg/getOHAF0021M0.do"
     }
   ],
-
   "rate": 0.095,
   "rateNote": "2026년 국민연금 보험료율 9.5%. 2026년부터 매년 0.5%p씩 8년간 단계적으로 인상되어 2033년 13%에 도달한다(2025년 연금개혁). 지역가입자는 인상분을 포함해 전액 본인이 부담한다.",
-
   "standardIncomeCeiling": 6590000,
   "standardIncomeFloor": 410000,
   "standardIncomePeriod": "2026.7.1~2027.6.30",
   "standardIncomeNote": "기준소득월액 상한 6,590,000원·하한 410,000원(2026.7.1~2027.6.30 적용). 신고소득이 이 범위를 벗어나면 상·하한으로 조정된다. 기준소득월액은 천원 미만을 절사한다.",
-
   "premiumRoundUnit": 10,
-  "premiumRoundNote": "연금보험료는 10원 미만을 절사한다."
+  "premiumRoundNote": "연금보험료는 10원 미만을 절사한다.",
+  "reform": {
+    "startYear": 2026,
+    "startRate": 0.095,
+    "stepPerYear": 0.005,
+    "years": 8,
+    "targetRate": 0.13,
+    "targetYear": 2033,
+    "note": "2025년 연금개혁. 2026년 9.5%부터 매년 0.5%p씩 8년간 올라 2033년 13%에 도달한다. 연도별 표는 이 값들로 계산해서 만든다 — 각 연도를 따로 확인한 것이 아니므로 하드코딩하지 않는다."
+  },
+  "exemption": {
+    "applyBy": "사유발생일의 다음 달 15일",
+    "countsTowardCoverage": false,
+    "note": "사업중단·휴직·실직·병역·학생·3개월 이상 입원 등으로 보험료를 납부할 수 없을 때 신청한다. 납부예외기간은 가입기간에 포함되지 않아 연금액이 그만큼 줄어든다(공단 원문, 2026-09-10 확인)."
+  }
 }

@@ -1,0 +1,267 @@
+---
+/**
+ * 2026년 국민연금 보험료 (지역가입자) — 금액·계산법·인상 스케줄·납부예외.
+ *
+ * 이 키워드의 SERP 상단은 공단과 언론 기사다. 공단은 "제도"를 설명하고
+ * 기사는 "인상됐다"까지만 쓴다. 둘 다 답하지 않는 것이 "그래서 내 소득이면
+ * 얼마이고, 못 낼 때는 어떻게 하나"다. 그 자리를 잡는다.
+ *
+ * 카드뉴스(data/cards.ts)가 이 글로 유입을 보낸다. 카드에는 요약과 표만
+ * 들어가고, 계산 근거·인상 스케줄·납부예외는 여기에만 있다.
+ *
+ * 숫자 출처: rates/pension-premium-2026.json (국민연금공단 원문 대조)
+ * 모든 금액은 lib/pension-premium.ts 로 계산한다 — 본문에 손으로 적지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import rates from "../../../rates/pension-premium-2026.json";
+import { compute, standardIncome } from "../../../lib/pension-premium";
+import { rateSchedule } from "../../../lib/pension-reform";
+
+const title = "2026년 국민연금 보험료, 지역가입자는 얼마 내나";
+const description =
+  "2026년 보험료율은 9.5%. 지역가입자는 전액 본인 부담입니다. 월소득별 보험료 금액, 기준소득월액 계산 3단계, 2033년까지의 인상 스케줄, 소득이 끊겼을 때 납부예외까지 국민연금공단 원문 기준으로 정리했습니다.";
+
+const ratePercent = rates.rate * 100;
+const halfPercent = ratePercent / 2;
+const ceil = rates.standardIncomeCeiling;
+const floor = rates.standardIncomeFloor;
+const ceilPremium = compute(ceil).monthly;
+const floorPremium = compute(floor).monthly;
+
+const fmt = (n: number) => n.toLocaleString("ko-KR");
+
+// 예시 — 딱 떨어지지 않는 금액이어야 절사가 눈에 보인다.
+const EX = 3_205_600;
+const exStd = standardIncome(EX);
+const exResult = compute(EX);
+const exRaw = exStd * rates.rate;
+
+const tableIncomes = [
+  1_000_000, 2_000_000, 3_000_000, 4_000_000, 5_000_000, 6_000_000, ceil,
+];
+
+const schedule = rateSchedule();
+const targetPercent = rates.reform.targetRate * 100;
+---
+
+<GuideLayout title={title} description={description} updated="2026-09-10">
+  <p>
+    2026년 국민연금 보험료율은 <strong>{ratePercent}%</strong>입니다. 직장인은
+    회사와 절반씩 나눠 내지만, 프리랜서·자영업자 같은 지역가입자는
+    <strong>전액 본인이 냅니다</strong>. 같은 요율이어도 체감이 두 배로 다른
+    이유가 여기 있습니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      내 소득으로 얼마인지 바로 보려면
+      <a href="/national-pension-premium/">국민연금 보험료 계산기</a>에 월소득만
+      넣으면 됩니다. 이 글은 그 숫자가 <em>어떻게</em> 나오는지와, 부담을 줄일
+      방법을 다룹니다.
+    </p>
+  </div>
+
+  <h2>지역가입자는 전액 본인 부담</h2>
+  <p>
+    직장가입자는 보험료를 회사와 근로자가 반씩 냅니다. 요율이 {ratePercent}%면
+    본인 부담은 절반인 {halfPercent}%입니다. 반면 지역가입자는 공단 설명대로
+    자신의 소득으로 기준소득월액을 신고하고, 그에 따른 보험료를 본인이 전액
+    납부합니다. (농어업인 국고보조 대상자는 예외입니다.)
+  </p>
+  <p>
+    그래서 회사를 그만두고 프리랜서로 전환하면 소득이 같아도 국민연금 부담액은
+    두 배가 됩니다. 퇴사 시점에 이 부분을 놓치는 경우가 많습니다 —
+    <a href="/guide/severance-to-freelance/">퇴사하고 프리랜서 시작할 때</a>에
+    함께 정리해 두었습니다.
+  </p>
+
+  <h2>보험료는 기준소득월액에서 나옵니다</h2>
+  <p>
+    보험료의 기준은 실제 소득이 아니라 <strong>기준소득월액</strong>입니다.
+    신고한 소득을 그대로 쓰는 게 아니라 두 번 손을 봅니다.
+  </p>
+  <ul>
+    <li><strong>천원 미만 절사</strong> — 신고소득에서 1,000원 아래를 버립니다.</li>
+    <li>
+      <strong>상·하한 적용</strong> — 하한 {fmt(floor)}원, 상한 {fmt(ceil)}원.
+      이 범위를 벗어나면 상한 또는 하한으로 조정됩니다.
+    </li>
+  </ul>
+  <p class="meta">
+    상·하한은 {rates.standardIncomePeriod} 적용 기준입니다. 매년 7월에
+    조정되므로 해가 바뀌면 이 금액도 달라집니다.
+  </p>
+
+  <h2>계산 3단계</h2>
+  <p>월소득을 {fmt(EX)}원으로 신고한 사람을 따라가 보겠습니다.</p>
+  <ol>
+    <li><strong>천원 미만 절사</strong> — {fmt(EX)}원 → {fmt(exStd)}원</li>
+    <li>
+      <strong>상·하한 확인</strong> — {fmt(exStd)}원은 하한 {fmt(floor)}원과
+      상한 {fmt(ceil)}원 사이라 그대로 씁니다.
+    </li>
+    <li>
+      <strong>요율 곱하고 10원 미만 절사</strong> — {fmt(exStd)}원 ×
+      {ratePercent}% = {fmt(exRaw)}원 →
+      <strong>{fmt(exResult.monthly)}원</strong>
+    </li>
+  </ol>
+  <p>
+    연간으로는 {fmt(exResult.annual)}원입니다. 절사가 두 번 들어가서 계산기 없이
+    어림하면 몇백 원씩 어긋납니다.
+  </p>
+
+  <h2>월소득별 보험료</h2>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>신고 월소득</th>
+          <th>기준소득월액</th>
+          <th>월 보험료</th>
+          <th>연 보험료</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          tableIncomes.map((income) => {
+            const r = compute(income);
+            return (
+              <tr>
+                <td>
+                  {fmt(income)}원{income === ceil ? " 이상" : ""}
+                </td>
+                <td>{fmt(r.standardIncome)}원</td>
+                <td>
+                  <strong>{fmt(r.monthly)}원</strong>
+                </td>
+                <td>{fmt(r.annual)}원</td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="meta">
+    지역가입자 전액 부담 기준 · 10원 미만 절사 · 출처 국민연금공단
+  </p>
+
+  <h2>상한 {fmt(ceil)}원이 뜻하는 것</h2>
+  <p>
+    기준소득월액 상한이 {fmt(ceil)}원이므로 그보다 많이 벌어도 보험료는 늘지
+    않습니다. 월 700만원을 벌든 1,500만원을 벌든 똑같이
+    <strong>{fmt(ceilPremium)}원</strong>입니다.
+  </p>
+  <p>
+    반대쪽에도 벽이 있습니다. 소득이 하한 {fmt(floor)}원보다 적어도 하한이
+    적용되어 월 {fmt(floorPremium)}원은 내야 합니다. 소득이 아주 적을 때 부담이
+    상대적으로 커지는 구간이 생기는 이유입니다.
+  </p>
+
+  <h2>요율은 {rates.reform.targetYear}년까지 매년 오릅니다</h2>
+  <p>
+    {ratePercent}%가 끝이 아닙니다. 2025년 연금개혁으로 2026년부터 매년 0.5%p씩
+    올라 {rates.reform.targetYear}년에 {targetPercent}%가 됩니다.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>연도</th>
+          <th>보험료율</th>
+          <th>월소득 300만원이면</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          schedule.map((s) => (
+            <tr>
+              <td>{s.year}년</td>
+              <td>{Math.round(s.rate * 1000) / 10}%</td>
+              <td>{fmt(Math.floor((3_000_000 * s.rate) / 10) * 10)}원</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="meta">
+    연도별 요율은 공단이 밝힌 인상 계획(2026년 {ratePercent}%에서 매년 0.5%p씩
+    {rates.reform.years}년간 인상, {rates.reform.targetYear}년 {targetPercent}%
+    도달)에서 계산한 값입니다. 상·하한은 매년 조정되므로 실제 금액은
+    달라집니다.
+  </p>
+
+  <h2>소득이 끊겼을 때 — 납부예외</h2>
+  <p>
+    사업을 중단했거나 실직해서 보험료를 낼 수 없으면 <strong>납부예외</strong>를
+    신청할 수 있습니다. 공단은 사업중단·휴직·실직, 병역의무 수행, 학생, 질병으로
+    3개월 이상 입원한 경우 등을 사유로 듭니다.
+  </p>
+  <ul>
+    <li><strong>신청 기한</strong> — {rates.exemption.applyBy}까지입니다.</li>
+    <li>
+      <strong>기간</strong> — 사유가 생긴 달부터 사유가 없어진 달까지 면제됩니다.
+    </li>
+  </ul>
+  <div class="callout warn">
+    <p>
+      ⚠️ 공짜가 아닙니다. 공단 원문 그대로 납부예외기간은 가입기간에 포함되지
+      않고, 연금급여를 산정할 때 그만큼 연금액이 줄어듭니다. 당장의 부담은 덜지만
+      나중에 받을 금액이 깎이는 거래입니다.
+    </p>
+  </div>
+  <p>
+    그래서 소득이 아예 없는 기간에만 쓰는 게 맞습니다. 소득이 줄었을 뿐이라면
+    신고소득을 실제에 맞게 조정하는 쪽이 가입기간을 지키면서 부담을 낮추는
+    방법입니다. 받을 금액이 얼마나 달라지는지는
+    <a href="/guide/national-pension-estimate/">예상수령액과 수령 시점</a>에서 볼
+    수 있습니다.
+  </p>
+
+  <h2>자주 묻는 것</h2>
+
+  <details>
+    <summary>직장에서 프리랜서로 바뀌면 보험료가 두 배가 되나요?</summary>
+    <p>
+      요율은 같지만 부담 주체가 달라집니다. 직장가입자일 때는 회사와 절반씩 나눠
+      {halfPercent}%만 본인이 냈고, 지역가입자는 {ratePercent}% 전액을 본인이
+      냅니다. 소득이 같다면 실제로 내는 돈은 두 배가 됩니다.
+    </p>
+  </details>
+
+  <details>
+    <summary>소득이 매달 다른데 어떻게 신고하나요?</summary>
+    <p>
+      지역가입자는 본인이 기준소득월액을 신고합니다. 소득이 크게 변했다면 공단에
+      변경 신고를 할 수 있습니다. 구체적 절차와 필요 서류는 공단(1355)이나
+      지사에서 확인하는 것이 정확합니다.
+    </p>
+  </details>
+
+  <details>
+    <summary>안 내고 버티면 어떻게 되나요?</summary>
+    <p>
+      국민연금은 의무가입이라 미납이 쌓이면 체납으로 처리됩니다. 다만 구체적인
+      연체금 산정 방식과 징수 절차는 이 글을 쓰면서 원문으로 확인하지 못해
+      단정하지 않겠습니다. 낼 수 없는 사정이라면 버티는 것보다 위의 납부예외를
+      신청하는 편이 가입기간 관리에도 유리합니다.
+    </p>
+  </details>
+
+  <details>
+    <summary>연금저축·IRP로 세금을 줄이면서 노후를 준비할 수 있나요?</summary>
+    <p>
+      국민연금과 별개로 세액공제를 받는 방법이 있습니다.
+      <a href="/guide/pension-savings-tax-credit/">연금저축·IRP 세액공제 한도</a>와
+      <a href="/guide/irp-account/">IRP 계좌</a>에 정리해 두었습니다.
+    </p>
+  </details>
+
+  <p class="meta">
+    수치 출처: 국민연금공단 — 기준소득월액 상·하한 조정 안내, 연금개혁 FAQ,
+    알기쉬운 국민연금(지역가입자·납부예외). {rates.verifiedOn} 및 2026-09-10
+    확인. 상·하한과 요율은 매년 바뀌므로 발행일 기준으로 읽어주세요.
+  </p>
+</GuideLayout>
