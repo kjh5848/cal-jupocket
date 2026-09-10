@@ -6,10 +6,12 @@
  * 면책조항 아래 맨 끝으로 밀린다. 다 읽은 직후 눈이 닿는 자리에 한 번 더
  * 둔다. 고르는 규칙은 data/clusters.ts 의 nextReads 가 갖는다.
  *
- * 허브 번호(linkhub)를 같이 보여준다 — 인스타 카드가 "13번 글"이라고
- * 부르는 그 번호와 같은 번호라, 독자가 두 곳을 같은 체계로 읽게 된다.
+ * 디자인은 카드가 아니라 목차다. 색 배지와 둥근 카드를 늘어놓으면 본문의
+ * 조용한 톤과 어긋나고 흔한 위젯처럼 보인다. 가는 선으로만 나누고 제목이
+ * 스스로 읽히게 두었다. 허브 번호는 책 목차의 쪽번호처럼 오른쪽에 작게
+ * 붙는다 — 인스타 카드가 "13번 글"이라 부르는 그 번호와 같다.
  */
-import { nextReads, clusterColor } from "../data/clusters";
+import { nextReads } from "../data/clusters";
 import { hubEntries } from "../data/linkhub";
 
 interface Props {
@@ -19,27 +21,30 @@ const { path } = Astro.props;
 const picks = nextReads(path);
 
 const noByHref = new Map(hubEntries.map((e) => [e.href, e.no]));
+
+/** 오른쪽에 붙는 한 마디 — 계산기이거나, 다른 주제이거나, 없거나. */
+function note(p: (typeof picks)[number]): string | null {
+  if (p.link.kind === "calc") return "계산기";
+  if (p.crossCluster) return p.clusterTitle;
+  return null;
+}
 ---
 
 {
   picks.length > 0 && (
     <nav class="next-reads" aria-labelledby="next-reads-h">
-      <p id="next-reads-h" class="nr-h">이어서 볼 글</p>
+      <h2 id="next-reads-h" class="nr-h">이어서 볼 글</h2>
       <ul class="nr-list">
         {picks.map((p) => (
           <li>
-            <a
-              href={p.link.href}
-              style={`--nr:${clusterColor[p.clusterId]?.mark ?? "#0b5cad"}`}
-            >
-              <span class="nr-top">
+            <a href={p.link.href}>
+              <span class="nr-title">{p.link.title}</span>
+              <span class="nr-right">
+                {note(p) && <span class="nr-note">{note(p)}</span>}
                 {noByHref.has(p.link.href) && (
                   <span class="nr-no">{noByHref.get(p.link.href)}</span>
                 )}
-                {p.link.kind === "calc" && <span class="nr-tag">계산기</span>}
-                {p.crossCluster && <span class="nr-cross">{p.clusterTitle}</span>}
               </span>
-              <span class="nr-title">{p.link.title}</span>
             </a>
           </li>
         ))}
@@ -50,99 +55,79 @@ const noByHref = new Map(hubEntries.map((e) => [e.href, e.no]));
 
 <style>
   .next-reads {
-    margin: 2.75rem 0 0;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--rule);
+    margin: 3rem 0 0;
   }
 
+  /* 본문 h2 의 굵은 스타일을 물려받지 않게 여기서 전부 다시 잡는다. */
   .nr-h {
-    margin: 0 0 0.85rem;
-    font-size: 0.8rem;
-    letter-spacing: 0.06em;
-    color: var(--muted);
+    margin: 0;
+    padding: 0 0 0.5rem;
+    border: 0;
+    border-bottom: 2px solid var(--text);
+    font-size: 0.75rem;
     font-weight: 700;
+    letter-spacing: 0.09em;
+    color: var(--text);
   }
 
   .nr-list {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    gap: 0.6rem;
+  }
+
+  .nr-list li + li a {
+    border-top: 1px solid var(--rule);
   }
 
   .nr-list a {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    /* 손가락으로 누르는 카드라 세로 여백을 넉넉히 준다. */
-    min-height: 76px;
-    padding: 0.85rem 0.95rem;
-    border-radius: 12px;
-    background: var(--accent-bg);
-    border-left: 3px solid var(--nr);
+    align-items: baseline;
+    gap: 1rem;
+    /* 손가락으로 누르는 줄이라 세로 여백으로 높이를 확보한다. */
+    padding: 0.95rem 0;
     color: var(--text);
     text-decoration: none;
-    transition:
-      transform 0.12s ease,
-      background-color 0.12s ease;
-  }
-  .nr-list a:hover {
-    background: var(--bg);
-  }
-  .nr-list a:active {
-    transform: scale(0.985);
-  }
-
-  .nr-top {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-  }
-
-  .nr-no {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.4rem;
-    height: 1.4rem;
-    padding: 0 0.35rem;
-    border-radius: 6px;
-    background: var(--nr);
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .nr-tag,
-  .nr-cross {
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 0.15rem 0.4rem;
-    border-radius: 5px;
-    letter-spacing: 0.01em;
-  }
-  .nr-tag {
-    background: var(--nr);
-    color: #fff;
-  }
-  .nr-cross {
-    border: 1px solid var(--rule);
-    color: var(--muted);
   }
 
   .nr-title {
-    font-size: 0.95rem;
+    flex: 1;
+    font-size: 1rem;
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1.45;
     text-wrap: pretty;
   }
+  .nr-list a:hover .nr-title {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 
-  @media (min-width: 48rem) {
-    .nr-list {
-      grid-template-columns: repeat(3, 1fr);
+  .nr-right {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex: 0 0 auto;
+  }
+
+  .nr-note {
+    font-size: 0.75rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .nr-no {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    /* 두 자리까지 오른쪽 끝을 맞춘다. */
+    min-width: 1.2em;
+    text-align: right;
+  }
+
+  @media (max-width: 26rem) {
+    .nr-note {
+      display: none;
     }
   }
 </style>
