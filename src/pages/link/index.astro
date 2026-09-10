@@ -87,7 +87,7 @@ const dot = (id: string | null) =>
     background-color: var(--surface-2);
     background-image:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E"),
-      radial-gradient(120% 62% at 50% 0%, var(--brand-wash) 0%, var(--surface-2) 64%);
+      radial-gradient(135% 72% at 50% -6%, var(--brand-wash) 0%, var(--surface-2) 72%);
     background-repeat: repeat, no-repeat;
     background-size: 160px 160px, 100% 100%;
     background-attachment: fixed, scroll;
@@ -209,9 +209,4 @@ const dot = (id: string | null) =>
     color: var(--link);
   }
 
-  @media (prefers-color-scheme: dark) {
-    .hub-list a {
-      box-shadow: none;
-    }
-  }
 </style>

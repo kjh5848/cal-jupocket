@@ -32,7 +32,7 @@
   --surface: #ffffff;
   --surface-2: #f5f7fa;
   --brand: #0b5cad;
-  --brand-wash: #e3edf9;
+  --brand-wash: #cfe1f7;
 
   /* ── 모서리 ── 쓰이던 14종을 네 단계로. 이동폭 최대 2px. */
   --r-xs: 4px;
@@ -91,14 +91,16 @@
     --surface-2: #1e2127;
     --brand: #6fb3ff;
     --brand-wash: #1b2735;
-    /* 어두운 배경에서는 그림자가 안 보인다. 경계선이 그 역할을 한다. */
-    --shadow-1: none;
-    --shadow-2: none;
+    /* 어두운 배경에서는 그림자가 안 보인다. 경계선이 그 역할을 한다.
+       다만 none 으로 두면 box-shadow: var(--shadow-1), inset ... 처럼
+       합성할 때 선언 전체가 무효가 된다. 투명한 무효 그림자를 쓴다. */
+    --shadow-1: 0 0 0 rgb(0 0 0 / 0);
+    --shadow-2: 0 0 0 rgb(0 0 0 / 0);
 
     /* 어두운 배경에서는 흰 유리를 아주 옅게 얹고 테두리로 형태를 잡는다. */
-    --glass-bg: rgb(255 255 255 / 0.07);
-    --glass-border: rgb(255 255 255 / 0.14);
-    --glass-hi: rgb(255 255 255 / 0.12);
+    --glass-bg: rgb(255 255 255 / 0.095);
+    --glass-border: rgb(255 255 255 / 0.2);
+    --glass-hi: rgb(255 255 255 / 0.18);
   }
 }
 
