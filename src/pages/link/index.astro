@@ -161,10 +161,15 @@ const dot = (id: string | null) =>
     min-height: 58px;
     padding: 0.7rem 1rem;
     border-radius: var(--r-lg);
-    background: var(--bg);
+    /* 유리 — 뒤의 노이즈 그라데이션이 비쳐 보인다. backdrop-filter 를
+       못 쓰는 브라우저에서는 반투명 흰 판으로 떨어질 뿐 깨지지 않는다. */
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
     color: var(--text);
     text-decoration: none;
-    box-shadow: var(--shadow-1);
+    box-shadow: var(--shadow-1), inset 0 1px 0 var(--glass-hi);
     transition:
       transform 0.12s ease,
       box-shadow 0.12s ease;
@@ -207,7 +212,6 @@ const dot = (id: string | null) =>
   @media (prefers-color-scheme: dark) {
     .hub-list a {
       box-shadow: none;
-      border: 1px solid var(--rule);
     }
   }
 </style>

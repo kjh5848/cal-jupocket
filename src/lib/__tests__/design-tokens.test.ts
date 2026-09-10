@@ -90,6 +90,15 @@ describe("CSS 변수", () => {
   });
 });
 
+/**
+ * 퍼센트로만 쓴 값은 모서리 스케일이 아니라 형태 정의다.
+ * 원(50%)이나 블롭(58% 42% 47% 53% / 46% ...)이 여기 해당한다.
+ * px 는 스케일을 강제하고, % 는 형태라서 통과시킨다.
+ */
+function isShape(v: string): boolean {
+  return /^[0-9%. /]+$/.test(v) && v.includes("%");
+}
+
 describe("모서리 스케일", () => {
   const ALLOWED = [
     "var(--r-xs)",
@@ -97,7 +106,6 @@ describe("모서리 스케일", () => {
     "var(--r-md)",
     "var(--r-lg)",
     "var(--r-pill)",
-    "50%",
     "0",
     "inherit",
   ];
@@ -108,7 +116,8 @@ describe("모서리 스케일", () => {
       if (EXEMPT.includes(file)) continue;
       for (const m of src.matchAll(/border-radius:\s*([^;}]+)[;}]/g)) {
         const v = m[1].trim();
-        if (!ALLOWED.includes(v)) offScale.push(`${file}: ${v}`);
+        if (ALLOWED.includes(v) || isShape(v)) continue;
+        offScale.push(`${file}: ${v}`);
       }
     }
     expect(offScale).toEqual([]);

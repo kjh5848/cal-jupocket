@@ -1,17 +1,21 @@
 ---
 /**
- * 주포켓 마크를 3D 로 세운 표현. 받침 원 없이 마크만 크게 보여준다.
+ * 주포켓 마크의 3D 표현 — 두께와 바닥 그림자.
  *
- * three.js 를 쓰지 않는다. 이 자리는 인스타에서 넘어온 사람이 모바일에서
- * 처음 보는 화면이라 150KB 짜리 런타임을 얹을 이유가 없다. CSS transform
- * 은 추가 JS 0KB 에 GPU 가속이고, 필요한 만큼은 충분히 나온다.
+ * three.js 를 쓰지 않는다. 인스타에서 넘어온 사람이 모바일에서 처음 보는
+ * 화면이라 150KB 짜리 런타임을 얹을 이유가 없다. CSS transform 은 추가 JS
+ * 0KB 에 GPU 가속이다.
  *
- * 계속 돌리지 않는다. 링크를 눌러야 하는 화면에서 로고가 쉬지 않고 움직이면
- * 정작 찾아야 할 번호에서 시선을 뺏는다. 등장할 때 한 번 돌고 멈춘 뒤,
- * 만졌을 때만 살짝 기울어진다.
+ * 구성은 세 겹이다.
+ *   1. 바닥 그림자 — 기울면 같이 눕는다. 물체가 떠 있어 보이게 한다.
+ *   2. 두께       — 마크를 Z축으로 여러 장 겹쳐 실제 깊이를 만든다.
+ *   3. 앞면       — 제일 밝은 한 장.
  *
- * prefers-reduced-motion 이면 회전과 기울기를 모두 끈다 — 전정기관 문제가
- * 있는 사람에게 회전은 실제로 불편을 준다.
+ * 뒤에 받침(원·블롭)을 두지 않는다. 배경의 그라데이션을 가려서 오히려
+ * 지저분해진다.
+ *
+ * 계속 돌리지 않는다. 링크를 눌러야 하는 화면이라 등장할 때 한 번 돌고,
+ * 이후엔 만졌을 때만 기울어진다. prefers-reduced-motion 이면 전부 끈다.
  */
 import BrandMark from "./BrandMark.astro";
 
@@ -19,25 +23,59 @@ interface Props {
   /** 마크 가로 크기(px). */
   size?: number;
 }
-const { size = 104 } = Astro.props;
+const { size = 124 } = Astro.props;
 const height = Math.round((size * 34) / 44);
+/** 두께를 만드는 겹 수. 많을수록 두꺼워 보이지만 DOM 도 늘어난다. */
+const LAYERS = 7;
 ---
 
 <span class="coin" style={`--w:${size}px;--h:${height}px`} aria-hidden="true">
-  <span class="coin-inner">
-    <span class="coin-face"><BrandMark size={size} tight /></span>
-    <span class="coin-face coin-back"><BrandMark size={size} tight /></span>
+  <span class="coin-stage">
+    <span class="coin-inner">
+      {
+        Array.from({ length: LAYERS }, (_, i) => (
+          <span class="coin-layer" style={`--i:${i}`}>
+            <BrandMark size={size} tight />
+          </span>
+        ))
+      }
+      <span class="coin-layer coin-front"><BrandMark size={size} tight /></span>
+    </span>
   </span>
+  <span class="coin-shadow"></span>
 </span>
 
 <style>
   .coin {
-    display: inline-block;
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: calc(var(--w) * 1.4);
+    height: calc(var(--h) * 1.7);
+  }
+
+  /* 1. 바닥 그림자 */
+  .coin-shadow {
+    position: absolute;
+    left: 50%;
+    bottom: 6%;
+    width: calc(var(--w) * 0.7);
+    height: calc(var(--h) * 0.16);
+    translate: -50% 0;
+    background: rgb(12 40 70 / 0.2);
+    border-radius: 50%;
+    filter: blur(9px);
+    transition:
+      width 420ms cubic-bezier(0.2, 0.7, 0.3, 1),
+      opacity 420ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  .coin-stage {
+    grid-area: 1 / 1;
     width: var(--w);
     height: var(--h);
     /* 원근이 있어야 회전이 평면 찌그러짐이 아니라 두께로 읽힌다. */
-    perspective: 620px;
-    color: var(--brand);
+    perspective: 680px;
   }
 
   .coin-inner {
@@ -46,47 +84,60 @@ const height = Math.round((size * 34) / 44);
     width: 100%;
     height: 100%;
     transform-style: preserve-3d;
-    transform: rotateY(0deg);
+    transform: rotateY(-14deg) rotateX(6deg);
     transition: transform 420ms cubic-bezier(0.2, 0.7, 0.3, 1);
-    animation: coin-in 900ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+    animation: coin-in 1000ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
   }
 
-  .coin-face {
+  /* 2. 두께 */
+  .coin-layer {
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    backface-visibility: hidden;
+    color: var(--brand);
+    transform: translateZ(calc(var(--i) * -1.6px));
+    /* 뒤로 갈수록 어둡게 — 빛이 덜 드는 쪽이다. */
+    filter: brightness(calc(1 - var(--i) * 0.085));
   }
-  /* 뒷면은 빛이 덜 드는 쪽 — 넘어올 때 앞뒤가 구분된다. */
-  .coin-back {
-    transform: rotateY(180deg);
-    opacity: 0.72;
+
+  /* 3. 앞면 */
+  .coin-front {
+    --i: 0;
+    transform: translateZ(1.6px);
+    filter: none;
   }
 
   .coin:hover .coin-inner,
   .coin:focus-visible .coin-inner {
-    transform: rotateY(-16deg) rotateX(8deg);
+    transform: rotateY(20deg) rotateX(-8deg);
+  }
+  .coin:hover .coin-shadow {
+    width: calc(var(--w) * 0.56);
+    opacity: 0.7;
   }
 
   @keyframes coin-in {
     from {
-      transform: rotateY(-190deg) scale(0.86);
+      transform: rotateY(-196deg) rotateX(6deg) scale(0.84);
     }
     to {
-      transform: rotateY(0deg) scale(1);
+      transform: rotateY(-14deg) rotateX(6deg) scale(1);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .coin-inner {
       animation: none;
+    }
+    .coin-inner,
+    .coin-shadow {
       transition: none;
     }
     .coin:hover .coin-inner,
     .coin:focus-visible .coin-inner {
-      transform: none;
+      transform: rotateY(-14deg) rotateX(6deg);
     }
   }
 </style>
