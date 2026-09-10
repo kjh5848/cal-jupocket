@@ -29,8 +29,7 @@ export const socials: SocialAccount[] = [
     label: "인스타그램",
     handle: `@${HANDLE}`,
     url: `https://www.instagram.com/${HANDLE}/`,
-    // 아직 첫 게시물이 없다. 빈 계정을 홍보하면 신뢰가 깎인다.
-    live: false,
+    live: true,
   },
 ];
 
