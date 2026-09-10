@@ -1,0 +1,72 @@
+---
+/**
+ * 카드 세트 미리보기 — 한 화면에 전체 시퀀스를 늘어놓는다.
+ *
+ * 실제 아트보드를 CSS transform 으로 축소해 보여주므로, 여기서 괜찮아
+ * 보이면 발행 이미지도 똑같다. 발행용 이미지는 /cards/<set>/<n>/ 을
+ * 1080×1350 뷰포트로 찍어서 뽑는다.
+ */
+import CardArtboard from "../../../components/CardArtboard.astro";
+import { cardSets } from "../../../data/cards";
+
+export function getStaticPaths() {
+  return cardSets.map((set) => ({ params: { set: set.slug }, props: { set } }));
+}
+
+const { set } = Astro.props;
+const SCALE = 0.26;
+---
+
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{set.slug} 카드 미리보기</title>
+    <style define:vars={{ scale: SCALE, w: `${1080 * SCALE}px`, h: `${1350 * SCALE}px` }}>
+      body {
+        margin: 0;
+        padding: 28px;
+        background: #f2f4f7;
+        font:
+          14px/1.5 system-ui,
+          sans-serif;
+        color: #344054;
+      }
+      .strip {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .slot {
+        width: var(--w);
+        height: var(--h);
+        overflow: hidden;
+      }
+      .slot > :global(.artboard) {
+        transform: scale(var(--scale));
+        transform-origin: top left;
+      }
+      .cap {
+        margin: 8px 0 0;
+        font-size: 12px;
+        color: #667085;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="strip">
+      {
+        set.cards.map((card, i) => (
+          <div>
+            <div class="slot">
+              <CardArtboard card={card} cluster={set.cluster} />
+            </div>
+            <p class="cap">
+              {i + 1} · {card.kind}
+            </p>
+          </div>
+        ))
+      }
+    </div>
+  </body>
+</html>

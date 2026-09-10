@@ -1,0 +1,47 @@
+---
+/**
+ * 카드 한 장만 있는 페이지 — 스크린샷 전용.
+ *
+ * body에 여백이 0이고 문서 크기가 정확히 1080×1350이라, 뷰포트를 같은
+ * 크기로 맞추고 찍으면 그대로 발행 이미지가 된다.
+ *
+ * 색인 금지 — noindex + 사이트맵 제외 + 어디서도 링크하지 않는다.
+ */
+import CardArtboard from "../../../components/CardArtboard.astro";
+import { cardSets } from "../../../data/cards";
+
+export function getStaticPaths() {
+  return cardSets.flatMap((set) =>
+    set.cards.map((card, i) => ({
+      params: { set: set.slug, n: String(i + 1) },
+      props: { card, cluster: set.cluster },
+    })),
+  );
+}
+
+const { card, cluster } = Astro.props;
+---
+
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>카드 아트보드</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+      }
+      body {
+        width: 1080px;
+        height: 1350px;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <CardArtboard card={card} cluster={cluster} />
+  </body>
+</html>

@@ -1,0 +1,306 @@
+---
+/**
+ * 카드뉴스 아트보드 한 장 — 1080×1350 (인스타 피드 4:5).
+ *
+ * 화면에 보이는 크기가 곧 출력 크기다. 브라우저 뷰포트를 1080×1350으로
+ * 맞추고 스크린샷을 찍으면 그대로 발행 이미지가 된다. 그래서 여기서는
+ * rem을 쓰지 않고 px로만 잡는다 — 루트 폰트 크기에 흔들리면 안 된다.
+ */
+import type { Card } from "../data/cards";
+import { clusterColor } from "../data/clusters";
+import { parseMarkup } from "../lib/card-markup";
+
+interface Props {
+  card: Card;
+  cluster: keyof typeof clusterColor;
+}
+
+const { card, cluster } = Astro.props;
+const accent = clusterColor[cluster].mark;
+---
+
+<div class="artboard" data-kind={card.kind} style={`--accent:${accent}`}>
+  {
+    card.kind === "list" && (
+      <>
+        <div class="head">
+          <span class="badge">{card.badge}</span>
+          <h2 class="h-list">{card.title}</h2>
+        </div>
+        <ol class="items">
+          {card.items.map((raw, i) => (
+            <li>
+              <span class="num">{i + 1}</span>
+              <span class="line">
+                <span class="txt">
+                  {parseMarkup(raw.text).map((t) => (
+                    <span class={t.emphasis === "none" ? "" : t.emphasis}>{t.text}</span>
+                  ))}
+                </span>
+                <span class="detail">{raw.detail}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+        <p class="foot">{card.footnote}</p>
+      </>
+    )
+  }
+
+  {
+    card.kind === "table" && (
+      <>
+        <h2 class="h-table">{card.title}</h2>
+        <p class="sub">{card.sub}</p>
+        <div class="rows">
+          {card.rows.map((r) => (
+            <div class="row" data-tone={r.tone ?? "plain"}>
+              <span class="label">{r.label}</span>
+              <span class="value">{r.value}</span>
+            </div>
+          ))}
+        </div>
+        <p class="foot">{card.footnote}</p>
+      </>
+    )
+  }
+
+  {
+    card.kind === "note" && (
+      <>
+        <div class="head">
+          <span class="badge">{card.badge}</span>
+          <h2 class="h-note">{card.title}</h2>
+        </div>
+        <div class="body">
+          {card.body.split("\n\n").map((para) => (
+            <p>
+              {parseMarkup(para).map((t) => (
+                <span class={t.emphasis === "none" ? "" : t.emphasis}>{t.text}</span>
+              ))}
+            </p>
+          ))}
+        </div>
+        <p class="foot">{card.footnote}</p>
+      </>
+    )
+  }
+
+  {
+    card.kind === "cta" && (
+      <div class="cta">
+        <div class="mark">₩</div>
+        <h2 class="h-cta">{card.title}</h2>
+        <p class="cta-sub">{card.sub}</p>
+        <p class="pill">프로필 링크 jupocket.com</p>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .artboard {
+    width: 1080px;
+    height: 1350px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 8px solid #12161c;
+    padding: 84px 76px;
+    display: flex;
+    flex-direction: column;
+    font-family:
+      "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+      "Malgun Gothic", system-ui, sans-serif;
+    color: #12161c;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    font-feature-settings: "tnum";
+  }
+
+  .badge {
+    display: inline-block;
+    background: #12161c;
+    color: #fff;
+    font-size: 30px;
+    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  h2 {
+    margin: 0;
+    letter-spacing: -0.035em;
+    line-height: 1.18;
+  }
+  .h-list,
+  .h-note {
+    font-size: 74px;
+    font-weight: 800;
+    margin-top: 26px;
+  }
+  .h-table {
+    font-size: 76px;
+    font-weight: 800;
+  }
+
+  .sub {
+    margin: 18px 0 0;
+    font-size: 32px;
+    color: #667085;
+  }
+
+  .items {
+    list-style: none;
+    margin: 46px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .items li {
+    display: flex;
+    align-items: flex-start;
+    gap: 22px;
+    font-size: 44px;
+    line-height: 1.4;
+  }
+  .line {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .detail {
+    font-size: 29px;
+    font-weight: 500;
+    color: #667085;
+    line-height: 1.4;
+  }
+  .num {
+    flex: 0 0 auto;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 27px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5px;
+  }
+  .txt {
+    font-weight: 600;
+  }
+
+  .mark {
+    background: #ffe97a;
+    padding: 0 8px;
+    border-radius: 4px;
+  }
+  .warn {
+    color: #d92d20;
+    font-weight: 800;
+  }
+
+  .rows {
+    margin-top: 52px;
+    border-top: 4px solid #12161c;
+  }
+  .row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 30px 0;
+    border-bottom: 2px solid #eaecf0;
+    font-size: 46px;
+  }
+  .row .label {
+    color: #475467;
+  }
+  .row .value {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .row[data-tone="mark"] {
+    background: #ffe97a;
+    margin: 0 -28px;
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+  .row[data-tone="mark"] .label {
+    color: #5c4a00;
+  }
+  .row[data-tone="warn"] .value {
+    color: #d92d20;
+  }
+
+  .body {
+    margin-top: 56px;
+  }
+  .body p {
+    margin: 0 0 34px;
+    font-size: 44px;
+    line-height: 1.55;
+    color: #344054;
+  }
+
+  .foot {
+    margin: auto 0 0;
+    padding-top: 32px;
+    border-top: 2px solid #eaecf0;
+    font-size: 26px;
+    color: #667085;
+    line-height: 1.5;
+  }
+
+  .artboard[data-kind="cta"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .cta .mark {
+    width: 132px;
+    height: 132px;
+    border-radius: 32px;
+    background: #fff;
+    color: var(--accent);
+    font-size: 68px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .h-cta {
+    font-size: 88px;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 48px;
+    white-space: pre-line;
+  }
+  .cta-sub {
+    margin: 28px 0 0;
+    font-size: 36px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.86);
+    white-space: pre-line;
+  }
+  .pill {
+    margin: 56px 0 0;
+    background: #ffe97a;
+    color: #12161c;
+    font-size: 40px;
+    font-weight: 700;
+    padding: 22px 40px;
+    border-radius: 16px;
+  }
+</style>
