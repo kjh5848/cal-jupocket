@@ -5,7 +5,7 @@
  * 거짓말이 된다. 회수할 수 없으므로 여기서 막는다.
  */
 import { describe, it, expect } from "vitest";
-import { hubEntries, nextNo, entryByNo } from "../../data/linkhub";
+import { hubEntries, nextNo, entryByNo, hubGroups } from "../../data/linkhub";
 import { clusters } from "../../data/clusters";
 
 const clusterHrefs = clusters.flatMap((c) => c.links.map((l) => l.href));
@@ -61,5 +61,19 @@ describe("표시용 라벨", () => {
     expect(e.label.length).toBeGreaterThan(0);
     // 모바일 한 줄에 안 들어가면 번호를 찾기 어려워진다.
     expect(e.label.length).toBeLessThanOrEqual(30);
+  });
+});
+
+describe("허브 묶음", () => {
+  it("모든 항목이 정확히 한 묶음에만 들어간다 — 빠지거나 겹치면 번호를 못 찾는다", () => {
+    const grouped = hubGroups.flatMap((g) => g.entries.map((e) => e.no));
+    expect(new Set(grouped).size).toBe(grouped.length);
+    expect(grouped.sort((a, b) => a - b)).toEqual(
+      hubEntries.map((e) => e.no).sort((a, b) => a - b),
+    );
+  });
+
+  it("빈 묶음이 없다", () => {
+    for (const g of hubGroups) expect(g.entries.length).toBeGreaterThan(0);
   });
 });

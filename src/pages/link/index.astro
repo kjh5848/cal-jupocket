@@ -2,33 +2,31 @@
 /**
  * 프로필 링크 허브 — 인스타 바이오에서 들어오는 사람이 착지하는 곳.
  *
- * 카드가 "더 자세한 내용은 13번 글" 이라고 지목하면, 여기서 13번을 눈으로
- * 찾아 누른다. 그래서 번호가 가장 크고 먼저 읽혀야 하고, 목록은 스크롤
- * 한 번에 훑을 수 있어야 한다. 번호는 data/linkhub.ts 가 고정한다.
+ * 카드가 "더 자세한 내용은 13번 글" 이라고 지목하면 여기서 13번을 눈으로
+ * 찾아 누른다. 그래서 번호가 먼저 읽히고, 19개를 스크롤 한 번에 훑을 수
+ * 있어야 한다. 번호는 data/linkhub.ts 가 고정한다 — 이미 발행된 카드가
+ * 가리키므로 바뀌면 안 된다.
  *
- * 검색용 페이지가 아니라 유입 착지용이라 noindex다 — 홈과 브랜드 검색어를
- * 두고 경쟁시킬 이유가 없다. follow는 남겨 링크는 타고 가게 둔다.
+ * 링크트리·리틀리 관습대로 큼직한 버튼을 쓴다. 다만 줄마다 색 배지를 다는
+ * 대신 색은 묶음 제목의 점에만 쓴다 — 19줄이 전부 알록달록하면 정작 번호가
+ * 안 보인다.
  *
- * 광고는 넣지 않는다. 인스타에서 막 넘어온 사람이 처음 보는 화면이라
- * 글로 넘어가는 걸 방해하지 않는 편이 낫다.
+ * 검색용이 아니라 유입 착지용이라 noindex다. 광고도 넣지 않는다 —
+ * 인스타에서 막 넘어온 첫 화면이라 글로 넘어가는 걸 방해하지 않는 게 낫다.
  */
 import BaseHead from "../../components/BaseHead.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
-import { calcEntries, guideEntries } from "../../data/linkhub";
-import { clusters, clusterColor } from "../../data/clusters";
+import { hubGroups } from "../../data/linkhub";
+import { clusterColor } from "../../data/clusters";
 import "../../styles/global.css";
 
 const title = "주포켓 — 계산기와 글 전체 목록";
 const description =
   "3.3% 원천징수·부가세·국민연금 계산기와 세금 가이드 전체를 번호로 정리했습니다. 인스타에서 본 번호를 여기서 찾으세요.";
 
-/** 번호 배지를 주제 색으로 물들여 목록을 눈으로 훑기 쉽게 한다. */
-const clusterOf = new Map<string, string>();
-for (const c of clusters) {
-  for (const l of c.links) clusterOf.set(l.href, c.id);
-}
-const tint = (href: string) =>
-  clusterColor[clusterOf.get(href) ?? "income"]?.mark ?? "#0b5cad";
+const BRAND = "#0b5cad";
+const dot = (id: string | null) =>
+  id ? (clusterColor[id]?.mark ?? BRAND) : BRAND;
 ---
 
 <html lang="ko">
@@ -37,177 +35,174 @@ const tint = (href: string) =>
     <meta name="robots" content="noindex, follow" />
     <ClarityHead />
   </head>
-  <body>
+  <body class="hub-page">
     <main class="hub">
       <header class="hub-head">
-        <span class="hub-mark" aria-hidden="true">₩</span>
+        <span class="hub-avatar" aria-hidden="true">₩</span>
         <h1>주포켓</h1>
-        <p>세금 계산기와 가이드. 직장인·사장님·프리랜서 누구나.</p>
+        <p class="hub-handle">@jupocket.money</p>
+        <p class="hub-bio">
+          세금 계산기와 가이드.<br />직장인·사장님·프리랜서 누구나.
+        </p>
       </header>
 
-      <p class="hub-hint">
-        인스타에서 본 <strong>번호</strong>를 아래에서 찾으세요.
-      </p>
+      <p class="hub-hint">인스타에서 본 번호를 아래에서 찾으세요</p>
 
-      <section aria-labelledby="hub-calc">
-        <h2 id="hub-calc" class="hub-h">계산기</h2>
-        <ul class="hub-list">
-          {
-            calcEntries.map((e) => (
-              <li>
-                <a href={e.href} style={`--tint:${tint(e.href)}`}>
-                  <span class="hub-no">{e.no}</span>
-                  <span class="hub-label">{e.label}</span>
-                  <span class="hub-go" aria-hidden="true">›</span>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
-
-      <section aria-labelledby="hub-guide">
-        <h2 id="hub-guide" class="hub-h">읽을거리</h2>
-        <ul class="hub-list">
-          {
-            guideEntries.map((e) => (
-              <li>
-                <a href={e.href} style={`--tint:${tint(e.href)}`}>
-                  <span class="hub-no">{e.no}</span>
-                  <span class="hub-label">{e.label}</span>
-                  <span class="hub-go" aria-hidden="true">›</span>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
+      {
+        hubGroups.map((g) => (
+          <section class="hub-group" aria-label={g.label}>
+            <p class="hub-glabel">
+              <span class="hub-dot" style={`--d:${dot(g.cluster)}`} aria-hidden="true" />
+              {g.label}
+            </p>
+            <ul class="hub-list">
+              {g.entries.map((e) => (
+                <li>
+                  <a href={e.href}>
+                    <span class="hub-no">{e.no}</span>
+                    <span class="hub-label">{e.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
 
       <p class="hub-foot">
-        <a href="/">주포켓 홈</a> · 세금 수치는 국세청·국민연금공단 원문을
-        확인해 씁니다.
+        <a href="/">jupocket.com</a>
+        <span>세금 수치는 국세청·국민연금공단 원문을 확인해 씁니다.</span>
       </p>
     </main>
   </body>
 </html>
 
 <style>
+  .hub-page {
+    background: var(--accent-bg);
+  }
   .hub {
-    max-width: 30rem;
+    max-width: 28rem;
     margin: 0 auto;
-    padding: 2rem 1.1rem 3rem;
+    padding: 2.5rem 1.1rem 3.5rem;
   }
 
   .hub-head {
     text-align: center;
-    margin-bottom: 1.6rem;
   }
-  .hub-mark {
+  .hub-avatar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 60px;
-    height: 60px;
-    border-radius: 17px;
+    width: 76px;
+    height: 76px;
+    /* 링크인바이오는 원형 프로필이 관습이다. */
+    border-radius: 50%;
     background: #0b5cad;
     color: #fff;
-    font-size: 1.9rem;
+    font-size: 2.1rem;
     font-weight: 700;
   }
   .hub-head h1 {
-    font-size: 1.5rem;
-    margin: 0.7rem 0 0.3rem;
+    font-size: 1.4rem;
+    margin: 0.8rem 0 0.15rem;
   }
-  .hub-head p {
+  .hub-handle {
     margin: 0;
+    font-size: 0.9rem;
     color: var(--muted);
-    font-size: 0.94rem;
+  }
+  .hub-bio {
+    margin: 0.7rem 0 0;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--muted);
   }
 
   .hub-hint {
+    margin: 1.6rem 0 1.9rem;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.84rem;
     color: var(--muted);
-    background: var(--accent-bg);
-    border-radius: 10px;
-    padding: 0.65rem 0.9rem;
-    margin: 0 0 1.8rem;
   }
 
-  .hub-h {
-    font-size: 0.82rem;
-    letter-spacing: 0.06em;
+  .hub-group {
+    margin-bottom: 1.9rem;
+  }
+  .hub-glabel {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.6rem 0.15rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     color: var(--muted);
-    margin: 0 0 0.6rem;
-    border: 0;
-    padding: 0;
+  }
+  .hub-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--d);
   }
 
   .hub-list {
     list-style: none;
-    margin: 0 0 1.8rem;
+    margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
-
   .hub-list a {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    /* 손가락으로 누르는 목록이라 세로 여백을 넉넉히 준다. */
-    min-height: 60px;
-    padding: 0.6rem 0.9rem;
-    border-radius: 13px;
-    background: var(--accent-bg);
-    box-shadow:
-      0 1px 2px rgb(16 24 40 / 0.05),
-      0 1px 3px rgb(16 24 40 / 0.08);
+    gap: 0.85rem;
+    /* 손가락으로 누르는 버튼이라 높이를 넉넉히 준다. */
+    min-height: 58px;
+    padding: 0.7rem 1rem;
+    border-radius: 14px;
+    background: var(--bg);
     color: var(--text);
     text-decoration: none;
+    box-shadow: 0 1px 2px rgb(16 24 40 / 0.05);
     transition:
       transform 0.12s ease,
       box-shadow 0.12s ease;
   }
   .hub-list a:active {
-    transform: scale(0.98);
-    box-shadow: 0 1px 2px rgb(16 24 40 / 0.06);
+    transform: scale(0.985);
+    box-shadow: none;
   }
 
   .hub-no {
     flex: 0 0 auto;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background: var(--tint);
-    color: #fff;
-    font-size: 0.95rem;
+    min-width: 1.6rem;
+    font-size: 0.92rem;
     font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
+    text-align: center;
   }
   .hub-label {
     flex: 1;
     font-size: 0.97rem;
     font-weight: 600;
-    line-height: 1.35;
-  }
-  .hub-go {
-    flex: 0 0 auto;
-    color: var(--muted);
-    font-size: 1.3rem;
-    line-height: 1;
+    line-height: 1.4;
+    text-wrap: pretty;
   }
 
   .hub-foot {
-    margin: 2rem 0 0;
+    margin: 2.4rem 0 0;
     text-align: center;
-    font-size: 0.84rem;
+    font-size: 0.82rem;
+    line-height: 1.7;
     color: var(--muted);
-    line-height: 1.6;
+  }
+  .hub-foot a {
+    display: block;
+    font-weight: 700;
+    color: var(--link);
   }
 
   @media (prefers-color-scheme: dark) {

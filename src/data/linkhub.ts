@@ -57,3 +57,56 @@ export function entryByNo(no: number): HubEntry | undefined {
 
 export const calcEntries = hubEntries.filter((e) => e.kind === "calc");
 export const guideEntries = hubEntries.filter((e) => e.kind === "guide");
+
+/**
+ * 허브 화면의 묶음. 19개를 한 줄로 늘어놓으면 번호를 찾기 어렵다.
+ * 계산기를 먼저 두고, 글은 주제별로 나눈다. 색은 여기(묶음)에만 쓰고
+ * 항목마다 배지를 달지 않는다 — 배지가 줄마다 붙으면 흔한 위젯처럼 보인다.
+ */
+export interface HubGroup {
+  label: string;
+  /** clusters.ts 의 id. 묶음 제목의 점 색에만 쓴다. null 이면 브랜드색. */
+  cluster: string | null;
+  entries: HubEntry[];
+}
+
+const inCluster = (prefixes: string[]) =>
+  hubEntries.filter(
+    (e) => e.kind === "guide" && prefixes.some((p) => e.href.startsWith(p)),
+  );
+
+export const hubGroups: HubGroup[] = [
+  { label: "계산기", cluster: null, entries: calcEntries },
+  {
+    label: "종합소득세·원천징수",
+    cluster: "income",
+    entries: inCluster([
+      "/guide/33-settlement",
+      "/guide/who-must-file",
+      "/guide/income-tax-brackets",
+      "/guide/expense-rate",
+    ]),
+  },
+  {
+    label: "부가가치세",
+    cluster: "vat",
+    entries: inCluster([
+      "/guide/vat-freelancer",
+      "/guide/simplified-vat",
+      "/guide/vat-filing",
+    ]),
+  },
+  {
+    label: "노후·연금",
+    cluster: "retirement",
+    entries: inCluster([
+      "/guide/pension-premium-2026",
+      "/guide/retirement-planning",
+      "/guide/national-pension-estimate",
+      "/guide/pension-savings-tax-credit",
+      "/guide/irp-account",
+      "/guide/retirement-fund",
+      "/guide/severance-to-freelance",
+    ]),
+  },
+];
