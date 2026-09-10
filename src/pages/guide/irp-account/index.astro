@@ -15,7 +15,7 @@ import pensionAccount from "../../../rates/pension-account-2026.json";
 import { formatWon } from "../../../lib/money";
 import PensionLimitChart from "../../../components/PensionLimitChart.astro";
 
-const title = "IRP란? 프리랜서도 열 수 있는 계좌, 개설 전에 알아야 할 것";
+const title = "IRP란? 소득 있으면 누구나 여는 계좌, 개설 전에 알아야 할 것";
 const description =
   "IRP는 소득이 있으면 누구나 열 수 있는 퇴직연금 계좌입니다. 납입한도 1,800만원과 세액공제 한도 900만원의 차이, 연금저축과의 결정적 차이, 개설 경로를 정리했습니다.";
 
@@ -74,7 +74,7 @@ const fssJoinSource = pensionAccount.sources.find((s) =>
     <p>
       IRP는 이름에 "퇴직연금"이 들어가서 회사원만 쓰는 제도로 보이지만,{" "}
       <strong>소득이 있으면 누구나 직접 열 수 있는 계좌</strong>입니다. 퇴직금
-      제도가 없는 프리랜서에게는 비어 있는 2층을 스스로 채우는 수단이면서,
+      그 제도가 없는 사람에게는 비어 있는 2층을 스스로 채우는 수단이면서,
       동시에 세액공제를 받는 통로입니다.
     </p>
   </div>
@@ -218,11 +218,11 @@ const fssJoinSource = pensionAccount.sources.find((s) =>
       <strong>납입 금액을 정합니다.</strong> 공제 한도를 목표로 한다면 연금저축{" "}
       {formatWon(savingsOnly)}을 먼저 채우고 IRP에{" "}
       {formatWon(combined - savingsOnly)}을 넣는 조합이 기본입니다. 소득이
-      불규칙한 프리랜서라면 매달 고정보다 <strong>연말에 여유를 보고 한 번에
+      불규칙하다면 매달 고정보다 <strong>연말에 여유를 보고 한 번에
       넣는 방식</strong>도 가능합니다 — 공제는 그 해에 넣은 총액 기준입니다.
     </li>
     <li>
-      <strong>5월 신고 때 반영합니다.</strong> 프리랜서는 연말정산이 아니라
+      <strong>5월 신고 때 반영합니다.</strong> 사업소득자는 연말정산이 아니라
       종합소득세 신고에서 납입액을 세액공제로 넣습니다. →{" "}
       <a href="/guide/33-settlement/">5월 신고와 정산 구조</a>
     </li>

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { ogSlug, ogPath, ogPathFor } from "../og";
+import { ogSlug, ogPath } from "../og";
+import { ogPathFor } from "../og-pages";
 
 describe("ogSlug", () => {
   it("루트는 home", () => {

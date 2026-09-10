@@ -19,21 +19,3 @@ export function ogPath(path: string): string {
   return `/og/${ogSlug(path)}.png`;
 }
 
-/**
- * 이 경로에 전용 OG 이미지가 있는가.
- *
- * 생성기는 clusters.ts 의 링크와 홈만 굽는다. /privacy/, /link/ 처럼
- * 굽지 않는 페이지가 자기 이름의 이미지를 가리키면 공유했을 때 깨진 채로
- * 나가므로, 없으면 홈 이미지로 떨어뜨린다.
- */
-import { clusters } from "../data/clusters";
-
-const generated = new Set<string>([
-  "home",
-  ...clusters.flatMap((c) => c.links.map((l) => ogSlug(l.href))),
-]);
-
-export function ogPathFor(path: string): string {
-  const slug = ogSlug(path);
-  return `/og/${generated.has(slug) ? slug : "home"}.png`;
-}

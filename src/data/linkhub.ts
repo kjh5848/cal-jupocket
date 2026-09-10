@@ -38,10 +38,10 @@ export const hubEntries: HubEntry[] = [
   { no: 11, href: "/guide/simplified-vat/", label: "간이과세 vs 일반과세, 뭐가 유리한가", kind: "guide" },
   { no: 12, href: "/guide/vat-filing/", label: "부가세 신고, 언제 어떻게 하나", kind: "guide" },
   { no: 13, href: "/guide/pension-premium-2026/", label: "2026년 국민연금 보험료, 얼마 내나", kind: "guide" },
-  { no: 14, href: "/guide/retirement-planning/", label: "프리랜서 노후대비, 순서대로", kind: "guide" },
+  { no: 14, href: "/guide/retirement-planning/", label: "노후대비, 순서대로 정리", kind: "guide" },
   { no: 15, href: "/guide/national-pension-estimate/", label: "국민연금 예상수령액과 수령 시점", kind: "guide" },
   { no: 16, href: "/guide/pension-savings-tax-credit/", label: "연금저축·IRP 세액공제 한도 (2026)", kind: "guide" },
-  { no: 17, href: "/guide/irp-account/", label: "IRP란? 프리랜서도 열 수 있는 계좌", kind: "guide" },
+  { no: 17, href: "/guide/irp-account/", label: "IRP란? 소득 있으면 누구나", kind: "guide" },
   { no: 18, href: "/guide/retirement-fund/", label: "노후자금 얼마 있어야 하나", kind: "guide" },
   { no: 19, href: "/guide/severance-to-freelance/", label: "퇴사하고 프리랜서 시작할 때", kind: "guide" },
 ];

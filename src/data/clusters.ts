@@ -60,14 +60,14 @@ export const clusters: Cluster[] = [
   },
   {
     id: "retirement",
-    title: "프리랜서 노후·연금",
+    title: "노후·연금",
     links: [
       { href: "/national-pension-premium/", title: "국민연금 보험료 계산기 (지역가입)", kind: "calc", icon: "calculator", blurb: "월소득으로 2026년 요율(9.5%) 월·연 보험료" },
       { href: "/guide/pension-premium-2026/", title: "2026년 국민연금 보험료, 지역가입자는 얼마 내나", kind: "guide", icon: "percent" },
-      { href: "/guide/retirement-planning/", title: "프리랜서 노후대비, 순서대로 정리", kind: "guide", icon: "umbrella" },
+      { href: "/guide/retirement-planning/", title: "노후대비, 순서대로 정리", kind: "guide", icon: "umbrella" },
       { href: "/guide/national-pension-estimate/", title: "국민연금 예상수령액 조회 후 시점 정하기", kind: "guide", icon: "calendar" },
       { href: "/guide/pension-savings-tax-credit/", title: "연금저축·IRP 세액공제 한도(2026)", kind: "guide", icon: "coins" },
-      { href: "/guide/irp-account/", title: "IRP란? 프리랜서도 열 수 있는 계좌", kind: "guide", icon: "wallet" },
+      { href: "/guide/irp-account/", title: "IRP란? 소득 있으면 누구나 여는 계좌", kind: "guide", icon: "wallet" },
       { href: "/guide/retirement-fund/", title: "노후자금 얼마 있어야 하나", kind: "guide", icon: "chart" },
       { href: "/guide/severance-to-freelance/", title: "퇴사하고 프리랜서 시작할 때", kind: "guide", icon: "briefcase" },
     ],
