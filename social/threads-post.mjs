@@ -47,7 +47,9 @@ if (argError) {
 }
 
 const env = readEnv();
-requireEnv(env, ["THREADS_APP_SECRET", "THREADS_ACCESS_TOKEN", "THREADS_USER_ID"]);
+// 앱 시크릿은 필요 없다 — 갱신 엔드포인트(th_refresh_token)는 액세스 토큰만
+// 받는다. 시크릿은 OAuth 단기→장기 교환(threads-auth.mjs)에만 쓴다.
+requireEnv(env, ["THREADS_ACCESS_TOKEN", "THREADS_USER_ID"]);
 
 async function callJson(url, init) {
   const res = await fetch(url, init);
@@ -175,33 +177,34 @@ console.log(`· 컨테이너 ✓ id=${container.id}`);
 if (!doPublish) {
   console.log("\n드라이런 종료 — 실제 게시하지 않았습니다. (컨테이너는 두면 만료됩니다)");
   console.log("실제로 올리려면 --publish 를 붙여 다시 실행하세요.\n");
-  process.exit(0);
+} else {
+  // process.exit() 로 일찍 끊지 않고 분기로 감싼다 — 진행 중인 fetch 핸들이
+  // 남은 채 종료하면 Windows 의 libuv 가 어설션으로 시끄럽게 군다.
+  console.log(`· 게시 전 ${PUBLISH_DELAY_MS / 1000}초 대기 (문서 권장)…`);
+  await new Promise((r) => setTimeout(r, PUBLISH_DELAY_MS));
+
+  console.log("· 게시 중…");
+  const published = await callJson(`${API}/${userId}/threads_publish`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ creation_id: container.id, access_token: token }),
+  });
+
+  let permalink = null;
+  try {
+    const info = await callJson(
+      `${API}/${published.id}?` +
+        new URLSearchParams({ fields: "permalink", access_token: token }),
+    );
+    permalink = info.permalink ?? null;
+  } catch {
+    // permalink 조회 실패는 게시 성공에 영향이 없다.
+  }
+
+  ledger.push({ file, id: published.id, permalink, at: new Date().toISOString() });
+  writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + "\n", "utf8");
+
+  console.log(`\n✓ 게시 완료  id=${published.id}`);
+  if (permalink) console.log(`  ${permalink}`);
+  console.log("  기록 → social/posted.json\n");
 }
-
-console.log(`· 게시 전 ${PUBLISH_DELAY_MS / 1000}초 대기 (문서 권장)…`);
-await new Promise((r) => setTimeout(r, PUBLISH_DELAY_MS));
-
-console.log("· 게시 중…");
-const published = await callJson(`${API}/${userId}/threads_publish`, {
-  method: "POST",
-  headers: { "content-type": "application/x-www-form-urlencoded" },
-  body: new URLSearchParams({ creation_id: container.id, access_token: token }),
-});
-
-let permalink = null;
-try {
-  const info = await callJson(
-    `${API}/${published.id}?` +
-      new URLSearchParams({ fields: "permalink", access_token: token }),
-  );
-  permalink = info.permalink ?? null;
-} catch {
-  // permalink 조회 실패는 게시 성공에 영향이 없다.
-}
-
-ledger.push({ file, id: published.id, permalink, at: new Date().toISOString() });
-writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + "\n", "utf8");
-
-console.log(`\n✓ 게시 완료  id=${published.id}`);
-if (permalink) console.log(`  ${permalink}`);
-console.log("  기록 → social/posted.json\n");
