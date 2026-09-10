@@ -16,7 +16,7 @@
  */
 import BaseHead from "../../components/BaseHead.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
-import BrandMark from "../../components/BrandMark.astro";
+import BrandCoin from "../../components/BrandCoin.astro";
 import { hubGroups } from "../../data/linkhub";
 import { clusterColor } from "../../data/clusters";
 import "../../styles/global.css";
@@ -39,9 +39,7 @@ const dot = (id: string | null) =>
   <body class="hub-page">
     <main class="hub">
       <header class="hub-head">
-        <span class="hub-avatar">
-          <BrandMark size={40} />
-        </span>
+        <BrandCoin size={76} />
         <h1>주포켓</h1>
         <p class="hub-handle">@jupocket.money</p>
         <p class="hub-bio">
@@ -103,17 +101,6 @@ const dot = (id: string | null) =>
 
   .hub-head {
     text-align: center;
-  }
-  .hub-avatar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 76px;
-    height: 76px;
-    /* 링크인바이오는 원형 프로필이 관습이다. */
-    border-radius: 50%;
-    background: #0b5cad;
-    color: #fff;
   }
   .hub-head h1 {
     font-size: 1.4rem;
