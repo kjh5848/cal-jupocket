@@ -25,6 +25,7 @@ import {
   resolveImage,
   resolveLink,
   textLength,
+  parseArgs,
   TEXT_WARN,
   TEXT_HARD,
 } from "./parse.mjs";
@@ -37,9 +38,13 @@ const API = "https://graph.threads.net/v1.0";
 /** 문서 권장: 컨테이너 생성 후 게시까지 평균 30초 대기. */
 const PUBLISH_DELAY_MS = 30_000;
 
-const args = process.argv.slice(2);
-const doPublish = args.includes("--publish");
-const pickFile = args.includes("--file") ? args[args.indexOf("--file") + 1] : null;
+const { publish: doPublish, file: pickFile, error: argError } = parseArgs(
+  process.argv.slice(2),
+);
+if (argError) {
+  console.error(`\n✖ ${argError}\n`);
+  process.exit(1);
+}
 
 const env = readEnv();
 requireEnv(env, ["THREADS_APP_SECRET", "THREADS_ACCESS_TOKEN", "THREADS_USER_ID"]);

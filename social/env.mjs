@@ -41,9 +41,11 @@ export function readEnv() {
  */
 export function updateEnv(patch) {
   const path = envPath();
-  const lines = existsSync(path)
-    ? readFileSync(path, "utf8").split(/\r?\n/)
-    : [];
+  const raw = existsSync(path) ? readFileSync(path, "utf8") : "";
+  // 원래 줄바꿈을 유지한다. 갱신 한 번에 파일 전체를 CRLF에서 LF로 바꿔
+  // 버리면, 같은 파일을 읽는 다른 도구가 이유 없이 흔들린다.
+  const eol = raw.includes("\r\n") ? "\r\n" : "\n";
+  const lines = raw ? raw.split(/\r?\n/) : [];
   const remaining = new Map(Object.entries(patch));
 
   const next = lines.map((line) => {
@@ -61,7 +63,7 @@ export function updateEnv(patch) {
     next.push("");
   }
 
-  writeFileSync(path, next.join("\n"), "utf8");
+  writeFileSync(path, next.join(eol), "utf8");
 }
 
 /** 없으면 즉시 죽는다 — 반쯤 설정된 상태로 API를 때리지 않기 위해. */

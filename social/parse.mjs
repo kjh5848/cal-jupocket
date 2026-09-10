@@ -42,3 +42,29 @@ export function resolveLink(meta) {
 export function textLength(text) {
   return [...text].length;
 }
+
+/**
+ * 커맨드라인 인자 해석.
+ *
+ * `--file` 뒤에 값이 없거나(`--file` 이 마지막) `--file=x` 형태로 쓰면
+ * 조용히 "큐의 첫 글"로 넘어가 버린다. --publish 와 같이 쓰면 의도하지 않은
+ * 글이 실제 계정에 올라간다. 그래서 여기서 명시적으로 걸러낸다.
+ *
+ * 반환 { publish, file, error } — error 가 있으면 호출부가 죽인다.
+ */
+export function parseArgs(args) {
+  const publish = args.includes("--publish");
+  const i = args.findIndex((a) => a === "--file" || a.startsWith("--file="));
+  if (i === -1) return { publish, file: null, error: null };
+
+  const a = args[i];
+  const file = a.startsWith("--file=") ? a.slice("--file=".length) : args[i + 1];
+  if (!file || file.startsWith("--")) {
+    return {
+      publish,
+      file: null,
+      error: "--file 뒤에 큐 파일 이름이 필요합니다. 예: --file 002-vat-january-deadline.md",
+    };
+  }
+  return { publish, file, error: null };
+}

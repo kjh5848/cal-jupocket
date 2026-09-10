@@ -15,6 +15,7 @@ import {
   resolveLink,
   textLength,
   TEXT_HARD,
+  parseArgs,
   SITE,
 } from "../parse.mjs";
 
@@ -103,5 +104,42 @@ describe("실제 큐 파일", () => {
   it.each(files)("%s — link와 image를 동시에 쓰지 않는다", (file) => {
     const { meta } = parsePost(readFileSync(join(dir, file), "utf8"));
     expect(Boolean(meta.link && meta.image)).toBe(false);
+  });
+});
+
+describe("parseArgs", () => {
+  it("--publish 를 읽는다", () => {
+    expect(parseArgs(["--publish"]).publish).toBe(true);
+    expect(parseArgs([]).publish).toBe(false);
+  });
+
+  it("--file 값을 읽는다", () => {
+    expect(parseArgs(["--file", "002.md"]).file).toBe("002.md");
+  });
+
+  it("--file=값 형태도 받는다", () => {
+    expect(parseArgs(["--file=002.md"]).file).toBe("002.md");
+  });
+
+  // 아래 두 경우가 예전엔 조용히 "큐의 첫 글"로 넘어갔다.
+  // --publish 와 같이 쓰면 의도하지 않은 글이 실제 계정에 올라간다.
+  it("--file 이 마지막이면 오류 (첫 글로 넘어가지 않는다)", () => {
+    const r = parseArgs(["--file"]);
+    expect(r.file).toBeNull();
+    expect(r.error).toMatch(/큐 파일 이름/);
+  });
+
+  it("--file 다음이 또 다른 플래그면 오류", () => {
+    const r = parseArgs(["--file", "--publish"]);
+    expect(r.file).toBeNull();
+    expect(r.error).toMatch(/큐 파일 이름/);
+  });
+
+  it("--file 없으면 file 은 null 이고 오류도 없다", () => {
+    expect(parseArgs(["--publish"])).toEqual({
+      publish: true,
+      file: null,
+      error: null,
+    });
   });
 });

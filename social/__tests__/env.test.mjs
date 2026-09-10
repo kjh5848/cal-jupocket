@@ -98,3 +98,20 @@ describe("updateEnv", () => {
     expect(env.readEnv().THREADS_ACCESS_TOKEN).toBe("c");
   });
 });
+
+describe("updateEnv — 줄바꿈 보존", () => {
+  it("CRLF 파일을 LF로 바꾸지 않는다", () => {
+    writeFileSync(path, "NAVER_SEARCHAD_API_KEY=k\r\nTHREADS_ACCESS_TOKEN=\r\n");
+    env.updateEnv({ THREADS_ACCESS_TOKEN: "t" });
+    const raw = readFileSync(path, "utf8");
+    expect(raw).toContain("\r\n");
+    expect(raw).not.toMatch(/[^\r]\n/);
+    expect(env.readEnv().NAVER_SEARCHAD_API_KEY).toBe("k");
+  });
+
+  it("LF 파일은 LF로 유지한다", () => {
+    writeFileSync(path, "A=1\nB=\n");
+    env.updateEnv({ B: "2" });
+    expect(readFileSync(path, "utf8")).not.toContain("\r");
+  });
+});
