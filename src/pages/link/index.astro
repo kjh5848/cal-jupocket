@@ -16,6 +16,7 @@
  */
 import BaseHead from "../../components/BaseHead.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
+import BrandMark from "../../components/BrandMark.astro";
 import { hubGroups } from "../../data/linkhub";
 import { clusterColor } from "../../data/clusters";
 import "../../styles/global.css";
@@ -38,7 +39,9 @@ const dot = (id: string | null) =>
   <body class="hub-page">
     <main class="hub">
       <header class="hub-head">
-        <span class="hub-avatar" aria-hidden="true">₩</span>
+        <span class="hub-avatar">
+          <BrandMark size={40} />
+        </span>
         <h1>주포켓</h1>
         <p class="hub-handle">@jupocket.money</p>
         <p class="hub-bio">
@@ -79,7 +82,18 @@ const dot = (id: string | null) =>
 
 <style>
   .hub-page {
-    background: var(--accent-bg);
+    /* 노이즈 얹은 그라데이션. 위쪽에 브랜드색을 부드럽게 깔고 그 위에
+       미세한 알갱이를 덮는다. 알갱이는 SVG feTurbulence 를 데이터 URI 로
+       넣는다 — 외부 이미지 요청이 0이고, 타일이라 용량도 거의 없다.
+       색은 토큰에서 오므로 다크에서도 같은 공식이 그대로 돈다. */
+    background-color: var(--surface-2);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E"),
+      radial-gradient(120% 62% at 50% 0%, var(--brand-wash) 0%, var(--surface-2) 64%);
+    background-repeat: repeat, no-repeat;
+    background-size: 160px 160px, 100% 100%;
+    background-attachment: fixed, scroll;
+    min-height: 100vh;
   }
   .hub {
     max-width: 28rem;
@@ -100,8 +114,6 @@ const dot = (id: string | null) =>
     border-radius: 50%;
     background: #0b5cad;
     color: #fff;
-    font-size: 2.1rem;
-    font-weight: 700;
   }
   .hub-head h1 {
     font-size: 1.4rem;
@@ -161,11 +173,11 @@ const dot = (id: string | null) =>
     /* 손가락으로 누르는 버튼이라 높이를 넉넉히 준다. */
     min-height: 58px;
     padding: 0.7rem 1rem;
-    border-radius: 14px;
+    border-radius: var(--r-lg);
     background: var(--bg);
     color: var(--text);
     text-decoration: none;
-    box-shadow: 0 1px 2px rgb(16 24 40 / 0.05);
+    box-shadow: var(--shadow-1);
     transition:
       transform 0.12s ease,
       box-shadow 0.12s ease;

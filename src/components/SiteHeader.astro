@@ -5,37 +5,12 @@
  * currentColor를 써서 라이트/다크에 맞춰 색이 바뀐다. 파비콘은
  * public/favicon.svg(A안 채움형)로 분리한다.
  */
+import BrandMark from "./BrandMark.astro";
 ---
 
 <header class="site-header">
   <a href="/" class="brand" aria-label="주포켓 계산기 홈">
-    <svg
-      class="brand-mark"
-      viewBox="0 0 64 64"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 24 L32 32 L52 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="3.5"
-        stroke-linejoin="round"
-        stroke-linecap="round"></path>
-      <path
-        d="M12 24 L12 50 Q12 54 16 54 L48 54 Q52 54 52 50 L52 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="3.5"
-        stroke-linejoin="round"
-        stroke-linecap="round"></path>
-      <text
-        x="32"
-        y="49"
-        text-anchor="middle"
-        font-size="17"
-        font-weight="600"
-        fill="currentColor">₩</text>
-    </svg>
+    <BrandMark class="brand-mark" />
   </a>
   <nav class="site-nav" aria-label="Primary">
     <a href="/privacy/">개인정보처리방침</a>

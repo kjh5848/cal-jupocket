@@ -23,6 +23,48 @@
   --chart-loss: #b3541e;
   --chart-base: #0b5cad;
   --chart-gain: #1f7a4d;
+  /* ── 표면 ────────────────────────────────────────────────
+     --bg        페이지 바닥
+     --surface   그 위에 뜨는 카드
+     --surface-2 은은한 틴트(구역 구분·입력 배경)
+     오늘 이 구분이 없어서 없는 변수(--card)를 쓰다 다크에서 글자가
+     안 보였다. 이름을 고정해 둔다. */
+  --surface: #ffffff;
+  --surface-2: #f5f7fa;
+  --brand: #0b5cad;
+  --brand-wash: #e3edf9;
+
+  /* ── 모서리 ── 쓰이던 14종을 네 단계로. 이동폭 최대 2px. */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  /* ── 그림자 ── 띄우는 용도는 두 단계면 충분하다. */
+  --shadow-1: 0 1px 2px rgb(16 24 40 / 0.06);
+  --shadow-2: 0 1px 2px rgb(16 24 40 / 0.06), 0 8px 24px rgb(16 24 40 / 0.08);
+
+  /* ── 간격 ── 4px 배수. 새로 쓰는 곳부터 적용한다. */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+
+  /* ── 글자 크기 ── 21종이 흩어져 있었다. 새로 쓰는 곳부터 여기서. */
+  --t-xs: 0.78rem;
+  --t-sm: 0.875rem;
+  --t-md: 1rem;
+  --t-lg: 1.125rem;
+  --t-xl: 1.375rem;
+  --t-2xl: 1.75rem;
+
+  /* ── 모션 ── transition: all 은 쓰지 않는다. 속성을 적는다. */
+  --dur: 120ms;
+  --ease: ease;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,6 +80,14 @@
     --chart-base: #6fb3ff;
     --chart-gain: #4cc38a;
     --img-outline: rgba(255, 255, 255, 0.12); /* 다크에선 흰색 저투명 */
+
+    --surface: #1e2127;
+    --surface-2: #1e2127;
+    --brand: #6fb3ff;
+    --brand-wash: #1b2735;
+    /* 어두운 배경에서는 그림자가 안 보인다. 경계선이 그 역할을 한다. */
+    --shadow-1: none;
+    --shadow-2: none;
   }
 }
 
@@ -174,7 +224,7 @@ hr {
   width: 100%;
   padding: 0.5rem 0.6rem;
   border: 1px solid var(--rule);
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   background: var(--bg);
   color: var(--text);
   font: inherit;
@@ -192,7 +242,7 @@ hr {
   width: 100%;
   padding: 0.5rem 0.6rem;
   border: 1px solid var(--rule);
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   background: var(--bg);
   color: var(--text);
   font: inherit;
@@ -210,7 +260,7 @@ button,
   font-weight: 600;
   padding: 0.6rem 1.1rem;
   border: 1px solid var(--link);
-  border-radius: 5px;
+  border-radius: var(--r-xs);
   background: var(--link);
   color: #fff;
   cursor: pointer;
@@ -282,7 +332,7 @@ button:active,
 /* 인라인 설명 (접이식) — 계산 결과 옆에서 개념을 바로 풀어준다 */
 details {
   border: 1px solid var(--rule);
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   padding: 0.75rem 1rem;
   margin: 1.25rem 0;
 }
@@ -325,7 +375,7 @@ details[open] summary {
  * 여백을 좁히고 모서리를 다른 내부 요소(.stat-chip 등)와 맞춘다.
  */
 .bridge-card {
-  border-radius: 12px;
+  border-radius: var(--r-md);
   margin: 0 0 1.25rem;
   font-size: 0.9375rem;
 }
@@ -350,7 +400,7 @@ details[open] summary {
 .calc-card {
   background: var(--bg);
   border: 1px solid var(--rule);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   padding: 1.5rem;
   margin: 1.5rem 0 2rem;
   box-shadow:
@@ -370,7 +420,7 @@ details[open] summary {
   max-width: 100%;
   padding: 0.25rem;
   background: var(--accent-bg);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   gap: 0.25rem;
   margin: 0 0 1.5rem;
 }
@@ -380,7 +430,7 @@ details[open] summary {
   background: transparent;
   color: var(--muted);
   padding: 0.55rem 1.1rem;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   font: inherit;
   font-weight: 600;
   font-size: 0.9375rem;
@@ -410,7 +460,7 @@ details[open] summary {
 .segmented button[aria-pressed="true"] {
   background: var(--bg);
   color: var(--link);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-1);
 }
 
 .segmented button:focus-visible {
@@ -435,7 +485,7 @@ details[open] summary {
   width: 100%;
   padding: 1rem 3.25rem 1rem 1rem;
   border: 1px solid var(--rule);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   background: var(--accent-bg);
   color: var(--text);
   font: inherit;
@@ -472,7 +522,7 @@ details[open] summary {
   font-weight: 600;
   font-size: 0.875rem;
   border: 1px solid var(--rule);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   padding: 0.4rem 0.9rem;
   background: var(--accent-bg);
   color: var(--text);
@@ -492,7 +542,7 @@ details[open] summary {
 .result-hero {
   background: #14213d;
   color: #fff;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   padding: 1.25rem 1.4rem;
   margin: 0 0 1rem;
 }
@@ -521,7 +571,7 @@ details[open] summary {
 
 .stat-chip {
   background: var(--accent-bg);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   padding: 0.8rem 1rem;
 }
 
@@ -620,7 +670,7 @@ details[open] summary {
 .chart-legend .swatch {
   width: 0.85rem;
   height: 0.85rem;
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   flex: none;
 }
 
@@ -635,7 +685,7 @@ details[open] summary {
   margin: 0;
   padding: 0;
   border: 1px solid var(--rule);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   overflow: hidden;
 }
 
@@ -1229,7 +1279,7 @@ details[open] summary {
 .article-thumb {
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   background: var(--tb);
   /* 비율로 잡는다. min-height 만 두면 폭이 넓어질수록 납작해져서
      583px 열에서 3.94:1 까지 눌렸다. 좁은 화면에서는 제목이 여러 줄로
@@ -1276,7 +1326,7 @@ details[open] summary {
   width: 1.4rem;
   height: 1.4rem;
   flex: none;
-  border-radius: 5px;
+  border-radius: var(--r-xs);
   background: var(--tm);
   color: #fff;
   align-items: center;
@@ -1344,7 +1394,7 @@ details[open] summary {
 .home-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   margin: 0.5rem 0 2rem;
   padding: 3rem 1.75rem;
   background:
@@ -1360,7 +1410,7 @@ details[open] summary {
 .photo-frame {
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   outline: 1px solid var(--img-outline);
   outline-offset: -1px;
 }
@@ -1416,7 +1466,7 @@ details[open] summary {
   gap: 0.8rem;
   padding: 1rem 1.1rem;
   border: 1px solid var(--rule);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   background: var(--bg);
   text-decoration: none;
   color: var(--text);
@@ -1446,7 +1496,7 @@ details[open] summary {
   flex: none;
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   background: var(--cb);
   display: inline-flex;
   align-items: center;
@@ -1500,7 +1550,7 @@ details[open] summary {
   content: "";
   width: 0.7rem;
   height: 0.7rem;
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   background: var(--cm);
   flex: none;
 }
@@ -1515,7 +1565,7 @@ details[open] summary {
   gap: 0.65rem;
   padding: 0.75rem 0.85rem;
   border: 1px solid var(--rule);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   background: var(--bg);
   text-decoration: none;
   color: var(--text);
@@ -1528,7 +1578,7 @@ details[open] summary {
   flex: none;
   width: 2rem;
   height: 2rem;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--cb);
   display: inline-flex;
   align-items: center;
@@ -1547,7 +1597,7 @@ details[open] summary {
 .aside-box,
 .aside-cta {
   border: 1px solid var(--rule);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   padding: 1.1rem 1.2rem;
   margin-bottom: 1rem;
 }
@@ -1586,7 +1636,7 @@ details[open] summary {
   flex: none;
   width: 0.5rem;
   height: 0.5rem;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   background: var(--cm);
   transform: translateY(-0.1em);
 }
@@ -1616,7 +1666,7 @@ details[open] summary {
 /* 계산기 페이지 상단 배너 사진 */
 .calc-banner {
   height: 190px;
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   margin: 0.25rem 0 1.5rem;
 }
 
@@ -1654,7 +1704,7 @@ details[open] summary {
   min-height: 40px; /* 최소 히트 영역 */
   padding: 0.4rem 0.8rem;
   border: 1px solid var(--rule);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--bg);
   color: var(--text);
   font: inherit;
@@ -1723,7 +1773,7 @@ details[open] summary {
 .toc-inline {
   margin: 0 0 1.75rem;
   border: 1px solid var(--rule);
-  border-radius: 10px;
+  border-radius: var(--r-md);
   padding: 0.55rem 0.95rem;
 }
 .toc-inline summary {

@@ -1,0 +1,42 @@
+---
+/**
+ * 주포켓 마크 — 주머니에 ₩.
+ *
+ * 같은 그림이 헤더·파비콘·카드 아트보드·OG 이미지에 따로 그려져 있었고,
+ * 그래서 허브에는 주머니 없이 ₩ 글자만 들어가 있었다. 웹에서 쓰는 곳은
+ * 전부 이 컴포넌트를 쓴다. (파비콘과 OG 는 SVG 파일·문자열이라 별도지만
+ * 좌표는 여기와 같은 64 격자를 쓴다.)
+ *
+ * 색은 currentColor 를 따른다 — 감싸는 쪽에서 color 만 정하면 된다.
+ */
+interface Props {
+  /** 픽셀 크기. 정사각이다. */
+  size?: number;
+  class?: string;
+}
+const { size = 28, class: cls = "" } = Astro.props;
+---
+
+<svg
+  class={cls}
+  viewBox="0 0 64 64"
+  width={size}
+  height={size}
+  aria-hidden="true"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="3.5"
+  stroke-linejoin="round"
+  stroke-linecap="round"
+>
+  <path d="M12 24 L32 32 L52 24"></path>
+  <path d="M12 24 L12 50 Q12 54 16 54 L48 54 Q52 54 52 50 L52 24"></path>
+  <text
+    x="32"
+    y="49"
+    text-anchor="middle"
+    font-size="17"
+    font-weight="600"
+    fill="currentColor"
+    stroke="none">₩</text>
+</svg>

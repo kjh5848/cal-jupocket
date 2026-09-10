@@ -11,7 +11,8 @@ export default defineConfig({
       // (페이지 자체에도 noindex가 걸려 있다 — 이중 방어)
       filter: (page) => !page.includes("/oauth/") &&
         !page.includes("/cards/") &&
-        !page.includes("/link/"),
+        !page.includes("/link/") &&
+        !page.includes("/design/"),
     }),
   ],
 });
