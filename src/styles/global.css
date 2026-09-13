@@ -1137,6 +1137,16 @@ details[open] summary {
   color: var(--link);
 }
 
+/* 히어로 아래 보조 링크 — 소셜에서 번호를 보고 온 사람용.
+   검색으로 온 사람에게는 거슬리지 않을 만큼만 작게 둔다. */
+.hero-hub {
+  margin: var(--s-3) 0 0;
+  font-size: var(--t-sm);
+}
+.hero-hub a {
+  font-weight: 700;
+}
+
 .site-nav,
 .site-footer-nav {
   border-bottom: 0;
