@@ -18,7 +18,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import sharp from "sharp";
-import { clusters, clusterColor } from "../src/data/clusters.ts";
+import { clusters, clusterColor, displayTitle } from "../src/data/clusters.ts";
 import { icons } from "../src/data/icons.ts";
 import { ogSlug } from "../src/lib/og.ts";
 
@@ -108,7 +108,7 @@ for (const c of clusters) {
   for (const l of c.links) {
     jobs.push({
       slug: ogSlug(l.href),
-      title: l.title,
+      title: displayTitle(l),
       clusterTitle: c.title,
       color: clusterColor[c.id],
       iconKey: l.icon,

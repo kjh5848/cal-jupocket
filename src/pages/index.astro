@@ -11,7 +11,7 @@ import ClarityHead from "../components/ClarityHead.astro";
 import AdSenseHead from "../components/AdSenseHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
-import { clusters, clusterColor, recent, linkByHref } from "../data/clusters";
+import { clusters, clusterColor, recent, linkByHref, displayTitle } from "../data/clusters";
 import { icons } from "../data/icons";
 import { liveSocials } from "../data/social";
 import "../styles/global.css";
@@ -75,7 +75,7 @@ const recentCards = recent
                   <svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[l.icon]} />
                 </span>
                 <span class="tool-body">
-                  <span class="tool-title">{l.title}</span>
+                  <span class="tool-title">{displayTitle(l)}</span>
                   <span class="tool-blurb">{l.blurb}</span>
                 </span>
               </a>
@@ -106,7 +106,7 @@ const recentCards = recent
                       <span class="post-icon">
                         <svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[g.icon]} />
                       </span>
-                      <span class="post-title">{g.title}</span>
+                      <span class="post-title">{displayTitle(g)}</span>
                     </a>
                   ))}
                 </div>
@@ -124,7 +124,7 @@ const recentCards = recent
                   <li>
                     <a href={link.href} style={`--cm:${color.mark}`}>
                       <span class="recent-dot" aria-hidden="true" />
-                      {link.title}
+                      {displayTitle(link)}
                     </a>
                   </li>
                 ))

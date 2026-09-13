@@ -16,6 +16,7 @@ import ClarityHead from "../../../components/ClarityHead.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
 import CardArtboard from "../../../components/CardArtboard.astro";
+import CardCarousel from "../../../components/CardCarousel.astro";
 import { cardSets } from "../../../data/cards";
 import { clusterColor } from "../../../data/clusters";
 import { liveSocials } from "../../../data/social";
@@ -56,20 +57,7 @@ const SCALE = 0.26;
 
       {
         shots.length > 0 ? (
-          <ul class="cardset-strip">
-            {shots.map((n) => (
-              <li>
-                <img
-                  src={`/cards/${set.slug}/${n}.jpg`}
-                  alt={`카드 ${n}`}
-                  width="1080"
-                  height="1350"
-                  loading={n > 2 ? "lazy" : "eager"}
-                  decoding="async"
-                />
-              </li>
-            ))}
-          </ul>
+          <CardCarousel slug={set.slug} shots={shots} label={heading} />
         ) : (
           <div class="cardset-preview">
             {set.cards.map((card) => (
@@ -116,24 +104,9 @@ const SCALE = 0.26;
     color: var(--muted);
   }
 
-  .cardset-strip {
-    list-style: none;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-    gap: var(--s-3);
-    margin: var(--s-4) 0 0;
-    padding: 0;
+  .cardset :global(.carousel) {
+    margin-top: var(--s-4);
   }
-  .cardset-strip img {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 5;
-    border-radius: var(--r-md);
-    border: 1px solid var(--img-outline);
-    background: var(--surface);
-  }
-
   .cardset-preview {
     display: flex;
     gap: var(--s-4);

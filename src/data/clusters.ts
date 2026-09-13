@@ -15,7 +15,26 @@ export interface ClusterLink {
   icon: string;
   /** 홈 계산기 카드용 한 줄 설명(계산기에만). */
   blurb?: string;
+  /**
+   * 연도에 따라 숫자가 바뀌는 글에만 붙인다(세율·한도·기준금액·신고일정).
+   * 제목 문자열에 "2026"을 박지 않는 이유: 내년에 열네 군데를 손으로 고쳐야
+   * 하고, 한 군데를 빠뜨리면 2026과 2027이 같은 페이지에 같이 나온다.
+   *
+   * 올리는 순서가 있다 — rates 를 원문으로 재검증하고 verifiedOn 을 갱신한
+   * 뒤에만 올린다. 숫자를 확인하지 않고 연도만 올리는 것은 가짜 최신화다.
+   */
+  year?: number;
 }
+
+/**
+ * 화면에 쓰는 제목. year 가 있으면 "2026년 " 을 앞에 붙인다.
+ *
+ * 계산기에는 붙이지 않는다(항상 최신이라 연도를 달면 오히려 낡아 보인다).
+ * 링크허브 라벨에도 붙이지 않는다 — 라벨은 30자 상한이 걸려 있고, 허브는
+ * 번호를 찾는 색인이라 연도가 할 일이 없다.
+ */
+export const displayTitle = (l: ClusterLink): string =>
+  l.year ? `${l.year}년 ${l.title}` : l.title;
 
 export interface Cluster {
   id: string;
@@ -43,9 +62,9 @@ export const clusters: Cluster[] = [
       { href: "/withholding/", title: "원천징수 계산기 (3.3%·8.8%)", kind: "calc", icon: "receipt", blurb: "사업소득 3.3%·기타소득 8.8% 원천징수액과 실수령액" },
       { href: "/income-tax-refund/", title: "종소세 환급 예상 계산기", kind: "calc", icon: "coins", blurb: "총수입·경비율·공제로 5월 환급/추가납부 예상" },
       { href: "/guide/33-settlement/", title: "3.3%는 종합소득세에서 정산됩니다", kind: "guide", icon: "refresh" },
-      { href: "/guide/who-must-file/", title: "종합소득세 신고 대상, 나는 해야 하나", kind: "guide", icon: "checklist" },
-      { href: "/guide/income-tax-brackets/", title: "종합소득세 세율 구간(2026)", kind: "guide", icon: "chart" },
-      { href: "/guide/expense-rate/", title: "단순경비율 vs 기준경비율", kind: "guide", icon: "document" },
+      { href: "/guide/who-must-file/", title: "종합소득세 신고 대상, 나는 해야 하나", kind: "guide", icon: "checklist", year: 2026 },
+      { href: "/guide/income-tax-brackets/", title: "종합소득세 세율 구간", kind: "guide", icon: "chart", year: 2026 },
+      { href: "/guide/expense-rate/", title: "단순경비율 vs 기준경비율", kind: "guide", icon: "document", year: 2026 },
     ],
   },
   {
@@ -54,8 +73,8 @@ export const clusters: Cluster[] = [
     links: [
       { href: "/vat/", title: "부가세 계산기", kind: "calc", icon: "calculator", blurb: "공급가액↔합계 양방향 + 간이과세 업종별 납부세액" },
       { href: "/guide/vat-freelancer/", title: "프리랜서도 부가세를 내야 하나요?", kind: "guide", icon: "receipt" },
-      { href: "/guide/simplified-vat/", title: "간이과세 vs 일반과세, 뭐가 유리한가", kind: "guide", icon: "scale" },
-      { href: "/guide/vat-filing/", title: "부가세 신고, 언제 어떻게 하나", kind: "guide", icon: "calendar" },
+      { href: "/guide/simplified-vat/", title: "간이과세 vs 일반과세, 뭐가 유리한가", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/vat-filing/", title: "부가세 신고, 언제 어떻게 하나", kind: "guide", icon: "calendar", year: 2026 },
     ],
   },
   {
@@ -63,10 +82,10 @@ export const clusters: Cluster[] = [
     title: "노후·연금",
     links: [
       { href: "/national-pension-premium/", title: "국민연금 보험료 계산기 (지역가입)", kind: "calc", icon: "calculator", blurb: "월소득으로 2026년 요율(9.5%) 월·연 보험료" },
-      { href: "/guide/pension-premium-2026/", title: "2026년 국민연금 보험료, 지역가입자는 얼마 내나", kind: "guide", icon: "percent" },
+      { href: "/guide/pension-premium-2026/", title: "국민연금 보험료, 지역가입자는 얼마 내나", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/retirement-planning/", title: "노후대비, 순서대로 정리", kind: "guide", icon: "umbrella" },
       { href: "/guide/national-pension-estimate/", title: "국민연금 예상수령액 조회 후 시점 정하기", kind: "guide", icon: "calendar" },
-      { href: "/guide/pension-savings-tax-credit/", title: "연금저축·IRP 세액공제 한도(2026)", kind: "guide", icon: "coins" },
+      { href: "/guide/pension-savings-tax-credit/", title: "연금저축·IRP 세액공제 한도", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/irp-account/", title: "IRP란? 소득 있으면 누구나 여는 계좌", kind: "guide", icon: "wallet" },
       { href: "/guide/retirement-fund/", title: "노후자금 얼마 있어야 하나", kind: "guide", icon: "chart" },
       { href: "/guide/severance-to-freelance/", title: "퇴사하고 프리랜서 시작할 때", kind: "guide", icon: "briefcase" },

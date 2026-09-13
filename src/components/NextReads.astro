@@ -11,7 +11,7 @@
  * 스스로 읽히게 두었다. 허브 번호는 책 목차의 쪽번호처럼 오른쪽에 작게
  * 붙는다 — 인스타 카드가 "13번 글"이라 부르는 그 번호와 같다.
  */
-import { nextReads } from "../data/clusters";
+import { nextReads, displayTitle } from "../data/clusters";
 import { hubEntries } from "../data/linkhub";
 
 interface Props {
@@ -38,7 +38,7 @@ function note(p: (typeof picks)[number]): string | null {
         {picks.map((p) => (
           <li>
             <a href={p.link.href}>
-              <span class="nr-title">{p.link.title}</span>
+              <span class="nr-title">{displayTitle(p.link)}</span>
               <span class="nr-right">
                 {note(p) && <span class="nr-note">{note(p)}</span>}
                 {noByHref.has(p.link.href) && (

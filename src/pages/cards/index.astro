@@ -54,7 +54,11 @@ const sets = cardSets
         sets.map(({ set, shots }) => (
           <section class="gallery-set" aria-labelledby={`set-${set.slug}`}>
             <div class="gallery-head">
-              <h2 id={`set-${set.slug}`}>{set.cards[0].kind === "list" ? set.cards[0].title : set.slug}</h2>
+              <h2 id={`set-${set.slug}`}>
+                <a href={`/cards/${set.slug}/`}>
+                  {set.cards[0].kind === "list" ? set.cards[0].title : set.slug}
+                </a>
+              </h2>
               <a
                 class="gallery-more"
                 href={set.link}
@@ -66,14 +70,16 @@ const sets = cardSets
             <ul class="gallery-strip">
               {shots.map((n) => (
                 <li>
-                  <img
-                    src={`/cards/${set.slug}/${n}.jpg`}
-                    alt={`${set.slug} 카드 ${n}`}
-                    width="1080"
-                    height="1350"
-                    loading="lazy"
-                    decoding="async"
-                  />
+                  <a href={`/cards/${set.slug}/`} aria-label={`카드 ${n} — 전체 보기`}>
+                    <img
+                      src={`/cards/${set.slug}/${n}.jpg`}
+                      alt={`${set.slug} 카드 ${n}`}
+                      width="1080"
+                      height="1350"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </a>
                 </li>
               ))}
             </ul>
@@ -138,6 +144,9 @@ const sets = cardSets
     gap: var(--s-3);
     margin: var(--s-3) 0 0;
     padding: 0;
+  }
+  .gallery-strip a {
+    display: block;
   }
   .gallery-strip img {
     display: block;

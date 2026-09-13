@@ -6,7 +6,7 @@
  * 계산기는 배지로 구분하고, 각진 네모 스타일로 통일한다. 클러스터에
  * 속하지 않는 경로면 아무것도 렌더하지 않는다.
  */
-import { relatedFor } from "../data/clusters";
+import { relatedFor, displayTitle } from "../data/clusters";
 
 interface Props {
   path: string;
@@ -27,7 +27,7 @@ const related = relatedFor(path);
           <li class:list={["related-item", `is-${l.kind}`]}>
             <a href={l.href}>
               {l.kind === "calc" && <span class="related-badge">계산기</span>}
-              <span class="related-link-text">{l.title}</span>
+              <span class="related-link-text">{displayTitle(l)}</span>
             </a>
           </li>
         ))}

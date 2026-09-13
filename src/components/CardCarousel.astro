@@ -1,0 +1,278 @@
+---
+/**
+ * 카드뉴스 캐러셀 — 인스타 게시물처럼 한 장씩 넘겨 읽는다.
+ *
+ * 격자로 늘어놓으면 네 장이 동시에 보여서 "순서"가 사라진다. 카드뉴스는
+ * 1장이 후킹, 마지막이 CTA인 순서가 있는 물건이라 한 번에 한 장만 보여야
+ * 만든 대로 읽힌다.
+ *
+ * 외부 라이브러리를 쓰지 않는다. 넘기는 일 자체는 CSS scroll-snap 이
+ * 다 하고, 스크립트는 화살표·점·카운터를 붙이는 일만 한다. 그래서 JS 가
+ * 죽어도 스크롤로는 끝까지 읽을 수 있다 — 그 상태를 기본값으로 두려고
+ * 화살표·점을 hidden 으로 내보내고 스크립트가 켠다.
+ */
+interface Props {
+  slug: string;
+  shots: number[];
+  /** 세트 제목 — 스크린리더가 이 캐러셀이 뭔지 알아야 한다. */
+  label: string;
+}
+
+const { slug, shots, label } = Astro.props;
+const total = shots.length;
+---
+
+<div class="carousel" data-carousel>
+  <button class="car-nav car-prev" type="button" hidden aria-label="이전 카드">
+    <svg viewBox="0 0 24 24" aria-hidden="true"
+      ><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"></path></svg
+    >
+  </button>
+
+  <ul
+    class="car-track"
+    tabindex="0"
+    role="group"
+    aria-roledescription="캐러셀"
+    aria-label={label}
+  >
+    {
+      shots.map((n, i) => (
+        <li>
+          <img
+            src={`/cards/${slug}/${n}.jpg`}
+            alt={`${label} 카드 ${i + 1} / ${total}`}
+            width="1080"
+            height="1350"
+            loading={i === 0 ? "eager" : "lazy"}
+            decoding="async"
+          />
+        </li>
+      ))
+    }
+  </ul>
+
+  <button class="car-nav car-next" type="button" hidden aria-label="다음 카드">
+    <svg viewBox="0 0 24 24" aria-hidden="true"
+      ><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"></path></svg
+    >
+  </button>
+
+  <div class="car-foot" hidden>
+    <div class="car-dots">
+      {
+        shots.map((_, i) => (
+          <button
+            type="button"
+            data-dot={i}
+            aria-label={`${i + 1}번째 카드`}
+            aria-current={i === 0 ? "true" : "false"}
+          />
+        ))
+      }
+    </div>
+    <p class="car-count"><span data-cur>1</span> / {total}</p>
+  </div>
+</div>
+
+<style>
+  .carousel {
+    position: relative;
+    max-width: 26rem;
+    margin-inline: auto;
+  }
+
+  .car-track {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    border-radius: var(--r-md);
+    /* 스크롤바가 카드 밑에 붙으면 인스타 느낌이 깨진다. 점·카운터가
+       위치를 알려주므로 막대는 지운다. */
+    scrollbar-width: none;
+  }
+  .car-track::-webkit-scrollbar {
+    display: none;
+  }
+  .car-track:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+  }
+
+  .car-track > li {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+  }
+  .car-track img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--r-md);
+    border: 1px solid var(--img-outline);
+    background: var(--surface);
+  }
+
+  .car-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: var(--shadow-1);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .car-nav svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .car-prev {
+    left: 0.5rem;
+  }
+  .car-next {
+    right: 0.5rem;
+  }
+  .car-nav:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  /* 모바일은 스와이프가 더 빠르다. 화살표가 카드를 가리기만 한다. */
+  @media (max-width: 30rem) {
+    .car-nav {
+      display: none;
+    }
+  }
+
+  .car-foot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-3);
+    margin-top: var(--s-3);
+  }
+  .car-dots {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .car-dots button {
+    width: 6px;
+    height: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--rule);
+    cursor: pointer;
+    transition:
+      width var(--dur) var(--ease),
+      background var(--dur) var(--ease);
+  }
+  .car-dots button[aria-current="true"] {
+    width: 18px;
+    background: var(--brand);
+  }
+  .car-count {
+    margin: 0;
+    font-size: var(--t-xs);
+    font-weight: 700;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .car-track {
+      scroll-behavior: auto;
+    }
+    .car-dots button {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // 한 페이지에 캐러셀이 여러 개 와도 각자 움직여야 한다.
+  for (const root of document.querySelectorAll<HTMLElement>("[data-carousel]")) {
+    const track = root.querySelector<HTMLElement>(".car-track");
+    const foot = root.querySelector<HTMLElement>(".car-foot");
+    const prev = root.querySelector<HTMLButtonElement>(".car-prev");
+    const next = root.querySelector<HTMLButtonElement>(".car-next");
+    const dots = [...root.querySelectorAll<HTMLButtonElement>("[data-dot]")];
+    const cur = root.querySelector<HTMLElement>("[data-cur]");
+    if (!track) continue;
+
+    const slides = [...track.children] as HTMLElement[];
+    if (slides.length < 2) continue;
+
+    // 여기서부터 조작 수단이 생긴다. JS 가 없으면 hidden 인 채로 두고
+    // 스크롤만으로 읽게 둔다.
+    for (const el of [foot, prev, next]) el?.removeAttribute("hidden");
+
+    let index = -1;
+    const paint = (i: number) => {
+      if (i === index || i < 0 || i >= slides.length) return;
+      index = i;
+      if (cur) cur.textContent = String(i + 1);
+      dots.forEach((d, di) =>
+        d.setAttribute("aria-current", di === i ? "true" : "false"),
+      );
+      if (prev) prev.disabled = i === 0;
+      if (next) next.disabled = i === slides.length - 1;
+    };
+
+    const go = (i: number) => {
+      const t = Math.max(0, Math.min(slides.length - 1, i));
+      // 스크롤이 끝나기를 기다리지 않고 먼저 칠한다. 눌렀는데 점이 늦게
+      // 따라오면 고장 난 것처럼 보이고, 무엇보다 다음 클릭이 옛 index 를
+      // 기준으로 움직인다.
+      paint(t);
+      track.scrollTo({ left: slides[t].offsetLeft - track.offsetLeft });
+    };
+
+    // 스와이프·휠로 넘긴 것도 따라잡아야 한다. 칸 너비가 모두 같으므로
+    // 위치를 나누면 몇 번째인지 바로 나온다 — 관찰자를 두는 것보다 단순하고,
+    // 관찰자가 돌지 않는 상황(숨은 탭 등)에서도 상태가 굳지 않는다.
+    let settle: ReturnType<typeof setTimeout>;
+    track.addEventListener(
+      "scroll",
+      () => {
+        clearTimeout(settle);
+        settle = setTimeout(() => {
+          const w = slides[0].getBoundingClientRect().width || track.clientWidth;
+          if (w > 0) paint(Math.round(track.scrollLeft / w));
+        }, 80);
+      },
+      { passive: true },
+    );
+
+    prev?.addEventListener("click", () => go(index - 1));
+    next?.addEventListener("click", () => go(index + 1));
+    dots.forEach((d, di) => d.addEventListener("click", () => go(di)));
+
+    track.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        go(index - 1);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        go(index + 1);
+      }
+    });
+
+    paint(0);
+  }
+</script>
