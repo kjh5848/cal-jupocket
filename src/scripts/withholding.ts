@@ -6,6 +6,10 @@ import {
   currentValueOrDefault,
 } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
+import { track, trackCalculatorUse } from "../lib/track";
+
+/** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
+const reportUse = trackCalculatorUse("withholding");
 
 type IncomeType = "business" | "other";
 type Mode = "gross" | "net";
@@ -135,6 +139,7 @@ tabNet.addEventListener("click", () => {
 });
 
 amountInput.addEventListener("input", () => {
+  reportUse(parseAmount(amountInput.value));
   const value = parseAmount(amountInput.value);
   amountInput.value = value === 0 ? "" : formatAmountInput(value);
   const end = amountInput.value.length;
@@ -144,6 +149,7 @@ amountInput.addEventListener("input", () => {
 
 presetButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
+    track("preset_click", { calculator: "withholding" });
     const add = parseInt(btn.dataset.add ?? "0", 10);
     const next = parseAmount(amountInput.value) + add;
     amountInput.value = formatAmountInput(next);
@@ -152,10 +158,12 @@ presetButtons.forEach((btn) => {
 });
 
 btnDownload.addEventListener("click", () => {
+  track("save_result", { calculator: "withholding" });
   downloadCard(buildCard(), "withholding-result.png");
 });
 
 btnShare.addEventListener("click", async () => {
+  track("share_result", { calculator: "withholding" });
   await shareCard(
     buildCard(),
     `원천징수(${rateLabel()}) 계산 결과 - jupocket.com`,
@@ -163,6 +171,7 @@ btnShare.addEventListener("click", async () => {
 });
 
 btnCopy.addEventListener("click", async () => {
+  track("copy_result", { calculator: "withholding" });
   const text = `소득유형 ${incomeLabel()}(${rateLabel()}) / ${netLabel("계약금액")} ${formatWon(
     lastResult.gross,
   )} / 원천징수액 ${formatWon(lastResult.withholding)} / 실수령액 ${formatWon(

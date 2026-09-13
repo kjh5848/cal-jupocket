@@ -7,6 +7,10 @@ import {
   currentValueOrDefault,
 } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
+import { track, trackCalculatorUse } from "../lib/track";
+
+/** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
+const reportUse = trackCalculatorUse("income_tax_refund");
 
 const DEFAULT_GROSS_INCOME = 30000000;
 const DEFAULT_EXPENSE_RATE_PERCENT = rates.simpleExpenseRateDefault * 100;
@@ -107,6 +111,7 @@ function buildCard() {
 }
 
 amountInput.addEventListener("input", () => {
+  reportUse(parseAmount(amountInput.value));
   const value = parseAmount(amountInput.value);
   amountInput.value = value === 0 ? "" : formatAmountInput(value);
   const end = amountInput.value.length;
@@ -116,6 +121,7 @@ amountInput.addEventListener("input", () => {
 
 presetButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
+    track("preset_click", { calculator: "income_tax_refund" });
     const add = parseInt(btn.dataset.add ?? "0", 10);
     const next = parseAmount(amountInput.value) + add;
     amountInput.value = formatAmountInput(next);
@@ -137,10 +143,12 @@ dependentsInput.addEventListener("input", () => {
 });
 
 btnDownload.addEventListener("click", () => {
+  track("save_result", { calculator: "income_tax_refund" });
   downloadCard(buildCard(), "income-tax-refund-result.png");
 });
 
 btnShare.addEventListener("click", async () => {
+  track("share_result", { calculator: "income_tax_refund" });
   const statusLabel = lastResult.refund >= 0 ? "환급 예상액" : "추가납부 예상액";
   await shareCard(
     buildCard(),
@@ -149,6 +157,7 @@ btnShare.addEventListener("click", async () => {
 });
 
 btnCopy.addEventListener("click", async () => {
+  track("copy_result", { calculator: "income_tax_refund" });
   const statusLabel = lastResult.refund >= 0 ? "환급 예상액" : "추가납부 예상액";
   const text = `총수입 ${formatWon(lastResult.grossIncome)} / 경비율 ${lastResult.expenseRatePercent}% / 인적공제 ${lastResult.dependents}명 / 과세표준 ${formatWon(
     lastResult.taxableBase,

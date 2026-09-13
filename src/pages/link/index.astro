@@ -17,6 +17,7 @@
 import BaseHead from "../../components/BaseHead.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
 import GtagHead from "../../components/GtagHead.astro";
+import TrackLinks from "../../components/TrackLinks.astro";
 import BrandCoin from "../../components/BrandCoin.astro";
 import { hubGroups } from "../../data/linkhub";
 import { clusterColor } from "../../data/clusters";
@@ -77,6 +78,7 @@ const dot = (id: string | null) =>
         <span>세금 수치는 국세청·국민연금공단 원문을 확인해 씁니다.</span>
       </p>
     </main>
+      <TrackLinks />
   </body>
 </html>
 

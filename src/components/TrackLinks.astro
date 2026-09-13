@@ -1,0 +1,51 @@
+---
+/**
+ * 링크 클릭 추적 — 위임 리스너 하나로 처리한다.
+ *
+ * 글 안의 계산기 링크는 14개 파일에 흩어져 있다. 링크마다 onclick 을
+ * 붙이면 새 글을 쓸 때마다 빠뜨리게 되고, 빠진 걸 알아채지도 못한다.
+ * document 에서 한 번 잡으면 앞으로 추가되는 링크도 저절로 들어온다.
+ *
+ * 계산기 주소는 clusters.ts 가 안다 — 여기 따로 적으면 계산기가 늘 때
+ * 어긋난다.
+ */
+import { clusters } from "../data/clusters";
+
+const calcPaths = clusters.flatMap((c) =>
+  c.links.filter((l) => l.kind === "calc").map((l) => l.href),
+);
+---
+
+<script is:inline define:vars={{ calcPaths }}>
+  document.addEventListener(
+    "click",
+    (e) => {
+      const a = e.target instanceof Element ? e.target.closest("a[href]") : null;
+      if (!a || typeof window.gtag !== "function") return;
+
+      const href = a.getAttribute("href") || "";
+      const path = href.startsWith("/") ? href : null;
+      const from = location.pathname;
+
+      // 프로필 링크 허브의 번호 — 소셜에서 "N번 글" 을 보고 온 사람이
+      // 실제로 그 번호를 누르는지가 카드뉴스 성과의 마지막 마디다.
+      const no = a.querySelector(".hub-no")?.textContent?.trim();
+      if (no) {
+        window.gtag("event", "hub_click", { hub_no: Number(no), link_path: path });
+        return;
+      }
+
+      // 글 끝 "같이 보면 좋은 글"
+      if (a.closest(".nr-list, .next-reads")) {
+        window.gtag("event", "next_read", { from, link_path: path });
+        return;
+      }
+
+      // 글 → 계산기
+      if (path && calcPaths.includes(path) && from.startsWith("/guide/")) {
+        window.gtag("event", "guide_to_calc", { from, calculator_path: path });
+      }
+    },
+    { passive: true },
+  );
+</script>

@@ -6,6 +6,10 @@ import {
   formatAmountInput,
 } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
+import { track, trackCalculatorUse } from "../lib/track";
+
+/** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
+const reportUse = trackCalculatorUse("vat");
 
 // 세 모드: 공급가액→합계(supply) / 합계→공급가액(total) / 간이과세(simple)
 type Mode = "supply" | "total" | "simple";
@@ -118,6 +122,7 @@ tabSimple.addEventListener("click", () => setMode("simple"));
 rateSelect.addEventListener("change", compute);
 
 amountInput.addEventListener("input", () => {
+  reportUse(parseAmount(amountInput.value));
   const value = parseAmount(amountInput.value);
   amountInput.value = value === 0 ? "" : formatAmountInput(value);
   const end = amountInput.value.length;
@@ -127,6 +132,7 @@ amountInput.addEventListener("input", () => {
 
 presetButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
+    track("preset_click", { calculator: "vat" });
     const add = parseInt(btn.dataset.add ?? "0", 10);
     const next = parseAmount(amountInput.value) + add;
     amountInput.value = formatAmountInput(next);
@@ -135,14 +141,17 @@ presetButtons.forEach((btn) => {
 });
 
 btnDownload.addEventListener("click", () => {
+  track("save_result", { calculator: "vat" });
   downloadCard(buildCard(), "vat-result.png");
 });
 
 btnShare.addEventListener("click", async () => {
+  track("share_result", { calculator: "vat" });
   await shareCard(buildCard(), "부가세 계산 결과 - jupocket.com");
 });
 
 btnCopy.addEventListener("click", async () => {
+  track("copy_result", { calculator: "vat" });
   const text = lastLines.map(([k, v]) => `${k} ${v}`).join(" / ");
   if (!navigator.clipboard) return;
   await navigator.clipboard.writeText(text);

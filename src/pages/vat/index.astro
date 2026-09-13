@@ -9,6 +9,7 @@
 import BaseHead from "../../components/BaseHead.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
 import GtagHead from "../../components/GtagHead.astro";
+import TrackLinks from "../../components/TrackLinks.astro";
 import AdSenseHead from "../../components/AdSenseHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
@@ -164,5 +165,6 @@ const rates = vat.simplified.valueAddedRates;
     </main>
     <SiteFooter />
     <script src="../../scripts/vat.ts"></script>
+      <TrackLinks />
   </body>
 </html>

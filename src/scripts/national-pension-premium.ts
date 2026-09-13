@@ -5,6 +5,10 @@ import {
   formatAmountInput,
 } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
+import { track, trackCalculatorUse } from "../lib/track";
+
+/** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
+const reportUse = trackCalculatorUse("national_pension");
 
 let lastLines: [string, string][] = [];
 
@@ -56,6 +60,7 @@ function buildCard() {
 }
 
 incomeInput.addEventListener("input", () => {
+  reportUse(parseAmount(incomeInput.value));
   const value = parseAmount(incomeInput.value);
   incomeInput.value = value === 0 ? "" : formatAmountInput(value);
   const end = incomeInput.value.length;
@@ -65,6 +70,7 @@ incomeInput.addEventListener("input", () => {
 
 presetButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
+    track("preset_click", { calculator: "national_pension" });
     const add = parseInt(btn.dataset.add ?? "0", 10);
     const next = parseAmount(incomeInput.value) + add;
     incomeInput.value = formatAmountInput(next);
@@ -73,14 +79,17 @@ presetButtons.forEach((btn) => {
 });
 
 btnDownload.addEventListener("click", () => {
+  track("save_result", { calculator: "national_pension" });
   downloadCard(buildCard(), "nps-premium.png");
 });
 
 btnShare.addEventListener("click", async () => {
+  track("share_result", { calculator: "national_pension" });
   await shareCard(buildCard(), "국민연금 보험료 계산 결과 - jupocket.com");
 });
 
 btnCopy.addEventListener("click", async () => {
+  track("copy_result", { calculator: "national_pension" });
   const text = lastLines.map(([k, v]) => `${k} ${v}`).join(" / ");
   if (!navigator.clipboard) return;
   await navigator.clipboard.writeText(text);

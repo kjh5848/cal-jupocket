@@ -10,6 +10,7 @@
 import BaseHead from "../../components/BaseHead.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
 import GtagHead from "../../components/GtagHead.astro";
+import TrackLinks from "../../components/TrackLinks.astro";
 import AdSenseHead from "../../components/AdSenseHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
@@ -142,5 +143,6 @@ const srcStd = pp.sources.find((s) => s.url.includes("OHAE0001"))!;
     </main>
     <SiteFooter />
     <script src="../../scripts/national-pension-premium.ts"></script>
+      <TrackLinks />
   </body>
 </html>

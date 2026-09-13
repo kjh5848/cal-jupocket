@@ -6,6 +6,10 @@ import {
   currentValueOrDefault,
 } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
+import { track, trackCalculatorUse } from "../lib/track";
+
+/** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
+const reportUse = trackCalculatorUse("freelancer_33");
 
 type Mode = "gross" | "net";
 let mode: Mode = "gross";
@@ -81,6 +85,7 @@ tabGross.addEventListener("click", () => setMode("gross"));
 tabNet.addEventListener("click", () => setMode("net"));
 
 amountInput.addEventListener("input", () => {
+  reportUse(parseAmount(amountInput.value));
   const value = parseAmount(amountInput.value);
   amountInput.value = value === 0 ? "" : formatAmountInput(value);
   const end = amountInput.value.length;
@@ -90,6 +95,7 @@ amountInput.addEventListener("input", () => {
 
 presetButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
+    track("preset_click", { calculator: "freelancer_33" });
     const add = parseInt(btn.dataset.add ?? "0", 10);
     const next = parseAmount(amountInput.value) + add;
     amountInput.value = formatAmountInput(next);
@@ -98,14 +104,17 @@ presetButtons.forEach((btn) => {
 });
 
 btnDownload.addEventListener("click", () => {
+  track("save_result", { calculator: "freelancer_33" });
   downloadCard(buildCard(), "freelancer-33-result.png");
 });
 
 btnShare.addEventListener("click", async () => {
+  track("share_result", { calculator: "freelancer_33" });
   await shareCard(buildCard(), "3.3% 원천징수 계산 결과 - jupocket.com");
 });
 
 btnCopy.addEventListener("click", async () => {
+  track("copy_result", { calculator: "freelancer_33" });
   const text = `${netLabel("계약금액")} ${formatWon(lastResult.gross)} / 원천징수액 ${formatWon(lastResult.withholding)} / 실수령액 ${formatWon(lastResult.net)}`;
   if (!navigator.clipboard) return;
   await navigator.clipboard.writeText(text);
