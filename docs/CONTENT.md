@@ -138,6 +138,11 @@ Playwright `browser_resize(1080,1350)` → `browser_navigate` → `browser_take_
 >
 > **인스타는 JPEG 만 받는다** — PNG 면 `ig:post` 가 content-type 검사에서 멈춘다.
 
+뽑은 뒤 갤러리에 실제로 뜨는지 확인한다. 사이트가 파일을 찾는 일은
+`src/lib/published-cards.ts` 가 한다(`process.cwd()` 기준). 축소 아트보드가
+보이면 파일을 못 찾은 것이다 — `npm test` 의 `published-cards.test.ts` 가
+같은 것을 본다.
+
 ## ⑦ OG
 
 ```bash
