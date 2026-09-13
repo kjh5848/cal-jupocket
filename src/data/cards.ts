@@ -175,6 +175,75 @@ export const cardSets: CardSet[] = [
       },
     ],
   },
+  {
+    slug: "late-filing-penalty",
+    cluster: "income",
+    link: "https://jupocket.com/guide/late-filing-penalty/",
+    cards: [
+      {
+        kind: "list",
+        badge: "신고 기한 지남",
+        title: "가산세는 두 개가 따로 붙는다",
+        items: [
+          {
+            text: "무신고가산세 [[세액의 20%]]",
+            detail: "기한 후 신고하면 깎인다",
+          },
+          {
+            text: "납부지연가산세 [[1일 0.022%]]",
+            detail: "매일 늘고 감면 대상이 아니다",
+          },
+          {
+            text: "깎이는 건 {{무신고분뿐}}",
+            detail: "\"가산세 절반 감면\"은 절반만 맞는 말",
+          },
+          {
+            text: "6개월 넘기면 감면 [[0%]]",
+            detail: "국세기본법 제48조 제2항 제2호",
+          },
+        ],
+        footnote: "국세기본법 제47조의2·제47조의4 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "언제 신고하느냐가 전부",
+        sub: "무신고가산세 감면율",
+        rows: [
+          { label: "1개월 이내", value: "50% 감면", tone: "mark" },
+          { label: "3개월 이내", value: "30% 감면" },
+          { label: "6개월 이내", value: "20% 감면" },
+          { label: "6개월 초과", value: "감면 없음", tone: "warn" },
+        ],
+        footnote: "국세기본법 제48조 제2항 제2호 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "하루 차이로 4만원",
+        sub: "세액 100만원 기준 가산세 합계",
+        rows: [
+          { label: "10일", value: "102,200원" },
+          { label: "30일", value: "106,600원", tone: "mark" },
+          { label: "31일", value: "146,820원", tone: "warn" },
+          { label: "181일", value: "239,820원" },
+        ],
+        footnote: "31일째 감면율이 50%에서 30%로 떨어진다 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "note",
+        badge: "놓치기 쉬운 것",
+        title: "돈이 없어도 신고는 먼저",
+        body:
+          "세금을 당장 못 내도 [[신고부터 하면]] 무신고가산세가 깎입니다.\n\n신고와 납부는 별개입니다. 신고를 미루면 깎일 기회까지 같이 사라집니다.\n\n{{6개월이 지나면}} 감면이 아예 없어집니다.",
+        footnote: "국세기본법 제48조 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "cta",
+        title: "내 가산세는\n얼마일까?",
+        sub: "세액과 지난 일수만 넣으면 나와요",
+        refNo: 21,
+      },
+    ],
+  },
 ];
 
 export function cardSetBySlug(slug: string): CardSet | undefined {

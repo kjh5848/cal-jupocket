@@ -8,6 +8,8 @@
 import { describe, it, expect } from "vitest";
 import { cardSets, cardSetBySlug } from "../../data/cards";
 import { compute } from "../pension-premium";
+import { computeLateFiling } from "../penalty";
+import penalty from "../../rates/penalty-2026.json";
 import { parseMarkup } from "../card-markup";
 import { entryByNo } from "../../data/linkhub";
 import rates from "../../rates/pension-premium-2026.json";
@@ -174,5 +176,54 @@ describe("세트의 link 와 카드의 refNo 는 같은 곳을 가리킨다", ()
     const entry = entryByNo(cta.refNo);
     expect(entry, `허브에 ${cta.refNo}번이 없다`).toBeDefined();
     expect(new URL(set.link).pathname).toBe(entry!.href);
+  });
+});
+
+/**
+ * 가산세 카드는 금액과 감면율을 동시에 말한다. 둘 중 하나만 틀려도
+ * 카드를 본 사람이 신고 시점을 잘못 잡는다 — 회수할 수 없는 종류의 실수다.
+ */
+describe("late-filing-penalty 세트", () => {
+  const set = cardSetBySlug("late-filing-penalty");
+
+  it("감면율 표가 rates 와 같다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.sub.includes("감면율"),
+    );
+    if (t?.kind !== "table") throw new Error("감면율 표 없음");
+    for (const step of penalty.lateFilingRelief) {
+      const row = t.rows.find((r) => r.label.startsWith(`${step.withinMonths}개월`));
+      expect(row, `${step.withinMonths}개월 행`).toBeDefined();
+      expect(row!.value).toContain(`${step.relief * 100}%`);
+    }
+  });
+
+  it("금액 표가 computeLateFiling 과 같다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.sub.includes("100만원"),
+    );
+    if (t?.kind !== "table") throw new Error("금액 표 없음");
+    for (const row of t.rows) {
+      const days = Number(row.label.replace(/[^\d]/g, ""));
+      const expected = computeLateFiling({ tax: 1_000_000, daysLate: days }).total;
+      expect(parseWon(row.value), `${days}일`).toBe(expected);
+    }
+  });
+
+  it("리스트 카드가 현재 요율을 말한다", () => {
+    const list = set?.cards.find((c) => c.kind === "list");
+    if (list?.kind !== "list") throw new Error("리스트 카드 없음");
+    const joined = list.items.map((i) => i.text).join(" ");
+    // 0.00022 * 100 은 0.022000000000000002 가 된다 — 표시용으로 반올림해서
+    // 비교한다. rateSchedule() 이 같은 함정을 1000배 트릭으로 피한 것과 같다.
+    const pct = (n: number) => +(n * 100).toFixed(4);
+    expect(joined).toContain(`${pct(penalty.noReport.general)}%`);
+    expect(joined).toContain(`${pct(penalty.latePayment.dailyRate)}%`);
+  });
+
+  it("CTA 가 21번 글을 가리킨다", () => {
+    const cta = set?.cards.find((c) => c.kind === "cta");
+    if (cta?.kind !== "cta") throw new Error("CTA 없음");
+    expect(cta.refNo).toBe(21);
   });
 });
