@@ -244,6 +244,30 @@ npm run stats -- --show # 수집하지 않고 쌓인 것만 본다
 
 ---
 
+## 검색·AI 검색에 걸리게 하는 것 (자동으로 되는 것들)
+
+글·카드를 규칙대로 넣으면 아래는 따라온다. **따로 손댈 필요 없지만, 왜 그런지는
+알아야 망가뜨리지 않는다.**
+
+- **카드 내용이 페이지에 글자로 실린다** — `src/lib/card-text.ts` 가 `cards.ts`
+  에서 alt·전문·요약을 뽑는다. 카드뉴스 페이지는 JPEG 가 전부라 그림 안 내용은
+  기계가 못 읽는다. `cards.ts` 를 제대로 채우면 그대로 검색 대상이 된다
+- **구조화 데이터** — 글은 `Article`(`dateModified` = 각 글의 `updated`,
+  `citation` = 국세청·국민연금공단·국가법령정보센터), 카드 세트는
+  `ImageGallery` + 장마다 `ImageObject`
+- **사이트맵 `lastmod`** — `astro.config.mjs` 가 빌드 때 각 글의 `updated` 를
+  읽는다. **날짜를 지어내지 않는다.** 모르는 페이지는 비워 둔다 — 오늘로 채우면
+  배포할 때마다 전부 "오늘 바뀜"이 되어 신호가 죽는다
+- **`public/robots.txt`** — GPTBot·OAI-SearchBot·ClaudeBot·PerplexityBot·
+  Google-Extended·Applebot-Extended·CCBot 을 명시적으로 허용한다. 막아두면 AI
+  답변에 우리 글이 아니라 **우리 글을 베낀 곳**이 인용된다
+
+**그래서 ②에서 출처를 원문으로 다는 일이 두 배로 중요하다.** AI 답변은 근거가
+분명한 문서를 고른다 — 숫자 옆의 "출처 국세청"이 사람용 면피가 아니라 인용되는
+이유가 된다.
+
+---
+
 ## 운영상 기억할 것
 
 - **토큰은 양쪽 60일**이고 게시할 때마다 자동 연장된다 → **60일 넘게 안 올리면 죽는다.** 죽으면 `npm run social:setup` / `npm run ig:setup`
