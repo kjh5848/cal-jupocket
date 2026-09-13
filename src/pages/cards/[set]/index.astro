@@ -9,14 +9,13 @@
  * 미리보기 용도로 그대로 쓸모가 있다. 발행용 이미지는 /cards/<set>/<n>/ 을
  * 1080×1350 뷰포트로 찍어서 뽑는다.
  */
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import BaseHead from "../../../components/BaseHead.astro";
 import ClarityHead from "../../../components/ClarityHead.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
 import CardArtboard from "../../../components/CardArtboard.astro";
 import CardCarousel from "../../../components/CardCarousel.astro";
+import { publishedShots } from "../../../lib/published-cards";
 import { cardSets } from "../../../data/cards";
 import { clusterColor } from "../../../data/clusters";
 import { liveSocials } from "../../../data/social";
@@ -28,12 +27,7 @@ export function getStaticPaths() {
 
 const { set } = Astro.props;
 
-const publicDir = new URL("../../../../public/", import.meta.url);
-const shots = set.cards
-  .map((_, i) => i + 1)
-  .filter((n) =>
-    existsSync(fileURLToPath(new URL(`cards/${set.slug}/${n}.jpg`, publicDir))),
-  );
+const shots = publishedShots(set.slug, set.cards.length);
 
 const first = set.cards[0];
 const heading =

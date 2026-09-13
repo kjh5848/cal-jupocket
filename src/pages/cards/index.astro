@@ -9,13 +9,12 @@
  * 아직 이미지를 뽑지 않은 세트는 목록에서 뺀다 — 깨진 이미지가 나가는 것보다
  * 없는 편이 낫다.
  */
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import BaseHead from "../../components/BaseHead.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import { cardSets } from "../../data/cards";
+import { publishedShots } from "../../lib/published-cards";
 import { clusterColor } from "../../data/clusters";
 import { liveSocials } from "../../data/social";
 import "../../styles/global.css";
@@ -24,15 +23,8 @@ const title = "카드뉴스 — 주포켓";
 const description =
   "세금 계산기 주포켓이 인스타그램·스레드에 올린 카드뉴스 모음. 국민연금 보험료, 부가세 신고 일정 등을 한 장씩 정리했습니다.";
 
-const publicDir = new URL("../../../public/", import.meta.url);
-const has = (slug: string, n: number) =>
-  existsSync(fileURLToPath(new URL(`cards/${slug}/${n}.jpg`, publicDir)));
-
 const sets = cardSets
-  .map((s) => ({
-    set: s,
-    shots: s.cards.map((_, i) => i + 1).filter((n) => has(s.slug, n)),
-  }))
+  .map((s) => ({ set: s, shots: publishedShots(s.slug, s.cards.length) }))
   .filter((x) => x.shots.length > 0);
 ---
 
