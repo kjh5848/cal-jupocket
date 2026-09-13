@@ -169,3 +169,36 @@ npm run ig:post -- --publish    # 게시
 - 캡션의 URL 은 클릭되지 않는다. 그래서 링크를 본문에서 빼는 스레드 전략이
   여기서는 자동으로 성립하고, `reply` 문구가 캡션 끝에 붙는다.
 - 캐러셀은 2~20장, 첫 장 비율로 전부 잘린다.
+
+---
+
+## 성과 보기
+
+```bash
+npm run stats           # 수집해서 social/stats.json 에 쌓고 표로 보여준다
+npm run stats -- --show # 수집하지 않고 쌓인 것만 본다
+```
+
+원장(`posted.json`·`ig-posted.json`)의 id 를 그대로 조회한다. **게시 직후 한 번
+보고 끝내면 안 된다** — 인스타는 며칠에 걸쳐 오르므로 **48시간·7일 시점**에 다시
+돌린다. 덮어쓰지 않고 append 하므로 증가 곡선 자체가 신호가 된다.
+
+**insights 는 지금 쓰는 토큰으로 양쪽 다 조회된다** (2026-09-13 확인). 대시보드에서
+발급한 토큰이 조회 권한을 함께 갖고 있어서, `threads_manage_insights` /
+`instagram_business_manage_insights` 를 따로 추가하지 않았다. 토큰을 다시 발급한
+뒤 막히면 그때 앱 설정에서 확인한다 — 스크립트가 조용히 0 을 쌓지 않고 무엇이
+막혔는지 말한다.
+
+값이 진짜인지 의심되면 다른 경로로 교차검증한다. insights 의 `likes`·`comments` 는
+미디어 필드 `like_count`·`comments_count` 와 같아야 한다:
+
+```
+GET /v23.0/<id>?fields=like_count,comments_count,media_type,media_product_type
+```
+
+"전부 0" 이 나와도 버그가 아닐 수 있다. 처음 올린 계정은 실제로 0 이다 —
+같은 응답에 `replies` 같은 값이 하나라도 살아 있으면 응답은 진짜다.
+
+> 왜 필요한가: "반응 좋은 글을 반복한다"는 신호가 있어야 성립한다.
+> 첫 달은 측정 구간으로 두고 최적화하지 않는다. 자세한 발행 구조는
+> `docs/CONTENT.md` 참조.

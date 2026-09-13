@@ -37,7 +37,7 @@ export const hubEntries: HubEntry[] = [
   { no: 10, href: "/guide/vat-freelancer/", label: "프리랜서도 부가세를 내야 하나요?", kind: "guide" },
   { no: 11, href: "/guide/simplified-vat/", label: "간이과세 vs 일반과세, 뭐가 유리한가", kind: "guide" },
   { no: 12, href: "/guide/vat-filing/", label: "부가세 신고, 언제 어떻게 하나", kind: "guide" },
-  { no: 13, href: "/guide/pension-premium-2026/", label: "2026년 국민연금 보험료, 얼마 내나", kind: "guide" },
+  { no: 13, href: "/guide/pension-premium-2026/", label: "국민연금 보험료, 지역가입자는 얼마 내나", kind: "guide" },
   { no: 14, href: "/guide/retirement-planning/", label: "노후대비, 순서대로 정리", kind: "guide" },
   { no: 15, href: "/guide/national-pension-estimate/", label: "국민연금 예상수령액과 수령 시점", kind: "guide" },
   { no: 16, href: "/guide/pension-savings-tax-credit/", label: "연금저축·IRP 세액공제 한도 (2026)", kind: "guide" },

@@ -42,8 +42,11 @@ const history = readJson(STATS, []);
 
 function table(rows) {
   if (rows.length === 0) return "  (아직 쌓인 기록이 없습니다)";
-  const cols = ["at", "platform", "file", "views", "likes", "saved", "shares"];
-  const w = (c) => (c === "file" ? 32 : c === "at" ? 12 : 10);
+  // replies/comments 를 빼면 "전부 0" 으로 보인다 — 실제로는 값이 와 있는데도.
+  const cols = ["at", "platform", "file", "views", "reach", "likes",
+                "replies", "comments", "saved", "shares"];
+  const w = (c) =>
+    c === "file" ? 32 : c === "at" ? 12 : c === "platform" ? 11 : 9;
   const head = cols.map((c) => c.padEnd(w(c))).join("");
   const body = rows.map((r) =>
     cols
