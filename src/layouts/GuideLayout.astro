@@ -13,6 +13,7 @@
  */
 import BaseHead from "../components/BaseHead.astro";
 import ClarityHead from "../components/ClarityHead.astro";
+import GtagHead from "../components/GtagHead.astro";
 import AdSenseHead from "../components/AdSenseHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
@@ -70,6 +71,7 @@ const jsonLd = {
   <head>
     <BaseHead title={title} description={description} />
     <ClarityHead />
+    <GtagHead />
     <AdSenseHead />
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
   </head>

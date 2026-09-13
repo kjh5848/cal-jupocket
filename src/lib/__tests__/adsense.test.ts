@@ -5,6 +5,7 @@
  * 있으나 마나다. 눈으로는 확인하기 어려운 한 줄이라 여기서 지킨다.
  */
 import { describe, it, expect } from "vitest";
+import { GA4_MEASUREMENT_ID, GA4_ENABLED, isValidGa4Id } from "../../data/analytics";
 import { PUBLISHER_ID, SELLER_ID, GOOGLE_TAG_ID, adsTxt } from "../../data/adsense";
 
 describe("ads.txt", () => {
@@ -36,5 +37,22 @@ describe("ads.txt", () => {
       expect(l).toMatch(/^google\.com,/);
     }
     expect(adsTxt().endsWith("\n")).toBe(true);
+  });
+});
+
+/**
+ * GA4 는 로더가 조용히 안 붙어도 눈에 띄지 않는다 — 한 달 뒤에야
+ * "데이터가 왜 없지" 하고 알게 된다. 형식과 배선을 여기서 지킨다.
+ */
+describe("GA4", () => {
+  it("측정 ID 형식이 맞다", () => {
+    expect(isValidGa4Id(GA4_MEASUREMENT_ID)).toBe(true);
+    expect(GA4_ENABLED).toBe(true);
+  });
+
+  it("틀린 ID 는 걸러진다 — 오타로 조용히 수집이 멈추는 걸 막는다", () => {
+    for (const bad of ["", "G-", "UA-12345-1", "GTM-5S7QR9JF", "G-abc12345", "FELZX20X9E"]) {
+      expect(isValidGa4Id(bad), bad).toBe(false);
+    }
   });
 });

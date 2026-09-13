@@ -11,6 +11,7 @@
  */
 import BaseHead from "../../components/BaseHead.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
+import GtagHead from "../../components/GtagHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import { cardSets } from "../../data/cards";
@@ -32,6 +33,7 @@ const sets = cardSets
   <head>
     <BaseHead title={title} description={description} />
     <ClarityHead />
+    <GtagHead />
   </head>
   <body class="bg-texture">
     <SiteHeader />

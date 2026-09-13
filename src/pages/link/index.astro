@@ -16,6 +16,7 @@
  */
 import BaseHead from "../../components/BaseHead.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
+import GtagHead from "../../components/GtagHead.astro";
 import BrandCoin from "../../components/BrandCoin.astro";
 import { hubGroups } from "../../data/linkhub";
 import { clusterColor } from "../../data/clusters";
@@ -35,6 +36,7 @@ const dot = (id: string | null) =>
     <BaseHead title={title} description={description} />
     <meta name="robots" content="noindex, follow" />
     <ClarityHead />
+    <GtagHead />
   </head>
   <body class="bg-texture">
     <main class="hub">
