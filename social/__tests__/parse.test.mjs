@@ -20,6 +20,7 @@ import {
   SITE,
   parseAt,
   isDue,
+  findBodyLink,
 } from "../parse.mjs";
 
 describe("parsePost", () => {
@@ -229,5 +230,50 @@ describe("--due 플래그", () => {
   it("붙이면 true, 없으면 false", () => {
     expect(parseArgs(["--due", "--publish"]).due).toBe(true);
     expect(parseArgs(["--publish"]).due).toBe(false);
+  });
+});
+
+describe("예약 유예 창", () => {
+  const at = (h, m) => new Date(2026, 0, 1, h, m);
+
+  it("시각 직후에는 올린다", () => {
+    expect(isDue("09:00", at(9, 0))).toBe(true);
+    expect(isDue("09:00", at(9, 30))).toBe(true);
+    expect(isDue("09:00", at(10, 30))).toBe(true);
+  });
+
+  it("창을 넘기면 건너뛴다 — 저녁에 아침 글이 몰려 나오면 안 된다", () => {
+    expect(isDue("09:00", at(10, 31))).toBe(false);
+    expect(isDue("07:30", at(16, 0))).toBe(false);
+    expect(isDue("12:30", at(20, 0))).toBe(false);
+  });
+
+  it("아직 시각 전이면 당연히 안 올린다", () => {
+    expect(isDue("21:00", at(16, 0))).toBe(false);
+  });
+
+  it("창 크기는 바꿀 수 있다", () => {
+    expect(isDue("09:00", at(12, 0), 30)).toBe(false);
+    expect(isDue("09:00", at(12, 0), 24 * 60)).toBe(true);
+  });
+});
+
+describe("본문 링크 탐지 — 링크는 두 번째 스레드부터", () => {
+  it("본문에 링크가 있으면 잡아낸다", () => {
+    expect(findBodyLink("자세한 건 jupocket.com 에서")).toBe("jupocket.com");
+    expect(findBodyLink("여기 https://jupocket.com/guide/")).toMatch(/^https:/);
+    expect(findBodyLink("주소는 www.nts.go.kr 입니다")).toBe("www.nts.go.kr");
+  });
+
+  it("날짜·금액·비율을 링크로 오인하지 않는다", () => {
+    for (const t of [
+      "1월 1일~25일에 신고합니다.",
+      "9.5% 입니다. 월 285,000원.",
+      "2026.7.1~2027.6.30 적용",
+      "기준소득월액 6,590,000원",
+      "3.3% 떼고 받는 프리랜서인데",
+    ]) {
+      expect(findBodyLink(t), t).toBeNull();
+    }
   });
 });

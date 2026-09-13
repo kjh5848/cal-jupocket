@@ -122,9 +122,37 @@ export function parseAt(value) {
   return Number(m[1]) * 60 + Number(m[2]);
 }
 
-/** 지금이 예약 시각을 지났나. now 는 테스트에서 주입한다. */
-export function isDue(value, now = new Date()) {
+/**
+ * 본문에 링크가 있는지 본다.
+ *
+ * Threads 는 본문에 링크가 있으면 도달이 죽는다. 링크는 두 번째 스레드
+ * (reply)로만 내보낸다. 사람이 실수로 본문에 붙이는 걸 여기서 막는다 —
+ * 한 번 나가면 회수할 수 없고, 왜 조회수가 안 나오는지도 알기 어렵다.
+ */
+export function findBodyLink(text) {
+  if (typeof text !== "string") return null;
+  const url = /https?:[/][/]\S+/i;
+  const bare = /(?:^|[^a-zA-Z0-9@._-])((?:[a-z0-9-]+\.)+(?:com|co\.kr|kr|net|org|io|me)(?:[/][^\s]*)?)/i;
+  const m = text.match(url) ?? text.match(bare);
+  return m ? (m[1] ?? m[0]).trim() : null;
+}
+
+/** 예약 시각을 놓친 것으로 보는 기준(분). */
+export const DUE_GRACE_MIN = 90;
+
+/**
+ * 지금이 예약 시각 직후인가.
+ *
+ * "지났으면 무조건 올린다" 로 만들면 안 된다. 저녁에 처음 돌리는 순간
+ * 아침·점심 예약분이 한꺼번에 밀려나와, 시간대를 나눈 이유가 사라진다.
+ * PC 가 꺼져 있었을 때도 같은 일이 생긴다.
+ *
+ * 그래서 유예 창을 둔다. 창을 넘긴 것은 오늘은 건너뛰고, at 이 하루 중
+ * 시각이므로 내일 그 시간대에 다시 후보가 된다.
+ */
+export function isDue(value, now = new Date(), graceMin = DUE_GRACE_MIN) {
   const at = parseAt(value);
   if (at === null) return false;
-  return now.getHours() * 60 + now.getMinutes() >= at;
+  const mins = now.getHours() * 60 + now.getMinutes();
+  return mins >= at && mins - at <= graceMin;
 }

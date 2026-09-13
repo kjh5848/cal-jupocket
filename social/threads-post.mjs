@@ -38,6 +38,7 @@ import {
   textLength,
   parseArgs,
   isDue,
+  findBodyLink,
   TEXT_WARN,
   TEXT_HARD,
 } from "./parse.mjs";
@@ -200,6 +201,21 @@ const len = textLength(text);
 
 if (!text) {
   console.error(`\n✖ ${file} 본문이 비었습니다.\n`);
+  process.exit(1);
+}
+
+// 본문에 링크가 있으면 도달이 죽는다. 링크는 두 번째 스레드(reply)로만
+// 나간다 — 한 번 올라가면 회수할 수 없으므로 여기서 멈춘다.
+const stray = findBodyLink(text);
+if (stray) {
+  console.error(`\n✖ ${file} 본문에 링크가 있습니다: ${stray}`);
+  console.error(`  Threads 는 본문 링크가 있으면 도달이 줄어듭니다.`);
+  console.error(`  본문에서 빼고 frontmatter 의 reply: 로 옮기세요.\n`);
+  process.exit(1);
+}
+if (linkAttachment) {
+  console.error(`\n✖ ${file} 에 link: 가 있습니다 — 본문에 링크 카드가 붙습니다.`);
+  console.error(`  링크는 두 번째 스레드부터입니다. reply: 로 옮기세요.\n`);
   process.exit(1);
 }
 if (len > TEXT_HARD) {
