@@ -29,6 +29,7 @@ export const hubEntries: HubEntry[] = [
   { no: 3, href: "/income-tax-refund/", label: "종소세 환급 예상 계산기", kind: "calc" },
   { no: 4, href: "/vat/", label: "부가세 계산기", kind: "calc" },
   { no: 5, href: "/national-pension-premium/", label: "국민연금 보험료 계산기", kind: "calc" },
+  { no: 20, href: "/penalty/", label: "가산세 계산기 (기한 후 신고)", kind: "calc" },
 
   { no: 6, href: "/guide/33-settlement/", label: "3.3%는 종합소득세에서 정산됩니다", kind: "guide" },
   { no: 7, href: "/guide/who-must-file/", label: "종합소득세 신고 대상, 나는 해야 하나", kind: "guide" },
@@ -44,6 +45,7 @@ export const hubEntries: HubEntry[] = [
   { no: 17, href: "/guide/irp-account/", label: "IRP란? 소득 있으면 누구나", kind: "guide" },
   { no: 18, href: "/guide/retirement-fund/", label: "노후자금 얼마 있어야 하나", kind: "guide" },
   { no: 19, href: "/guide/severance-to-freelance/", label: "퇴사하고 프리랜서 시작할 때", kind: "guide" },
+  { no: 21, href: "/guide/late-filing-penalty/", label: "신고 기한을 놓쳤다면", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -85,6 +87,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/who-must-file",
       "/guide/income-tax-brackets",
       "/guide/expense-rate",
+      "/guide/late-filing-penalty",
     ]),
   },
   {

@@ -65,6 +65,8 @@ export const clusters: Cluster[] = [
       { href: "/guide/who-must-file/", title: "종합소득세 신고 대상, 나는 해야 하나", kind: "guide", icon: "checklist", year: 2026 },
       { href: "/guide/income-tax-brackets/", title: "종합소득세 세율 구간", kind: "guide", icon: "chart", year: 2026 },
       { href: "/guide/expense-rate/", title: "단순경비율 vs 기준경비율", kind: "guide", icon: "document", year: 2026 },
+      { href: "/penalty/", title: "가산세 계산기 (기한 후 신고)", kind: "calc", icon: "calendar", blurb: "신고를 놓쳤을 때 지금 신고하면 얼마인지" },
+      { href: "/guide/late-filing-penalty/", title: "종합소득세·부가세 신고 기한을 놓쳤다면", kind: "guide", icon: "checklist", year: 2026 },
     ],
   },
   {
@@ -98,6 +100,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/late-filing-penalty/",
   "/guide/pension-premium-2026/",
   "/guide/vat-filing/",
   "/national-pension-premium/",

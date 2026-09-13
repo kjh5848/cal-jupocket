@@ -65,6 +65,15 @@ export function computeLateFiling(input: LateFilingInput): PenaltyResult {
   const tax = won(input.tax);
   const days = Math.max(0, Math.floor(input.daysLate));
 
+  // 기한 내 신고면 가산세가 아예 없다. 감면율 0 과 헷갈리면 안 된다 —
+  // 감면 0 은 "20% 를 다 문다" 이고 여기는 "안 문다" 다.
+  if (days === 0) {
+    return {
+      noReportBase: 0, reliefRate: 0, reliefAmount: 0, noReport: 0,
+      latePayment: 0, total: 0, grandTotal: tax, reliefExpired: false,
+    };
+  }
+
   const rate = input.fraud ? rates.noReport.fraud : rates.noReport.general;
   const noReportBase = won(tax * rate);
 

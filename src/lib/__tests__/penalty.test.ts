@@ -142,3 +142,23 @@ describe("다음 감면 단계까지", () => {
     expect(daysUntilReliefDrops(200)).toBeNull(); // 이미 끝남
   });
 });
+
+describe("기한 내 신고", () => {
+  it("0일이면 가산세가 아예 없다 — 감면 0%와 다른 상태다", () => {
+    const p = computeLateFiling({ tax: 1_000_000, daysLate: 0 });
+    expect(p.noReportBase).toBe(0);
+    expect(p.noReport).toBe(0);
+    expect(p.latePayment).toBe(0);
+    expect(p.total).toBe(0);
+    expect(p.grandTotal).toBe(1_000_000); // 세금은 그대로 낸다
+    expect(p.reliefExpired).toBe(false);
+  });
+
+  it("하루만 늦어도 무신고가산세가 붙는다", () => {
+    expect(computeLateFiling({ tax: 1_000_000, daysLate: 1 }).total).toBeGreaterThan(0);
+  });
+
+  it("부정행위도 기한 내면 0이다", () => {
+    expect(computeLateFiling({ tax: 1_000_000, daysLate: 0, fraud: true }).total).toBe(0);
+  });
+});

@@ -1,0 +1,173 @@
+---
+/**
+ * 가산세 계산기 — 신고를 놓쳤을 때 지금 신고하면 얼마인가.
+ *
+ * 국세청은 가산세 "종류" 표를 주지만 "내 경우 얼마"를 답하지 않는다. 검색
+ * 수요(기한후신고·가산세 관련 21개 키워드 월 11,350)는 전부 금액을 묻는다.
+ * 그 자리를 메우는 계산기다.
+ *
+ * 숫자는 rates/penalty-2026.json 에서만 온다 — 국세기본법 제47조의2~4,
+ * 제48조와 시행령 제27조의4 원문에서 확인한 값이다.
+ *
+ * 감면 구간(1·3·6개월)이 이 계산의 핵심이다. 하루 차이로 감면율이 20%p
+ * 떨어지므로 "며칠 남았는지" 를 크게 보여준다.
+ */
+import BaseHead from "../../components/BaseHead.astro";
+import ClarityHead from "../../components/ClarityHead.astro";
+import GtagHead from "../../components/GtagHead.astro";
+import TrackLinks from "../../components/TrackLinks.astro";
+import AdSenseHead from "../../components/AdSenseHead.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import Disclaimer from "../../components/Disclaimer.astro";
+import p from "../../rates/penalty-2026.json";
+import "../../styles/global.css";
+
+const title = "가산세 계산기 — 기한 후 신고하면 얼마";
+const description =
+  "종합소득세·부가세 신고를 놓쳤을 때 지금 신고하면 가산세가 얼마인지 계산합니다. 무신고 20%, 기한후신고 감면 1개월 50%·3개월 30%·6개월 20%, 납부지연 1일 0.022%를 국세기본법 원문 기준으로 반영합니다.";
+
+const noReportPct = p.noReport.general * 100; // 20
+const dailyPct = p.latePayment.dailyRate * 100; // 0.022
+const srcNo = p.sources.find((s) => s.label.includes("제47조의2"))!;
+const srcRelief = p.sources.find((s) => s.label.includes("제48조"))!;
+const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>가산세 계산기</h1>
+      <p>
+        신고 기한을 놓쳤을 때 <strong>지금 신고하면</strong> 가산세가 얼마인지
+        계산합니다. 기한이 지난 뒤에도 빨리 신고할수록 무신고가산세가
+        줄어듭니다 — 그 감면이 <strong>1개월·3개월·6개월</strong>에서
+        단계적으로 떨어집니다.
+      </p>
+
+      <div class="calc-card">
+        <div class="calc-input-wrap">
+          <label id="input-label" for="tax">신고했어야 할 세액</label>
+          <input type="text" inputmode="numeric" id="tax" value="1,000,000" />
+          <span class="unit">원</span>
+        </div>
+
+        <div class="amount-presets" role="group" aria-label="금액 빠르게 올리기">
+          <button type="button" class="preset-chip" data-add="100000">+10만</button>
+          <button type="button" class="preset-chip" data-add="1000000">+100만</button>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="days">기한이 지난 일수</label>
+          <input type="text" inputmode="numeric" id="days" value="10" />
+          <span class="unit">일</span>
+        </div>
+
+        <div class="amount-presets" role="group" aria-label="기간 빠르게 고르기">
+          <button type="button" class="preset-chip" data-days="7">1주</button>
+          <button type="button" class="preset-chip" data-days="30">1개월</button>
+          <button type="button" class="preset-chip" data-days="90">3개월</button>
+          <button type="button" class="preset-chip" data-days="180">6개월</button>
+          <button type="button" class="preset-chip" data-days="365">1년</button>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">가산세 합계</p>
+          <p class="big" id="hero-value">102,200원</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">무신고가산세</span>
+            <span class="value" id="stat1-value">100,000원</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">납부지연가산세</span>
+            <span class="value" id="stat2-value">2,200원</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">세금 + 가산세</span>
+            <span class="value" id="stat3-value">1,102,200원</span>
+          </div>
+        </div>
+
+        <p id="relief-note" class="meta"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+          <button id="btn-copy" type="button" class="secondary">결과 복사</button>
+        </div>
+        <p id="copy-toast" class="meta" style="display:none;">
+          결과를 복사했어요.
+        </p>
+      </div>
+
+      <div class="callout warn">
+        <p>
+          ⚠️ <strong>납부지연가산세는 감면되지 않습니다.</strong> 기한 후 신고로
+          줄어드는 것은 무신고가산세({noReportPct}%)뿐입니다. 국세기본법
+          제48조 제2항 제2호가 감면 대상으로 제47조의2(무신고)만 들기
+          때문입니다. 둘을 합쳐 "가산세 50% 감면"이라고 계산하면 금액이
+          틀립니다.
+        </p>
+      </div>
+
+      <details>
+        <summary>감면은 왜 1개월·3개월·6개월에서 떨어지나요?</summary>
+        <p>
+          국세기본법 제48조 제2항 제2호가 기한 후 신고 시점에 따라 무신고
+          가산세를 깎아줍니다. <strong>1개월 이내 50%</strong>,
+          <strong>3개월 이내 30%</strong>, <strong>6개월 이내 20%</strong>이고
+          6개월을 넘기면 감면이 없습니다. 계단식이라 하루 차이로 감면율이
+          20%p 떨어질 수 있습니다. 다만 과세관청이 결정할 것을 미리 알고
+          신고한 경우는 감면에서 제외됩니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>신고는 했는데 적게 신고한 경우는요?</summary>
+        <p>
+          그건 <strong>과소신고</strong>라 다른 조문(제47조의3)이 적용되고
+          가산세가 {p.underReport.general * 100}%입니다. 수정신고를 하면
+          제48조 제2항 제1호에 따라 1개월 이내 90%부터 2년 이내 10%까지
+          여섯 단계로 감면됩니다. 이 계산기는 <strong>아예 신고하지 않은
+          경우</strong>를 다룹니다.
+        </p>
+      </details>
+
+      <p>
+        기한을 놓친 뒤 무엇부터 해야 하는지, 감면을 받으려면 어떤 신고를
+        해야 하는지는{" "}
+        <a href="/guide/late-filing-penalty/">신고 기한을 놓쳤을 때</a>에
+        정리했습니다.
+      </p>
+
+      <p class="meta">
+        무신고가산세는{" "}
+        <a href={srcNo.url} rel="nofollow noopener">국세기본법 제47조의2</a>,
+        감면율은{" "}
+        <a href={srcRelief.url} rel="nofollow noopener">제48조</a>,
+        납부지연 이자율(1일 {dailyPct}%)은{" "}
+        <a href={srcLate.url} rel="nofollow noopener">시행령 제27조의4</a>{" "}
+        원문에서 확인한 값입니다({p.verifiedOn} 확인 · {p.lawVersion}).
+        부정행위·복식부기의무자·법인·영세율은 계산에 넣지 않았습니다.
+        실제 부과액은 홈택스 또는 세무 전문가에게 확인하세요.
+      </p>
+
+      <div class="ad-slot" data-ad="penalty-result"></div>
+
+      <Disclaimer variant="calc" />
+    </main>
+    <SiteFooter />
+    <TrackLinks />
+    <script src="../../scripts/penalty.ts"></script>
+  </body>
+</html>
