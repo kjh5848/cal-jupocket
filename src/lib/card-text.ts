@@ -30,6 +30,9 @@ export function cardTitle(card: Card): string {
 /** 카드가 말하는 핵심 몇 가지. transcript·alt 가 공유한다. */
 function points(card: Card): string[] {
   switch (card.kind) {
+    case "cover":
+      // 표지는 사진 위 한 문장이 전부다. 그 문장이 곧 요지다.
+      return [stripMarkup(card.sub)];
     case "list":
       return card.items.map((i) =>
         [stripMarkup(i.text), stripMarkup(i.detail)].filter(Boolean).join(" — "),

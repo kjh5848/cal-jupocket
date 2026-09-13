@@ -12,6 +12,29 @@
  */
 import { clusterColor } from "./clusters";
 
+/**
+ * 표지 카드 — 사진 위에 한 문장.
+ *
+ * 안쪽 카드는 밀도가 강점이지만(조밀한 표·번호 목록), 첫 장은 역할이
+ * 다르다. 넘길지 말지를 0.5초에 정하게 만드는 자리라 읽을거리가 아니라
+ * 멈춤장치여야 한다. 그래서 표지만 사진을 쓴다.
+ *
+ * 사진은 public/photos/ 에 두고 흑백·저채도로 고른다 — 브랜드색과
+ * 형광펜이 그 위에 얹히기 때문이다.
+ */
+export interface CoverCard {
+  kind: "cover";
+  /** public 기준 경로. 예: /photos/card-calendar.jpg */
+  photo: string;
+  /** 사진 설명 — 스크린샷에는 안 나오지만 갤러리 alt 로 쓴다. */
+  photoAlt: string;
+  badge: string;
+  title: string;
+  /** 제목 아래 한 줄. 숫자를 여기 둔다. */
+  sub: string;
+  footnote: string;
+}
+
 export interface ListCard {
   kind: "list";
   badge: string;
@@ -47,7 +70,7 @@ export interface CtaCard {
   refNo?: number;
 }
 
-export type Card = ListCard | TableCard | NoteCard | CtaCard;
+export type Card = CoverCard | ListCard | TableCard | NoteCard | CtaCard;
 
 export interface CardSet {
   slug: string;
@@ -181,6 +204,39 @@ export const cardSets: CardSet[] = [
     link: "https://jupocket.com/guide/late-filing-penalty/",
     cards: [
       {
+        kind: "cover",
+        photo: "/photos/card-calendar.jpg",
+        photoAlt: "달력의 날짜 숫자 클로즈업",
+        badge: "신고 기한 지남",
+        title: "30일과 31일,\n4만원 차이",
+        sub: "가산세 감면은 계단식이라 하루 늦으면 한 칸 떨어집니다.",
+        footnote: "세액 100만원 기준 · 국세기본법 제48조 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "며칠 늦었나로 갈린다",
+        sub: "세액 100만원 기준 가산세 합계",
+        rows: [
+          { label: "10일", value: "102,200원" },
+          { label: "30일", value: "106,600원", tone: "mark" },
+          { label: "31일", value: "146,820원", tone: "warn" },
+          { label: "181일", value: "239,820원" },
+        ],
+        footnote: "31일째 감면율이 50%에서 30%로 떨어진다 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "언제 신고하느냐가 전부",
+        sub: "무신고가산세 감면율",
+        rows: [
+          { label: "1개월 이내", value: "50% 감면", tone: "mark" },
+          { label: "3개월 이내", value: "30% 감면" },
+          { label: "6개월 이내", value: "20% 감면" },
+          { label: "6개월 초과", value: "감면 없음", tone: "warn" },
+        ],
+        footnote: "국세기본법 제48조 제2항 제2호 · 출처 국가법령정보센터",
+      },
+      {
         kind: "list",
         badge: "신고 기한 지남",
         title: "가산세는 두 개가 따로 붙는다",
@@ -203,30 +259,6 @@ export const cardSets: CardSet[] = [
           },
         ],
         footnote: "국세기본법 제47조의2·제47조의4 · 출처 국가법령정보센터",
-      },
-      {
-        kind: "table",
-        title: "언제 신고하느냐가 전부",
-        sub: "무신고가산세 감면율",
-        rows: [
-          { label: "1개월 이내", value: "50% 감면", tone: "mark" },
-          { label: "3개월 이내", value: "30% 감면" },
-          { label: "6개월 이내", value: "20% 감면" },
-          { label: "6개월 초과", value: "감면 없음", tone: "warn" },
-        ],
-        footnote: "국세기본법 제48조 제2항 제2호 · 출처 국가법령정보센터",
-      },
-      {
-        kind: "table",
-        title: "하루 차이로 4만원",
-        sub: "세액 100만원 기준 가산세 합계",
-        rows: [
-          { label: "10일", value: "102,200원" },
-          { label: "30일", value: "106,600원", tone: "mark" },
-          { label: "31일", value: "146,820원", tone: "warn" },
-          { label: "181일", value: "239,820원" },
-        ],
-        footnote: "31일째 감면율이 50%에서 30%로 떨어진다 · 출처 국가법령정보센터",
       },
       {
         kind: "note",
