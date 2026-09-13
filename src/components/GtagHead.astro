@@ -6,10 +6,24 @@
  * "코드 없이 태그 추가" 라는 GTM 의 이점이 거의 없는 반면, 로더가 하나
  * 더 붙고 GTM 에서 '게시'를 빠뜨리면 조용히 수집이 멈추는 비용은 그대로다.
  *
- * 측정 ID가 비어 있거나 형식이 틀리면 아무것도 렌더하지 않는다 — 잘못된
- * ID로 스크립트만 부르는 것은 무게만 늘리고 데이터는 안 쌓인다.
+ * define:vars 를 쓰지 않는다. 그러면 Astro 가 스크립트를 블록으로 감싸고,
+ * 블록 안의 function 선언은 전역에 올라가지 않는다. 페이지뷰는 dataLayer
+ * 큐로 처리돼서 멀쩡히 수집되지만 window.gtag 가 없어, 나중에
+ * gtag("event", …) 를 부르는 순간 터진다. 실제로 그렇게 나갔다가 고쳤다.
+ *
+ * 측정 ID가 비었거나 형식이 틀리면 아무것도 렌더하지 않는다 — 틀린 ID로
+ * 스크립트만 부르면 무게만 늘고 데이터는 안 쌓이는데, 그걸 한참 뒤에야
+ * 알게 된다.
  */
 import { GA4_MEASUREMENT_ID, GA4_ENABLED } from "../data/analytics";
+
+const boot = `
+window.dataLayer = window.dataLayer || [];
+function gtag(){ dataLayer.push(arguments); }
+window.gtag = gtag;
+gtag("js", new Date());
+gtag("config", ${JSON.stringify(GA4_MEASUREMENT_ID)});
+`.trim();
 ---
 
 {
@@ -20,12 +34,7 @@ import { GA4_MEASUREMENT_ID, GA4_ENABLED } from "../data/analytics";
         async
         src={`https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`}
       />
-      <script is:inline define:vars={{ GA4_MEASUREMENT_ID }}>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag("js", new Date());
-        gtag("config", GA4_MEASUREMENT_ID);
-      </script>
+      <script is:inline set:html={boot} />
     </>
   )
 }
