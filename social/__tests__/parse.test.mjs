@@ -18,6 +18,8 @@ import {
   parseArgs,
   resolveImages,
   SITE,
+  parseAt,
+  isDue,
 } from "../parse.mjs";
 
 describe("parsePost", () => {
@@ -139,6 +141,7 @@ describe("parseArgs", () => {
   it("--file 없으면 file 은 null 이고 오류도 없다", () => {
     expect(parseArgs(["--publish"])).toEqual({
       publish: true,
+      due: false,
       file: null,
       error: null,
     });
@@ -191,5 +194,40 @@ describe("resolveImages", () => {
 describe("resolveLink — 이미지가 여러 장일 때", () => {
   it("캐러셀에는 링크 카드를 붙이지 않는다", () => {
     expect(resolveLink({ link: "https://a.com/", images: ["/a.jpg"] })).toBeNull();
+  });
+});
+
+describe("예약 시각", () => {
+  it("HH:MM 을 분으로 바꾼다", () => {
+    expect(parseAt("09:00")).toBe(540);
+    expect(parseAt("21:30")).toBe(1290);
+    expect(parseAt("00:00")).toBe(0);
+    expect(parseAt("23:59")).toBe(1439);
+  });
+
+  it("형식이 아니면 null — 잘못 적은 시각에 글이 나가면 안 된다", () => {
+    for (const bad of ["9:5", "25:00", "12:60", "아침", "", "9시", undefined, null, 900]) {
+      expect(parseAt(bad)).toBeNull();
+    }
+  });
+
+  it("isDue 는 지난 시각에만 참", () => {
+    const at10 = new Date(2026, 0, 1, 10, 0);
+    expect(isDue("09:00", at10)).toBe(true);
+    expect(isDue("10:00", at10)).toBe(true);
+    expect(isDue("10:01", at10)).toBe(false);
+    expect(isDue("23:00", at10)).toBe(false);
+  });
+
+  it("at 이 없으면 --due 가 집어가지 않는다", () => {
+    expect(isDue(undefined, new Date())).toBe(false);
+    expect(isDue("아무거나", new Date())).toBe(false);
+  });
+});
+
+describe("--due 플래그", () => {
+  it("붙이면 true, 없으면 false", () => {
+    expect(parseArgs(["--due", "--publish"]).due).toBe(true);
+    expect(parseArgs(["--publish"]).due).toBe(false);
   });
 });

@@ -1,13 +1,22 @@
 /**
- * Threads 게시 — 큐에서 다음 글 하나를 올린다.
+ * Threads 게시 — 큐에서 다음 글 하나를 올린다. 글만 올린다.
  *
  *   node social/threads-post.mjs              드라이런: 컨테이너만 만들고 멈춤
  *   node social/threads-post.mjs --publish    실제 게시
- *   node social/threads-post.mjs --file 002-vat-january-deadline.md --publish
+ *   node social/threads-post.mjs --due --publish   예약 시각이 된 것 하나
+ *   node social/threads-post.mjs --file 003-….md --publish
  *
- * 기본이 드라이런인 이유: 컨테이너 생성까지 가면 토큰·본문·이미지 URL이
- * 전부 검증된다. 게시하지 않은 컨테이너는 그냥 만료되므로 밖으로 나가는
+ * 이미지를 올리지 않는다. Threads 는 글이 먼저인 곳이고, 카드 렌더링이
+ * 빠지면 하루에 여러 편을 낼 수 있다. 카드뉴스는 인스타가 맡는다 —
+ * 같은 큐 파일을 쓰되 images: 는 ig-post.mjs 만 본다.
+ *
+ * 기본이 드라이런인 이유: 컨테이너 생성까지 가면 토큰과 본문이 전부
+ * 검증된다. 게시하지 않은 컨테이너는 그냥 만료되므로 밖으로 나가는
  * 영향이 0이다. 실제 게시는 --publish 를 명시해야만 일어난다.
+ *
+ * --due 는 한 번에 하나만 올린다. 30분마다 돌리면 큐 글의 at: 에 맞춰
+ * 저절로 벌어진다 — 하루치를 한꺼번에 쏟으면 같은 타임라인에 연달아
+ * 붙어서 사람도 알고리즘도 반복으로 본다.
  *
  * 본문에 링크를 달면 도달이 줄어든다. 그래서 링크·프로필 안내는 본문이
  * 아니라 첫 답글로 보낸다(frontmatter 의 reply). 본문은 내용만 담는다.
@@ -25,15 +34,12 @@ import { dirname, join } from "node:path";
 import { readEnv, updateEnv, requireEnv } from "./env.mjs";
 import {
   parsePost,
-  resolveImage,
-  resolveImages,
   resolveLink,
   textLength,
   parseArgs,
+  isDue,
   TEXT_WARN,
   TEXT_HARD,
-  CAROUSEL_MIN,
-  CAROUSEL_MAX,
 } from "./parse.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -46,7 +52,7 @@ const PUBLISH_DELAY_MS = 30_000;
 /** 답글은 본문보다 가볍다. 짧게 기다린다. */
 const REPLY_DELAY_MS = 8_000;
 
-const { publish: doPublish, file: pickFile, error: argError } = parseArgs(
+const { publish: doPublish, file: pickFile, due: dueOnly, error: argError } = parseArgs(
   process.argv.slice(2),
 );
 if (argError) {
@@ -136,18 +142,6 @@ async function refreshTokenIfDue(token) {
   }
 }
 
-/** 이미지가 실제로 공개돼 있는지 먼저 본다 — Threads 가 못 받아오면 실패한다. */
-async function assertReachable(urls) {
-  for (const u of urls) {
-    const head = await fetch(u, { method: "HEAD" });
-    if (!head.ok) {
-      console.error(`\n✖ 이미지 접근 불가 (${head.status}): ${u}\n`);
-      process.exit(1);
-    }
-  }
-  console.log(`· 이미지 ${urls.length}장 확인 ✓`);
-}
-
 const ledger = existsSync(LEDGER) ? JSON.parse(readFileSync(LEDGER, "utf8")) : [];
 const posted = new Set(ledger.map((e) => e.file));
 
@@ -155,7 +149,37 @@ const queue = existsSync(QUEUE_DIR)
   ? readdirSync(QUEUE_DIR).filter((f) => f.endsWith(".md")).sort()
   : [];
 
-const file = pickFile ?? queue.find((f) => !posted.has(f));
+/** 큐 글의 예약 시각(at: "09:00"). 없으면 null. */
+function atOf(f) {
+  const { meta } = parsePost(readFileSync(join(QUEUE_DIR, f), "utf8"));
+  return meta.at ?? null;
+}
+
+/**
+ * --due: 예약 시각이 지난 것 중 가장 이른 것 하나만 고른다.
+ *
+ * 한 번에 하나만 올리는 게 핵심이다 — 하루치를 한꺼번에 쏟으면 같은
+ * 타임라인에 열 편이 연달아 붙어서 사람도 알고리즘도 반복으로 본다.
+ * 30분마다 한 번씩 돌리면 예약한 시간대에 맞춰 저절로 벌어진다.
+ */
+let file;
+if (pickFile) {
+  file = pickFile;
+} else if (dueOnly) {
+  const now = new Date();
+  file = queue.filter((f) => !posted.has(f) && isDue(atOf(f), now))[0];
+  if (!file) {
+    const waiting = queue.filter((f) => !posted.has(f) && atOf(f));
+    console.log(
+      waiting.length
+        ? `\n아직 시각이 안 됐습니다. 대기 ${waiting.length}건 — 다음 ${waiting[0]} (at ${atOf(waiting[0])})\n`
+        : "\n예약된 글이 없습니다. 큐 글에 at: 09:00 을 넣으세요.\n",
+    );
+    process.exit(0);
+  }
+} else {
+  file = queue.find((f) => !posted.has(f));
+}
 if (!file) {
   console.log("\n큐에 올릴 글이 없습니다. social/queue/ 에 .md 를 추가하세요.\n");
   process.exit(0);
@@ -170,8 +194,6 @@ if (!pickFile && posted.has(file)) {
 }
 
 const { meta, text } = parsePost(readFileSync(join(QUEUE_DIR, file), "utf8"));
-const images = resolveImages(meta);
-const single = images.length === 0 ? resolveImage(meta.image) : null;
 const linkAttachment = resolveLink(meta);
 const reply = meta.reply ?? null;
 const len = textLength(text);
@@ -189,28 +211,15 @@ if (len > TEXT_WARN) {
     `⚠ 본문 ${len}자 — 상한(${TEXT_HARD}자)에 근접. 한글/이모지 계산 방식이 문서상 모호하니 거절되면 줄이세요.`,
   );
 }
-if (images.length === 1) {
-  console.error(
-    `\n✖ 캐러셀은 ${CAROUSEL_MIN}장 이상이어야 합니다. 한 장이면 image: 로 쓰세요.\n`,
-  );
-  process.exit(1);
-}
-if (images.length > CAROUSEL_MAX) {
-  console.error(`\n✖ 캐러셀은 ${CAROUSEL_MAX}장까지입니다 (지금 ${images.length}장).\n`);
-  process.exit(1);
-}
 if (reply && textLength(reply) > TEXT_HARD) {
   console.error(`\n✖ 답글 ${textLength(reply)}자 — 상한 ${TEXT_HARD}자를 넘습니다.\n`);
   process.exit(1);
 }
 
-const kind = images.length ? `캐러셀 ${images.length}장` : single ? "이미지" : "텍스트";
-console.log(`\n▶ ${file}  (${kind})`);
+console.log(`\n▶ ${file}  (텍스트${meta.at ? ` · 예약 ${meta.at}` : ""})`);
 console.log("─".repeat(56));
 console.log(text);
 console.log("─".repeat(56));
-for (const u of images) console.log(`  이미지: ${u}`);
-if (single) console.log(`이미지: ${single}`);
 if (linkAttachment) console.log(`링크 카드: ${linkAttachment}`);
 if (reply) console.log(`답글: ${reply}`);
 console.log(`${len}자\n`);
@@ -218,44 +227,12 @@ console.log(`${len}자\n`);
 const token = await refreshTokenIfDue(env.THREADS_ACCESS_TOKEN);
 const userId = env.THREADS_USER_ID;
 
-if (images.length) await assertReachable(images);
-else if (single) await assertReachable([single]);
-
 console.log("· 컨테이너 생성 중…");
-let containerId;
 
-if (images.length) {
-  // 캐러셀: 낱장 컨테이너를 먼저 만들고, 그 id 들을 children 으로 묶는다.
-  const children = [];
-  for (const [i, url] of images.entries()) {
-    const item = await post(`${userId}/threads`, {
-      media_type: "IMAGE",
-      image_url: url,
-      is_carousel_item: "true",
-      access_token: token,
-    });
-    await waitReady(item.id, token);
-    children.push(item.id);
-    console.log(`  · ${i + 1}/${images.length} ✓`);
-  }
-  const carousel = await post(`${userId}/threads`, {
-    media_type: "CAROUSEL",
-    children: children.join(","),
-    text,
-    access_token: token,
-  });
-  containerId = carousel.id;
-} else {
-  const params = {
-    media_type: single ? "IMAGE" : "TEXT",
-    text,
-    access_token: token,
-  };
-  if (single) params.image_url = single;
-  if (linkAttachment) params.link_attachment = linkAttachment;
-  const c = await post(`${userId}/threads`, params);
-  containerId = c.id;
-}
+const params = { media_type: "TEXT", text, access_token: token };
+if (linkAttachment) params.link_attachment = linkAttachment;
+const c = await post(`${userId}/threads`, params);
+const containerId = c.id;
 console.log(`· 컨테이너 ✓ id=${containerId}`);
 
 if (!doPublish) {

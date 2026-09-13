@@ -92,17 +92,39 @@ export function textLength(text) {
  */
 export function parseArgs(args) {
   const publish = args.includes("--publish");
+  const due = args.includes("--due");
   const i = args.findIndex((a) => a === "--file" || a.startsWith("--file="));
-  if (i === -1) return { publish, file: null, error: null };
+  if (i === -1) return { publish, due, file: null, error: null };
 
   const a = args[i];
   const file = a.startsWith("--file=") ? a.slice("--file=".length) : args[i + 1];
   if (!file || file.startsWith("--")) {
     return {
       publish,
+      due,
       file: null,
       error: "--file 뒤에 큐 파일 이름이 필요합니다. 예: --file 002-vat-january-deadline.md",
     };
   }
-  return { publish, file, error: null };
+  return { publish, due, file, error: null };
+}
+
+/**
+ * 예약 시각(at: "09:00")을 분으로 바꾼다. 형식이 아니면 null.
+ *
+ * 하루 안의 시각만 쓴다 — 날짜까지 적게 하면 큐 글마다 날짜를 고쳐야 해서
+ * 하루 열 편씩 올리는 흐름에서 금방 어긋난다.
+ */
+export function parseAt(value) {
+  if (typeof value !== "string") return null;
+  const m = value.trim().match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+  if (!m) return null;
+  return Number(m[1]) * 60 + Number(m[2]);
+}
+
+/** 지금이 예약 시각을 지났나. now 는 테스트에서 주입한다. */
+export function isDue(value, now = new Date()) {
+  const at = parseAt(value);
+  if (at === null) return false;
+  return now.getHours() * 60 + now.getMinutes() >= at;
 }
