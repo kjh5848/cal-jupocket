@@ -7,11 +7,13 @@
  */
 
 :root {
-  --text: #1a1a1a;
-  --muted: #5c5c5c;
+  /* 순흑에 가까우면 흰 바탕에서 글자가 튄다. 살짝 낮춰도 14:1 로
+     AAA(7:1)의 두 배라 읽기에는 손해가 없다. */
+  --text: #23272e;
+  --muted: #545a62;
   --rule: #e0e0e0;
   --link: #0b5cad;
-  --bg: #ffffff;
+  --bg: #f7f9fb;
   --accent-bg: #f5f7fa;
   --measure: 68ch;
   --wide: 72rem; /* 홈·사이트 크롬(헤더/푸터)용 넓은 폭. 읽기 글은 --measure 유지 */
@@ -29,7 +31,7 @@
      --surface-2 은은한 틴트(구역 구분·입력 배경)
      오늘 이 구분이 없어서 없는 변수(--card)를 쓰다 다크에서 글자가
      안 보였다. 이름을 고정해 둔다. */
-  --surface: #ffffff;
+  --surface: #fbfcfd;
   --surface-2: #f5f7fa;
   --brand: #0b5cad;
   --brand-wash: #cfe1f7;

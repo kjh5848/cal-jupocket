@@ -12,10 +12,20 @@
  * 홈과 같은 내용이 두 군데가 되어 서로 순위를 갉아먹는다.
  */
 import BrandCoin from "./BrandCoin.astro";
+import { clusters } from "../data/clusters";
+
+/** 계산기 주소는 clusters.ts 가 안다 — 여기 따로 적으면 새 계산기가 빠진다. */
+const calcPaths = new Set(
+  clusters.flatMap((c) => c.links.filter((l) => l.kind === "calc").map((l) => l.href)),
+);
 
 const here = Astro.url.pathname;
 const links = [
-  { href: "/#tools", label: "계산기", match: (p: string) => p === "/" },
+  {
+    href: "/#tools",
+    label: "계산기",
+    match: (p: string) => p === "/" || calcPaths.has(p),
+  },
   { href: "/#reads", label: "읽을거리", match: (p: string) => p.startsWith("/guide/") },
   { href: "/cards/", label: "카드뉴스", match: (p: string) => p.startsWith("/cards/") },
 ];
