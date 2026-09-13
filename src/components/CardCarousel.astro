@@ -16,9 +16,11 @@ interface Props {
   shots: number[];
   /** 세트 제목 — 스크린리더가 이 캐러셀이 뭔지 알아야 한다. */
   label: string;
+  /** 장마다의 alt 문구. shots 와 같은 길이. 없으면 번호만 읽힌다. */
+  alts?: string[];
 }
 
-const { slug, shots, label } = Astro.props;
+const { slug, shots, label, alts = [] } = Astro.props;
 const total = shots.length;
 ---
 
@@ -42,7 +44,7 @@ const total = shots.length;
         <li>
           <img
             src={`/cards/${slug}/${n}.jpg`}
-            alt={`${label} 카드 ${i + 1} / ${total}`}
+            alt={alts[i] ?? `${label} 카드 ${i + 1} / ${total}`}
             width="1080"
             height="1350"
             loading={i === 0 ? "eager" : "lazy"}
@@ -119,6 +121,9 @@ const total = shots.length;
     background: var(--surface);
   }
 
+  /* 카드 그림 위에 얹히는 버튼이라 유리 효과로는 안 보인다 — 카드마다
+     배경색이 다르고 대부분 밝다. 페이지 배경색을 그대로 채워 불투명하게
+     두고 테두리로 카드와 분리한다. */
   .car-nav {
     position: absolute;
     top: 50%;
@@ -126,26 +131,30 @@ const total = shots.length;
     z-index: 1;
     display: grid;
     place-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
     padding: 0;
     border-radius: var(--r-pill);
-    border: 1px solid var(--glass-border);
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    box-shadow: var(--shadow-1);
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    box-shadow: var(--shadow-2);
     color: var(--text);
     cursor: pointer;
+  }
+  .car-nav:hover:not(:disabled) {
+    border-color: var(--brand);
+    color: var(--brand);
   }
   .car-nav svg {
     width: 1.25rem;
     height: 1.25rem;
   }
+  /* 카드 밖으로 반쯤 빼서 그림을 가리지 않게 한다. */
   .car-prev {
-    left: 0.5rem;
+    left: -0.75rem;
   }
   .car-next {
-    right: 0.5rem;
+    right: -0.75rem;
   }
   .car-nav:disabled {
     opacity: 0.35;
@@ -274,5 +283,64 @@ const total = shots.length;
     });
 
     paint(0);
+
+    // ── 모바일 자동 넘김 ──────────────────────────────────────────────
+    // 화살표가 없는 좁은 화면에서는 넘길 수 있다는 걸 아무도 모른다.
+    // 한 바퀴만 돌고 멈춘다 — 끝없이 움직이는 캐러셀은 읽는 사람을 쫓아내고,
+    // 손대면 바로 멈추는 것과 합쳐서 "멈출 수단"이 된다.
+    const STEP_MS = 4000;
+    const narrow = matchMedia("(max-width: 30rem)");
+    const calm = matchMedia("(prefers-reduced-motion: reduce)");
+
+    let timer: ReturnType<typeof setInterval> | null = null;
+    let stopped = false;
+    // 관찰자가 돌지 않는 환경도 있으므로 "보인다"를 기본값으로 둔다.
+    let onScreen = true;
+
+    const halt = () => {
+      if (timer !== null) clearInterval(timer);
+      timer = null;
+    };
+
+    const tick = () => {
+      if (index >= slides.length - 1) {
+        stopped = true; // 한 바퀴 끝. 다시 시작하지 않는다.
+        halt();
+        return;
+      }
+      go(index + 1);
+    };
+
+    const sync = () => {
+      const should =
+        !stopped && onScreen && narrow.matches && !calm.matches && !document.hidden;
+      if (should && timer === null) timer = setInterval(tick, STEP_MS);
+      else if (!should) halt();
+    };
+
+    /** 사람이 건드리면 그 뒤로는 사람 것이다. */
+    const surrender = () => {
+      stopped = true;
+      halt();
+    };
+    for (const ev of ["pointerdown", "touchstart", "wheel", "keydown"] as const) {
+      root.addEventListener(ev, surrender, { passive: true, once: true });
+    }
+
+    narrow.addEventListener("change", sync);
+    calm.addEventListener("change", sync);
+    document.addEventListener("visibilitychange", sync);
+
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) onScreen = e.isIntersecting;
+          sync();
+        },
+        { threshold: 0.5 },
+      ).observe(root);
+    }
+
+    sync();
   }
 </script>

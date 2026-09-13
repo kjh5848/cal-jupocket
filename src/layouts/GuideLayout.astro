@@ -23,6 +23,7 @@ import ArticleThumb from "../components/ArticleThumb.astro";
 import ArticleMeta from "../components/ArticleMeta.astro";
 import ShareButtons from "../components/ShareButtons.astro";
 import Toc from "../components/Toc.astro";
+import { ogPathFor } from "../lib/og-pages";
 import "../styles/global.css";
 
 interface Props {
@@ -34,6 +35,35 @@ interface Props {
 
 const { title, description, updated } = Astro.props;
 const path = Astro.url.pathname;
+
+/**
+ * Article 구조화 데이터.
+ *
+ * AI 검색이 인용할 때 "누가 언제 확인한 숫자인가"를 묻는다. 그 답이
+ * 페이지 안에만 문장으로 있으면 기계가 못 읽는다 — dateModified 와
+ * 출처 기관을 여기서 명시한다. updated 는 rates 의 원문 확인일이라
+ * 지어낸 날짜가 아니다.
+ */
+const siteUrl = Astro.site!.href.replace(/\/$/, "");
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: title,
+  description,
+  inLanguage: "ko",
+  url: `${siteUrl}${path}`,
+  mainEntityOfPage: { "@type": "WebPage", "@id": `${siteUrl}${path}` },
+  dateModified: updated,
+  image: new URL(ogPathFor(path), Astro.site).href,
+  author: { "@type": "Organization", name: "주포켓", url: siteUrl },
+  publisher: { "@type": "Organization", name: "주포켓", url: siteUrl },
+  isAccessibleForFree: true,
+  citation: [
+    { "@type": "Organization", name: "국세청", url: "https://www.nts.go.kr/" },
+    { "@type": "Organization", name: "국민연금공단", url: "https://www.nps.or.kr/" },
+    { "@type": "WebSite", name: "국가법령정보센터", url: "https://www.law.go.kr/" },
+  ],
+};
 ---
 
 <html lang="ko">
@@ -41,6 +71,7 @@ const path = Astro.url.pathname;
     <BaseHead title={title} description={description} />
     <ClarityHead />
     <AdSenseHead />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
   </head>
   <body>
     <SiteHeader />
