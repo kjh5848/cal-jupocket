@@ -80,10 +80,25 @@ const total = shots.length;
 </div>
 
 <style>
+  /* 화살표는 카드 옆 칸에 앉는다 — 위에 얹으면 아무리 대비를 올려도
+     그림을 가린다. 그래서 절대배치 대신 [화살표][카드][화살표] 3칸을
+     만든다. 좁은 화면에서는 화살표가 빠지고 카드 한 칸만 남는다. */
   .carousel {
-    position: relative;
-    max-width: 26rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 26rem) auto;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
     margin-inline: auto;
+  }
+  .car-foot {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 30rem) {
+    .carousel {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   .car-track {
@@ -121,14 +136,9 @@ const total = shots.length;
     background: var(--surface);
   }
 
-  /* 카드 그림 위에 얹히는 버튼이라 유리 효과로는 안 보인다 — 카드마다
-     배경색이 다르고 대부분 밝다. 페이지 배경색을 그대로 채워 불투명하게
-     두고 테두리로 카드와 분리한다. */
+  /* 카드마다 배경색이 다르고 대부분 밝아서 유리 효과로는 안 보인다.
+     페이지 표면색으로 불투명하게 채우고 테두리로 분리한다. */
   .car-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 1;
     display: grid;
     place-items: center;
     width: 2.75rem;
@@ -148,13 +158,6 @@ const total = shots.length;
   .car-nav svg {
     width: 1.25rem;
     height: 1.25rem;
-  }
-  /* 카드 밖으로 반쯤 빼서 그림을 가리지 않게 한다. */
-  .car-prev {
-    left: -0.75rem;
-  }
-  .car-next {
-    right: -0.75rem;
   }
   .car-nav:disabled {
     opacity: 0.35;
