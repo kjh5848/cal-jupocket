@@ -258,9 +258,36 @@ npm run stats -- --show # 수집하지 않고 쌓인 것만 본다
 - **사이트맵 `lastmod`** — `astro.config.mjs` 가 빌드 때 각 글의 `updated` 를
   읽는다. **날짜를 지어내지 않는다.** 모르는 페이지는 비워 둔다 — 오늘로 채우면
   배포할 때마다 전부 "오늘 바뀜"이 되어 신호가 죽는다
-- **`public/robots.txt`** — GPTBot·OAI-SearchBot·ClaudeBot·PerplexityBot·
-  Google-Extended·Applebot-Extended·CCBot 을 명시적으로 허용한다. 막아두면 AI
-  답변에 우리 글이 아니라 **우리 글을 베낀 곳**이 인용된다
+- **`public/robots.txt`** — `/oauth/`·`/design/`·`/link/` 만 잠근다. 봇별 그룹은
+  일부러 만들지 않는다 — 크롤러는 자기 이름의 그룹이 있으면 `User-agent: *` 를
+  통째로 무시해서, 한 봇을 허용하려다 잠가둔 곳이 열린다
+
+### ⚠ AI 크롤러는 Cloudflare 대시보드가 막고 있다
+
+`jupocket.com/robots.txt` 를 열어 보면 **우리 파일 앞에 Cloudflare 관리형
+블록**이 붙어 있고, 거기서 이렇게 막는다:
+
+```
+User-agent: GPTBot            Disallow: /
+User-agent: ClaudeBot         Disallow: /
+User-agent: Google-Extended   Disallow: /
+User-agent: CCBot             Disallow: /
+User-agent: Applebot-Extended Disallow: /
+(외 Amazonbot·Bytespider·meta-externalagent)
+```
+
+- 엣지에서 실제로 차단하지는 않는다 — 전부 200 을 준다. **robots.txt 지시문일
+  뿐**이다
+- **`OAI-SearchBot`·`PerplexityBot`·`Perplexity-User`·`ChatGPT-User` 는 막혀
+  있지 않다.** ChatGPT 검색과 Perplexity 는 지금도 들어온다
+- 막혀 있는 쪽 중 **`Google-Extended` 가 제일 아깝다** — 구글 AI 개요(AI
+  Overviews)가 근거를 모으는 통로라 일반 검색 유입과 직결된다
+
+**이건 코드로 못 고친다.** Cloudflare 대시보드에서 관리형 robots.txt / AI
+크롤러 설정을 꺼야 한다. 파일에서 `Allow` 로 덮어쓰려 하면 같은 봇에 Disallow 와
+Allow 가 동시에 걸린 모순된 파일이 된다. 학습(ai-train)은 막고 검색 인용만
+받고 싶다면 Cloudflare 의 Content Signals(`ai-train=no, use=reference`)가 이미
+그 뜻이므로, 봇 차단만 풀면 된다
 
 **그래서 ②에서 출처를 원문으로 다는 일이 두 배로 중요하다.** AI 답변은 근거가
 분명한 문서를 고른다 — 숫자 옆의 "출처 국세청"이 사람용 면피가 아니라 인용되는

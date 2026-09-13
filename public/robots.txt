@@ -1,67 +1,29 @@
 # 주포켓 — https://jupocket.com
 #
-# AI 검색(ChatGPT·Claude·Perplexity·Gemini)에서 인용되는 것이 목표다.
-# 그래서 AI 크롤러를 막지 않고 명시적으로 허용한다. 막아두면 답변에
-# 우리 글이 아니라 우리 글을 베낀 곳이 인용된다.
+# 봇별 그룹(User-agent: GPTBot 등)을 일부러 만들지 않는다. 크롤러는 자기
+# 이름의 그룹이 있으면 User-agent: * 를 통째로 무시하기 때문에, 봇마다
+# 그룹을 파면 아래 Disallow 가 그 봇에게만 사라진다. 한 줄 허용하려다
+# 잠가둔 곳이 열린다.
 #
-# 검색에 내보내지 않는 곳만 잠근다:
-#   /oauth/            Threads 인증 코드를 받는 일회성 유틸리티
-#   /cards/*/1/ 같은   스크린샷용 낱장 아트보드 (본 페이지가 따로 있다)
-#   /design/           내부 디자인 토큰 참조
-#   /link/             인스타 바이오 착지용 — 홈과 경쟁시킬 이유가 없다
+# AI 크롤러 정책은 이 파일이 정하지 않는다 — Cloudflare 대시보드의 관리형
+# robots.txt 가 이 내용 앞에 자기 블록을 붙인다(현재 GPTBot·ClaudeBot·
+# Google-Extended·CCBot·Applebot-Extended 등에 Disallow: / ). 바꾸려면
+# 거기서 끈다. 파일에서 Allow 로 덮어쓰려 하면 같은 봇에 Disallow 와
+# Allow 가 동시에 걸린 모순된 파일이 된다.
+#
+# 검색에 내보내지 않는 곳:
+#   /oauth/     Threads 인증 코드를 받는 일회성 유틸리티
+#   /design/    내부 디자인 토큰 참조
+#   /link/      인스타 바이오 착지용 — 홈과 경쟁시킬 이유가 없다
+#
+# 낱장 아트보드(/cards/<세트>/<번호>/)는 여기서 막지 않는다. 페이지마다
+# noindex, nofollow 가 붙어 있고, robots.txt 로 막으면 크롤러가 그 태그를
+# 읽지도 못해 오히려 색인에 남는다.
 
 User-agent: *
 Allow: /
 Disallow: /oauth/
 Disallow: /design/
 Disallow: /link/
-
-# 낱장 아트보드. /cards/ 와 /cards/<세트>/ 는 계속 열어둔다.
-Disallow: /cards/*/1/
-Disallow: /cards/*/2/
-Disallow: /cards/*/3/
-Disallow: /cards/*/4/
-Disallow: /cards/*/5/
-Disallow: /cards/*/6/
-
-# ── AI 크롤러 ─────────────────────────────────────────────────
-# OpenAI
-User-agent: GPTBot
-Allow: /
-
-User-agent: OAI-SearchBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-# Anthropic
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: Claude-Web
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-# Perplexity
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Perplexity-User
-Allow: /
-
-# Google 의 생성형 답변(Gemini·AI Overviews) 근거 수집
-User-agent: Google-Extended
-Allow: /
-
-# Apple Intelligence
-User-agent: Applebot-Extended
-Allow: /
-
-# Common Crawl — 여러 모델의 공통 출처다
-User-agent: CCBot
-Allow: /
 
 Sitemap: https://jupocket.com/sitemap-index.xml
