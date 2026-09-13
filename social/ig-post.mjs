@@ -27,6 +27,7 @@ import {
   resolveImage,
   resolveImages,
   parseArgs,
+  isDue,
   CAROUSEL_MIN,
   CAROUSEL_MAX,
 } from "./parse.mjs";
@@ -40,7 +41,7 @@ const PUBLISH_DELAY_MS = 20_000;
 /** 인스타 캡션 상한. */
 const CAPTION_HARD = 2200;
 
-const { publish: doPublish, file: pickFile, error: argError } = parseArgs(
+const { publish: doPublish, file: pickFile, due: dueOnly, error: argError } = parseArgs(
   process.argv.slice(2),
 );
 if (argError) {
@@ -146,7 +147,51 @@ function hasImages(f) {
   return resolveImages(meta).length > 0 || Boolean(meta.image);
 }
 
-const file = pickFile ?? queue.find((f) => !posted.has(f) && hasImages(f));
+/**
+ * --due: 하루에 한 건만.
+ *
+ * 스레드용 스케줄러는 30분마다 도는데 그 간격을 인스타에 그대로 쓰면 안
+ * 된다. 같은 날 여러 개를 올리면 게시물당 도달이 나뉜다. 그래서 오늘
+ * 이미 올렸으면 그냥 끝낸다.
+ *
+ * 예약 시각(at:)도 본다 — 시각이 안 됐으면 기다린다. 유예 창을 넘긴 것은
+ * 스레드와 같은 이유로 건너뛴다(저녁에 처음 돌렸다고 아침 예약분이
+ * 쏟아지면 안 된다).
+ */
+function postedToday() {
+  const today = new Date().toDateString();
+  return ledger.some((e) => e.at && new Date(e.at).toDateString() === today);
+}
+
+function atOf(f) {
+  const { meta } = parsePost(readFileSync(join(QUEUE_DIR, f), "utf8"));
+  return meta.at ?? null;
+}
+
+let file;
+if (pickFile) {
+  file = pickFile;
+} else if (dueOnly) {
+  if (postedToday()) {
+    console.log("\n오늘은 이미 올렸습니다. 인스타는 하루 한 건만 올립니다.\n");
+    process.exit(0);
+  }
+  const now = new Date();
+  file = queue.find(
+    (f) => !posted.has(f) && hasImages(f) && isDue(atOf(f), now),
+  );
+  if (!file) {
+    const waiting = queue.filter((f) => !posted.has(f) && hasImages(f));
+    console.log(
+      waiting.length
+        ? `\n아직 시각이 안 됐습니다. 대기 ${waiting.length}건 — 다음 ${waiting[0]} (at ${atOf(waiting[0]) ?? "없음"})\n`
+        : "\n올릴 카드 세트가 없습니다.\n",
+    );
+    process.exit(0);
+  }
+} else {
+  file = queue.find((f) => !posted.has(f) && hasImages(f));
+}
 if (!file) {
   console.log("\n올릴 카드 세트가 없습니다. 큐 글에 images: 를 넣으세요.\n");
   process.exit(0);

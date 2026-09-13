@@ -13,15 +13,17 @@
     "ig:setup": "node social/ig-setup.mjs",
     "ig:post": "node social/ig-post.mjs",
     "stats": "node social/stats.mjs",
-    "queue": "node social/queue-status.mjs"
+    "queue": "node social/queue-status.mjs",
+    "cards": "node social/render-cards.mjs"
   },
   "dependencies": {
-    "astro": "^7.0.0",
-    "@astrojs/sitemap": "^3.0.0"
+    "@astrojs/sitemap": "^3.0.0",
+    "astro": "^7.0.0"
   },
   "devDependencies": {
+    "playwright": "^1.63.0",
+    "typescript": "^5.5.0",
     "vitest": "^2.0.0",
-    "wrangler": "^3.0.0",
-    "typescript": "^5.5.0"
+    "wrangler": "^3.0.0"
   }
 }
