@@ -5,7 +5,7 @@ description: jupocket.com(cal 저장소)의 하루치 콘텐츠를 만든다 —
 
 # 하루치 콘텐츠 사이클
 
-글 1편 → 인스타 카드뉴스 1세트 + 스레드 텍스트 10편.
+글 1편 → 인스타 카드뉴스 1세트 + 스레드 텍스트 여러 편.
 
 이 저장소에서 **가장 먼저 무너지는 것은 숫자 검증**이다. 세금 사이트에서
 검증이 무너지면 잃는 것은 순위가 아니라 신뢰이고, 한 번 나간 글은 회수할 수
@@ -132,9 +132,9 @@ npm run queue
 
 ---
 
-## 6. 스레드 텍스트 10편
+## 6. 스레드 텍스트
 
-`social/queue/NNN-<slug>.md` × 10
+`social/queue/NNN-<slug>.md` — 0단계 표가 정한 편수만큼
 
 ```markdown
 ---
@@ -191,19 +191,17 @@ npm run queue    # 본문 링크 ✖, 길이, 예약 시각
 
 ---
 
-## 8. 카드 이미지 (수동)
+## 8. 카드 이미지
 
 ```bash
-npm run dev
+npm run cards
 ```
 
-아트보드 `/cards/<slug>/<n>/` 를 **1080×1350 뷰포트**로 스크린샷 →
-`public/cards/<slug>/<n>.jpg`
+아트보드를 1080×1350 JPEG 로 자동 캡처한다(Playwright).
 
-Playwright: `browser_resize(1080,1350)` → `browser_navigate` →
-`browser_take_screenshot({ filename, type:"jpeg" })`
-
-- **인스타는 JPEG 만 받는다.** PNG 면 `ig:post` 가 멈춘다
+- 기본은 **이미지가 없는 세트만** 뽑는다. 발행본을 말없이 덮어쓰면 인스타에
+  나간 그림과 사이트 그림이 달라진다
+- 이미 발행한 세트를 다시 뽑는 것(`--all`, `--set`)은 **사용자에게 묻는다**
 - 뽑은 뒤 갤러리에 실제로 뜨는지 본다. 축소 아트보드가 보이면 못 찾은 것
 
 ---
@@ -226,16 +224,21 @@ curl -sI https://jupocket.com/cards/<slug>/1.jpg | head -1
 
 ---
 
-## 10. 게시
+## 10. 게시 — 손댈 것 없다
 
-스레드는 **스케줄러가 알아서** 한다 — `at:` 시각에 맞춰 30분마다 하나씩.
-손댈 것 없다.
+스케줄러(`scripts/post-due.cmd`)가 30분마다 돌며 알아서 올린다.
 
-인스타만 사람이 돌린다:
+- **스레드**: `at:` 시각이 된 것 하나. 90분 유예 창을 넘기면 내일로 넘긴다
+- **인스타**: 하루 한 건. 같은 날 여러 개면 게시물당 도달이 나뉜다
+
+큐에 넣고 이미지를 배포하면 끝이다. 배포가 안 끝났는데 시각이 되면
+메타 서버가 이미지를 못 받아가므로 9단계의 200 확인을 건너뛰지 않는다.
+
+손으로 올려야 할 때만:
 
 ```bash
-npm run ig:post                 # 드라이런
-npm run ig:post -- --publish    # 게시
+npm run social:post -- --file NNN-….md --publish
+npm run ig:post -- --file NNN-….md --publish
 ```
 
 ---
