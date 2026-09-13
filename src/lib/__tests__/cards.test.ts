@@ -160,3 +160,19 @@ describe("vat-filing 카드", () => {
     expect(entryByNo(cta.refNo!)?.href).toBe("/guide/vat-filing/");
   });
 });
+
+/**
+ * 카드가 "13번 글" 이라고 지목해 놓고 사이트 버튼은 계산기로 보내고 있었다.
+ * 세트가 자기 자신과 모순이면 읽는 사람만 헤맨다 — 둘은 같은 곳이어야 한다.
+ */
+describe("세트의 link 와 카드의 refNo 는 같은 곳을 가리킨다", () => {
+  it.each(cardSets.map((s) => s.slug))("%s", (slug) => {
+    const set = cardSets.find((s) => s.slug === slug)!;
+    const cta = set.cards.find((c) => c.kind === "cta");
+    if (!cta || cta.kind !== "cta" || cta.refNo === undefined) return;
+
+    const entry = entryByNo(cta.refNo);
+    expect(entry, `허브에 ${cta.refNo}번이 없다`).toBeDefined();
+    expect(new URL(set.link).pathname).toBe(entry!.href);
+  });
+});

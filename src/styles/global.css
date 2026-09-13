@@ -1149,6 +1149,13 @@ details[open] summary {
   font-size: 0.9375rem;
 }
 
+/* 지금 보고 있는 갈래를 표시한다. 색만 쓰면 색각 이상에서 안 보이므로
+   굵기도 같이 바꾼다. */
+.site-nav a[aria-current="page"] {
+  font-weight: 700;
+  color: var(--link);
+}
+
 .site-footer {
   max-width: var(--wide);
   margin: 4rem auto 0;

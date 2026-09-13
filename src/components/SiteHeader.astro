@@ -1,18 +1,38 @@
 ---
 /**
- * 사이트 공통 마스트헤드. 모든 페이지 상단에 같은 모양으로 들어간다.
- * 심볼은 인라인 SVG(B안 — 포켓 라인 + ₩)라 네트워크 요청이 0이고
- * currentColor를 써서 라이트/다크에 맞춰 색이 바뀐다. 파비콘은
- * public/favicon.svg(A안 채움형)로 분리한다.
+ * 사이트 공통 마스트헤드.
+ *
+ * 한동안 로고 심볼 하나만 두고 있었는데(2cb80b3), 계산기 다섯 개와 글
+ * 열네 편, 카드뉴스가 생긴 지금은 헤더에서 아무 데도 갈 수 없는 게 더
+ * 큰 문제가 됐다. 이름을 되살리고 세 갈래를 연다.
+ *
+ * 개인정보처리방침은 푸터에만 둔다 — 길잡이가 아니라 법적 고지다.
+ *
+ * 계산기·읽을거리는 홈의 구획으로 보낸다. 목록 페이지를 따로 만들면
+ * 홈과 같은 내용이 두 군데가 되어 서로 순위를 갉아먹는다.
  */
 import BrandCoin from "./BrandCoin.astro";
+
+const here = Astro.url.pathname;
+const links = [
+  { href: "/#tools", label: "계산기", match: (p: string) => p === "/" },
+  { href: "/#reads", label: "읽을거리", match: (p: string) => p.startsWith("/guide/") },
+  { href: "/cards/", label: "카드뉴스", match: (p: string) => p.startsWith("/cards/") },
+];
 ---
 
 <header class="site-header">
   <a href="/" class="brand" aria-label="주포켓 계산기 홈">
     <BrandCoin size={38} animate={false} shadow={false} layers={3} />
+    <span class="brand-name">주포켓</span>
   </a>
-  <nav class="site-nav" aria-label="Primary">
-    <a href="/privacy/">개인정보처리방침</a>
+  <nav class="site-nav" aria-label="주요 메뉴">
+    {
+      links.map((l) => (
+        <a href={l.href} aria-current={l.match(here) ? "page" : undefined}>
+          {l.label}
+        </a>
+      ))
+    }
   </nav>
 </header>

@@ -62,7 +62,7 @@ export const cardSets: CardSet[] = [
   {
     slug: "pension-2026",
     cluster: "retirement",
-    link: "https://jupocket.com/national-pension-premium/",
+    link: "https://jupocket.com/guide/pension-premium-2026/",
     cards: [
       {
         kind: "list",
