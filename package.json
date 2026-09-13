@@ -12,7 +12,8 @@
     "og": "node social/render-og.mjs",
     "ig:setup": "node social/ig-setup.mjs",
     "ig:post": "node social/ig-post.mjs",
-    "stats": "node social/stats.mjs"
+    "stats": "node social/stats.mjs",
+    "queue": "node social/queue-status.mjs"
   },
   "dependencies": {
     "astro": "^7.0.0",
