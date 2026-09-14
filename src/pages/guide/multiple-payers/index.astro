@@ -15,6 +15,7 @@
  * 인적공제가 그 파일에서 오기 때문이다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import rates from "../../../rates/2026.json";
 import filing from "../../../rates/filing-2026.json";
 import { estimateRefund } from "../../../lib/income-tax";
@@ -162,7 +163,7 @@ const amount = (diff: number) => formatWon(Math.abs(diff));
     아니라, 흩어져 있어서 합계가 작아 보이는 것</strong>이 문제입니다.
   </p>
 
-  <div class="ad-slot" data-ad="guide-multiple-payers-mid"></div>
+  <AdSlot label="guide-multiple-payers-mid" />
 
   <h2>뒤집히는 지점은 경비율이 정한다</h2>
   <p>
@@ -276,5 +277,5 @@ const amount = (diff: number) => formatWon(Math.abs(diff));
     달라집니다. 개별 사안은 국세상담센터(126)나 세무 전문가에게 확인하세요.
   </p>
 
-  <div class="ad-slot" data-ad="guide-multiple-payers-bottom"></div>
+  <AdSlot label="guide-multiple-payers-bottom" />
 </GuideLayout>

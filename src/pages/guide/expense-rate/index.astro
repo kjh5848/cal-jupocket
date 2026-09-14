@@ -1,5 +1,6 @@
 ---
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import rates from "../../../rates/2026.json";
 import { round1 } from "../../../lib/rate-display";
 import { estimateRefund } from "../../../lib/income-tax";
@@ -112,7 +113,7 @@ const highBracketRatePercent = round1(bracketForHighCase.rate * 100);
         </p>
       </div>
 
-      <div class="ad-slot" data-ad="guide-expense-rate-mid"></div>
+      <AdSlot label="guide-expense-rate-mid" />
 
       <h2>왜 경비율이 절세 레버가 되는가</h2>
       <p>
@@ -208,5 +209,5 @@ const highBracketRatePercent = round1(bracketForHighCase.rate * 100);
         >
       </p>
 
-      <div class="ad-slot" data-ad="guide-expense-rate-bottom"></div>
+      <AdSlot label="guide-expense-rate-bottom" />
 </GuideLayout>

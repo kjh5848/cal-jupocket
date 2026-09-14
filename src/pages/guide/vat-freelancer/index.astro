@@ -13,6 +13,7 @@
  * 확인하지 못했으므로 조문 번호는 인용하지 않는다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import vat from "../../../rates/vat-2026.json";
 import VatFreelancerFlow from "../../../components/VatFreelancerFlow.astro";
 
@@ -56,7 +57,7 @@ const srcBasic = vat.sources.find((s) => s.url.includes("7693"))!;
 
   <VatFreelancerFlow />
 
-  <div class="ad-slot" data-ad="guide-vat-freelancer-mid"></div>
+  <AdSlot label="guide-vat-freelancer-mid" />
 
   <h2>면세 인적용역이란</h2>
   <p>
@@ -128,5 +129,5 @@ const srcBasic = vat.sources.find((s) => s.url.includes("7693"))!;
     국세상담센터(126)나 세무 전문가에게 확인하세요.
   </p>
 
-  <div class="ad-slot" data-ad="guide-vat-freelancer-bottom"></div>
+  <AdSlot label="guide-vat-freelancer-bottom" />
 </GuideLayout>

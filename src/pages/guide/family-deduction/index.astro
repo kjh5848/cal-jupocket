@@ -18,6 +18,7 @@
  * 공제 요건이 그 파일에서 오기 때문이다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import rates from "../../../rates/deduction-2026.json";
 import taxRates from "../../../rates/2026.json";
 import { computeDeduction, taxSaved, type Person } from "../../../lib/deduction";
@@ -125,7 +126,7 @@ const src53 = rates.sources[2];
     5월에 한 번 확인하지 않아서 놓치는 금액치고는 작지 않습니다.
   </p>
 
-  <div class="ad-slot" data-ad="guide-family-deduction-mid"></div>
+  <AdSlot label="guide-family-deduction-mid" />
 
   <h2>세 가지를 모두 통과해야 한다</h2>
   <p>
@@ -386,5 +387,5 @@ const src53 = rates.sources[2];
     달라집니다. 개별 사안은 국세상담센터(126)나 세무 전문가에게 확인하세요.
   </p>
 
-  <div class="ad-slot" data-ad="guide-family-deduction-bottom"></div>
+  <AdSlot label="guide-family-deduction-bottom" />
 </GuideLayout>

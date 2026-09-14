@@ -12,6 +12,7 @@
  * 수치를 넣지 않고 "기한을 넘기면 가산세" 정도로만 서술한다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import vat from "../../../rates/vat-2026.json";
 import VatScheduleDiagram from "../../../components/VatScheduleDiagram.astro";
 
@@ -48,7 +49,7 @@ const srcClosing = vat.sources.find((s) => s.url.includes("7699"))!;
   <h2>연간 신고·납부 일정</h2>
   <VatScheduleDiagram />
 
-  <div class="ad-slot" data-ad="guide-vat-filing-mid"></div>
+  <AdSlot label="guide-vat-filing-mid" />
 
   <h2>확정신고 — 직접 신고하고 납부</h2>
   <p>
@@ -139,5 +140,5 @@ const srcClosing = vat.sources.find((s) => s.url.includes("7699"))!;
     가산세 등 개별 사안은 국세상담센터(126)나 세무 전문가에게 확인하세요.
   </p>
 
-  <div class="ad-slot" data-ad="guide-vat-filing-bottom"></div>
+  <AdSlot label="guide-vat-filing-bottom" />
 </GuideLayout>

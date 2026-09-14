@@ -13,6 +13,7 @@
  * 모든 금액은 lib/pension-premium.ts 로 계산한다 — 본문에 손으로 적지 않는다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import rates from "../../../rates/pension-premium-2026.json";
 import { compute, standardIncome } from "../../../lib/pension-premium";
 import { rateSchedule } from "../../../lib/pension-reform";
@@ -113,7 +114,7 @@ const targetPercent = rates.reform.targetRate * 100;
     어림하면 몇백 원씩 어긋납니다.
   </p>
 
-  <div class="ad-slot" data-ad="guide-pension-premium-2026-mid"></div>
+  <AdSlot label="guide-pension-premium-2026-mid" />
 
   <h2>월소득별 보험료</h2>
   <div class="table-scroll">
@@ -263,7 +264,7 @@ const targetPercent = rates.reform.targetRate * 100;
     </p>
   </details>
 
-  <div class="ad-slot" data-ad="guide-pension-premium-2026-bottom"></div>
+  <AdSlot label="guide-pension-premium-2026-bottom" />
 
   <p class="meta">
     수치 출처: 국민연금공단 — 기준소득월액 상·하한 조정 안내, 연금개혁 FAQ,

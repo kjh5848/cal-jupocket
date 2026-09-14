@@ -1,5 +1,6 @@
 ---
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import rates from "../../../rates/2026.json";
 import { round1, splitWithholdingRate } from "../../../lib/rate-display";
 
@@ -114,7 +115,7 @@ const highestBracketPercent = round1(highestBracket.rate * 100); // 45
         먼저 가늠해볼 수 있습니다.
       </p>
 
-      <div class="ad-slot" data-ad="guide-33-settlement-mid"></div>
+      <AdSlot label="guide-33-settlement-mid" />
 
       <h2>신고 기간과 미신고 시 유의사항</h2>
       <p>
@@ -160,5 +161,5 @@ const highestBracketPercent = round1(highestBracket.rate * 100); // 45
         >
       </p>
 
-      <div class="ad-slot" data-ad="guide-33-settlement-bottom"></div>
+      <AdSlot label="guide-33-settlement-bottom" />
 </GuideLayout>

@@ -14,6 +14,7 @@
  * 퇴직소득세 감액률은 의도적으로 쓰지 않는다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import transition from "../../../rates/job-transition-2026.json";
 import pensionAccount from "../../../rates/pension-account-2026.json";
 import { formatWon } from "../../../lib/money";
@@ -78,7 +79,7 @@ const srcNhis = transition.sources.find((s) => s.url.includes("nhis"))!;
     </p>
   </div>
 
-  <div class="ad-slot" data-ad="guide-severance-to-freelance-mid"></div>
+  <AdSlot label="guide-severance-to-freelance-mid" />
 
   <h2>이 IRP가 프리랜서의 2층이 됩니다</h2>
   <p>
@@ -222,5 +223,5 @@ const srcNhis = transition.sources.find((s) => s.url.includes("nhis"))!;
     않았습니다 — 정확한 세액은 금융기관이나 홈택스에서 확인하세요.
   </p>
 
-  <div class="ad-slot" data-ad="guide-severance-to-freelance-bottom"></div>
+  <AdSlot label="guide-severance-to-freelance-bottom" />
 </GuideLayout>

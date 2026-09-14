@@ -11,6 +11,7 @@
  * 인용 수치는 모두 기존 검증 파일에서 가져온다(새 수치를 만들지 않는다).
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import retirement from "../../../rates/retirement-2026.json";
 import pension from "../../../rates/pension-2026.json";
 import pensionAccount from "../../../rates/pension-account-2026.json";
@@ -61,7 +62,7 @@ const combinedLimit = pensionAccount.combinedLimit;
     빈칸을 메우면서 그해 세금까지 줄이는 셈입니다.
   </p>
 
-  <div class="ad-slot" data-ad="guide-retirement-planning-mid"></div>
+  <AdSlot label="guide-retirement-planning-mid" />
 
   <h2>순서대로 해야 할 네 가지</h2>
   <p>
@@ -150,5 +151,5 @@ const combinedLimit = pensionAccount.combinedLimit;
     >
   </p>
 
-  <div class="ad-slot" data-ad="guide-retirement-planning-bottom"></div>
+  <AdSlot label="guide-retirement-planning-bottom" />
 </GuideLayout>

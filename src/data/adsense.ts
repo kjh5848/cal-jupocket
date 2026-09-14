@@ -33,3 +33,24 @@ export function adsTxt(): string {
     "",
   ].join("\n");
 }
+
+/**
+ * 광고 단위 ID.
+ *
+ * 자리는 두 종류뿐이다 — 본문 중간과 페이지 끝. 글마다 단위를 따로 만들면
+ * 40개가 되고, 애드센스 보고서에서 어느 글이 버는지는 어차피 "페이지" 축으로
+ * 보므로 단위를 쪼갤 이유가 없다.
+ *
+ * data-ad 라벨의 꼬리로 고른다. `-mid` 는 본문 중간, 나머지(`-bottom`,
+ * `-result`)는 끝이다.
+ */
+export const AD_SLOTS = {
+  mid: "9008848591",
+  bottom: "3279201738",
+} as const;
+
+/** 라벨이 가리키는 광고 단위. 라벨이 없으면 null — 요청을 보내지 않는다. */
+export function slotFor(label?: string): string | null {
+  if (!label) return null;
+  return label.endsWith("-mid") ? AD_SLOTS.mid : AD_SLOTS.bottom;
+}

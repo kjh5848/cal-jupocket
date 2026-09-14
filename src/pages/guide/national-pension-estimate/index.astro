@@ -10,6 +10,7 @@
  * 수치 출처: rates/pension-2026.json (국민연금공단, 2026-08-21 확인)
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import pension from "../../../rates/pension-2026.json";
 import {
   earlyRate,
@@ -178,7 +179,7 @@ const sourceUrl = pension.sources[0].url;
     </table>
   </div>
 
-  <div class="ad-slot" data-ad="guide-national-pension-estimate-mid"></div>
+  <AdSlot label="guide-national-pension-estimate-mid" />
 
   <h2>그래서 언제 받는 게 유리한가</h2>
   <p>
@@ -285,5 +286,5 @@ const sourceUrl = pension.sources[0].url;
     값입니다({pension.verifiedOn} 확인).
   </p>
 
-  <div class="ad-slot" data-ad="guide-national-pension-estimate-bottom"></div>
+  <AdSlot label="guide-national-pension-estimate-bottom" />
 </GuideLayout>

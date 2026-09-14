@@ -7,6 +7,7 @@
  * 세율·부가가치율은 rates/vat-2026.json(국세청 대조)에서만 가져온다.
  */
 import BaseHead from "../../components/BaseHead.astro";
+import AdSlot from "../../components/AdSlot.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
 import GtagHead from "../../components/GtagHead.astro";
 import TrackLinks from "../../components/TrackLinks.astro";
@@ -163,7 +164,7 @@ const rates = vat.simplified.valueAddedRates;
       <NextReads path="/vat/" />
 
 
-      <div class="ad-slot" data-ad="vat-result"></div>
+      <AdSlot label="vat-result" />
 
       <Disclaimer />
     </main>

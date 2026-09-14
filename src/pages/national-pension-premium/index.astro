@@ -8,6 +8,7 @@
  * 노후 클러스터에 붙는 첫 계산기.
  */
 import BaseHead from "../../components/BaseHead.astro";
+import AdSlot from "../../components/AdSlot.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
 import GtagHead from "../../components/GtagHead.astro";
 import TrackLinks from "../../components/TrackLinks.astro";
@@ -141,7 +142,7 @@ const srcStd = pp.sources.find((s) => s.url.includes("OHAE0001"))!;
       <NextReads path="/national-pension-premium/" />
 
 
-      <div class="ad-slot" data-ad="nps-premium-result"></div>
+      <AdSlot label="nps-premium-result" />
 
       <Disclaimer />
     </main>

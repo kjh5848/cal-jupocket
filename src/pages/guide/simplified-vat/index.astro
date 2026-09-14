@@ -15,6 +15,7 @@
  * 기본정보에서 확인한 값이다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import vat from "../../../rates/vat-2026.json";
 import VatCompareDiagram from "../../../components/VatCompareDiagram.astro";
 
@@ -59,7 +60,7 @@ const srcLaw = vat.sources.find((s) => s.url.includes("제69조"))!;
     ratePercent={ratePercent}
   />
 
-  <div class="ad-slot" data-ad="guide-simplified-vat-mid"></div>
+  <AdSlot label="guide-simplified-vat-mid" />
 
   <h2>어느 쪽이 유리한가 — 판단 기준</h2>
   <ul class="doc-checks">
@@ -111,5 +112,5 @@ const srcLaw = vat.sources.find((s) => s.url.includes("제69조"))!;
     국세상담센터(126)나 세무 전문가에게 확인하세요.
   </p>
 
-  <div class="ad-slot" data-ad="guide-simplified-vat-bottom"></div>
+  <AdSlot label="guide-simplified-vat-bottom" />
 </GuideLayout>

@@ -9,6 +9,7 @@
  * rates/penalty-2026.json(국세기본법 원문 대조)에서만 온다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import { computeLateFiling } from "../../../lib/penalty";
 import p from "../../../rates/penalty-2026.json";
 
@@ -180,7 +181,7 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
     </p>
   </div>
 
-  <div class="ad-slot" data-ad="late-filing-mid"></div>
+  <AdSlot label="late-filing-mid" />
 
   <h2>신고는 했는데 적게 신고한 경우</h2>
 

@@ -7,6 +7,7 @@
 import { describe, it, expect } from "vitest";
 import { GA4_MEASUREMENT_ID, GA4_ENABLED, isValidGa4Id } from "../../data/analytics";
 import { PUBLISHER_ID, SELLER_ID, GOOGLE_TAG_ID, adsTxt } from "../../data/adsense";
+import { slotFor, AD_SLOTS } from "../../data/adsense";
 
 describe("ads.txt", () => {
   it("태그의 퍼블리셔 ID와 같은 계정을 가리킨다", () => {
@@ -53,6 +54,31 @@ describe("GA4", () => {
   it("틀린 ID 는 걸러진다 — 오타로 조용히 수집이 멈추는 걸 막는다", () => {
     for (const bad of ["", "G-", "UA-12345-1", "GTM-5S7QR9JF", "G-abc12345", "FELZX20X9E"]) {
       expect(isValidGa4Id(bad), bad).toBe(false);
+    }
+  });
+});
+
+describe("광고 단위 고르기", () => {
+  it("-mid 는 본문 중간 단위", () => {
+    expect(slotFor("guide-family-deduction-mid")).toBe(AD_SLOTS.mid);
+    expect(slotFor("late-filing-mid")).toBe(AD_SLOTS.mid);
+  });
+
+  it("-bottom 과 -result 는 끝 단위", () => {
+    expect(slotFor("guide-family-deduction-bottom")).toBe(AD_SLOTS.bottom);
+    expect(slotFor("penalty-result")).toBe(AD_SLOTS.bottom);
+    expect(slotFor("home-bottom")).toBe(AD_SLOTS.bottom);
+  });
+
+  it("라벨이 없으면 광고 요청을 보내지 않는다", () => {
+    expect(slotFor(undefined)).toBeNull();
+    expect(slotFor("")).toBeNull();
+  });
+
+  it("두 단위는 서로 다른 ID다", () => {
+    expect(AD_SLOTS.mid).not.toBe(AD_SLOTS.bottom);
+    for (const id of Object.values(AD_SLOTS)) {
+      expect(id).toMatch(/^\d{10}$/);
     }
   });
 });

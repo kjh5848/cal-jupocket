@@ -11,6 +11,7 @@
  * 금융사별 수수료·상품 구성은 확인 대상이 아니므로 단정하지 않는다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import pensionAccount from "../../../rates/pension-account-2026.json";
 import { formatWon } from "../../../lib/money";
 import PensionLimitChart from "../../../components/PensionLimitChart.astro";
@@ -154,7 +155,7 @@ const fssJoinSource = pensionAccount.sources.find((s) =>
     감수할 자금인지 먼저 따져야 합니다.
   </p>
 
-  <div class="ad-slot" data-ad="guide-irp-account-mid"></div>
+  <AdSlot label="guide-irp-account-mid" />
 
   <h2>연금저축과의 결정적 차이: 중도인출</h2>
   <p>
@@ -257,5 +258,5 @@ const fssJoinSource = pensionAccount.sources.find((s) =>
     요건은 국세청 자료에서 확인한 값입니다({pensionAccount.verifiedOn} 확인).
   </p>
 
-  <div class="ad-slot" data-ad="guide-irp-account-bottom"></div>
+  <AdSlot label="guide-irp-account-bottom" />
 </GuideLayout>

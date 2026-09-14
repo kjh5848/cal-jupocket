@@ -11,6 +11,7 @@
  * 조사 제10차 부가조사, 2026-08-21 확인)
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import retirement from "../../../rates/retirement-2026.json";
 import { formatWon } from "../../../lib/money";
 import {
@@ -117,7 +118,7 @@ const eok = (v: number) => `${(v / 100_000_000).toFixed(1)}억`;
     >로 확인해 이 자리에 넣어보세요.
   </p>
 
-  <div class="ad-slot" data-ad="guide-retirement-fund-mid"></div>
+  <AdSlot label="guide-retirement-fund-mid" />
 
   <h2>3단계: 부족분을 총액으로, 다시 월 저축액으로</h2>
   <p>
@@ -185,5 +186,5 @@ const eok = (v: number) => `${(v / 100_000_000).toFixed(1)}억`;
     자료에서 확인한 값입니다({retirement.verifiedOn} 확인).
   </p>
 
-  <div class="ad-slot" data-ad="guide-retirement-fund-bottom"></div>
+  <AdSlot label="guide-retirement-fund-bottom" />
 </GuideLayout>

@@ -10,6 +10,7 @@
  * 실효율 16.5%/13.2%는 이 페이지에서 직접 계산해 표시한다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import rates from "../../../rates/2026.json";
 import pensionAccount from "../../../rates/pension-account-2026.json";
 import { round1 } from "../../../lib/rate-display";
@@ -88,7 +89,7 @@ const maxRefundHigh = Math.round((COMBINED_LIMIT * highRateEffective) / 100);
     됩니다.
   </p>
 
-  <div class="ad-slot" data-ad="guide-pension-savings-tax-credit-mid"></div>
+  <AdSlot label="guide-pension-savings-tax-credit-mid" />
 
   <h2>공제율: 종합소득금액 4,500만원이 기준선</h2>
   <p>
@@ -190,5 +191,5 @@ const maxRefundHigh = Math.round((COMBINED_LIMIT * highRateEffective) / 100);
     <a class="btn" href="/income-tax-refund/">내 환급/추가납부 예상액 계산하기</a>
   </p>
 
-  <div class="ad-slot" data-ad="guide-pension-savings-tax-credit-bottom"></div>
+  <AdSlot label="guide-pension-savings-tax-credit-bottom" />
 </GuideLayout>

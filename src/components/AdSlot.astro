@@ -1,17 +1,24 @@
 ---
 import { PUBLISHER_ID } from "./AdSenseHead.astro";
+import { slotFor } from "../data/adsense";
 
 /**
- * 개별 광고 단위. slot이 비어 있으면 자리표시자만 렌더링하고 광고 요청은
- * 나가지 않는다 — cal.jupocket.com은 아직 애드센스에 사이트로 등록 전이라
- * (Task 10에서 등록) 지금은 전부 빈 slot이다.
+ * 개별 광고 단위.
+ *
+ * 자리는 label 이 정한다(`guide-…-mid`, `…-result`). 어느 광고 단위를 쓸지는
+ * data/adsense.ts 의 slotFor 가 라벨 꼬리를 보고 고른다 — 페이지마다 slot ID
+ * 를 적어두면 40군데가 되고, 단위를 바꿀 때 한 곳이 반드시 남는다.
+ *
+ * slot 을 직접 넘기면 그걸 쓴다. 둘 다 없으면 자리표시자만 그리고 광고
+ * 요청은 나가지 않는다.
  */
 interface Props {
   slot?: string;
   label?: string;
 }
 
-const { slot, label } = Astro.props;
+const { slot: given, label } = Astro.props;
+const slot = given ?? slotFor(label);
 ---
 
 {

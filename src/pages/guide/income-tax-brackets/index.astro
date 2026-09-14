@@ -1,5 +1,6 @@
 ---
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import rates from "../../../rates/2026.json";
 import { round1 } from "../../../lib/rate-display";
 import { estimateRefund } from "../../../lib/income-tax";
@@ -125,7 +126,7 @@ const insightExtraPayment = -insight.refund; // refund가 음수면 추가납부
         됩니다(세액공제 반영 전 산출세액 기준).
       </p>
 
-      <div class="ad-slot" data-ad="guide-income-tax-brackets-mid"></div>
+      <AdSlot label="guide-income-tax-brackets-mid" />
 
       <h2>반전: 소득이 많으면 실효세율이 {businessRatePercent}%를 훌쩍 넘습니다</h2>
       <p>
@@ -172,5 +173,5 @@ const insightExtraPayment = -insight.refund; // refund가 음수면 추가납부
         >
       </p>
 
-      <div class="ad-slot" data-ad="guide-income-tax-brackets-bottom"></div>
+      <AdSlot label="guide-income-tax-brackets-bottom" />
 </GuideLayout>

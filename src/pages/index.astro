@@ -7,6 +7,7 @@
  * 가져오므로, 글을 추가하면 홈도 자동으로 갱신된다.
  */
 import BaseHead from "../components/BaseHead.astro";
+import AdSlot from "../components/AdSlot.astro";
 import ClarityHead from "../components/ClarityHead.astro";
 import GtagHead from "../components/GtagHead.astro";
 import TrackLinks from "../components/TrackLinks.astro";
@@ -211,7 +212,7 @@ const jsonLd = [
         </aside>
       </div>
 
-      <div class="ad-slot" data-ad="home-bottom"></div>
+      <AdSlot label="home-bottom" />
     </main>
     <SiteFooter />
       <TrackLinks />

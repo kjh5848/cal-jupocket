@@ -1,5 +1,6 @@
 ---
 import BaseHead from "../../components/BaseHead.astro";
+import AdSlot from "../../components/AdSlot.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
 import GtagHead from "../../components/GtagHead.astro";
 import TrackLinks from "../../components/TrackLinks.astro";
@@ -215,7 +216,7 @@ const defaultExpenseRatePercent = rates.simpleExpenseRateDefault * 100;
       <NextReads path="/income-tax-refund/" />
 
 
-      <div class="ad-slot" data-ad="income-tax-refund-result"></div>
+      <AdSlot label="income-tax-refund-result" />
 
       <Disclaimer />
     </main>

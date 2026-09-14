@@ -14,6 +14,7 @@
  * 원문에서 확인되지 않은 무신고 가산세율은 쓰지 않는다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
 import filing from "../../../rates/filing-2026.json";
 import rates from "../../../rates/2026.json";
 import { round1 } from "../../../lib/rate-display";
@@ -70,7 +71,7 @@ const srcSeparate = filing.sources.find((s) => s.url.includes("7896"))!;
     됩니다.
   </p>
 
-  <div class="ad-slot" data-ad="guide-who-must-file-mid"></div>
+  <AdSlot label="guide-who-must-file-mid" />
 
   <h2>기타소득 {formatWon(otherThreshold)} 기준은 따로 있습니다</h2>
   <p>
@@ -177,5 +178,5 @@ const srcSeparate = filing.sources.find((s) => s.url.includes("7896"))!;
     국세상담센터(126)나 세무 전문가에게 확인하세요.
   </p>
 
-  <div class="ad-slot" data-ad="guide-who-must-file-bottom"></div>
+  <AdSlot label="guide-who-must-file-bottom" />
 </GuideLayout>

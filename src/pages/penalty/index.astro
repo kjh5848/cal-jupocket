@@ -13,6 +13,7 @@
  * 떨어지므로 "며칠 남았는지" 를 크게 보여준다.
  */
 import BaseHead from "../../components/BaseHead.astro";
+import AdSlot from "../../components/AdSlot.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
 import GtagHead from "../../components/GtagHead.astro";
 import TrackLinks from "../../components/TrackLinks.astro";
@@ -166,7 +167,7 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
       <NextReads path="/penalty/" />
 
 
-      <div class="ad-slot" data-ad="penalty-result"></div>
+      <AdSlot label="penalty-result" />
 
       <Disclaimer variant="calc" />
     </main>
