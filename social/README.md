@@ -226,7 +226,7 @@ GET /v23.0/<id>?fields=like_count,comments_count,media_type,media_product_type
 ```markdown
 ---
 at: "09:00"
-reply: 한 줄 요약. 프로필 링크에서 N번 글입니다 → jupocket.com
+reply: 한 줄 요약. 프로필 링크에서 N번 글입니다 → jupocket.com/link/
 ---
 본문 첫 줄이 후킹.
 ```

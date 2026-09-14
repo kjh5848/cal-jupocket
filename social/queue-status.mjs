@@ -15,6 +15,22 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parsePost, parseAt, isDue, findBodyLink, textLength, DUE_GRACE_MIN } from "./parse.mjs";
 
+/**
+ * 답글이 가리켜야 할 곳. "N번 글입니다" 라고 써놓고 홈으로 보내면
+ * 번호 목록이 없는 페이지에 떨어진다 — 스레드에서 실제로 그랬다.
+ * 번호를 찾는 색인은 /link/ 하나뿐이다.
+ */
+const HUB = "jupocket.com/link/";
+
+/** 답글 링크가 허브가 아니면 그 링크를 돌려준다. 정상이면 null. */
+function badReplyLink(reply) {
+  if (typeof reply !== "string") return null;
+  const m = reply.match(/jupocket\.com[^\s]*/g);
+  if (!m) return null;
+  const bad = m.filter((u) => !u.startsWith(HUB));
+  return bad.length ? bad[0] : null;
+}
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const QUEUE_DIR = join(HERE, "queue");
 const TASK = "jupocket-threads";
@@ -104,6 +120,8 @@ const rows = files.map((f) => {
     f, at: meta.at ?? "—", state, when,
     len: textLength(text),
     link: findBodyLink(text),
+    // 이미 나간 글은 고칠 수 없다. 경고해봤자 매일 보는 소음만 된다.
+    reply: postedT.has(f) ? null : badReplyLink(meta.reply),
     ig: hasImages ? (postedI.has(f) ? "✓" : "대기") : "—",
   };
 });
@@ -111,7 +129,13 @@ const rows = files.map((f) => {
 console.log(`  ${pad("큐", 34)}${pad("예약", 7)}${pad("상태", 11)}${pad("", 12)}${pad("길이", 7)}인스타`);
 console.log("  " + "─".repeat(74));
 for (const r of rows) {
-  const warn = r.link ? `  ✖ 본문링크: ${r.link}` : r.len > 450 ? `  ⚠ ${r.len}자` : "";
+  const warn = r.link
+    ? `  ✖ 본문링크: ${r.link}`
+    : r.reply
+      ? `  ✖ 답글링크: ${r.reply}`
+      : r.len > 450
+        ? `  ⚠ ${r.len}자`
+        : "";
   console.log(
     `  ${pad(r.f.replace(/\.md$/, ""), 34)}${pad(r.at, 7)}${pad(r.state, 11)}${pad(r.when, 12)}${pad(String(r.len) + "자", 7)}${r.ig}${warn}`,
   );
@@ -126,6 +150,12 @@ console.log("");
 console.log(`  오늘 남은 것 ${pending.length}건${pending.length ? " — 다음 " + pending[0].f.replace(/\.md$/, "") + " (" + pending[0].at + ")" : ""}`);
 if (tomorrow.length) console.log(`  내일로 넘어감 ${tomorrow.length}건 (유예 창을 지남)`);
 if (problems.length) console.log(`  ✖ 본문에 링크가 있는 글 ${problems.length}건 — 게시되지 않습니다`);
+const replyProblems = rows.filter((r) => r.reply);
+if (replyProblems.length) {
+  console.log(
+    `  ✖ 답글이 허브가 아닌 곳을 가리키는 글 ${replyProblems.length}건 — ${HUB} 로 고치세요`,
+  );
+}
 
 // ── 성과 ────────────────────────────────────────────────────
 if (stats.length) {

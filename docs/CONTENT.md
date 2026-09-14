@@ -201,7 +201,7 @@ curl -sI https://jupocket.com/cards/<slug>/1.jpg | head -1
 images:
   - /cards/<slug>/1.jpg
   - /cards/<slug>/2.jpg
-reply: 한 줄 요약. 프로필 링크에서 N번 글입니다 → jupocket.com
+reply: 한 줄 요약. 프로필 링크에서 N번 글입니다 → jupocket.com/link/
 ---
 본문 첫 줄이 후킹. 링크는 절대 넣지 않는다.
 짧은 문단으로 3~5덩어리.
