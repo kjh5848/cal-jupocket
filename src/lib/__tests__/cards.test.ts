@@ -10,6 +10,8 @@ import { cardSets, cardSetBySlug } from "../../data/cards";
 import { compute } from "../pension-premium";
 import { computeLateFiling } from "../penalty";
 import { estimateRefund } from "../income-tax";
+import { taxSaved, computeDeduction, type Person } from "../deduction";
+import deduction from "../../rates/deduction-2026.json";
 import penalty from "../../rates/penalty-2026.json";
 import { parseMarkup } from "../card-markup";
 import { entryByNo } from "../../data/linkhub";
@@ -289,5 +291,89 @@ describe("multiple-payers 세트", () => {
     const cta = set?.cards.find((c) => c.kind === "cta");
     if (cta?.kind !== "cta") throw new Error("CTA 없음");
     expect(entryByNo(cta.refNo!)?.href).toBe("/guide/multiple-payers/");
+  });
+});
+
+describe("family-deduction 세트", () => {
+  const set = cardSetBySlug("family-deduction");
+
+  it("세트가 존재한다", () => {
+    expect(set).toBeDefined();
+  });
+
+  it("세금 감소 표가 taxSaved 와 같다", () => {
+    // "과세표준 1,400만원 (6%)" / "5,000만원 (15%)" 두 꼴을 모두 읽는다.
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.sub.includes("1명당"),
+    );
+    if (t?.kind !== "table") throw new Error("세금 감소 표 없음");
+
+    for (const row of t.rows) {
+      const m = row.label.match(/([\d,]+)억?\s*([\d,]*)만원/);
+      expect(m, `금액을 못 읽음: ${row.label}`).not.toBeNull();
+      const base = row.label.includes("억")
+        ? Number(m![1].replace(/,/g, "")) * 100_000_000 +
+          Number((m![2] || "0").replace(/,/g, "")) * 10_000
+        : Number(m![1].replace(/,/g, "")) * 10_000;
+
+      const expected = taxSaved(base, deduction.basic.perPerson).total;
+      expect(parseWon(row.value), row.label).toBe(expected);
+    }
+  });
+
+  it("요건 표의 나이가 rates 와 같다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.sub.includes("소득금액"),
+    );
+    if (t?.kind !== "table") throw new Error("요건 표 없음");
+    const find = (label: string) => t.rows.find((r) => r.label === label)!.value;
+
+    expect(find("부모·조부모")).toContain(`${deduction.age.ascendant}세 이상`);
+    expect(find("자녀·손자녀")).toContain(`${deduction.age.descendant}세 이하`);
+    expect(find("형제자매")).toContain(`${deduction.age.siblingMax}세 이하`);
+    expect(find("형제자매")).toContain(`${deduction.age.siblingMin}세 이상`);
+  });
+
+  it("표지가 말하는 132만원이 실제 계산과 같다", () => {
+    // 표지 문구는 이미지로 구워져 회수할 수 없다. 전제(과세표준 7,000만원,
+    // 부모 두 분)까지 같이 확인한다.
+    const cover = set?.cards.find((c) => c.kind === "cover");
+    if (cover?.kind !== "cover") throw new Error("표지 없음");
+
+    const BASE = 70_000_000;
+    const people: Person[] = [
+      { relation: "self", age: 45, income: BASE },
+      { relation: "ascendant", age: 74, income: 0, separatedForHousing: true },
+      { relation: "ascendant", age: 71, income: 0, separatedForHousing: true },
+    ];
+    const withParents = computeDeduction(
+      { isFemale: false, hasSpouse: false, totalIncome: BASE },
+      people,
+    );
+    const gap =
+      taxSaved(BASE, withParents.applied).total -
+      taxSaved(BASE, deduction.basic.perPerson).total;
+
+    expect(cover.sub).toContain("7,000만원");
+    expect(cover.sub).toContain(`${Math.round(gap / 10_000).toLocaleString("ko-KR")}만원`);
+  });
+
+  it("부녀자·한부모 중복 배제를 말한다", () => {
+    const note = set?.cards.find((c) => c.kind === "note");
+    if (note?.kind !== "note") throw new Error("note 카드 없음");
+    expect(note.body).toContain(
+      `${deduction.additional.female.amount / 10_000}만원`,
+    );
+    expect(note.body).toContain(
+      `${deduction.additional.singleParent.amount / 10_000}만원`,
+    );
+    // 더한 값(150만원)을 정답처럼 적으면 안 된다 — "틀립니다" 맥락에서만 나온다.
+    expect(note.body).toContain("틀립니다");
+  });
+
+  it("23번 글을 가리킨다", () => {
+    const cta = set?.cards.find((c) => c.kind === "cta");
+    if (cta?.kind !== "cta") throw new Error("cta 없음");
+    expect(entryByNo(cta.refNo!)?.href).toBe("/guide/family-deduction/");
   });
 });

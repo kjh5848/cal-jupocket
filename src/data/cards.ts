@@ -354,6 +354,80 @@ export const cardSets: CardSet[] = [
       },
     ],
   },
+  {
+    slug: "family-deduction",
+    cluster: "income",
+    link: "https://jupocket.com/guide/family-deduction/",
+    cards: [
+      {
+        kind: "cover",
+        photo: "/photos/card-family.jpg",
+        photoAlt: "노인의 손이 아이의 손을 감싸 쥔 모습",
+        badge: "종합소득세 · 연말정산",
+        title: "따로 사는 부모님도\n공제 대상입니다",
+        sub: "주거 형편에 따른 별거는 법이 인정합니다. 두 분을 놓치면 과세표준 7,000만원 기준 매년 132만원입니다.",
+        footnote: "소득세법 제53조 제3항 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "150만원 공제가\n실제로 깎는 세금",
+        sub: "1명당 · 지방소득세 포함",
+        rows: [
+          { label: "과세표준 1,400만원 (6%)", value: "99,000원" },
+          { label: "5,000만원 (15%)", value: "247,500원" },
+          { label: "8,800만원 (24%)", value: "396,000원", tone: "mark" },
+          { label: "1억 5,000만원 (35%)", value: "577,500원" },
+        ],
+        footnote: "공제는 세금이 아니라 과세표준을 줄인다 · 소득세법 제50조",
+      },
+      {
+        kind: "table",
+        title: "누구를 넣을 수 있나",
+        sub: "소득금액 100만원 이하는 공통 조건",
+        rows: [
+          { label: "배우자", value: "나이 제한 없음" },
+          { label: "부모·조부모", value: "60세 이상" },
+          { label: "자녀·손자녀", value: "20세 이하" },
+          { label: "형제자매", value: "20세 이하 또는 60세 이상", tone: "warn" },
+        ],
+        footnote: "장애인은 나이 제한을 받지 않는다 · 소득세법 제50조 제1항 제3호",
+      },
+      {
+        kind: "list",
+        badge: "여기서 걸린다",
+        title: "세 가지를 조심하세요",
+        items: [
+          {
+            text: "소득 100만원은 [[수입이 아니라 소득금액]]",
+            detail: "필요경비를 뺀 뒤의 금액. 근로소득만 있으면 총급여 500만원까지 대상",
+          },
+          {
+            text: "형제자매는 {{21~59세가 비어 있다}}",
+            detail: "실제로 부양하고 있어도 이 나이대는 공제 대상이 아니다",
+          },
+          {
+            text: "나이는 [[그 해 하루라도 해당하면]] 된다",
+            detail: "올해 스물한 살이 되어도 스무 살이던 날이 있었다면 그 해는 대상",
+          },
+        ],
+        footnote: "소득세법 제50조·제53조 제5항 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "note",
+        badge: "흔한 오해",
+        title: "이 둘은 더해지지 않습니다",
+        body:
+          "부녀자 50만원과 한부모 100만원에 모두 해당되면 한부모만 적용합니다.\n제51조 제1항 단서가 그렇게 정하고 있어서, 둘을 더해 150만원으로 잡으면 틀립니다.",
+        footnote: "소득세법 제51조 제1항 단서 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "cta",
+        title: "우리 집은\n몇 명일까?",
+        sub: "요건과 금액을 표로 정리해 뒀어요",
+        refNo: 23,
+      },
+    ],
+  },
 ];
 
 export function cardSetBySlug(slug: string): CardSet | undefined {

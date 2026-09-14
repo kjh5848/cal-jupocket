@@ -1,0 +1,390 @@
+---
+/**
+ * "인적공제, 누구까지 넣을 수 있나" — v4 인사이트 지도의 "절세: 인적공제"
+ * 칸(GKP 5,000). docs/CONTENT.md 의 마지막 빈칸이었다.
+ *
+ * 바로 앞 글(multiple-payers)이 "인적공제는 본인 1명만 넣어 계산했고,
+ * 부양가족 요건은 이 글에서 다루지 않습니다" 로 끝난다. 이 글이 그 자리다.
+ *
+ * SERP 상단은 국세청 안내와 연말정산 블로그다. 국세청은 요건을 조문 순서로
+ * 나열하고, 블로그는 "150만원 공제!" 라고만 쓴다. 둘 다 답하지 않는 것이
+ * **그래서 내 세금이 얼마 줄어드나**와 **왜 내 경우엔 안 되나**다.
+ *
+ * 숫자는 전부 lib/deduction.ts 로 뽑는다. 본문에 손으로 적은 금액이 없다.
+ * 요건 출처: rates/deduction-2026.json (소득세법 원문, 2026-09-14 확인)
+ * 세율 출처: rates/2026.json (2026-08-10 확인)
+ *
+ * updated 는 deduction-2026.json 의 verifiedOn 을 쓴다 — 글의 뼈대인
+ * 공제 요건이 그 파일에서 오기 때문이다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import rates from "../../../rates/deduction-2026.json";
+import taxRates from "../../../rates/2026.json";
+import { computeDeduction, taxSaved, type Person } from "../../../lib/deduction";
+import { formatWon } from "../../../lib/money";
+import { round1 } from "../../../lib/rate-display";
+
+const title = "인적공제, 부양가족 누구까지 넣을 수 있나";
+const description =
+  "기본공제는 1명당 150만원입니다. 다만 돌려받는 돈은 150만원이 아니라 세율만큼입니다. 소득·나이·생계 세 요건과, 따로 사는 부모님·부녀자와 한부모의 중복 불가처럼 실제로 걸리는 지점을 소득세법 원문으로 정리했습니다.";
+
+const PER = rates.basic.perPerson;
+const A = rates.additional;
+
+/**
+ * 세율 구간별로 "150만원 공제가 세금으로 얼마인가".
+ *
+ * 각 구간의 상단(upTo)을 과세표준으로 잡는다. 거기서 150만원을 빼도 같은
+ * 구간 안에 남으므로 표의 세율이 그대로 적용된다 — 구간을 걸쳐 섞이는
+ * 값이 아니라는 뜻이다.
+ */
+const savingRows = taxRates.incomeTaxBrackets
+  .filter((b) => b.upTo !== null)
+  .slice(0, 4)
+  .map((b) => ({
+    base: b.upTo as number,
+    percent: round1(b.rate * 100),
+    ...taxSaved(b.upTo as number, PER),
+  }));
+
+/** 예시 가구 — 본인 + 따로 사는 부모님 두 분(70세 이상). */
+const EX_INCOME = 70_000_000;
+const exPeople: Person[] = [
+  { relation: "self", age: 45, income: EX_INCOME },
+  { relation: "ascendant", age: 74, income: 0, separatedForHousing: true },
+  { relation: "ascendant", age: 71, income: 0, separatedForHousing: true },
+];
+const ex = computeDeduction(
+  { isFemale: false, hasSpouse: false, totalIncome: EX_INCOME },
+  exPeople,
+);
+const exSaved = taxSaved(EX_INCOME, ex.applied);
+
+/** 소득이 적어 공제가 잘리는 예시(제51조 제4항). */
+const SMALL_INCOME = 3_000_000;
+const small = computeDeduction(
+  { isFemale: false, hasSpouse: false, totalIncome: SMALL_INCOME },
+  [
+    { relation: "self", age: 40, income: SMALL_INCOME },
+    { relation: "ascendant", age: 75, income: 0, separatedForHousing: true },
+  ],
+);
+
+const src50 = rates.sources[0];
+const src51 = rates.sources[1];
+const src53 = rates.sources[2];
+---
+
+<GuideLayout title={title} description={description} updated={rates.verifiedOn}>
+  <h1>{title}</h1>
+
+  <div class="callout">
+    <p>
+      부양가족 한 명을 넣으면 <strong>{formatWon(PER)}</strong>이 공제됩니다.
+      그런데 이 금액이 그대로 돌아오는 것은 아닙니다. 공제는 세금을 깎는 게
+      아니라 <strong>세금을 매기는 기준(과세표준)을 줄이는 것</strong>이라,
+      실제로 덜 내는 돈은 내 세율만큼입니다. 그래서 같은 한 명이라도
+      소득이 높은 사람일수록 더 크게 돌아옵니다.
+    </p>
+  </div>
+
+  <h2>한 명이 세금으로 얼마인가</h2>
+  <p>
+    {formatWon(PER)} 공제가 실제 세금에서 얼마를 줄이는지 구간별로 보면
+    이렇습니다. 지방소득세(소득세액의 {round1(taxRates.localTaxRate * 100)}%)까지
+    더한 금액입니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>과세표준</th>
+          <th>세율</th>
+          <th>소득세 감소</th>
+          <th>지방소득세 포함</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          savingRows.map((r) => (
+            <tr>
+              <td>{formatWon(r.base)}</td>
+              <td>{r.percent}%</td>
+              <td>{formatWon(r.national)}</td>
+              <td><strong>{formatWon(r.total)}</strong></td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    <strong>한 명을 빠뜨리면 그만큼을 그냥 더 내는 것</strong>입니다.
+    5월에 한 번 확인하지 않아서 놓치는 금액치고는 작지 않습니다.
+  </p>
+
+  <div class="ad-slot" data-ad="guide-family-deduction-mid"></div>
+
+  <h2>세 가지를 모두 통과해야 한다</h2>
+  <p>
+    공제 대상인지는 <strong>소득·나이·생계</strong> 세 가지로 갈립니다. 하나만
+    걸려도 안 됩니다. 반대로 본인(신고하는 사람)은 아무 조건 없이 무조건
+    한 명으로 셉니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>관계</th>
+          <th>나이</th>
+          <th>소득</th>
+          <th>같이 살아야 하나</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>본인</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>배우자</td>
+          <td>—</td>
+          <td>{formatWon(rates.incomeTest.amount)} 이하</td>
+          <td>아니요</td>
+        </tr>
+        <tr>
+          <td>부모·조부모</td>
+          <td>{rates.age.ascendant}세 이상</td>
+          <td>{formatWon(rates.incomeTest.amount)} 이하</td>
+          <td>원칙은 예 — 단, 아래 참고</td>
+        </tr>
+        <tr>
+          <td>자녀·손자녀</td>
+          <td>{rates.age.descendant}세 이하</td>
+          <td>{formatWon(rates.incomeTest.amount)} 이하</td>
+          <td>아니요</td>
+        </tr>
+        <tr>
+          <td>형제자매</td>
+          <td>{rates.age.siblingMax}세 이하 또는 {rates.age.siblingMin}세 이상</td>
+          <td>{formatWon(rates.incomeTest.amount)} 이하</td>
+          <td>예</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    형제자매 칸을 다시 보면 <strong>{rates.age.siblingMax}세와
+    {rates.age.siblingMin}세 사이가 비어 있습니다</strong>. 스물다섯 살
+    동생을 실제로 부양하고 있어도 공제 대상이 아닙니다. 장애인인 경우에만
+    나이 제한을 받지 않습니다.
+  </p>
+
+  <h2>"소득 {formatWon(rates.incomeTest.amount)}"의 진짜 기준</h2>
+  <p>
+    가장 많이 걸리는 곳입니다. 기준은 <strong>수입이 아니라 소득금액</strong>
+    입니다. 수입에서 필요경비를 뺀 뒤의 금액이 {formatWon(rates.incomeTest.amount)}
+    이하여야 합니다.
+  </p>
+  <p>
+    다만 <strong>근로소득만 있는 경우</strong>는 예외가 있습니다. 총급여
+    {formatWon(rates.incomeTest.salaryOnly)}까지는 대상입니다 — 근로소득공제를
+    빼면 소득금액이 {formatWon(rates.incomeTest.amount)} 이하로 떨어지기
+    때문입니다. 아르바이트를 한 자녀나 소일거리를 하는 부모님이 여기에
+    해당하는 경우가 많습니다.
+  </p>
+  <p>
+    반대로 <strong>근로소득이 아닌 소득이 섞이면 이 예외가 사라집니다.</strong>
+    같은 {formatWon(rates.incomeTest.salaryOnly)}이어도 사업소득이나
+    기타소득이면 소득금액 기준으로 다시 따져야 합니다.
+  </p>
+
+  <h2>따로 사는 부모님도 됩니다</h2>
+  <p>
+    원칙은 주민등록표상 같이 살면서 실제로 생계를 함께하는 사람입니다. 그런데
+    소득세법 제53조 제3항이 <strong>직계존속이 주거 형편에 따라 별거하는
+    경우</strong>는 생계를 같이 하는 것으로 본다고 따로 적어 뒀습니다.
+    고향에 계신 부모님을 부양하고 있다면 주소가 달라도 대상입니다.
+  </p>
+  <p>
+    자녀는 아예 동거 요건 자체가 없습니다(같은 조 제1항 단서). 유학·자취 중인
+    자녀도 나이와 소득만 맞으면 됩니다. <strong>이 특례가 없는 쪽은
+    형제자매</strong>입니다 — 조문이 직계존속만 말하기 때문에, 따로 사는
+    동생은 대상이 아닙니다.
+  </p>
+
+  <h2>나이는 생일이 아니라 그 해로 본다</h2>
+  <p>
+    공제 대상인지는 <strong>{rates.livingTogether.judgedOn} 현재</strong>로
+    판정합니다(제53조 제4항). 그런데 나이만은 기준이 한 번 더 느슨합니다 —
+    <strong>그 해 중에 해당 나이가 되는 날이 있으면</strong> 대상입니다
+    (같은 조 제5항).
+  </p>
+  <p>
+    자녀가 올해 스물한 살이 되더라도, 그 해에 스무 살이던 날이 있었다면
+    그 해까지는 공제 대상입니다. 부모님이 올해 예순이 되신다면 생일이
+    12월이어도 올해부터 대상입니다.
+  </p>
+
+  <h2>추가공제는 같은 사람 위에 더 붙는다</h2>
+  <p>
+    기본공제 대상이 된 사람에게 조건이 더 맞으면 금액이 추가됩니다. 기본공제를
+    통과하지 못한 사람에게는 <strong>추가공제도 붙지 않습니다</strong> — 조문이
+    "기본공제대상이 되는 사람"에만 적용한다고 못박고 있습니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th>조건</th>
+          <th>금액</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{A.elderly.label}</td>
+          <td>{A.elderly.age}세 이상 1명당</td>
+          <td>{formatWon(A.elderly.amount)}</td>
+        </tr>
+        <tr>
+          <td>{A.disabled.label}</td>
+          <td>1명당 (나이 제한 없음)</td>
+          <td>{formatWon(A.disabled.amount)}</td>
+        </tr>
+        <tr>
+          <td>{A.female.label}</td>
+          <td>종합소득금액 {formatWon(A.female.incomeCap)} 이하인 여성</td>
+          <td>{formatWon(A.female.amount)}</td>
+        </tr>
+        <tr>
+          <td>{A.singleParent.label}</td>
+          <td>배우자 없이 기본공제 대상 자녀가 있는 경우</td>
+          <td>{formatWon(A.singleParent.amount)}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p>
+      <strong>{A.female.label}와 {A.singleParent.label}는 더해지지 않습니다.</strong>
+      둘 다 해당되면 {A.singleParent.label}({formatWon(A.singleParent.amount)})만
+      적용합니다. 제51조 제1항 단서가 그렇게 정하고 있어서,
+      {formatWon(A.female.amount)} + {formatWon(A.singleParent.amount)} 로
+      계산하면 틀립니다.
+    </p>
+  </div>
+
+  <h2>실제로 얼마나 차이가 나나</h2>
+  <p>
+    과세표준 {formatWon(EX_INCOME)}인 사람이 따로 사시는 부모님 두 분
+    (각 {exPeople[1].age}세, {exPeople[2].age}세)을 올리면 이렇게 됩니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <tbody>
+        <tr>
+          <th>기본공제</th>
+          <td>{ex.count}명 × {formatWon(PER)} = {formatWon(ex.basic)}</td>
+        </tr>
+        <tr>
+          <th>{A.elderly.label}</th>
+          <td>2명 × {formatWon(A.elderly.amount)} = {formatWon(ex.additional)}</td>
+        </tr>
+        <tr>
+          <th>공제 합계</th>
+          <td>{formatWon(ex.applied)}</td>
+        </tr>
+        <tr>
+          <th>덜 내는 세금</th>
+          <td><strong>{formatWon(exSaved.total)}</strong> (지방소득세 포함)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    본인 한 명만 넣었을 때와 비교하면 차액이{" "}
+    {formatWon(exSaved.total - taxSaved(EX_INCOME, PER).total)}입니다.
+    부모님을 올릴 수 있는데 올리지 않으면 매년 이만큼입니다.
+  </p>
+
+  <h2>소득보다 공제가 크면 남는 건 버려진다</h2>
+  <p>
+    인적공제 합계가 종합소득금액을 넘으면 <strong>넘는 부분은 없는 것으로
+    합니다</strong>(제51조 제4항).
+  </p>
+  <p>
+    소득금액이 {formatWon(SMALL_INCOME)}인 사람이 본인과 부모님 한 분,
+    모두 {small.count}명을 넣으면 공제는 {formatWon(small.raw)}이 되지만,
+    실제로 빠지는 것은 {formatWon(small.applied)}이고
+    <strong>{formatWon(small.discarded)}은 사라집니다</strong>. 다음 해로
+    이월되지 않습니다.
+  </p>
+  <p>
+    그래서 <strong>소득이 적은 해에는 공제를 더 넣어도 돌아오는 게 없습니다.</strong>
+    부모님을 형제와 나눠 올릴 수 있는 상황이라면, 소득이 높은 쪽이 올리는 것이
+    가구 전체로는 유리합니다. 단, <strong>같은 사람을 두 명이 동시에 올릴 수는
+    없습니다.</strong>
+  </p>
+
+  <h2>그래서 순서는 이렇습니다</h2>
+  <ol>
+    <li>본인은 무조건 한 명으로 센다</li>
+    <li>
+      배우자와 부양가족을 후보로 적고, <strong>소득금액
+      {formatWon(rates.incomeTest.amount)}</strong>(근로소득만이면 총급여
+      {formatWon(rates.incomeTest.salaryOnly)})을 먼저 확인한다
+    </li>
+    <li>나이를 본다 — 그 해 중 해당하는 날이 있으면 통과다</li>
+    <li>
+      생계를 본다. 부모님은 주거 형편에 따른 별거면 인정되고, 자녀는 아예
+      따지지 않는다
+    </li>
+    <li>통과한 사람에게 {A.elderly.label}·{A.disabled.label}를 얹는다</li>
+    <li>
+      본인에게 {A.female.label} 또는 {A.singleParent.label}가 붙는지 본다 —
+      <strong>둘 중 하나만</strong>이다
+    </li>
+  </ol>
+
+  <p class="actions">
+    <a class="btn" href="/income-tax-refund/">공제 인원을 넣고 환급액 계산해보기</a>
+  </p>
+
+  <h2>이 글이 다루지 않는 것</h2>
+  <p>
+    자녀 관련해서는 인적공제와 별개로 <strong>자녀세액공제</strong>가 따로
+    있습니다. 이것은 소득에서 빼는 공제가 아니라 산출된 세금에서 직접 빼는
+    것이라 계산 단계가 다르고, 이 글에서는 다루지 않았습니다. 장애인의 범위,
+    일시 퇴거로 인정되는 사유처럼 시행령이 정하는 세부 항목도 마찬가지입니다.
+    합산 신고 자체가 처음이라면
+    <a href="/guide/multiple-payers/">거래처 여러 곳의 합산신고</a>와
+    <a href="/guide/who-must-file/">신고 대상 판단</a>을 먼저 보세요.
+  </p>
+
+  <p class="meta">
+    기본공제 {formatWon(PER)}과 소득·나이 요건은
+    <a href={src50.url} rel="nofollow noopener">{src50.label}</a>,
+    추가공제 금액과 중복 배제는
+    <a href={src51.url} rel="nofollow noopener">{src51.label}</a>,
+    생계 요건과 판정 시기는
+    <a href={src53.url} rel="nofollow noopener">{src53.label}</a>
+    에서 확인한 값입니다({rates.lawVersion}, {rates.verifiedOn} 확인).
+    세율표는 <a href={taxRates.sources[0].url} rel="nofollow noopener">국세청
+    세율표</a>({taxRates.verifiedOn} 확인)입니다. 표의 금액은 사이트 계산기와
+    같은 함수로 뽑은 <strong>예상치</strong>이며, 실제 세액은 다른 공제에 따라
+    달라집니다. 개별 사안은 국세상담센터(126)나 세무 전문가에게 확인하세요.
+  </p>
+
+  <div class="ad-slot" data-ad="guide-family-deduction-bottom"></div>
+</GuideLayout>

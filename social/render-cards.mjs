@@ -160,6 +160,13 @@ for (const slug of targets) {
 
   for (let i = 1; i <= n; i++) {
     await page.goto(`${base}/cards/${slug}/${i}/`, { waitUntil: "networkidle" });
+    // Astro dev 툴바가 아트보드 바닥 가운데에 겹쳐 찍힌다. 발행된 다섯
+    // 세트 전부에 이 작은 알약 모양이 박혀 있었는데, 어두운 카드에서는
+    // 눈에 잘 안 띄어 한참 몰랐다. dev 서버를 쓰는 한 항상 뜨므로 찍기
+    // 직전에 가린다 — config 로 끄면 평소 개발에서도 사라진다.
+    await page.addStyleTag({
+      content: "astro-dev-toolbar{display:none!important}",
+    });
     // 웹폰트가 앉기 전에 찍으면 글자가 밀린다.
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({
