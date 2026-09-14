@@ -56,3 +56,39 @@ describe("nextReads", () => {
     expect(nextReads("/guide/vat-filing/", 2)).toHaveLength(2);
   });
 });
+
+describe("계산기에서 이어서 볼 글", () => {
+  const calcPaths = clusters.flatMap((c) =>
+    c.links.filter((l) => l.kind === "calc").map((l) => l.href),
+  );
+
+  it("계산기도 결과를 받는다", () => {
+    expect(calcPaths.length).toBe(6);
+    for (const p of calcPaths) {
+      expect(nextReads(p).length, p).toBeGreaterThan(0);
+    }
+  });
+
+  it("첫 번째는 같은 주제의 글이다", () => {
+    // 계산기는 guide 만 걸러낸 배열에 없어서 findIndex 가 -1 이 됐고,
+    // 그 결과 어느 계산기든 클러스터의 첫 글을 권했다 — 가산세 계산기가
+    // 3.3% 글을 권하고 있었다. 가장 가까운 글이 나와야 한다.
+    for (const p of calcPaths) {
+      const first = nextReads(p)[0];
+      expect(first.link.kind, p).toBe("guide");
+      expect(first.crossCluster, p).toBe(false);
+    }
+  });
+
+  it("가산세 계산기는 가산세 글을 먼저 권한다", () => {
+    expect(nextReads("/penalty/")[0].link.href).toBe(
+      "/guide/late-filing-penalty/",
+    );
+  });
+
+  it("계산기마다 첫 글이 다르다", () => {
+    const firsts = calcPaths.map((p) => nextReads(p)[0].link.href);
+    // 같은 클러스터의 계산기끼리는 겹칠 수 있지만 전부 같으면 예전 버그다.
+    expect(new Set(firsts).size).toBeGreaterThan(1);
+  });
+});

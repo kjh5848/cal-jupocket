@@ -216,12 +216,18 @@ export function nextReads(path: string, limit = 3): NextRead[] {
   };
 
   // 1) 같은 주제의 다음 글 (순환)
-  const guides = cluster.links.filter((l) => l.kind === "guide");
-  if (guides.length > 0) {
-    const gi = guides.findIndex((l) => norm(l.href) === here);
-    for (let k = 1; k <= guides.length && out.length < 1; k++) {
-      push(guides[(gi + k + guides.length) % guides.length], cluster);
-    }
+  //
+  // links 배열 순서 그대로 앞으로 돈다. clusters 는 계산기 바로 뒤에 그
+  // 계산기를 설명하는 글을 두는 식으로 짜여 있어서(penalty → 
+  // late-filing-penalty), 앞에서부터 도는 것만으로 가장 가까운 글이 잡힌다.
+  //
+  // 예전에는 guide 만 걸러낸 배열에서 위치를 찾았다. 계산기는 그 배열에
+  // 없으니 findIndex 가 -1 이 되고, (-1+1)%n = 0 이라 언제나 클러스터의
+  // 첫 글이 나왔다 — 가산세 계산기가 3.3% 글을 권하고 있었다.
+  const n = cluster.links.length;
+  for (let k = 1; k <= n && out.length < 1; k++) {
+    const l = cluster.links[(idx + k) % n];
+    if (l.kind === "guide") push(l, cluster);
   }
 
   // 2) 같은 주제의 계산기
