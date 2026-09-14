@@ -114,3 +114,53 @@ describe.skipIf(!has)("빌드 산출물 SEO 불변식", () => {
     expect(bad).toEqual([]);
   });
 });
+
+describe.skipIf(!has)("동선과 광고 자리", () => {
+  /** 계산기 = 루트에 있는 도구 페이지. 사람이 제일 먼저 닿는 입구다. */
+  const calcs = pages.filter((p) =>
+    /^\/(penalty|vat|withholding|freelancer-33|income-tax-refund|national-pension-premium)\/$/.test(
+      p.path,
+    ),
+  );
+  const guides = pages.filter((p) => p.path.startsWith("/guide/"));
+
+  it("계산기에 '이어서 볼 글'이 있다", () => {
+    // 계산하고 나가버리면 그 방문은 한 페이지로 끝난다. 광고 노출은
+    // 페이지뷰 × 페이지당 광고 수라, 동선이 끊기면 거기서 같이 끝난다.
+    // 실제로 /withholding/ 과 /income-tax-refund/ 가 막다른 길이었다.
+    expect(calcs.length).toBe(6);
+    const dead = calcs
+      .filter((p) => !p.html.includes('class="nr-title"'))
+      .map((p) => p.path);
+    expect(dead).toEqual([]);
+  });
+
+  it("모든 계산기가 글로 나가는 링크를 갖는다", () => {
+    const dead = calcs
+      .filter((p) => !/href="\/guide\/[a-z0-9-]+\//.test(p.html))
+      .map((p) => p.path);
+    expect(dead).toEqual([]);
+  });
+
+  it("모든 글에 광고 자리가 있다", () => {
+    // guide/pension-premium-2026 만 0개였다. 빌드도 테스트도 통과했다 —
+    // 광고가 없는 건 아무것도 깨뜨리지 않기 때문이다. 여기서 잡는다.
+    const none = guides
+      .filter((p) => !p.html.includes('class="ad-slot"'))
+      .map((p) => p.path);
+    expect(none).toEqual([]);
+  });
+
+  it("광고가 '이어서 볼 글'보다 뒤에 온다", () => {
+    // 다음 단계가 있어야 할 자리에 광고가 있으면 독자가 그걸 네비게이션으로
+    // 읽는다. 애드센스가 금지하는 배치이고 실수 클릭은 CTR 이상치로
+    // 자동 적발된다. 순서를 강제한다.
+    const wrong: string[] = [];
+    for (const p of calcs) {
+      const nav = p.html.indexOf('class="next-reads"');
+      const ad = p.html.indexOf('class="ad-slot"');
+      if (nav >= 0 && ad >= 0 && ad < nav) wrong.push(p.path);
+    }
+    expect(wrong).toEqual([]);
+  });
+});

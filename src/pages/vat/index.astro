@@ -13,6 +13,7 @@ import TrackLinks from "../../components/TrackLinks.astro";
 import AdSenseHead from "../../components/AdSenseHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
+import NextReads from "../../components/NextReads.astro";
 import Disclaimer from "../../components/Disclaimer.astro";
 import vat from "../../rates/vat-2026.json";
 import "../../styles/global.css";
@@ -158,6 +159,9 @@ const rates = vat.simplified.valueAddedRates;
         <a href="/guide/vat-freelancer/">프리랜서도 부가세를 내야 하나요?</a> ·
         <a href="/guide/simplified-vat/">간이과세 vs 일반과세, 뭐가 유리한가</a>
       </p>
+
+      <NextReads path="/vat/" />
+
 
       <div class="ad-slot" data-ad="vat-result"></div>
 

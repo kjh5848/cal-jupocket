@@ -19,6 +19,7 @@ import TrackLinks from "../../components/TrackLinks.astro";
 import AdSenseHead from "../../components/AdSenseHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
+import NextReads from "../../components/NextReads.astro";
 import Disclaimer from "../../components/Disclaimer.astro";
 import p from "../../rates/penalty-2026.json";
 import "../../styles/global.css";
@@ -161,6 +162,9 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
         부정행위·복식부기의무자·법인·영세율은 계산에 넣지 않았습니다.
         실제 부과액은 홈택스 또는 세무 전문가에게 확인하세요.
       </p>
+
+      <NextReads path="/penalty/" />
+
 
       <div class="ad-slot" data-ad="penalty-result"></div>
 

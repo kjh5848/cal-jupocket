@@ -14,6 +14,7 @@ import TrackLinks from "../../components/TrackLinks.astro";
 import AdSenseHead from "../../components/AdSenseHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
+import NextReads from "../../components/NextReads.astro";
 import Disclaimer from "../../components/Disclaimer.astro";
 import pp from "../../rates/pension-premium-2026.json";
 import "../../styles/global.css";
@@ -136,6 +137,9 @@ const srcStd = pp.sources.find((s) => s.url.includes("OHAE0001"))!;
         원문에서 확인한 값입니다({pp.verifiedOn} 확인). 개별 부과액은
         국민연금공단(1355)에 확인하세요.
       </p>
+
+      <NextReads path="/national-pension-premium/" />
+
 
       <div class="ad-slot" data-ad="nps-premium-result"></div>
 
