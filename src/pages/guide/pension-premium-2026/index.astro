@@ -49,10 +49,10 @@ const targetPercent = rates.reform.targetRate * 100;
   <h1>{title}</h1>
 
   <p>
-    2026년 국민연금 보험료율은 <strong>{ratePercent}%</strong>입니다. 직장인은
-    회사와 절반씩 나눠 내지만, 프리랜서·자영업자 같은 지역가입자는
-    <strong>전액 본인이 냅니다</strong>. 같은 요율이어도 체감이 두 배로 다른
-    이유가 여기 있습니다.
+    직장 다닐 때는 월급에서 빠지는 금액만 봤는데, 프리랜서가 되고 나서
+    받은 고지서는 금액이 두 배로 보입니다. 요율이 오른 게 아니라 회사가
+    내주던 절반이 없어진 것입니다. 2026년 보험료율은
+    <strong>{ratePercent}%</strong>이고, 지역가입자는 그 전액을 본인이 냅니다.
   </p>
 
   <div class="callout">
@@ -64,7 +64,7 @@ const targetPercent = rates.reform.targetRate * 100;
     </p>
   </div>
 
-  <h2>지역가입자는 전액 본인 부담</h2>
+  <h2>왜 나만 전액을 내나요?</h2>
   <p>
     직장가입자는 보험료를 회사와 근로자가 반씩 냅니다. 요율이 {ratePercent}%면
     본인 부담은 절반인 {halfPercent}%입니다. 반면 지역가입자는 공단 설명대로
@@ -78,7 +78,7 @@ const targetPercent = rates.reform.targetRate * 100;
     함께 정리해 두었습니다.
   </p>
 
-  <h2>보험료는 기준소득월액에서 나옵니다</h2>
+  <h2>보험료는 무엇을 기준으로 정해지나요?</h2>
   <p>
     보험료의 기준은 실제 소득이 아니라 <strong>기준소득월액</strong>입니다.
     신고한 소득을 그대로 쓰는 게 아니라 두 번 손을 봅니다.
@@ -95,7 +95,7 @@ const targetPercent = rates.reform.targetRate * 100;
     조정되므로 해가 바뀌면 이 금액도 달라집니다.
   </p>
 
-  <h2>계산 3단계</h2>
+  <h2>내 보험료는 어떻게 계산되나요?</h2>
   <p>월소득을 {fmt(EX)}원으로 신고한 사람을 따라가 보겠습니다.</p>
   <ol>
     <li><strong>천원 미만 절사</strong> — {fmt(EX)}원 → {fmt(exStd)}원</li>
@@ -152,7 +152,7 @@ const targetPercent = rates.reform.targetRate * 100;
     지역가입자 전액 부담 기준 · 10원 미만 절사 · 출처 국민연금공단
   </p>
 
-  <h2>상한 {fmt(ceil)}원이 뜻하는 것</h2>
+  <h2>많이 벌면 보험료도 계속 오르나요?</h2>
   <p>
     기준소득월액 상한이 {fmt(ceil)}원이므로 그보다 많이 벌어도 보험료는 늘지
     않습니다. 월 700만원을 벌든 1,500만원을 벌든 똑같이
@@ -164,7 +164,7 @@ const targetPercent = rates.reform.targetRate * 100;
     상대적으로 커지는 구간이 생기는 이유입니다.
   </p>
 
-  <h2>요율은 {rates.reform.targetYear}년까지 매년 오릅니다</h2>
+  <h2>앞으로 더 오르나요?</h2>
   <p>
     {ratePercent}%가 끝이 아닙니다. 2025년 연금개혁으로 2026년부터 매년 0.5%p씩
     올라 {rates.reform.targetYear}년에 {targetPercent}%가 됩니다.
@@ -198,7 +198,7 @@ const targetPercent = rates.reform.targetRate * 100;
     달라집니다.
   </p>
 
-  <h2>소득이 끊겼을 때 — 납부예외</h2>
+  <h2>소득이 없으면 안 내도 되나요?</h2>
   <p>
     사업을 중단했거나 실직해서 보험료를 낼 수 없으면 <strong>납부예외</strong>를
     신청할 수 있습니다. 공단은 사업중단·휴직·실직, 병역의무 수행, 학생, 질병으로
