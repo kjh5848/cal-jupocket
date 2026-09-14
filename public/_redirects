@@ -1,0 +1,42 @@
+# cal.jupocket.com 시절 루트에 있던 가이드 주소를 지금 자리로 보낸다.
+#
+# 서브도메인은 이미 apex 로 301 되는데, 경로를 그대로 붙여 넘긴다.
+# 그런데 가이드가 /guide/ 아래로 옮겨진 뒤라 넘어간 자리가 404다 —
+# 구글 색인에 남아 있는 옛 주소 9개가 전부 404 로 흘러들고 있었다.
+#
+# 계산기는 예전에도 지금도 루트라 건드리지 않는다(/vat/, /withholding/ 등).
+
+/33-settlement/  /guide/33-settlement/  301
+/33-settlement  /guide/33-settlement/  301
+/expense-rate/  /guide/expense-rate/  301
+/expense-rate  /guide/expense-rate/  301
+/family-deduction/  /guide/family-deduction/  301
+/family-deduction  /guide/family-deduction/  301
+/income-tax-brackets/  /guide/income-tax-brackets/  301
+/income-tax-brackets  /guide/income-tax-brackets/  301
+/irp-account/  /guide/irp-account/  301
+/irp-account  /guide/irp-account/  301
+/late-filing-penalty/  /guide/late-filing-penalty/  301
+/late-filing-penalty  /guide/late-filing-penalty/  301
+/multiple-payers/  /guide/multiple-payers/  301
+/multiple-payers  /guide/multiple-payers/  301
+/national-pension-estimate/  /guide/national-pension-estimate/  301
+/national-pension-estimate  /guide/national-pension-estimate/  301
+/pension-premium-2026/  /guide/pension-premium-2026/  301
+/pension-premium-2026  /guide/pension-premium-2026/  301
+/pension-savings-tax-credit/  /guide/pension-savings-tax-credit/  301
+/pension-savings-tax-credit  /guide/pension-savings-tax-credit/  301
+/retirement-fund/  /guide/retirement-fund/  301
+/retirement-fund  /guide/retirement-fund/  301
+/retirement-planning/  /guide/retirement-planning/  301
+/retirement-planning  /guide/retirement-planning/  301
+/severance-to-freelance/  /guide/severance-to-freelance/  301
+/severance-to-freelance  /guide/severance-to-freelance/  301
+/simplified-vat/  /guide/simplified-vat/  301
+/simplified-vat  /guide/simplified-vat/  301
+/vat-filing/  /guide/vat-filing/  301
+/vat-filing  /guide/vat-filing/  301
+/vat-freelancer/  /guide/vat-freelancer/  301
+/vat-freelancer  /guide/vat-freelancer/  301
+/who-must-file/  /guide/who-must-file/  301
+/who-must-file  /guide/who-must-file/  301
