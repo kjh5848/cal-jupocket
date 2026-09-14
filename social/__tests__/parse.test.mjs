@@ -143,9 +143,21 @@ describe("parseArgs", () => {
     expect(parseArgs(["--publish"])).toEqual({
       publish: true,
       due: false,
+      replyMissing: false,
       file: null,
       error: null,
     });
+  });
+
+  it("--reply-missing 을 알아본다", () => {
+    expect(parseArgs(["--reply-missing", "--publish"])).toEqual({
+      publish: true,
+      due: false,
+      replyMissing: true,
+      file: null,
+      error: null,
+    });
+    expect(parseArgs(["--due"]).replyMissing).toBe(false);
   });
 });
 

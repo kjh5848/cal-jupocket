@@ -93,8 +93,10 @@ export function textLength(text) {
 export function parseArgs(args) {
   const publish = args.includes("--publish");
   const due = args.includes("--due");
+  const replyMissing = args.includes("--reply-missing");
   const i = args.findIndex((a) => a === "--file" || a.startsWith("--file="));
-  if (i === -1) return { publish, due, file: null, error: null };
+  if (i === -1)
+    return { publish, due, replyMissing, file: null, error: null };
 
   const a = args[i];
   const file = a.startsWith("--file=") ? a.slice("--file=".length) : args[i + 1];
@@ -102,11 +104,12 @@ export function parseArgs(args) {
     return {
       publish,
       due,
+      replyMissing,
       file: null,
       error: "--file 뒤에 큐 파일 이름이 필요합니다. 예: --file 002-vat-january-deadline.md",
     };
   }
-  return { publish, due, file, error: null };
+  return { publish, due, replyMissing, file, error: null };
 }
 
 /**

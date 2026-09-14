@@ -8,6 +8,7 @@
     "test": "vitest run",
     "social:auth": "node social/threads-auth.mjs",
     "social:post": "node social/threads-post.mjs",
+    "social:reply": "node social/threads-post.mjs --reply-missing",
     "social:setup": "node social/threads-setup.mjs",
     "og": "node social/render-og.mjs",
     "ig:setup": "node social/ig-setup.mjs",

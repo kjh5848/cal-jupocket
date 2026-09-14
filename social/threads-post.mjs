@@ -51,11 +51,18 @@ const API = "https://graph.threads.net/v1.0";
 /** 문서 권장: 컨테이너 생성 후 게시까지 평균 30초 대기. */
 const PUBLISH_DELAY_MS = 30_000;
 /** 답글은 본문보다 가볍다. 짧게 기다린다. */
+/** 답글 재시도 간격. 갓 게시된 글은 잠깐 조회가 안 된다. */
+const REPLY_RETRY_MS = [8_000, 20_000, 45_000];
+
 const REPLY_DELAY_MS = 8_000;
 
-const { publish: doPublish, file: pickFile, due: dueOnly, error: argError } = parseArgs(
-  process.argv.slice(2),
-);
+const {
+  publish: doPublish,
+  file: pickFile,
+  due: dueOnly,
+  replyMissing,
+  error: argError,
+} = parseArgs(process.argv.slice(2));
 if (argError) {
   console.error(`\n✖ ${argError}\n`);
   process.exit(1);
@@ -154,6 +161,68 @@ const queue = existsSync(QUEUE_DIR)
 function atOf(f) {
   const { meta } = parsePost(readFileSync(join(QUEUE_DIR, f), "utf8"));
   return meta.at ?? null;
+}
+
+/**
+ * --reply-missing: 본문은 나갔는데 답글이 안 붙은 글에 답글만 붙인다.
+ *
+ * 답글이 실패해도 본문 기록은 남기도록 바꾼 뒤로, 원장에 replyId 가 null
+ * 인 줄이 생긴다. 그 줄들이 여기서 처리된다. 본문을 다시 올리지 않는다 —
+ * 이미 나간 글에 링크 안내만 붙이는 것이다.
+ */
+if (replyMissing) {
+  const pending = ledger.filter((e) => !e.replyId);
+  if (!pending.length) {
+    console.log("\n답글이 빠진 글이 없습니다.\n");
+    process.exit(0);
+  }
+  const token = await refreshTokenIfDue(env.THREADS_ACCESS_TOKEN);
+  const userId = env.THREADS_USER_ID;
+  const save = () =>
+    writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + "\n", "utf8");
+
+  console.log(`\n답글이 빠진 글 ${pending.length}건\n`);
+  for (const e of pending) {
+    const path = join(QUEUE_DIR, e.file);
+    if (!existsSync(path)) {
+      console.log(`· ${e.file} — 큐 파일이 없습니다. 건너뜁니다.`);
+      continue;
+    }
+    const { meta } = parsePost(readFileSync(path, "utf8"));
+    if (!meta.reply) {
+      console.log(`· ${e.file} — reply: 가 없습니다. 건너뜁니다.`);
+      continue;
+    }
+    console.log(`· ${e.file} → ${e.id}`);
+    if (!doPublish) {
+      console.log(`    (드라이런) ${meta.reply}`);
+      continue;
+    }
+    try {
+      const rc = await post(`${userId}/threads`, {
+        media_type: "TEXT",
+        text: meta.reply,
+        reply_to_id: e.id,
+        access_token: token,
+      });
+      await waitReady(rc.id, token);
+      const rp = await post(`${userId}/threads_publish`, {
+        creation_id: rc.id,
+        access_token: token,
+      });
+      e.replyId = rp.id;
+      save();
+      console.log(`    ✓ ${rp.id}`);
+    } catch (err) {
+      console.log(`    ✖ ${err.message}`);
+    }
+  }
+  console.log(
+    doPublish
+      ? "\n끝났습니다.\n"
+      : "\n드라이런입니다. 실제로 붙이려면 --publish 를 붙이세요.\n",
+  );
+  process.exit(0);
 }
 
 /**
@@ -264,46 +333,85 @@ if (!doPublish) {
     access_token: token,
   });
 
-  let permalink = null;
+  // ── 원장을 여기서 쓴다. 답글보다 먼저다. ──────────────────
+  //
+  // 예전에는 답글까지 끝난 뒤에 썼는데, 답글이 실패하면 프로세스가 죽으면서
+  // 원장이 비었다. 그러면 30분 뒤 스케줄러가 "아직 안 올렸다"고 보고 본문을
+  // 또 올린다. 실제로 같은 글이 2~3번 나갔다.
+  //
+  // 본문이 나간 것은 되돌릴 수 없다. 되돌릴 수 없는 일이 끝났으면 그
+  // 사실부터 적는다. 답글은 실패해도 나중에 다시 붙일 수 있다.
+  const entry = {
+    file,
+    id: published.id,
+    replyId: null,
+    permalink: null,
+    at: new Date().toISOString(),
+  };
+  ledger.push(entry);
+  const save = () =>
+    writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + "\n", "utf8");
+  save();
+
+  console.log(`\n✓ 게시 완료  id=${published.id}  (원장 기록됨)`);
+
   try {
     const info = await callJson(
       `${API}/${published.id}?` +
         new URLSearchParams({ fields: "permalink", access_token: token }),
     );
-    permalink = info.permalink ?? null;
+    entry.permalink = info.permalink ?? null;
+    save();
   } catch {
     // permalink 조회 실패는 게시 성공에 영향이 없다.
   }
 
   // 링크·프로필 안내는 본문이 아니라 답글로 — 본문에 링크를 달면 도달이 준다.
-  let replyId = null;
+  //
+  // 갓 게시된 글은 잠깐 조회가 안 된다("미디어를 찾을 수 없음"). 8초로는
+  // 부족할 때가 있어 간격을 늘려 가며 다시 시도한다.
   if (reply) {
-    console.log(`· 답글 준비 ${REPLY_DELAY_MS / 1000}초 대기…`);
-    await sleep(REPLY_DELAY_MS);
-    const rc = await post(`${userId}/threads`, {
-      media_type: "TEXT",
-      text: reply,
-      reply_to_id: published.id,
-      access_token: token,
-    });
-    const rp = await post(`${userId}/threads_publish`, {
-      creation_id: rc.id,
-      access_token: token,
-    });
-    replyId = rp.id;
-    console.log(`· 답글 ✓ id=${replyId}`);
+    for (const wait of REPLY_RETRY_MS) {
+      console.log(`· 답글 준비 ${wait / 1000}초 대기…`);
+      await sleep(wait);
+      try {
+        const rc = await post(`${userId}/threads`, {
+          media_type: "TEXT",
+          text: reply,
+          reply_to_id: published.id,
+          access_token: token,
+        });
+        // 본문은 컨테이너를 만들고 30초를 기다린 뒤에 게시한다. 답글도
+        // 같은 컨테이너 API 를 쓰는데 여기만 곧바로 게시하고 있었다.
+        // 그래서 "미디어를 찾을 수 없음" 이 났다 — 답글 문제가 아니라
+        // 기다리지 않은 문제다.
+        //
+        // 눈감고 30초 세는 대신 상태를 물어본다. waitReady 는 캐러셀을
+        // 걷어내면서 쓰이지 않게 된 함수인데, 정확히 이 일을 한다.
+        console.log("· 답글 컨테이너 준비 대기…");
+        await waitReady(rc.id, token);
+        const rp = await post(`${userId}/threads_publish`, {
+          creation_id: rc.id,
+          access_token: token,
+        });
+        entry.replyId = rp.id;
+        save();
+        console.log(`· 답글 ✓ id=${entry.replyId}`);
+        break;
+      } catch (err) {
+        console.log(`· 답글 실패 — ${err.message}`);
+      }
+    }
+    if (!entry.replyId) {
+      // 여기서 죽으면 안 된다. 본문은 이미 나갔고 원장에도 적혔다.
+      // 죽으면 .cmd 의 다음 줄(인스타)까지 못 돈다.
+      console.log(
+        "\n⚠ 답글을 붙이지 못했습니다. 본문은 정상이고 원장에도 적혔습니다." +
+          "\n  나중에 `npm run social:reply -- --publish` 로 붙입니다.",
+      );
+    }
   }
 
-  ledger.push({
-    file,
-    id: published.id,
-    replyId,
-    permalink,
-    at: new Date().toISOString(),
-  });
-  writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + "\n", "utf8");
-
-  console.log(`\n✓ 게시 완료  id=${published.id}`);
-  if (permalink) console.log(`  ${permalink}`);
+  if (entry.permalink) console.log(`  ${entry.permalink}`);
   console.log("  기록 → social/posted.json\n");
 }
