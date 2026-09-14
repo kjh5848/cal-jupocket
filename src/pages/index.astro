@@ -39,6 +39,42 @@ const recentCards = recent
   .map((h) => linkByHref(h))
   .filter((x): x is NonNullable<typeof x> => x !== null)
   .slice(0, 5);
+
+/**
+ * 홈에만 붙이는 WebSite + Organization.
+ *
+ * 계산기 페이지마다 SoftwareApplication 을 붙이고 싶어지지만, 평점도
+ * 가격도 없는 앱 마크업은 검색결과에 아무것도 만들지 않는다. 읽히지 않을
+ * 구조화 데이터는 관리 비용만 남는다.
+ *
+ * 여기 두 개는 다르다 — 사이트 이름과 발행 주체를 기계가 확정하는 자리라,
+ * 검색결과의 사이트명 표기와 지식 패널이 이걸 본다.
+ */
+const siteUrl = Astro.site!.href.replace(/\/$/, "");
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "주포켓",
+    alternateName: "jupocket",
+    url: `${siteUrl}/`,
+    inLanguage: "ko",
+    description,
+    publisher: { "@id": `${siteUrl}/#org` },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${siteUrl}/#org`,
+    name: "주포켓",
+    url: `${siteUrl}/`,
+    logo: `${siteUrl}/favicon.svg`,
+    sameAs: [
+      "https://www.instagram.com/jupocket.money/",
+      "https://www.threads.com/@jupocket.money",
+    ],
+  },
+];
 ---
 
 <html lang="ko">
@@ -47,6 +83,7 @@ const recentCards = recent
     <ClarityHead />
     <GtagHead />
     <AdSenseHead />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
   </head>
   <body class="bg-texture">
     <SiteHeader />

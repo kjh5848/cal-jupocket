@@ -49,6 +49,20 @@ function points(card: Card): string[] {
   }
 }
 
+/**
+ * 세트 한 벌의 이름. 페이지 제목·h1·갤러리 제목이 전부 이걸 쓴다.
+ *
+ * 예전에는 첫 장이 list 나 note 일 때만 제목을 꺼내고 나머지는 slug 로
+ * 떨어뜨렸다. 표지 카드(cover)를 도입한 뒤 두 세트의 <title> 이
+ * "late-filing-penalty" 로 나갔다 — 검색결과에 그대로 보이는 자리다.
+ *
+ * 첫 장에는 항상 제목이 있다. 종류를 가릴 이유가 없다. slug 는 제목이
+ * 정말 비었을 때만 쓰는 마지막 수단이다.
+ */
+export function setHeading(set: CardSet): string {
+  return cardTitle(set.cards[0]) || set.slug;
+}
+
 const ALT_MAX = 150;
 
 /**

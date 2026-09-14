@@ -17,7 +17,21 @@ import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import { cardSets } from "../../data/cards";
 import { publishedShots } from "../../lib/published-cards";
-import { clusterColor } from "../../data/clusters";
+import { altText, setHeading } from "../../lib/card-text";
+
+/**
+ * 카드 세트가 가리키는 글의 제목.
+ *
+ * 링크 텍스트가 "자세히 읽기" 뿐이면 그 링크가 어디로 가는지 기계도
+ * 스크린리더도 알 수 없다 — 같은 문구가 페이지에 네 번 나온다.
+ * 가이드가 말하는 "페이지 내용을 명확히 설명하는 앵커 텍스트"가 이것이다.
+ */
+function articleTitle(link: string): string | null {
+  const path = link.startsWith("http") ? new URL(link).pathname : link;
+  const found = linkByHref(path);
+  return found ? displayTitle(found.link) : null;
+}
+import { clusterColor, linkByHref, displayTitle } from "../../data/clusters";
 import { liveSocials } from "../../data/social";
 import "../../styles/global.css";
 
@@ -50,16 +64,14 @@ const sets = cardSets
           <section class="gallery-set" aria-labelledby={`set-${set.slug}`}>
             <div class="gallery-head">
               <h2 id={`set-${set.slug}`}>
-                <a href={`/cards/${set.slug}/`}>
-                  {set.cards[0].kind === "list" ? set.cards[0].title : set.slug}
-                </a>
+                <a href={`/cards/${set.slug}/`}>{setHeading(set)}</a>
               </h2>
               <a
                 class="gallery-more"
                 href={set.link}
                 style={`--cm:${clusterColor[set.cluster]?.mark}`}
               >
-                자세히 읽기
+                {articleTitle(set.link) ?? "글로 읽기"}
               </a>
             </div>
             <ul class="gallery-strip">
@@ -68,7 +80,7 @@ const sets = cardSets
                   <a href={`/cards/${set.slug}/`} aria-label={`카드 ${n} — 전체 보기`}>
                     <img
                       src={`/cards/${set.slug}/${n}.jpg`}
-                      alt={`${set.slug} 카드 ${n}`}
+                      alt={altText(set.cards[n - 1], n - 1, shots.length)}
                       width="1080"
                       height="1350"
                       loading="lazy"
