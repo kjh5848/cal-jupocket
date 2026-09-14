@@ -9,6 +9,7 @@ import { describe, it, expect } from "vitest";
 import { cardSets, cardSetBySlug } from "../../data/cards";
 import { compute } from "../pension-premium";
 import { computeLateFiling } from "../penalty";
+import { estimateRefund } from "../income-tax";
 import penalty from "../../rates/penalty-2026.json";
 import { parseMarkup } from "../card-markup";
 import { entryByNo } from "../../data/linkhub";
@@ -225,5 +226,68 @@ describe("late-filing-penalty 세트", () => {
     const cta = set?.cards.find((c) => c.kind === "cta");
     if (cta?.kind !== "cta") throw new Error("CTA 없음");
     expect(cta.refNo).toBe(21);
+  });
+});
+
+/**
+ * 여러 거래처 카드는 "환급"과 "추가납부"를 같은 표에서 말한다. 부호가
+ * 뒤집힌 채로 인쇄되면 읽는 사람이 정반대로 준비한다 — 금액뿐 아니라
+ * 방향까지 계산 결과와 대조한다.
+ */
+describe("multiple-payers 세트", () => {
+  const set = cardSetBySlug("multiple-payers");
+
+  /** "6만 5,000원 추가납부" → { won, refund:false } */
+  function parseOutcome(value: string) {
+    const m = value.match(/^(.*원)\s*(환급|추가납부)$/);
+    if (!m) throw new Error(`읽을 수 없는 결과 표기: ${value}`);
+    return { won: parseWon(m[1]), refund: m[2] === "환급" };
+  }
+
+  /** 카드가 절대값만 찍으므로 계산 결과도 부호와 크기를 나눠 본다. */
+  function expected(gross: number, expenseRate: number) {
+    const diff = estimateRefund({ grossIncome: gross, expenseRate, dependents: 1 }).refund;
+    return { won: Math.abs(diff), refund: diff >= 0 };
+  }
+
+  it("세트가 존재한다", () => {
+    expect(set).toBeDefined();
+  });
+
+  it("거래처 수 표가 estimateRefund 와 같다", () => {
+    const t = set?.cards.find((c) => c.kind === "table" && c.sub.includes("한 곳당 600만원"));
+    if (t?.kind !== "table") throw new Error("거래처 수 표 없음");
+    for (const row of t.rows) {
+      // "10곳 (6,000만원)" 에서 괄호 안 합계를 읽는다.
+      const man = Number(row.label.match(/\(([\d,]+)만원\)/)![1].replace(/,/g, ""));
+      expect(parseOutcome(row.value), row.label).toEqual(expected(man * 10000, 0.6));
+    }
+  });
+
+  it("경비율 30% 표가 estimateRefund 와 같다", () => {
+    const t = set?.cards.find((c) => c.kind === "table" && c.sub.includes("경비율 30%"));
+    if (t?.kind !== "table") throw new Error("경비율 30% 표 없음");
+    for (const row of t.rows) {
+      const man = Number(row.label.replace(/[^\d]/g, ""));
+      expect(parseOutcome(row.value), row.label).toEqual(expected(man * 10000, 0.3));
+    }
+  });
+
+  it("표지가 말하는 전환 지점이 실제로 뒤집히는 지점이다", () => {
+    const cover = set?.cards.find((c) => c.kind === "cover");
+    if (cover?.kind !== "cover") throw new Error("표지 없음");
+    const man = Number(cover.sub.match(/([\d,]+)만원부터/)![1].replace(/,/g, ""));
+    const at = man * 10000;
+    // 그 금액에서는 추가납부이고, 10만원 앞에서는 아직 환급이어야 한다.
+    expect(estimateRefund({ grossIncome: at, expenseRate: 0.6, dependents: 1 }).refund).toBeLessThan(0);
+    expect(
+      estimateRefund({ grossIncome: at - 100_000, expenseRate: 0.6, dependents: 1 }).refund,
+    ).toBeGreaterThanOrEqual(0);
+  });
+
+  it("CTA 가 22번 글을 가리킨다", () => {
+    const cta = set?.cards.find((c) => c.kind === "cta");
+    if (cta?.kind !== "cta") throw new Error("CTA 없음");
+    expect(entryByNo(cta.refNo!)?.href).toBe("/guide/multiple-payers/");
   });
 });

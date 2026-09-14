@@ -276,6 +276,84 @@ export const cardSets: CardSet[] = [
       },
     ],
   },
+  {
+    slug: "multiple-payers",
+    cluster: "income",
+    link: "https://jupocket.com/guide/multiple-payers/",
+    cards: [
+      {
+        kind: "cover",
+        photo: "/photos/card-papers.jpg",
+        photoAlt: "사방으로 흩어진 서류 뭉치에 파묻힌 사람",
+        badge: "종합소득세 · 원천징수",
+        title: "3.3% 뗐어도\n5월에 더 낼 수 있습니다",
+        sub: "거래처가 흩어져 있으면 합계가 작아 보입니다. 경비율 60%면 합계 5,760만원부터 추가납부로 넘어갑니다.",
+        footnote: "소득세법 제50조·제129조 · 국세청 세율표 · 2026-08-10 확인",
+      },
+      {
+        kind: "table",
+        title: "곳 수만 늘렸을 뿐인데",
+        sub: "한 곳당 600만원 · 경비율 60% · 본인 1명",
+        rows: [
+          { label: "3곳 (1,800만원)", value: "32만 2,000원 환급" },
+          { label: "5곳 (3,000만원)", value: "43만 원 환급", tone: "mark" },
+          { label: "8곳 (4,800만원)", value: "25만 9,000원 환급" },
+          { label: "10곳 (6,000만원)", value: "6만 5,000원 추가납부", tone: "warn" },
+        ],
+        footnote: "거래처당 받은 금액은 내내 같다 · 출처 국세청 세율표",
+      },
+      {
+        kind: "table",
+        title: "경비가 적으면 더 빨리",
+        sub: "경비율 30% · 본인 1명 · 총수입 합계 기준",
+        rows: [
+          { label: "1,000만원", value: "7만 원 환급", tone: "mark" },
+          { label: "2,000만원", value: "2만 원 추가납부", tone: "warn" },
+          { label: "3,000만원", value: "60만 5,000원 추가납부" },
+          { label: "4,000만원", value: "132만 5,000원 추가납부", tone: "warn" },
+        ],
+        footnote: "경비율은 업종마다 다르다 · 출처 국세청 세율표",
+      },
+      {
+        kind: "list",
+        badge: "왜 어긋나나",
+        title: "떼는 기준과 매기는 기준이 다르다",
+        items: [
+          {
+            text: "거래처는 [[자기가 준 금액]]만 본다",
+            detail: "다른 곳 수입도 내 공제도 알 수 없다",
+          },
+          {
+            text: "3.3%는 [[정률]] — 누구에게나 같은 비율",
+            detail: "소득세법 제129조",
+          },
+          {
+            text: "실제 세율은 {{합친 뒤}} 정해진다",
+            detail: "6%~45% 누진세율",
+          },
+          {
+            text: "그래서 합계가 커지면 [[모자란다]]",
+            detail: "차액을 5월에 더 낸다",
+          },
+        ],
+        footnote: "소득세법 제129조 · 국세청 누진세율표 · 2026-08-10 확인",
+      },
+      {
+        kind: "note",
+        badge: "놓치기 쉬운 것",
+        title: "한 곳만 신고하면 나머지는 무신고",
+        body:
+          "거래처별로 따로 신고하는 제도는 없습니다. [[합산해서 한 번]]입니다.\n\n금액이 작아 잊어버린 거래처 하나가 빠져도 그만큼은 {{신고하지 않은 것}}으로 남습니다.\n\n홈택스 지급명세서 조회로 지급처부터 확인하세요.",
+        footnote: "신고 기간 5월 1일~31일 · 출처 국세청",
+      },
+      {
+        kind: "cta",
+        title: "내 합계면\n환급일까?",
+        sub: "총수입과 경비율만 넣으면 나와요",
+        refNo: 22,
+      },
+    ],
+  },
 ];
 
 export function cardSetBySlug(slug: string): CardSet | undefined {

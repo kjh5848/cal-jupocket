@@ -46,6 +46,7 @@ export const hubEntries: HubEntry[] = [
   { no: 18, href: "/guide/retirement-fund/", label: "노후자금 얼마 있어야 하나", kind: "guide" },
   { no: 19, href: "/guide/severance-to-freelance/", label: "퇴사하고 프리랜서 시작할 때", kind: "guide" },
   { no: 21, href: "/guide/late-filing-penalty/", label: "신고 기한을 놓쳤다면", kind: "guide" },
+  { no: 22, href: "/guide/multiple-payers/", label: "여러 곳 3.3%, 합산해서 한 번", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -88,6 +89,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/income-tax-brackets",
       "/guide/expense-rate",
       "/guide/late-filing-penalty",
+      "/guide/multiple-payers",
     ]),
   },
   {

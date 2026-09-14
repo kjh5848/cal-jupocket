@@ -1,0 +1,280 @@
+---
+/**
+ * "거래처가 여러 곳일 때 3.3%와 합산신고" — v4 인사이트 지도의
+ * "실수: 여러 곳 합산신고" 칸(CPC ₩1,468). docs/CONTENT.md 참조.
+ *
+ * 33-settlement 는 "3.3%는 예납이다"를 말하고, who-must-file 은 "합산해서
+ * 한 번 신고한다"를 한 줄로 짚는다. 이 글의 각도는 그 둘이 안 다룬 것 —
+ * 원천징수는 지급처별 정률인데 종합소득세는 합산 후 누진이라, 지급처가
+ * 흩어져 있으면 각각은 소액이어도 합계가 커져 3.3%로 모자라게 되는 구조다.
+ *
+ * 금액은 전부 estimateRefund() 로 뽑는다. 손으로 적은 값이 없다.
+ * 세율·공제·원천징수율 출처: rates/2026.json (2026-08-10 확인).
+ * 신고기한 출처: rates/filing-2026.json (2026-08-21 확인).
+ * updated 는 둘 중 이른 날(2026-08-10)을 쓴다 — 글의 뼈대인 누진세율과
+ * 인적공제가 그 파일에서 오기 때문이다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import rates from "../../../rates/2026.json";
+import filing from "../../../rates/filing-2026.json";
+import { estimateRefund } from "../../../lib/income-tax";
+import { formatWon } from "../../../lib/money";
+import { round1 } from "../../../lib/rate-display";
+
+const title = "거래처가 여러 곳이면 3.3%로 모자랄 수 있습니다";
+const description =
+  "지급처는 자기가 준 금액만 보고 3.3%를 뗍니다. 종합소득세는 전부 합친 뒤 누진세율을 적용하므로, 한 곳씩은 소액이어도 합계가 커지면 예납이 모자라 추가납부가 됩니다.";
+
+const businessRate = round1(rates.withholding.business * 100); // 3.3
+const deduction = rates.personalDeductionPerHead;
+const d = filing.deadline;
+
+/** 이 글의 예시 경비율. rates 가 "검증된 보편 수치가 아니다"라고 못박은 값이라 그대로 옮긴다. */
+const EX_RATE = rates.simpleExpenseRateDefault; // 0.6
+const EX_RATE_PCT = round1(EX_RATE * 100);
+const LOW_RATE = 0.3;
+const LOW_RATE_PCT = round1(LOW_RATE * 100);
+
+/** 과세표준이 속한 구간의 세율(%) — 표에 "몇 % 구간"을 적기 위해. */
+function bracketPercent(base: number): number {
+  const b = rates.incomeTaxBrackets.find((x) => x.upTo === null || base <= x.upTo)!;
+  return round1(b.rate * 100);
+}
+
+/** 한 줄 = 한 시나리오. 손으로 적는 값이 없도록 여기서 전부 계산한다. */
+function row(gross: number, expenseRate: number) {
+  const r = estimateRefund({ grossIncome: gross, expenseRate, dependents: 1 });
+  return {
+    gross,
+    base: r.taxableBase,
+    bracket: bracketPercent(r.taxableBase),
+    tax: r.computedTax,
+    prepaid: r.prepaid,
+    diff: r.refund, // 양수면 환급, 음수면 추가납부
+  };
+}
+
+/** 지급처 한 곳당 같은 금액을 받았을 때, 곳 수만 늘린 경우. */
+const PER_PAYER = 6_000_000;
+const splitRows = [1, 3, 5, 8, 10].map((n) => ({
+  payers: n,
+  ...row(PER_PAYER * n, EX_RATE),
+}));
+
+/** 환급이 추가납부로 뒤집히는 지점 — 10만원 단위로 훑어 처음 음수가 되는 총수입. */
+function flipPoint(expenseRate: number): number | null {
+  for (let g = 1_000_000; g <= 300_000_000; g += 100_000) {
+    if (estimateRefund({ grossIncome: g, expenseRate, dependents: 1 }).refund < 0) return g;
+  }
+  return null;
+}
+const flipDefault = flipPoint(EX_RATE)!;
+const flipLow = flipPoint(LOW_RATE)!;
+
+const lowRows = [10_000_000, 20_000_000, 30_000_000, 40_000_000].map((g) =>
+  row(g, LOW_RATE),
+);
+
+const srcBrackets = rates.sources.find((s) => s.item.includes("누진세율표"))!;
+const srcWithholding = rates.sources.find((s) => s.item.includes("제129조"))!;
+const srcDeduction = rates.sources.find((s) => s.item.includes("제50조"))!;
+const srcDeadline = filing.sources.find((s) => s.url.includes("7665"))!;
+
+/** 음수(추가납부)를 "환급"으로 읽히지 않게 절대값만 찍고 말로 구분한다. */
+const amount = (diff: number) => formatWon(Math.abs(diff));
+---
+
+<GuideLayout title={title} description={description} updated={rates.verifiedOn}>
+  <h1>{title}</h1>
+
+  <div class="callout">
+    <p>
+      거래처가 여러 곳이면 <strong>합쳐서 한 번</strong> 신고합니다. 그런데
+      합치는 순간 문제가 하나 더 생깁니다 — 각 거래처는 자기가 준 금액만 보고
+      {businessRate}%를 뗐지만, 실제 세율은 <strong>전부 합친 뒤에</strong>
+      정해지기 때문입니다. 한 곳씩은 소액이어도 합계가 커지면 미리 뗀
+      {businessRate}%로는 모자랄 수 있습니다.
+    </p>
+  </div>
+
+  <h2>지급처는 서로를 모른다</h2>
+  <p>
+    거래처가 {businessRate}%를 뗄 때 보는 것은 <strong>자기가 지급하는 금액
+    하나뿐</strong>입니다. 그 프리랜서가 다른 곳에서 얼마를 더 벌었는지,
+    부양가족이 몇 명인지, 경비를 얼마나 썼는지는 알 수 없고 알 필요도
+    없습니다. 원천징수는 소득 규모와 무관하게 <strong>누구에게나 같은
+    비율</strong>로 떼는 예납이기 때문입니다.
+  </p>
+  <p>
+    반면 종합소득세는 그 해에 번 소득을 <strong>전부 합친 과세표준</strong>에
+    <a href="/guide/income-tax-brackets/">누진세율</a>을 적용합니다. 기준이
+    다르니 두 금액이 맞아떨어질 이유가 없습니다. 이 구조 자체는
+    <a href="/guide/33-settlement/">3.3%가 예납이라는 이야기</a>와 같지만,
+    거래처가 여러 곳일 때는 한 가지가 더 붙습니다.
+  </p>
+
+  <h2>합치면 구간이 올라간다</h2>
+  <p>
+    한 곳에서 {formatWon(PER_PAYER)}씩 받았다고 해보겠습니다. 곳 수만 늘리고
+    나머지 조건(경비율 {EX_RATE_PCT}%, 본인 1명 공제)은 그대로 두면 이렇게
+    됩니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>거래처</th>
+          <th>총수입 합계</th>
+          <th>과세표준</th>
+          <th>세율 구간</th>
+          <th>뗀 {businessRate}%</th>
+          <th>결과</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          splitRows.map((r) => (
+            <tr>
+              <td>{r.payers}곳</td>
+              <td>{formatWon(r.gross)}</td>
+              <td>{formatWon(r.base)}</td>
+              <td>{r.bracket}%</td>
+              <td>{formatWon(r.prepaid)}</td>
+              <td>
+                {r.diff >= 0 ? (
+                  <span>{amount(r.diff)} 환급</span>
+                ) : (
+                  <strong>{amount(r.diff)} 추가납부</strong>
+                )}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    거래처 한 곳당 받은 금액은 {formatWon(PER_PAYER)}으로 내내 같습니다.
+    달라진 것은 합계뿐인데, 어느 지점부터 세율 구간이 올라가고 결과가
+    환급에서 추가납부로 넘어갑니다. <strong>거래처 수가 세금을 늘리는 것이
+    아니라, 흩어져 있어서 합계가 작아 보이는 것</strong>이 문제입니다.
+  </p>
+
+  <div class="ad-slot" data-ad="guide-multiple-payers-mid"></div>
+
+  <h2>뒤집히는 지점은 경비율이 정한다</h2>
+  <p>
+    위 표는 경비율 {EX_RATE_PCT}%를 가정했습니다. 이 조건에서는 총수입이
+    <strong>{formatWon(flipDefault)}</strong>쯤부터 추가납부로 넘어갑니다.
+    그런데 인정받는 경비가 적으면 그 지점이 훨씬 앞으로 당겨집니다. 같은
+    계산을 경비율 {LOW_RATE_PCT}%로 다시 해보면 이렇습니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>총수입 합계</th>
+          <th>과세표준</th>
+          <th>실제 세액</th>
+          <th>뗀 {businessRate}%</th>
+          <th>결과</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          lowRows.map((r) => (
+            <tr>
+              <td>{formatWon(r.gross)}</td>
+              <td>{formatWon(r.base)}</td>
+              <td>{formatWon(r.tax)}</td>
+              <td>{formatWon(r.prepaid)}</td>
+              <td>
+                {r.diff >= 0 ? (
+                  <span>{amount(r.diff)} 환급</span>
+                ) : (
+                  <strong>{amount(r.diff)} 추가납부</strong>
+                )}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    경비율 {LOW_RATE_PCT}%에서는 <strong>{formatWon(flipLow)}</strong>쯤에서
+    이미 뒤집힙니다. 같은 총수입이라도 업종에 따라 결과가 반대로 나올 수
+    있다는 뜻입니다. 본인에게 적용되는 경비율이 얼마인지는
+    <a href="/guide/expense-rate/">단순경비율과 기준경비율</a> 쪽에서
+    확인하세요.
+  </p>
+
+  <div class="callout warn">
+    <p>
+      ⚠️ 위 두 표의 경비율({EX_RATE_PCT}%·{LOW_RATE_PCT}%)은 구조를 보여주기
+      위한 <strong>예시 값</strong>입니다. {rates.simpleExpenseRateDefaultNote}
+    </p>
+  </div>
+
+  <h2>한 곳만 신고하면 나머지는 무신고다</h2>
+  <p>
+    거래처별로 따로 신고하는 제도는 없습니다. 여러 곳에서 받은 사업소득은
+    <strong>합산해서 한 번</strong> 신고하는 것이고, 일부만 넣어서 신고하면
+    빠진 소득은 신고하지 않은 것으로 남습니다. 금액이 작아 잊어버린 거래처
+    한 곳도 마찬가지입니다.
+  </p>
+  <p>
+    내가 어디에서 얼마를 받았는지는 홈택스의 지급명세서 조회로 확인할 수
+    있습니다. 기억에 의존해서 적으면 빠뜨리기 쉽고, 빠뜨린 만큼
+    <a href="/guide/late-filing-penalty/">가산세</a>가 따라붙습니다.
+  </p>
+
+  <h2>그래서 순서는 이렇습니다</h2>
+  <ol class="doc-checks">
+    <li>
+      <strong>거래처를 빠짐없이 모읍니다.</strong> 홈택스 지급명세서에서 그
+      해에 나를 지급처로 신고한 곳이 전부 나옵니다.
+    </li>
+    <li>
+      <strong>합계로 계산합니다.</strong> 한 곳씩 보면 작아 보이지만 세율은
+      합계로 정해집니다. 본인 포함 인적공제는 1명당 {formatWon(deduction)}입니다.
+    </li>
+    <li>
+      <strong>추가납부면 미리 준비합니다.</strong> 신고 기간은 {d.generalFrom}~{d.generalTo}이고,
+      {d.generalNote}. 결과를 5월에 처음 알면 목돈을 갑자기 마련해야 합니다.
+    </li>
+  </ol>
+
+  <p class="actions">
+    <a class="btn" href="/income-tax-refund/">합계로 환급/추가납부 계산해보기</a>
+  </p>
+
+  <h2>이 글이 다루지 않는 것</h2>
+  <p>
+    근로소득과 사업소득이 섞인 경우, 기타소득이 함께 있는 경우는 합산 규칙이
+    조금 다릅니다. 각각
+    <a href="/guide/severance-to-freelance/">퇴사 후 프리랜서 전향</a>과
+    <a href="/guide/who-must-file/">신고 대상 판단</a> 쪽에 정리해 두었습니다.
+    인적공제는 본인 1명만 넣어 계산했고, 부양가족 요건은 이 글에서 다루지
+    않습니다.
+  </p>
+
+  <p class="meta">
+    누진세율표와 인적공제 {formatWon(deduction)}, 사업소득 원천징수
+    {businessRate}%는
+    <a href={srcBrackets.url} rel="nofollow noopener">국세청 세율표</a>,
+    <a href={srcDeduction.url} rel="nofollow noopener">소득세법 제50조</a>,
+    <a href={srcWithholding.url} rel="nofollow noopener">소득세법 제129조</a>
+    에서 확인한 값입니다({rates.verifiedOn} 확인). 신고 기간은 국세청
+    <a href={srcDeadline.url} rel="nofollow noopener">종합소득세 신고납부기한</a>
+    자료({filing.verifiedOn} 확인)입니다. 표의 금액은 사이트 계산기와 같은
+    함수로 뽑은 <strong>예상치</strong>이며, 실제 세액은 개별 공제에 따라
+    달라집니다. 개별 사안은 국세상담센터(126)나 세무 전문가에게 확인하세요.
+  </p>
+
+  <div class="ad-slot" data-ad="guide-multiple-payers-bottom"></div>
+</GuideLayout>
