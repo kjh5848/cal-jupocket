@@ -1,0 +1,329 @@
+---
+/**
+ * 부가세 가산세 — 부가가치세법 제60조.
+ *
+ * v5에서 채택한 가산세 축의 남은 각도다. 앞 글(late-filing-penalty)은
+ * **국세기본법** 가산세(무신고·과소신고·납부지연)를 다루고 기준이 세액이다.
+ * 이 글은 **부가가치세법 제60조** 가산세를 다루고 기준이 공급가액이다.
+ * 조문도 기준도 달라서 앞 글에 넣을 수 없었던 내용이고, 겹치지 않는다.
+ *
+ * v5 키워드: 부가세가산세 920 · 부가세신고불성실가산세 510 ·
+ * 부가세수정신고가산세 590 · 부가세기한후신고 890.
+ *
+ * SERP 상단(국세청)은 제60조를 조문 순서대로 나열만 한다. 답하지 않는 것이
+ * **왜 신고를 제때 했는데도 붙나**와 **내 공급가액이면 얼마인가**다.
+ *
+ * 금액은 손으로 적지 않는다 — lib/vat-penalty.ts 가 낸다.
+ * 요율 출처: rates/vat-penalty-2026.json (법령 원문, 2026-09-15 확인)
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import v from "../../../rates/vat-penalty-2026.json";
+import {
+  invoiceRows,
+  transmitRows,
+  listRows,
+  registrationRows,
+  falseInvoiceRows,
+  onSupply,
+} from "../../../lib/vat-penalty";
+import { formatWon } from "../../../lib/money";
+
+const title = "부가세 가산세, 신고를 제때 해도 붙습니다";
+const description =
+  "부가가치세법 제60조 가산세는 세액이 아니라 공급가액에 붙습니다. 세금계산서를 늦게 발급하면 1%, 안 하면 2%, 합계표를 빠뜨리면 0.5%. 낼 세금이 0원이어도 붙는 이유와 요율을 법령 원문으로 정리했습니다.";
+
+const pct = (n: number) => `${+(n * 100).toFixed(1)}%`;
+
+/** 세금계산서 한 건의 공급가액 — 한 곳에서 바꾸면 표 전체가 따라온다. */
+const SUPPLY = 10_000_000;
+/** 미등록 가산세는 한 건이 아니라 개시일~등록 직전일 공급가액 합계가 기준이다. */
+const UNREGISTERED = 30_000_000;
+
+const invoice = invoiceRows(SUPPLY);
+const transmit = transmitRows(SUPPLY);
+const lists = listRows(SUPPLY);
+const registration = registrationRows(UNREGISTERED);
+const fakes = falseInvoiceRows(SUPPLY);
+
+const src = v.sources[0];
+---
+
+<GuideLayout title={title} description={description} updated={v.verifiedOn}>
+  <h1>{title}</h1>
+
+  <p>
+    부가세 가산세를 "신고를 늦게 해서 무는 돈"으로만 알고 있으면 절반을
+    놓칩니다. 기한을 지켜 신고하고 세금까지 다 냈어도,
+    <strong>세금계산서를 늦게 줬거나 합계표를 빠뜨렸으면</strong> 가산세가
+    따로 붙습니다. 근거가 다른 법이기 때문입니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>신고 자체를 놓치신 경우</strong>라면 이 글이 아니라{" "}
+      <a href="/guide/late-filing-penalty/">종합소득세·부가세 신고 기한을
+      놓쳤다면</a>을 보세요. 그쪽은 국세기본법 가산세(무신고·납부지연)와
+      기한 후 신고 감면을 다룹니다. 이 글은 그것과 <em>별개로</em> 붙는
+      부가가치세법 가산세입니다.
+    </p>
+  </div>
+
+  <h2>세액이 아니라 공급가액에 붙습니다</h2>
+
+  <p>
+    이 글의 숫자를 앞 글의 숫자와 같은 줄에 놓고 비교하면 안 되는 이유가
+    여기 있습니다. <strong>기준이 다릅니다.</strong>
+  </p>
+
+  <table>
+    <thead>
+      <tr><th></th><th>국세기본법 가산세</th><th>부가가치세법 제60조</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>무엇에 붙나</td>
+        <td>납부할 <strong>세액</strong></td>
+        <td><strong>공급가액</strong></td>
+      </tr>
+      <tr>
+        <td>언제 붙나</td>
+        <td>신고를 안 했거나 적게 했을 때</td>
+        <td>세금계산서·합계표·등록을 잘못 다뤘을 때</td>
+      </tr>
+      <tr>
+        <td>제때 신고하면 안 붙나</td>
+        <td>안 붙는다</td>
+        <td><strong>붙는다</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    공급가액이 기준이라는 말은 <strong>낼 세금이 없어도 가산세는 나온다</strong>는
+    뜻입니다. 매입세액이 많아 납부세액이 0원이거나 환급을 받는 과세기간이어도
+    제60조 가산세는 그대로 계산됩니다 — 조문이 "납부세액에 더하거나
+    <strong>환급세액에서 뺀다</strong>"고 쓴 이유입니다.
+  </p>
+
+  <h2>세금계산서를 제때 못 줬을 때</h2>
+
+  <p>
+    가장 흔하게 걸리는 자리입니다. 공급시기가 속한 과세기간의
+    <strong>확정신고기한</strong>이 갈림길입니다 — 그 안에 발급하면 지연발급,
+    넘기면 미발급으로 요율이 두 배가 됩니다.
+  </p>
+
+  <p class="meta">공급가액 {formatWon(SUPPLY)}짜리 세금계산서 한 건 기준</p>
+
+  <table>
+    <thead>
+      <tr><th>어떤 경우</th><th>요율</th><th>가산세</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      {
+        invoice.map((r) => (
+          <tr>
+            <td>{r.label}</td>
+            <td>{pct(r.rate)}</td>
+            <td>
+              {r.tone === "warn" ? <strong>{formatWon(r.amount)}</strong> : formatWon(r.amount)}
+            </td>
+            <td class="meta">{r.clause}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <p>
+    미발급 2%에는 단서가 있습니다. 전자세금계산서를 발급해야 하는 사업자가
+    발급시기에 <strong>종이로</strong> 발급했거나, 사업장이 여러 곳인
+    사업자가 공급한 사업장이 아닌 <strong>자신의 다른 사업장 명의로</strong>
+    발급한 경우는 2%가 아니라 {pct(v.taxInvoice.notIssuedException)}입니다.
+    발급을 아예 안 한 것과는 다르게 봅니다.
+  </p>
+
+  <AdSlot label="vat-penalty-mid" />
+
+  <h2>전자세금계산서는 전송까지가 끝입니다</h2>
+
+  <p>
+    발급했다고 끝이 아니라 국세청장에게 <strong>발급명세를 전송</strong>해야
+    합니다. 발급과 전송은 별도의 의무이고 가산세도 따로 있습니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>어떤 경우</th><th>요율</th><th>가산세</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      {
+        transmit.map((r) => (
+          <tr>
+            <td>{r.label}</td>
+            <td>{pct(r.rate)}</td>
+            <td>{formatWon(r.amount)}</td>
+            <td class="meta">{r.clause}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <h2>합계표를 빠뜨렸을 때</h2>
+
+  <p>
+    세금계산서는 제대로 주고받았는데 <strong>합계표</strong>를 안 냈거나
+    잘못 적은 경우입니다. 요율은 낮지만 매출 전체가 기준이 될 수 있어
+    금액은 작지 않습니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>어떤 경우</th><th>요율</th><th>가산세</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      {
+        lists.map((r) => (
+          <tr>
+            <td>{r.label}</td>
+            <td>{pct(r.rate)}</td>
+            <td>{formatWon(r.amount)}</td>
+            <td class="meta">{r.clause}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <p>
+    매출처별 합계표는 <strong>착오로</strong> 적힌 경우라도 발급한
+    세금계산서로 거래사실이 확인되는 부분은 제외합니다. 매입처별도
+    수령한 세금계산서로 확인되면 마찬가지입니다 — 숫자를 잘못 옮긴 것과
+    거래가 없는 것을 같이 보지는 않습니다.
+  </p>
+
+  <h2>등록을 늦게 했을 때</h2>
+
+  <p>
+    사업을 시작했는데 사업자등록을 미룬 경우입니다. 기준이 한 건이 아니라
+    <strong>사업 개시일부터 등록 신청일 직전일까지의 공급가액 합계액</strong>
+    이라 금액이 커집니다.
+  </p>
+
+  <p class="meta">그 기간 공급가액 합계 {formatWon(UNREGISTERED)} 기준</p>
+
+  <table>
+    <thead>
+      <tr><th>어떤 경우</th><th>요율</th><th>가산세</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      {
+        registration.map((r) => (
+          <tr>
+            <td>{r.label}</td>
+            <td>{pct(r.rate)}</td>
+            <td>
+              {r.tone === "warn" ? <strong>{formatWon(r.amount)}</strong> : formatWon(r.amount)}
+            </td>
+            <td class="meta">{r.clause}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <h2>여기부터는 성격이 다릅니다</h2>
+
+  <div class="callout warn">
+    <p>
+      아래는 실수가 아니라 <strong>거래 자체가 없는</strong> 세금계산서입니다.
+      요율이 위와 자릿수가 다르고, 사업자가 아닌 사람이 발급해도 사업자로
+      보고 징수합니다(제4항).
+    </p>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>어떤 경우</th><th>요율</th><th>가산세</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      {
+        fakes.map((r) => (
+          <tr>
+            <td>{r.label}</td>
+            <td><strong>{pct(r.rate)}</strong></td>
+            <td><strong>{formatWon(r.amount)}</strong></td>
+            <td class="meta">{r.clause}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <p>
+    사업자가 아닌 사람이 공급 없이 세금계산서를 발급하거나 발급받으면
+    공급가액의 {pct(v.falseInvoice.nonBusinessPerson)}를 관할 세무서장이
+    가산세로 징수합니다 — {formatWon(onSupply(SUPPLY, v.falseInvoice.nonBusinessPerson))}입니다.
+  </p>
+
+  <h2>두 개가 같이 붙지는 않습니다</h2>
+
+  <p>
+    위 표들을 다 더하면 실제보다 훨씬 크게 나옵니다. 제60조 제9항이
+    <strong>중복 적용을 막는 규칙</strong>을 따로 두기 때문입니다. 어떤 항이
+    적용되는 부분에는 아래 항을 적용하지 않습니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>적용되는 규정</th><th>적용하지 않는 규정</th></tr>
+    </thead>
+    <tbody>
+      {
+        v.overlapExclusion.map((o) => (
+          <tr>
+            <td>{o.applied}</td>
+            <td>{o.excluded}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <p>
+    예를 들어 등록을 늦게 해서 제1항이 붙은 부분에는 매출처별 합계표
+    가산세(제6항)를 다시 붙이지 않습니다. 그래서 "해당하는 것을 전부
+    더한 금액"은 틀린 계산입니다.
+  </p>
+
+  <h2>이 글이 다루지 않는 것</h2>
+
+  <ul>
+    <li>
+      <strong>무신고·과소신고·납부지연 가산세</strong> — 국세기본법 소관이라
+      조문도 기준(세액)도 다릅니다.{" "}
+      <a href="/guide/late-filing-penalty/">기한을 놓쳤다면</a>에서 다룹니다.
+    </li>
+    <li>
+      <strong>시행령에 위임된 세부 요건</strong> — 제60조 곳곳의 "대통령령으로
+      정하는" 부분은 시행령 원문을 따로 확인하지 않았으므로 예외 범위를
+      단정하지 않았습니다.
+    </li>
+    <li>
+      <strong>국외사업자 간편사업자등록</strong>(제1항 제1호의2),
+      영세율 과세표준 신고불성실 가산세, 가산세 한도(국세기본법 제49조).
+    </li>
+  </ul>
+
+  <p class="meta">
+    요율은 <a href={src.url} rel="nofollow noopener">{src.label}</a> 원문에서
+    확인했습니다({v.verifiedOn} 확인 · {v.lawVersion}). 개별 사안은 홈택스
+    또는 세무 전문가에게 확인하세요.
+  </p>
+
+  <p>
+    <a class="btn" href="/vat/">부가세 계산기 열기</a>
+  </p>
+</GuideLayout>

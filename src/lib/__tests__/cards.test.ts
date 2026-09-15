@@ -17,6 +17,8 @@ import { parseMarkup } from "../card-markup";
 import { entryByNo } from "../../data/linkhub";
 import rates from "../../rates/pension-premium-2026.json";
 import vat from "../../rates/vat-2026.json";
+import vatPenalty from "../../rates/vat-penalty-2026.json";
+import { onSupply } from "../vat-penalty";
 
 /** "28만 5,000원" 같은 표기를 숫자로 되돌린다. */
 function parseWon(label: string): number {
@@ -375,5 +377,60 @@ describe("family-deduction 세트", () => {
     const cta = set?.cards.find((c) => c.kind === "cta");
     if (cta?.kind !== "cta") throw new Error("cta 없음");
     expect(entryByNo(cta.refNo!)?.href).toBe("/guide/family-deduction/");
+  });
+});
+
+describe("vat-penalty 세트", () => {
+  const set = cardSetBySlug("vat-penalty");
+
+  it("세트가 존재한다", () => {
+    expect(set).toBeDefined();
+  });
+
+  it("세금계산서 표의 금액이 요율 × 공급가액과 같다", () => {
+    const t = set!.cards[1];
+    if (t.kind !== "table") throw new Error("표 카드 없음");
+    const SUPPLY = 10_000_000;
+    const expected: Record<string, number> = {
+      "지연발급 1%": vatPenalty.taxInvoice.lateIssue,
+      "미발급 2%": vatPenalty.taxInvoice.notIssued,
+      "부실기재 1%": vatPenalty.taxInvoice.wrongEntry,
+      "전자 미전송 0.5%": vatPenalty.taxInvoice.eTransmitNone,
+      };
+    for (const row of t.rows) {
+      const rate = expected[row.label];
+      expect(rate, `요율을 못 찾음: ${row.label}`).toBeDefined();
+      expect(parseWon(row.value)).toBe(onSupply(SUPPLY, rate));
+    }
+  });
+
+  it("합계표·등록 표의 금액이 요율 × 기준금액과 같다", () => {
+    const t = set!.cards[3];
+    if (t.kind !== "table") throw new Error("표 카드 없음");
+    const cases: [string, number, number][] = [
+      ["매출 합계표 미제출 0.5%", vatPenalty.salesList.notSubmitted, 10_000_000],
+      ["예정신고 빠뜨림 0.3%", vatPenalty.salesList.lateAtFinalReturn, 10_000_000],
+      ["매입 합계표 미제출 0.5%", vatPenalty.purchaseList.notSubmittedOrWrong, 10_000_000],
+      ["사업자등록 지연 1%", vatPenalty.registration.lateRegistration, 30_000_000],
+      ];
+    for (const [label, rate, base] of cases) {
+      const row = t.rows.find((r) => r.label === label);
+      expect(row, `행을 못 찾음: ${label}`).toBeDefined();
+      expect(parseWon(row!.value)).toBe(onSupply(base, rate));
+    }
+  });
+
+  it("출처는 전부 부가가치세법 제60조다 — 국세기본법 가산세와 섞이면 안 된다", () => {
+    for (const card of set!.cards) {
+      if (card.kind === "cta") continue;
+      expect(card.footnote).toContain("부가가치세법 제60조");
+      expect(card.footnote).not.toContain("국세기본법");
+    }
+  });
+
+  it("24번 글을 가리킨다", () => {
+    const cta = set!.cards[set!.cards.length - 1];
+    if (cta.kind !== "cta") throw new Error("cta 없음");
+    expect(entryByNo(cta.refNo!)?.href).toBe("/guide/vat-penalty/");
   });
 });

@@ -428,6 +428,84 @@ export const cardSets: CardSet[] = [
       },
     ],
   },
+  {
+    slug: "vat-penalty",
+    cluster: "vat",
+    link: "https://jupocket.com/guide/vat-penalty/",
+    cards: [
+      {
+        kind: "cover",
+        photo: "/photos/card-documents.jpg",
+        photoAlt: "쌓인 서류 뭉치를 손으로 든 모습",
+        badge: "부가가치세",
+        title: "제때 신고해도\n붙는 가산세가 있습니다",
+        sub: "세금계산서를 늦게 주면 공급가액의 1%. 1천만원짜리 한 건이면 10만원입니다.",
+        footnote: "부가가치세법 제60조 제2항 제1호 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "세금계산서 한 건, 얼마",
+        sub: "공급가액 1,000만원 기준",
+        rows: [
+          { label: "지연발급 1%", value: "10만 원" },
+          { label: "미발급 2%", value: "20만 원", tone: "warn" },
+          { label: "부실기재 1%", value: "10만 원" },
+          { label: "전자 미전송 0.5%", value: "5만 원", tone: "mark" },
+        ],
+        footnote: "부가가치세법 제60조 제2항 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "list",
+        badge: "왜 제때 신고했는데",
+        title: "기준이 세액이 아니다",
+        items: [
+          {
+            text: "제60조는 [[공급가액]]에 붙는다",
+            detail: "무신고가산세는 세액 기준 — 다른 법이다",
+          },
+          {
+            text: "납부세액이 {{0원이어도}} 붙는다",
+            detail: "환급받는 과세기간에도 환급액에서 뺀다",
+          },
+          {
+            text: "신고를 제때 해도 붙는다",
+            detail: "발급·전송·합계표는 신고와 별개 의무",
+          },
+          {
+            text: "근거가 [[부가가치세법]]이다",
+            detail: "무신고·납부지연은 국세기본법 소관",
+          },
+        ],
+        footnote: "부가가치세법 제60조 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "합계표와 등록도 본다",
+        sub: "합계표는 공급가액 1,000만원 · 등록은 3,000만원 기준",
+        rows: [
+          { label: "매출 합계표 미제출 0.5%", value: "5만 원" },
+          { label: "예정신고 빠뜨림 0.3%", value: "3만 원" },
+          { label: "매입 합계표 미제출 0.5%", value: "5만 원" },
+          { label: "사업자등록 지연 1%", value: "30만 원", tone: "warn" },
+        ],
+        footnote: "부가가치세법 제60조 제1항·제6항·제7항 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "note",
+        badge: "잘못 계산하기 쉬운 것",
+        title: "해당하는 걸 다 더하면 틀립니다",
+        body:
+          "제60조 제9항이 [[중복 적용을 막는 규칙]]을 따로 둡니다.\n\n등록이 늦어 제1항이 붙은 부분에는 매출 합계표 가산세를 다시 붙이지 않습니다.\n\n{{전부 합한 금액}}은 실제보다 큽니다.",
+        footnote: "부가가치세법 제60조 제9항 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "cta",
+        title: "내 경우엔\n어디가 걸릴까?",
+        sub: "요율과 근거 조항을 표로 정리해 뒀어요",
+        refNo: 24,
+      },
+    ],
+  },
 ];
 
 export function cardSetBySlug(slug: string): CardSet | undefined {

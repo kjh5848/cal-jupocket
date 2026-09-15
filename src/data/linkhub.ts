@@ -48,6 +48,7 @@ export const hubEntries: HubEntry[] = [
   { no: 21, href: "/guide/late-filing-penalty/", label: "신고 기한을 놓쳤다면", kind: "guide" },
   { no: 22, href: "/guide/multiple-payers/", label: "여러 곳 3.3%, 합산해서 한 번", kind: "guide" },
   { no: 23, href: "/guide/family-deduction/", label: "인적공제, 누구까지 넣나", kind: "guide" },
+  { no: 24, href: "/guide/vat-penalty/", label: "부가세 가산세, 따로 붙는 것들", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -101,6 +102,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/vat-freelancer",
       "/guide/simplified-vat",
       "/guide/vat-filing",
+      "/guide/vat-penalty",
     ]),
   },
   {
