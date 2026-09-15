@@ -1,6 +1,8 @@
 ---
 at: "09:00"
-reply: 소득 기준을 관계별로 정리해 뒀어요. 프로필 링크에서 23번 글입니다 → jupocket.com/link/
+ref: /guide/family-deduction/
+ref_no: 23
+reply: 소득 기준을 관계별로 정리해 뒀어요.
 ---
 부양가족 소득 100만원은 수입이 아닙니다.
 

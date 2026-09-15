@@ -1,6 +1,8 @@
 ---
 at: "21:00"
-reply: 납부예외와 추납을 함께 정리해 뒀어요. 프로필 링크에서 13번 글입니다 → jupocket.com
+ref: /guide/pension-premium-2026/
+ref_no: 13
+reply: 납부예외와 추납을 함께 정리해 뒀어요.
 ---
 납부예외는 공짜가 아닙니다.
 

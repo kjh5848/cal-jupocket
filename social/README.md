@@ -118,11 +118,35 @@ GitHub Actions PAT 나 Worker+KV — 가 필요해진다. 그럴 이유가 없�
 
 ```markdown
 ---
+ref: /guide/vat-penalty/                 # 이 글이 가리키는 사이트 글. 유입 계측에 쓴다
+ref_no: 24                               # 링크허브 번호. 인스타 캡션 문구에 들어간다
+reply: 발급과 전송은 별개 의무입니다.      # 링크 없이 문장만 쓴다 — 링크는 자동으로 붙는다
 link: https://jupocket.com/vat/          # 선택. 텍스트 글에 링크 카드로 붙는다
 image: /photos/card-papers.jpg             # 선택. 있으면 이미지 글이 된다
 ---
 본문. 500자 이내.
 ```
+
+### `ref` 와 유입 계측
+
+`reply` 에는 **문장만** 쓴다. 링크는 플랫폼마다 다르게 자동으로 붙는다.
+
+| | 붙는 것 | 왜 |
+|---|---|---|
+| 스레드 | `ref` 주소 + `utm_source=threads&utm_medium=social&utm_campaign=<큐번호>` | 답글 링크가 눌린다. 글로 바로 보낸다 |
+| 인스타 | `프로필 링크에서 <ref_no>번 글입니다 → jupocket.com/link/` | 캡션 URL 이 눌리지 않는다 |
+
+`utm_campaign` 은 큐 파일 이름 앞 번호다(`022-….md` → `022`). `npm run seo`
+의 **GA4 유입 출처** 표에서 글 단위로 갈린다.
+
+인스타는 프로필 링크 하나로만 들어오므로 **글 단위 귀속이 원리상 안 된다.**
+인스타 행은 합계로만 읽는다.
+
+`ref` 가 없으면 손으로 쓴 `reply` 가 그대로 나간다 — 계측이 빠질 뿐 글은
+정상 게시된다. `tracking.test.mjs` 가 빠진 글을 잡는다.
+
+**frontmatter 키는 소문자와 밑줄만 쓴다.** 파서가 `[a-z_]+` 만 키로 읽어서,
+대문자가 하나 섞이면 그 줄이 오류 없이 통째로 무시된다.
 
 - `image` 는 사이트에 올라가 **공개 접근 가능한 URL**이어야 한다
   (`/photos/...` 로 쓰면 `https://jupocket.com` 이 자동으로 붙는다).

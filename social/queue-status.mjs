@@ -16,19 +16,19 @@ import { dirname, join } from "node:path";
 import { parsePost, parseAt, isDue, findBodyLink, textLength, DUE_GRACE_MIN } from "./parse.mjs";
 
 /**
- * 답글이 가리켜야 할 곳. "N번 글입니다" 라고 써놓고 홈으로 보내면
- * 번호 목록이 없는 페이지에 떨어진다 — 스레드에서 실제로 그랬다.
- * 번호를 찾는 색인은 /link/ 하나뿐이다.
+ * 답글 계측이 빠졌는지 본다.
+ *
+ * 전에는 "답글 링크가 /link/ 를 가리키는가" 를 봤다. 이제 링크는 손으로
+ * 쓰지 않는다 — ref 를 보고 플랫폼마다 자동으로 붙는다(parse.mjs). 그래서
+ * 검사할 것이 바뀌었다: ref 가 없으면 그 글은 계측 없이 나간다. 한 번
+ * 나가면 소급해 붙일 수 없어서 그 기간 데이터가 통째로 사라진다.
  */
-const HUB = "jupocket.com/link/";
-
-/** 답글 링크가 허브가 아니면 그 링크를 돌려준다. 정상이면 null. */
-function badReplyLink(reply) {
-  if (typeof reply !== "string") return null;
-  const m = reply.match(/jupocket\.com[^\s]*/g);
-  if (!m) return null;
-  const bad = m.filter((u) => !u.startsWith(HUB));
-  return bad.length ? bad[0] : null;
+function replyProblem(meta) {
+  if (typeof meta?.reply !== "string") return null;
+  if (!meta.ref) return "ref: 없음 — 유입 계측이 빠진다";
+  // 링크는 자동으로 붙는다. 손으로 쓴 링크가 남아 있으면 두 번 붙는다.
+  const left = meta.reply.match(/jupocket\.com[^\s]*/g);
+  return left ? `답글에 손으로 쓴 링크: ${left[0]}` : null;
 }
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -121,7 +121,7 @@ const rows = files.map((f) => {
     len: textLength(text),
     link: findBodyLink(text),
     // 이미 나간 글은 고칠 수 없다. 경고해봤자 매일 보는 소음만 된다.
-    reply: postedT.has(f) ? null : badReplyLink(meta.reply),
+    reply: postedT.has(f) ? null : replyProblem(meta),
     ig: hasImages ? (postedI.has(f) ? "✓" : "대기") : "—",
   };
 });
@@ -132,7 +132,7 @@ for (const r of rows) {
   const warn = r.link
     ? `  ✖ 본문링크: ${r.link}`
     : r.reply
-      ? `  ✖ 답글링크: ${r.reply}`
+      ? `  ✖ ${r.reply}`
       : r.len > 450
         ? `  ⚠ ${r.len}자`
         : "";
@@ -153,7 +153,7 @@ if (problems.length) console.log(`  ✖ 본문에 링크가 있는 글 ${problem
 const replyProblems = rows.filter((r) => r.reply);
 if (replyProblems.length) {
   console.log(
-    `  ✖ 답글이 허브가 아닌 곳을 가리키는 글 ${replyProblems.length}건 — ${HUB} 로 고치세요`,
+    `  ✖ 답글 계측에 문제가 있는 글 ${replyProblems.length}건 — social/README.md 의 "ref 와 유입 계측" 참고`,
   );
 }
 

@@ -7,7 +7,9 @@ images:
   - /cards/late-filing-penalty/4.jpg
   - /cards/late-filing-penalty/5.jpg
   - /cards/late-filing-penalty/6.jpg
-reply: 기한 후 신고 감면을 금액까지 정리해 뒀어요. 프로필 링크에서 21번 글입니다 → jupocket.com
+ref: /guide/late-filing-penalty/
+ref_no: 21
+reply: 기한 후 신고 감면을 금액까지 정리해 뒀어요.
 ---
 신고 기한을 놓쳤다고 끝난 게 아닙니다.
 

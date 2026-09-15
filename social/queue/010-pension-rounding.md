@@ -1,6 +1,8 @@
 ---
 at: "18:00"
-reply: 계산 과정을 단계별로 정리해 뒀어요. 프로필 링크에서 13번 글입니다 → jupocket.com
+ref: /guide/pension-premium-2026/
+ref_no: 13
+reply: 계산 과정을 단계별로 정리해 뒀어요.
 ---
 국민연금 계산기에서 숫자가 딱 안 떨어지는 이유.
 

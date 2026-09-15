@@ -1,6 +1,8 @@
 ---
 at: "16:00"
-reply: 발급과 전송은 별개 의무입니다. 프로필 링크에서 24번 글입니다 → jupocket.com/link/
+ref: /guide/vat-penalty/
+ref_no: 24
+reply: 발급과 전송은 별개 의무입니다.
 ---
 전자세금계산서는 발급했다고 끝이 아닙니다.
 

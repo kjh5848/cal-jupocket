@@ -1,6 +1,8 @@
 ---
 at: "18:00"
-reply: 기한을 놓쳤을 때 순서대로 뭘 해야 하는지 정리해 뒀어요. 프로필 링크에서 21번 글입니다 → jupocket.com/link/
+ref: /guide/late-filing-penalty/
+ref_no: 21
+reply: 기한을 놓쳤을 때 순서대로 뭘 해야 하는지 정리해 뒀어요.
 ---
 세금 낼 돈이 없어도
 신고는 먼저 하는 게 맞습니다.

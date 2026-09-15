@@ -4,7 +4,9 @@ images:
   - /cards/vat-filing/2.jpg
   - /cards/vat-filing/3.jpg
   - /cards/vat-filing/4.jpg
-reply: 신고 기간·간이과세 면제 기준을 숫자로 정리해 뒀어요. 프로필 링크에서 12번 글입니다 → jupocket.com
+ref: /guide/vat-filing/
+ref_no: 12
+reply: 신고 기간·간이과세 면제 기준을 숫자로 정리해 뒀어요.
 ---
 1월 25일. 부가세 확정신고 마감일입니다.
 

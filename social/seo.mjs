@@ -300,4 +300,59 @@ if (!propId) {
     );
     console.log("");
   }
+
+  /*
+   * 유입 출처 — 어느 글이 사람을 데려왔나.
+   *
+   * 방문 페이지만 보면 "무엇을 봤나"까지만 안다. 스레드 조회 9,237 에
+   * 세션 25 였던 걸(2026-09-16) 알아도, 그 25 를 어느 글이 만들었는지는
+   * 알 수 없었다. 큐 글의 답글 링크에 utm_campaign(큐 번호)을 달았으니
+   * 여기서 글 단위로 갈린다.
+   *
+   * 인스타는 캡션 URL 이 눌리지 않아 프로필 링크로만 온다 — 글 단위
+   * 귀속이 원리상 불가능하다. instagram 행은 합계로만 읽는다.
+   */
+  const src = await api(`${GA4_API}/properties/${propId}:runReport`, token, {
+    dateRanges: [{ startDate: gaStartDate, endDate: gaEndDate }],
+    dimensions: [
+      { name: "sessionSource" },
+      { name: "sessionMedium" },
+      { name: "sessionCampaignName" },
+    ],
+    metrics: [{ name: "sessions" }, { name: "activeUsers" }],
+    orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+    limit: 25,
+  });
+  if (!src.ok) {
+    console.error(
+      `✖ GA4 유입 출처 실패 (${src.status}) ${JSON.stringify(src.json).slice(0, 300)}\n`,
+    );
+  } else {
+    const rows = (src.json.rows ?? []).map((r) => ({
+      source: r.dimensionValues[0].value,
+      medium: r.dimensionValues[1].value,
+      campaign: r.dimensionValues[2].value,
+      sessions: Number(r.metricValues[0].value),
+      users: Number(r.metricValues[1].value),
+    }));
+    const tot = rows.reduce((a, r) => a + r.sessions, 0);
+    console.log(`GA4 유입 출처 ${rows.length}줄 — 세션 합계 ${tot}`);
+    console.log(
+      table(rows, [
+        { label: "출처", get: (r) => r.source },
+        { label: "매체", get: (r) => r.medium },
+        { label: "캠페인(큐 번호)", get: (r) => r.campaign },
+        { label: "세션", get: (r) => r.sessions },
+        { label: "사용자", get: (r) => r.users },
+      ]),
+    );
+    const tagged = rows.filter((r) => r.medium === "social");
+    if (tagged.length === 0) {
+      console.log(
+        "\n  utm_medium=social 행이 아직 없습니다. 태그를 단 뒤 올린 글이" +
+          "\n  도달하기까지 기다리거나, 답글에 utm 이 실제로 붙었는지 보세요.",
+      );
+    }
+    console.log("");
+  }
 }

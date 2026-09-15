@@ -1,6 +1,8 @@
 ---
 at: "11:00"
-reply: 두 가산세의 차이를 표로 정리해 뒀어요. 프로필 링크에서 21번 글입니다 → jupocket.com
+ref: /guide/late-filing-penalty/
+ref_no: 21
+reply: 두 가산세의 차이를 표로 정리해 뒀어요.
 ---
 "1개월 안에 신고하면 가산세 절반"
 — 이 말은 절반만 맞습니다.

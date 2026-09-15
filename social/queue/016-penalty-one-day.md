@@ -1,6 +1,8 @@
 ---
 at: "14:00"
-reply: 내 세액으로 얼마인지 계산기에 넣어보세요. 프로필 링크에서 21번 글입니다 → jupocket.com/link/
+ref: /guide/late-filing-penalty/
+ref_no: 21
+reply: 내 세액으로 얼마인지 계산기에 넣어보세요.
 ---
 가산세 감면은 계단식입니다.
 

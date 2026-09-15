@@ -24,6 +24,7 @@ import { dirname, join } from "node:path";
 import { readEnv, updateEnv, requireEnv } from "./env.mjs";
 import {
   parsePost,
+  resolveReply,
   resolveImage,
   resolveImages,
   parseArgs,
@@ -224,7 +225,9 @@ if (images.length > CAROUSEL_MAX) {
 
 // 캡션 = 본문 + 프로필 안내. 인스타는 캡션 URL 이 클릭되지 않으므로
 // 링크를 본문에서 빼는 스레드 전략이 여기서는 자동으로 성립한다.
-const caption = [text, meta.reply].filter(Boolean).join("\n\n");
+const caption = [text, resolveReply(meta, { platform: "instagram", file })]
+  .filter(Boolean)
+  .join("\n\n");
 if ([...caption].length > CAPTION_HARD) {
   console.error(`\n✖ 캡션 ${[...caption].length}자 — 상한 ${CAPTION_HARD}자를 넘습니다.\n`);
   process.exit(1);

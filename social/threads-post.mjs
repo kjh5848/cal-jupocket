@@ -39,6 +39,7 @@ import {
   parseArgs,
   isDue,
   findBodyLink,
+  resolveReply,
   TEXT_WARN,
   TEXT_HARD,
 } from "./parse.mjs";
@@ -189,19 +190,20 @@ if (replyMissing) {
       continue;
     }
     const { meta } = parsePost(readFileSync(path, "utf8"));
-    if (!meta.reply) {
+    const replyText = resolveReply(meta, { platform: "threads", file: e.file });
+    if (!replyText) {
       console.log(`· ${e.file} — reply: 가 없습니다. 건너뜁니다.`);
       continue;
     }
     console.log(`· ${e.file} → ${e.id}`);
     if (!doPublish) {
-      console.log(`    (드라이런) ${meta.reply}`);
+      console.log(`    (드라이런) ${replyText}`);
       continue;
     }
     try {
       const rc = await post(`${userId}/threads`, {
         media_type: "TEXT",
-        text: meta.reply,
+        text: replyText,
         reply_to_id: e.id,
         access_token: token,
       });
@@ -265,7 +267,7 @@ if (!pickFile && posted.has(file)) {
 
 const { meta, text } = parsePost(readFileSync(join(QUEUE_DIR, file), "utf8"));
 const linkAttachment = resolveLink(meta);
-const reply = meta.reply ?? null;
+const reply = resolveReply(meta, { platform: "threads", file });
 const len = textLength(text);
 
 if (!text) {

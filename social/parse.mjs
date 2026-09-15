@@ -78,6 +78,67 @@ export function resolveLink(meta) {
   return !hasImage && meta.link ? meta.link : null;
 }
 
+/**
+ * ── 유입 계측 ──────────────────────────────────────────────────
+ *
+ * 왜 필요한가: 스레드 조회 9,237 에 사이트 세션 25 였다(2026-09-16 측정).
+ * 어느 글이 그 25 를 만들었는지는 알 수 없었다. 답글 링크에 표식이 없어서다.
+ * 조회수는 어느 글이 읽혔는지만 말하고, 읽은 사람이 왔는지는 말하지 않는다.
+ *
+ * GA4 는 utm_* 를 기본 채널 분류로 읽는다. medium=social 이면 Organic Social
+ * 로 묶이고, campaign 으로 글 단위까지 갈린다.
+ */
+export function withUtm(url, { source, campaign }) {
+  const u = new URL(url);
+  u.searchParams.set("utm_source", source);
+  u.searchParams.set("utm_medium", "social");
+  if (campaign) u.searchParams.set("utm_campaign", campaign);
+  return u.toString();
+}
+
+/** 큐 파일 이름 앞의 일련번호가 캠페인 이름이 된다. 022-vat-….md -> "022" */
+export function campaignOf(file) {
+  const m = String(file ?? "").match(/^(\d+)-/);
+  return m ? m[1] : null;
+}
+
+/**
+ * 손으로 쓴 답글에서 링크 안내 꼬리를 떼고 문장만 남긴다.
+ *
+ * 기존 큐 글은 "… 프로필 링크에서 24번 글입니다 → jupocket.com/link/" 를
+ * 문자열로 달고 있다. 그 문구는 인스타 때문에 생겼다 — 캡션 URL 이 눌리지
+ * 않으니 프로필로 보내야 했다. 스레드는 링크가 눌리는데도 같은 문구를 그대로
+ * 썼고, 그래서 독자가 답글 -> 프로필 -> 허브 -> 글로 세 번 건너뛰어야 했다.
+ * 꼬리를 떼고 플랫폼마다 다시 붙인다.
+ */
+export function replySentence(reply) {
+  return String(reply ?? "")
+    .replace(/\s*프로필 링크에서\s*\d+번 글입니다\s*(?:→[^\r\n]*)?$/u, "")
+    .trim();
+}
+
+/**
+ * 답글을 플랫폼에 맞게 만든다.
+ *
+ * ref(글 경로)가 없으면 손으로 쓴 답글을 그대로 쓴다 — 계측을 넣는다고
+ * 이미 예약된 글이 조용히 달라지면 안 된다.
+ */
+export function resolveReply(meta, { platform, file }) {
+  const sentence = replySentence(meta?.reply);
+  if (!sentence) return meta?.reply ?? null;
+  if (!meta.ref) return meta.reply;
+
+  const campaign = campaignOf(file);
+  if (platform === "threads") {
+    // 스레드는 답글 링크가 눌린다. 글로 바로 보낸다.
+    return `${sentence} → ${withUtm(SITE + meta.ref, { source: "threads", campaign })}`;
+  }
+  // 인스타는 캡션 URL 이 눌리지 않는다. 프로필 링크 안내가 여전히 최선이고,
+  // 그래서 인스타 쪽은 글 단위 유입을 귀속할 방법이 없다(알려진 한계).
+  const no = meta.ref_no ? `${meta.ref_no}번 글입니다` : "찾으실 수 있어요";
+  return `${sentence} 프로필 링크에서 ${no} → jupocket.com/link/`;
+}
+
 /** 코드포인트 기준 길이. 이모지를 서러게이트 쌍으로 두 번 세지 않기 위해. */
 export function textLength(text) {
   return [...text].length;

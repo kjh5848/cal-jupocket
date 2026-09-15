@@ -1,6 +1,8 @@
 ---
 at: "11:00"
-reply: 관계별 나이 요건을 표로 정리해 뒀어요. 프로필 링크에서 23번 글입니다 → jupocket.com/link/
+ref: /guide/family-deduction/
+ref_no: 23
+reply: 관계별 나이 요건을 표로 정리해 뒀어요.
 ---
 스물다섯 살 동생은 부양해도 공제가 안 됩니다.
 

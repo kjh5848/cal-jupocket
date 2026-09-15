@@ -1,6 +1,8 @@
 ---
 at: "07:30"
-reply: 요건과 금액을 표로 정리해 뒀어요. 프로필 링크에서 23번 글입니다 → jupocket.com/link/
+ref: /guide/family-deduction/
+ref_no: 23
+reply: 요건과 금액을 표로 정리해 뒀어요.
 ---
 따로 사는 부모님도 인적공제 대상입니다.
 
