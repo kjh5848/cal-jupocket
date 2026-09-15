@@ -50,7 +50,7 @@ export const hubEntries: HubEntry[] = [
   { no: 23, href: "/guide/family-deduction/", label: "인적공제, 누구까지 넣나", kind: "guide" },
   { no: 24, href: "/guide/vat-penalty/", label: "부가세 가산세, 따로 붙는 것들", kind: "guide" },
   { no: 25, href: "/inheritance/", label: "상속세 계산기", kind: "calc" },
-  { no: 26, href: "/guide/inheritance-tax/", label: "상속세, 얼마부터 내나", kind: "guide" },
+  { no: 26, href: "/guide/inheritance-tax/", label: "상속세 면제한도, 얼마부터", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */

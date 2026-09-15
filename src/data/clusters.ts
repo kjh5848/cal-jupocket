@@ -103,8 +103,8 @@ export const clusters: Cluster[] = [
     id: "inheritance",
     title: "상속·증여",
     links: [
-      { href: "/inheritance/", title: "상속세 계산기", kind: "calc", icon: "scale", blurb: "재산과 가족 구성을 넣으면 공제·과세표준·세액까지" },
-      { href: "/guide/inheritance-tax/", title: "상속세, 얼마부터 내나", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/inheritance/", title: "상속세 계산기", kind: "calc", icon: "scale", blurb: "재산과 가족 구성을 넣으면 면제한도·과세표준·세액까지" },
+      { href: "/guide/inheritance-tax/", title: "상속세 면제한도, 얼마부터 내나", kind: "guide", icon: "coins", year: 2026 },
     ],
   },
 ];

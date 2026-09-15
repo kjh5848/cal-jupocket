@@ -24,9 +24,9 @@ import {
 } from "../../../lib/inheritance";
 import { formatWon, formatMan } from "../../../lib/money";
 
-const title = "상속세, 얼마부터 내나";
+const title = "상속세 면제한도, 얼마부터 내나";
 const description =
-  "배우자와 자녀가 있으면 10억까지 상속세가 0원입니다. 일괄공제 5억과 배우자공제 최소 5억이 그 경계를 만듭니다. 누가 얼마부터 내는지, 왜 배우자 유무로 8천만원이 갈리는지 국세청 기준으로 정리했습니다.";
+  "상속세 면제한도는 배우자와 자녀가 있으면 10억입니다. 일괄공제 5억과 배우자공제 최소 5억이 그 경계를 만듭니다. 자녀만 있으면 얼마인지, 왜 배우자 유무로 8천만원이 갈리는지 국세청 기준으로 정리했습니다.";
 
 const 억 = 100_000_000;
 const pct = (v: number) => Math.round(v * 100);
@@ -79,9 +79,15 @@ const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한")
       {formatMan(ceilings[0].ceiling)}까지 세금이 0원이기 때문입니다.
       상속세는 세율이 아니라 <strong>공제</strong>가 결과를 정합니다.
     </p>
+    <p>
+      검색할 때 흔히 쓰는 <strong>“면제한도”</strong>가 이 공제를 가리킵니다.
+      세법에는 면제한도라는 항목이 따로 없고, 기초공제·일괄공제·배우자공제를
+      합한 금액이 그 역할을 합니다. 아래에서는 법에 적힌 대로 “공제”라고
+      부르지만 찾으시는 그 금액이 맞습니다.
+    </p>
   </div>
 
-  <h2>우리 집은 얼마부터 내나요?</h2>
+  <h2>상속세 면제한도, 우리 집은 얼마인가요?</h2>
   <p>
     가족 구성에 따라 경계가 다릅니다. 이 금액까지는 세금이 0원입니다.
   </p>
@@ -227,7 +233,7 @@ const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한")
     <a class="btn" href="/inheritance/">내 재산으로 계산해보기</a>
   </p>
 
-  <h2>공제는 더하는 게 아니라 고르는 것입니다</h2>
+  <h2>면제한도는 더하는 게 아니라 고르는 것입니다</h2>
   <p>
     여기서 계산이 가장 많이 틀립니다. 기초공제{" "}
     {formatMan(r.basicDeduction.amount)}과 일괄공제{" "}
@@ -344,6 +350,21 @@ const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한")
       {pct(r.filingCredit.rate)}% 공제를 받습니다
     </li>
   </ol>
+
+  <h2>2026년 상속세 개정, 언제부터 적용되나요?</h2>
+  <p>
+    <strong>{r.lawVersion}</strong>이 지금 시행 중인 법입니다. 이 글과
+    계산기의 세율·공제 금액은 그 법과 국세청 안내에서
+    {r.verifiedOn}에 확인한 값이고, 오늘 상속이 개시되면 적용되는 금액이
+    이것입니다.
+  </p>
+  <p>
+    국회에서 논의 중인 개정안의 숫자는 <strong>여기에 싣지 않습니다.</strong>
+    개정은 통과와 공포를 거쳐 <strong>시행일이 와야</strong> 적용되고, 그
+    전까지는 위 금액이 그대로입니다. 확정되지 않은 숫자로 계산하면 실제와
+    다른 금액이 나옵니다. 개정이 확정되면 요율 자료를 원문에서 다시 확인한
+    뒤 이 글을 갱신합니다.
+  </p>
 
   <h2>이 글이 다루지 않는 것</h2>
   <p>

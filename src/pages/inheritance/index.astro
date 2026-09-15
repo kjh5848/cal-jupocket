@@ -27,9 +27,9 @@ import r from "../../rates/inheritance-2026.json";
 import { formatMan } from "../../lib/money";
 import "../../styles/global.css";
 
-const title = "상속세 계산기 — 10억이면 얼마";
+const title = "상속세 계산기 — 면제한도와 세금 한 번에";
 const description =
-  "상속재산과 가족 구성을 넣으면 공제 합계·과세표준·낼 세금이 바로 나옵니다. 일괄공제 5억과 배우자공제 최소 5억을 반영해, 얼마까지는 세금이 0원인지도 함께 보여줍니다. 국세청 상속세 안내 기준.";
+  "상속재산과 가족 구성을 넣으면 면제한도(공제 합계)·과세표준·낼 세금이 바로 나옵니다. 일괄공제 5억과 배우자공제 최소 5억을 반영해, 얼마까지 0원인지도 같이 보여줍니다. 1억·2억·5억·10억·20억 바로 계산. 국세청 기준.";
 
 const srcRate = r.sources.find((s) => s.label.includes("세율"))!;
 const srcDeduct = r.sources.find((s) => s.label.includes("상속공제"))!;
@@ -54,7 +54,8 @@ const pct = (v: number) => Math.round(v * 100);
         상속받은 재산과 가족 구성을 넣으면 <strong>낼 세금</strong>이 바로
         나옵니다. 상속세는 세율보다 <strong>공제</strong>가 결과를 정합니다 —
         배우자와 자녀가 있으면 <strong>{formatMan(1_000_000_000)}까지</strong>{" "}
-        세금이 0원입니다.
+        세금이 0원입니다. 흔히 말하는 <strong>면제한도</strong>가 아래의
+        “공제 합계”입니다.
       </p>
 
       <div class="calc-card">
@@ -65,10 +66,11 @@ const pct = (v: number) => Math.round(v * 100);
         </div>
 
         <div class="amount-presets" role="group" aria-label="재산 빠르게 고르기">
+          <button type="button" class="preset-chip" data-estate="100000000">1억</button>
+          <button type="button" class="preset-chip" data-estate="200000000">2억</button>
           <button type="button" class="preset-chip" data-estate="500000000">5억</button>
           <button type="button" class="preset-chip" data-estate="1000000000">10억</button>
-          <button type="button" class="preset-chip" data-estate="1500000000">15억</button>
-          <button type="button" class="preset-chip" data-estate="3000000000">30억</button>
+          <button type="button" class="preset-chip" data-estate="2000000000">20억</button>
         </div>
 
         <div class="calc-input-wrap">
@@ -142,7 +144,7 @@ const pct = (v: number) => Math.round(v * 100);
       </div>
 
       <details>
-        <summary>왜 10억까지는 세금이 없나요?</summary>
+        <summary>상속세 면제한도가 왜 10억인가요?</summary>
         <p>
           일괄공제 {formatMan(r.lumpSum.amount)}과 배우자공제 최소{" "}
           {formatMan(r.spouse.minimum)}을 더해{" "}
