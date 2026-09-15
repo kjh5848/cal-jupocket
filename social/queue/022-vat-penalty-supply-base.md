@@ -1,5 +1,12 @@
 ---
 at: "12:30"
+images:
+  - /cards/vat-penalty/1.jpg
+  - /cards/vat-penalty/2.jpg
+  - /cards/vat-penalty/3.jpg
+  - /cards/vat-penalty/4.jpg
+  - /cards/vat-penalty/5.jpg
+  - /cards/vat-penalty/6.jpg
 reply: 기준이 세액이 아니라 공급가액이라 그렇습니다. 프로필 링크에서 24번 글입니다 → jupocket.com/link/
 ---
 부가세는 낼 게 없는데 가산세가 나왔습니다.
