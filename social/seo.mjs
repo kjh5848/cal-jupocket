@@ -124,9 +124,20 @@ async function api(url, token, body) {
 /* ------------------------------------------------------------------ 날짜 */
 
 const ymd = (d) => d.toISOString().slice(0, 10);
-/** GSC 는 보통 2~3일 지연된다 — 어제까지 달라고 하면 빈 날이 섞인다. */
-const endDate = ymd(new Date(Date.now() - 3 * 86400000));
-const startDate = ymd(new Date(Date.now() - (DAYS + 3) * 86400000));
+const ago = (n) => ymd(new Date(Date.now() - n * 86400000));
+
+/**
+ * 두 서비스의 최신성이 다르므로 기간을 따로 잡는다.
+ *
+ * GSC 는 보통 2~3일 지연돼서 어제까지 달라고 하면 빈 날이 섞인다.
+ * GA4 는 거의 실시간이라 같은 지연을 적용하면 최근 며칠이 통째로 빠진다 —
+ * 실제로 그렇게 두었다가 트래픽이 있는데도 세션 0 으로 보고했다.
+ */
+const GSC_LAG = 3;
+const endDate = ago(GSC_LAG);
+const startDate = ago(DAYS + GSC_LAG);
+const gaEndDate = ago(0);
+const gaStartDate = ago(DAYS);
 
 /* ------------------------------------------------------------------ 표 */
 
@@ -154,7 +165,7 @@ const token = await getAccessToken(key);
 const env = readEnv();
 
 console.log(`\n서비스 계정  ${key.client_email}`);
-console.log(`기간         ${startDate} ~ ${endDate}  (GSC 지연 3일 반영)\n`);
+console.log(`기간         GSC ${startDate} ~ ${endDate} (지연 ${GSC_LAG}일) · GA4 ${gaStartDate} ~ ${gaEndDate}\n`);
 
 /* --- 접근 가능한 GSC 속성 --- */
 const sites = await api(`${GSC_API}/sites`, token);
@@ -186,7 +197,7 @@ if (has("--check")) {
     );
   } else {
     const probe = await api(`${GA4_API}/properties/${propId}:runReport`, token, {
-      dateRanges: [{ startDate, endDate }],
+      dateRanges: [{ startDate: gaStartDate, endDate: gaEndDate }],
       metrics: [{ name: "sessions" }],
     });
     console.log(
@@ -258,7 +269,7 @@ if (!propId) {
   console.log(`GA4_PROPERTY_ID 가 .env 에 없어 GA4 는 건너뜁니다.\n`);
 } else {
   const g = await api(`${GA4_API}/properties/${propId}:runReport`, token, {
-    dateRanges: [{ startDate, endDate }],
+    dateRanges: [{ startDate: gaStartDate, endDate: gaEndDate }],
     dimensions: [{ name: "landingPage" }],
     metrics: [
       { name: "sessions" },
