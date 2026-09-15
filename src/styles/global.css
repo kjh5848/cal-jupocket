@@ -11,10 +11,10 @@
      AAA(7:1)의 두 배라 읽기에는 손해가 없다. */
   --text: #23272e;
   --muted: #545a62;
-  --rule: #e0e0e0;
+  --rule: #d5dce5;
   --link: #0b5cad;
-  --bg: #f7f9fb;
-  --accent-bg: #f5f7fa;
+  --bg: #e8edf4;
+  --accent-bg: #eef2f7;
   --measure: 68ch;
   --wide: 72rem; /* 홈·사이트 크롬(헤더/푸터)용 넓은 폭. 읽기 글은 --measure 유지 */
   --img-outline: rgba(0, 0, 0, 0.1); /* 이미지 가장자리 아웃라인(라이트) */
@@ -31,8 +31,8 @@
      --surface-2 은은한 틴트(구역 구분·입력 배경)
      오늘 이 구분이 없어서 없는 변수(--card)를 쓰다 다크에서 글자가
      안 보였다. 이름을 고정해 둔다. */
-  --surface: #fbfcfd;
-  --surface-2: #f5f7fa;
+  --surface: #f9fbfd;
+  --surface-2: #eef2f7;
   --brand: #0b5cad;
   --brand-wash: #cfe1f7;
 
@@ -79,18 +79,18 @@
   :root {
     --text: #e8e8e8;
     --muted: #a0a0a0;
-    --rule: #333333;
+    --rule: #363c44;
     --link: #6fb3ff;
-    --bg: #16181c;
-    --accent-bg: #1e2127;
+    --bg: #121419;
+    --accent-bg: #23282f;
 
     --chart-loss: #e08a4c;
     --chart-base: #6fb3ff;
     --chart-gain: #4cc38a;
     --img-outline: rgba(255, 255, 255, 0.12); /* 다크에선 흰색 저투명 */
 
-    --surface: #1e2127;
-    --surface-2: #1e2127;
+    --surface: #1c2027;
+    --surface-2: #23282f;
     --brand: #6fb3ff;
     --brand-wash: #1b2735;
     /* 어두운 배경에서는 그림자가 안 보인다. 경계선이 그 역할을 한다.
@@ -240,7 +240,7 @@ hr {
   padding: 0.5rem 0.6rem;
   border: 1px solid var(--rule);
   border-radius: var(--r-xs);
-  background: var(--bg);
+  background: var(--surface-2);
   color: var(--text);
   font: inherit;
   font-size: 1rem;
@@ -258,7 +258,7 @@ hr {
   padding: 0.5rem 0.6rem;
   border: 1px solid var(--rule);
   border-radius: var(--r-xs);
-  background: var(--bg);
+  background: var(--surface-2);
   color: var(--text);
   font: inherit;
   font-size: 1rem;
@@ -413,7 +413,7 @@ details[open] summary {
  * 결과 강조 카드 → 보조 수치 칩 순서가 스캔하기 가장 쉬웠다.
  */
 .calc-card {
-  background: var(--bg);
+  background: var(--surface);
   border: 1px solid var(--rule);
   border-radius: var(--r-lg);
   padding: 1.5rem;
@@ -473,7 +473,7 @@ details[open] summary {
 }
 
 .segmented button[aria-pressed="true"] {
-  background: var(--bg);
+  background: var(--surface);
   color: var(--link);
   box-shadow: var(--shadow-1);
 }
@@ -530,6 +530,15 @@ details[open] summary {
   flex-wrap: wrap;
   gap: 0.5rem;
   margin: 0 0 1.5rem;
+}
+
+/*
+ * .calc-input-wrap 은 아래 여백 1.5rem 을 스스로 갖지만 .field 는 갖지
+ * 않는다. 그래서 경비율 입력처럼 .field 안에 칩이 오면 입력창에 딱 붙어
+ * 한 덩어리로 보였다. 붙는 쪽에만 여백을 준다.
+ */
+.field .amount-presets {
+  margin-top: 0.75rem;
 }
 
 .preset-chip {
@@ -1476,6 +1485,15 @@ details[open] summary {
 .home-hero .actions {
   margin: 0;
 }
+/*
+ * 히어로는 어두운 사진 위다. 링크 기본색(--link)은 진한 파랑이라
+ * 스크림 위에서 읽히지 않았다. 버튼이 아닌 링크는 흰색 + 밑줄로 둔다.
+ */
+.home-hero a:not(.btn) {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 @media (min-width: 48rem) {
   .home-hero {
     padding: 4.5rem 2.5rem;
@@ -1499,7 +1517,7 @@ details[open] summary {
   padding: 1rem 1.1rem;
   border: 1px solid var(--rule);
   border-radius: var(--r-lg);
-  background: var(--bg);
+  background: var(--surface);
   text-decoration: none;
   color: var(--text);
   box-shadow:
@@ -1598,7 +1616,7 @@ details[open] summary {
   padding: 0.75rem 0.85rem;
   border: 1px solid var(--rule);
   border-radius: var(--r-md);
-  background: var(--bg);
+  background: var(--surface);
   text-decoration: none;
   color: var(--text);
   transition: border-color 0.12s;
@@ -1737,7 +1755,7 @@ details[open] summary {
   padding: 0.4rem 0.8rem;
   border: 1px solid var(--rule);
   border-radius: var(--r-sm);
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
   font: inherit;
   font-size: 0.8125rem;
@@ -1841,10 +1859,10 @@ details[open] summary {
  * 본문 뒤에 질감이 깔리면 눈이 빨리 피로해진다.
  */
 .bg-texture {
-  background-color: var(--surface-2);
+  background-color: var(--bg);
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E"),
-    radial-gradient(135% 72% at 50% -6%, var(--brand-wash) 0%, var(--surface-2) 72%);
+    radial-gradient(135% 72% at 50% -6%, var(--brand-wash) 0%, var(--bg) 72%);
   background-repeat: repeat, no-repeat;
   background-size: 160px 160px, 100% 100%;
   background-attachment: fixed, scroll;
