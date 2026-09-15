@@ -118,7 +118,7 @@ describe.skipIf(!has)("빌드 산출물 SEO 불변식", () => {
 describe.skipIf(!has)("동선과 광고 자리", () => {
   /** 계산기 = 루트에 있는 도구 페이지. 사람이 제일 먼저 닿는 입구다. */
   const calcs = pages.filter((p) =>
-    /^\/(penalty|vat|withholding|freelancer-33|income-tax-refund|national-pension-premium)\/$/.test(
+    /^\/(penalty|vat|withholding|freelancer-33|income-tax-refund|national-pension-premium|inheritance)\/$/.test(
       p.path,
     ),
   );
@@ -128,7 +128,7 @@ describe.skipIf(!has)("동선과 광고 자리", () => {
     // 계산하고 나가버리면 그 방문은 한 페이지로 끝난다. 광고 노출은
     // 페이지뷰 × 페이지당 광고 수라, 동선이 끊기면 거기서 같이 끝난다.
     // 실제로 /withholding/ 과 /income-tax-refund/ 가 막다른 길이었다.
-    expect(calcs.length).toBe(6);
+    expect(calcs.length).toBe(7);
     const dead = calcs
       .filter((p) => !p.html.includes('class="nr-title"'))
       .map((p) => p.path);

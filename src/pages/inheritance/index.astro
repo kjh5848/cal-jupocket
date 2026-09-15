@@ -1,0 +1,228 @@
+---
+/**
+ * 상속세 계산기 — "10억이면 얼마인가"에 답하는 자리.
+ *
+ * 이 주제의 검색 수요는 압도적으로 금액을 묻는다(상속세 월 74,000,
+ * 10억 상속세 140, 5억 아파트 상속세 170 …). 국세청은 세율표와 공제 목록을
+ * 따로 주지만 그 둘을 합쳐 "내 경우 얼마"를 답하지 않는다.
+ *
+ * 이 계산의 핵심은 세율이 아니라 **공제**다. 대부분의 사람에게 세금은
+ * 0이고, 0이 아닌 사람은 공제 경계를 넘은 것이다. 그래서 세액만큼이나
+ * "공제 합계"와 "얼마까지 0원인가"를 크게 보여준다.
+ *
+ * 숫자는 rates/inheritance-2026.json 에서만 온다 — 국세청 상속세 안내
+ * (세율·상속공제·세액공제·신고납부기한)에서 확인한 값이다.
+ */
+import BaseHead from "../../components/BaseHead.astro";
+import AdSlot from "../../components/AdSlot.astro";
+import ClarityHead from "../../components/ClarityHead.astro";
+import GtagHead from "../../components/GtagHead.astro";
+import TrackLinks from "../../components/TrackLinks.astro";
+import AdSenseHead from "../../components/AdSenseHead.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import NextReads from "../../components/NextReads.astro";
+import Disclaimer from "../../components/Disclaimer.astro";
+import r from "../../rates/inheritance-2026.json";
+import { formatMan } from "../../lib/money";
+import "../../styles/global.css";
+
+const title = "상속세 계산기 — 10억이면 얼마";
+const description =
+  "상속재산과 가족 구성을 넣으면 공제 합계·과세표준·낼 세금이 바로 나옵니다. 일괄공제 5억과 배우자공제 최소 5억을 반영해, 얼마까지는 세금이 0원인지도 함께 보여줍니다. 국세청 상속세 안내 기준.";
+
+const srcRate = r.sources.find((s) => s.label.includes("세율"))!;
+const srcDeduct = r.sources.find((s) => s.label.includes("상속공제"))!;
+const srcCredit = r.sources.find((s) => s.label.includes("세액공제"))!;
+const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한"))!;
+
+const pct = (v: number) => Math.round(v * 100);
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>상속세 계산기</h1>
+      <p>
+        상속받은 재산과 가족 구성을 넣으면 <strong>낼 세금</strong>이 바로
+        나옵니다. 상속세는 세율보다 <strong>공제</strong>가 결과를 정합니다 —
+        배우자와 자녀가 있으면 <strong>{formatMan(1_000_000_000)}까지</strong>{" "}
+        세금이 0원입니다.
+      </p>
+
+      <div class="calc-card">
+        <div class="calc-input-wrap">
+          <label id="input-label" for="estate">상속받은 재산</label>
+          <input type="text" inputmode="numeric" id="estate" value="1,000,000,000" />
+          <span class="unit">원</span>
+        </div>
+
+        <div class="amount-presets" role="group" aria-label="재산 빠르게 고르기">
+          <button type="button" class="preset-chip" data-estate="500000000">5억</button>
+          <button type="button" class="preset-chip" data-estate="1000000000">10억</button>
+          <button type="button" class="preset-chip" data-estate="1500000000">15억</button>
+          <button type="button" class="preset-chip" data-estate="3000000000">30억</button>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="children">자녀 수</label>
+          <input type="text" inputmode="numeric" id="children" value="2" />
+          <span class="unit">명</span>
+        </div>
+
+        <div class="amount-presets" role="group" aria-label="자녀 수 빠르게 고르기">
+          <button type="button" class="preset-chip" data-children="0">없음</button>
+          <button type="button" class="preset-chip" data-children="1">1명</button>
+          <button type="button" class="preset-chip" data-children="2">2명</button>
+          <button type="button" class="preset-chip" data-children="3">3명</button>
+        </div>
+
+        <div class="calc-input-wrap toggle-row">
+          <label for="has-spouse">배우자가 있다</label>
+          <input type="checkbox" id="has-spouse" checked />
+        </div>
+
+        <div class="calc-input-wrap" id="spouse-share-wrap">
+          <label for="spouse-share">배우자가 실제로 받는 금액</label>
+          <input type="text" inputmode="numeric" id="spouse-share" value="" />
+          <span class="unit">원</span>
+        </div>
+        <p class="meta">
+          비워 두면 <strong>최소 {formatMan(r.spouse.minimum)}</strong>이
+          적용됩니다. 배우자가 한 푼도 받지 않아도 이 금액은 공제됩니다.
+        </p>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">낼 세금</p>
+          <p class="big" id="hero-value">0원</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">공제 합계</span>
+            <span class="value" id="stat1-value">1,000,000,000원</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">과세표준</span>
+            <span class="value" id="stat2-value">0원</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">세율 구간</span>
+            <span class="value" id="stat3-value">—</span>
+          </div>
+        </div>
+
+        <p id="ceiling-note" class="meta"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+          <button id="btn-copy" type="button" class="secondary">결과 복사</button>
+        </div>
+        <p id="copy-toast" class="meta" style="display:none;">
+          결과를 복사했어요.
+        </p>
+      </div>
+
+      <div class="callout warn">
+        <p>
+          ⚠️ <strong>일괄공제와 기초공제는 더하지 않습니다.</strong> 기초공제
+          {formatMan(r.basicDeduction.amount)}과 인적공제를 합한 금액,
+          그리고 일괄공제 {formatMan(r.lumpSum.amount)} 중{" "}
+          <strong>큰 쪽 하나만</strong> 씁니다. 둘을 더해 7억으로 계산하면
+          금액이 틀립니다.
+        </p>
+      </div>
+
+      <details>
+        <summary>왜 10억까지는 세금이 없나요?</summary>
+        <p>
+          일괄공제 {formatMan(r.lumpSum.amount)}과 배우자공제 최소{" "}
+          {formatMan(r.spouse.minimum)}을 더해{" "}
+          <strong>{formatMan(1_000_000_000)}</strong>이 되기 때문입니다.
+          상속재산이 그 아래면 과세표준이 0이라 세금도 0입니다. 배우자가
+          없으면 일괄공제만 남아 경계가 {formatMan(r.lumpSum.amount)}으로
+          내려갑니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>자녀 수를 늘려도 공제가 안 늘어나는데요?</summary>
+        <p>
+          자녀공제는 1인당 {formatMan(r.otherPersonal.child)}이고,
+          기초공제 {formatMan(r.basicDeduction.amount)}과 합한 금액이
+          일괄공제 {formatMan(r.lumpSum.amount)}보다 커야 의미가 생깁니다.
+          자녀가 <strong>6명을 넘어야</strong> 그 지점에 닿습니다. 그 전까지는
+          일괄공제 쪽이 크기 때문에 자녀 수가 결과를 바꾸지 않습니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>신고를 안 하면 공제도 못 받나요?</summary>
+        <p>
+          일괄공제 {formatMan(r.lumpSum.amount)}은 신고하지 않아도 적용되고,
+          배우자가 있으면 배우자공제도 받습니다. 다만{" "}
+          <strong>신고세액공제 {pct(r.filingCredit.rate)}%</strong>는 신고해야
+          받고, 기한을 넘기면 무신고가산세가 따로 붙습니다. 신고기한은{" "}
+          {r.deadline.from}부터 <strong>{r.deadline.months}개월</strong>입니다.
+        </p>
+      </details>
+
+      <p>
+        얼마부터 내는지, 배우자공제가 왜 결과를 가르는지는{" "}
+        <a href="/guide/inheritance-tax/">상속세, 얼마부터 내나</a>에
+        정리했습니다.
+      </p>
+
+      <p class="meta">
+        세율(5단계 {pct(r.brackets[0].rate)}~{pct(r.brackets[4].rate)}%)은{" "}
+        <a href={srcRate.url} rel="nofollow noopener">{srcRate.label}</a>,
+        기초·일괄·배우자공제는{" "}
+        <a href={srcDeduct.url} rel="nofollow noopener">{srcDeduct.label}</a>,
+        신고세액공제 {pct(r.filingCredit.rate)}%는{" "}
+        <a href={srcCredit.url} rel="nofollow noopener">{srcCredit.label}</a>,
+        신고기한은{" "}
+        <a href={srcDeadline.url} rel="nofollow noopener">{srcDeadline.label}</a>
+        에서 확인한 값입니다({r.verifiedOn} 확인 · {r.lawVersion}).
+        가업상속·영농상속·금융재산·동거주택 공제와 세대생략 할증,
+        사망 전 증여재산 합산은 계산에 넣지 않았습니다 — 해당하면 실제
+        세액은 이 결과와 달라집니다. 개별 사안은 국세상담센터(126)나
+        세무 전문가에게 확인하세요.
+      </p>
+
+      <NextReads path="/inheritance/" />
+
+      <AdSlot label="inheritance-result" />
+
+      <Disclaimer variant="calc" />
+    </main>
+    <SiteFooter />
+    <TrackLinks />
+    <script src="../../scripts/inheritance.ts"></script>
+  </body>
+</html>
+
+<style>
+  /* 체크박스 한 줄 — 금액 입력과 같은 높이로 맞춘다. */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .toggle-row input[type="checkbox"] {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--brand);
+    flex: 0 0 auto;
+  }
+  .toggle-row label {
+    margin: 0;
+  }
+</style>

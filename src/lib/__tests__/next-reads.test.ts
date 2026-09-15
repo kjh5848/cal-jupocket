@@ -63,7 +63,7 @@ describe("계산기에서 이어서 볼 글", () => {
   );
 
   it("계산기도 결과를 받는다", () => {
-    expect(calcPaths.length).toBe(6);
+    expect(calcPaths.length).toBe(7);
     for (const p of calcPaths) {
       expect(nextReads(p).length, p).toBeGreaterThan(0);
     }

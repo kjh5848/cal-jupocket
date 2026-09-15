@@ -1,0 +1,376 @@
+---
+/**
+ * "상속세, 얼마부터 내나" — v7 판정의 1순위.
+ *
+ * 상속세 월 74,000, 입찰가 ₩167~3,729. 롱테일은 전부 금액을 묻는다
+ * (10억 상속세 140 / 5억 아파트 상속세 170 / 부동산 상속세 260).
+ *
+ * SERP 상단은 세무법인 상담 유도 글과 국세청 안내다. 전자는 "복잡하니
+ * 상담하세요"로 끝나고 후자는 항목을 조문 순서로 나열한다. 둘 다 답하지
+ * 않는 것이 **"우리 집은 내나 안 내나"** 다. 대부분의 사람에게 답은
+ * "안 낸다" 이고, 그 경계가 어디인지가 이 글의 전부다.
+ *
+ * 금액은 전부 lib/inheritance.ts 로 뽑는다. 본문에 손으로 적은 값이 없다.
+ * 출처: rates/inheritance-2026.json (국세청 상속세 안내, 2026-09-15 확인)
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/inheritance-2026.json";
+import {
+  computeInheritance,
+  taxFreeCeiling,
+  deductionsFor,
+  taxOn,
+} from "../../../lib/inheritance";
+import { formatWon, formatMan } from "../../../lib/money";
+
+const title = "상속세, 얼마부터 내나";
+const description =
+  "배우자와 자녀가 있으면 10억까지 상속세가 0원입니다. 일괄공제 5억과 배우자공제 최소 5억이 그 경계를 만듭니다. 누가 얼마부터 내는지, 왜 배우자 유무로 8천만원이 갈리는지 국세청 기준으로 정리했습니다.";
+
+const 억 = 100_000_000;
+const pct = (v: number) => Math.round(v * 100);
+
+/** 가족 구성별 "여기까지는 0원" 경계. 이 글의 뼈대다. */
+const ceilings = [
+  { label: "배우자 + 자녀", h: { hasSpouse: true, children: 2 } },
+  { label: "배우자만 (자녀 없음)", h: { hasSpouse: true, children: 0 } },
+  { label: "자녀만 (배우자 없음)", h: { hasSpouse: false, children: 2 } },
+  { label: "혼자 (형제자매 등)", h: { hasSpouse: false, children: 0 } },
+].map((x) => ({ ...x, ceiling: taxFreeCeiling(x.h) }));
+
+/** 재산 규모별 세금 — 배우자 있음 / 없음 두 줄로 나란히. */
+const ladder = [5, 10, 15, 20, 30, 50].map((n) => {
+  const estate = n * 억;
+  const withSpouse = computeInheritance({ estate, hasSpouse: true, children: 2 });
+  const without = computeInheritance({ estate, hasSpouse: false, children: 2 });
+  return { n, estate, withSpouse, without, gap: without.payable - withSpouse.payable };
+});
+
+/** 10억 사례 — 단계별로 풀어 보여준다. */
+const EX = 10 * 억;
+const exWith = computeInheritance({ estate: EX, hasSpouse: true, children: 2 });
+const exWithout = computeInheritance({ estate: EX, hasSpouse: false, children: 2 });
+
+/** 자녀 수가 언제부터 결과를 바꾸나 — 인적공제가 일괄공제를 넘는 지점. */
+const childBreakEven = (() => {
+  for (let n = 0; n <= 20; n += 1) {
+    if (deductionsFor({ estate: 0, hasSpouse: false, children: n }).chosenLabel !== "일괄공제") {
+      return n;
+    }
+  }
+  return null;
+})();
+
+const srcRate = r.sources.find((s) => s.label.includes("세율"))!;
+const srcDeduct = r.sources.find((s) => s.label.includes("상속공제"))!;
+const srcCredit = r.sources.find((s) => s.label.includes("세액공제"))!;
+const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한"))!;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+  <h1>{title}</h1>
+
+  <div class="callout">
+    <p>
+      부모님이 돌아가시고 집 한 채를 물려받게 되면 제일 먼저 드는 생각이
+      "세금이 얼마나 나오려나"입니다. 그런데 <strong>대부분은 한 푼도 내지
+      않습니다.</strong> 배우자와 자녀가 있으면{" "}
+      {formatMan(ceilings[0].ceiling)}까지 세금이 0원이기 때문입니다.
+      상속세는 세율이 아니라 <strong>공제</strong>가 결과를 정합니다.
+    </p>
+  </div>
+
+  <h2>우리 집은 얼마부터 내나요?</h2>
+  <p>
+    가족 구성에 따라 경계가 다릅니다. 이 금액까지는 세금이 0원입니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>가족 구성</th>
+          <th>여기까지 0원</th>
+          <th>무엇으로</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{ceilings[0].label}</td>
+          <td><strong>{formatMan(ceilings[0].ceiling)}</strong></td>
+          <td>일괄공제 {formatMan(r.lumpSum.amount)} + 배우자 {formatMan(r.spouse.minimum)}</td>
+        </tr>
+        <tr>
+          <td>{ceilings[1].label}</td>
+          <td><strong>{formatMan(ceilings[1].ceiling)}</strong></td>
+          <td>일괄공제 + 배우자 (자녀 수와 무관)</td>
+        </tr>
+        <tr>
+          <td>{ceilings[2].label}</td>
+          <td><strong>{formatMan(ceilings[2].ceiling)}</strong></td>
+          <td>일괄공제만</td>
+        </tr>
+        <tr>
+          <td>{ceilings[3].label}</td>
+          <td><strong>{formatMan(ceilings[3].ceiling)}</strong></td>
+          <td>일괄공제만</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    수도권 아파트 한 채면 이 경계를 넘는 경우가 생깁니다. 넘은 만큼에만
+    세금이 붙지, 전체 금액에 붙는 게 아닙니다.
+  </p>
+
+  <AdSlot label="guide-inheritance-tax-mid" />
+
+  <h2>배우자가 있고 없고로 얼마나 달라지나요?</h2>
+  <p>
+    자녀 2명 기준으로, 배우자 유무만 바꿔 보면 이렇습니다.
+    신고세액공제 {pct(r.filingCredit.rate)}%를 뺀 금액입니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>상속재산</th>
+          <th>배우자 있음</th>
+          <th>배우자 없음</th>
+          <th>차이</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          ladder.map((x) => (
+            <tr>
+              <td>{formatMan(x.estate)}</td>
+              <td>{formatWon(x.withSpouse.payable)}</td>
+              <td>{formatWon(x.without.payable)}</td>
+              <td>
+                {x.gap > 0 ? <strong>{formatWon(x.gap)}</strong> : "—"}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    <strong>배우자공제는 최소 {formatMan(r.spouse.minimum)}입니다.</strong>{" "}
+    배우자가 실제로 한 푼도 받지 않아도 이 금액은 공제됩니다. "배우자가
+    안 받으면 공제도 없다"가 가장 흔한 오해인데, 국세청 표현 그대로 "실제
+    상속받은 금액이 없거나 {formatMan(r.spouse.minimum)} 미만인 경우{" "}
+    {formatMan(r.spouse.minimum)} 공제"입니다.
+  </p>
+
+  <h2>{formatMan(EX)}을 물려받으면 얼마인가요?</h2>
+  <p>
+    가장 많이 묻는 금액입니다. 자녀 2명 기준으로 단계별로 풀어보면
+    이렇습니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>단계</th>
+          <th>배우자 있음</th>
+          <th>배우자 없음</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>상속재산</th>
+          <td>{formatWon(EX)}</td>
+          <td>{formatWon(EX)}</td>
+        </tr>
+        <tr>
+          <th>{exWith.deductions.chosenLabel}</th>
+          <td>− {formatWon(exWith.deductions.chosen)}</td>
+          <td>− {formatWon(exWithout.deductions.chosen)}</td>
+        </tr>
+        <tr>
+          <th>배우자공제</th>
+          <td>− {formatWon(exWith.deductions.spouse)}</td>
+          <td>{formatWon(exWithout.deductions.spouse)}</td>
+        </tr>
+        <tr>
+          <th>과세표준</th>
+          <td><strong>{formatWon(exWith.base)}</strong></td>
+          <td><strong>{formatWon(exWithout.base)}</strong></td>
+        </tr>
+        <tr>
+          <th>산출세액</th>
+          <td>{formatWon(exWith.computed)}</td>
+          <td>{formatWon(exWithout.computed)}</td>
+        </tr>
+        <tr>
+          <th>신고세액공제 {pct(r.filingCredit.rate)}%</th>
+          <td>− {formatWon(exWith.filingCredit)}</td>
+          <td>− {formatWon(exWithout.filingCredit)}</td>
+        </tr>
+        <tr>
+          <th>낼 세금</th>
+          <td><strong>{formatWon(exWith.payable)}</strong></td>
+          <td><strong>{formatWon(exWithout.payable)}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="actions">
+    <a class="btn" href="/inheritance/">내 재산으로 계산해보기</a>
+  </p>
+
+  <h2>공제는 더하는 게 아니라 고르는 것입니다</h2>
+  <p>
+    여기서 계산이 가장 많이 틀립니다. 기초공제{" "}
+    {formatMan(r.basicDeduction.amount)}과 일괄공제{" "}
+    {formatMan(r.lumpSum.amount)}을 <strong>더해서</strong>{" "}
+    {formatMan(r.basicDeduction.amount + r.lumpSum.amount)}으로 잡은 글이
+    흔한데, 국세청 표현은 "기초공제 {formatMan(r.basicDeduction.amount)}과 그
+    밖의 인적공제액의 합계액과 {formatMan(r.lumpSum.amount)} 중{" "}
+    <strong>큰 금액</strong>을 공제받을 수 있습니다"입니다.
+  </p>
+  <p>
+    즉 둘 중 <strong>하나만</strong> 씁니다. 그 밖의 인적공제는 자녀 1인당{" "}
+    {formatMan(r.otherPersonal.child)}, {r.otherPersonal.elderlyAge}세 이상{" "}
+    1인당 {formatMan(r.otherPersonal.elderly)}입니다.
+  </p>
+  {
+    childBreakEven !== null && (
+      <p>
+        계산해 보면 <strong>자녀가 {childBreakEven}명을 넘어야</strong> 기초 +
+        인적공제 쪽이 일괄공제를 앞섭니다. 그 전까지는 자녀 수를 늘려도 공제
+        합계가 그대로입니다 — 계산기에서 자녀 수를 바꿔도 결과가 안 변하는
+        이유가 이것입니다.
+      </p>
+    )
+  }
+
+  <h2>세율은 어떻게 되나요?</h2>
+  <p>
+    {pct(r.brackets[0].rate)}%부터 {pct(r.brackets[4].rate)}%까지 5단계
+    초과누진입니다. 여기서 말하는 금액은 상속재산이 아니라{" "}
+    <strong>공제를 뺀 과세표준</strong>입니다.
+  </p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>과세표준</th>
+          <th>세율</th>
+          <th>누진공제</th>
+          <th>그 구간 끝의 세액</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{formatMan(1 * 억)} 이하</td>
+          <td>{pct(r.brackets[0].rate)}%</td>
+          <td>—</td>
+          <td>{formatWon(taxOn(1 * 억))}</td>
+        </tr>
+        <tr>
+          <td>{formatMan(1 * 억)} ~ {formatMan(5 * 억)}</td>
+          <td>{pct(r.brackets[1].rate)}%</td>
+          <td>{formatMan(r.brackets[1].deduction)}</td>
+          <td>{formatWon(taxOn(5 * 억))}</td>
+        </tr>
+        <tr>
+          <td>{formatMan(5 * 억)} ~ {formatMan(10 * 억)}</td>
+          <td>{pct(r.brackets[2].rate)}%</td>
+          <td>{formatMan(r.brackets[2].deduction)}</td>
+          <td>{formatWon(taxOn(10 * 억))}</td>
+        </tr>
+        <tr>
+          <td>{formatMan(10 * 억)} ~ {formatMan(30 * 억)}</td>
+          <td>{pct(r.brackets[3].rate)}%</td>
+          <td>{formatMan(r.brackets[3].deduction)}</td>
+          <td>{formatWon(taxOn(30 * 억))}</td>
+        </tr>
+        <tr>
+          <td>{formatMan(30 * 억)} 초과</td>
+          <td>{pct(r.brackets[4].rate)}%</td>
+          <td>{formatMan(r.brackets[4].deduction)}</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>언제까지 신고하나요?</h2>
+  <p>
+    <strong>{r.deadline.from}부터 {r.deadline.months}개월</strong> 이내입니다.
+    소득세나 부가세처럼 날짜가 고정된 것이 아니라 <strong>사망일에 따라
+    사람마다 다릅니다.</strong> 예를 들어 3월 어느 날 상속이 개시되면
+    3월 31일부터 세어 9월 30일이 기한입니다.
+  </p>
+  <p>
+    피상속인이나 상속인이 외국에 주소를 둔 경우에는{" "}
+    {r.deadline.monthsNonResident}개월입니다.
+  </p>
+  <p>
+    기한 안에 신고하면 <strong>신고세액공제 {pct(r.filingCredit.rate)}%</strong>를
+    받습니다. 반대로 넘기면 무신고가산세가 붙습니다 —{" "}
+    <a href="/guide/late-filing-penalty/">기한을 놓쳤을 때</a>에 그 계산을
+    정리해 뒀습니다.
+  </p>
+
+  <h2>그래서 순서는 이렇습니다</h2>
+  <ol>
+    <li>
+      상속재산을 모읍니다. 부동산·예금·주식에서 채무와 장례비를 뺀 금액이
+      출발점입니다
+    </li>
+    <li>
+      가족 구성으로 <strong>공제 경계</strong>를 확인합니다 — 배우자와 자녀가
+      있으면 {formatMan(ceilings[0].ceiling)}, 배우자가 없으면{" "}
+      {formatMan(ceilings[2].ceiling)}
+    </li>
+    <li>경계 아래면 세금은 0입니다. 그래도 신고는 해 두는 편이 안전합니다</li>
+    <li>
+      넘었다면 넘은 금액에 세율을 적용합니다. 전체 금액이 아니라{" "}
+      <strong>넘은 부분</strong>입니다
+    </li>
+    <li>
+      {r.deadline.from}부터 {r.deadline.months}개월 안에 신고해{" "}
+      {pct(r.filingCredit.rate)}% 공제를 받습니다
+    </li>
+  </ol>
+
+  <h2>이 글이 다루지 않는 것</h2>
+  <p>
+    가업상속공제(최대 600억)와 영농상속공제(30억), 금융재산 상속공제,
+    동거주택 상속공제(6억 한도)는 대상이 좁아 계산에 넣지 않았습니다.
+    사망 전 10년 이내에 상속인에게 증여한 재산은 상속재산에 합산되는데
+    그 규칙도 여기서는 다루지 않습니다. <strong>해당하는 경우 실제 세액은
+    이 글의 숫자와 달라집니다.</strong> 상속재산을 어떻게 평가하는지
+    (시가·보충적 평가)도 별도 주제입니다.
+  </p>
+
+  <p class="meta">
+    세율표와 누진공제는{" "}
+    <a href={srcRate.url} rel="nofollow noopener">{srcRate.label}</a>,
+    기초·일괄·배우자·인적공제는{" "}
+    <a href={srcDeduct.url} rel="nofollow noopener">{srcDeduct.label}</a>,
+    신고세액공제 {pct(r.filingCredit.rate)}%는{" "}
+    <a href={srcCredit.url} rel="nofollow noopener">{srcCredit.label}</a>,
+    신고기한은{" "}
+    <a href={srcDeadline.url} rel="nofollow noopener">{srcDeadline.label}</a>
+    에서 확인한 값입니다({r.verifiedOn} 확인 · {r.lawVersion}).
+    국가법령정보센터는 상속세 세율표를 이미지로 싣고 있어 조문 텍스트에서
+    직접 대조하지 못했고, 그래서 국세청 안내를 기준으로 삼았습니다.
+    표의 금액은 사이트 계산기와 같은 함수로 뽑은 <strong>예상치</strong>이며
+    개별 공제에 따라 달라집니다. 개별 사안은 국세상담센터(126)나 세무
+    전문가에게 확인하세요.
+  </p>
+
+  <AdSlot label="guide-inheritance-tax-bottom" />
+</GuideLayout>

@@ -51,6 +51,9 @@ export const clusterColor: Record<
   income: { bg: "#e1f5ee", wm: "#9fe1cb", ink: "#0f6e56", mark: "#0f6e56" },
   vat: { bg: "#e6f1fb", wm: "#b5d4f4", ink: "#0c447c", mark: "#0b5cad" },
   retirement: { bg: "#eeedfe", wm: "#cecbf6", ink: "#3c3489", mark: "#534ab7" },
+  // 상속·증여는 네 번째 축이다. 앞의 셋과 달리 "해마다 내는 세금" 이 아니라
+  // 한 번 오는 일이라, 색도 따뜻한 쪽으로 떼어 놓는다.
+  inheritance: { bg: "#fbeee6", wm: "#f0cdb4", ink: "#8a4a1c", mark: "#a85820" },
 };
 
 export const clusters: Cluster[] = [
@@ -96,6 +99,14 @@ export const clusters: Cluster[] = [
       { href: "/guide/severance-to-freelance/", title: "퇴사하고 프리랜서 시작할 때", kind: "guide", icon: "briefcase" },
     ],
   },
+  {
+    id: "inheritance",
+    title: "상속·증여",
+    links: [
+      { href: "/inheritance/", title: "상속세 계산기", kind: "calc", icon: "scale", blurb: "재산과 가족 구성을 넣으면 공제·과세표준·세액까지" },
+      { href: "/guide/inheritance-tax/", title: "상속세, 얼마부터 내나", kind: "guide", icon: "coins", year: 2026 },
+    ],
+  },
 ];
 
 /**
@@ -103,6 +114,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/inheritance-tax/",
   "/guide/vat-penalty/",
   "/guide/family-deduction/",
   "/guide/multiple-payers/",
