@@ -1713,13 +1713,6 @@ details[open] summary {
   }
 }
 
-/* 계산기 페이지 상단 배너 사진 */
-.calc-banner {
-  height: 190px;
-  border-radius: var(--r-lg);
-  margin: 0.25rem 0 1.5rem;
-}
-
 /* ── 가이드 편집형: 메타·공유·목차 ────────────────────────────── */
 /* 상단 메타(태그·기준일) */
 .article-meta {

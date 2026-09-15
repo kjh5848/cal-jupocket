@@ -119,7 +119,7 @@ GitHub Actions PAT 나 Worker+KV — 가 필요해진다. 그럴 이유가 없�
 ```markdown
 ---
 link: https://jupocket.com/vat/          # 선택. 텍스트 글에 링크 카드로 붙는다
-image: /photos/calc-vat.webp             # 선택. 있으면 이미지 글이 된다
+image: /photos/card-papers.jpg             # 선택. 있으면 이미지 글이 된다
 ---
 본문. 500자 이내.
 ```
