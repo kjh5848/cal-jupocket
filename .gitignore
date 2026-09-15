@@ -3,6 +3,10 @@
 .env.*
 !.env.example
 
+# Google 서비스 계정 비공개 키 — 유출되면 GA4·GSC 데이터가 열린다
+.secrets/
+*.json.key
+
 # Node
 node_modules/
 
