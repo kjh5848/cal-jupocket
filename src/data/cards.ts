@@ -506,6 +506,85 @@ export const cardSets: CardSet[] = [
       },
     ],
   },
+  {
+    slug: "gift-tax",
+    cluster: "inheritance",
+    link: "https://jupocket.com/guide/gift-tax/",
+    cards: [
+      {
+        kind: "cover",
+        photo: "/photos/card-hands.jpg",
+        photoAlt: "무릎 위에 포개어 놓은 노인의 손",
+        badge: "증여세",
+        title: "결혼할 때 받는 돈은\n1억 5천만원까지 0원입니다",
+        sub: "혼인신고 전후 2년 안에 받아야 합니다. 그 창이 지나면 한도가 5천만원입니다.",
+        footnote: "상속세 및 증여세법 제53조·제53조의2 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "누가 주느냐로 갈립니다",
+        sub: "10년간 합해서 이 금액까지 세금 0원",
+        rows: [
+          { label: "배우자", value: "6억 원" },
+          { label: "부모·조부모", value: "5,000만 원", tone: "mark" },
+          { label: "자녀·손자녀", value: "5,000만 원" },
+          { label: "형제자매·삼촌·사위", value: "1,000만 원", tone: "warn" },
+          { label: "그 외의 사람", value: "0원", tone: "warn" },
+        ],
+        footnote: "상속세 및 증여세법 제53조 · 출처 국세청 증여세 안내",
+      },
+      {
+        kind: "list",
+        badge: "왜 자꾸 10년인가",
+        title: "한 번 쓰면 끝이 아닙니다",
+        items: [
+          {
+            text: "한도는 [[10년 합산]]이다",
+            detail: "직전 10년 안에 공제받은 금액을 먼저 뺀다",
+          },
+          {
+            text: "10년이 지나면 [[다시 생긴다]]",
+            detail: "5천만원씩 두 번, 10년 띄우면 양쪽 다 0원",
+          },
+          {
+            text: "아버지와 어머니는 {{한 사람}}이다",
+            detail: "직계존속이면 그 배우자를 동일인으로 본다",
+          },
+          {
+            text: "10년 안에 또 받으면 첫 원부터 과세",
+            detail: "같은 5천만원인데 이번엔 485만원이 나온다",
+          },
+        ],
+        footnote: "상속세 및 증여세법 제47조 제2항·제53조 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "부모가 성년 자녀에게 주면",
+        sub: "5천만원 공제 후 · 신고세액공제 3% 반영",
+        rows: [
+          { label: "1억원 받으면", value: "485만 원" },
+          { label: "2억원 받으면", value: "1,940만 원" },
+          { label: "3억원 받으면", value: "3,880만 원" },
+          { label: "5억원 받으면", value: "7,760만 원", tone: "warn" },
+        ],
+        footnote: "상속세 및 증여세법 제53조·제56조·제69조 · 출처 국세청 증여세 안내",
+      },
+      {
+        kind: "note",
+        badge: "기한을 자주 틀립니다",
+        title: "증여세는 3개월, 상속세가 6개월입니다",
+        body:
+          "증여받은 날이 속하는 달의 말일부터 [[3개월]] 이내에 신고합니다.\n\n6월 10일에 받았다면 9월 30일까지입니다.\n\n기한을 넘기면 {{신고세액공제 3%부터 사라지고}} 무신고가산세가 따로 붙습니다.",
+        footnote: "상속세 및 증여세법 제68조·제69조 · 출처 국세청 증여세 안내",
+      },
+      {
+        kind: "cta",
+        title: "우리 집은\n얼마까지 괜찮을까?",
+        sub: "관계별 한도와 결혼·출산 1억을 표로 정리해 뒀어요",
+        refNo: 27,
+      },
+    ],
+  },
 ];
 
 export function cardSetBySlug(slug: string): CardSet | undefined {

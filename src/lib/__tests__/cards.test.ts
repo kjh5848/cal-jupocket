@@ -19,6 +19,8 @@ import rates from "../../rates/pension-premium-2026.json";
 import vat from "../../rates/vat-2026.json";
 import vatPenalty from "../../rates/vat-penalty-2026.json";
 import { onSupply } from "../vat-penalty";
+import { computeGift, relationCap, taxFreeCeiling } from "../gift";
+import gift from "../../rates/gift-2026.json";
 
 /** "28만 5,000원" 같은 표기를 숫자로 되돌린다. */
 function parseWon(label: string): number {
@@ -432,5 +434,72 @@ describe("vat-penalty 세트", () => {
     const cta = set!.cards[set!.cards.length - 1];
     if (cta.kind !== "cta") throw new Error("cta 없음");
     expect(entryByNo(cta.refNo!)?.href).toBe("/guide/vat-penalty/");
+  });
+});
+
+/**
+ * 증여세 카드는 관계별 한도와 금액을 동시에 말한다. 한도를 잘못 박으면
+ * "괜찮은 줄 알고" 넘긴 사람이 생기고, 그건 이미지로 나간 뒤에 못 고친다.
+ */
+describe("gift-tax 세트", () => {
+  const set = cardSetBySlug("gift-tax");
+
+  it("관계별 한도 표가 rates 와 같다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.sub.includes("10년간"),
+    );
+    if (t?.kind !== "table") throw new Error("한도 표 없음");
+    const expected: Record<string, number> = {
+      배우자: relationCap("spouse"),
+      "부모·조부모": relationCap("ascendant"),
+      "자녀·손자녀": relationCap("descendant"),
+      "형제자매·삼촌·사위": relationCap("relative"),
+      "그 외의 사람": relationCap("other"),
+    };
+    for (const row of t.rows) {
+      const want = expected[row.label];
+      expect(want, `표에 없는 관계: ${row.label}`).toBeDefined();
+      const got = row.value === "0원"
+        ? 0
+        : row.value.endsWith("억 원")
+          ? Number(row.value.replace(/[^\d]/g, "")) * 100_000_000
+          : parseWon(row.value);
+      expect(got, row.label).toBe(want);
+    }
+  });
+
+  it("금액 표가 계산 함수 결과와 일치한다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.sub.includes("신고세액공제"),
+    );
+    if (t?.kind !== "table") throw new Error("금액 표 없음");
+    for (const row of t.rows) {
+      const 억 = Number(row.label.replace(/[^\d]/g, "")) * 100_000_000;
+      const r = computeGift({ amount: 억, relation: "ascendant" });
+      expect(parseWon(row.value), row.label).toBe(r.payable);
+    }
+  });
+
+  it("표지가 말하는 경계는 5천만 + 혼인·출산 1억이다", () => {
+    const cover = set?.cards.find((c) => c.kind === "cover");
+    if (cover?.kind !== "cover") throw new Error("표지 없음");
+    const ceiling = taxFreeCeiling("ascendant", { marriageBirth: true });
+    expect(ceiling).toBe(150_000_000);
+    expect(cover.title).toContain("1억 5천만원");
+    expect(cover.sub).toContain(
+      `${gift.marriageBirthDeduction.marriageWindowYears}년`,
+    );
+  });
+
+  it("신고기한 카드가 rates 의 개월 수를 말한다", () => {
+    const note = set?.cards.find((c) => c.kind === "note");
+    if (note?.kind !== "note") throw new Error("note 카드 없음");
+    expect(note.title).toContain(`${gift.deadline.months}개월`);
+  });
+
+  it("27번 글(증여세)을 가리킨다", () => {
+    const cta = set!.cards.find((c) => c.kind === "cta");
+    if (cta?.kind !== "cta") throw new Error("cta 없음");
+    expect(entryByNo(cta.refNo!)?.href).toBe("/guide/gift-tax/");
   });
 });

@@ -105,6 +105,7 @@ export const clusters: Cluster[] = [
     links: [
       { href: "/inheritance/", title: "상속세 계산기", kind: "calc", icon: "scale", blurb: "재산과 가족 구성을 넣으면 면제한도·과세표준·세액까지" },
       { href: "/guide/inheritance-tax/", title: "상속세 면제한도, 얼마부터 내나", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/gift-tax/", title: "증여세 면제한도, 10년마다 다시 생긴다", kind: "guide", icon: "refresh", year: 2026 },
     ],
   },
 ];
@@ -114,6 +115,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/gift-tax/",
   "/guide/inheritance-tax/",
   "/guide/vat-penalty/",
   "/guide/family-deduction/",
