@@ -273,7 +273,8 @@ if (!propId) {
     dimensions: [{ name: "landingPage" }],
     metrics: [
       { name: "sessions" },
-      { name: "activeUsers" },
+      { name: "engagedSessions" },
+      { name: "screenPageViewsPerSession" },
       { name: "averageSessionDuration" },
     ],
     orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
@@ -285,8 +286,9 @@ if (!propId) {
     const rows = (g.json.rows ?? []).map((r) => ({
       page: r.dimensionValues[0].value,
       sessions: Number(r.metricValues[0].value),
-      users: Number(r.metricValues[1].value),
-      dur: Number(r.metricValues[2].value),
+      engaged: Number(r.metricValues[1].value),
+      perSession: Number(r.metricValues[2].value),
+      dur: Number(r.metricValues[3].value),
     }));
     const tot = rows.reduce((a, r) => a + r.sessions, 0);
     console.log(`GA4 방문 페이지 상위 ${rows.length}개 — 세션 합계 ${tot}`);
@@ -294,7 +296,12 @@ if (!propId) {
       table(rows, [
         { label: "방문 페이지", get: (r) => r.page },
         { label: "세션", get: (r) => r.sessions },
-        { label: "사용자", get: (r) => r.users },
+        // 세션 수만 보면 "왔다"까지만 안다. 참여 세션(10초 이상 머물거나
+        // 두 쪽 이상 본 세션)이 "읽었나"를 가른다 — 실제로 /link 는 6세션에
+        // 참여 4인데 글 페이지들은 참여 0이었다. 그 차이가 세션 수에는
+        // 전혀 보이지 않았다.
+        { label: "참여", get: (r) => r.engaged },
+        { label: "쪽/세션", get: (r) => r.perSession.toFixed(1) },
         { label: "평균체류", get: (r) => `${Math.round(r.dur)}초` },
       ]),
     );
