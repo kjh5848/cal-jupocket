@@ -1,5 +1,12 @@
 ---
 at: "07:30"
+images:
+  - /cards/gift-tax/1.jpg
+  - /cards/gift-tax/2.jpg
+  - /cards/gift-tax/3.jpg
+  - /cards/gift-tax/4.jpg
+  - /cards/gift-tax/5.jpg
+  - /cards/gift-tax/6.jpg
 ref: /guide/gift-tax/
 ref_no: 27
 reply: 관계별 한도와 10년 규칙을 표로 정리해 뒀습니다.
