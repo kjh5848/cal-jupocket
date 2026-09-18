@@ -140,20 +140,28 @@ describe("inheritance-tax 카드", () => {
     expect(set).toBeDefined();
   });
 
-  it("면제한도 표가 계산기의 공제 합계와 같다", () => {
+  /**
+   * 행을 골라 검사하면 고르지 않은 행이 그대로 나간다. 실제로 "기초공제만
+   * 2억원" 행이 그렇게 실릴 뻔했다 — 일괄공제 5억이 늘 더 커서 계산기가
+   * 2억을 내놓는 가족 구성이 없는데, 검사에서 빠져 있어 안 걸렸다.
+   * 그래서 모든 행을 계산기로 되돌려 맞춘다.
+   */
+  it("면제한도 표의 모든 행이 계산기의 공제 합계와 같다", () => {
     const table = set!.cards.find(
       (c) => c.kind === "table" && c.title.includes("얼마부터"),
     );
     if (table?.kind !== "table") throw new Error("면제한도 표 없음");
-    const byLabel = (needle: string) =>
-      table.rows.find((r) => r.label.includes(needle))!;
 
-    expect(parseEok(byLabel("배우자 + 자녀").value)).toBe(
-      inheritanceCeiling({ hasSpouse: true, children: 2 }),
-    );
-    expect(parseEok(byLabel("자녀만").value)).toBe(
-      inheritanceCeiling({ hasSpouse: false, children: 2 }),
-    );
+    /** 행 라벨 → 계산기 입력. 라벨이 늘면 여기도 늘어야 한다. */
+    const household = (label: string) => ({
+      hasSpouse: label.includes("배우자") && !label.includes("배우자 없음"),
+      children: label.includes("자녀 없음") ? 0 : 2,
+    });
+
+    expect(table.rows.length).toBeGreaterThan(0);
+    for (const row of table.rows) {
+      expect(parseEok(row.value)).toBe(inheritanceCeiling(household(row.label)));
+    }
   });
 
   it("세액 표의 모든 행이 계산기 결과와 일치한다", () => {

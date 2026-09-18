@@ -679,10 +679,10 @@ export const cardSets: CardSet[] = [
         sub: "이 금액까지는 상속세가 0원",
         rows: [
           { label: "배우자 + 자녀", value: "10억 원", tone: "mark" },
+          { label: "배우자 + 자녀 없음", value: "10억 원" },
           { label: "자녀만 (배우자 없음)", value: "5억 원", tone: "warn" },
-          { label: "기초공제만", value: "2억 원" },
         ],
-        footnote: "일괄공제 5억 · 배우자공제 최소 5억 · 출처 국세청 상속공제 안내",
+        footnote: "일괄공제 5억 + 배우자공제 최소 5억 · 출처 국세청 상속공제 안내",
       },
       {
         kind: "list",
