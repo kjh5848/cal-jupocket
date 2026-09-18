@@ -659,6 +659,83 @@ export const cardSets: CardSet[] = [
       },
     ],
   },
+  {
+    slug: "inheritance-tax",
+    cluster: "inheritance",
+    link: "https://jupocket.com/guide/inheritance-tax/",
+    cards: [
+      {
+        kind: "cover",
+        photo: "/photos/card-key.jpg",
+        photoAlt: "낡은 나무문 자물쇠에 꽂힌 오래된 열쇠",
+        badge: "상속세",
+        title: "같은 10억인데\n한 집은 0원, 한 집은 8,730만원",
+        sub: "배우자가 있으면 면제한도가 10억, 없으면 5억입니다. 갈리는 건 재산이 아니라 가족 구성입니다.",
+        footnote: "상속세 및 증여세법 · 출처 국세청 상속공제 안내",
+      },
+      {
+        kind: "table",
+        title: "우리 집은 얼마부터 내나",
+        sub: "이 금액까지는 상속세가 0원",
+        rows: [
+          { label: "배우자 + 자녀", value: "10억 원", tone: "mark" },
+          { label: "자녀만 (배우자 없음)", value: "5억 원", tone: "warn" },
+          { label: "기초공제만", value: "2억 원" },
+        ],
+        footnote: "일괄공제 5억 · 배우자공제 최소 5억 · 출처 국세청 상속공제 안내",
+      },
+      {
+        kind: "list",
+        badge: "왜 이렇게 갈리나",
+        title: "공제는 더하는 게 아니라 고르는 것",
+        items: [
+          {
+            text: "기초공제 2억 + 인적공제 vs [[일괄공제 5억]]",
+            detail: "둘을 더하지 않는다 — 큰 쪽 하나만 쓴다",
+          },
+          {
+            text: "대부분 [[일괄공제 5억]]이 크다",
+            detail: "인적공제를 채워 5억을 넘기기가 쉽지 않다",
+          },
+          {
+            text: "배우자공제는 [[따로]] 붙는다",
+            detail: "실제로 받은 게 없어도 최소 5억, 그래서 합이 10억",
+          },
+          {
+            text: "배우자가 {{단독 상속}}이면 일괄공제를 못 쓴다",
+            detail: "기초공제 + 인적공제 합계만 쓴다",
+          },
+        ],
+        footnote: "상속세 및 증여세법 · 출처 국세청 상속공제 안내",
+      },
+      {
+        kind: "table",
+        title: "배우자와 자녀 둘이 있다면",
+        sub: "면제한도 10억 적용 · 신고세액공제 3% 반영",
+        rows: [
+          { label: "10억원 물려받으면", value: "0원", tone: "mark" },
+          { label: "15억원 물려받으면", value: "8,730만 원" },
+          { label: "20억원 물려받으면", value: "2억 3,280만 원" },
+          { label: "30억원 물려받으면", value: "6억 2,080만 원", tone: "warn" },
+        ],
+        footnote: "상속세 및 증여세법 세율 10~50% · 출처 국세청 상속세 세율",
+      },
+      {
+        kind: "note",
+        badge: "기한을 자주 틀립니다",
+        title: "상속세는 6개월, 증여세가 3개월입니다",
+        body:
+          "상속개시일이 속하는 달의 말일부터 [[6개월]] 이내에 신고합니다.\n\n3월 10일에 돌아가셨다면 9월 30일까지입니다.\n\n기한을 넘기면 {{신고세액공제 3%부터 사라지고}} 무신고가산세가 따로 붙습니다.",
+        footnote: "상속세 및 증여세법 · 출처 국세청 신고납부기한",
+      },
+      {
+        kind: "cta",
+        title: "우리 집은\n얼마부터 내나?",
+        sub: "가족 구성을 넣으면 면제한도와 세액까지 바로 나와요",
+        refNo: 26,
+      },
+    ],
+  },
 ];
 
 export function cardSetBySlug(slug: string): CardSet | undefined {

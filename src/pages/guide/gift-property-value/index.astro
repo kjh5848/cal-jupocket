@@ -1,0 +1,429 @@
+---
+/**
+ * 부동산을 증여할 때 재산가액을 얼마로 잡나.
+ *
+ * 27번 글(gift-tax)은 공제와 세율을 답한다. 그 둘을 알아도 세금이
+ * 안 나오는 이유는 증여재산가액이 비어 있기 때문이다. 현금은 금액이
+ * 곧 가액이라 그 칸이 안 보이는데, 부동산은 그 칸에서 전부가 갈린다.
+ *
+ * 소제목은 자동완성 묶음에서 왔다(keywords/gift-property-2026-09-18.csv,
+ * 74개). 가장 큰 묶음이 기준시가·공시지가·시가표준액의 "차이"(13회)였고
+ * 그다음이 평가기간·평가방법(9회)이다. 절차·서류·계약서 묶음(30회 이상)은
+ * 등기 쪽이라 이 글에서 다루지 않는다 — 세법이 아니다.
+ *
+ * 이 글의 반전: 공시가격으로 신고하면 된다고 알고 있는 사람이 많은데,
+ * 아파트는 우리 집이 안 팔렸어도 시가가 있는 것으로 본다(시행령 제49조
+ * 제4항의 유사재산 매매사례가액).
+ *
+ * 날짜는 손으로 적지 않는다 — giftValuationWindow() 로 뽑는다. 증여의
+ * 평가기간은 전 6개월·후 3개월이라 상속의 전후 6개월과 다르고, 손으로
+ * 적으면 어느 한쪽을 반드시 틀린다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import {
+  giftValuationWindow,
+  requiredAppraisalCount,
+} from "../../../lib/property-valuation";
+import { formatMan } from "../../../lib/money";
+import r from "../../../rates/property-valuation-2026.json";
+
+const title = "부동산 증여, 공시가격으로 신고해도 되나";
+const description =
+  "증여재산은 시가로 평가하는 것이 원칙이고 기준시가는 시가를 산정하기 어려울 때 쓰는 보충적 방법입니다. 아파트는 같은 단지의 유사 거래가 시가가 됩니다. 증여의 평가기간은 전 6개월·후 3개월로 상속과 다릅니다. 상속세 및 증여세법 원문 기준입니다.";
+
+/** 예시 증여일 — 한 곳에서 바꾸면 본문 날짜가 전부 따라온다. */
+const EXAMPLE_GIFT_DATE = "2026-09-18";
+const w = giftValuationWindow(EXAMPLE_GIFT_DATE);
+
+/** 날짜를 "2026년 3월 18일"로 읽는다. */
+const ko = (isoDate: string) => {
+  const [y, m, d] = isoDate.split("-");
+  return `${y}년 ${Number(m)}월 ${Number(d)}일`;
+};
+
+const srcLaw = r.sources.find((s) => s.label.includes("제60조"))!;
+const srcDecree = r.sources.find((s) => s.label.includes("시행령"))!;
+const srcLocal = r.sources.find((s) => s.label.includes("지방세법"))!;
+
+const 감정기준 = r.appraisalAgencies.reducedThreshold;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+  <h1>{title}</h1>
+
+  <p>
+    증여세를 계산하려면 세 가지가 필요합니다 — <strong>재산가액</strong>,
+    공제, 세율입니다. 현금을 주면 첫 칸이 저절로 채워집니다. 5천만원을
+    줬으면 5천만원입니다. 그런데 <strong>부동산은 그 칸이 비어 있습니다.</strong>
+    같은 집을 두고도 공시가격과 실거래가가 몇 억씩 차이 나기 때문입니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      공제와 세율은{" "}
+      <a href="/guide/gift-tax/">증여세 면제한도, 10년마다 다시 생깁니다</a>에
+      정리해 뒀습니다. 이 글은 그 앞칸 — <strong>부동산을 얼마로
+      쳐서</strong> 과세표준을 만드는지를 다룹니다.
+    </p>
+  </div>
+
+  <h2>공시가격으로 신고하면 되나요?</h2>
+
+  <p>
+    <strong>원칙은 아닙니다.</strong> 법은 순서를 분명히 정해 뒀습니다.
+    상속세·증여세가 부과되는 재산의 가액은 평가기준일 현재의
+    {" "}<strong>시가</strong>에 따릅니다(상속세 및 증여세법 제60조 제1항).
+    공시가격 같은 기준시가는 그다음입니다 —
+    {" "}<strong>"시가를 산정하기 어려운 경우에" 제61조부터 제65조까지의
+    방법으로 평가한 가액을 시가로 본다</strong>(같은 조 제3항).
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>순서</th><th>무엇으로 평가하나</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1순위</strong></td>
+        <td>시가 — 실제 거래가·감정가·수용·경매·공매가액</td>
+        <td>제60조 제1항·제2항</td>
+      </tr>
+      <tr>
+        <td><strong>2순위</strong></td>
+        <td>기준시가 — 시가를 산정하기 <strong>어려울 때만</strong></td>
+        <td>제60조 제3항 → 제61조</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    그래서 "부동산은 공시가격으로 신고한다"는 말은 절반만 맞습니다.
+    <strong>시가가 없을 때</strong> 그렇게 한다는 뜻입니다. 시가가 있으면
+    기준시가로 신고할 자리가 없습니다.
+  </p>
+
+  <h2>기준시가·공시지가·시가표준액은 뭐가 다른가요?</h2>
+
+  <p>
+    검색창에서 섞여 쓰이지만 <strong>근거 법이 다릅니다.</strong>
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>말</th><th>어느 법</th><th>무엇인가</th></tr>
+    </thead>
+    <tbody>
+      {
+        r.standardValueTerms.items.map((t) => (
+          <tr>
+            <td><strong>{t.term}</strong></td>
+            <td>{t.law}</td>
+            <td>{t.note}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <p>
+      요약하면 <strong>기준시가는 세법이 쓰는 말</strong>이고,
+      <strong>공시지가·공동주택가격은 그 재료</strong>이며,
+      <strong>시가표준액은 취득세 쪽(지방세) 용어</strong>입니다.
+      증여세를 계산할 때 봐야 하는 것은 상속세 및 증여세법 제61조입니다.
+    </p>
+  </div>
+
+  <h2>시가로 보는 것은 어디까지인가요?</h2>
+
+  <p>
+    시가는 <strong>불특정 다수인 사이에 자유롭게 거래될 때 통상 성립한다고
+    인정되는 가액</strong>이고, 여기에 수용가격·공매가격·감정가격 등
+    시행령이 정하는 것이 포함됩니다(제60조 제2항). 시행령 제49조 제1항이
+    그 목록을 세 가지로 적어 뒀습니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>시가로 보는 것</th><th>어느 날을 기준으로 따지나</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      {
+        r.marketValueKinds.map((k) => (
+          <tr>
+            <td><strong>{k.label}</strong></td>
+            <td>{k.basisDate}</td>
+            <td>{k.article}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <p>
+    감정가액은 <strong>둘 이상</strong>의 공신력 있는 감정기관이 평가한
+    금액의 <strong>평균액</strong>입니다. 한 곳만 받아서는 원칙적으로
+    시가가 되지 않습니다 — 예외는 아래에서 따로 봅니다.
+  </p>
+
+  <p>
+    시가로 볼 가액이 둘 이상이면 <strong>평가기준일에 가장 가까운 날</strong>의
+    가액을 씁니다. 그 가액도 둘이면 평균을 냅니다(시행령 제49조 제2항).
+  </p>
+
+  <AdSlot label="gift-property-mid" />
+
+  <h2>우리 집은 안 팔렸는데 시가가 있나요?</h2>
+
+  <p>
+    <strong>아파트라면 있을 가능성이 높습니다.</strong> 이 글에서 가장 자주
+    어긋나는 지점입니다. 시행령 제49조 제4항은 해당 재산과
+    {" "}<strong>면적·위치·용도·종목 및 기준시가가 동일하거나 유사한 다른
+    재산</strong>의 거래가액을 시가로 보게 합니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      같은 단지, 같은 평형, 비슷한 층의 집이 평가기간 안에 팔렸다면
+      <strong>그 가격이 우리 집의 시가가 됩니다.</strong> 우리 집을 팔지
+      않았어도 그렇습니다. 공시가격으로 신고했다가 나중에 경정되는 일이
+      대부분 여기서 생깁니다.
+    </p>
+  </div>
+
+  <p>
+    순서가 있습니다. <strong>해당 재산 자체의 매매·감정·경매·공매 가액이
+    있으면 그것이 먼저입니다.</strong> 유사재산의 가액은 해당 재산의 가액이
+    없을 때 씁니다(시행령 제49조 제2항 단서).
+  </p>
+
+  <p>
+    거꾸로, 단독주택이나 토지처럼 <strong>같다고 볼 다른 재산을 찾기
+    어려운</strong> 부동산은 유사 매매사례가 잡히지 않아 기준시가로 가는
+    경우가 많습니다. 아파트와 단독주택의 실무가 갈리는 이유가 이것입니다.
+  </p>
+
+  <h2>평가기간은 언제부터 언제까지인가요?</h2>
+
+  <p>
+    거래가 있었다고 해서 아무 때나 시가가 되는 것은 아닙니다. 시행령
+    제49조 제1항이 <strong>평가기간</strong>을 정해 뒀는데,
+    <strong>증여와 상속이 다릅니다.</strong>
+  </p>
+
+  <table>
+    <thead>
+      <tr><th></th><th>평가기준일 전</th><th>평가기준일 후</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>증여</strong></td>
+        <td>{r.valuationPeriod.giftBeforeMonths}개월</td>
+        <td><strong>{r.valuationPeriod.giftAfterMonths}개월</strong></td>
+      </tr>
+      <tr>
+        <td>상속</td>
+        <td>{r.valuationPeriod.inheritanceBeforeMonths}개월</td>
+        <td>{r.valuationPeriod.inheritanceAfterMonths}개월</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    증여는 <strong>뒤쪽이 짧습니다.</strong> 상속처럼 전후 6개월로 알고
+    있으면 증여일 뒤 4~6개월의 거래를 시가로 계산했다가 어긋납니다.
+  </p>
+
+  <p>
+    {ko(w.valuationDate)}에 증여했다면 이렇게 됩니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>무엇</th><th>날짜</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>평가기간 시작 (증여일 전 {r.valuationPeriod.giftBeforeMonths}개월)</td>
+        <td>{ko(w.periodFrom)}</td>
+      </tr>
+      <tr>
+        <td>평가기준일 (증여일)</td>
+        <td><strong>{ko(w.valuationDate)}</strong></td>
+      </tr>
+      <tr>
+        <td>평가기간 종료 (증여일 후 {r.valuationPeriod.giftAfterMonths}개월)</td>
+        <td>{ko(w.periodTo)}</td>
+      </tr>
+      <tr>
+        <td>증여세 신고기한</td>
+        <td><strong>{ko(w.filingDeadline)}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="meta">
+    신고기한은 증여일부터 3개월이 아니라 <strong>증여받은 날이 속하는 달의
+    말일부터</strong> 3개월입니다(법 제68조 제1항). 9월에 받았으면 9월
+    며칠에 받았든 기한은 같습니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>평가기간 밖의 거래도 쓰일 수 있습니다.</strong> 평가기준일 전
+      {" "}{r.valuationPeriod.outsideWindow.priorYears}년 이내의 매매등이
+      있으면, 가격변동의 특별한 사정이 없다고 보아 납세자나 세무서장이
+      신청하는 때에 <strong>평가심의위원회</strong> 심의를 거쳐 시가에
+      포함시킬 수 있습니다(시행령 제49조 제1항 단서). 증여의 신청기한은
+      신고기한 만료{" "}
+      <strong>{r.valuationCommittee.giftRequestDaysBeforeDeadline}일 전</strong>
+      까지입니다 — 위 예시라면 {ko(w.committeeRequestBy)}입니다.
+    </p>
+  </div>
+
+  <h2>시가가 없으면 그때 기준시가입니다</h2>
+
+  <p>
+    시가를 산정하기 어려우면 제61조 제1항의 보충적 평가로 갑니다.
+    <strong>부동산 종류마다 근거가 되는 고시가격이 다릅니다.</strong>
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>종류</th><th>무엇으로 평가하나</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      {
+        r.supplementary.items.map((i) => (
+          <tr>
+            <td><strong>{i.label}</strong></td>
+            <td>{i.basis}</td>
+            <td>{i.article}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <p>
+    아파트는 <strong>공동주택가격</strong>, 단독주택은
+    {" "}<strong>개별주택가격</strong>, 토지는 <strong>개별공시지가</strong>입니다.
+    오피스텔과 상업용 건물은 토지와 건물을 따로 매기지 않고 국세청장이
+    {" "}<strong>일괄 고시한 가액</strong>을 씁니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>임대를 주고 있으면 더 높아질 수 있습니다.</strong> 사실상
+      임대차계약이 체결되었거나 임차권이 등기된 재산은, 임대료 등을 기준으로
+      평가한 가액과 위 표의 가액 중 <strong>큰 금액</strong>을 그 재산의
+      가액으로 합니다(제61조 제5항).
+    </p>
+  </div>
+
+  <h2>감정평가를 받아야 하나요?</h2>
+
+  <p>
+    의무는 아닙니다. 다만 유사 매매사례가 애매하거나 기준시가와 실제
+    시세가 크게 벌어진 경우, 감정가액을 받아 시가로 삼는 선택지가 있습니다.
+    이때 <strong>몇 곳에 받아야 하는지</strong>가 갈립니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>기준시가</th><th>감정기관</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{formatMan(감정기준)} 이하</td>
+        <td><strong>{requiredAppraisalCount(감정기준)}곳</strong> 이상</td>
+        <td>시행령 제49조 제6항</td>
+      </tr>
+      <tr>
+        <td>{formatMan(감정기준)} 초과</td>
+        <td><strong>{requiredAppraisalCount(감정기준 + 1)}곳</strong> 이상</td>
+        <td>법 제60조 제5항</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    감정가액이라고 해서 무조건 받아들여지는 것도 아닙니다. 납세자가 제시한
+    감정가액이 세무서장이 다시 의뢰해 받은 감정가액의
+    {" "}<strong>{r.appraisalAgencies.disqualification.ratio * 100}%에 미달</strong>하면,
+    평가심의위원회 심의를 거쳐 그 감정기관을
+    {" "}<strong>{r.appraisalAgencies.disqualification.maxYears}년의 범위에서
+    시가불인정 감정기관</strong>으로 지정할 수 있습니다(법 제60조 제5항
+    후단, 시행령 제49조 제7항·제8항).
+  </p>
+
+  <h2>그래서 순서는 이렇습니다</h2>
+
+  <ol>
+    <li>
+      <strong>해당 재산의 거래가 있었나</strong> — 평가기간(증여는 전
+      {" "}{r.valuationPeriod.giftBeforeMonths}개월·후
+      {" "}{r.valuationPeriod.giftAfterMonths}개월) 안의 매매·감정·수용·경매·공매.
+      있으면 그것이 시가입니다.
+    </li>
+    <li>
+      <strong>없다면 유사한 재산의 거래가 있었나</strong> — 면적·위치·용도·
+      종목·기준시가가 같거나 비슷한 다른 재산. 아파트는 대개 여기서 걸립니다.
+    </li>
+    <li>
+      <strong>그것도 없으면 기준시가</strong> — 토지는 개별공시지가, 주택은
+      고시주택가격, 오피스텔·상업용 건물은 국세청장 일괄 고시가액.
+    </li>
+    <li>
+      <strong>임대차가 있으면</strong> 임대료 환산가액과 비교해 큰 쪽.
+    </li>
+    <li>
+      정해진 재산가액에서 공제를 빼고 세율을 적용합니다 —{" "}
+      <a href="/guide/gift-tax/">증여세 면제한도와 세율</a>.
+    </li>
+  </ol>
+
+  <h2>이 글이 다루지 않는 것</h2>
+
+  <p>
+    아래는 별도 조문이 적용되거나 원문을 확인하지 않아, 이 글의 규칙을
+    그대로 적용하면 안 됩니다.
+  </p>
+
+  <ul>
+    <li>
+      <strong>부담부증여</strong> — 전세보증금이나 대출을 함께 넘기면 그
+      채무액만큼은 유상 양도로 보아 증여자에게 양도소득세가 붙습니다.
+      계산 구조가 달라 이 글에서 다루지 않았습니다.
+    </li>
+    <li>
+      <strong>취득세 등 지방세</strong> — 증여로 부동산을 받으면 취득세도
+      따로 붙습니다. 근거가 지방세법이고 과세표준도 따로 정해집니다.
+      이 글은 지방세법 제4조의 시가표준액 정의만 확인했습니다.
+    </li>
+    <li>
+      <strong>배율방법의 배율</strong>, <strong>임대료 환산가액의 산식</strong>{" "}
+      — 시행령이 정하는 구체적 수치를 확인하지 않아 숫자를 적지 않았습니다.
+    </li>
+    <li>
+      <strong>비상장주식·지상권·시설물</strong> — 제61조 제3항·제4항과
+      제63조의 별도 평가규정이 적용됩니다.
+    </li>
+    <li>
+      <strong>등기 절차와 필요 서류</strong> — 세법이 아니라 등기 쪽이라
+      이 글에서 다루지 않았습니다.
+    </li>
+  </ul>
+
+  <p class="meta">
+    근거: <a href={srcLaw.url} rel="nofollow noopener" target="_blank">{srcLaw.label}</a>,{" "}
+    <a href={srcDecree.url} rel="nofollow noopener" target="_blank">{srcDecree.label}</a>,{" "}
+    <a href={srcLocal.url} rel="nofollow noopener" target="_blank">{srcLocal.label}</a>.
+    {" "}{r.verifiedOn} 원문 확인 · {r.lawVersion}. 유사 매매사례가액의
+    판단은 개별 사안에 따라 갈리므로 국세상담센터(126)나 세무 전문가에게
+    확인하시기 바랍니다.
+  </p>
+
+  <AdSlot label="guide-gift-property-value-bottom" />
+</GuideLayout>

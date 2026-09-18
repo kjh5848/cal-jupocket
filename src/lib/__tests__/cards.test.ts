@@ -20,6 +20,10 @@ import vat from "../../rates/vat-2026.json";
 import vatPenalty from "../../rates/vat-penalty-2026.json";
 import { onSupply } from "../vat-penalty";
 import { computeGift, relationCap, taxFreeCeiling } from "../gift";
+import {
+  computeInheritance,
+  taxFreeCeiling as inheritanceCeiling,
+} from "../inheritance";
 import gift from "../../rates/gift-2026.json";
 
 /** "28만 5,000원" 같은 표기를 숫자로 되돌린다. */
@@ -109,6 +113,85 @@ describe("모든 카드 세트 공통", () => {
         expect(rendered).not.toMatch(/\[\[|\]\]|\{\{|\}\}/);
       }
     }
+  });
+});
+
+/**
+ * 상속세 카드는 "배우자가 있고 없고"로 면제한도가 갈리는 것이 전부다.
+ * 표의 금액이 계산기와 어긋나면 인스타에 나간 이미지를 고칠 수 없다.
+ */
+describe("inheritance-tax 카드", () => {
+  const set = cardSetBySlug("inheritance-tax");
+
+  /**
+   * 상속세는 자릿수가 커서 "2억 3,280만 원" 처럼 억이 앞에 붙는다.
+   * 공용 parseWon 은 만 단위까지만 읽으므로 여기서 따로 읽는다.
+   */
+  const parseEok = (label: string): number => {
+    const m = label.match(
+      /^(?:([\d,]+)억)?\s*(?:([\d,]+)만)?\s*(?:([\d,]+)\s*)?원$/,
+    );
+    if (!m) throw new Error(`읽을 수 없는 금액 표기: ${label}`);
+    const n = (v?: string) => (v ? Number(v.replace(/,/g, "")) : 0);
+    return n(m[1]) * 100_000_000 + n(m[2]) * 10_000 + n(m[3]);
+  };
+
+  it("세트가 존재한다", () => {
+    expect(set).toBeDefined();
+  });
+
+  it("면제한도 표가 계산기의 공제 합계와 같다", () => {
+    const table = set!.cards.find(
+      (c) => c.kind === "table" && c.title.includes("얼마부터"),
+    );
+    if (table?.kind !== "table") throw new Error("면제한도 표 없음");
+    const byLabel = (needle: string) =>
+      table.rows.find((r) => r.label.includes(needle))!;
+
+    expect(parseEok(byLabel("배우자 + 자녀").value)).toBe(
+      inheritanceCeiling({ hasSpouse: true, children: 2 }),
+    );
+    expect(parseEok(byLabel("자녀만").value)).toBe(
+      inheritanceCeiling({ hasSpouse: false, children: 2 }),
+    );
+  });
+
+  it("세액 표의 모든 행이 계산기 결과와 일치한다", () => {
+    const table = set!.cards.find(
+      (c) => c.kind === "table" && c.title.includes("배우자와 자녀"),
+    );
+    if (table?.kind !== "table") throw new Error("세액 표 없음");
+    for (const row of table.rows) {
+      const estate = Number(row.label.replace(/[^\d]/g, "")) * 100_000_000;
+      const r = computeInheritance({ estate, hasSpouse: true, children: 2 });
+      expect(parseEok(row.value)).toBe(r.payable);
+    }
+  });
+
+  it("표지의 금액이 배우자 없는 10억 상속의 세액이다", () => {
+    const cover = set!.cards.find((c) => c.kind === "cover");
+    if (cover?.kind !== "cover") throw new Error("표지 없음");
+    const noSpouse = computeInheritance({
+      estate: 1_000_000_000,
+      hasSpouse: false,
+      children: 2,
+    });
+    const withSpouse = computeInheritance({
+      estate: 1_000_000_000,
+      hasSpouse: true,
+      children: 2,
+    });
+    // "한 집은 0원, 한 집은 8,730만원"
+    expect(withSpouse.payable).toBe(0);
+    expect(cover.title).toContain(
+      (noSpouse.payable / 10000).toLocaleString("ko-KR"),
+    );
+  });
+
+  it("26번 글(상속세)을 가리킨다", () => {
+    const cta = set!.cards.find((c) => c.kind === "cta");
+    if (cta?.kind !== "cta") throw new Error("cta 없음");
+    expect(entryByNo(cta.refNo!)?.href).toBe("/guide/inheritance-tax/");
   });
 });
 
