@@ -816,7 +816,7 @@ export const cardSets: CardSet[] = [
       {
         kind: "cta",
         title: "내 사유가\n되는 건가?",
-        sub: "7가지 사유와 한도, 중도인출과 갈리는 지점을 글에 정리했어요",
+        sub: "담보로 되는 사유와 한도, 중도인출과 갈리는 지점을 글에 정리했어요",
         refNo: 30,
       },
     ],
