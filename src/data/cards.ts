@@ -736,6 +736,91 @@ export const cardSets: CardSet[] = [
       },
     ],
   },
+  {
+    slug: "retirement-pension-loan",
+    cluster: "retirement",
+    link: "https://jupocket.com/guide/retirement-pension-loan/",
+    cards: [
+      {
+        kind: "cover",
+        photo: "/photos/card-safebox.jpg",
+        photoAlt: "금고함이 줄지어 늘어선 벽, 가운데 한 칸만 열려 있다",
+        badge: "퇴직연금 · IRP",
+        title: "중도인출은 거절돼도\n담보대출은 됩니다",
+        sub: "대학등록금·혼례비·장례비가 그렇습니다. 적립금의 50%까지, 계좌는 깨지 않고.",
+        footnote: "근로자퇴직급여 보장법 제7조 · 시행령 제2조",
+      },
+      {
+        kind: "list",
+        badge: "담보대출이 되는 사유",
+        title: "이 사유가 아니면 안 됩니다",
+        items: [
+          {
+            text: "무주택자가 [[본인 명의로 주택 구입]]",
+            detail: "시행령 제2조 제1항 제1호",
+          },
+          {
+            text: "무주택자의 [[전세금·임차보증금]]",
+            detail: "한 사업장에서 근로하는 동안 1회 한정",
+          },
+          {
+            text: "6개월 이상 요양이 필요한 [[의료비]]",
+            detail: "본인·배우자·부양가족 — 담보는 금액 요건 없음",
+          },
+          {
+            text: "5년 이내 [[파산선고·개인회생 개시결정]]",
+            detail: "담보를 제공하는 날부터 거꾸로 계산해 5년",
+          },
+          {
+            text: "[[대학등록금·혼례비·장례비]]",
+            detail: "중도인출 사유에는 아예 없는 칸",
+          },
+          {
+            text: "휴업으로 임금 감소 또는 {{재난 피해}}",
+            detail: "한도를 고용노동부장관 고시가 따로 정한다",
+          },
+        ],
+        footnote: "근로자퇴직급여 보장법 시행령 제2조 제1항 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "얼마까지 담보로 잡히나",
+        sub: "가입자별 적립금의 50%",
+        rows: [
+          { label: "적립금 3,000만원", value: "1,500만 원" },
+          { label: "적립금 6,000만원", value: "3,000만 원", tone: "mark" },
+          { label: "적립금 1억원", value: "5,000만 원" },
+        ],
+        footnote: "시행령 제2조 제2항 제1호 · 실제 대출 실행액은 사업자 심사에서 정해집니다",
+      },
+      {
+        kind: "table",
+        title: "중도인출은 더 좁습니다",
+        sub: "같은 사유인데 인출 쪽에만 조건이 붙는다",
+        rows: [
+          { label: "대학등록금·혼례비·장례비", value: "인출 불가", tone: "warn" },
+          { label: "휴업으로 임금 감소", value: "인출 불가", tone: "warn" },
+          { label: "의료비 (DC형)", value: "연봉의 12.5% 초과", tone: "warn" },
+          { label: "주택·전세금·파산·회생", value: "둘 다 가능", tone: "mark" },
+        ],
+        footnote: "시행령 제2조 제1항 vs 제14조·제18조 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "note",
+        badge: "먼저 확인할 것",
+        title: "퇴직금제도만 있으면 둘 다 안 됩니다",
+        body:
+          "법이 말하는 [[퇴직연금제도]]는 DB·DC·IRP 셋입니다.\n\n회사가 퇴직연금에 가입하지 않고 퇴직금제도만 두고 있으면 {{담보대출도 중도인출도 열리지 않습니다}}.\n\n반대로 DB형은 중도인출 자체가 없어서 담보대출이 사실상 유일한 길입니다.",
+        footnote: "근로자퇴직급여 보장법 제2조 제7호·제22조",
+      },
+      {
+        kind: "cta",
+        title: "내 사유가\n되는 건가?",
+        sub: "7가지 사유와 한도, 중도인출과 갈리는 지점을 글에 정리했어요",
+        refNo: 30,
+      },
+    ],
+  },
 ];
 
 export function cardSetBySlug(slug: string): CardSet | undefined {

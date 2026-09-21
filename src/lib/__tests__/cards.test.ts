@@ -14,6 +14,7 @@ import { taxSaved, computeDeduction, type Person } from "../deduction";
 import deduction from "../../rates/deduction-2026.json";
 import penalty from "../../rates/penalty-2026.json";
 import { parseMarkup } from "../card-markup";
+import { stripMarkup } from "../card-text";
 import { entryByNo } from "../../data/linkhub";
 import rates from "../../rates/pension-premium-2026.json";
 import vat from "../../rates/vat-2026.json";
@@ -25,6 +26,7 @@ import {
   taxFreeCeiling as inheritanceCeiling,
 } from "../inheritance";
 import gift from "../../rates/gift-2026.json";
+import { collateralLimit, limitPercent, reasons } from "../retirement-loan";
 
 /** "28만 5,000원" 같은 표기를 숫자로 되돌린다. */
 function parseWon(label: string): number {
@@ -592,5 +594,70 @@ describe("gift-tax 세트", () => {
     const cta = set!.cards.find((c) => c.kind === "cta");
     if (cta?.kind !== "cta") throw new Error("cta 없음");
     expect(entryByNo(cta.refNo!)?.href).toBe("/guide/gift-tax/");
+  });
+});
+
+
+describe("retirement-pension-loan 카드", () => {
+  const set = cardSetBySlug("retirement-pension-loan");
+
+  it("세트가 존재한다", () => {
+    expect(set).toBeDefined();
+  });
+
+  it("한도 표의 모든 행이 collateralLimit() 과 일치한다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.sub.includes("적립금의"),
+    );
+    if (t?.kind !== "table") throw new Error("한도 표 없음");
+    for (const row of t.rows) {
+      const balance = row.label.includes("억")
+        ? Number(row.label.replace(/[^\d]/g, "")) * 100_000_000
+        : Number(row.label.replace(/[^\d]/g, "")) * 10_000;
+      expect(parseWon(row.value), row.label).toBe(collateralLimit(balance));
+    }
+  });
+
+  it("한도 표의 부제가 rates 의 퍼센트를 말한다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.sub.includes("적립금의"),
+    );
+    if (t?.kind !== "table") throw new Error("한도 표 없음");
+    expect(t.sub).toContain(`${limitPercent}%`);
+  });
+
+  it("사유 목록 카드가 시행령 일곱 개 호를 하나도 빠뜨리지 않는다", () => {
+    const list = set?.cards.find((c) => c.kind === "list");
+    if (list?.kind !== "list") throw new Error("목록 카드 없음");
+    const text = stripMarkup(
+      list.items.map((i) => `${i.text} ${i.detail}`).join(" "),
+    );
+    for (const word of [
+      "주택",
+      "전세금",
+      "의료비",
+      "파산선고",
+      "개인회생",
+      "대학등록금",
+      "혼례비",
+      "장례비",
+      "재난",
+    ]) {
+      expect(text, `사유 누락: ${word}`).toContain(word);
+    }
+    expect(list.items.length).toBeLessThanOrEqual(reasons.length);
+  });
+
+  it("표지가 담보대출로만 열리는 사유를 말한다", () => {
+    const cover = set?.cards.find((c) => c.kind === "cover");
+    if (cover?.kind !== "cover") throw new Error("표지 없음");
+    expect(cover.sub).toContain("대학등록금");
+    expect(cover.sub).toContain(`${limitPercent}%`);
+  });
+
+  it("30번 글(퇴직연금 담보대출)을 가리킨다", () => {
+    const cta = set!.cards.find((c) => c.kind === "cta");
+    if (cta?.kind !== "cta") throw new Error("cta 없음");
+    expect(entryByNo(cta.refNo!)?.href).toBe("/guide/retirement-pension-loan/");
   });
 });

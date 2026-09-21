@@ -1,0 +1,399 @@
+---
+/**
+ * 퇴직연금을 깨지 않고 돈을 꺼내는 길 — 수급권 담보대출.
+ *
+ * 17번(irp-account)과 16번(pension-savings-tax-credit)이 "넣을 때"를
+ * 답한다. 이 글은 그 반대쪽 — 만기 전에 돈이 필요할 때다. 꺼내는 길이
+ * 둘인데(중도인출·담보대출) 검색자는 대개 중도인출만 알고 있다.
+ *
+ * 소제목은 자동완성 묶음에서 왔다(keywords/retirement-pension-loan-
+ * 2026-09-21.csv, 48개). 묶음 크기 순서가 그대로 순서다 —
+ * 사유·요건·조건(9회) > 금융사 이름(7회) > DC형 구분(5회) >
+ * 금리·이자·이율(4회) > 중도인출 세금(3회).
+ *
+ * 금융사 이름 묶음(미래에셋·삼성증권·신한·우리·하나)은 상품 비교라
+ * 우리가 못 쓰는 자리로 보이지만, 조문에 답이 있다 — 법 제7조 제2항
+ * 후단이 퇴직연금사업자에게 협조 의무를 지운다. 은행을 고르는 게 아니라
+ * 내 적립금이 있는 그 사업자에게 신청하는 것이다.
+ *
+ * 금리·DSR 묶음은 조문에 없다. 숫자를 만들지 않고 "왜 우리가 말할 수
+ * 없는지"를 적었다 — rates 의 notVerified 가 그 목록이다.
+ *
+ * 이 글의 반전: 대학등록금·혼례비·장례비는 담보대출 사유에는 있는데
+ * 중도인출 사유에는 아예 없다(시행령 제2조 제1항 제4호의2 vs 제14조
+ * 제1항·제18조 제2항). 깨려고 해도 못 깨는 돈을 빌릴 수는 있다.
+ *
+ * 한도 금액은 손으로 적지 않는다 — collateralLimit() 로 뽑는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import {
+  collateralLimit,
+  collateralOnly,
+  limitPercent,
+  reasons,
+} from "../../../lib/retirement-loan";
+import { formatMan, formatWon } from "../../../lib/money";
+import r from "../../../rates/retirement-loan-2026.json";
+import pensionAccount from "../../../rates/pension-account-2026.json";
+
+const title = "퇴직연금 담보대출, 적립금의 절반까지 — 중도인출과 뭐가 다른가";
+const description =
+  "퇴직연금·IRP는 정해진 사유가 있으면 적립금의 50%까지 담보로 제공하고 대출받을 수 있습니다. 중도인출과 달리 적립금이 빠져나가지 않고, 대학등록금·혼례비·장례비처럼 담보대출로만 열리는 사유도 있습니다. 근로자퇴직급여 보장법 원문 기준입니다.";
+
+/** 예시 적립금 — 한 곳에서 바꾸면 본문 금액이 전부 따라온다. */
+const EXAMPLE_BALANCE = 60_000_000;
+const EXAMPLE_LIMIT = collateralLimit(EXAMPLE_BALANCE);
+const LIMIT_EXAMPLES = [30_000_000, EXAMPLE_BALANCE, 100_000_000];
+
+const onlyByLoan = collateralOnly();
+
+const srcLaw = r.sources.find((s) => s.label.includes("제7조"))!;
+const srcDecree = r.sources.find((s) => s.label.includes("시행령"))!;
+const fssSource = pensionAccount.sources.find((s) =>
+  s.url.includes("bnacCncltn"),
+)!;
+const 해지세율 = pensionAccount.irp.withdrawalPenaltyRatePercent;
+
+/** 표의 칸 — "된다/조건부/안 된다"를 한 곳에서 그린다. */
+const mark = (v: string) => (v === "yes" ? "○" : v === "limited" ? "△" : "✗");
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+  <h1>퇴직연금 담보대출, 적립금의 절반까지</h1>
+
+  <p>
+    퇴직연금 계좌에 돈은 쌓여 있는데 당장 쓸 수가 없습니다. 그래서 대부분{" "}
+    <strong>중도인출</strong>을 먼저 알아봅니다. 그런데 꺼내는 길은 하나가
+    아닙니다. 법은 <strong>적립금을 그대로 둔 채 그 수급권을 담보로 돈을
+    빌리는 길</strong>을 따로 열어 뒀습니다(근로자퇴직급여 보장법 제7조
+    제2항).
+  </p>
+
+  <div class="callout">
+    <p>
+      그리고 <strong>중도인출로는 안 되는데 담보대출로는 되는 사유가
+      있습니다.</strong> 대학등록금·혼례비·장례비가 그렇습니다. 깨려고 해도
+      못 깨는 돈을 담보로 빌릴 수는 있다는 뜻입니다.
+    </p>
+  </div>
+
+  <h2>중도인출과 뭐가 다릅니까?</h2>
+
+  <p>
+    한 줄로 하면 <strong>적립금이 빠져나가느냐 남아 있느냐</strong>입니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th></th><th>중도인출</th><th>담보대출</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>적립금</strong></td>
+        <td>그만큼 빠져나간다</td>
+        <td>계좌에 그대로 남아 운용된다</td>
+      </tr>
+      <tr>
+        <td><strong>갚는 돈</strong></td>
+        <td>없다 — 내 돈을 뺀 것이다</td>
+        <td>원금과 이자를 갚아야 한다</td>
+      </tr>
+      <tr>
+        <td><strong>인출에 붙는 세금</strong></td>
+        <td>붙는다</td>
+        <td>인출이 아니므로 생기지 않는다</td>
+      </tr>
+      <tr>
+        <td><strong>노후 재원</strong></td>
+        <td>줄어든 채로 끝난다</td>
+        <td>갚으면 원래대로 돌아온다</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    세금 쪽을 조금 더 보겠습니다. 중도인출은 적립금을 실제로 빼내는 것이라
+    그 시점에 세금이 붙습니다 — 사유에 따라 기타소득세{" "}
+    <strong>{해지세율}%</strong> 또는 연금소득세 5.5~3.3%로 갈립니다(금융감독원
+    통합연금포털 기준,{" "}
+    <a href="/guide/irp-account/">IRP란? 소득 있으면 누구나 여는 계좌</a>에
+    사유별로 정리해 뒀습니다). 담보대출은 <strong>적립금을 인출하지 않으므로
+    인출에 따르는 이 과세가 생기지 않습니다.</strong> 대신 대출이자를
+    부담합니다 — 세금을 아끼는 대신 이자를 내는 구조입니다.
+  </p>
+
+  <AdSlot label="retirement-loan-mid" />
+
+  <h2>담보대출이 되는 사유는 뭔가요?</h2>
+
+  <p>
+    원칙은 <strong>안 되는 것</strong>입니다. 퇴직연금제도의 급여를 받을
+    권리는 양도·압류하거나 담보로 제공할 수 없습니다(법 제7조 제1항). 노후
+    재원을 지키려는 규정입니다. 그 원칙을 뚫는 예외가 시행령 제2조 제1항의{" "}
+    <strong>일곱 개 호</strong>이고, 그 밖의 사유로는 되지 않습니다.
+  </p>
+
+  <p>
+    아래 표에서 <strong>○</strong>는 열리는 것, <strong>△</strong>는 조건이 더
+    붙는 것, <strong>✗</strong>는 그 길이 없는 것입니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>사유</th>
+        <th>담보<br />대출</th>
+        <th>DC<br />중도인출</th>
+        <th>IRP<br />중도인출</th>
+        <th>근거</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        reasons.map((reason) => (
+          <tr>
+            <td>{reason.label}</td>
+            <td><strong>{mark(reason.collateral)}</strong></td>
+            <td>{mark(reason.dcWithdrawal)}</td>
+            <td>{mark(reason.irpWithdrawal)}</td>
+            <td>{reason.clause}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <p>
+    표에서 <strong>담보대출 칸만 전부 ○</strong>인 것이 눈에 띕니다. 담보제공
+    사유가 중도인출 사유보다 넓습니다. 갈리는 자리가 셋입니다.
+  </p>
+
+  <h3>1. 담보대출로만 열리는 칸 — 대학등록금·혼례비·장례비</h3>
+
+  {
+    onlyByLoan.map((reason) => (
+      <p>
+        <strong>{reason.label}</strong>({reason.clause})는 담보제공 사유에는
+        들어 있는데, 중도인출 사유를 정한 시행령 제14조 제1항과 제18조
+        제2항에는 <strong>이 호가 아예 없습니다.</strong> 본인뿐 아니라
+        배우자, 그리고 본인이나 배우자의 부양가족의 비용도 포함됩니다.
+        등록금 고지서를 들고 중도인출을 알아봤다가 안 된다는 말을 들었다면,
+        막힌 것은 <strong>인출이지 대출이 아닙니다.</strong>
+      </p>
+    ))
+  }
+
+  <h3>2. 의료비 — 담보는 금액 요건이 없다</h3>
+
+  <p>
+    본인·배우자·부양가족이 6개월 이상 요양이 필요한 질병이나 부상으로
+    의료비를 부담한 경우, <strong>담보제공에는 금액 요건이 없습니다.</strong>{" "}
+    그런데 DC형 중도인출은 <strong>본인 연간 임금총액의 1천분의 125</strong>
+    (12.5%)를 넘게 부담한 경우로 한정됩니다(시행령 제14조 제1항 제1호의2).
+    연봉 4,000만원이면 의료비가 500만원을 넘어야 인출이 열린다는 뜻입니다.
+  </p>
+
+  <p>
+    IRP 쪽은 한 겹 더 있습니다. 이 12.5% 요건은{" "}
+    <strong>법 제25조(상시 10명 미만 사업 특례)로 설정된 IRP</strong> 가입자
+    에게만 걸립니다(시행령 제18조 제2항 제3호 단서). 본인이 직접 연 개인형
+    IRP라면 그 요건이 붙지 않습니다.
+  </p>
+
+  <h3>3. 휴업·재난 — 중도인출은 재난만</h3>
+
+  <p>
+    담보제공은 <strong>사업주의 휴업으로 임금이 감소한 경우</strong>와 재난
+    피해를 모두 사유로 둡니다(제2조 제1항 제5호). 중도인출은{" "}
+    <strong>재난으로 피해를 입은 경우로만</strong> 한정됩니다(제14조 제1항
+    제1호 괄호, 제18조 제2항 제4호). 다만 이 사유는 구체적인 요건과 한도를
+    고용노동부장관 고시가 따로 정하므로, 고시를 확인하기 전에는 숫자를 말할
+    수 없습니다.
+  </p>
+
+  <h2>얼마까지 되나요?</h2>
+
+  <p>
+    <strong>가입자별 적립금의 {limitPercent}%</strong>입니다(시행령 제2조
+    제2항 제1호). 주택구입·전세금·의료비·파산·개인회생·대학등록금·혼례비·
+    장례비가 모두 이 한도를 씁니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>적립금</th><th>담보로 제공할 수 있는 한도</th></tr>
+    </thead>
+    <tbody>
+      {
+        LIMIT_EXAMPLES.map((balance) => (
+          <tr>
+            <td>{formatMan(balance)}</td>
+            <td><strong>{formatWon(collateralLimit(balance))}</strong></td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <p>
+    적립금이 {formatMan(EXAMPLE_BALANCE)}이면 한도는 {formatWon(EXAMPLE_LIMIT)}
+    입니다. 여기서 두 가지를 구분해야 합니다. 이 {limitPercent}%는{" "}
+    <strong>담보로 제공할 수 있는 권리의 한도</strong>지 대출이 그만큼 나온다는
+    약속이 아닙니다. 실제로 얼마가 실행되는지는 퇴직연금사업자의 심사
+    영역이고, 법이 정하는 것이 아닙니다.
+  </p>
+
+  <p>
+    휴업·재난 사유(제2조 제1항 제5호)의 한도는 다릅니다. 피해 정도 등을
+    고려해 <strong>고용노동부장관이 정하여 고시</strong>합니다(제2조 제2항
+    제2호). 그 고시를 확인하지 않았으므로 이 글에 수치를 적지 않았습니다.
+  </p>
+
+  <h2>DB·DC·IRP 중 어디서 되나요?</h2>
+
+  <p>
+    <strong>셋 다 됩니다.</strong> 법 제2조 제7호가 "퇴직연금제도"를
+    확정급여형(DB)·확정기여형(DC)·개인형퇴직연금제도(IRP) 셋으로 정의하고,
+    제7조의 담보제공 특례가 그 셋에 그대로 걸리기 때문입니다.
+    중소기업퇴직연금기금제도도 제7조 제1항이 괄호로 따로 포함시켰습니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>퇴직금제도는 다릅니다.</strong> 회사가 퇴직연금에 가입하지 않고
+      퇴직금제도(법 제8조)만 두고 있다면, 그것은 제2조 제6호의 "퇴직급여제도"
+      에는 들어가지만 제7호의 <strong>"퇴직연금제도"에는 들어가지
+      않습니다.</strong> 제7조 제2항이 열어 주는 담보제공도, 제22조의
+      중도인출도 퇴직연금제도를 전제로 합니다. 내 회사가 어느 제도인지부터
+      확인해야 하는 이유입니다.
+    </p>
+  </div>
+
+  <p>
+    반대로 <strong>중도인출 쪽은 DB형이 빠집니다.</strong> 법 제22조는
+    중도인출을 확정기여형(DC) 가입 근로자에게만 열어 두고, IRP는 제24조 제5항이
+    시행령에 위임합니다. DB형은 급여 수준이 사전에 정해진 제도라 "내 적립금"을
+    특정해 빼낼 구조가 아닙니다. 그래서 <strong>DB형 가입자에게는 담보대출이
+    사실상 유일한 길</strong>입니다.
+  </p>
+
+  <h2>어느 은행에서 되나요?</h2>
+
+  <p>
+    은행을 고르는 문제가 아닙니다. <strong>내 퇴직연금 적립금을 관리하는 그
+    퇴직연금사업자</strong>에게 신청하는 것입니다. 담보로 잡는 대상이 그
+    사업자가 관리하는 적립금의 수급권이기 때문입니다.
+  </p>
+
+  <p>
+    그리고 법이 사업자에게 의무를 지웁니다. 가입자가 사유와 요건을 갖춰 급여를
+    받을 권리를 담보로 제공하면, <strong>등록한 퇴직연금사업자는 제공된 급여를
+    담보로 한 대출이 이루어지도록 협조하여야 합니다</strong>(법 제7조 제2항
+    후단). 중소기업퇴직연금기금제도라면 근로복지공단이 그 자리에 들어갑니다.
+  </p>
+
+  <p>
+    "협조하여야 한다"는 대출을 반드시 실행해 준다는 뜻과는 다릅니다. 구체적인
+    취급 여부와 조건은 사업자마다 갈리므로, <strong>내 계좌가 있는 곳에 먼저
+    물어보는 것</strong>이 순서입니다.
+  </p>
+
+  <h2>금리는 얼마인가요?</h2>
+
+  <p>
+    <strong>이 글은 금리를 말하지 않습니다.</strong> 근로자퇴직급여 보장법과
+    시행령 어디에도 금리가 없기 때문입니다. 법이 정하는 것은{" "}
+    <strong>사유</strong>와 <strong>한도</strong> 둘뿐이고, 금리는
+    퇴직연금사업자가 정하는 대출 조건입니다.
+  </p>
+
+  <p>
+    이 사이트는 법령 원문에서 확인한 숫자만 적습니다. 실시간 상품 조건은 확인할
+    근거가 없어서, 대신 <strong>확인하지 않은 것을 목록으로 남겨 둡니다.</strong>
+  </p>
+
+  <ul>
+    {r.notVerified.map((item) => <li>{item}</li>)}
+  </ul>
+
+  <h2>빌린 돈을 갚으려고 또 꺼낼 수 있나요?</h2>
+
+  <p>
+    됩니다. 담보대출을 받은 가입자가 <strong>그 대출 원리금을 갚기 위한
+    경우</strong>도 중도인출 사유로 따로 들어가 있습니다(시행령 제14조 제1항
+    제4호, 제18조 제2항 제7호). 담보대출이 먼저 있어야 생기는 사유라, 담보제공
+    사유를 정한 제2조 제1항에는 없습니다.
+  </p>
+
+  <p>
+    다만 두 가지 제한이 붙습니다. <strong>고용노동부장관이 정하여 고시하는
+    사유</strong>에 해당해야 하고, 인출 금액은{" "}
+    <strong>대출 원리금의 상환에 필요한 금액 이하</strong>로 제한됩니다(제14조
+    제2항, 제18조 제3항). 갚을 만큼만 꺼내라는 뜻입니다.
+  </p>
+
+  <h2>정리하면</h2>
+
+  <ol>
+    <li>
+      <strong>내 제도가 퇴직연금인지 먼저 확인합니다</strong> — 퇴직금제도만
+      있으면 담보대출도 중도인출도 열리지 않습니다.
+    </li>
+    <li>
+      <strong>사유가 시행령 제2조 제1항의 일곱 개 중 하나인지 봅니다</strong> —
+      그 밖의 사유로는 되지 않습니다.
+    </li>
+    <li>
+      <strong>중도인출로도 되는 사유인지 갈라 봅니다</strong> —
+      대학등록금·혼례비·장례비는 담보대출로만 열립니다.
+    </li>
+    <li>
+      <strong>한도는 적립금의 {limitPercent}%</strong>입니다. 실제 실행액은
+      사업자 심사에서 정해집니다.
+    </li>
+    <li>
+      <strong>내 적립금이 있는 퇴직연금사업자에게 신청합니다</strong> —
+      사업자에게 협조 의무가 있습니다.
+    </li>
+  </ol>
+
+  <h2>이 글이 다루지 않는 것</h2>
+
+  <ul>
+    <li>
+      <strong>금리·이자율과 DSR 산입 여부</strong> — 근퇴법 조문에 없습니다.
+      DSR은 금융위원회 규정 영역이라 이 글의 근거로 삼을 원문이 없습니다.
+    </li>
+    <li>
+      <strong>고용노동부장관 고시의 내용</strong> — 휴업·재난 사유의 요건과
+      한도, 대출 원리금 상환 중도인출의 사유가 고시에 있습니다. 고시 원문을
+      열지 않아 숫자를 적지 않았습니다.
+    </li>
+    <li>
+      <strong>필요 서류와 신청 절차</strong> — 조문에 없고 사업자마다 갈립니다.
+    </li>
+    <li>
+      <strong>연금저축 담보대출</strong> — 연금저축은 근퇴법이 아니라
+      소득세법·조세특례제한법이 근거인 계좌라 이 글의 규칙이 그대로 적용되지
+      않습니다.
+    </li>
+    <li>
+      <strong>중도인출 세액의 계산</strong> — 사유별 세율은{" "}
+      <a href="/guide/irp-account/">17번 글</a>에 금융감독원 기준으로 정리해
+      뒀습니다.
+    </li>
+  </ul>
+
+  <p class="meta">
+    근거:{" "}
+    <a href={srcLaw.url} rel="nofollow noopener" target="_blank">{srcLaw.label}</a>,{" "}
+    <a href={srcDecree.url} rel="nofollow noopener" target="_blank">{srcDecree.label}</a>.{" "}
+    {r.verifiedOn} 원문 확인 · {r.lawVersion}. 중도인출 세율은{" "}
+    <a href={fssSource.url} rel="nofollow noopener" target="_blank">{fssSource.label}</a>
+    에서 따로 확인한 값입니다. 개별 사안의 적용은 가입한 퇴직연금사업자나
+    고용노동부 고객상담센터(1350)에 확인하시기 바랍니다.
+  </p>
+
+  <AdSlot label="guide-retirement-pension-loan-bottom" />
+</GuideLayout>

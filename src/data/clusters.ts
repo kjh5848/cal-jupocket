@@ -98,6 +98,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/irp-account/", title: "IRP란? 소득 있으면 누구나 여는 계좌", kind: "guide", icon: "wallet" },
       { href: "/guide/retirement-fund/", title: "노후자금 얼마 있어야 하나", kind: "guide", icon: "chart" },
       { href: "/guide/severance-to-freelance/", title: "퇴사하고 프리랜서 시작할 때", kind: "guide", icon: "briefcase" },
+      { href: "/guide/retirement-pension-loan/", title: "퇴직연금 담보대출, 중도인출과 뭐가 다른가", kind: "guide", icon: "wallet" },
     ],
   },
   {
@@ -117,6 +118,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/retirement-pension-loan/",
   "/guide/gift-property-value/",
   "/guide/late-filing-refund/",
   "/guide/gift-tax/",

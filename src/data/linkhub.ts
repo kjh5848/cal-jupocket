@@ -54,6 +54,7 @@ export const hubEntries: HubEntry[] = [
   { no: 27, href: "/guide/gift-tax/", label: "증여세 면제한도, 10년마다", kind: "guide" },
   { no: 28, href: "/guide/late-filing-refund/", label: "기한후신고 환급, 언제 들어오나", kind: "guide" },
   { no: 29, href: "/guide/gift-property-value/", label: "부동산 증여, 얼마로 신고하나", kind: "guide" },
+  { no: 30, href: "/guide/retirement-pension-loan/", label: "퇴직연금 담보대출, 사유와 한도", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -131,6 +132,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/irp-account",
       "/guide/retirement-fund",
       "/guide/severance-to-freelance",
+      "/guide/retirement-pension-loan",
     ]),
   },
 ];
