@@ -4,6 +4,7 @@
  *   node social/seo.mjs --check     자격증명·권한만 확인한다(가장 먼저 이것)
  *   node social/seo.mjs             최근 28일 쿼리·페이지 성과를 본다
  *   node social/seo.mjs --days 7    기간을 바꾼다
+ *   node social/seo.mjs --calcs    계산기 일곱 개만 비교한다(대표 계산기 판단용)
  *
  * 스레드·인스타 지표(stats.mjs)가 "우리가 밀어서 온 사람"이라면 여기 숫자는
  * "검색으로 찾아온 사람"이다. 둘은 성격이 달라서 같은 표에 넣지 않는다.
@@ -206,6 +207,115 @@ if (has("--check")) {
         : `✖ GA4 접근 실패 (${probe.status}) — 속성 액세스 관리에 서비스 계정을 뷰어로 추가했는지 확인하세요\n`,
     );
   }
+  process.exit(0);
+}
+
+/* ------------------------------------------------ 계산기 비교 (--calcs) */
+
+/**
+ * 홈의 "대표 계산기"를 무엇으로 둘지 판단하기 위한 표.
+ *
+ * 함정이 하나 있다 — **세션이 가장 많은 계산기를 대표로** 는 순환이다.
+ * 지금 대표인 3.3% 는 홈이 밀어주기 때문에 조회가 붙고, 그걸 근거로 다시
+ * 3.3% 를 고르면 아무것도 잰 것이 없다.
+ *
+ * 그래서 두 수를 갈라 놓는다.
+ *
+ *   진입   landingPage — 밖에서 그 계산기로 곧장 들어온 세션. 홈과 무관한
+ *          독립 수요다. **이것이 판단 기준이다.**
+ *   총조회 pagePath   — 사이트 안에서 이동해 온 것까지 포함. 홈의 편향이
+ *          섞여 있으므로 참고로만 본다.
+ *
+ * 표본이 적을 때 순위를 읽지 않도록 합계가 기준 미만이면 그렇다고 말한다.
+ */
+const CALCS = [
+  ["/freelancer-33", "프리랜서 3.3%"],
+  ["/withholding", "원천징수 3.3·8.8%"],
+  ["/income-tax-refund", "종소세 환급"],
+  ["/vat", "부가세"],
+  ["/penalty", "가산세"],
+  ["/national-pension-premium", "국민연금 보험료"],
+  ["/inheritance", "상속세"],
+];
+
+/** 홈이 현재 밀고 있는 계산기. src/pages/index.astro 의 aside-cta 와 맞춘다. */
+const FEATURED = "/freelancer-33";
+
+/** 이 아래면 순위를 읽지 않는다. 8건으로 일곱 개를 줄 세우면 우연을 고정한다. */
+const CALC_MIN_SESSIONS = 50;
+
+if (has("--calcs")) {
+  const propId = env.GA4_PROPERTY_ID;
+  if (!propId) {
+    console.log("GA4_PROPERTY_ID 가 .env 에 없습니다.\n");
+    process.exit(1);
+  }
+  const norm = (p) => p.replace(/\/$/, "");
+  const pull = async (dim, mets) => {
+    const r = await api(`${GA4_API}/properties/${propId}:runReport`, token, {
+      dateRanges: [{ startDate: gaStartDate, endDate: gaEndDate }],
+      dimensions: [{ name: dim }],
+      metrics: mets.map((name) => ({ name })),
+      limit: 300,
+    });
+    if (!r.ok) {
+      console.error(`✖ GA4 실패 (${r.status}) ${JSON.stringify(r.json).slice(0, 200)}`);
+      process.exit(1);
+    }
+    const m = new Map();
+    for (const row of r.json.rows ?? []) {
+      m.set(norm(row.dimensionValues[0].value), row.metricValues.map((v) => Number(v.value)));
+    }
+    return m;
+  };
+
+  const land = await pull("landingPage", ["sessions", "engagedSessions"]);
+  const views = await pull("pagePath", ["screenPageViews", "userEngagementDuration"]);
+
+  const rows = CALCS.map(([path, name]) => {
+    const [s0 = 0, e0 = 0] = land.get(path) ?? [];
+    const [v0 = 0, d0 = 0] = views.get(path) ?? [];
+    return {
+      path,
+      name: name + (path === FEATURED ? "  ← 현재 대표" : ""),
+      entry: s0,
+      engaged: e0,
+      views: v0,
+      perView: v0 ? Math.round(d0 / v0) : 0,
+    };
+  }).sort((a, b) => b.entry - a.entry || b.views - a.views);
+
+  const total = rows.reduce((a, r) => a + r.entry, 0);
+
+  console.log(`계산기 일곱 개 — ${gaStartDate} ~ ${gaEndDate}`);
+  console.log(
+    table(rows, [
+      { label: "계산기", get: (r) => r.name },
+      { label: "진입", get: (r) => r.entry },
+      { label: "진입참여", get: (r) => r.engaged },
+      { label: "총조회", get: (r) => r.views },
+      { label: "체류/조회", get: (r) => (r.perView ? `${r.perView}초` : "·") },
+    ]),
+  );
+
+  console.log(`\n  진입 합계 ${total}건`);
+  if (total < CALC_MIN_SESSIONS) {
+    console.log(
+      `  표본이 ${CALC_MIN_SESSIONS}건 미만이라 **순위를 읽지 않는다.**\n` +
+        `  이 숫자로 대표를 바꾸면 우연을 고정하는 것이다.`,
+    );
+  } else {
+    const top = rows[0];
+    const cur = rows.find((r) => r.path === FEATURED);
+    console.log(
+      top.path === FEATURED
+        ? `  현재 대표(${FEATURED})가 진입 1위다. 바꿀 근거가 없다.`
+        : `  진입 1위는 ${top.path}(${top.entry}) 이고 현재 대표는 ${cur.entry} 다.\n` +
+          `  바꾸려면 src/pages/index.astro 의 aside-cta 와 히어로 문구,\n` +
+          `  그리고 이 파일의 FEATURED 를 함께 고친다.`,
+    );
+  }
+  console.log("");
   process.exit(0);
 }
 
