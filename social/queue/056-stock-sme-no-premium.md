@@ -1,5 +1,12 @@
 ---
 at: "21:00"
+images:
+  - /cards/unlisted-stock-value/1.jpg
+  - /cards/unlisted-stock-value/2.jpg
+  - /cards/unlisted-stock-value/3.jpg
+  - /cards/unlisted-stock-value/4.jpg
+  - /cards/unlisted-stock-value/5.jpg
+  - /cards/unlisted-stock-value/6.jpg
 ref: /guide/unlisted-stock-value/
 ref_no: 31
 reply: 중소기업 제외는 상증세법 시행령 제53조 제6항과 제8항 제9호입니다.
