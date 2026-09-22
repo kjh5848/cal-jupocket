@@ -109,6 +109,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/inheritance-tax/", title: "상속세 면제한도, 얼마부터 내나", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/gift-tax/", title: "증여세 면제한도, 10년마다 다시 생깁니다", kind: "guide", icon: "refresh", year: 2026 },
       { href: "/guide/gift-property-value/", title: "부동산 증여, 공시가격으로 신고해도 되나", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/unlisted-stock-value/", title: "비상장주식, 상속·증여할 때 1주당 얼마로 평가하나", kind: "guide", icon: "chart" },
     ],
   },
 ];
@@ -118,6 +119,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/unlisted-stock-value/",
   "/guide/retirement-pension-loan/",
   "/guide/gift-property-value/",
   "/guide/late-filing-refund/",

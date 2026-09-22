@@ -27,6 +27,13 @@ import {
 } from "../inheritance";
 import gift from "../../rates/gift-2026.json";
 import { collateralLimit, limitPercent, reasons } from "../retirement-loan";
+import {
+  valuate,
+  totalValue,
+  premiumPercent,
+  floorPercent,
+  capitalizationRatePercent,
+} from "../unlisted-stock";
 
 /** "28만 5,000원" 같은 표기를 숫자로 되돌린다. */
 function parseWon(label: string): number {
@@ -659,5 +666,125 @@ describe("retirement-pension-loan 카드", () => {
     const cta = set!.cards.find((c) => c.kind === "cta");
     if (cta?.kind !== "cta") throw new Error("cta 없음");
     expect(entryByNo(cta.refNo!)?.href).toBe("/guide/retirement-pension-loan/");
+  });
+});
+
+describe("unlisted-stock-value 카드", () => {
+  const set = cardSetBySlug("unlisted-stock-value");
+
+  /** 카드가 쓰는 예시 법인 — 글과 같은 값이어야 한다. */
+  const EX = { netAssets: 2_000_000_000, shares: 10_000 };
+  const PROFIT: [number, number, number] = [30_000, 24_000, 18_000];
+  const 기본 = valuate({ perShareProfitByYear: PROFIT, ...EX });
+  const 부동산과다 = valuate({
+    perShareProfitByYear: PROFIT,
+    ...EX,
+    realEstateHeavy: true,
+  });
+  const 최대주주 = valuate({
+    perShareProfitByYear: PROFIT,
+    ...EX,
+    majorShareholder: true,
+  });
+  const 적자 = valuate({ perShareProfitByYear: [0, 0, 0], ...EX });
+
+  it("세트가 존재한다", () => {
+    expect(set).toBeDefined();
+  });
+
+  it("평가 표의 네 행이 valuate() 와 같다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.title.includes("1주당 얼마"),
+    );
+    if (t?.kind !== "table") throw new Error("평가 표 없음");
+    expect(parseWon(t.rows[0].value)).toBe(기본.profit);
+    expect(parseWon(t.rows[1].value)).toBe(기본.asset);
+    expect(parseWon(t.rows[2].value)).toBe(기본.weighted);
+    expect(parseWon(t.rows[3].value)).toBe(부동산과다.weighted);
+  });
+
+  it("평가 표가 환원율을 rates 의 값으로 말한다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.title.includes("1주당 얼마"),
+    );
+    if (t?.kind !== "table") throw new Error("평가 표 없음");
+    expect(t.rows[0].label).toContain(`${capitalizationRatePercent}%`);
+    expect(t.footnote).toContain(`${capitalizationRatePercent}%`);
+  });
+
+  it("하한 표가 순자산가치의 80% 로 올라가는 것을 정확히 보여 준다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.title.includes("적자여도"),
+    );
+    if (t?.kind !== "table") throw new Error("하한 표 없음");
+    expect(parseWon(t.rows[0].value)).toBe(적자.profit);
+    expect(parseWon(t.rows[1].value)).toBe(적자.asset);
+    expect(parseWon(t.rows[2].value)).toBe(적자.weighted);
+    expect(parseWon(t.rows[3].value)).toBe(적자.floor);
+    // 하한이 실제로 걸리는 예시여야 카드가 말이 된다
+    expect(적자.floorApplied).toBe(true);
+    expect(t.sub).toContain(`${floorPercent}%`);
+  });
+
+  it("할증 표의 1주당 금액과 총액이 valuate() · totalValue() 와 같다", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.title.includes("할증"),
+    );
+    if (t?.kind !== "table") throw new Error("할증 표 없음");
+    expect(t.rows[0].label).toContain(`${premiumPercent}% 가산`);
+    expect(parseWon(t.rows[0].value)).toBe(최대주주.perShare);
+    // "8억 4,960만원" 처럼 억·만 단위로 적힌 총액
+    const shares = Number(t.rows[1].label.replace(/[^\d]/g, ""));
+    const eok = Number(t.rows[1].value.split("억")[0].replace(/[^\d]/g, ""));
+    const man = Number(
+      t.rows[1].value.split("억")[1].replace(/[^\d]/g, "") || "0",
+    );
+    expect(eok * 100_000_000 + man * 10_000).toBe(
+      totalValue(최대주주, shares),
+    );
+  });
+
+  it("할증 표가 빠지는 셋을 말한다 — 이 카드의 반전", () => {
+    const t = set?.cards.find(
+      (c) => c.kind === "table" && c.title.includes("할증"),
+    );
+    if (t?.kind !== "table") throw new Error("할증 표 없음");
+    const text = t.rows.map((r) => `${r.label} ${r.value}`).join(" ");
+    for (const word of ["중소기업", "중견기업", "결손금"]) {
+      expect(text, `제외 누락: ${word}`).toContain(word);
+    }
+  });
+
+  it("순자산가치 전용 목록이 시행령 다섯 개 호를 빠뜨리지 않는다", () => {
+    const list = set?.cards.find((c) => c.kind === "list");
+    if (list?.kind !== "list") throw new Error("목록 카드 없음");
+    const text = stripMarkup(
+      list.items.map((i) => `${i.text} ${i.detail}`).join(" "),
+    );
+    for (const word of [
+      "청산",
+      "휴업",
+      "부동산",
+      "주식",
+      "존속기한",
+    ]) {
+      expect(text, `사유 누락: ${word}`).toContain(word);
+    }
+    // list 카드의 실질 상한은 6줄이다 (v11 에서 footnote 가 잘려 배운 것)
+    expect(list.items.length).toBeLessThanOrEqual(6);
+  });
+
+  it("표지가 중소기업 제외를 말한다 — 분류로 시작하지 않는다", () => {
+    const cover = set?.cards.find((c) => c.kind === "cover");
+    if (cover?.kind !== "cover") throw new Error("표지 없음");
+    expect(cover.title).toContain(`${premiumPercent}%`);
+    expect(cover.sub).toContain("중소기업");
+    expect(cover.badge).toContain("증여세");
+  });
+
+  it("31번 글(비상장주식 평가)을 가리킨다", () => {
+    const cta = set!.cards.find((c) => c.kind === "cta");
+    if (cta?.kind !== "cta") throw new Error("cta 없음");
+    expect(entryByNo(cta.refNo!)?.href).toBe("/guide/unlisted-stock-value/");
   });
 });

@@ -821,6 +821,103 @@ export const cardSets: CardSet[] = [
       },
     ],
   },
+  {
+    slug: "unlisted-stock-value",
+    cluster: "inheritance",
+    link: "https://jupocket.com/guide/unlisted-stock-value/",
+    cards: [
+      {
+        kind: "cover",
+        photo: "/photos/card-balance.jpg",
+        photoAlt: "어두운 실내에 놓인 빈티지 양팔저울, 두 접시가 비어 있다",
+        badge: "상속세 · 증여세",
+        title: "최대주주 20% 할증,\n중소기업은 빠집니다",
+        sub: "가족회사 주식을 넘기면서 20%를 얹어 신고하셨다면, 먼저 그 회사가 중소기업인지 보세요.",
+        footnote: "상증세법 제63조 제3항 · 시행령 제53조 제6항·제8항 제9호",
+      },
+      {
+        kind: "table",
+        title: "1주당 얼마가 나오나",
+        sub: "순자산 20억 · 발행주식 1만주 예시",
+        rows: [
+          { label: "순손익가치 — 3년 가중평균 ÷ 10%", value: "260,000원" },
+          { label: "순자산가치 — 순자산 ÷ 주식수", value: "200,000원" },
+          { label: "가중평균 3 : 2", value: "236,000원", tone: "mark" },
+          { label: "부동산과다보유법인이면 2 : 3", value: "224,000원" },
+        ],
+        footnote:
+          "시행령 제54조 제1항 · 환원율 연 10%는 시행규칙 제17조 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "3년 내리 적자여도 0이 아닙니다",
+        sub: "순자산가치의 80%가 하한",
+        rows: [
+          { label: "순손익가치 (음수 → 0)", value: "0원" },
+          { label: "순자산가치", value: "200,000원" },
+          {
+            label: "가중평균 (0 × 3 + 20만 × 2) ÷ 5",
+            value: "80,000원",
+            tone: "warn",
+          },
+          { label: "하한 — 순자산가치 × 80%", value: "160,000원", tone: "mark" },
+        ],
+        footnote: "시행령 제54조 제1항 단서 · 제56조 제1항 후단",
+      },
+      {
+        kind: "list",
+        badge: "가중평균을 안 쓰는 경우",
+        title: "이때는 순자산가치로만 봅니다",
+        items: [
+          {
+            text: "[[청산 중]]이거나 사업 계속이 곤란한 법인",
+            detail: "시행령 제54조 제4항 제1호",
+          },
+          {
+            text: "사업개시 전 · 개시 후 3년 미만 · [[휴업·폐업]]",
+            detail: "제2호 — 적격분할 신설법인은 분할 전 사업개시일부터 기산",
+          },
+          {
+            text: "자산의 [[80% 이상이 부동산]]인 법인",
+            detail: "제3호 — 가중평균액이 순자산가치보다 낮은 경우로 한정",
+          },
+          {
+            text: "자산의 [[80% 이상이 주식]]인 법인",
+            detail: "제5호 — 제3호와 같은 단서가 붙는다",
+          },
+          {
+            text: "정관상 [[잔여 존속기한이 3년 이내]]",
+            detail: "제6호 — 제4호는 2018년에 삭제돼 번호가 건너뛴다",
+          },
+        ],
+        footnote: "상증세법 시행령 제54조 제4항 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "table",
+        title: "할증 20%, 붙는 곳과 빠지는 곳",
+        sub: "가중평균 → 하한 → 할증 순서다",
+        rows: [
+          {
+            label: "1주당 236,000원에 20% 가산",
+            value: "283,200원",
+            tone: "warn",
+          },
+          { label: "3,000주를 증여하면", value: "8억 4,960만원", tone: "warn" },
+          { label: "중소기업기본법상 중소기업", value: "할증 없음", tone: "mark" },
+          { label: "중견기업 · 매출 5천억 미만", value: "할증 없음", tone: "mark" },
+          { label: "3년 연속 결손금 법인", value: "할증 없음", tone: "mark" },
+        ],
+        footnote:
+          "상증세법 제63조 제3항 · 시행령 제53조 · 지분은 1년 이내 양도·증여분도 합산",
+      },
+      {
+        kind: "cta",
+        title: "우리 회사는\n얼마로 나오나?",
+        sub: "순손익가치·순자산가치·하한·할증을 조문 순서대로 글에 정리했어요",
+        refNo: 31,
+      },
+    ],
+  },
 ];
 
 export function cardSetBySlug(slug: string): CardSet | undefined {

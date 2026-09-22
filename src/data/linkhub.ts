@@ -55,6 +55,7 @@ export const hubEntries: HubEntry[] = [
   { no: 28, href: "/guide/late-filing-refund/", label: "기한후신고 환급, 언제 들어오나", kind: "guide" },
   { no: 29, href: "/guide/gift-property-value/", label: "부동산 증여, 얼마로 신고하나", kind: "guide" },
   { no: 30, href: "/guide/retirement-pension-loan/", label: "퇴직연금 담보대출, 사유와 한도", kind: "guide" },
+  { no: 31, href: "/guide/unlisted-stock-value/", label: "비상장주식, 1주당 얼마로 평가하나", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -119,6 +120,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/inheritance-tax",
       "/guide/gift-tax",
       "/guide/gift-property-value",
+      "/guide/unlisted-stock-value",
     ]),
   },
   {
