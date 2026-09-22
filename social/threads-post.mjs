@@ -275,14 +275,33 @@ if (!text) {
   process.exit(1);
 }
 
-// 본문에 링크가 있으면 도달이 죽는다. 링크는 두 번째 스레드(reply)로만
-// 나간다 — 한 번 올라가면 회수할 수 없으므로 여기서 멈춘다.
+/*
+ * 본문 링크 — 기본은 거부, 글 단위로만 연다.
+ *
+ * "본문에 링크가 있으면 도달이 죽는다"는 업계 통설이고 우리가 잰 적이 없다.
+ * 메타 쪽 입장도 바뀌었다(Mosseri, 2025-06: "links have been working much
+ * better"). 그래서 시험해 볼 값어치가 있는데, **검사 자체를 빼면 안 된다** —
+ * 이 가드는 실수로 들어간 링크도 잡고, 실험하려고 뺀 검사는 영영 안 돌아온다.
+ *
+ * 그래서 옵트인으로 만든다. frontmatter 에 `allow_body_link: true` 를 적은
+ * 글만 통과하고, 나머지는 전과 똑같이 거부한다. npm run queue 가 켜 둔 글을
+ * 따로 표시한다.
+ *
+ * 왜 이걸 재는가: 답글 조회가 본문의 1.7% 뿐이다(2026-09-22 측정).
+ * 링크를 본 사람의 6.8% 가 누르는데 그 "본 사람"이 너무 적다.
+ * 자세한 설계는 docs/threads-findings.md 6절.
+ */
 const stray = findBodyLink(text);
-if (stray) {
+const bodyLinkAllowed = String(meta.allow_body_link ?? "").toLowerCase() === "true";
+if (stray && !bodyLinkAllowed) {
   console.error(`\n✖ ${file} 본문에 링크가 있습니다: ${stray}`);
-  console.error(`  Threads 는 본문 링크가 있으면 도달이 줄어듭니다.`);
-  console.error(`  본문에서 빼고 frontmatter 의 reply: 로 옮기세요.\n`);
+  console.error(`  Threads 는 본문 링크가 있으면 도달이 줄어든다고 알려져 있습니다.`);
+  console.error(`  본문에서 빼고 frontmatter 의 reply: 로 옮기세요.`);
+  console.error(`  일부러 시험하는 글이면 frontmatter 에 allow_body_link: true 를 적으세요.\n`);
   process.exit(1);
+}
+if (stray && bodyLinkAllowed) {
+  console.log(`⚠ ${file} — 본문 링크를 일부러 켠 글입니다 (allow_body_link): ${stray}`);
 }
 if (linkAttachment) {
   console.error(`\n✖ ${file} 에 link: 가 있습니다 — 본문에 링크 카드가 붙습니다.`);

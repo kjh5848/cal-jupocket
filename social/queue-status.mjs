@@ -120,6 +120,9 @@ const rows = files.map((f) => {
     f, at: meta.at ?? "—", state, when,
     len: textLength(text),
     link: findBodyLink(text),
+    // 본문 링크를 일부러 켠 글. 실험 중인 글이 조용히 섞여 있으면
+    // 나중에 결과를 해석할 수 없다.
+    allowLink: String(meta.allow_body_link ?? "").toLowerCase() === "true",
     // 이미 나간 글은 고칠 수 없다. 경고해봤자 매일 보는 소음만 된다.
     reply: postedT.has(f) ? null : replyProblem(meta),
     ig: hasImages ? (postedI.has(f) ? "✓" : "대기") : "—",
@@ -129,7 +132,9 @@ const rows = files.map((f) => {
 console.log(`  ${pad("큐", 34)}${pad("예약", 7)}${pad("상태", 11)}${pad("", 12)}${pad("길이", 7)}인스타`);
 console.log("  " + "─".repeat(74));
 for (const r of rows) {
-  const warn = r.link
+  const warn = r.link && r.allowLink
+    ? `  ⚑ 본문링크 실험중: ${r.link}`
+    : r.link
     ? `  ✖ 본문링크: ${r.link}`
     : r.reply
       ? `  ✖ ${r.reply}`
@@ -144,12 +149,17 @@ for (const r of rows) {
 // ── 요약 ────────────────────────────────────────────────────
 const pending = rows.filter((r) => r.state.includes("대기") || r.state.includes("지금"));
 const tomorrow = rows.filter((r) => r.state.includes("내일"));
-const problems = rows.filter((r) => r.link);
+const problems = rows.filter((r) => r.link && !r.allowLink);
+const experiments = rows.filter((r) => r.link && r.allowLink);
 
 console.log("");
 console.log(`  오늘 남은 것 ${pending.length}건${pending.length ? " — 다음 " + pending[0].f.replace(/\.md$/, "") + " (" + pending[0].at + ")" : ""}`);
 if (tomorrow.length) console.log(`  내일로 넘어감 ${tomorrow.length}건 (유예 창을 지남)`);
 if (problems.length) console.log(`  ✖ 본문에 링크가 있는 글 ${problems.length}건 — 게시되지 않습니다`);
+if (experiments.length)
+  console.log(
+    `  ⚑ 본문링크를 켠 글 ${experiments.length}건 — 실험 중입니다 (docs/threads-findings.md 6절)`,
+  );
 const replyProblems = rows.filter((r) => r.reply);
 if (replyProblems.length) {
   console.log(

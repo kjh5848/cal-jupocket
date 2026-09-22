@@ -13,7 +13,15 @@ import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { parsePost, withUtm, campaignOf, replySentence, resolveReply, SITE } from "../parse.mjs";
+import {
+  parsePost,
+  withUtm,
+  campaignOf,
+  replySentence,
+  resolveReply,
+  findBodyLink,
+  SITE,
+} from "../parse.mjs";
 
 describe("withUtm", () => {
   it("source·medium·campaign 을 붙인다", () => {
@@ -147,4 +155,34 @@ describe("실제 큐 파일", () => {
       expect(out).toContain(`프로필 링크에서 ${meta.ref_no}번 글입니다`);
     },
   );
+});
+
+describe("본문 링크 옵트인", () => {
+  /*
+   * 규칙을 시험하려고 가드를 끄면 가드가 영영 사라진다. 그래서 글 단위
+   * 옵트인으로 만들었는데, 그 스위치가 조용히 켜져 있으면 더 나쁘다 —
+   * 실험이 아닌 글이 본문 링크를 달고 나가고, 나중에 결과를 해석할 수 없다.
+   */
+  const dir = join(dirname(fileURLToPath(import.meta.url)), "..", "queue");
+  const files = readdirSync(dir).filter((f) => f.endsWith(".md"));
+
+  it("본문에 링크가 있는 글은 allow_body_link 를 켜 둔 글뿐이다", () => {
+    const bad = [];
+    for (const f of files) {
+      const { meta, text } = parsePost(readFileSync(join(dir, f), "utf8"));
+      const on = String(meta.allow_body_link ?? "").toLowerCase() === "true";
+      if (findBodyLink(text) && !on) bad.push(f);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it("allow_body_link 를 켠 글은 실제로 본문에 링크가 있다", () => {
+    // 켜 두고 링크가 없으면 스위치만 남아 다음 사람을 헷갈리게 한다.
+    const idle = files.filter((f) => {
+      const { meta, text } = parsePost(readFileSync(join(dir, f), "utf8"));
+      const on = String(meta.allow_body_link ?? "").toLowerCase() === "true";
+      return on && !findBodyLink(text);
+    });
+    expect(idle).toEqual([]);
+  });
 });
