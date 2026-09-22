@@ -244,6 +244,10 @@ const FEATURED = "/freelancer-33";
 /** 이 아래면 순위를 읽지 않는다. 8건으로 일곱 개를 줄 세우면 우연을 고정한다. */
 const CALC_MIN_SESSIONS = 50;
 
+/** 대표 계산기 판정에 필요한 홈 클릭 수. 진입보다 낮게 잡는다 — 홈에 온
+ *  사람만 세는 수라 모수가 작고, 편향도 없다. */
+const CALC_MIN_CLICKS = 30;
+
 if (has("--calcs")) {
   const propId = env.GA4_PROPERTY_ID;
   if (!propId) {
@@ -285,6 +289,38 @@ if (has("--calcs")) {
     };
   }).sort((a, b) => b.entry - a.entry || b.views - a.views);
 
+  /*
+   * 두 번째 표 — 이미 사이트에 온 사람이 무엇을 누르나.
+   *
+   * 진입은 "밖에서 그 주제를 찾아온 사람"이라 SEO 투자 판단에 쓰고,
+   * 대표 계산기 자리는 **이미 온 사람의 클릭**으로 정해야 한다. 홈에 온
+   * 사람에게 대표 계산기가 할 일은 검색 순위가 아니라 전환이다.
+   *
+   * from · calculator 는 GA4 에 맞춤 측정기준으로 등록돼 있어야 읽힌다.
+   * 등록돼 있지 않으면 전부 (not set) 으로 나온다 — 실제로 코드가
+   * `calculator_path` 로 보내고 등록은 `calculator` 여서 90일치가 통째로
+   * (not set) 이었다(2026-09-22 수정).
+   */
+  const clickRes = await api(`${GA4_API}/properties/${propId}:runReport`, token, {
+    dateRanges: [{ startDate: gaStartDate, endDate: gaEndDate }],
+    dimensions: [{ name: "customEvent:from" }, { name: "customEvent:calculator" }],
+    metrics: [{ name: "eventCount" }],
+    dimensionFilter: {
+      filter: { fieldName: "eventName", stringFilter: { value: "calc_click" } },
+    },
+    limit: 100,
+  });
+  const clicks = [];
+  if (clickRes.ok) {
+    for (const r of clickRes.json.rows ?? []) {
+      clicks.push({
+        from: r.dimensionValues[0].value,
+        calc: norm(r.dimensionValues[1].value),
+        n: Number(r.metricValues[0].value),
+      });
+    }
+  }
+
   const total = rows.reduce((a, r) => a + r.entry, 0);
 
   console.log(`계산기 일곱 개 — ${gaStartDate} ~ ${gaEndDate}`);
@@ -298,21 +334,58 @@ if (has("--calcs")) {
     ]),
   );
 
-  console.log(`\n  진입 합계 ${total}건`);
-  if (total < CALC_MIN_SESSIONS) {
+  const fromHome = clicks.filter((c) => c.from === "/");
+  const homeTotal = fromHome.reduce((a, c) => a + c.n, 0);
+  console.log(`\n홈에서 계산기로 간 클릭 — ${gaStartDate} ~ ${gaEndDate}`);
+  if (!homeTotal) {
     console.log(
-      `  표본이 ${CALC_MIN_SESSIONS}건 미만이라 **순위를 읽지 않는다.**\n` +
+      "  아직 없다. `calc_click` 은 2026-09-22 에 붙였고, 그 전에는 홈에서 누른\n" +
+        "  클릭이 아예 기록되지 않았다(조건이 /guide/ 로만 걸려 있었다).",
+    );
+  } else {
+    const byCalc = new Map();
+    for (const c of fromHome) byCalc.set(c.calc, (byCalc.get(c.calc) ?? 0) + c.n);
+    const list = CALCS.map(([p, name]) => ({
+      name: name + (p === FEATURED ? "  ← 현재 대표" : ""),
+      n: byCalc.get(p) ?? 0,
+      share: homeTotal ? (byCalc.get(p) ?? 0) / homeTotal : 0,
+    })).sort((a, b) => b.n - a.n);
+    console.log(
+      table(list, [
+        { label: "계산기", get: (r) => r.name },
+        { label: "클릭", get: (r) => r.n },
+        { label: "비중", get: (r) => `${(r.share * 100).toFixed(0)}%` },
+      ]),
+    );
+    console.log(`  합계 ${homeTotal}건`);
+  }
+
+  console.log(`\n  진입 합계 ${total}건`);
+  console.log(
+    "\n  진입은 '밖에서 이 주제를 찾아온 사람'이라 SEO 투자 판단에 쓴다.\n" +
+      "  대표 계산기 자리는 위의 **홈 클릭**으로 정한다 — 홈에 온 사람에게\n" +
+      "  대표 계산기가 할 일은 검색 순위가 아니라 전환이다.",
+  );
+
+  if (homeTotal < CALC_MIN_CLICKS) {
+    console.log(
+      `\n  판정 보류 — 홈 클릭 ${homeTotal}건은 기준 ${CALC_MIN_CLICKS}건 미만이다.\n` +
         `  이 숫자로 대표를 바꾸면 우연을 고정하는 것이다.`,
     );
   } else {
-    const top = rows[0];
-    const cur = rows.find((r) => r.path === FEATURED);
+    const byCalc = new Map();
+    for (const c of fromHome) byCalc.set(c.calc, (byCalc.get(c.calc) ?? 0) + c.n);
+    const ranked = CALCS.map(([p]) => ({ p, n: byCalc.get(p) ?? 0 }))
+      .sort((a, b) => b.n - a.n);
+    const top = ranked[0];
+    const cur = ranked.find((r) => r.p === FEATURED);
     console.log(
-      top.path === FEATURED
-        ? `  현재 대표(${FEATURED})가 진입 1위다. 바꿀 근거가 없다.`
-        : `  진입 1위는 ${top.path}(${top.entry}) 이고 현재 대표는 ${cur.entry} 다.\n` +
-          `  바꾸려면 src/pages/index.astro 의 aside-cta 와 히어로 문구,\n` +
-          `  그리고 이 파일의 FEATURED 를 함께 고친다.`,
+      top.p === FEATURED
+        ? `\n  현재 대표(${FEATURED})가 홈 클릭 1위다. 바꿀 근거가 없다.`
+        : `\n  홈 클릭 1위는 ${top.p}(${top.n}) 이고 현재 대표는 ${cur.n} 다.\n` +
+          `  바꾸려면 네 군데를 함께 고친다 —\n` +
+          `    src/pages/index.astro 의 description · 히어로 문구 · aside-cta 문구 · 버튼\n` +
+          `    social/seo.mjs 의 FEATURED`,
     );
   }
   console.log("");
