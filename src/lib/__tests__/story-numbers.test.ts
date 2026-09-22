@@ -10,6 +10,8 @@
  */
 import { describe, it, expect } from "vitest";
 import { computeGift, taxFreeCeiling } from "../gift";
+import { taxSaved } from "../deduction";
+import { isPaymentExempt } from "../vat";
 
 describe("스토리 001 — 1년 차이로 갈린 증여세", () => {
   /*
@@ -39,5 +41,40 @@ describe("스토리 001 — 1년 차이로 갈린 증여세", () => {
 
   it("직계존속 공제 한도가 5천만원이다", () => {
     expect(taxFreeCeiling("ascendant")).toBe(50_000_000);
+  });
+});
+
+describe("스토리 002 — 한 살 차이로 못 받은 경로우대", () => {
+  /* 어머니가 69세. 60세를 넘겨 기본공제는 받지만 경로우대는 70세부터다. */
+  it("경로우대 100만원을 더 받으면 과세표준 5,000만원에서 세금이 얼마 줄나", () => {
+    const r = taxSaved(50_000_000, 1_000_000);
+    expect(r.national).toBe(150_000);
+    // 지방소득세 10% 까지가 실제로 덜 내는 금액이다.
+    expect(r.total).toBe(165_000);
+  });
+});
+
+describe("스토리 003 — 부녀자와 한부모는 더하지 않는다", () => {
+  /* 제51조 제1항 단서. 둘 다 해당되면 한부모만 적용한다. */
+  it("둘을 더해 150만원으로 잡으면 50만원을 더 공제한 셈이 된다", () => {
+    const r = taxSaved(50_000_000, 500_000);
+    expect(r.national).toBe(75_000);
+    expect(r.total).toBe(82_500);
+  });
+});
+
+describe("스토리 004 — 4,800만원 경계", () => {
+  /* 간이과세자는 공급대가 4,800만원 미만이면 납부의무가 면제된다. */
+  it("4,790만원이면 면제, 4,810만원이면 낸다", () => {
+    expect(isPaymentExempt(47_900_000)).toBe(true);
+    expect(isPaymentExempt(48_100_000)).toBe(false);
+  });
+});
+
+describe("스토리 005 — 3.3%와 8.8%", () => {
+  /* 같은 일인데 사업소득이냐 기타소득이냐로 원천징수율이 갈린다. */
+  it("1,000만원에서 뗄 금액이 다르다", () => {
+    expect(Math.round(10_000_000 * 0.033)).toBe(330_000);
+    expect(Math.round(10_000_000 * 0.088)).toBe(880_000);
   });
 });
