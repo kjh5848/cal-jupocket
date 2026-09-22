@@ -10,6 +10,18 @@ export const SITE = "https://jupocket.com";
 /** Threads 문서상 500자. 한글·이모지 계산이 모호해 여유를 두고 경고한다. */
 export const TEXT_WARN = 450;
 export const TEXT_HARD = 500;
+
+/**
+ * 본문 목표 길이. 상한이 아니라 목표라서 막지 않고 알리기만 한다.
+ *
+ * 48시간 이상 지난 38편을 길이 절반으로 가르면 조회 중앙값이 176 대 58 이다.
+ * 주제 안에서만 비교해도 여섯 주제 전부 짧은 쪽이 이겼다(2026-09-22,
+ * docs/threads-findings.md 7절). 지금 중앙값이 268자라 목표를 내린다.
+ *
+ * 덜어낼 것은 사실이 아니라 설명이다 — 조문 번호 반복, 예외의 예외,
+ * "~이기 때문입니다" 식 배경. 사실을 빼면 이 사이트의 자산을 버리는 것이다.
+ */
+export const TEXT_TARGET = 190;
 /** 캐러셀은 2장 이상 20장 이하. */
 export const CAROUSEL_MIN = 2;
 export const CAROUSEL_MAX = 20;

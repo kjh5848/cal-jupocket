@@ -13,7 +13,15 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { parsePost, parseAt, isDue, findBodyLink, textLength, DUE_GRACE_MIN } from "./parse.mjs";
+import {
+  parsePost,
+  parseAt,
+  isDue,
+  findBodyLink,
+  textLength,
+  DUE_GRACE_MIN,
+  TEXT_TARGET,
+} from "./parse.mjs";
 
 /**
  * 답글 계측이 빠졌는지 본다.
@@ -139,8 +147,10 @@ for (const r of rows) {
     : r.reply
       ? `  ✖ ${r.reply}`
       : r.len > 450
-        ? `  ⚠ ${r.len}자`
-        : "";
+        ? `  ⚠ ${r.len}자 — 상한에 가깝다`
+        : !postedT.has(r.f) && r.len > TEXT_TARGET
+          ? `  · ${r.len}자 — 목표 ${TEXT_TARGET}자`
+          : "";
   console.log(
     `  ${pad(r.f.replace(/\.md$/, ""), 34)}${pad(r.at, 7)}${pad(r.state, 11)}${pad(r.when, 12)}${pad(String(r.len) + "자", 7)}${r.ig}${warn}`,
   );
