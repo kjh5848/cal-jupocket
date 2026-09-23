@@ -961,7 +961,7 @@ export const cardSets: CardSet[] = [
       {
         kind: "list",
         badge: "고지서가 안 나오는 경우",
-        title: "이 셋 중 하나면 징수하지 않습니다",
+        title: "이때는 징수하지 않습니다",
         items: [
           {
             text: "징수할 금액이 [[50만원 미만]]",

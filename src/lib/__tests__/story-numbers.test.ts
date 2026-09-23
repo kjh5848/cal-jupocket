@@ -12,7 +12,7 @@ import { describe, it, expect } from "vitest";
 import { computeGift, taxFreeCeiling } from "../gift";
 import { taxSaved } from "../deduction";
 import { isPaymentExempt } from "../vat";
-import { noticeAmount, oneThirdLine } from "../vat-prepay";
+import { noticeAmount, oneThirdLine, qualifiesBySlump } from "../vat-prepay";
 
 describe("스토리 001 — 1년 차이로 갈린 증여세", () => {
   /*
@@ -109,5 +109,18 @@ describe("스토리 007 — 매출이 꺾였는데 고지서는 그대로", () =
 
   it("3분의 1 선은 140만원이다", () => {
     expect(oneThirdLine(4_200_000)).toBe(1_400_000);
+  });
+
+  it("사례의 120만원은 그 선 아래다 — 전환이 된다", () => {
+    expect(qualifiesBySlump(4_200_000, 1_200_000)).toBe(true);
+  });
+
+  /*
+   * 처음 쓴 초안이 "매출이 반토막" 이었다. 반토막은 2분의 1이라
+   * 3분의 1 미달이 아니다 — 요건에 해당하지 않는 사람을 해당하는 것처럼
+   * 읽히게 만든다. 스토리에서 가장 새기 쉬운 곳이 이런 어림말이다.
+   */
+  it("반토막(210만원)으로는 모자란다", () => {
+    expect(qualifiesBySlump(4_200_000, 2_100_000)).toBe(false);
   });
 });
