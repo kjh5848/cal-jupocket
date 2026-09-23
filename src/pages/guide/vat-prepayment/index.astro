@@ -1,0 +1,393 @@
+---
+/**
+ * "부가세 예정고지" — 부가세 클러스터 5번째 글(32번).
+ *
+ * 12번 글(vat-filing)이 연간 일정을 그리면서 "개인 일반과세자는 예정신고가
+ * 아니라 예정고지"라고 한 줄로 넘어갔다. 이 글이 그 한 줄을 조문으로 편다.
+ *
+ * 소제목은 자동완성 묶음에서 왔다(keywords/vat-prepay-2026-09-23.csv 51개).
+ * 가장 큰 묶음이 납부(12회 — 납부기한·납부방법·납부서·분납·연장·납부유예)
+ * 였고, 그다음이 기준·대상(7회 — 기준금액·법인 기준·신고 기준),
+ * 가산세·미납(5회), 뜻·계산·확인(4회), 환급(3회), 예정신고 vs 확정신고(3회),
+ * 면제(2회) 순이다. 회계처리·분개 묶음(2회)은 세법 조문의 문제가 아니라
+ * 답하지 않았다.
+ *
+ * ⚠️ 가산세 묶음은 5회나 잡혔는데 **금액으로 답하지 않는다.**
+ * 시행령 제90조 제1항은 예정신고·납부(법 제48조 제1항·제2항·제4항)에
+ * 국세기본법 제47조의2~4를 적용하지 않는다고만 하고, 제3항의 예정고지세액을
+ * 안 냈을 때를 다루지 않는다. 국세기본법 제47조의4 제1항의 여러 호와 제8항이
+ * 걸쳐 있어 조문 문언만으로 금액이 갈리지 않는다 —
+ * rates/vat-prepay-2026.json 의 notVerified 에 적어 두고, 본문에서는
+ * "여기서 금액으로 답하지 않는다"를 그대로 말한다. 세 번 추론해서 나온
+ * 숫자를 쓰는 것이 이 저장소에서 가장 비싼 실수다.
+ *
+ * 금액은 손으로 적지 않는다 — noticeAmount() 가 낸다. 50% → 1천원 절사 →
+ * 50만원 판정의 순서가 조문의 순서이고, 손으로 적으면 경계가 움직인다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import {
+  noticeAmount,
+  noticeThresholdTax,
+  corporateSupplyThreshold,
+  noCollectionUnder,
+  oneThirdLine,
+  periods,
+  period2,
+} from "../../../lib/vat-prepay";
+import { formatWon, formatMan } from "../../../lib/money";
+import r from "../../../rates/vat-prepay-2026.json";
+
+const title = "부가세 예정고지, 누구에게 얼마가 나오나";
+const description =
+  "개인사업자와 공급가액 1억5천만원 미만 법인은 부가세 예정신고 대신 예정고지를 받습니다. 직전 과세기간 납부세액의 50%이고, 50만원 미만이면 아예 나오지 않습니다. 10월 1~10일 고지서, 10월 25일 납부. 부가가치세법 제48조와 시행령 제90조 원문 기준입니다.";
+
+/** 예시 — 한 곳에서 바꾸면 본문 금액이 전부 따라온다. */
+const 직전납부세액 = 4_200_000;
+const 예시 = noticeAmount(직전납부세액);
+
+/** 1천원 절사가 실제로 작동하는 값. 777,500 → 777,000 */
+const 절사예시 = noticeAmount(1_555_000);
+/** 고지서가 안 나오는 값. 450,000 < 50만원 */
+const 미고지예시 = noticeAmount(900_000);
+/** 경계. 직전 100만원이면 정확히 50만원이 고지된다 */
+const 경계 = noticeAmount(noticeThresholdTax());
+
+/** 예정신고로 갈아탈 수 있는 기준선 */
+const 부진기준 = oneThirdLine(직전납부세액);
+
+const srcLaw = r.sources.find((s) => s.label.includes("제48조"))!;
+const srcDecree = r.sources.find((s) => s.label.includes("시행령"))!;
+const srcBasic = r.sources.find((s) => s.label.includes("국세기본법"))!;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+  <h1>{title}</h1>
+
+  <p>
+    10월 초에 세무서에서 부가세 고지서가 날아왔습니다. 신고한 적이 없는데
+    금액이 적혀 있습니다. 신고를 빠뜨린 걸까요.
+  </p>
+
+  <p>
+    <strong>아닙니다.</strong> 개인사업자는 1년에 두 번(7월·1월) 확정신고만
+    하면 되고, 그 사이의 4월과 10월에는 <strong>세무서가 알아서 계산해
+    보내는 고지서</strong>를 받습니다. 이것이 예정고지입니다. 신고할 것이
+    없고, 적힌 금액을 기한까지 내면 됩니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      연간 일정 전체는 <a href="/guide/vat-filing/">부가세 신고, 언제 어떻게
+      하나</a>에 정리해 뒀습니다. 이 글은 그중 <strong>4월·10월에 오는
+      고지서 한 장</strong>만 조문으로 폅니다.
+    </p>
+  </div>
+
+  <h2>예정고지는 누구에게 오나</h2>
+
+  <p>
+    부가가치세법 제48조 제1항은 원래 <strong>모든 사업자</strong>에게
+    예정신고 의무를 지웁니다. 그런데 같은 조 제3항이 그것을 뒤집습니다 —
+    <strong>개인사업자와 대통령령으로 정하는 법인사업자</strong>에게는
+    세무서장이 세액을 결정해 징수한다고요. 신고 의무가 고지로 바뀝니다.
+  </p>
+
+  <p>
+    그 “대통령령으로 정하는 법인사업자”가 시행령 제90조 제4항에 있습니다 —
+    <strong>직전 과세기간 공급가액의 합계액이
+    {formatMan(corporateSupplyThreshold)} 미만인 법인사업자</strong>입니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>구분</th><th>10월에 하는 일</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>개인사업자</strong> (일반과세)</td>
+        <td>예정<strong>고지</strong> — 고지서를 받아 납부만</td>
+      </tr>
+      <tr>
+        <td>법인 — 직전 공급가액 {formatMan(corporateSupplyThreshold)} <strong>미만</strong></td>
+        <td>예정<strong>고지</strong> — 개인과 같다</td>
+      </tr>
+      <tr>
+        <td>법인 — 직전 공급가액 {formatMan(corporateSupplyThreshold)} <strong>이상</strong></td>
+        <td>예정<strong>신고</strong> — 직접 신고하고 납부</td>
+      </tr>
+      <tr>
+        <td>간이과세자</td>
+        <td>해당 없음 — 1년에 한 번(1월) 신고한다</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    개인사업자는 매출 규모와 관계없이 전부 고지 대상입니다. 법인만 공급가액
+    선으로 갈립니다. <a href="/guide/simplified-vat/">간이과세자</a>는 과세기간
+    자체가 1년이라 예정고지 구조에 들어오지 않습니다.
+  </p>
+
+  <h2>얼마가 나오나 — 직전에 낸 것의 절반</h2>
+
+  <p>
+    제48조 제3항입니다. <strong>직전 과세기간에 대한 납부세액의
+    50퍼센트</strong>로 결정합니다. 이번 기간에 얼마를 벌었는지는 보지
+    않습니다 — 지난번에 낸 금액만 봅니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      예정고지세액 = 직전 과세기간 납부세액 × 50%<br />
+      (1천원 미만인 단수가 있을 때에는 그 단수금액은 버린다)
+    </p>
+  </div>
+
+  <p>
+    올해 1기(1월~6월) 확정신고에서 {formatWon(직전납부세액)}을 냈다면,
+    10월 고지서에 찍히는 금액은 <strong>{formatWon(예시.amount)}</strong>
+    입니다.
+  </p>
+
+  <p>
+    <strong>절사는 내림입니다.</strong> 직전 납부세액이
+    {" "}{formatWon(절사예시.previousTax)}이면 절반은
+    {" "}{formatWon(절사예시.halved)}인데, 1천원 미만 단수를 버려
+    {" "}<strong>{formatWon(절사예시.amount)}</strong>이 됩니다. 반올림이
+    아니라 버림이라 500원이 사라집니다.
+  </p>
+
+  <AdSlot label="vat-prepayment-mid" />
+
+  <h2>{formatMan(noCollectionUnder)} 미만이면 아예 안 나옵니다</h2>
+
+  <p>
+    제48조 제3항 단서입니다. 다음 세 가지 중 하나에 해당하면
+    <strong>징수하지 아니한다</strong>고 정합니다.
+  </p>
+
+  <ol>
+    {r.noCollectionCases.map((c) => <li>{c}</li>)}
+  </ol>
+
+  <p>
+    실제로 걸리는 것은 첫째입니다. 고지할 금액이
+    {" "}{formatMan(noCollectionUnder)} 미만이면 고지서 자체가 나오지
+    않습니다. <strong>50%를 곱하고 1천원을 버린 뒤의 금액</strong>을 재기
+    때문에, 직전 납부세액으로 환산하면 경계는
+    {" "}<strong>{formatMan(noticeThresholdTax())}</strong>입니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>직전 과세기간 납부세액</th>
+        <th>절반</th>
+        <th>고지서</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{formatWon(미고지예시.previousTax)}</td>
+        <td>{formatWon(미고지예시.amount)}</td>
+        <td><strong>안 나옴</strong></td>
+      </tr>
+      <tr>
+        <td>{formatWon(경계.previousTax)}</td>
+        <td>{formatWon(경계.amount)}</td>
+        <td>나옴 — 여기가 경계</td>
+      </tr>
+      <tr>
+        <td>{formatWon(절사예시.previousTax)}</td>
+        <td>{formatWon(절사예시.amount)}</td>
+        <td>나옴 (500원 절사)</td>
+      </tr>
+      <tr>
+        <td>{formatWon(예시.previousTax)}</td>
+        <td>{formatWon(예시.amount)}</td>
+        <td>나옴</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    고지서가 안 왔다고 해서 부가세가 없어진 것은 아닙니다. <strong>7월과
+    1월의 확정신고는 그대로 합니다.</strong> 예정고지는 1년 치를 미리 나눠
+    내는 장치이지 세금을 깎는 장치가 아닙니다.
+  </p>
+
+  <h2>고지서는 언제 오고 언제까지 내나</h2>
+
+  <p>
+    예정신고기간은 제48조 제1항의 표에 있고, 고지서 발부기간은 시행령
+    제90조 제5항의 표에 있습니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>구분</th>
+        <th>예정신고기간</th>
+        <th>고지서 발부</th>
+        <th>납부기한</th>
+      </tr>
+    </thead>
+    <tbody>
+      {periods.map((p) => (
+        <tr>
+          <td>제{p.period}기</td>
+          <td>{p.coverage}</td>
+          <td>{p.noticeIssued}</td>
+          <td><strong>{p.returnDeadline}</strong></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <p>
+    지금 받는 것은 제2기분입니다 — {period2.noticeIssued} 사이에 고지서가
+    발부되고, <strong>{period2.returnDeadline}까지</strong> 냅니다. 관할
+    세무서장은 그 발부기간 안에 납부고지서를 발부해야 합니다.
+  </p>
+
+  <h2>고지를 신고로 바꿀 수 있는 두 경우</h2>
+
+  <p>
+    지난 상반기에는 잘됐는데 하반기에 매출이 꺾였다면, 고지서 금액이 지금
+    사정에 비해 큽니다. 이때 제48조 제4항이 열립니다 — <strong>예정신고를
+    하고 실제 납부세액을 내면</strong>, 제3항의 고지 결정은
+    <strong>없었던 것으로 봅니다.</strong>
+  </p>
+
+  <p>해당하는 사업자는 시행령 제90조 제6항의 두 가지입니다.</p>
+
+  <ol>
+    {r.switchToReturnCases.map((c) => <li>{c}</li>)}
+  </ol>
+
+  <p>
+    첫째는 <strong>3분의 1 선</strong>입니다. 예정신고기간(7월~9월)의
+    공급가액이나 납부세액이 직전 과세기간의 3분의 1에 <strong>미달</strong>
+    해야 합니다. 직전에 {formatWon(직전납부세액)}을 냈다면
+    {" "}{formatWon(부진기준)}보다 적어야 한다는 뜻입니다. 정확히 3분의 1은
+    미달이 아닙니다.
+  </p>
+
+  <p>
+    둘째는 <strong>조기환급</strong>입니다. 설비를 사서 매입세액이 매출세액보다
+    커진 분기라면, 고지서를 그냥 내고 내년 1월까지 기다릴 이유가 없습니다.
+    예정신고를 해서 그 기간분을 환급받는 쪽이 자금 면에서 낫습니다.
+  </p>
+
+  <h2>예정신고와 확정신고는 뭐가 다른가</h2>
+
+  <p>
+    <strong>확정신고가 정산입니다.</strong> 예정신고기간분은 7월·1월의
+    확정신고에 흡수됩니다. 예정고지로 낸 금액도 확정신고 때 기납부세액으로
+    빠집니다 — 같은 돈을 두 번 내지 않습니다.
+  </p>
+
+  <p>
+    예정신고를 할 때 내는 서류도 다릅니다. 시행령 제90조 제2항은 예정신고서에
+    인적사항·납부세액과 그 계산 근거·공제세액과 그 계산 근거·매출처별
+    매입처별 세금계산서합계표의 제출 내용을 적으라고 합니다. 확정신고에서
+    다시 한 번 전체를 냅니다.
+  </p>
+
+  <h2>고지서를 기한까지 못 내면</h2>
+
+  <p>
+    자동완성에서 <strong>“예정고지 미납 가산세”</strong>가 반복해서 잡힙니다.
+    그런데 <strong>이 글은 그 금액을 숫자로 답하지 않습니다.</strong>
+    확인할 수 없었기 때문입니다.
+  </p>
+
+  <p>
+    시행령 제90조 제1항은 “법 제48조제1항ㆍ제2항 및 제4항에 따른 부가가치세의
+    예정신고와 납부를 할 때에는 가산세에 관한 법 제60조 및 「국세기본법」
+    제47조의2부터 제47조의4까지의 규정은 적용하지 아니한다”고 정합니다.
+    <strong>이 문언이 가리키는 것은 제1항·제2항·제4항의 예정
+    <em>신고</em>·납부</strong>이고, 제3항의 예정<em>고지</em>세액을 내지
+    않은 경우는 여기에 적혀 있지 않습니다.
+  </p>
+
+  <p>
+    한편 국세기본법 제47조의4 제8항은 체납된 국세의
+    <strong>납부고지서별ㆍ세목별 세액이
+    {formatMan(r.latePaymentNoticeThreshold)} 미만</strong>인 경우 같은 조
+    제1항 제1호의2ㆍ제2호의2 및 제4호의 가산세를 적용하지 않는다고 합니다.
+    적용되는 호와 적용되지 않는 호가 갈리고, 예정고지의 납부기한을 법정납부기한
+    으로 볼지 지정납부기한으로 볼지가 조문 문언만으로 정해지지 않습니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>그래서 금액을 쓰지 않았습니다.</strong> 조문 세 개를 이어
+      추론하면 그럴듯한 숫자가 나오지만, 그것은 확인한 값이 아닙니다.
+      고지서에 적힌 금액과 기한을 먼저 보시고, 이미 기한이 지났다면
+      관할 세무서나 국세상담센터(126)에 실제 금액을 확인하세요.
+    </p>
+  </div>
+
+  <p>
+    기한 후 신고 쪽의 가산세는 원문으로 확인해 따로 정리해 뒀습니다 —
+    {" "}<a href="/guide/late-filing-penalty/">신고 기한을 놓쳤다면</a>,
+    {" "}<a href="/guide/vat-penalty/">부가세 가산세, 신고를 제때 해도 붙는다</a>.
+  </p>
+
+  <h2>정리하면</h2>
+
+  <ol>
+    <li>
+      개인사업자와 직전 공급가액 {formatMan(corporateSupplyThreshold)} 미만
+      법인은 <strong>예정신고가 아니라 예정고지</strong>입니다.
+    </li>
+    <li>
+      금액은 <strong>직전 과세기간 납부세액의 50%</strong>, 1천원 미만은
+      버립니다.
+    </li>
+    <li>
+      그 금액이 {formatMan(noCollectionUnder)} 미만이면
+      <strong>고지서가 나오지 않습니다</strong> — 직전 납부세액
+      {" "}{formatMan(noticeThresholdTax())}이 경계입니다.
+    </li>
+    <li>
+      제2기분은 <strong>{period2.noticeIssued}</strong> 발부,
+      {" "}<strong>{period2.returnDeadline}</strong> 납부입니다.
+    </li>
+    <li>
+      사업이 꺾여 <strong>3분의 1에 미달</strong>하거나
+      <strong>조기환급</strong>을 받으려면 예정신고로 갈아탈 수 있고,
+      그러면 고지 결정은 없었던 것으로 봅니다.
+    </li>
+    <li>
+      예정고지로 낸 돈은 <strong>확정신고에서 정산</strong>됩니다 —
+      {" "}<a href="/vat/">부가세 계산기</a>로 확정신고 때 낼 금액을 먼저
+      가늠해 보세요.
+    </li>
+  </ol>
+
+  <h2>이 글이 다루지 않는 것</h2>
+
+  <p>
+    아래는 원문에서 값을 확인하지 못했거나 근거법이 달라, 이 글의 규칙을
+    그대로 적용하면 안 됩니다.
+  </p>
+
+  <ul>
+    {r.notVerified.map((n) => <li>{n}</li>)}
+  </ul>
+
+  <p class="meta">
+    근거: <a href={srcLaw.url} rel="nofollow noopener" target="_blank">{srcLaw.label}</a>,
+    {" "}<a href={srcDecree.url} rel="nofollow noopener" target="_blank">{srcDecree.label}</a>,
+    {" "}<a href={srcBasic.url} rel="nofollow noopener" target="_blank">{srcBasic.label}</a>.
+    {" "}{r.verifiedOn} 원문 확인 · {r.lawVersion}. 본문의 금액은 예시
+    사업자를 가정해 계산한 것으로, 실제 고지세액은 직전 과세기간 확정신고
+    내용에 따라 달라집니다. 국세상담센터(126)나 세무 전문가에게 확인하시기
+    바랍니다.
+  </p>
+
+  <AdSlot label="guide-vat-prepayment-bottom" />
+</GuideLayout>

@@ -56,6 +56,7 @@ export const hubEntries: HubEntry[] = [
   { no: 29, href: "/guide/gift-property-value/", label: "부동산 증여, 얼마로 신고하나", kind: "guide" },
   { no: 30, href: "/guide/retirement-pension-loan/", label: "퇴직연금 담보대출, 사유와 한도", kind: "guide" },
   { no: 31, href: "/guide/unlisted-stock-value/", label: "비상장주식, 1주당 얼마로 평가하나", kind: "guide" },
+  { no: 32, href: "/guide/vat-prepayment/", label: "부가세 예정고지, 얼마가 나오나", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -111,6 +112,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/simplified-vat",
       "/guide/vat-filing",
       "/guide/vat-penalty",
+      "/guide/vat-prepayment",
     ]),
   },
   {

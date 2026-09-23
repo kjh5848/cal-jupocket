@@ -84,6 +84,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/simplified-vat/", title: "간이과세 vs 일반과세, 뭐가 유리한가", kind: "guide", icon: "scale", year: 2026 },
       { href: "/guide/vat-filing/", title: "부가세 신고, 언제 어떻게 하나", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/vat-penalty/", title: "부가세 가산세, 신고를 제때 해도 붙는다", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/vat-prepayment/", title: "부가세 예정고지, 누구에게 얼마가 나오나", kind: "guide", icon: "calendar", year: 2026 },
     ],
   },
   {
@@ -119,6 +120,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/vat-prepayment/",
   "/guide/unlisted-stock-value/",
   "/guide/retirement-pension-loan/",
   "/guide/gift-property-value/",

@@ -12,6 +12,7 @@ import { describe, it, expect } from "vitest";
 import { computeGift, taxFreeCeiling } from "../gift";
 import { taxSaved } from "../deduction";
 import { isPaymentExempt } from "../vat";
+import { noticeAmount, oneThirdLine } from "../vat-prepay";
 
 describe("스토리 001 — 1년 차이로 갈린 증여세", () => {
   /*
@@ -76,5 +77,37 @@ describe("스토리 005 — 3.3%와 8.8%", () => {
   it("1,000만원에서 뗄 금액이 다르다", () => {
     expect(Math.round(10_000_000 * 0.033)).toBe(330_000);
     expect(Math.round(10_000_000 * 0.088)).toBe(880_000);
+  });
+});
+
+describe("스토리 006 — 고지서가 오지 않은 이유", () => {
+  /*
+   * 직전 과세기간에 90만원을 냈다. 절반은 45만원이고, 50만원 미만이라
+   * 고지서가 나오지 않는다. 100만원을 냈어야 딱 경계다.
+   */
+  it("직전 90만원이면 45만원이라 고지되지 않는다", () => {
+    const r = noticeAmount(900_000);
+    expect(r.amount).toBe(450_000);
+    expect(r.collected).toBe(false);
+  });
+
+  it("직전 100만원이면 50만원이 고지된다 — 여기가 경계다", () => {
+    const r = noticeAmount(1_000_000);
+    expect(r.amount).toBe(500_000);
+    expect(r.collected).toBe(true);
+  });
+});
+
+describe("스토리 007 — 매출이 꺾였는데 고지서는 그대로", () => {
+  /*
+   * 상반기에 420만원을 냈으니 고지서는 그 절반인 210만원이다.
+   * 하반기 납부세액이 3분의 1(140만원)에 미달하면 예정신고로 바꿀 수 있다.
+   */
+  it("직전 420만원이면 210만원이 고지된다", () => {
+    expect(noticeAmount(4_200_000).amount).toBe(2_100_000);
+  });
+
+  it("3분의 1 선은 140만원이다", () => {
+    expect(oneThirdLine(4_200_000)).toBe(1_400_000);
   });
 });
