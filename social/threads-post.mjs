@@ -6,9 +6,9 @@
  *   node social/threads-post.mjs --due --publish   예약 시각이 된 것 하나
  *   node social/threads-post.mjs --file 003-….md --publish
  *
- * 이미지를 올리지 않는다. Threads 는 글이 먼저인 곳이고, 카드 렌더링이
- * 빠지면 하루에 여러 편을 낼 수 있다. 카드뉴스는 인스타가 맡는다 —
- * 같은 큐 파일을 쓰되 images: 는 ig-post.mjs 만 본다.
+ * images: 가 있으면 이미지로, 없으면 텍스트로 나간다. 전에는 텍스트만
+ * 올렸다 — 스레드 API 는 IMAGE·CAROUSEL 을 받는데 우리가 안 보냈고,
+ * 이미 만들어 둔 카드가 인스타로만 나가고 있었다.
  *
  * 기본이 드라이런인 이유: 컨테이너 생성까지 가면 토큰과 본문이 전부
  * 검증된다. 게시하지 않은 컨테이너는 그냥 만료되므로 밖으로 나가는
@@ -35,6 +35,7 @@ import { readEnv, updateEnv, requireEnv } from "./env.mjs";
 import {
   parsePost,
   resolveLink,
+  resolveImages,
   textLength,
   parseArgs,
   isDue,
@@ -90,6 +91,57 @@ async function callJson(url, init) {
     throw new Error(`${res.status} ${e.message ?? ""} ${JSON.stringify(e)}`);
   }
   return body;
+}
+
+/*
+ * 스레드 이미지 규격 (developers.facebook.com/docs/threads/posts, 2026-09-23 확인)
+ *
+ *   형식     JPEG · PNG      (인스타는 JPEG 만 받는다 — 여기가 더 넓다)
+ *   용량     8MB 이하
+ *   가로     320~1440px      (우리 카드가 1080 이라 안쪽)
+ *   비율     10:1 까지
+ *   캐러셀   2~20장
+ *
+ * 인스타(ig-post.mjs)와 달리 PNG 도 되지만, 같은 카드를 양쪽에 쓰므로
+ * 좁은 쪽(JPEG)에 맞춰 만든다. 여기서는 형식을 막지 않고 알리기만 한다.
+ */
+const CAROUSEL_MAX_ITEMS = 20;
+
+/**
+ * 게시 전에 이미지가 실제로 열리는지 본다.
+ *
+ * 메타 서버가 URL 을 가져가는 구조라, 배포가 안 끝났으면 404 를 받고
+ * 그림 없이 나간다. 한 번 나가면 회수할 수 없어서 여기서 멈춘다 —
+ * 제작 순서 9단계의 200 확인을 코드로 옮긴 것이다.
+ */
+async function assertImages(urls) {
+  for (const u of urls) {
+    let head;
+    try {
+      head = await fetch(u, { method: "HEAD" });
+    } catch (e) {
+      console.error(`\n✖ 이미지에 접근할 수 없습니다: ${u}\n  ${e.message}\n`);
+      process.exit(1);
+    }
+    if (!head.ok) {
+      console.error(
+        `\n✖ 이미지 접근 불가 (${head.status}): ${u}\n` +
+          `  배포가 끝났는지 확인하세요 — 메타 서버가 이 URL 을 직접 가져갑니다.\n`,
+      );
+      process.exit(1);
+    }
+    const type = head.headers.get("content-type") ?? "";
+    if (!/jpeg|png/.test(type)) {
+      console.error(`\n✖ 스레드는 JPEG·PNG 만 받습니다. ${u} 는 ${type}\n`);
+      process.exit(1);
+    }
+    const size = Number(head.headers.get("content-length") ?? 0);
+    if (size > 8 * 1024 * 1024) {
+      console.error(`\n✖ 8MB 를 넘습니다 (${(size / 1048576).toFixed(1)}MB): ${u}\n`);
+      process.exit(1);
+    }
+  }
+  console.log(`· 이미지 ${urls.length}장 확인 ✓`);
 }
 
 /**
@@ -266,6 +318,7 @@ if (!pickFile && posted.has(file)) {
 }
 
 const { meta, text } = parsePost(readFileSync(join(QUEUE_DIR, file), "utf8"));
+const images = resolveImages(meta);
 const linkAttachment = resolveLink(meta);
 const reply = resolveReply(meta, { platform: "threads", file });
 const len = textLength(text);
@@ -335,11 +388,65 @@ const userId = env.THREADS_USER_ID;
 
 console.log("· 컨테이너 생성 중…");
 
-const params = { media_type: "TEXT", text, access_token: token };
-if (linkAttachment) params.link_attachment = linkAttachment;
-const c = await post(`${userId}/threads`, params);
-const containerId = c.id;
-console.log(`· 컨테이너 ✓ id=${containerId}`);
+/*
+ * 컨테이너를 만든다 — 이미지 수에 따라 세 갈래다.
+ *
+ *   0장   TEXT
+ *   1장   IMAGE   (text 를 같이 보낼 수 있다)
+ *   2~20  CAROUSEL — 낱장을 is_carousel_item 으로 먼저 만들고 묶는다
+ *
+ * link_attachment 는 텍스트 글에만 붙는다. 이미지가 있으면 parse.mjs 의
+ * resolveLink 가 이미 null 로 만든다 — 둘 다 보내면 API 가 거절한다.
+ */
+let containerId;
+
+if (images.length > CAROUSEL_MAX_ITEMS) {
+  console.error(
+    `\n✖ 캐러셀은 ${CAROUSEL_MAX_ITEMS}장까지입니다. ${file} 은 ${images.length}장입니다.\n`,
+  );
+  process.exit(1);
+}
+
+if (images.length === 0) {
+  const params = { media_type: "TEXT", text, access_token: token };
+  if (linkAttachment) params.link_attachment = linkAttachment;
+  const c = await post(`${userId}/threads`, params);
+  containerId = c.id;
+} else if (images.length === 1) {
+  await assertImages(images);
+  const c = await post(`${userId}/threads`, {
+    media_type: "IMAGE",
+    image_url: images[0],
+    text,
+    access_token: token,
+  });
+  containerId = c.id;
+} else {
+  await assertImages(images);
+  const children = [];
+  for (const [i, url] of images.entries()) {
+    const item = await post(`${userId}/threads`, {
+      media_type: "IMAGE",
+      image_url: url,
+      is_carousel_item: "true",
+      access_token: token,
+    });
+    await waitReady(item.id, token);
+    children.push(item.id);
+    console.log(`  · ${i + 1}/${images.length} ✓`);
+  }
+  const carousel = await post(`${userId}/threads`, {
+    media_type: "CAROUSEL",
+    children: children.join(","),
+    text,
+    access_token: token,
+  });
+  containerId = carousel.id;
+}
+
+const kind =
+  images.length === 0 ? "텍스트" : images.length === 1 ? "이미지" : `캐러셀 ${images.length}장`;
+console.log(`· 컨테이너 ✓ id=${containerId} (${kind})`);
 
 if (!doPublish) {
   console.log("\n드라이런 종료 — 실제 게시하지 않았습니다. (컨테이너는 두면 만료됩니다)");
