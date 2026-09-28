@@ -1,5 +1,8 @@
 ---
 at: "14:00"
+images:
+  - /cards/income-prepayment/5.jpg
+  - /cards/income-prepayment/6.jpg
 ref: /guide/income-prepayment/
 ref_no: 33
 reply: 2천만원 이하는 1천만원을 넘는 부분, 2천만원을 넘으면 절반 이하를 납부기한 후 2개월 안에 나눠 낼 수 있습니다.

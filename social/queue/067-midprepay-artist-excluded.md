@@ -1,5 +1,8 @@
 ---
 at: "12:30"
+images:
+  - /cards/income-prepayment/4.jpg
+  - /cards/income-prepayment/6.jpg
 ref: /guide/income-prepayment/
 ref_no: 33
 reply: 시행령 제123조와 시행규칙 제64조가 정한 소득만 있는 분은 중간예납 대상이 아닙니다. 목록을 글에 정리했어요.
