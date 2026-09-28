@@ -18,6 +18,8 @@ import {
   parseAt,
   isDue,
   findBodyLink,
+  closingFor,
+  withClosing,
   textLength,
   DUE_GRACE_MIN,
   TEXT_TARGET,
@@ -126,7 +128,9 @@ const rows = files.map((f) => {
 
   return {
     f, at: meta.at ?? "—", state, when,
-    len: textLength(text),
+    // 스레드는 게시할 때 마무리 한 줄이 더 붙는다(parse.mjs closingFor).
+    // 여기서 세지 않으면 목표 190자를 매 편 조용히 넘긴다.
+    len: textLength(withClosing(text, closingFor(f, meta))),
     link: findBodyLink(text),
     // 본문 링크를 일부러 켠 글. 실험 중인 글이 조용히 섞여 있으면
     // 나중에 결과를 해석할 수 없다.

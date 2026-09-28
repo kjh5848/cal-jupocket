@@ -28,8 +28,16 @@ const STATS = join(HERE, "stats.json");
 const THREADS_API = "https://graph.threads.net/v1.0";
 const IG_API = "https://graph.instagram.com/v23.0";
 
-/** 스레드는 지표를 metric 파라미터로 골라 받는다. */
-const THREADS_METRICS = ["views", "likes", "replies", "reposts", "quotes", "shares"];
+/*
+ * 스레드는 지표를 metric 파라미터로 골라 받는다.
+ *
+ * 허용되는 전부는 clicks · likes · quotes · replies · reposts · shares · views
+ * 다(2026-09-28 에 API 가 400 으로 되돌려 준 목록). **saved 는 없다** — 인스타에만
+ * 있다. 저장을 유도하는 마무리는 스레드에서 효과를 직접 잴 수 없다.
+ *
+ * clicks 는 지금까지 받지 않고 있었다. 받는다.
+ */
+const THREADS_METRICS = ["views", "clicks", "likes", "replies", "reposts", "quotes", "shares"];
 /** 인스타 캐러셀에서 의미 있는 것들. saved 가 "나중에 볼 만함"의 대리지표다. */
 const IG_METRICS = ["views", "reach", "likes", "comments", "saved", "shares"];
 
@@ -43,7 +51,7 @@ const history = readJson(STATS, []);
 function table(rows) {
   if (rows.length === 0) return "  (아직 쌓인 기록이 없습니다)";
   // replies/comments 를 빼면 "전부 0" 으로 보인다 — 실제로는 값이 와 있는데도.
-  const cols = ["at", "platform", "file", "views", "reach", "likes",
+  const cols = ["at", "platform", "file", "views", "clicks", "reach", "likes",
                 "replies", "comments", "saved", "shares"];
   const w = (c) =>
     c === "file" ? 32 : c === "at" ? 12 : c === "platform" ? 11 : 9;

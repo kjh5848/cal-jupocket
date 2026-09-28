@@ -115,6 +115,67 @@ export function campaignOf(file) {
 }
 
 /**
+ * 스레드 본문 끝에 붙일 마무리 한 줄.
+ *
+ * **왜 코드에서 붙이나.** 큐 글의 본문은 인스타 캡션으로도 나간다.
+ * 인스타는 `resolveReply` 가 캡션 끝에 "프로필 링크에서 N번 글입니다" 를
+ * 이미 붙이므로, 큐 파일에 "댓글에 있어요" 를 적어 두면 인스타에서는
+ * 거짓말이 되고 안내가 두 번 나간다. 그래서 **게시할 때 스레드에만** 붙인다.
+ *
+ * **왜 지금 붙이나.** 54편 12,402 조회에 좋아요 4 · 리포스트 0 · 공유 0 이다
+ * (2026-09-28). 참여 신호가 사실상 0 이면 알고리즘이 밀어 줄 근거가 없다.
+ * 그리고 본문을 본 사람 중 답글까지 가는 비율이 1.7% 다 — "댓글" 을 말로
+ * 가리키는 것이 그 병목을 건드리는 가장 싼 수단이다.
+ *
+ * **왜 돌려 쓰나.** 같은 문장이 매 편 끝에 붙으면 그 자체가 기계가 찍은
+ * 티다(SKILL.md 의 금지 ④). 글 번호로 고르므로 재현되고, stats 에서
+ * 종류별로 갈라 볼 수 있다.
+ *
+ * **URL 을 넣지 않는다.** 넣으면 `findBodyLink` 가 잡아 게시가 멈춘다.
+ * 그게 맞는 동작이다 — 본문 링크는 `allow_body_link` 실험으로만 연다.
+ *
+ * 저장(saved)은 스레드 insights 에 없다. 2026-09-28 에 확인했고 허용 지표는
+ * clicks · likes · quotes · replies · reposts · shares · views 다. 저장 유도는
+ * 계측 없이 나가는 유일한 종류라서, 효과를 재려면 나머지 셋을 본다.
+ */
+export const CLOSINGS = [
+  { key: "save", text: "계산기는 댓글에 있어요. 나중에 다시 볼 내용이면 저장해 두세요." },
+  { key: "share", text: "자세한 건 댓글에 정리해 뒀어요. 비슷한 상황인 분께 보내주세요." },
+  { key: "follow", text: "조문과 표는 댓글 글에 있어요. 세금 이야기 매일 올립니다." },
+  { key: "like", text: "숫자 근거는 댓글에서 볼 수 있어요. 도움이 됐다면 좋아요 부탁드려요." },
+];
+
+/** 지어낸 사례라는 표시. 마무리 줄 앞에 붙여 한 줄로 합친다. */
+export const FICTION_MARK = "※ 가상 사례입니다.";
+
+/**
+ * 이 글에 붙일 마무리를 고른다. 답글로 보낼 글(`ref`)이 없으면 붙이지 않는다 —
+ * 가리킬 댓글이 없는데 "댓글에 있어요" 라고 쓰면 거짓말이다.
+ */
+export function closingFor(file, meta) {
+  if (!meta?.ref) return null;
+  // Number(null) 은 0 이고 0 은 유한하다. 앞자리 번호가 없는 파일이
+  // 조용히 첫 번째 마무리를 받게 두면 안 된다.
+  const no = campaignOf(file);
+  if (no === null) return null;
+  const n = Number(no);
+  if (!Number.isFinite(n)) return null;
+  const pick = CLOSINGS[n % CLOSINGS.length];
+  const fiction = String(meta.fiction ?? "").toLowerCase() === "true";
+  return {
+    key: pick.key,
+    fiction,
+    text: fiction ? `${FICTION_MARK} ${pick.text}` : pick.text,
+  };
+}
+
+/** 본문 끝에 마무리를 붙인다. 빈 줄 하나를 띄운다. */
+export function withClosing(text, closing) {
+  const body = String(text ?? "").trimEnd();
+  return closing ? `${body}\n\n${closing.text}` : body;
+}
+
+/**
  * 손으로 쓴 답글에서 링크 안내 꼬리를 떼고 문장만 남긴다.
  *
  * 기존 큐 글은 "… 프로필 링크에서 24번 글입니다 → jupocket.com/link/" 를

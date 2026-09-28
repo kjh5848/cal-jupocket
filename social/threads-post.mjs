@@ -34,6 +34,8 @@ import { dirname, join } from "node:path";
 import { readEnv, updateEnv, requireEnv } from "./env.mjs";
 import {
   parsePost,
+  closingFor,
+  withClosing,
   resolveLink,
   resolveImages,
   textLength,
@@ -317,13 +319,15 @@ if (!pickFile && posted.has(file)) {
   process.exit(0);
 }
 
-const { meta, text } = parsePost(readFileSync(join(QUEUE_DIR, file), "utf8"));
+const { meta, text: body } = parsePost(readFileSync(join(QUEUE_DIR, file), "utf8"));
+const closing = closingFor(file, meta);
+const text = withClosing(body, closing);
 const images = resolveImages(meta);
 const linkAttachment = resolveLink(meta);
 const reply = resolveReply(meta, { platform: "threads", file });
 const len = textLength(text);
 
-if (!text) {
+if (!body) {
   console.error(`\n✖ ${file} 본문이 비었습니다.\n`);
   process.exit(1);
 }
@@ -474,6 +478,9 @@ if (!doPublish) {
     id: published.id,
     replyId: null,
     permalink: null,
+    // 어떤 마무리로 나갔는지 남긴다. 이게 없으면 나중에 종류별 효과를
+    // 가를 수 없다 — 큐 파일은 고쳐지고 코드의 목록도 바뀐다.
+    cta: closing?.key ?? null,
     at: new Date().toISOString(),
   };
   ledger.push(entry);
