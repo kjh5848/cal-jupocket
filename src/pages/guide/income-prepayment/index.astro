@@ -1,0 +1,437 @@
+---
+/**
+ * "종합소득세 중간예납" — 종합소득세 클러스터 10번째 글(33번).
+ *
+ * 32번(부가세 예정고지)의 소득세판이다. 모양은 같다 — 직전 세액의 절반,
+ * 1천원 절사, 50만원 미만 미징수. 그래서 독자가 두 글을 섞어 읽기 쉽고,
+ * 이 글은 **다른 곳 셋**을 앞에 둔다: 기준액에서 원천징수(3.3%)가 빠진다,
+ * 갈아타는 선이 3분의 1이 아니라 30%이고 재는 것이 세액이다, 1천만원을
+ * 넘으면 분납이 된다.
+ *
+ * 소제목은 자동완성 묶음에서 왔다(keywords/income-prepay-2026-09-28.csv
+ * 27개). 계산·금액·세액(6회), 고지·고지서·조회(5회), 분납(4회),
+ * 신고·추계액(4회), 기간·납부기한(3회), 대상자·기준(3회), 안하면(1회),
+ * 지방세(1회) 순이다.
+ *
+ * ⚠️ "안하면" 에 가산세 금액으로 답하지 않는다. 제65조 제2항은 분할납부할
+ * 수 있는 세액을 "고지가 없었던 것으로 본다"고만 하고 가산세를 말하지
+ * 않는다. 지방소득세도 지방세법을 열지 않아 답하지 않는다 —
+ * rates/income-prepay-2026.json 의 notVerified 에 적었다.
+ *
+ * 금액은 손으로 적지 않는다 — noticeAmount()·prepayBase()·maxInstallment()
+ * 가 낸다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import {
+  prepayBase,
+  noticeAmount,
+  noticeThresholdBase,
+  estimateLine,
+  maxInstallment,
+  noCollectionUnder,
+  installmentOver,
+  installmentUpTo,
+  schedule,
+} from "../../../lib/income-prepay";
+import { formatWon, formatMan } from "../../../lib/money";
+import r from "../../../rates/income-prepay-2026.json";
+
+const title = "종합소득세 중간예납, 11월 고지서는 얼마가 나오나";
+const description =
+  "5월에 종합소득세를 낸 사업자에게 11월에 한 번 더 오는 고지서가 중간예납입니다. 작년 세금의 절반이고, 50만원 미만이면 나오지 않습니다. 기준에 3.3% 원천징수는 들어가지 않고, 상반기 세액이 30%에 못 미치면 신고로 바꿀 수 있습니다. 소득세법 제65조 원문 기준입니다.";
+
+/** 예시 — 한 곳에서 바꾸면 본문 금액이 전부 따라온다. */
+const 오월추가납부 = 3_000_000;
+const 기준 = prepayBase({ finalReturnPaid: 오월추가납부 });
+const 예시 = noticeAmount(기준);
+
+/** 3.3% 프리랜서 — 5월에 추가로 낸 돈만 기준이 된다 */
+const 프리랜서기준 = prepayBase({ finalReturnPaid: 1_200_000 });
+const 프리랜서 = noticeAmount(프리랜서기준);
+/** 5월에 환급만 받은 경우 */
+const 환급기준 = prepayBase({ refund: 400_000 });
+
+/** 절사 · 미고지 · 경계 */
+const 절사예시 = noticeAmount(1_555_000);
+const 미고지예시 = noticeAmount(900_000);
+const 경계 = noticeAmount(noticeThresholdBase());
+
+/** 30% 선 */
+const 추계선 = estimateLine(기준);
+
+/** 분납 예시 — 중간예납세액 기준 */
+const 분납1 = 15_000_000;
+const 분납2 = 25_000_000;
+
+const src = (k: string) => r.sources.find((s) => s.label.includes(k))!;
+const srcLaw = src("제65조");
+const srcFinal = src("제76조");
+const srcInst = src("제77조");
+const srcSmall = src("제86조");
+const srcDecree = src("제123조");
+const srcDecree140 = src("제140조");
+const srcRule = src("시행규칙");
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+  <h1>{title}</h1>
+
+  <p>
+    5월에 종합소득세를 냈는데 11월에 세무서에서 또 고지서가 옵니다. 신고한
+    적이 없고, 금액이 딱 5월에 낸 것의 절반쯤입니다. 뭔가 잘못된 걸까요.
+  </p>
+
+  <p>
+    <strong>아닙니다.</strong> 이것이 <strong>중간예납</strong>입니다.
+    올해 소득세를 내년 5월에 한꺼번에 내지 말고, <strong>작년 세금의 절반을
+    11월에 미리 내라</strong>는 고지서입니다. 신고할 것이 없고, 적힌 금액을
+    기한까지 내면 됩니다. 미리 낸 돈은 내년 5월 확정신고에서 빠집니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      부가세에도 같은 모양의 고지서가 있습니다 —
+      {" "}<a href="/guide/vat-prepayment/">부가세 예정고지</a>. 둘은
+      비슷해 보여도 <strong>기준·기준선·분납</strong>이 다릅니다. 이 글은
+      소득세 쪽만 조문으로 폅니다.
+    </p>
+  </div>
+
+  <h2>중간예납은 누구에게 오나</h2>
+
+  <p>
+    소득세법 제65조 제1항입니다. 납세지 관할 세무서장은
+    <strong>종합소득이 있는 거주자</strong>에게
+    {" "}{schedule.period}를 중간예납기간으로 해서 세액을 결정하고 징수합니다.
+    그런데 괄호 안에서 두 부류를 뺍니다.
+  </p>
+
+  <ol>
+    <li>
+      <strong>대통령령으로 정하는 소득만이 있는 자</strong> — 시행령
+      제123조와 시행규칙 제64조가 정한다
+    </li>
+    <li>
+      <strong>{r.excluded.newBusiness}</strong> — 올해 처음 사업을 시작했다면
+      올해 11월 고지서는 없다
+    </li>
+  </ol>
+
+  <p>첫째에 해당하는 소득은 이렇습니다.</p>
+
+  <table>
+    <thead>
+      <tr><th>중간예납을 하지 않는 소득</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      {r.excluded.onlyIncomes.map((x) => (
+        <tr><td>{x}</td><td>시행령 제123조</td></tr>
+      ))}
+      {r.excluded.onlyIncomesRule.map((x) => (
+        <tr><td>{x}</td><td>시행규칙 제64조</td></tr>
+      ))}
+    </tbody>
+  </table>
+
+  <p>
+    <strong>직장인</strong>(근로소득)·<strong>연금 받는 분</strong>·
+    <strong>작가·화가·배우·가수 같은 자영 예술가</strong>·
+    <strong>보험설계사</strong>가 여기 들어갑니다. 다만 조문은
+    <strong>“그 소득<em>만이</em> 있는 자”</strong>입니다. 이 목록 밖의
+    사업소득이 하나라도 함께 있으면 제외되지 않습니다. 방문판매 수당은
+    원천징수의무자가 직전 과세기간 사업소득세액을 <strong>연말정산한
+    경우에만</strong> 빠집니다.
+  </p>
+
+  <h2>얼마가 나오나 — 작년 세금의 절반</h2>
+
+  <p>
+    제65조 제1항이 <strong>중간예납기준액의 2분의 1</strong>로 결정하라고
+    합니다. 올해 상반기에 얼마를 벌었는지는 보지 않습니다.
+  </p>
+
+  <div class="callout">
+    <p>
+      중간예납세액 = 중간예납기준액 × 1/2<br />
+      (1천원 미만의 단수가 있을 때에는 그 단수금액은 버린다)
+    </p>
+  </div>
+
+  <p>
+    작년 소득에 대해 올해 5월 확정신고 때 {formatWon(오월추가납부)}을 냈고
+    다른 납부·환급이 없었다면, 11월 고지서에는
+    {" "}<strong>{formatWon(예시.amount)}</strong>이 찍힙니다.
+  </p>
+
+  <h3>“작년 세금”에 3.3%는 들어가지 않습니다</h3>
+
+  <p>
+    그 기준액이 무엇인지 제65조 제7항이 열거합니다. 아래 네 가지를 더하고
+    <strong>제85조에 따른 환급세액을 뺍니다.</strong>
+  </p>
+
+  <ol>
+    {r.baseComponents.map((c) => <li>{c}</li>)}
+  </ol>
+
+  <p>
+    <strong>원천징수세액은 이 열거에 없습니다.</strong> 프리랜서가 1년 내내
+    떼인 3.3%는 기준이 아닙니다. 기준이 되는 것은 5월 신고 때
+    <strong>추가로 더 낸 돈</strong>(확정신고납부세액)입니다. 제76조
+    제3항이 확정신고납부 때 원천징수세액과 중간예납세액을 먼저
+    공제하라고 하기 때문에, 그 금액에는 3.3%가 이미 빠져 있습니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>작년 소득에 대한 5월 정산</th><th>기준액</th><th>11월 고지</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>5월에 {formatWon(1_200_000)} 추가 납부</td>
+        <td>{formatWon(프리랜서기준)}</td>
+        <td><strong>{formatWon(프리랜서.amount)}</strong></td>
+      </tr>
+      <tr>
+        <td>5월에 {formatWon(400_000)} 환급 (작년 11월 중간예납 없음)</td>
+        <td>{formatWon(환급기준)}</td>
+        <td><strong>없음</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    5월에 환급을 받았다면 확정신고납부세액이 없고 환급세액만 빠지니
+    기준액이 남지 않습니다. 반대로 작년 11월에 중간예납을 냈다면 그 금액도
+    기준에 더해집니다. 5월 정산 구조는
+    {" "}<a href="/guide/33-settlement/">3.3%는 종합소득세에서 정산됩니다</a>에
+    따로 정리했습니다.
+  </p>
+
+  <AdSlot label="income-prepayment-mid" />
+
+  <h2>{formatMan(noCollectionUnder)} 미만이면 아예 안 나옵니다</h2>
+
+  <p>
+    제86조 제4호입니다. <strong>제65조에 따른 중간예납세액이
+    {" "}{formatMan(noCollectionUnder)} 미만인 경우</strong>에는 징수하지
+    아니합니다. 절반을 곱하고 1천원을 버린 <strong>뒤의 금액</strong>을
+    재기 때문에, 기준액으로 환산하면 경계는
+    {" "}<strong>{formatMan(noticeThresholdBase())}</strong>입니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>중간예납기준액</th><th>절반(절사 후)</th><th>고지서</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{formatWon(미고지예시.base)}</td>
+        <td>{formatWon(미고지예시.amount)}</td>
+        <td><strong>안 나옴</strong></td>
+      </tr>
+      <tr>
+        <td>{formatWon(경계.base)}</td>
+        <td>{formatWon(경계.amount)}</td>
+        <td>나옴 — 여기가 경계</td>
+      </tr>
+      <tr>
+        <td>{formatWon(절사예시.base)}</td>
+        <td>{formatWon(절사예시.amount)}</td>
+        <td>나옴 ({formatWon(절사예시.halved - 절사예시.amount)} 절사)</td>
+      </tr>
+      <tr>
+        <td>{formatWon(예시.base)}</td>
+        <td>{formatWon(예시.amount)}</td>
+        <td>나옴</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    고지서가 안 왔다고 올해 소득세가 없어진 것은 아닙니다. <strong>내년
+    5월 확정신고는 그대로 합니다.</strong> 중간예납은 미리 나눠 내는
+    장치이지 세금을 깎는 장치가 아닙니다.
+  </p>
+
+  <h2>고지서는 언제 오고 언제까지 내나</h2>
+
+  <table>
+    <thead>
+      <tr><th>구분</th><th>기간</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>중간예납기간</td><td>{schedule.period}</td></tr>
+      <tr><td>납부고지서 발급</td><td>{schedule.noticeIssued}</td></tr>
+      <tr><td><strong>납부기한</strong></td><td><strong>{schedule.paymentDeadline}까지</strong></td></tr>
+      <tr><td>추계액 신고 (아래 절)</td><td>{schedule.estimateReturnWindow}</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    제65조 제1항은 세무서장이 <strong>{schedule.noticeIssued}</strong>의
+    기간에 납부고지서를 발급해야 한다고 정합니다. 올해 받는 고지서의
+    기준은 작년(2025년) 소득에 대한 세액입니다.
+  </p>
+
+  <h2>1천만원이 넘으면 나눠 낼 수 있습니다</h2>
+
+  <p>
+    제77조입니다. 제65조에 따라 납부할 세액이
+    {" "}<strong>{formatMan(installmentOver)}을 초과</strong>하면, 그 일부를
+    {" "}<strong>{r.installment.window}</strong>에 나눠 낼 수 있습니다.
+    얼마까지 나눌 수 있는지는 시행령 제140조가 정합니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>중간예납세액</th><th>나눠 낼 수 있는 금액</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{formatMan(installmentOver)} 이하</td>
+        <td>분납 불가 (정확히 {formatMan(installmentOver)}도 “초과”가 아니다)</td>
+      </tr>
+      <tr>
+        <td>{formatMan(installmentUpTo)} 이하</td>
+        <td>{formatMan(installmentOver)}을 초과하는 금액 — {formatWon(분납1)}이면 {formatWon(maxInstallment(분납1))}</td>
+      </tr>
+      <tr>
+        <td>{formatMan(installmentUpTo)} 초과</td>
+        <td>세액의 100분의 50 이하 — {formatWon(분납2)}이면 {formatWon(maxInstallment(분납2))}까지</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    제65조 제2항이 여기에 하나를 더 붙입니다. 11월 30일까지 전부 또는
+    일부를 내지 않았다면, 안 낸 세액 중 <strong>분할납부할 수 있는
+    세액</strong>에 대해서는 <strong>납부의 고지가 없었던 것으로
+    보고</strong>, 세무서장이 <strong>{schedule.reissueForInstallment}</strong>의
+    기간에 그 세액으로 고지서를 다시 발급합니다.
+  </p>
+
+  <h2>상반기가 안 좋았다면 신고로 바꿀 수 있습니다</h2>
+
+  <p>
+    작년엔 잘 벌었는데 올해 상반기에 꺾였다면, 작년 기준 고지서는 지금
+    사정에 비해 큽니다. 제65조 제3항이 이때를 위해 있습니다.
+  </p>
+
+  <p>
+    6월 30일까지의 종합소득금액으로 계산한 소득세액(<strong>중간예납
+    추계액</strong>)이 <strong>중간예납기준액의 100분의 30에
+    미달</strong>하면, {schedule.estimateReturnWindow}의 기간에 그
+    추계액을 중간예납세액으로 신고할 수 있습니다. 신고하면 고지 결정은
+    <strong>없었던 것으로 봅니다</strong>(제4항).
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>비교하는 것은 소득이 아니라 세액입니다.</strong> 소득이 30%
+      줄었다는 뜻도, 고지서 금액의 30%라는 뜻도 아닙니다. 기준액이
+      {" "}{formatWon(기준)}이면 상반기 기준 추계액이
+      {" "}<strong>{formatWon(추계선)}보다 적어야</strong> 합니다. 정확히
+      30%는 미달이 아닙니다.
+    </p>
+  </div>
+
+  <p>추계액은 제65조 제8항의 순서대로 계산합니다.</p>
+
+  <ol>
+    {r.estimate.formula.map((f) => <li>{f}</li>)}
+  </ol>
+
+  <p>
+    상반기 소득을 <strong>두 배로 늘려 1년 치로 보고</strong> 세율을 매긴 뒤
+    다시 절반으로 줄이는 구조입니다. 세율은
+    {" "}<a href="/guide/income-tax-brackets/">종합소득세 세율 구간</a>의
+    기본세율입니다.
+  </p>
+
+  <p>
+    이 신고는 선택입니다(“신고할 수 있다”). 그런데 <strong>의무인 경우가
+    하나 있습니다</strong> — 제5항. 중간예납기준액이 없는 거주자 중
+    <strong>복식부기의무자</strong>가 중간예납기간에 사업소득이 있으면
+    같은 기간에 추계액을 <strong>신고하여야 합니다.</strong> 작년 세금이
+    없어 고지서가 안 온다고 끝나는 것이 아닙니다.
+  </p>
+
+  <h2>11월 30일까지 안 내면</h2>
+
+  <p>
+    자동완성에 <strong>“중간예납 안하면”</strong>이 잡힙니다. 조문에서
+    확인한 것은 제65조 제2항 하나입니다 — 분할납부할 수 있는 세액은
+    고지가 없었던 것으로 보고 1월에 다시 고지한다는 것.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>가산세 금액은 쓰지 않았습니다.</strong> 제65조 제2항은
+      가산세를 말하지 않고, 국세기본법 제47조의4를 이번에 열지 않았습니다.
+      이미 기한이 지났다면 관할 세무서나 국세상담센터(126)에 실제 금액을
+      확인하세요. 개인지방소득세 쪽도 지방세법을 열지 않아 이 글에서 답하지
+      않습니다.
+    </p>
+  </div>
+
+  <h2>정리하면</h2>
+
+  <ol>
+    <li>
+      중간예납은 <strong>작년 세금의 절반을 11월에 미리 내는
+      고지서</strong>입니다. 신고할 것이 없습니다.
+    </li>
+    <li>
+      근로·연금 소득만 있는 분, 자영 예술가·보험설계사처럼 시행규칙이
+      정한 소득<strong>만</strong> 있는 분, 올해 새로 사업을 시작한 분은
+      대상이 아닙니다.
+    </li>
+    <li>
+      기준은 <strong>3.3% 원천징수가 아니라</strong> 작년 11월 중간예납과
+      5월에 추가로 낸 돈 등의 합계에서 환급을 뺀 금액입니다.
+    </li>
+    <li>
+      절반이 {formatMan(noCollectionUnder)} 미만이면 <strong>나오지
+      않습니다</strong> — 기준액 {formatMan(noticeThresholdBase())}이
+      경계입니다.
+    </li>
+    <li>
+      고지서는 <strong>{schedule.noticeIssued}</strong>, 납부는
+      {" "}<strong>{schedule.paymentDeadline}까지</strong>입니다.
+    </li>
+    <li>
+      {formatMan(installmentOver)}을 넘으면 <strong>분납</strong>이 되고,
+      상반기 세액이 기준액의 <strong>30%에 미달</strong>하면 신고로 바꿔
+      그 금액만 낼 수 있습니다.
+    </li>
+  </ol>
+
+  <h2>이 글이 다루지 않는 것</h2>
+
+  <p>
+    아래는 원문에서 값을 확인하지 못했거나 근거법이 달라, 이 글의 규칙을
+    그대로 적용하면 안 됩니다.
+  </p>
+
+  <ul>
+    {r.notVerified.map((n) => <li>{n}</li>)}
+  </ul>
+
+  <p class="meta">
+    근거: <a href={srcLaw.url} rel="nofollow noopener" target="_blank">{srcLaw.label}</a>,
+    {" "}<a href={srcFinal.url} rel="nofollow noopener" target="_blank">{srcFinal.label}</a>,
+    {" "}<a href={srcInst.url} rel="nofollow noopener" target="_blank">{srcInst.label}</a>,
+    {" "}<a href={srcSmall.url} rel="nofollow noopener" target="_blank">{srcSmall.label}</a>,
+    {" "}<a href={srcDecree.url} rel="nofollow noopener" target="_blank">{srcDecree.label}</a>,
+    {" "}<a href={srcDecree140.url} rel="nofollow noopener" target="_blank">{srcDecree140.label}</a>,
+    {" "}<a href={srcRule.url} rel="nofollow noopener" target="_blank">{srcRule.label}</a>.
+    {" "}{r.verifiedOn} 원문 확인 · {r.lawVersion}. 본문의 금액은 예시를
+    가정해 계산한 것으로, 실제 고지세액은 직전 과세기간 신고·납부 내용에
+    따라 달라집니다. 국세상담센터(126)나 세무 전문가에게 확인하시기
+    바랍니다.
+  </p>
+
+  <AdSlot label="guide-income-prepayment-bottom" />
+</GuideLayout>

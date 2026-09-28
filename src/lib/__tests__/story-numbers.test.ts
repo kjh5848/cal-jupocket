@@ -13,6 +13,11 @@ import { computeGift, taxFreeCeiling } from "../gift";
 import { taxSaved } from "../deduction";
 import { isPaymentExempt } from "../vat";
 import { noticeAmount, oneThirdLine, qualifiesBySlump } from "../vat-prepay";
+import {
+  prepayBase,
+  noticeAmount as incomeNotice,
+  maxInstallment,
+} from "../income-prepay";
 
 describe("스토리 001 — 1년 차이로 갈린 증여세", () => {
   /*
@@ -122,5 +127,40 @@ describe("스토리 007 — 매출이 꺾였는데 고지서는 그대로", () =
    */
   it("반토막(210만원)으로는 모자란다", () => {
     expect(qualifiesBySlump(4_200_000, 2_100_000)).toBe(false);
+  });
+});
+
+describe("스토리 008 — 3.3%를 떼였는데 11월에 또 고지서", () => {
+  /*
+   * 1년 내내 3.3%를 떼인 프리랜서가 5월에 120만원을 더 냈다.
+   * 중간예납기준액은 떼인 3.3%가 아니라 5월에 더 낸 120만원이고,
+   * 11월 고지서는 그 절반인 60만원이다.
+   */
+  it("5월에 120만원을 더 냈으면 기준액은 120만원이다", () => {
+    expect(prepayBase({ finalReturnPaid: 1_200_000 })).toBe(1_200_000);
+  });
+
+  it("11월 고지서는 60만원이다", () => {
+    const r = incomeNotice(1_200_000);
+    expect(r.amount).toBe(600_000);
+    expect(r.collected).toBe(true);
+  });
+});
+
+describe("스토리 009 — 1,500만원 고지서를 나눠 낸다", () => {
+  /*
+   * 중간예납세액이 1,500만원이면 1천만원을 넘는 500만원을 나눠 낼 수 있다.
+   * 정확히 1천만원이었다면 "초과"가 아니라 한 푼도 나눌 수 없다.
+   */
+  it("작년 세금 3천만원이면 고지서는 1,500만원이다", () => {
+    expect(incomeNotice(30_000_000).amount).toBe(15_000_000);
+  });
+
+  it("1,500만원 중 500만원을 나눠 낼 수 있다", () => {
+    expect(maxInstallment(15_000_000)).toBe(5_000_000);
+  });
+
+  it("정확히 1천만원이면 나눌 수 없다", () => {
+    expect(maxInstallment(10_000_000)).toBe(0);
   });
 });

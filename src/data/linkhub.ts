@@ -57,6 +57,7 @@ export const hubEntries: HubEntry[] = [
   { no: 30, href: "/guide/retirement-pension-loan/", label: "퇴직연금 담보대출, 사유와 한도", kind: "guide" },
   { no: 31, href: "/guide/unlisted-stock-value/", label: "비상장주식, 1주당 얼마로 평가하나", kind: "guide" },
   { no: 32, href: "/guide/vat-prepayment/", label: "부가세 예정고지, 얼마가 나오나", kind: "guide" },
+  { no: 33, href: "/guide/income-prepayment/", label: "종합소득세 중간예납, 얼마가 나오나", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -102,6 +103,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/multiple-payers",
       "/guide/family-deduction",
       "/guide/late-filing-refund",
+      "/guide/income-prepayment",
     ]),
   },
   {

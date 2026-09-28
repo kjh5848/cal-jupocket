@@ -1010,6 +1010,102 @@ export const cardSets: CardSet[] = [
       },
     ],
   },
+  {
+    slug: "income-prepayment",
+    cluster: "income",
+    link: "https://jupocket.com/guide/income-prepayment/",
+    cards: [
+      {
+        kind: "cover",
+        photo: "/photos/card-leaf.jpg",
+        photoAlt: "어두운 흙바닥 위에 낙엽 한 장이 놓여 있다",
+        badge: "종합소득세 · 중간예납",
+        title: "상반기가 안 좋았다면\n11월 고지서를 줄일 수 있습니다",
+        sub: "상반기 소득으로 계산한 세액이 작년 세금(기준액)의 30%에 못 미치면, 11월 30일까지 신고해 그 금액만 냅니다.",
+        footnote: "소득세법 제65조 제3항·제4항",
+      },
+      {
+        kind: "table",
+        title: "11월 고지서는 얼마인가",
+        sub: "작년 세금(중간예납기준액) × 1/2 · 1천원 미만 버림",
+        rows: [
+          { label: "기준액 90만원 → 45만원", value: "고지서 없음", tone: "mark" },
+          { label: "기준액 100만원 → 50만원", value: "여기가 경계", tone: "warn" },
+          { label: "기준액 155만 5천원", value: "77만 7천원" },
+          { label: "기준액 300만원", value: "150만원" },
+        ],
+        footnote:
+          "소득세법 제65조 제1항 · 제86조 제4호(50만원 미만 부징수) · 출처 국가법령정보센터",
+      },
+      {
+        kind: "list",
+        badge: "기준액에 들어가는 것",
+        title: "떼인 3.3%는 기준이 아닙니다",
+        items: [
+          {
+            text: "작년 11월에 낸 [[중간예납세액]]",
+            detail: "제65조 제7항 제1호",
+          },
+          {
+            text: "5월 신고 때 [[추가로 낸 돈]]",
+            detail: "확정신고납부세액 — 원천징수세액은 이미 공제된 금액이다(제76조 제3항)",
+          },
+          {
+            text: "추가납부·기한후신고 납부세액",
+            detail: "가산세액을 포함한다",
+          },
+          {
+            text: "여기서 {{환급받은 세액을 뺀다}}",
+            detail: "5월에 환급만 받았다면 기준액이 남지 않는다",
+          },
+        ],
+        footnote: "소득세법 제65조 제7항 · 출처 국가법령정보센터",
+      },
+      {
+        kind: "list",
+        badge: "고지서가 오지 않는 분",
+        title: "중간예납을 하지 않습니다",
+        items: [
+          {
+            text: "근로·연금·이자·배당·기타소득[[만]] 있는 분",
+            detail: "시행령 제123조",
+          },
+          {
+            text: "자영 예술가·직업선수·[[보험모집]] 소득만 있는 분",
+            detail: "시행규칙 제64조 — 방문판매는 연말정산한 경우만",
+          },
+          {
+            text: "올해 [[새로 사업을 시작]]한 분",
+            detail: "과세기간 개시일 현재 사업자가 아니었던 경우",
+          },
+          {
+            text: "다만 {{다른 사업소득이 섞이면 제외되지 않습니다}}",
+            detail: "조문은 '그 소득만이 있는 자'다",
+          },
+        ],
+        footnote: "소득세법 제65조 제1항 · 시행령 제123조 · 시행규칙 제64조",
+      },
+      {
+        kind: "table",
+        title: "언제 오고, 나눠 낼 수 있나",
+        sub: "1천만원을 넘으면 2개월 안에 분납",
+        rows: [
+          { label: "고지서 발급", value: "11월 1~15일" },
+          { label: "납부기한", value: "11월 30일", tone: "mark" },
+          { label: "1천만원 초과 ~ 2천만원", value: "1천만원 넘는 부분" },
+          { label: "2천만원 초과", value: "절반 이하", tone: "mark" },
+          { label: "정확히 1천만원", value: "분납 불가", tone: "warn" },
+        ],
+        footnote: "소득세법 제65조 제1항 · 제77조 · 시행령 제140조",
+      },
+      {
+        kind: "cta",
+        title: "우리 집은\n얼마가 나오나?",
+        sub: "대상·기준액·분납·추계액 신고까지 조문 순서대로 글에 정리했어요",
+        refNo: 33,
+      },
+    ],
+  },
 ];
 
 export function cardSetBySlug(slug: string): CardSet | undefined {
