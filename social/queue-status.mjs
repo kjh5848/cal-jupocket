@@ -20,6 +20,9 @@ import {
   findBodyLink,
   closingFor,
   withClosing,
+  igPaused,
+  IG_PAUSE_UNTIL,
+  IG_PAUSE_REASON,
   textLength,
   DUE_GRACE_MIN,
   TEXT_TARGET,
@@ -95,7 +98,12 @@ try {
 }
 
 console.log(`\n  스케줄러  ${sched}`);
-console.log(`  지금      ${hhmm(mins)}  ·  유예 창 ${DUE_GRACE_MIN}분\n`);
+console.log(`  지금      ${hhmm(mins)}  ·  유예 창 ${DUE_GRACE_MIN}분`);
+// 정지를 화면에 안 띄우면, 인스타 칸의 "대기" 를 보고 곧 나갈 거라고 읽게 된다.
+if (igPaused()) {
+  console.log(`  인스타    ‖ 정지 · ${IG_PAUSE_UNTIL} 재개 — ${IG_PAUSE_REASON}`);
+}
+console.log("");
 
 // ── 큐 ──────────────────────────────────────────────────────
 const files = existsSync(QUEUE_DIR)
@@ -137,7 +145,7 @@ const rows = files.map((f) => {
     allowLink: String(meta.allow_body_link ?? "").toLowerCase() === "true",
     // 이미 나간 글은 고칠 수 없다. 경고해봤자 매일 보는 소음만 된다.
     reply: postedT.has(f) ? null : replyProblem(meta),
-    ig: hasImages ? (postedI.has(f) ? "✓" : "대기") : "—",
+    ig: hasImages ? (postedI.has(f) ? "✓" : igPaused() ? "정지" : "대기") : "—",
   };
 });
 

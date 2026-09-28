@@ -12,6 +12,8 @@ import {
   closingFor,
   withClosing,
   findBodyLink,
+  igPaused,
+  IG_PAUSE_REASON,
 } from "../parse.mjs";
 
 describe("마무리 문장 자체", () => {
@@ -87,5 +89,17 @@ describe("본문에 붙이기", () => {
 
   it("마무리가 없으면 본문 그대로다", () => {
     expect(withClosing("본문\n", null)).toBe("본문");
+  });
+});
+
+describe("인스타 2주 정지", () => {
+  it("2026-10-12 0시에 저절로 풀린다", () => {
+    expect(igPaused(new Date("2026-10-11T23:59:00"))).toBe(true);
+    expect(igPaused(new Date("2026-10-12T00:00:00"))).toBe(false);
+  });
+
+  it("왜 멈췄는지가 코드에 남아 있다", () => {
+    // 이유가 없으면 재개일에 아무도 이게 뭐였는지 모른다.
+    expect(IG_PAUSE_REASON).toBeTruthy();
   });
 });

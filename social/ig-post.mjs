@@ -31,6 +31,9 @@ import {
   isDue,
   CAROUSEL_MIN,
   CAROUSEL_MAX,
+  igPaused,
+  IG_PAUSE_UNTIL,
+  IG_PAUSE_REASON,
 } from "./parse.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -173,6 +176,18 @@ let file;
 if (pickFile) {
   file = pickFile;
 } else if (dueOnly) {
+  if (igPaused()) {
+    console.log(
+      `
+인스타는 ${IG_PAUSE_UNTIL} 까지 멈춰 뒀습니다 — ${IG_PAUSE_REASON}.` +
+        `
+  그날이 되면 저절로 다시 올립니다.` +
+        `
+  그 전에 올려야 하면 --file 로 직접 지정하세요.
+`,
+    );
+    process.exit(0);
+  }
   if (postedToday()) {
     console.log("\n오늘은 이미 올렸습니다. 인스타는 하루 한 건만 올립니다.\n");
     process.exit(0);

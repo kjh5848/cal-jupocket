@@ -169,6 +169,29 @@ export function closingFor(file, meta) {
   };
 }
 
+/*
+ * 인스타그램 일시 정지 — 2026-10-12 에 저절로 풀린다.
+ *
+ * 게시 5건에 조회가 1 · 1 · 0 · 0 · 0 이었다. 스레드는 같은 기간에 54편
+ * 12,402 조회다. 두 플랫폼에 같은 품을 들일 이유가 없어서 2주 동안
+ * 스레드에만 쓴다(사용자 지시, 2026-09-28).
+ *
+ * **왜 scripts/post-due.cmd 에서 줄을 지우지 않았나.** 이 정지는
+ * docs/monetization.md 6절에 이미 적혀 있었는데 한 번도 실행되지
+ * 않았다 — 적어 두기만 하면 잊힌다. 지우는 방식도 똑같다. 돌아올
+ * 날짜를 코드에 박아야 잊히지 않고, 왜 멈췄는지도 같이 남는다.
+ *
+ * 막는 것은 `--due`(스케줄러) 뿐이다. `--file` 로 직접 올리는 길은
+ * 열어 둔다 — 사람이 일부러 하는 일까지 막을 이유는 없다.
+ */
+export const IG_PAUSE_UNTIL = "2026-10-12";
+export const IG_PAUSE_REASON = "게시 5건 조회 1·1·0·0·0 — 2주간 스레드에만 쓴다";
+
+/** 지금이 정지 기간인가. 재개일 0시부터 다시 올린다. */
+export function igPaused(now = new Date()) {
+  return now < new Date(`${IG_PAUSE_UNTIL}T00:00:00`);
+}
+
 /** 본문 끝에 마무리를 붙인다. 빈 줄 하나를 띄운다. */
 export function withClosing(text, closing) {
   const body = String(text ?? "").trimEnd();
