@@ -153,6 +153,17 @@ export const TAX_EVENTS: TaxEvent[] = [
   },
   {
     month: 6,
+    label: "자동차세 1기분",
+    from: "6월 16일",
+    to: "6월 30일",
+    domain: "vehicle",
+    who: "차가 있으면. 1~6월분이고 6월 1일 소유자에게 온다",
+    article: "지방세법 제128조 제1항 (표)",
+    source: "local-tax-2026.json",
+    kind: "고지",
+  },
+  {
+    month: 6,
     label: "성실신고확인대상자 종합소득세 신고",
     from: "5월 1일",
     to: "6월 30일",
@@ -260,6 +271,19 @@ export const TAX_EVENTS: TaxEvent[] = [
     article: "소득세법 제65조 제1항",
     source: "income-prepay-2026.json",
     href: "/guide/income-prepayment/",
+    kind: "고지",
+  },
+
+  // ── 12월 ───────────────────────────────────────────────
+  {
+    month: 12,
+    label: "자동차세 2기분",
+    from: "12월 16일",
+    to: "12월 31일",
+    domain: "vehicle",
+    who: "차가 있으면. 7~12월분이고 12월 1일 소유자에게 온다",
+    article: "지방세법 제128조 제1항 (표)",
+    source: "local-tax-2026.json",
     kind: "고지",
   },
 ];

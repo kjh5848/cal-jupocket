@@ -54,17 +54,29 @@ describe("달력 항목은 전부 근거를 가진다", () => {
 });
 
 describe("확인하지 못한 것은 달력에 없다", () => {
-  it("자동차세 본납기(6월·12월)를 넣지 않았다", () => {
-    // 제128조 제1항의 기분 표를 원문에서 읽지 못했다. 상식으로 채우면
-    // 이 저장소가 파는 것이 무너진다.
-    const vehicle = byDomain("vehicle");
-    for (const e of vehicle) expect(e.article).toContain("단서");
-    expect(vehicle.every((e) => e.month === 3 || e.month === 9)).toBe(true);
+  /*
+   * 처음에는 "자동차세 본납기를 넣지 않았다" 를 강제했다. 원문 표가
+   * 화면에 안 들어와 확인하지 못했기 때문이다. 같은 날 img 의 alt 에
+   * 표가 그대로 있는 것을 찾아 채웠으므로 이 테스트를 뒤집는다.
+   *
+   * 뒤집되 근거를 묶어 둔다 — 조문 표기에 "(표)" 가 있어야 한다.
+   * 상식으로 채운 값과 alt 에서 읽은 값을 코드가 구분하지 못하면
+   * 다음 사람이 똑같이 상식으로 채운다.
+   */
+  it("자동차세 본납기는 조문 표에서 왔다는 표시를 달고 있다", () => {
+    const main = byDomain("vehicle").filter((e) => e.month === 6 || e.month === 12);
+    expect(main).toHaveLength(2);
+    for (const e of main) expect(e.article, e.label).toContain("(표)");
   });
 
-  it("local-tax 가 확인 못 한 것을 스스로 적어 뒀다", () => {
+  it("분할납부는 여전히 단서 조문이다 — 신청한 사람만이라는 뜻", () => {
+    const split = byDomain("vehicle").filter((e) => e.month === 3 || e.month === 9);
+    for (const e of split) expect(e.article, e.label).toContain("단서");
+  });
+
+  it("local-tax 가 아직 확인 못 한 것을 스스로 적어 뒀다", () => {
     expect(local.vehicleTax.notVerified.length).toBeGreaterThan(0);
-    expect(local.vehicleTax.notVerified.join(" ")).toMatch(/본납기|기분/);
+    expect(local.vehicleTax.notVerified.join(" ")).toMatch(/연납|표준세율/);
   });
 
   it("주민세는 금액을 확정하지 않는다 — 조례 위임이다", () => {

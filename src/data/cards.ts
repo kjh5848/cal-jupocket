@@ -1143,8 +1143,9 @@ export const cardSets: CardSet[] = [
           { label: "8월 16~31일", value: "주민세" },
           { label: "9월 16~30일", value: "재산세 (토지·주택 절반)" },
           { label: "11월 1~15일", value: "종합소득세 중간예납" },
+          { label: "12월 16~31일", value: "자동차세 2기분" },
         ],
-        footnote: "소득세법 제70조·제65조 · 부가가치세법 제49조 · 지방세법 제114조·제115조·제79조",
+        footnote: "소득세법 제70조·제65조 · 부가가치세법 제49조 · 지방세법 제114조·제115조·제79조·제128조",
       },
       {
         kind: "table",
@@ -1155,6 +1156,7 @@ export const cardSets: CardSet[] = [
           { label: "주소지가 있으면", value: "7월 · 8월" },
           { label: "3.3% 떼이거나 사업소득", value: "5월 · 11월", tone: "mark" },
           { label: "사업자등록이 있으면", value: "1·2·4·6·7·10월" },
+          { label: "차가 있으면", value: "6월 · 12월" },
         ],
         footnote: "jupocket.com/guide/tax-year/ 에 달마다 정리했습니다",
       },
