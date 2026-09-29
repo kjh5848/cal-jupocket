@@ -174,8 +174,35 @@ const tomorrow = rows.filter((r) => r.state.includes("내일"));
 const problems = rows.filter((r) => r.link && !r.allowLink);
 const experiments = rows.filter((r) => r.link && r.allowLink);
 
+/*
+ * 남은 활주로 — 09-24 의 구멍을 잡았을 유일한 장치.
+ *
+ * 09-23 에 큐를 다 쓰고 09-28 에 다시 채웠다. 그 사이 나흘 동안 한 편도
+ * 나가지 않았고 계정 일별 조회가 605 → 2 → 1 → 10 으로 떨어졌다.
+ * 아무도 "큐가 비어 간다"는 말을 들은 적이 없어서 생긴 구멍이다.
+ *
+ * 하루 몇 편을 올리는지는 날마다 다르므로, 최근에 실제로 나간 속도로
+ * 나눈다. 편수가 아니라 **며칠치**로 말해야 사람이 행동한다.
+ */
+const unposted = rows.filter((r) => !r.state.includes("게시")).length;
+const recent = threads
+  .map((e) => e.at?.slice(0, 10))
+  .filter(Boolean)
+  .slice(-12);
+const perDay = recent.length ? recent.length / new Set(recent).size : 1;
+const runway = unposted / perDay;
+
 console.log("");
 console.log(`  오늘 남은 것 ${pending.length}건${pending.length ? " — 다음 " + pending[0].f.replace(/\.md$/, "") + " (" + pending[0].at + ")" : ""}`);
+if (unposted === 0) {
+  console.log(`  ✖ 큐가 비었습니다 — 내일 올릴 글이 없습니다`);
+} else if (runway < 2) {
+  console.log(
+    `  ⚠ 남은 활주로 ${runway.toFixed(1)}일 (미발행 ${unposted}건 · 최근 하루 ${perDay.toFixed(1)}편) — 큐를 채우세요`,
+  );
+} else {
+  console.log(`  남은 활주로 ${runway.toFixed(1)}일 (미발행 ${unposted}건)`);
+}
 if (tomorrow.length) console.log(`  내일로 넘어감 ${tomorrow.length}건 (유예 창을 지남)`);
 if (problems.length) console.log(`  ✖ 본문에 링크가 있는 글 ${problems.length}건 — 게시되지 않습니다`);
 if (experiments.length)

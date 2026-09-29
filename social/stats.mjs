@@ -51,8 +51,8 @@ const history = readJson(STATS, []);
 function table(rows) {
   if (rows.length === 0) return "  (아직 쌓인 기록이 없습니다)";
   // replies/comments 를 빼면 "전부 0" 으로 보인다 — 실제로는 값이 와 있는데도.
-  const cols = ["at", "platform", "file", "views", "clicks", "reach", "likes",
-                "replies", "comments", "saved", "shares"];
+  const cols = ["at", "platform", "file", "views", "replyViews", "replyClicks",
+                "reach", "likes", "replies", "comments", "saved", "shares"];
   const w = (c) =>
     c === "file" ? 32 : c === "at" ? 12 : c === "platform" ? 11 : 9;
   const head = cols.map((c) => c.padEnd(w(c))).join("");
@@ -125,6 +125,30 @@ for (const { platform, file } of LEDGERS) {
         `${api}/${entry.id}/insights?` +
           new URLSearchParams({ metric: metrics.join(","), access_token: token }),
       );
+      /*
+       * 답글도 따로 잰다 — 여기가 이 계정의 병목이다.
+       *
+       * 링크는 본문이 아니라 답글에 있다. 그래서 본문 clicks 는 늘 0 이고
+       * (누를 게 없다), 실제 링크 클릭 수는 답글 insights 에만 있다.
+       * 본문만 재고 있었기 때문에 답글 조회 비율(1.7%)을 매번 임시
+       * 스크립트로 다시 뽑아야 했고, 그 값이 어디에도 쌓이지 않았다.
+       *
+       * cta 는 posted.json 에 있는 마무리 종류다. 같이 넣어 둬야 나중에
+       * 종류별로 가를 수 있다.
+       */
+      let reply = {};
+      if (platform === "threads" && entry.replyId) {
+        try {
+          const r = await fetchJson(
+            `${api}/${entry.replyId}/insights?` +
+              new URLSearchParams({ metric: "views,clicks", access_token: token }),
+          );
+          const f = flatten(r.data);
+          reply = { replyViews: f.views ?? 0, replyClicks: f.clicks ?? 0 };
+        } catch (e) {
+          problems.push(`${platform} ${entry.file} 답글: ${e.message}`);
+        }
+      }
       collected.push({
         at,
         platform,
@@ -132,7 +156,9 @@ for (const { platform, file } of LEDGERS) {
         id: entry.id,
         permalink: entry.permalink ?? null,
         postedAt: entry.at ?? null,
+        cta: entry.cta ?? null,
         ...flatten(body.data),
+        ...reply,
       });
       console.log(`  ✓ ${platform} ${entry.file}`);
     } catch (e) {
