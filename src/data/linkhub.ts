@@ -61,6 +61,8 @@ export const hubEntries: HubEntry[] = [
   { no: 34, href: "/guide/tax-year/", label: "한 해 세금, 몇 월에 뭐가 오나", kind: "guide" },
   { no: 35, href: "/guide/property-tax/", label: "재산세, 6월 1일에 정해진다", kind: "guide" },
   { no: 36, href: "/property-tax/", label: "재산세 계산기", kind: "calc" },
+  { no: 37, href: "/guide/vehicle-tax/", label: "자동차세, 6월과 12월", kind: "guide" },
+  { no: 38, href: "/vehicle-tax/", label: "자동차세 계산기", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -101,7 +103,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
-  { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax"]) },
+  { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax"]) },
   {
     label: "종합소득세·원천징수",
     cluster: "income",

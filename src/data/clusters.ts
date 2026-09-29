@@ -115,7 +115,9 @@ export const clusters: Cluster[] = [
     title: "지방세 — 집·차",
     links: [
       { href: "/property-tax/", title: "재산세 계산기", kind: "calc", icon: "calculator", blurb: "시가표준액 → 본세·도시지역분·지방교육세를 갈라서" },
+      { href: "/vehicle-tax/", title: "자동차세 계산기", kind: "calc", icon: "calculator", blurb: "배기량·차령 → 자동차세와 지방교육세" },
       { href: "/guide/property-tax/", title: "재산세 부과기준과 납부기간", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/vehicle-tax/", title: "자동차세 납부기간과 계산", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/tax-year/", title: "한 해 동안 내는 세금 정리", kind: "guide", icon: "calendar" },
     ],
   },

@@ -65,7 +65,7 @@ describe("계산기에서 이어서 볼 글", () => {
   it("계산기도 결과를 받는다", () => {
     // 계산기를 하나 늘릴 때마다 여기가 깨진다. 그게 목적이다 — 새
     // 계산기가 nextReads 배선 없이 조용히 들어오는 것을 막는다.
-    expect(calcPaths.length).toBe(8);
+    expect(calcPaths.length).toBe(9);
     for (const p of calcPaths) {
       expect(nextReads(p).length, p).toBeGreaterThan(0);
     }

@@ -1,0 +1,232 @@
+---
+/**
+ * "자동차세" — 스물아홉 번째 글(37번). 지방세 클러스터 두 번째.
+ *
+ * 이 주제의 놀라운 점은 **cc 당 세액이 누진이 아니라는 것**이다.
+ * 1,600cc 를 1cc 넘으면 전체에 200원이 붙어 연세액이 9만원 뛴다.
+ * 소득세식으로 "초과분만" 이라고 읽으면 금액이 크게 틀린다.
+ *
+ * 두 번째가 차령 감면이다. 3년차부터 5%씩 깎이되 12년에서 멈춘다 —
+ * 조문이 n 을 12 이하로 묶었다. "오래 탈수록 계속 깎인다" 가 아니다.
+ *
+ * ⚠️ 연납 공제율은 쓰지 않는다. 제128조 제3항이 "100분의 10의 범위에서"
+ * 라고만 하고 시행령의 이자율에 넘긴다. 시행령을 아직 읽지 않았다.
+ *
+ * 금액은 손으로 적지 않는다 — yearlyBase()·bill()·ageDiscountRate() 가 낸다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import {
+  perCc,
+  yearlyBase,
+  ageDiscountRate,
+  bill,
+  AGE,
+  EDU_RATE,
+  LUMP_SUM_UNDER,
+  PREPAY_CAP,
+} from "../../../lib/vehicle-tax";
+import { formatWon, formatMan } from "../../../lib/money";
+import r from "../../../rates/local-tax-2026.json";
+
+const title = "자동차세 납부기간과 계산 — 6월과 12월, 배기량으로 정해집니다";
+const description =
+  "자동차세는 6월 16~30일과 12월 16~31일에 두 번 옵니다. 비영업용 승용차는 배기량 1cc당 80·140·200원이고 누진이 아니라 구간 단가가 전체에 붙습니다. 차령 3년부터 해마다 5%씩 깎이고 12년에서 멈춥니다. 지방세법 조문 원문 기준입니다.";
+
+const V = r.vehicleTax;
+const 예시cc = [1000, 1598, 1601, 2000, 2500];
+const 차령예시 = [2, 3, 5, 7, 10, 12, 15];
+const 기준차 = 2000;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+  <h1>{title}</h1>
+
+  <p>
+    자동차세는 한 해에 두 번 옵니다. 재산세처럼 고지서가 오므로 따로 신고할
+    일은 없습니다. 다만 <strong>금액이 어떻게 정해지는지</strong>는 알아 둘
+    값어치가 있습니다 — 차를 고를 때 배기량 1cc 차이로 한 해 9만원이
+    갈리기 때문입니다.
+  </p>
+
+  <h2>자동차세 납부기간</h2>
+  <table>
+    <thead>
+      <tr><th>기분</th><th>기간</th><th>납기</th></tr>
+    </thead>
+    <tbody>
+      {
+        V.periods.map((p) => (
+          <tr>
+            <th scope="row">제{p.period}기분</th>
+            <td>{p.coverage}</td>
+            <td>{p.from} ~ {p.to}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  <p>
+    납기가 있는 달의 <strong>1일 현재 소유자</strong>에게 옵니다. 6월 1일과
+    12월 1일이 기준입니다. 고지서는 납기 시작 5일 전까지 발급합니다.
+  </p>
+  <p>
+    연세액이 <strong>{formatMan(LUMP_SUM_UNDER)} 이하</strong>면 1기분을
+    부과할 때 전액을 한 번에 부과할 수 있습니다. 경차를 타면 12월 고지서가
+    없는 이유가 이것입니다.
+  </p>
+  <p>
+    나눠 내고 싶으면 <strong>신청해야</strong> 합니다. 신청하면 3월 16~31일과
+    9월 16~30일이 더 생겨 네 번에 나눠 냅니다. 가만히 있으면 두 번입니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>자동차세 계산 — 누진이 아닙니다</h2>
+  <p>
+    비영업용 승용차는 <strong>배기량 × cc당 세액</strong>입니다. 여기서
+    가장 많이 어긋나는 것이 <strong>구간을 넘으면 그 단가가 전체에
+    붙는다</strong>는 점입니다. 소득세처럼 초과분에만 높은 세율이 붙는 것이
+    아닙니다.
+  </p>
+  <table>
+    <thead>
+      <tr><th>배기량</th><th>cc당 (비영업용)</th><th>cc당 (영업용)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">1,000cc 이하</th>
+        <td>{formatWon(perCc(1000))}</td>
+        <td>{formatWon(perCc(1000, "business"))}</td>
+      </tr>
+      <tr>
+        <th scope="row">1,600cc 이하</th>
+        <td>{formatWon(perCc(1600))}</td>
+        <td>{formatWon(perCc(1600, "business"))}</td>
+      </tr>
+      <tr>
+        <th scope="row">1,600cc 초과</th>
+        <td>{formatWon(perCc(2000))}</td>
+        <td>{formatWon(perCc(3000, "business"))}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>배기량별 연세액입니다. 차령 감면 전 금액입니다.</p>
+  <table>
+    <thead>
+      <tr><th>배기량</th><th>cc당</th><th>연세액</th></tr>
+    </thead>
+    <tbody>
+      {
+        예시cc.map((cc) => (
+          <tr>
+            <th scope="row">{cc.toLocaleString("ko-KR")}cc</th>
+            <td>{formatWon(perCc(cc))}</td>
+            <td>{formatWon(yearlyBase(cc))}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  <p>
+    <strong>1,598cc와 1,601cc를 보세요.</strong> 3cc 차이인데 연세액이
+    {formatWon(yearlyBase(1598))}과 {formatWon(yearlyBase(1601))}입니다 —
+    {formatWon(yearlyBase(1601) - yearlyBase(1598))} 차이입니다. 국산차 배기량이
+    1,598cc나 1,599cc에 몰려 있는 이유가 여기 있습니다.
+  </p>
+
+  <h2>차령 감면 — 12년에서 멈춥니다</h2>
+  <p>
+    비영업용 승용차는 차령 3년차부터 해마다
+    <strong>{AGE.ratePerYear * 100}%</strong>씩 깎입니다. 조문의 계산식은
+    이렇습니다.
+  </p>
+  <p><code>{AGE.formula}</code></p>
+  <p>
+    A는 연세액, n은 차령입니다. 그리고 <strong>n은 12를 넘지 못합니다</strong> —
+    차령이 12년을 넘으면 12년으로 봅니다. 그래서 감면은 최대
+    {ageDiscountRate(12) * 100}%에서 멈춥니다. 20년을 타도 더 깎이지
+    않습니다.
+  </p>
+  <table>
+    <thead>
+      <tr><th>차령</th><th>감면율</th><th>{기준차.toLocaleString("ko-KR")}cc 연세액</th></tr>
+    </thead>
+    <tbody>
+      {
+        차령예시.map((n) => (
+          <tr>
+            <th scope="row">{n}년</th>
+            <td>{(ageDiscountRate(n) * 100).toFixed(0)}%</td>
+            <td>{formatWon(bill({ cc: 기준차, ageYears: n }).vehicleTax)}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>고지서에는 지방교육세가 함께 옵니다</h2>
+  <p>
+    자동차세액의 <strong>{EDU_RATE * 100}%</strong>가 지방교육세로 붙습니다.
+    재산세에 붙는 지방교육세는 20%인데 자동차세는 30%입니다 — 같은 이름인데
+    비율이 다릅니다.
+  </p>
+  <table>
+    <thead>
+      <tr><th>항목</th><th>{기준차.toLocaleString("ko-KR")}cc · 신차</th><th>{기준차.toLocaleString("ko-KR")}cc · 10년</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">자동차세</th>
+        <td>{formatWon(bill({ cc: 기준차 }).vehicleTax)}</td>
+        <td>{formatWon(bill({ cc: 기준차, ageYears: 10 }).vehicleTax)}</td>
+      </tr>
+      <tr>
+        <th scope="row">지방교육세</th>
+        <td>{formatWon(bill({ cc: 기준차 }).educationTax)}</td>
+        <td>{formatWon(bill({ cc: 기준차, ageYears: 10 }).educationTax)}</td>
+      </tr>
+      <tr>
+        <th scope="row">한 해 합계</th>
+        <td><strong>{formatWon(bill({ cc: 기준차 }).total)}</strong></td>
+        <td><strong>{formatWon(bill({ cc: 기준차, ageYears: 10 }).total)}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>연납하면 깎이는데, 얼마인지는 아직 못 적었습니다</h2>
+  <p>
+    연세액을 한꺼번에 내면 공제받습니다. 신고납부기간은 1월 16~31일,
+    3월 16~31일, 6월 16~30일, 9월 16~30일 네 구간입니다. 1월에 낼수록
+    많이 깎입니다 — 남은 기간이 길기 때문입니다.
+  </p>
+  <p>
+    다만 <strong>공제율을 여기 적지 않았습니다.</strong> 제128조 제3항이
+    "{PREPAY_CAP * 100}분의 10의 범위에서"라고만 하고 실제 공제액은
+    시행령이 정하는 이자율로 계산하게 넘겼습니다. 흔히 쓰이는 숫자가 있지만
+    <strong>원문에서 확인하지 못한 값은 쓰지 않습니다.</strong> 시행령을 읽는
+    대로 채웁니다.
+  </p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>승합·화물·특수·3륜 이하</strong> 자동차 — 세액표가 따로 있습니다.</li>
+    <li>
+      <strong>조례로 올린 지역</strong> — 제127조 제3항이 지자체에 표준세율의
+      50%까지 올릴 여지를 줍니다. 실제로 그렇게 한 곳이 있는지 확인하지
+      않았습니다.
+    </li>
+    <li>
+      <strong>자동차 주행에 대한 자동차세</strong> — 이름이 같지만 다른
+      세금입니다(제135조 이하). 유류에 붙습니다.
+    </li>
+  </ul>
+
+  <p>
+    조회와 납부는 위택스(wetax.go.kr)입니다. 한 해 전체 일정은{" "}
+    <a href="/guide/tax-year/">한 해 동안 내는 세금</a>에 있습니다.
+  </p>
+</GuideLayout>
