@@ -135,3 +135,28 @@ describe("신고세액공제 3%", () => {
     expect(r.payable).toBe(0);
   });
 });
+
+/*
+ * 배우자상속재산분할기한 — 산문 주석에 숨어 있던 오류를 숫자로 꺼낸다.
+ *
+ * 2026-09-29 까지 rates JSON 의 note 에 "신고기한 다음날부터 6개월" 이라고
+ * 적혀 있었다. 원문은 9개월이다(제19조 제2항, 2020. 12. 22. 개정).
+ * 산문이라 어떤 테스트도 읽지 않았고, 다른 세션이 이 note 를 보고 글을
+ * 썼으면 그대로 나갔을 것이다.
+ *
+ * 제3항의 "부득이한 사유" 연장이 6개월이라 헷갈리기 딱 좋다.
+ */
+describe("배우자상속재산분할기한 — 제19조 제2항", () => {
+  it("신고기한 다음 날부터 9개월이다. 6개월이 아니다", () => {
+    expect(rates.spouse.divisionDeadlineMonths).toBe(9);
+    expect(rates.spouse.divisionDeadlineFrom).toContain("신고기한");
+  });
+
+  it("어느 조문인지 적혀 있다", () => {
+    expect(rates.spouse.divisionDeadlineArticle).toContain("제19조");
+  });
+
+  it("note 에 기한 숫자를 다시 적지 않는다 — 두 곳에 있으면 한 곳만 고친다", () => {
+    expect(rates.spouse.note).not.toMatch(/\d+개월/);
+  });
+});
