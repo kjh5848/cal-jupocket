@@ -58,3 +58,7 @@
 /income-prepayment  /guide/income-prepayment/  301
 /who-must-file/  /guide/who-must-file/  301
 /who-must-file  /guide/who-must-file/  301
+
+# 2026-09-29 — 한 해 세금 허브(34번). 다른 가이드와 같은 규칙으로 루트 주소도 받아 둔다.
+/tax-year/  /guide/tax-year/  301
+/tax-year  /guide/tax-year/  301
