@@ -64,6 +64,7 @@ export const clusters: Cluster[] = [
       { href: "/freelancer-33/", title: "프리랜서 3.3% 계산기", kind: "calc", icon: "percent", blurb: "계약금액 → 실수령액, 실수령액 → 계약금액 역산" },
       { href: "/withholding/", title: "원천징수 계산기 (3.3%·8.8%)", kind: "calc", icon: "receipt", blurb: "사업소득 3.3%·기타소득 8.8% 원천징수액과 실수령액" },
       { href: "/income-tax-refund/", title: "종소세 환급 예상 계산기", kind: "calc", icon: "coins", blurb: "총수입·경비율·공제로 5월 환급/추가납부 예상" },
+      { href: "/guide/tax-year/", title: "한 해 동안 내는 세금 정리 — 국세와 지방세", kind: "guide", icon: "calendar" },
       { href: "/guide/33-settlement/", title: "3.3%는 종합소득세에서 정산됩니다", kind: "guide", icon: "refresh" },
       { href: "/guide/who-must-file/", title: "종합소득세 신고 대상, 나는 해야 하나", kind: "guide", icon: "checklist", year: 2026 },
       { href: "/guide/income-tax-brackets/", title: "종합소득세 세율 구간", kind: "guide", icon: "chart", year: 2026 },

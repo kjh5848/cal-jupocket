@@ -58,6 +58,7 @@ export const hubEntries: HubEntry[] = [
   { no: 31, href: "/guide/unlisted-stock-value/", label: "비상장주식, 1주당 얼마로 평가하나", kind: "guide" },
   { no: 32, href: "/guide/vat-prepayment/", label: "부가세 예정고지, 얼마가 나오나", kind: "guide" },
   { no: 33, href: "/guide/income-prepayment/", label: "종합소득세 중간예납, 얼마가 나오나", kind: "guide" },
+  { no: 34, href: "/guide/tax-year/", label: "한 해 세금, 몇 월에 뭐가 오나", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -91,6 +92,13 @@ const inCluster = (prefixes: string[]) =>
 
 export const hubGroups: HubGroup[] = [
   { label: "계산기", cluster: null, entries: calcEntries },
+  /*
+   * 허브 글은 한 클러스터에 속하지 않는다 — 열두 달을 다 덮으니 어느
+   * 주제에 넣어도 거짓말이 된다. 그래서 묶음을 따로 두고 맨 위에 올린다.
+   * clusters.ts 에서는 income 에 얹었는데, 그건 홈의 진열 위치일 뿐이고
+   * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
+   */
+  { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
   {
     label: "종합소득세·원천징수",
     cluster: "income",
