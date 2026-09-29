@@ -1,0 +1,279 @@
+---
+/**
+ * "재산세" — 스물여덟 번째 글(35번). 지방세 클러스터의 첫 글이다.
+ *
+ * 여태 국세만 썼는데 34번(한 해 세금 허브)이 빈칸을 드러냈다. 집을 가진
+ * 사람이 한 해에 가장 먼저 만나는 지방세가 재산세다.
+ *
+ * 소제목은 자동완성 묶음에서 왔다(keywords/tax-calendar-2026-09-29.csv).
+ * 재산세 뒤에 붙는 말이 납부기간(2회)·부과기준·계산기·조회·납부·9월 이다.
+ *
+ * **이 글의 핵심은 세율이 아니라 "고지서가 계산기보다 큰 이유"다.**
+ * 본세 + 도시지역분 + 지방교육세가 한 장에 온다. 이 셋을 나눠 보여주는
+ * 글이 검색 결과에 잘 없다.
+ *
+ * ⚠️ 세율표는 국가법령정보센터가 이미지로 싣는다. 이미지의 대체 텍스트에
+ * 표가 들어 있어 옮겼는데, alt 만 모으면 어느 표가 어느 조문 것인지 알 수
+ * 없다. DOM 순서로 조문을 붙여 확인한 뒤에만 썼다(2026-09-29).
+ *
+ * 금액은 손으로 적지 않는다 — bill()·baseTax()·taxBase() 가 낸다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import {
+  taxBase,
+  baseTax,
+  bill,
+  halfInstallment,
+  LUMP_SUM_UNDER,
+  BURDEN_CAP,
+  BASE_CAP_RATE,
+} from "../../../lib/property-tax";
+import { formatWon, formatMan } from "../../../lib/money";
+import r from "../../../rates/local-tax-2026.json";
+
+const title = "재산세 부과기준과 납부기간 — 6월 1일에 정해집니다";
+const description =
+  "재산세는 6월 1일 소유자에게 붙습니다. 고지서는 7월과 9월에 나눠 오고, 과세표준은 시가표준액이 아니라 시가표준액에 공정시장가액비율을 곱한 금액입니다. 고지서에는 재산세 본세 외에 도시지역분과 지방교육세가 함께 붙습니다. 지방세법 조문 원문 기준입니다.";
+
+const P = r.propertyTax;
+
+/** 예시 — 한 곳만 바꾸면 본문 금액이 전부 따라온다. */
+const 시가표준액 = 500_000_000;
+const 일반 = bill({ standardValue: 시가표준액, kind: "house" });
+const 특례 = bill({ standardValue: 시가표준액, kind: "house", oneHome: true });
+const 도시 = bill({ standardValue: 시가표준액, kind: "house", oneHome: true, urban: true });
+
+/** 세율 구간을 보여줄 시가표준액들 */
+const 구간예시 = [100_000_000, 200_000_000, 300_000_000, 500_000_000, 1_000_000_000];
+
+const pct = (n: number) => `${(n * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
+const 천분 = (n: number) => `1,000분의 ${n * 1000}`;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+  <h1>{title}</h1>
+
+  <p>
+    재산세에서 가장 많이 어긋나는 것이 <strong>날짜</strong>입니다. 고지서는
+    7월과 9월에 오는데, <strong>누가 내느냐는 6월 1일에 정해집니다.</strong>
+    6월 2일에 집을 팔아도 그해 재산세는 판 사람에게 옵니다. 잔금일이 하루만
+    앞섰으면 사는 쪽이 냈습니다.
+  </p>
+
+  <h2>재산세 납부기간 — 왜 두 번 오나</h2>
+  <p>
+    주택은 한 해 세액을 절반으로 나눠 두 번 보냅니다. 토지는 9월에 한 번,
+    상가 건물은 7월에 한 번입니다.
+  </p>
+  <table>
+    <thead>
+      <tr><th>무엇</th><th>납기</th></tr>
+    </thead>
+    <tbody>
+      {
+        P.periods.map((p) => (
+          <tr>
+            <th scope="row">{p.subject}</th>
+            <td>{p.from} ~ {p.to}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  <p>
+    다만 주택분 세액이 <strong>{formatMan(LUMP_SUM_UNDER)}</strong> 이하면
+    조례로 정하는 바에 따라 7월에 한꺼번에 보낼 수 있습니다. "할 수 있다"라
+    같은 금액이어도 지자체마다 다릅니다. 옆집은 두 번 내는데 우리 집은 한 번
+    내는 일이 여기서 생깁니다.
+  </p>
+  <p>
+    고지서는 납기가 시작되기 <strong>5일 전까지</strong> 발급합니다. 그리고
+    고지서 한 장당 재산세가 <strong>{formatWon(P.minCollect.amount)}</strong> 미만이면
+    아예 징수하지 않습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>재산세 부과기준 — 시가표준액이 과세표준이 아닙니다</h2>
+  <p>
+    여기가 두 번째로 많이 어긋나는 곳입니다. 세율을 곱하는 대상은 시가표준액이
+    아니라 <strong>시가표준액에 공정시장가액비율을 곱한 금액</strong>입니다.
+  </p>
+  <table>
+    <thead>
+      <tr><th>무엇</th><th>비율</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">토지·건축물</th>
+        <td>{pct(P.taxBase.ratios.landAndBuilding)}</td>
+      </tr>
+      <tr>
+        <th scope="row">그 밖의 주택</th>
+        <td>{pct(P.taxBase.ratios.house)}</td>
+      </tr>
+      {
+        P.taxBase.houseOneHouseholdOneHome2026.map((row) => (
+          <tr>
+            <th scope="row">
+              1세대 1주택 · 시가표준액{" "}
+              {row.upTo ? `${formatMan(row.upTo)} 이하` : "초과분"}
+            </th>
+            <td>{pct(row.ratio)}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  <p>
+    법은 범위만 정하고(주택 40~80%, 1세대 1주택 30~70%) 실제 비율은 시행령이
+    해마다 정합니다. <strong>1세대 1주택의 43~45%는 2026년도분에만</strong>
+    해당하는 값입니다. 시가표준액이 9억원을 넘는 주택도 이 구간에 들어갑니다.
+  </p>
+  <p>
+    시가표준액 {formatMan(시가표준액)}짜리 집이면 과세표준이 이렇게 갈립니다 —
+    그 밖의 주택은 {formatMan(taxBase({ standardValue: 시가표준액, kind: "house" }))},
+    1세대 1주택은 {formatMan(taxBase({ standardValue: 시가표준액, kind: "house", oneHome: true }))}입니다.
+  </p>
+
+  <h2>재산세 계산 — 세율은 네 구간입니다</h2>
+  <table>
+    <thead>
+      <tr><th>과세표준</th><th>그 밖의 주택</th><th>1세대 1주택</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">6천만원 이하</th>
+        <td>{천분(P.rates.house.brackets[0].rate)}</td>
+        <td>{천분(P.rates.houseOneHome.brackets[0].rate)}</td>
+      </tr>
+      <tr>
+        <th scope="row">6천만원 ~ 1억 5천만원</th>
+        <td>{formatWon(P.rates.house.brackets[1].base)} + 초과분 {천분(P.rates.house.brackets[1].rate)}</td>
+        <td>{formatWon(P.rates.houseOneHome.brackets[1].base)} + 초과분 {천분(P.rates.houseOneHome.brackets[1].rate)}</td>
+      </tr>
+      <tr>
+        <th scope="row">1억 5천만원 ~ 3억원</th>
+        <td>{formatWon(P.rates.house.brackets[2].base)} + 초과분 {천분(P.rates.house.brackets[2].rate)}</td>
+        <td>{formatWon(P.rates.houseOneHome.brackets[2].base)} + 초과분 {천분(P.rates.houseOneHome.brackets[2].rate)}</td>
+      </tr>
+      <tr>
+        <th scope="row">3억원 초과</th>
+        <td>{formatWon(P.rates.house.brackets[3].base)} + 초과분 {천분(P.rates.house.brackets[3].rate)}</td>
+        <td>{formatWon(P.rates.houseOneHome.brackets[3].base)} + 초과분 {천분(P.rates.houseOneHome.brackets[3].rate)}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>시가표준액으로 보면 이렇게 나옵니다. 한 해 본세 기준입니다.</p>
+  <table>
+    <thead>
+      <tr><th>시가표준액</th><th>그 밖의 주택</th><th>1세대 1주택</th></tr>
+    </thead>
+    <tbody>
+      {
+        구간예시.map((v) => (
+          <tr>
+            <th scope="row">{formatMan(v)}</th>
+            <td>{formatWon(baseTax({ standardValue: v, kind: "house" }))}</td>
+            <td>{formatWon(baseTax({ standardValue: v, kind: "house", oneHome: true }))}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  <p>
+    1세대 1주택 특례는 공정시장가액비율과 세율 <strong>양쪽에서</strong>
+    깎입니다. 그래서 차이가 큽니다 — {formatMan(시가표준액)}짜리 집이면
+    {formatWon(일반.propertyTax)}과 {formatWon(특례.propertyTax)}입니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>고지서가 계산기보다 큰 이유</h2>
+  <p>
+    재산세 고지서에는 재산세만 있지 않습니다. 세 가지가 한 장에 옵니다.
+  </p>
+  <table>
+    <thead>
+      <tr><th>항목</th><th>계산</th><th>{formatMan(시가표준액)} 1세대 1주택</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">재산세 본세</th>
+        <td>과세표준 × 세율</td>
+        <td>{formatWon(도시.propertyTax)}</td>
+      </tr>
+      <tr>
+        <th scope="row">재산세 도시지역분</th>
+        <td>과세표준 × {pct(P.urbanArea.rate)}</td>
+        <td>{formatWon(도시.urbanArea)}</td>
+      </tr>
+      <tr>
+        <th scope="row">지방교육세</th>
+        <td>본세 × {pct(P.localEducationTax.rate)}</td>
+        <td>{formatWon(도시.educationTax)}</td>
+      </tr>
+      <tr>
+        <th scope="row">합계</th>
+        <td>&nbsp;</td>
+        <td><strong>{formatWon(도시.total)}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    <strong>도시지역분은 지역마다 다릅니다.</strong> 도시지역 중 지방의회가
+    의결해 고시한 지역에만 붙고, 조례로 {pct(P.urbanArea.capByOrdinance)}까지
+    달리 정할 수 있습니다. 도시지역이 아니면 이 줄이 없어서 합계가
+    {formatWon(특례.total)}입니다.
+  </p>
+  <p>
+    지방교육세는 본세의 {pct(P.localEducationTax.rate)}인데,
+    <strong>도시지역분은 그 계산에서 뺍니다.</strong> 그래서 도시지역이어도
+    지방교육세 금액은 같습니다.
+  </p>
+
+  <h2>세부담 상한 — 집에는 없습니다</h2>
+  <p>
+    "재산세는 작년의 {pct(BURDEN_CAP - 1)}까지만 오른다"고 알고 계신 분이
+    많습니다. 지방세법 제122조에 그 상한이 있는 것은 맞습니다. 다만 같은
+    조문 본문이 <strong>"주택의 경우에는 적용하지 아니한다"</strong>로
+    끝납니다. 2023년에 개정되면서 주택이 빠졌습니다.
+  </p>
+  <p>
+    주택에는 대신 다른 장치가 있습니다. 과세표준이 직전 연도 과세표준
+    상당액의 <strong>{pct(1 + BASE_CAP_RATE)}</strong>를 넘지 못합니다.
+    세액이 아니라 <em>과세표준</em>을 묶는 방식이라, 세율 구간이 바뀌면
+    세액은 그보다 더 오를 수 있습니다.
+  </p>
+
+  <h2>조회와 납부는 위택스입니다</h2>
+  <p>
+    재산세는 국세가 아닙니다. 시·군·구가 부과하므로 홈택스에 없습니다.
+    조회와 납부는 위택스(wetax.go.kr) 또는 해당 지자체에서 합니다. 서울은
+    이택스(etax.seoul.go.kr)를 따로 씁니다.
+  </p>
+
+  <h2>이 글에 아직 없는 것</h2>
+  <ul>
+    <li>
+      <strong>지역자원시설세</strong> — 소방분이 재산세 고지서에 함께 붙는
+      경우가 많은데, 지방세법 제141조 이하를 아직 읽지 않았습니다. 그래서 위
+      합계에 들어 있지 않습니다.
+    </li>
+    <li>
+      <strong>1세대 1주택의 범위</strong> — 시행령 제110조의2가 정하는데
+      제외 대상이 여럿입니다(사원용 주택, 기숙사, 등록임대주택 등).
+      내 집이 여기 해당하는지는 지자체에 확인해야 합니다.
+    </li>
+    <li>
+      <strong>시가표준액</strong> — 주택은 공시가격, 그 밖은 지자체가 정한
+      가액입니다. 부동산공시가격알리미(realtyprice.kr)에서 확인합니다.
+    </li>
+  </ul>
+  <p>
+    확인되는 대로 채웁니다. 여기 없는 항목이라고 고지서에 없는 것은
+    아닙니다.
+  </p>
+</GuideLayout>

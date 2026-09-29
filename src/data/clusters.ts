@@ -54,6 +54,9 @@ export const clusterColor: Record<
   // 상속·증여는 네 번째 축이다. 앞의 셋과 달리 "해마다 내는 세금" 이 아니라
   // 한 번 오는 일이라, 색도 따뜻한 쪽으로 떼어 놓는다.
   inheritance: { bg: "#fbeee6", wm: "#f0cdb4", ink: "#8a4a1c", mark: "#a85820" },
+  // 지방세는 다섯 번째 축이다. 국세 셋(초록·파랑·보라)과 섞이면 "세무서에
+  // 내는 것" 으로 읽히므로, 흙빛 쪽으로 떼어 놓는다 — 집과 땅의 세금이다.
+  localtax: { bg: "#f0f1e8", wm: "#d3d6bd", ink: "#5a5f2e", mark: "#6e7438" },
 };
 
 export const clusters: Cluster[] = [
@@ -64,7 +67,6 @@ export const clusters: Cluster[] = [
       { href: "/freelancer-33/", title: "프리랜서 3.3% 계산기", kind: "calc", icon: "percent", blurb: "계약금액 → 실수령액, 실수령액 → 계약금액 역산" },
       { href: "/withholding/", title: "원천징수 계산기 (3.3%·8.8%)", kind: "calc", icon: "receipt", blurb: "사업소득 3.3%·기타소득 8.8% 원천징수액과 실수령액" },
       { href: "/income-tax-refund/", title: "종소세 환급 예상 계산기", kind: "calc", icon: "coins", blurb: "총수입·경비율·공제로 5월 환급/추가납부 예상" },
-      { href: "/guide/tax-year/", title: "한 해 동안 내는 세금 정리 — 국세와 지방세", kind: "guide", icon: "calendar" },
       { href: "/guide/33-settlement/", title: "3.3%는 종합소득세에서 정산됩니다", kind: "guide", icon: "refresh" },
       { href: "/guide/who-must-file/", title: "종합소득세 신고 대상, 나는 해야 하나", kind: "guide", icon: "checklist", year: 2026 },
       { href: "/guide/income-tax-brackets/", title: "종합소득세 세율 구간", kind: "guide", icon: "chart", year: 2026 },
@@ -102,6 +104,19 @@ export const clusters: Cluster[] = [
       { href: "/guide/retirement-fund/", title: "노후자금 얼마 있어야 하나", kind: "guide", icon: "chart" },
       { href: "/guide/severance-to-freelance/", title: "퇴사하고 프리랜서 시작할 때", kind: "guide", icon: "briefcase" },
       { href: "/guide/retirement-pension-loan/", title: "퇴직연금 담보대출, 중도인출과 뭐가 다른가", kind: "guide", icon: "wallet" },
+    ],
+  },
+  /*
+   * 지방세 — 2026-09-29 신설. 여태 국세만 다뤘는데 34번(한 해 세금 허브)이
+   * 빈칸을 드러냈다. 집과 차는 국세청이 아니라 시·군·구가 매긴다.
+   */
+  {
+    id: "localtax",
+    title: "지방세 — 집·차",
+    links: [
+      { href: "/property-tax/", title: "재산세 계산기", kind: "calc", icon: "calculator", blurb: "시가표준액 → 본세·도시지역분·지방교육세를 갈라서" },
+      { href: "/guide/property-tax/", title: "재산세 부과기준과 납부기간", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/tax-year/", title: "한 해 동안 내는 세금 정리", kind: "guide", icon: "calendar" },
     ],
   },
   {

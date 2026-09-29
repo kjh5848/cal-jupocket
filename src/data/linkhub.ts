@@ -59,6 +59,8 @@ export const hubEntries: HubEntry[] = [
   { no: 32, href: "/guide/vat-prepayment/", label: "부가세 예정고지, 얼마가 나오나", kind: "guide" },
   { no: 33, href: "/guide/income-prepayment/", label: "종합소득세 중간예납, 얼마가 나오나", kind: "guide" },
   { no: 34, href: "/guide/tax-year/", label: "한 해 세금, 몇 월에 뭐가 오나", kind: "guide" },
+  { no: 35, href: "/guide/property-tax/", label: "재산세, 6월 1일에 정해진다", kind: "guide" },
+  { no: 36, href: "/property-tax/", label: "재산세 계산기", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -99,6 +101,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
+  { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax"]) },
   {
     label: "종합소득세·원천징수",
     cluster: "income",

@@ -1,0 +1,217 @@
+---
+/**
+ * 재산세 계산기 — "우리 집 고지서가 왜 이 금액인가"에 답하는 자리.
+ *
+ * 다른 재산세 계산기가 대개 본세만 낸다. 그런데 실제 고지서에는 세 줄이
+ * 함께 온다 — 본세 · 도시지역분 · 지방교육세. "계산기로는 30만원인데
+ * 고지서는 40만원"이 여기서 생긴다. 그래서 **항목을 갈라 보여주는 것**이
+ * 이 계산기의 존재 이유다.
+ *
+ * 두 번째로 갈리는 것이 1세대 1주택이다. 공정시장가액비율과 세율 양쪽에서
+ * 깎이므로 차이가 크다. 체크 하나로 그 차이가 바로 보이게 둔다.
+ *
+ * 숫자는 rates/local-tax-2026.json 에서만 온다 — 지방세법·시행령 조문
+ * 원문에서 확인한 값이고, 세율표는 이미지의 대체 텍스트를 조문 위치까지
+ * 대조해 옮겼다.
+ */
+import BaseHead from "../../components/BaseHead.astro";
+import AdSlot from "../../components/AdSlot.astro";
+import ClarityHead from "../../components/ClarityHead.astro";
+import GtagHead from "../../components/GtagHead.astro";
+import TrackLinks from "../../components/TrackLinks.astro";
+import AdSenseHead from "../../components/AdSenseHead.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import NextReads from "../../components/NextReads.astro";
+import Disclaimer from "../../components/Disclaimer.astro";
+import r from "../../rates/local-tax-2026.json";
+import { formatMan } from "../../lib/money";
+import "../../styles/global.css";
+
+const title = "재산세 계산기 — 고지서 금액 그대로";
+const description =
+  "시가표준액만 넣으면 재산세 본세·도시지역분·지방교육세를 갈라서 보여줍니다. 1세대 1주택이면 공정시장가액비율과 세율 양쪽이 깎여 금액이 크게 달라집니다. 3억·5억·9억 바로 계산. 지방세법 조문 원문 기준.";
+
+const P = r.propertyTax;
+const pct = (v: number) => `${(v * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>재산세 계산기</h1>
+      <p>
+        시가표준액을 넣으면 <strong>고지서에 찍히는 금액</strong>이 나옵니다.
+        재산세 고지서에는 본세만 있지 않습니다 — <strong>도시지역분</strong>과
+        <strong>지방교육세</strong>가 함께 옵니다. 그래서 본세만 계산하면
+        실제보다 적게 나옵니다.
+      </p>
+
+      <div class="calc-card">
+        <div class="calc-input-wrap">
+          <label id="input-label" for="standard-value">시가표준액 (주택은 공시가격)</label>
+          <input type="text" inputmode="numeric" id="standard-value" value="500,000,000" />
+          <span class="unit">원</span>
+        </div>
+
+        <div class="amount-presets" role="group" aria-label="금액 빠르게 고르기">
+          <button type="button" class="preset-chip" data-value="200000000">2억</button>
+          <button type="button" class="preset-chip" data-value="300000000">3억</button>
+          <button type="button" class="preset-chip" data-value="500000000">5억</button>
+          <button type="button" class="preset-chip" data-value="900000000">9억</button>
+          <button type="button" class="preset-chip" data-value="1500000000">15억</button>
+        </div>
+
+        <div class="calc-input-wrap toggle-row">
+          <label for="one-home">1세대 1주택이다</label>
+          <input type="checkbox" id="one-home" checked />
+        </div>
+
+        <div class="calc-input-wrap toggle-row">
+          <label for="urban">도시지역분이 붙는 지역이다</label>
+          <input type="checkbox" id="urban" checked />
+        </div>
+        <p class="meta">
+          도시지역 중 지방의회가 의결해 고시한 지역에만 붙습니다. 고지서에
+          “재산세 도시지역분” 줄이 있으면 켜 두세요.
+        </p>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">한 해 고지서 합계</p>
+          <p class="big" id="hero-value">0원</p>
+        </div>
+
+        <div id="breakdown" class="breakdown"></div>
+
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">과세표준</span>
+            <span class="value" id="stat1-value">0원</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">공정시장가액비율</span>
+            <span class="value" id="stat2-value">—</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">재산세 본세</span>
+            <span class="value" id="stat3-value">0원</span>
+          </div>
+        </div>
+
+        <p id="split-note" class="meta"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+          <button id="btn-copy" type="button" class="secondary">결과 복사</button>
+        </div>
+        <p id="copy-toast" class="meta" style="display:none;">결과를 복사했어요.</p>
+      </div>
+
+      <div class="callout warn">
+        <p>
+          ⚠️ <strong>세율을 곱하는 대상은 시가표준액이 아닙니다.</strong>
+          시가표준액에 공정시장가액비율을 곱한 금액이 과세표준입니다.
+          그 밖의 주택은 {pct(P.taxBase.ratios.house)}, 1세대 1주택은
+          2026년도분에 한해 시가표준액 구간별로 43·44·45%입니다.
+        </p>
+      </div>
+
+      <details>
+        <summary>재산세는 언제 나오나요?</summary>
+        <p>
+          과세기준일은 <strong>{P.assessmentDate}</strong>입니다. 이날
+          소유자가 그해 재산세를 전부 냅니다 — 6월 2일에 팔아도 판 사람에게
+          옵니다. 고지서는 주택이 7월과 9월에 절반씩, 토지는 9월, 건축물은
+          7월에 옵니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>세부담 상한 150%가 집에도 적용되나요?</summary>
+        <p>
+          아닙니다. 지방세법 제122조에 {pct(P.burdenCap - 1)} 상한이 있지만
+          같은 조문이 <strong>“주택의 경우에는 적용하지 아니한다”</strong>로
+          끝납니다. 2023년 개정으로 주택이 빠졌습니다. 주택에는 대신 과세표준이
+          직전 연도의 {pct(1 + P.baseCapRate)}를 넘지 못하는 장치가 있습니다.
+        </p>
+      </details>
+
+      <p>
+        부과기준·납부기간·고지서 항목은{" "}
+        <a href="/guide/property-tax/">재산세 부과기준과 납부기간</a>에
+        정리했습니다. 한 해 전체 일정은{" "}
+        <a href="/guide/tax-year/">한 해 동안 내는 세금</a>에 있습니다.
+      </p>
+
+      <p class="meta">
+        공정시장가액비율은 지방세법 시행령 제109조, 세율은 법 제111조·제111조의2,
+        도시지역분 {pct(P.urbanArea.rate)}는 제112조, 지방교육세{" "}
+        {pct(P.localEducationTax.rate)}는 제151조 제1항 제6호,
+        과세기준일과 납기는 제114조·제115조에서 확인한 값입니다
+        ({r.verifiedOn} 확인 · {r.lawVersion}).
+        <strong>지역자원시설세는 넣지 않았습니다</strong> — 소방분이 고지서에
+        함께 붙는 경우가 많은데 아직 조문을 읽지 않았습니다. 1세대 1주택
+        해당 여부, 감면, 임대주택 특례에 따라 실제 금액은 달라집니다.
+        고지서가 다르면 관할 시·군·구나 위택스에서 확인하세요.
+      </p>
+
+      <NextReads path="/property-tax/" />
+
+      <AdSlot label="property-tax-result" />
+
+      <Disclaimer variant="calc" />
+    </main>
+    <SiteFooter />
+    <TrackLinks />
+    <script src="../../scripts/property-tax.ts"></script>
+  </body>
+</html>
+
+<style>
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .toggle-row input[type="checkbox"] {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--brand);
+    flex: 0 0 auto;
+  }
+  .toggle-row label {
+    margin: 0;
+  }
+
+  /* 고지서 항목 — 합계만 보여주면 "왜 이 금액인지"를 못 본다. */
+  .breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.9rem 0 0.25rem;
+  }
+  .bd-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 0.9375rem;
+  }
+  .bd-label {
+    color: var(--muted);
+  }
+  .bd-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+</style>

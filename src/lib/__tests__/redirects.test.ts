@@ -66,13 +66,23 @@ describe.skipIf(list.length === 0)("_redirects", () => {
     expect(dead.map((r) => r.to)).toEqual([]);
   });
 
-  it.skipIf(!built)("모든 가이드가 옛 주소에서 찾아진다", () => {
-    // 가이드가 늘 때마다 _redirects 도 같이 늘어야 한다.
+  it.skipIf(!built)("모든 가이드의 루트 주소가 어디로든 간다", () => {
+    /*
+     * 가이드가 늘 때마다 루트 주소(/slug/)가 어디론가 가야 한다. 옛
+     * 색인이 그 주소를 들고 있기 때문이다.
+     *
+     * 가는 곳은 둘 중 하나다 — _redirects 로 /guide/slug/ 에 보내거나,
+     * **그 자리에 실제 페이지가 있거나.** 재산세가 두 번째 경우다:
+     * /property-tax/ 는 계산기이고 /guide/property-tax/ 는 글이다.
+     * 여기에 리다이렉트를 걸면 계산기가 사라진다.
+     */
     const guides = readdirSync(join(DIST, "guide")).filter((g) =>
       statSync(join(DIST, "guide", g)).isDirectory(),
     );
     const covered = new Set(list.map((r) => r.to.replace(/^\/|\/$/g, "")));
-    const missing = guides.filter((g) => !covered.has(`guide/${g}`));
+    const missing = guides.filter(
+      (g) => !covered.has(`guide/${g}`) && !pageExists(`/${g}/`),
+    );
     expect(missing).toEqual([]);
   });
 });
