@@ -140,6 +140,19 @@ export const TAX_EVENTS: TaxEvent[] = [
     kind: "신고",
   },
 
+  {
+    month: 5,
+    label: "지방소득세 확정신고",
+    from: "5월 1일",
+    to: "5월 31일",
+    domain: "work",
+    who: "종합소득세를 신고하는 사람. 같은 기한인데 내는 곳이 다르다 — 위택스",
+    article: "지방세법 제95조 제1항",
+    source: "local-tax-2026.json",
+    href: "/guide/local-income-tax/",
+    kind: "신고",
+  },
+
   // ── 6월 ────────────────────────────────────────────────
   {
     month: 6,

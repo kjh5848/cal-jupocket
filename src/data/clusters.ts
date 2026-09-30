@@ -121,6 +121,7 @@ export const clusters: Cluster[] = [
       { href: "/acquisition-tax/", title: "취득세 계산기", kind: "calc", icon: "calculator", blurb: "취득가액·원인 → 취득세와 지방교육세, 신고기한까지" },
       { href: "/guide/vehicle-tax/", title: "자동차세 납부기간과 계산", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/acquisition-tax/", title: "취득세 세율과 신고기한", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/local-income-tax/", title: "지방소득세, 5월에 따로 냅니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/tax-year/", title: "한 해 동안 내는 세금 정리", kind: "guide", icon: "calendar" },
     ],
   },

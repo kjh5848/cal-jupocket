@@ -1,0 +1,155 @@
+---
+/**
+ * "지방소득세" — 서른두 번째 글(42번).
+ *
+ * 5월에 종합소득세를 내고 나서 "또 뭐가 나왔다" 는 경험이 흔한데,
+ * 그게 이것이다. 국세가 아니라 지방세이고 신고처가 다르다.
+ *
+ * **"소득세의 10%" 라고 쓰지 않는다.** 정확히는 소득세 산출세액의 10%가
+ * 아니라 **같은 과세표준에 1/10 세율표**를 적용한 것이다. 공제·감면이
+ * 없으면 결과가 같지만(테스트로 확인했다) 계산 대상이 다르다.
+ *
+ * 그리고 이 글은 34번 허브의 빈칸이기도 하다 — 5월 칸에 종합소득세만
+ * 있고 지방소득세가 없었다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import { taxOn, BRACKETS, INSTALLMENT, ORDINANCE } from "../../../lib/local-income-tax";
+import { formatWon, formatMan } from "../../../lib/money";
+import r from "../../../rates/local-tax-2026.json";
+
+const title = "지방소득세 — 5월에 종합소득세와 따로 냅니다";
+const description =
+  "종합소득세를 신고하면 개인지방소득세를 같은 기한까지 따로 신고·납부해야 합니다. 소득세 산출세액의 10%가 아니라 같은 과세표준에 1/10 세율을 적용합니다. 신고처가 홈택스가 아니라 위택스이고, 100만원을 넘으면 두 달 안에 나눠 낼 수 있습니다.";
+
+const L = r.localIncomeTax;
+const 예시 = [10_000_000, 30_000_000, 60_000_000, 100_000_000, 200_000_000];
+const 천분 = (v: number) => `1,000분의 ${v * 1000}`;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+  <h1>{title}</h1>
+
+  <p>
+    5월에 종합소득세를 내고 나면 하나가 더 옵니다. <strong>개인지방소득세</strong>
+    입니다. 새로 생긴 세금이 아니라 원래 있던 것인데, 국세가 아니라
+    지방세라 <strong>신고처가 다릅니다.</strong>
+  </p>
+
+  <h2>언제 내나 — 소득세와 같은 기한입니다</h2>
+  <p>
+    조문은 이렇습니다 — 소득세법에 따라 종합소득 과세표준확정신고를 하는
+    경우에는 <strong>그 신고기한까지</strong> 개인지방소득세도 관할
+    지방자치단체에 확정신고·납부해야 합니다.
+  </p>
+  <p>
+    그래서 5월 31일이 기한입니다. 성실신고확인대상자면 6월 30일입니다.
+    날짜는 같은데 <strong>내는 곳이 다릅니다</strong> — 소득세는
+    세무서(홈택스), 지방소득세는 시·군·구(위택스)입니다.
+  </p>
+  <p>
+    다행히 조문에 안전장치가 있습니다. 관할이 아닌 지자체에 신고해도{" "}
+    <strong>신고의 효력에는 영향이 없습니다.</strong> 주소를 옮겼는데 옛
+    주소지에 신고했다고 무효가 되지는 않습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>얼마인가 — 소득세의 10%가 아닙니다</h2>
+  <p>
+    흔히 "소득세의 10%"라고 합니다. 결과는 대개 맞는데 계산하는 대상이
+    다릅니다. 조문은 <strong>산출세액의 10%</strong>가 아니라
+    <strong>같은 과세표준에 1/10 세율표</strong>를 적용하라고 합니다.
+  </p>
+  <table>
+    <thead>
+      <tr><th>과세표준</th><th>세율</th></tr>
+    </thead>
+    <tbody>
+      {
+        BRACKETS.map((b, i) => (
+          <tr>
+            <th scope="row">
+              {i === 0
+                ? `${formatMan(b.upTo!)} 이하`
+                : b.upTo === null
+                  ? `${formatMan(BRACKETS[i - 1].upTo!)} 초과`
+                  : `${formatMan(BRACKETS[i - 1].upTo!)} 초과 ~ ${formatMan(b.upTo)} 이하`}
+            </th>
+            <td>
+              {b.base === 0
+                ? `과세표준의 ${천분(b.rate)}`
+                : `${formatWon(b.base)} + 초과분의 ${천분(b.rate)}`}
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  <p>
+    소득세 기본세율(6~45%)과 <strong>구간이 같고 세율만 1/10</strong>입니다.
+    그래서 세액공제나 감면이 없으면 딱 10분의 1이 나옵니다. 공제가 끼면
+    갈릴 수 있어서, 이 사이트는 소득세액에서 10%를 곱하지 않고 과세표준에서
+    다시 계산합니다.
+  </p>
+  <table>
+    <thead>
+      <tr><th>과세표준</th><th>지방소득세</th></tr>
+    </thead>
+    <tbody>
+      {
+        예시.map((b) => (
+          <tr>
+            <th scope="row">{formatMan(b)}</th>
+            <td>{formatWon(taxOn(b))}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <h2>지역마다 다를 수 있습니다</h2>
+  <p>
+    지방자치단체는 조례로 이 표준세율을 <strong>{ORDINANCE.rate * 100}%
+    범위에서 올리거나 내릴 수 있습니다.</strong> 실제로 그렇게 한 곳이
+    있는지는 확인하지 않았습니다 — 조문에 그 여지가 있다는 것까지가 우리가
+    확인한 사실입니다.
+  </p>
+
+  <h2>100만원을 넘으면 나눠 낼 수 있습니다</h2>
+  <p>
+    납부할 세액이 <strong>{formatMan(INSTALLMENT.over)}을 초과</strong>하면
+    일부를 납부기한이 지난 후 <strong>{INSTALLMENT.months}개월 이내</strong>에
+    나눠 낼 수 있습니다. 2023년에 새로 생긴 조항입니다.
+  </p>
+  <p>
+    종합소득세 쪽에도 비슷한 분납이 있습니다 —{" "}
+    <a href="/guide/who-must-file/">종합소득세 신고 대상</a>과{" "}
+    <a href="/guide/income-prepayment/">종합소득세 중간예납</a>을 함께
+    보세요.
+  </p>
+
+  <h2>직장인은 이미 내고 있습니다</h2>
+  <p>
+    근로소득자는 매달 급여에서 소득세와 함께 지방소득세가 떼입니다. 급여
+    명세서에 "지방소득세"라는 줄이 그것입니다. 연말정산으로 정산되므로
+    따로 5월에 신고할 일은 대개 없습니다.
+  </p>
+  <p>
+    다만 근로소득 외에 다른 소득이 있어 5월에 종합소득세를 신고한다면,
+    지방소득세도 함께 정산됩니다.{" "}
+    <a href="/guide/year-end-settlement/">연말정산 기간과 순서</a>에 그
+    구조가 있습니다.
+  </p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>특별징수</strong> — 매달 떼이는 구조의 조문(제103조의13)을 읽지 않았습니다.</li>
+    <li><strong>퇴직소득·양도소득</strong> 개인지방소득세 — 계산 방식이 따로 있습니다.</li>
+    <li><strong>법인지방소득세</strong> — 개인만 다뤘습니다.</li>
+  </ul>
+  <p>
+    한 해 전체 일정은 <a href="/guide/tax-year/">한 해 동안 내는 세금</a>에
+    있습니다.
+  </p>
+</GuideLayout>

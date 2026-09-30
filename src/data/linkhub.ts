@@ -66,6 +66,7 @@ export const hubEntries: HubEntry[] = [
   { no: 39, href: "/guide/acquisition-tax/", label: "취득세, 사면 60일 안에", kind: "guide" },
   { no: 40, href: "/acquisition-tax/", label: "취득세 계산기", kind: "calc" },
   { no: 41, href: "/guide/year-end-settlement/", label: "연말정산, 2월에 끝난다", kind: "guide" },
+  { no: 42, href: "/guide/local-income-tax/", label: "지방소득세, 5월에 따로", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -106,7 +107,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
-  { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax"]) },
+  { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax"]) },
   {
     label: "종합소득세·원천징수",
     cluster: "income",
