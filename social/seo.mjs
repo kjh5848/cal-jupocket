@@ -7,6 +7,7 @@
  *   node social/seo.mjs --calcs    계산기 일곱 개만 비교한다(대표 계산기 판단용)
  *   node social/seo.mjs --track    검색어를 날짜별로 쌓는다(seo-history.json)
  *   node social/seo.mjs --trend    쌓인 것에서 오르는 말·내리는 말을 본다
+ *   node social/seo.mjs --track --backfill   차원을 새로 붙였을 때 한 번
  *
  * 스레드·인스타 지표(stats.mjs)가 "우리가 밀어서 온 사람"이라면 여기 숫자는
  * "검색으로 찾아온 사람"이다. 둘은 성격이 달라서 같은 표에 넣지 않는다.
@@ -240,8 +241,17 @@ const siteUrl = env.GSC_SITE_URL;
 const readHistory = () =>
   existsSync(HISTORY) ? JSON.parse(readFileSync(HISTORY, "utf8")) : { rows: [] };
 
-/** GSC 를 날짜 × 차원으로 받아 납작한 줄로 만든다. */
+/**
+ * GSC 를 날짜 × 차원으로 받아 납작한 줄로 만든다.
+ *
+ * dimension 에 배열을 주면 두 차원을 함께 받는다. `["query","page"]` 가
+ * 그 경우인데, **이 쌍이 있어야 "어떤 말로 어느 쪽에 들어왔나" 를 물을 수
+ * 있다.** 검색어와 페이지를 따로 쌓으면 둘을 이을 방법이 없다 —
+ * 2026-09-30 에 그걸 알고 뒤늦게 붙였다.
+ */
 async function fetchDaily(dimension, from, to) {
+  const dims = Array.isArray(dimension) ? dimension : [dimension];
+  const kind = dims.join("+");
   const out = [];
   let startRow = 0;
   for (;;) {
@@ -251,21 +261,21 @@ async function fetchDaily(dimension, from, to) {
       {
         startDate: from,
         endDate: to,
-        dimensions: ["date", dimension],
+        dimensions: ["date", ...dims],
         rowLimit: 25000,
         startRow,
       },
     );
     if (!r.ok) {
-      console.error(`✖ GSC ${dimension} 실패 (${r.status})`);
+      console.error(`✖ GSC ${kind} 실패 (${r.status})`);
       break;
     }
     const rows = r.json.rows ?? [];
     for (const x of rows) {
       out.push({
         date: x.keys[0],
-        kind: dimension,
-        key: x.keys[1],
+        kind,
+        key: x.keys.slice(1).join(" → "),
         clicks: x.clicks,
         impressions: x.impressions,
         position: Math.round(x.position * 10) / 10,
@@ -281,14 +291,22 @@ if (has("--track")) {
   const hist = readHistory();
   const seen = new Map(hist.rows.map((r) => [`${r.date}|${r.kind}|${r.key}`, r]));
 
-  // 처음이면 넉넉히, 그 다음부터는 최근 며칠만 다시 받는다.
-  const lastDate = hist.rows.reduce((m, r) => (r.date > m ? r.date : m), "");
-  const from = lastDate ? ago(RECHECK_DAYS + GSC_LAG) : ago(480);
+  /*
+   * 시작일은 **종류마다 따로** 잡는다. 차원을 새로 추가하면 그 종류만
+   * 이력이 비어 있는데, 전체에 하나의 lastDate 를 쓰면 새 종류가 최근
+   * 열흘치만 채워진다 — 2026-09-30 에 query+page 를 붙이며 겪었다.
+   */
   const to = endDate;
+  const lastOf = (kind) =>
+    hist.rows.reduce((m, r) => (r.kind === kind && r.date > m ? r.date : m), "");
 
   let added = 0;
   let updated = 0;
-  for (const dim of ["query", "page"]) {
+  for (const dim of ["query", "page", ["query", "page"]]) {
+    const kind = Array.isArray(dim) ? dim.join("+") : dim;
+    // --backfill 은 이력을 무시하고 처음부터 다시 받는다. 차원을 새로
+    // 붙였을 때 한 번 쓴다.
+    const from = !has("--backfill") && lastOf(kind) ? ago(RECHECK_DAYS + GSC_LAG) : ago(480);
     const rows = await fetchDaily(dim, from, to);
     for (const r of rows) {
       const k = `${r.date}|${r.kind}|${r.key}`;
@@ -313,7 +331,7 @@ if (has("--track")) {
 
   const days = new Set(rows.map((r) => r.date));
   console.log(
-    `\n검색어 추적 — ${from} ~ ${to} 를 받았습니다.\n` +
+    `\n검색어 추적 — ~ ${to} 를 받았습니다.\n` +
       `  새로 ${added}줄 · 갱신 ${updated}줄 · 누적 ${rows.length}줄 (${days.size}일)\n` +
       `  → social/seo-history.json\n`,
   );
