@@ -73,6 +73,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/expense-rate/", title: "단순경비율 vs 기준경비율", kind: "guide", icon: "document", year: 2026 },
       { href: "/guide/multiple-payers/", title: "거래처 여러 곳, 3.3%와 합산신고", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/family-deduction/", title: "인적공제, 부양가족 누구까지", kind: "guide", icon: "checklist", year: 2026 },
+      { href: "/guide/year-end-settlement/", title: "연말정산 기간과 순서", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/penalty/", title: "가산세 계산기 (기한 후 신고)", kind: "calc", icon: "calendar", blurb: "신고를 놓쳤을 때 지금 신고하면 얼마인지" },
       { href: "/guide/late-filing-penalty/", title: "종합소득세·부가세 신고 기한을 놓쳤다면", kind: "guide", icon: "checklist", year: 2026 },
       { href: "/guide/late-filing-refund/", title: "기한후신고 환급, 언제까지 되고 언제 들어오나", kind: "guide", icon: "coins", year: 2026 },

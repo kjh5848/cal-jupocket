@@ -65,6 +65,7 @@ export const hubEntries: HubEntry[] = [
   { no: 38, href: "/vehicle-tax/", label: "자동차세 계산기", kind: "calc" },
   { no: 39, href: "/guide/acquisition-tax/", label: "취득세, 사면 60일 안에", kind: "guide" },
   { no: 40, href: "/acquisition-tax/", label: "취득세 계산기", kind: "calc" },
+  { no: 41, href: "/guide/year-end-settlement/", label: "연말정산, 2월에 끝난다", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -119,6 +120,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/family-deduction",
       "/guide/late-filing-refund",
       "/guide/income-prepayment",
+      "/guide/year-end-settlement",
     ]),
   },
   {
