@@ -17,7 +17,8 @@
     "seo": "node social/seo.mjs",
     "queue": "node social/queue-status.mjs",
     "cards": "node social/render-cards.mjs",
-    "calcs": "node social/seo.mjs --calcs"
+    "calcs": "node social/seo.mjs --calcs",
+    "report": "node social/report.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.0.0",

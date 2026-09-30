@@ -22,3 +22,7 @@ desktop.ini
 
 .worktrees/
 scripts/post-due.log
+
+# 주간 보고 산출물 — 매주 바뀌고 이력은 seo-history 가 들고 있다
+social/report.json
+scripts/weekly-report.log
