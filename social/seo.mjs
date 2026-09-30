@@ -5,6 +5,8 @@
  *   node social/seo.mjs             최근 28일 쿼리·페이지 성과를 본다
  *   node social/seo.mjs --days 7    기간을 바꾼다
  *   node social/seo.mjs --calcs    계산기 일곱 개만 비교한다(대표 계산기 판단용)
+ *   node social/seo.mjs --track    검색어를 날짜별로 쌓는다(seo-history.json)
+ *   node social/seo.mjs --trend    쌓인 것에서 오르는 말·내리는 말을 본다
  *
  * 스레드·인스타 지표(stats.mjs)가 "우리가 밀어서 온 사람"이라면 여기 숫자는
  * "검색으로 찾아온 사람"이다. 둘은 성격이 달라서 같은 표에 넣지 않는다.
@@ -19,7 +21,7 @@
  * GSC 는 "데이터가 없음" 과 "권한이 없음" 이 둘 다 빈 결과로 보이기 쉽다.
  * 그래서 --check 를 따로 두고, 접근 가능한 속성 목록을 먼저 보여준다.
  */
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, writeFileSync } from "node:fs";
 import { createSign } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -210,6 +212,182 @@ if (has("--check")) {
   process.exit(0);
 }
 
+/* ------------------------------------------------ 검색어 추적 (--track) */
+
+/**
+ * 검색어를 **날짜별로** 쌓는다.
+ *
+ * `npm run seo` 는 화면에 뿌리고 끝난다. 그래서 "지난주보다 늘었나" 를
+ * 물을 수가 없었다. GSC 는 16개월치를 들고 있지만 **날짜를 나눠 달라고
+ * 해야** 주고, 우리가 그걸 어디에도 안 적고 있었다.
+ *
+ * **스냅샷을 겹쳐 담지 않는다.** "최근 28일" 을 매번 저장하면 같은 날이
+ * 여러 줄에 들어가 합계가 부풀어 오른다. 대신 `date` 차원을 함께 받아
+ * (날짜, 검색어) 를 키로 덮어쓴다 — 몇 번을 돌려도 결과가 같다.
+ *
+ * **최근 것은 다시 받는다.** GSC 는 3일쯤 늦게 집계되고, 이미 준 값도
+ * 며칠 안에 고쳐진다. 그래서 마지막 RECHECK_DAYS 만큼은 매번 덮어쓴다.
+ */
+const HISTORY = join(HERE, "seo-history.json");
+const RECHECK_DAYS = 10;
+
+/*
+ * siteUrl 은 --track · --trend 와 아래 성과 출력이 함께 쓴다. 원래는
+ * 성과 출력 바로 위에 있었는데, 그러면 위에서 참조할 때 TDZ 에 걸린다.
+ */
+const siteUrl = env.GSC_SITE_URL;
+
+const readHistory = () =>
+  existsSync(HISTORY) ? JSON.parse(readFileSync(HISTORY, "utf8")) : { rows: [] };
+
+/** GSC 를 날짜 × 차원으로 받아 납작한 줄로 만든다. */
+async function fetchDaily(dimension, from, to) {
+  const out = [];
+  let startRow = 0;
+  for (;;) {
+    const r = await api(
+      `${GSC_API}/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`,
+      token,
+      {
+        startDate: from,
+        endDate: to,
+        dimensions: ["date", dimension],
+        rowLimit: 25000,
+        startRow,
+      },
+    );
+    if (!r.ok) {
+      console.error(`✖ GSC ${dimension} 실패 (${r.status})`);
+      break;
+    }
+    const rows = r.json.rows ?? [];
+    for (const x of rows) {
+      out.push({
+        date: x.keys[0],
+        kind: dimension,
+        key: x.keys[1],
+        clicks: x.clicks,
+        impressions: x.impressions,
+        position: Math.round(x.position * 10) / 10,
+      });
+    }
+    if (rows.length < 25000) break;
+    startRow += rows.length;
+  }
+  return out;
+}
+
+if (has("--track")) {
+  const hist = readHistory();
+  const seen = new Map(hist.rows.map((r) => [`${r.date}|${r.kind}|${r.key}`, r]));
+
+  // 처음이면 넉넉히, 그 다음부터는 최근 며칠만 다시 받는다.
+  const lastDate = hist.rows.reduce((m, r) => (r.date > m ? r.date : m), "");
+  const from = lastDate ? ago(RECHECK_DAYS + GSC_LAG) : ago(480);
+  const to = endDate;
+
+  let added = 0;
+  let updated = 0;
+  for (const dim of ["query", "page"]) {
+    const rows = await fetchDaily(dim, from, to);
+    for (const r of rows) {
+      const k = `${r.date}|${r.kind}|${r.key}`;
+      if (seen.has(k)) {
+        Object.assign(seen.get(k), r);
+        updated++;
+      } else {
+        seen.set(k, r);
+        added++;
+      }
+    }
+  }
+
+  const rows = [...seen.values()].sort(
+    (a, b) => a.date.localeCompare(b.date) || a.kind.localeCompare(b.kind),
+  );
+  writeFileSync(
+    HISTORY,
+    JSON.stringify({ updatedAt: new Date().toISOString(), rows }, null, 0) + "\n",
+    "utf8",
+  );
+
+  const days = new Set(rows.map((r) => r.date));
+  console.log(
+    `\n검색어 추적 — ${from} ~ ${to} 를 받았습니다.\n` +
+      `  새로 ${added}줄 · 갱신 ${updated}줄 · 누적 ${rows.length}줄 (${days.size}일)\n` +
+      `  → social/seo-history.json\n`,
+  );
+  process.exit(0);
+}
+
+/* ------------------------------------------------ 추세 (--trend) */
+
+if (has("--trend")) {
+  const hist = readHistory();
+  if (hist.rows.length === 0) {
+    console.log("\n아직 쌓인 것이 없습니다. 먼저 `npm run seo -- --track` 을 돌리세요.\n");
+    process.exit(0);
+  }
+  const win = Number(arg("--window", "14"));
+  const last = hist.rows.reduce((m, r) => (r.date > m ? r.date : m), "");
+  const d = (s, n) => {
+    const t = new Date(s + "T00:00:00Z");
+    t.setUTCDate(t.getUTCDate() - n);
+    return t.toISOString().slice(0, 10);
+  };
+  const midEdge = d(last, win - 1);
+  const prevEdge = d(last, win * 2 - 1);
+
+  const bucket = (from, to) => {
+    const m = new Map();
+    for (const r of hist.rows) {
+      if (r.kind !== "query" || r.date < from || r.date > to) continue;
+      const cur = m.get(r.key) ?? { clicks: 0, impressions: 0, posSum: 0, n: 0 };
+      cur.clicks += r.clicks;
+      cur.impressions += r.impressions;
+      cur.posSum += r.position * r.impressions;
+      cur.n += r.impressions;
+      m.set(r.key, cur);
+    }
+    return m;
+  };
+
+  const now = bucket(midEdge, last);
+  const before = bucket(prevEdge, d(midEdge, 1));
+
+  const keys = new Set([...now.keys(), ...before.keys()]);
+  const rows = [...keys].map((k) => {
+    const a = before.get(k) ?? { clicks: 0, impressions: 0, posSum: 0, n: 0 };
+    const b = now.get(k) ?? { clicks: 0, impressions: 0, posSum: 0, n: 0 };
+    return {
+      key: k,
+      was: a.impressions,
+      now: b.impressions,
+      diff: b.impressions - a.impressions,
+      clicks: b.clicks,
+      pos: b.n ? Math.round((b.posSum / b.n) * 10) / 10 : null,
+    };
+  });
+
+  const fmt = (r) =>
+    `  ${String(r.now).padStart(4)}노출 (${r.diff >= 0 ? "+" : ""}${r.diff})` +
+    `${String(r.clicks).padStart(3)}클릭  ${String(r.pos ?? "—").padStart(5)}위  ${r.key}`;
+
+  console.log(`\n검색어 추세 — 최근 ${win}일(${midEdge}~${last}) 대 그 전 ${win}일\n`);
+  const up = rows.filter((r) => r.diff > 0).sort((a, b) => b.diff - a.diff);
+  const down = rows.filter((r) => r.diff < 0).sort((a, b) => a.diff - b.diff);
+  const fresh = rows.filter((r) => r.was === 0 && r.now > 0).sort((a, b) => b.now - a.now);
+
+  console.log(`■ 새로 걸린 말 ${fresh.length}개`);
+  console.log(fresh.slice(0, 12).map(fmt).join("\n") || "  (없음)");
+  console.log(`\n■ 오르는 말 ${up.length}개`);
+  console.log(up.slice(0, 12).map(fmt).join("\n") || "  (없음)");
+  console.log(`\n■ 내리는 말 ${down.length}개`);
+  console.log(down.slice(0, 8).map(fmt).join("\n") || "  (없음)");
+  console.log("");
+  process.exit(0);
+}
+
 /* ------------------------------------------------ 계산기 비교 (--calcs) */
 
 /**
@@ -393,7 +571,6 @@ if (has("--calcs")) {
 }
 
 /* --- GSC 성과 --- */
-const siteUrl = env.GSC_SITE_URL;
 if (!siteUrl) {
   console.log(
     `GSC_SITE_URL 이 .env 에 없습니다. 위 목록에서 골라 넣으세요 — 예:\n` +
