@@ -68,6 +68,7 @@ export const hubEntries: HubEntry[] = [
   { no: 41, href: "/guide/year-end-settlement/", label: "연말정산, 2월에 끝난다", kind: "guide" },
   { no: 42, href: "/guide/local-income-tax/", label: "지방소득세, 5월에 따로", kind: "guide" },
   { no: 43, href: "/guide/comprehensive-property-tax/", label: "종합부동산세, 12월에", kind: "guide" },
+  { no: 44, href: "/guide/tax-invoice-date/", label: "세금계산서 발행일자", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -134,6 +135,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/vat-filing",
       "/guide/vat-penalty",
       "/guide/vat-prepayment",
+      "/guide/tax-invoice-date",
     ]),
   },
   {

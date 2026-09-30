@@ -1,0 +1,215 @@
+---
+/**
+ * "세금계산서 발행일자" — 서른네 번째 글(44번). 세금계산서 축의 첫 글.
+ *
+ * `docs/keyword-research.md` v16 의 볼륨 사다리 1단계로 쓴다. 머리말
+ * (`전자세금계산서` 18,130)은 지금 100위 밖이므로 겨냥하지 않는다.
+ * 대신 관련 질문과 자동완성이 준 조건부 롱테일을 노린다.
+ *
+ * 소제목은 자동완성 묶음에서 왔다(keywords/tax-invoice-2026-10-01.csv 62개).
+ * 가장 두꺼운 묶음이 **발행일자**다 — 발행일자 10일 · 발행일 작성일자 차이 ·
+ * 발행일자 전월 · 발행 기간 10일 · 발행 기간 초과 · 발행 날짜 · 발행 기준.
+ * 그다음이 간이과세자(9개), 취소(8개), 인증서(6개) 순이다.
+ *
+ * **이 글의 반전.** 관련 질문은 "10일 이후에 발행하면 어떻게 되나요?" 인데,
+ * 제34조를 읽으면 질문의 전제가 틀렸다 — 원칙은 공급시기 당일이고, 10일은
+ * 제3항의 세 경우에만 주어지는 조건부 기한이다. 그리고 세 경우가 모두
+ * **작성 연월일을 무엇으로 적느냐**로 갈린다.
+ *
+ * ⚠️ 인증서·보안카드·홈택스 조작은 쓰지 않는다. 조문 밖이고 화면이 바뀐다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/vat-2026.json";
+import p from "../../../rates/vat-penalty-2026.json";
+
+const title = "세금계산서 발행일자 — 다음 달 10일이 되는 경우는 정해져 있습니다";
+const description =
+  "세금계산서는 원칙적으로 공급시기에 발급합니다. 다음 달 10일까지 미룰 수 있는 것은 월합계처럼 작성 연월일을 정해진 날로 적는 세 경우뿐입니다. 늦으면 공급가액의 1%, 확정신고기한까지 발급하지 않으면 2%입니다. 부가가치세법 제34조 원문 기준입니다.";
+
+const T = r.taxInvoice;
+const pct = (v: number) => `${(v * 100).toFixed(1).replace(/\.0$/, "")}%`;
+const 예시공급가액 = 10_000_000;
+const won = (n: number) => n.toLocaleString("ko-KR") + "원";
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+  <h1>{title}</h1>
+
+  <p>
+    "세금계산서는 다음 달 10일까지 끊으면 된다"고 알고 계신 분이 많습니다.
+    반은 맞습니다. 다만 <strong>아무 거래나 그런 것이 아닙니다.</strong>
+    조문의 원칙은 다른 날이고, 10일은 조건이 붙은 기한입니다.
+  </p>
+
+  <h2>원칙은 공급시기 당일입니다</h2>
+  <p>
+    부가가치세법 제34조 제1항은 이렇게 시작합니다 — 세금계산서는
+    <strong>{T.issueTiming.principle}</strong>에 공급받는 자에게 발급하여야
+    한다.
+  </p>
+  <p>
+    물건을 넘긴 날, 용역을 끝낸 날이 기준입니다. 공급시기가 되기 전에 미리
+    발급하는 것은 됩니다(제2항). <strong>뒤로 미루는 것만 조건이
+    붙습니다.</strong>
+  </p>
+
+  <h2>다음 달 10일이 되는 세 경우</h2>
+  <p>
+    제34조 제3항이 정한 것은 이 셋뿐입니다. 셋 다
+    <strong>작성 연월일을 무엇으로 적느냐</strong>로 갈립니다.
+  </p>
+  <ol>
+    {T.issueTiming.extendedCases.map((c) => (
+      <li set:html={c.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")} />
+    ))}
+  </ol>
+  <p>
+    1번이 흔히 말하는 <strong>월합계 세금계산서</strong>입니다. 한 거래처에
+    한 달 동안 여러 번 공급했을 때, 그 달 공급가액을 합쳐
+    <strong>작성 연월일을 그 달 말일로</strong> 적고 다음 달 10일까지
+    발급하는 방식입니다.
+  </p>
+  <p>
+    10일이 <strong>{T.issueTiming.extendedHoliday}</strong>입니다. 2023년
+    개정으로 조문에 들어왔습니다.
+  </p>
+
+  <div class="callout warn">
+    <p>
+      ⚠️ <strong>건별 거래를 10일까지 미루면 지연발급입니다.</strong>
+      3월 5일에 한 건 공급하고 작성 연월일을 3월 5일로 적었다면, 그 세금계산서의
+      발급기한은 3월 5일입니다. 4월 10일이 아닙니다. 10일이 붙는 것은 위 세
+      경우에 해당할 때뿐입니다.
+    </p>
+  </div>
+
+  <AdSlot />
+
+  <h2>발행일과 작성일자는 다른 말입니다</h2>
+  <p>
+    여기서 대부분 헷갈립니다. 두 날짜가 따로 있습니다.
+  </p>
+  <table>
+    <thead>
+      <tr><th>&nbsp;</th><th>무엇</th><th>제34조에서</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">작성 연월일</th>
+        <td>세금계산서에 적는 날짜. 필요적 기재사항이다</td>
+        <td>이 날짜를 무엇으로 적느냐가 기한을 정한다</td>
+      </tr>
+      <tr>
+        <th scope="row">발급일</th>
+        <td>실제로 발급한 날</td>
+        <td>기한 안이어야 한다</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    월합계로 3월분을 끊는다면 <strong>작성 연월일은 3월 31일</strong>이고
+    <strong>발급일은 4월 10일까지</strong>입니다. 작성 연월일을 4월 5일로
+    적어 버리면 그건 3월분 월합계가 아니라 4월 거래가 됩니다 — 공급시기와
+    안 맞아 부실기재가 됩니다.
+  </p>
+
+  <h2>늦으면 얼마인가</h2>
+  <table>
+    <thead>
+      <tr><th>무엇</th><th>가산세</th><th>공급가액 {won(예시공급가액)}이면</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">지연발급 — 기한은 넘겼지만 확정신고기한까지 발급</th>
+        <td>{pct(p.taxInvoice.lateIssue)}</td>
+        <td>{won(예시공급가액 * p.taxInvoice.lateIssue)}</td>
+      </tr>
+      <tr>
+        <th scope="row">미발급 — 확정신고기한까지 발급하지 않음</th>
+        <td>{pct(p.taxInvoice.notIssued)}</td>
+        <td>{won(예시공급가액 * p.taxInvoice.notIssued)}</td>
+      </tr>
+      <tr>
+        <th scope="row">필요적 기재사항 부실기재</th>
+        <td>{pct(p.taxInvoice.wrongEntry)}</td>
+        <td>{won(예시공급가액 * p.taxInvoice.wrongEntry)}</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    세율이 아니라 <strong>공급가액</strong>에 붙습니다. 1천만원짜리 거래를
+    늦게 끊으면 10만원입니다. 부가세액이 아니라 거래 금액 전체가 기준이라
+    생각보다 큽니다.
+  </p>
+  <p>
+    가산세 전체 구조는 <a href="/guide/vat-penalty/">부가세 가산세</a>에
+    정리했습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>발급과 전송은 별개입니다</h2>
+  <p>
+    {T.electronic.who}는 전자세금계산서로 발급해야 합니다(제32조 제2항).
+    그리고 발급한 뒤 <strong>발급명세를 국세청장에게 전송</strong>해야 합니다
+    (제3항).
+  </p>
+  <p>
+    <strong>이 둘이 따로입니다.</strong> 제때 발급했어도 전송을 놓치면
+    가산세가 붙습니다 — 지연전송 {pct(p.taxInvoice.eTransmitLate)},
+    미전송 {pct(p.taxInvoice.eTransmitNone)}입니다.
+  </p>
+  <p>
+    의무자가 아니어도 전자로 발급하고 전송할 수 있습니다(제5항).
+  </p>
+
+  <h2>공급자가 안 끊어 주면</h2>
+  <p>
+    조문에 길이 있습니다. 공급자가 발급시기에 발급하지 않으면
+    <strong>공급받은 자가 관할 세무서장의 확인을 받아</strong> 발행할 수
+    있습니다(제34조의2). 부도·폐업, 계약 해제·변경도 포함됩니다. 이렇게
+    발행한 것을 매입자발행세금계산서라 하고, 그 부가가치세액은 매입세액으로
+    공제받을 수 있습니다.
+  </p>
+  <div class="callout">
+    <p>
+      실무에서 말하는 <strong>"역발행"과는 다른 제도입니다.</strong> 역발행은
+      공급받는 자가 작성하고 공급자가 승인하는 방식이고, 매입자발행세금계산서는
+      <strong>세무서장 확인</strong>이 필요합니다. 조문에 있는 것은 뒤쪽입니다.
+    </p>
+  </div>
+
+  <h2>잘못 적었으면</h2>
+  <p>
+    기재사항을 착오로 잘못 적었거나 발급 후 사유가 생기면 수정세금계산서를
+    발급할 수 있습니다(제32조 제7항). 다만 <strong>어떤 사유에 어떤
+    방법으로</strong> 발급하는지는 시행령이 정하는데, 이번에 그 조문을 읽지
+    않아 여기 적지 않았습니다.
+  </p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li>
+      <strong>전자 발급 의무 대상</strong> — 제32조 제2항의 "대통령령으로
+      정하는 개인사업자"가 누구인지는 시행령입니다.
+    </li>
+    <li><strong>전송 기한</strong> — 역시 시행령이 정합니다.</li>
+    <li><strong>수정세금계산서 사유와 방법</strong></li>
+    <li>
+      <strong>발급의무 면제 대상</strong> — 제33조가 시행령에 넘깁니다.
+      신용카드매출전표등을 발급하면 세금계산서를 발급하지 않는다는 것까지가
+      조문에 있는 내용입니다.
+    </li>
+    <li>
+      <strong>홈택스 조작 방법·인증서·보안카드</strong> — 조문 밖이고 화면이
+      바뀝니다.
+    </li>
+  </ul>
+  <p>
+    간이과세자가 세금계산서를 발급할 수 있는지는{" "}
+    <a href="/guide/simplified-vat/">간이과세 vs 일반과세</a>에 있습니다.
+    신고 일정은 <a href="/guide/vat-filing/">부가세 신고</a>,
+    한 해 전체는 <a href="/guide/tax-year/">한 해 동안 내는 세금</a>입니다.
+  </p>
+</GuideLayout>
