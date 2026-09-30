@@ -290,6 +290,18 @@ export const TAX_EVENTS: TaxEvent[] = [
   // ── 12월 ───────────────────────────────────────────────
   {
     month: 12,
+    label: "종합부동산세",
+    from: "12월 1일",
+    to: "12월 15일",
+    domain: "property",
+    who: "공시가격이 공제(1세대 1주택 12억 · 그 밖 9억)를 넘는 사람. 국세라 홈택스다",
+    article: "종합부동산세법 제16조 제1항",
+    source: "comprehensive-property-2026.json",
+    href: "/guide/comprehensive-property-tax/",
+    kind: "고지",
+  },
+  {
+    month: 12,
     label: "자동차세 2기분",
     from: "12월 16일",
     to: "12월 31일",
