@@ -91,6 +91,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/vat-penalty/", title: "부가세 가산세, 신고를 제때 해도 붙는다", kind: "guide", icon: "receipt", year: 2026 },
       { href: "/guide/vat-prepayment/", title: "부가세 예정고지, 누구에게 얼마가 나오나", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/tax-invoice-date/", title: "세금계산서 발행일자, 다음 달 10일의 조건", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/simplified-tax-invoice/", title: "간이과세자 세금계산서, 4,800만원이 두 번 나온다", kind: "guide", icon: "receipt", year: 2026 },
     ],
   },
   {
@@ -145,6 +146,18 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/simplified-tax-invoice/",
+  "/guide/tax-invoice-date/",
+  "/guide/comprehensive-property-tax/",
+  "/guide/local-income-tax/",
+  "/guide/year-end-settlement/",
+  "/acquisition-tax/",
+  "/guide/acquisition-tax/",
+  "/vehicle-tax/",
+  "/guide/vehicle-tax/",
+  "/property-tax/",
+  "/guide/property-tax/",
+  "/guide/tax-year/",
   "/guide/income-prepayment/",
   "/guide/vat-prepayment/",
   "/guide/unlisted-stock-value/",
