@@ -1,0 +1,180 @@
+---
+/**
+ * "세금계산서와 계산서의 차이" — 마흔일곱 번째 글(47번). 세금계산서 축 네 번째.
+ *
+ * 자동완성이 아니라 **관련 질문(PAA)** 에서 왔다. 세금계산서를 검색하면
+ * "세금계산서와 계산서의 차이점은 무엇인가요" 가 따라 붙는다.
+ *
+ * **이 글의 반전.** 계산서는 부가가치세법에 없다. 소득세법 제163조와
+ * 법인세법 제121조에 있다. 그래서 가산세도 다른 법(소득세법 제81조의10)이
+ * 매긴다. "같은 서류의 두 종류" 가 아니라 **법이 다르다.**
+ *
+ * 그리고 제163조 제1항은 '면세' 라는 말을 쓰지 않는다. 모든 공급에 계산서
+ * 의무를 걸어 두고 제6항이 세금계산서를 발급한 분을 걷어낸다. 남는 것이
+ * 결과적으로 면세 공급분이다. 흔히 말하는 "계산서는 면세용" 은 결과이지
+ * 조문의 출발점이 아니다.
+ *
+ * ⚠️ 계산서 발급시기는 쓰지 않았다. 제81조의10 이 "제163조 제7항에 따른
+ *    발급시기" 를 인용하는데 이번에 읽은 제7항은 대통령령 위임 조항이었다.
+ *    시행령을 안 읽었으므로 날짜를 적지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import s from "../../../rates/statement-2026.json";
+import v from "../../../rates/vat-2026.json";
+import p from "../../../rates/vat-penalty-2026.json";
+
+const title = "세금계산서와 계산서의 차이 — 법이 다릅니다";
+const description =
+  "계산서는 부가가치세법에 없습니다. 소득세법 제163조와 법인세법 제121조에 있고, 가산세도 다른 법이 매깁니다. 한 거래에 둘 다 끊는 것도 아닙니다.";
+
+const pct = (x: number) => `${(x * 100).toFixed(1).replace(/\.0$/, "")}%`;
+---
+
+<GuideLayout title={title} description={description} updated={s.verifiedOn}>
+  <h1>{title}</h1>
+
+  <p>
+    이름이 한 글자 차이라 같은 서류의 두 종류처럼 보입니다.
+    <strong>들어 있는 법이 다릅니다.</strong> 거기서 나머지가 전부
+    갈립니다.
+  </p>
+
+  <h2>어느 법에 있나</h2>
+  <table>
+    <thead>
+      <tr><th>&nbsp;</th><th>세금계산서</th><th>계산서</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">근거 법</th>
+        <td>부가가치세법 제32조</td>
+        <td>소득세법 제163조<br />법인세법 제121조</td>
+      </tr>
+      <tr>
+        <th scope="row">가산세</th>
+        <td>부가가치세법 제60조 제2항</td>
+        <td>소득세법 제81조의10</td>
+      </tr>
+      <tr>
+        <th scope="row">붙는 곳</th>
+        <td>부가가치세</td>
+        <td>종합소득 결정세액</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    계산서 가산세는 <strong>부가세가 아니라 소득세에 더해져</strong>
+    나옵니다. 부가세 신고를 아무리 들여다봐도 거기 없습니다.
+  </p>
+
+  <h2>조문에는 "면세"라는 말이 없습니다</h2>
+  <p>
+    흔히 계산서는 면세용이라고 합니다. 결과는 그렇지만 조문은 그렇게 쓰여
+    있지 않습니다. 소득세법 제163조 제1항은
+    <strong>{s.issue.who}</strong>에 계산서등을 발급하라고 합니다. 과세인지
+    면세인지 가리지 않습니다.
+  </p>
+  <p>
+    걷어내는 것은 제6항입니다.
+  </p>
+  <div class="callout">
+    <p>{s.deemedIssued.rule}</p>
+  </div>
+  <p>
+    모든 공급에 계산서 의무를 먼저 걸고, 세금계산서를 끊은 분을 빼는
+    구조입니다. 그래서 <strong>남는 것이 면세 공급분</strong>입니다.
+  </p>
+
+  <h2>한 거래에 둘 다 끊지 않습니다</h2>
+  <p>
+    {s.deemedIssued.note} 세금계산서를 발급했으면 계산서는 발급한 것으로
+    보고, 세금계산서합계표를 냈으면 계산서합계표도 낸 것으로 봅니다.
+  </p>
+  <p>
+    면세사업자와 거래하면서 "세금계산서로 주세요"라고 해 봐야 나올 수 없는
+    것도 같은 이유입니다. 그쪽에는 받을 부가세가 없습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>전자계산서는 전자세금계산서를 따라갑니다</h2>
+  <p>
+    의무자 범위부터 그렇습니다. 소득세법 제163조 제1항 후단이
+    <strong>{s.electronic.who[0]}</strong>를 그대로 끌어옵니다. 여기에
+    {s.electronic.who[1]}가 더해집니다.
+  </p>
+  <p>
+    발급과 전송이 따로인 것도 같습니다 — {s.electronic.transmit}.
+    의무자가 아니어도 전자로 발급하고 전송할 수 있습니다.
+  </p>
+  <p>
+    전송하면 <strong>합계표 제출이 면제</strong>됩니다({s.summaryTable.waived}).
+    전자로 끊을 이유가 여기 있습니다.
+  </p>
+
+  <h2>계산서 가산세는 얼마인가</h2>
+  <p>
+    소득세법 제81조의10입니다. {s.penalty.excludesSmall}.
+  </p>
+  <table>
+    <thead>
+      <tr><th>무엇</th><th>가산세</th></tr>
+    </thead>
+    <tbody>
+      {s.penalty.items.map((x) => (
+        <tr>
+          <th scope="row">
+            {x.label}
+            {x.relief && <><br /><small>— {x.relief.label}: {pct(x.relief.rate)}</small></>}
+          </th>
+          <td>{pct(x.rate)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <p>
+    세금계산서 쪽과 숫자가 거의 같습니다. 미발급
+    {pct(p.taxInvoice.notIssued)}, 지연 {pct(p.taxInvoice.lateIssue)},
+    부실기재 {pct(p.taxInvoice.wrongEntry)}. 두 법이 같은 모양으로
+    만들어져 있습니다.
+  </p>
+  <div class="callout">
+    <p>
+      <strong>겹쳐 붙지는 않습니다.</strong> {s.penalty.noDoubleCharge.rule}
+      ({s.penalty.noDoubleCharge.article})
+    </p>
+  </div>
+  <p>
+    그리고 {s.penalty.noIncomeNoExcuse}. 소득이 없어도 가산세는 나옵니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>안 끊어 주면 — 계산서에도 길이 있습니다</h2>
+  <p>
+    {s.buyerIssued.rule}({s.buyerIssued.article}, {s.buyerIssued.enacted} 신설).
+  </p>
+  <p>
+    세금계산서 쪽의 매입자발행세금계산서와 같은 구조입니다. 그쪽은
+    <a href="/guide/tax-invoice-date/">세금계산서 발행일자</a>에 정리했습니다.
+  </p>
+
+  <h2>계산서를 안 끊는 경우</h2>
+  <ul>
+    <li>{s.exceptions.customs}</li>
+    <li>{s.exceptions.notApplied}</li>
+  </ul>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    {s.notVerified.map((x) => <li>{x}</li>)}
+  </ul>
+  <p>
+    세금계산서 쪽 기한은 <a href="/guide/tax-invoice-date/">세금계산서 발행일자</a>,
+    잘못 끊었을 때는 <a href="/guide/tax-invoice-cancel/">세금계산서 발행 취소</a>,
+    간이과세자는 <a href="/guide/simplified-tax-invoice/">간이과세자 세금계산서 발행</a>에
+    있습니다. 면세 기준은 <a href="/guide/vat-freelancer/">프리랜서 부가세</a>를
+    보세요.
+  </p>
+</GuideLayout>

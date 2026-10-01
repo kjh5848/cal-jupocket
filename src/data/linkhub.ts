@@ -71,6 +71,7 @@ export const hubEntries: HubEntry[] = [
   { no: 44, href: "/guide/tax-invoice-date/", label: "세금계산서 발행일자", kind: "guide" },
   { no: 45, href: "/guide/simplified-tax-invoice/", label: "간이과세자 세금계산서 발행", kind: "guide" },
   { no: 46, href: "/guide/tax-invoice-cancel/", label: "세금계산서 발행 취소", kind: "guide" },
+  { no: 47, href: "/guide/tax-invoice-vs-statement/", label: "세금계산서와 계산서의 차이", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -140,6 +141,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/tax-invoice-date",
       "/guide/simplified-tax-invoice",
       "/guide/tax-invoice-cancel",
+      "/guide/tax-invoice-vs-statement",
     ]),
   },
   {
