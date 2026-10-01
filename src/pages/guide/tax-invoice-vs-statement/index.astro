@@ -64,8 +64,8 @@ const pct = (x: number) => `${(x * 100).toFixed(1).replace(/\.0$/, "")}%`;
     </tbody>
   </table>
   <p>
-    계산서 가산세는 <strong>부가세가 아니라 소득세에 더해져</strong>
-    나옵니다. 부가세 신고를 아무리 들여다봐도 거기 없습니다.
+    계산서 가산세는 <strong>부가세가 아닌 쪽에 더해져</strong> 나옵니다.
+    부가세 신고를 아무리 들여다봐도 거기 없습니다. {s.penalty.scope}
   </p>
 
   <h2>조문에는 "면세"라는 말이 없습니다</h2>
@@ -92,8 +92,8 @@ const pct = (x: number) => `${(x * 100).toFixed(1).replace(/\.0$/, "")}%`;
     보고, 세금계산서합계표를 냈으면 계산서합계표도 낸 것으로 봅니다.
   </p>
   <p>
-    면세사업자와 거래하면서 "세금계산서로 주세요"라고 해 봐야 나올 수 없는
-    것도 같은 이유입니다. 그쪽에는 받을 부가세가 없습니다.
+    그래서 "둘 다 받아 둬야 하나요"라는 질문에는 답이 하나입니다.
+    한 거래에는 한 장입니다.
   </p>
 
   <AdSlot />
@@ -146,7 +146,8 @@ const pct = (x: number) => `${(x * 100).toFixed(1).replace(/\.0$/, "")}%`;
     </p>
   </div>
   <p>
-    그리고 {s.penalty.noIncomeNoExcuse}. 소득이 없어도 가산세는 나옵니다.
+    그리고 {s.penalty.noIncomeNoExcuse}. 낼 세금이 0이어도 가산세는 따로
+    나옵니다.
   </p>
 
   <AdSlot />
@@ -160,15 +161,36 @@ const pct = (x: number) => `${(x * 100).toFixed(1).replace(/\.0$/, "")}%`;
     <a href="/guide/tax-invoice-date/">세금계산서 발행일자</a>에 정리했습니다.
   </p>
 
-  <h2>계산서를 안 끊는 경우</h2>
+  <h2>내가 안 끊는 경우</h2>
   <ul>
-    <li>{s.exceptions.customs}</li>
-    <li>{s.exceptions.notApplied}</li>
+    <li>
+      <strong>수입 재화</strong> — 안 끊는 것이 아니라 끊는 사람이 다릅니다.
+      {s.exceptions.customs}
+    </li>
+    <li><strong>적용 제외</strong> — {s.exceptions.notApplied}</li>
   </ul>
 
   <h2>이 글에 없는 것</h2>
   <ul>
-    {s.notVerified.map((x) => <li>{x}</li>)}
+    <li>
+      <strong>계산서 발급시기</strong> — 가산세 조문이 "제163조 제7항에 따른
+      발급시기"를 인용하는데, 이번에 읽은 제7항은 대통령령 위임 조항이었습니다.
+      시행령을 읽지 않아 날짜를 적지 않았습니다.
+    </li>
+    <li>
+      <strong>전자계산서 의무자의 금액 기준</strong> — "총수입금액등을 고려하여
+      대통령령으로 정하는 사업자"가 누구인지는 시행령입니다.
+    </li>
+    <li>
+      <strong>가산세가 면제되는 소규모사업자의 범위</strong> — 역시 시행령입니다.
+    </li>
+    <li>
+      <strong>법인세법 제121조</strong> — 법인의 계산서 조문입니다. 소득세법
+      제163조의3이 인용하고 있어 존재는 확인했지만 본문은 읽지 않았습니다.
+    </li>
+    <li>
+      <strong>계산서 서식에 세액란이 있는지</strong> — 서식은 시행규칙입니다.
+    </li>
   </ul>
   <p>
     세금계산서 쪽 기한은 <a href="/guide/tax-invoice-date/">세금계산서 발행일자</a>,

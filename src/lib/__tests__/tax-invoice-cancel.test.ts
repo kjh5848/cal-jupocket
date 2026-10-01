@@ -11,9 +11,10 @@ const PAGE = built ? readFileSync(DIST, "utf-8") : "";
 /**
  * 세금계산서 발행 취소(46번) — 시행령 제70조.
  *
- * 이 글이 틀릴 수 있는 자리는 "작성일" 이다. 작성일이 어느 과세기간에
- * 들어가는지를 그것이 정하므로, 2호(해제)와 3호(해지)를 바꿔 적으면
- * 신고가 흔들린다.
+ * 이 글이 틀릴 수 있는 자리는 "작성일" 이다. 1~3호는 사유가 생긴 날을
+ * 적으므로, 처음 세금계산서 작성일로 적으면 과세기간이 달라진다.
+ * 2호(해제)와 3호(해지)를 바꿔 적으면 달라지는 것은 과세기간이 아니라
+ * 금액이다 — 처음에 반대로 썼다가 되돌렸다.
  */
 describe("세금계산서 발행 취소", () => {
   it("사유는 아홉 가지고 전부 작성일이 적혀 있다", () => {
@@ -32,11 +33,23 @@ describe("세금계산서 발행 취소", () => {
     expect(해제.writeDate).not.toBe(해지.writeDate);
   });
 
-  it("기한이 붙은 사유는 제6호 하나뿐이다", () => {
+  it("조문에 기한이 적힌 사유는 제6호 하나뿐이다", () => {
     const withDeadline = C.reasons.filter((x) => "deadline" in x);
     expect(withDeadline.map((x) => x.no)).toEqual([6]);
     expect(withDeadline[0].deadline).toContain("1년");
     expect(withDeadline[0].deadline).toContain("확정신고기한");
+  });
+
+  it("나머지 사유에 '기한이 없다' 고 단정하지 않는다", () => {
+    // 제70조가 작성일만 정해 둔 것이지, 기한이 없다고 읽을 근거는 없다.
+    expect(C.deadlineNote).toContain("확인하지 못했다");
+    expect(C.deadlineNote).not.toContain("기한이 따로 없다");
+  });
+
+  it("1~3호의 작성일은 사유 발생일이고, 그게 금액 차이와 별개다", () => {
+    // 해제와 해지를 바꿔 적으면 달라지는 것은 과세기간이 아니라 금액이다.
+    expect(C.writeDateIsEventDate).toContain("사유가 생긴 날");
+    expect(C.amountDiffers).toContain("과세기간이 아니라 금액");
   });
 
   it("경정을 미리 알고 있으면 막히는 경우가 네 가지다", () => {
