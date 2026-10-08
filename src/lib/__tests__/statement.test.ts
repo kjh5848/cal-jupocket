@@ -54,10 +54,35 @@ describe("세금계산서와 계산서", () => {
     expect(PAGE).toContain("제163조");
   });
 
-  it.skipIf(!built)("확인 못 한 발급시기를 날짜로 쓰지 않는다", () => {
-    expect(s.notVerified.join(" ")).toContain("계산서의 발급시기");
-    // 시행령을 안 읽었으므로 "계산서는 …일까지" 같은 문장이 있으면 안 된다.
+  it("발급시기는 '공급하는 때' 뿐이고 연장 규정이 없다", () => {
+    // 2026-10-08 시행령 제211조 제1항에서 확인. 세금계산서의 다음 달 10일
+    // 같은 길이 법·시행령·시행규칙 어디에도 없다.
+    expect(s.issueTiming.article).toContain("제211조");
+    expect(s.issueTiming.rule).toContain("공급하는 때");
+    expect(s.issueTiming.searched).toHaveLength(3);
+    // "없다" 가 아니라 "찾지 못했다" 로 적혀 있어야 한다.
+    expect(s.issueTiming.noExtension).toContain("찾지 못했다");
+  });
+
+  it.skipIf(!built)("계산서에 날짜 기한을 지어내지 않는다", () => {
     const body = PAGE.replace(/<[^>]+>/g, " ");
-    expect(body).not.toMatch(/계산서[^.]{0,20}(발급시기는|발급기한은)\s*\S*\s*\d+일/);
+    expect(body).not.toMatch(/계산서[^.]{0,24}(발급시기는|발급기한은)[^.]{0,12}\d+일/);
+  });
+
+  it("필요적 기재사항 넷에 세액이 없다", () => {
+    // 세금계산서와 갈리는 자리다. 세액이 목록에 들어오면 틀린 글이 된다.
+    expect(s.requiredEntries.list).toHaveLength(4);
+    expect(s.requiredEntries.list.join(" ")).toContain("공급가액");
+    expect(s.requiredEntries.list.join(" ")).not.toContain("세액");
+  });
+
+  it("영수증 발급 대상 간이과세자는 계산서도 못 끊는다", () => {
+    expect(s.simplifiedCannotIssue.article).toContain("제211조 제3항");
+    expect(s.simplifiedCannotIssue.rule).toContain("발급할 수 없으며");
+  });
+
+  it("전자계산서 의무 기준이 8천만원이고 7월 1일에 시작한다", () => {
+    expect(s.electronic.whoResolved.rule).toContain("8천만원");
+    expect(s.electronic.whoResolved.startDate).toContain("7월 1일");
   });
 });

@@ -14,9 +14,14 @@
  * 결과적으로 면세 공급분이다. 흔히 말하는 "계산서는 면세용" 은 결과이지
  * 조문의 출발점이 아니다.
  *
- * ⚠️ 계산서 발급시기는 쓰지 않았다. 제81조의10 이 "제163조 제7항에 따른
- *    발급시기" 를 인용하는데 이번에 읽은 제7항은 대통령령 위임 조항이었다.
- *    시행령을 안 읽었으므로 날짜를 적지 않는다.
+ * **발급시기는 2026-10-08 에 닫았다.** 시행령 제211조 제1항이 "재화 또는
+ * 용역을 공급하는 때" 로 정한다. 그게 전부다 — 세금계산서의 다음 달 10일
+ * 같은 연장 규정이 법·시행령·시행규칙 어디에도 없다("다음 달 10일",
+ * "월합계" 라는 말 자체가 없다). 계산서가 세금계산서보다 **빡빡하다.**
+ *
+ * 같이 닫은 것: 전자계산서 의무자(총수입금액 8천만원, 시행령 제211조의2
+ * 제2항), 소규모사업자 범위(시행령 제147조의6 제1항), 필요적 기재사항
+ * 네 개 — 거기에 **세액이 없다**(시행령 제211조 제1항).
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AdSlot from "../../../components/AdSlot.astro";
@@ -86,6 +91,40 @@ const pct = (x: number) => `${(x * 100).toFixed(1).replace(/\.0$/, "")}%`;
     구조입니다. 그래서 <strong>남는 것이 면세 공급분</strong>입니다.
   </p>
 
+  <h2>계산서가 더 빡빡합니다 — 발급시기에 연장이 없습니다</h2>
+  <p>
+    세금계산서에는 월합계 같은 경우에 다음 달 10일까지 미룰 수 있는 길이
+    있습니다(부가가치세법 제34조 제3항). <strong>계산서에는 그게
+    없습니다.</strong>
+  </p>
+  <div class="callout warn">
+    <p>
+      ⚠️ 소득세법 시행령 제211조 제1항 — {s.issueTiming.rule}.
+      <strong>"공급하는 때"가 전부입니다.</strong>
+    </p>
+  </div>
+  <p>
+    {s.issueTiming.noExtension} 세 법령을 다 뒤져 보고 적는 말입니다.
+  </p>
+
+  <h2>계산서에는 세액란이 없습니다</h2>
+  <p>
+    필요적 기재사항이 넷입니다(시행령 제211조 제1항). 가산세 조문이 말하는
+    "필요적 기재사항"도 이 넷입니다.
+  </p>
+  <ol>
+    {s.requiredEntries.list.map((x) => <li>{x}</li>)}
+  </ol>
+  <p>
+    <strong>{s.requiredEntries.noTaxAmount}</strong> 공급가액 100만원짜리
+    계산서에는 100만원만 적힙니다. 세금계산서처럼 10만원이 따로 붙지
+    않습니다.
+  </p>
+  <p>
+    여기도 구제가 있습니다 — {s.penalty.wrongEntryRelief.rule}
+    ({s.penalty.wrongEntryRelief.article}).
+  </p>
+
   <h2>한 거래에 둘 다 끊지 않습니다</h2>
   <p>
     {s.deemedIssued.note} 세금계산서를 발급했으면 계산서는 발급한 것으로
@@ -102,7 +141,15 @@ const pct = (x: number) => `${(x * 100).toFixed(1).replace(/\.0$/, "")}%`;
   <p>
     의무자 범위부터 그렇습니다. 소득세법 제163조 제1항 후단이
     <strong>{s.electronic.who[0]}</strong>를 그대로 끌어옵니다. 여기에
-    {s.electronic.who[1]}가 더해집니다.
+    시행령이 금액 기준을 하나 더 얹습니다 —
+    <strong>직전 과세기간의 사업장별 총수입금액 8천만원 이상</strong>
+    ({s.electronic.whoResolved.article}).
+  </p>
+  <p>
+    시작 시점이 눈에 익습니다 — {s.electronic.whoResolved.startDate}.
+    {s.electronic.whoResolved.note} 간이과세자 쪽은
+    <a href="/guide/simplified-tax-invoice/">간이과세자 세금계산서 발행</a>에
+    있습니다.
   </p>
   <p>
     발급과 전송이 따로인 것도 같습니다 — {s.electronic.transmit}.
@@ -115,8 +162,12 @@ const pct = (x: number) => `${(x * 100).toFixed(1).replace(/\.0$/, "")}%`;
 
   <h2>계산서 가산세는 얼마인가</h2>
   <p>
-    소득세법 제81조의10입니다. {s.penalty.excludesSmall}.
+    소득세법 제81조의10입니다. {s.penalty.excludesSmall} — 시행령 제147조의6
+    제1항이 그 소규모사업자를 셋으로 정합니다.
   </p>
+  <ul>
+    {s.penalty.smallBusiness.list.map((x) => <li>{x}</li>)}
+  </ul>
   <table>
     <thead>
       <tr><th>무엇</th><th>가산세</th></tr>
@@ -161,6 +212,16 @@ const pct = (x: number) => `${(x * 100).toFixed(1).replace(/\.0$/, "")}%`;
     <a href="/guide/tax-invoice-date/">세금계산서 발행일자</a>에 정리했습니다.
   </p>
 
+  <h2>간이과세자는 계산서도 못 끊습니다</h2>
+  <p>
+    {s.simplifiedCannotIssue.rule}({s.simplifiedCannotIssue.article}).
+  </p>
+  <p>
+    {s.simplifiedCannotIssue.note} 영수증 발급 대상 간이과세자는
+    <strong>세금계산서도 계산서도 발급하지 않습니다.</strong> 나가는 것은
+    영수증 하나입니다.
+  </p>
+
   <h2>내가 안 끊는 경우</h2>
   <ul>
     <li>
@@ -173,23 +234,15 @@ const pct = (x: number) => `${(x * 100).toFixed(1).replace(/\.0$/, "")}%`;
   <h2>이 글에 없는 것</h2>
   <ul>
     <li>
-      <strong>계산서 발급시기</strong> — 가산세 조문이 "제163조 제7항에 따른
-      발급시기"를 인용하는데, 이번에 읽은 제7항은 대통령령 위임 조항이었습니다.
-      시행령을 읽지 않아 날짜를 적지 않았습니다.
-    </li>
-    <li>
-      <strong>전자계산서 의무자의 금액 기준</strong> — "총수입금액등을 고려하여
-      대통령령으로 정하는 사업자"가 누구인지는 시행령입니다.
-    </li>
-    <li>
-      <strong>가산세가 면제되는 소규모사업자의 범위</strong> — 역시 시행령입니다.
-    </li>
-    <li>
       <strong>법인세법 제121조</strong> — 법인의 계산서 조문입니다. 소득세법
       제163조의3이 인용하고 있어 존재는 확인했지만 본문은 읽지 않았습니다.
     </li>
     <li>
-      <strong>계산서 서식에 세액란이 있는지</strong> — 서식은 시행규칙입니다.
+      <strong>계산서 서식 자체</strong> — 기재사항은 시행령 제211조 제1항에서
+      확인했지만, 별지 서식(시행규칙)은 읽지 않았습니다.
+    </li>
+    <li>
+      <strong>시행령 제211조 제2항 제3호의 "재정경제부령이 정하는 사업"</strong>
     </li>
   </ul>
   <p>

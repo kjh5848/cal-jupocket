@@ -69,9 +69,27 @@ describe("세금계산서 발행 취소", () => {
     expect((PAGE.match(/<h2[^>]*>[^<]*취소/g) ?? []).length).toBeGreaterThanOrEqual(2);
   });
 
-  it.skipIf(!built)("확인 못 한 가산세를 숫자로 쓰지 않는다", () => {
-    // 수정분의 '발급시기' 를 제60조가 어떻게 보는지 확인하지 않았다.
-    expect(r.taxInvoice.notVerified.join(" ")).toContain("지연발급 가산세");
-    expect(PAGE).toContain("확인하지 못했습니다");
+  it("가산세는 제34조의 발급시기를 기준으로 한다", () => {
+    // 2026-10-08 확인. 제60조 제2항 제1·2호가 '제34조에 따른 발급시기' 를
+    // 재는데, 수정세금계산서는 제34조가 아니라 시행령 제70조가 정한다.
+    expect(C.penalty.baseIsArticle34).toContain("제34조");
+    expect(C.penalty.searched.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("'가산세가 없다' 고 단정하지 않는다", () => {
+    // 조문의 부재는 부재의 증명이 아니다. 해석례는 읽지 않았다.
+    expect(C.penalty.notFound).toContain("찾지 못했다");
+    expect(C.penalty.notFound).not.toMatch(/가산세가 (붙지 않는다|없다)/);
+    expect(r.taxInvoice.notVerified.join(" ")).toContain("유권해석");
+  });
+
+  it.skipIf(!built)("수정분에 가산세율 숫자를 붙이지 않는다", () => {
+    const body = PAGE.replace(/<[^>]+>/g, " ");
+    expect(body).not.toMatch(/수정세금계산서[^.]{0,40}\d+(\.\d+)?%/);
+  });
+
+  it("착오 기재라도 거래사실이 확인되면 부실기재가 아니다", () => {
+    expect(C.penalty.wrongEntryRelief.article).toContain("제108조 제3항");
+    expect(C.penalty.wrongEntryRelief.rule).toContain("보지 아니한다");
   });
 });
