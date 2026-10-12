@@ -1,0 +1,205 @@
+{
+ "made": "2026-10-12",
+ "method": "네이버 검색광고 키워드도구 직전 30일(≈2026-09-12~10-11) × 구글 트렌드 KR 주별 배수(2025-11·12, 2026-01 평균 ÷ 2026-09-12~10-11 평균)",
+ "caveats": [
+  "구글 곡선을 네이버에 곱했다 — 엔진별 계절 모양이 다를 수 있다",
+  "작년 곡선을 올해에 적용했다",
+  "구글 기준값이 5 미만이면 0~100 눈금의 해상도 밖이라 배수가 크게 흔들린다(연말정산 base 1)",
+  "종부세는 2026-08-02 주에 연중 최고점(12월 납부철보다 높다)이 있어 기준 기간이 평소와 다르다. 원인은 확인 안 함",
+  "자동차세연납·기부금세액공제·연말정산간소화는 9~10월 값이 0에 가까워 배수를 낼 수 없다"
+ ],
+ "rows": [
+  {
+   "keyword": "연말정산",
+   "naver30d": 15550,
+   "googleBase": 1,
+   "ratio": {
+    "nov": 2.6,
+    "dec": 5.5,
+    "jan": 48.25
+   },
+   "est": {
+    "nov": 40430,
+    "dec": 85525,
+    "jan": 750288
+   },
+   "reliable": false
+  },
+  {
+   "keyword": "연금저축",
+   "naver30d": 26840,
+   "googleBase": 16.8,
+   "ratio": {
+    "nov": 2.92,
+    "dec": 4.75,
+    "jan": 4.14
+   },
+   "est": {
+    "nov": 78373,
+    "dec": 127490,
+    "jan": 111118
+   },
+   "reliable": true
+  },
+  {
+   "keyword": "IRP",
+   "naver30d": 14700,
+   "googleBase": 17.6,
+   "ratio": {
+    "nov": 2.86,
+    "dec": 4.64,
+    "jan": 3.98
+   },
+   "est": {
+    "nov": 42042,
+    "dec": 68208,
+    "jan": 58506
+   },
+   "reliable": true
+  },
+  {
+   "keyword": "자동차세",
+   "naver30d": 13770,
+   "googleBase": 8,
+   "ratio": {
+    "nov": 1.77,
+    "dec": 4.47,
+    "jan": 8.03
+   },
+   "est": {
+    "nov": 24373,
+    "dec": 61552,
+    "jan": 110573
+   },
+   "reliable": true
+  },
+  {
+   "keyword": "원천징수영수증",
+   "naver30d": 29600,
+   "googleBase": 9.6,
+   "ratio": {
+    "nov": 1.52,
+    "dec": 1.74,
+    "jan": 6.17
+   },
+   "est": {
+    "nov": 44992,
+    "dec": 51504,
+    "jan": 182632
+   },
+   "reliable": true
+  },
+  {
+   "keyword": "부가세 신고",
+   "naver30d": 3530,
+   "googleBase": 6.4,
+   "ratio": {
+    "nov": 1.22,
+    "dec": 1.84,
+    "jan": 9.53
+   },
+   "est": {
+    "nov": 4307,
+    "dec": 6495,
+    "jan": 33641
+   },
+   "reliable": true
+  },
+  {
+   "keyword": "전자세금계산서",
+   "naver30d": 16210,
+   "googleBase": 36.4,
+   "ratio": {
+    "nov": 1.51,
+    "dec": 1.79,
+    "jan": 2.47
+   },
+   "est": {
+    "nov": 24477,
+    "dec": 29016,
+    "jan": 40039
+   },
+   "reliable": true
+  },
+  {
+   "keyword": "세금계산서",
+   "naver30d": 9730,
+   "googleBase": 42.4,
+   "ratio": {
+    "nov": 1.58,
+    "dec": 1.67,
+    "jan": 2.07
+   },
+   "est": {
+    "nov": 15373,
+    "dec": 16249,
+    "jan": 20141
+   },
+   "reliable": true
+  },
+  {
+   "keyword": "퇴직금",
+   "naver30d": 18700,
+   "googleBase": 40,
+   "ratio": {
+    "nov": 1.27,
+    "dec": 1.34,
+    "jan": 1.51
+   },
+   "est": {
+    "nov": 23749,
+    "dec": 25058,
+    "jan": 28237
+   },
+   "reliable": true
+  },
+  {
+   "keyword": "재산세",
+   "naver30d": 88900,
+   "googleBase": 36.6,
+   "ratio": {
+    "nov": 0.31,
+    "dec": 0.25,
+    "jan": 0.31
+   },
+   "est": {
+    "nov": 27559,
+    "dec": 22225,
+    "jan": 27559
+   },
+   "reliable": true
+  },
+  {
+   "keyword": "지방세",
+   "naver30d": 19320,
+   "googleBase": 46.2,
+   "ratio": {
+    "nov": 1.02,
+    "dec": 1.1,
+    "jan": 1.45
+   },
+   "est": {
+    "nov": 19706,
+    "dec": 21252,
+    "jan": 28014
+   },
+   "reliable": true
+  },
+  {
+   "keyword": "종부세",
+   "naver30d": 9210,
+   "googleBase": 8.2,
+   "ratio": {
+    "nov": 1.98,
+    "dec": 1.68,
+    "jan": 1.19
+   },
+   "est": {
+    "nov": 18236,
+    "dec": 15473,
+    "jan": 10960
+   },
+   "reliable": false
+  }
+ ]
+}
