@@ -94,6 +94,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/simplified-tax-invoice/", title: "간이과세자 세금계산서 발행, 4,800만원이 두 번", kind: "guide", icon: "receipt", year: 2026 },
       { href: "/guide/tax-invoice-cancel/", title: "세금계산서 발행 취소, 지우는 게 아니다", kind: "guide", icon: "receipt" },
       { href: "/guide/tax-invoice-vs-statement/", title: "세금계산서와 계산서의 차이, 법이 다르다", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/tax-invoice-early-issue/", title: "세금계산서 발행 후 대금 지급 기한, 먼저 끊었다면 7일", kind: "guide", icon: "calendar" },
     ],
   },
   {
@@ -148,6 +149,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/tax-invoice-early-issue/",
   "/guide/tax-invoice-vs-statement/",
   "/guide/tax-invoice-cancel/",
   "/guide/simplified-tax-invoice/",
