@@ -33,9 +33,15 @@ interface Props {
   description: string;
   /** 원문 확인일(YYYY-MM-DD). 상단 메타의 "기준" 날짜로 표시 */
   updated: string;
+  /**
+   * 질문형 소제목과 그 바로 아래 첫 답. 넘기면 FAQPage 구조화 데이터를 함께 낸다.
+   * 본문의 <h2> 와 <p class="qa-lead"> 에 같은 문자열을 써야 한다 —
+   * snippet-structure.test.ts 가 대조한다.
+   */
+  faq?: { q: string; a: string }[];
 }
 
-const { title, description, updated } = Astro.props;
+const { title, description, updated, faq } = Astro.props;
 const path = Astro.url.pathname;
 
 /**
@@ -66,6 +72,24 @@ const jsonLd = {
     { "@type": "WebSite", name: "국가법령정보센터", url: "https://www.law.go.kr/" },
   ],
 };
+
+/**
+ * FAQPage — AI 요약(구글 AI 개요·네이버 AI 브리핑)과 스니펫이 질문과 답을
+ * 짝으로 읽게 한다. 구글은 2023년부터 FAQ 리치 결과를 정부·보건 사이트에만
+ * 보여 주지만, 구조화 데이터 자체는 질문-답의 경계를 기계에 알려 준다.
+ * 답은 본문에 실제로 보이는 문장과 같아야 한다(숨긴 답은 정책 위반).
+ */
+const faqLd = faq?.length
+  ? {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faq.map((x) => ({
+        "@type": "Question",
+        name: x.q,
+        acceptedAnswer: { "@type": "Answer", text: x.a },
+      })),
+    }
+  : null;
 ---
 
 <html lang="ko">
@@ -75,6 +99,7 @@ const jsonLd = {
     <GtagHead />
     <AdSenseHead />
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+    {faqLd && <script type="application/ld+json" set:html={JSON.stringify(faqLd)} is:inline />}
   </head>
   <body class="bg-texture">
     <SiteHeader />

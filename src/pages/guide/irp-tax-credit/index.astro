@@ -1,196 +1,92 @@
 ---
 /**
- * "IRP 세액공제" — 마흔아홉 번째 글(49번). 노후·연금 축, 12월 대비.
+ * "IRP 세액공제" — 마흔아홉 번째 글(49번). IRP 세액공제 시리즈의 허브.
  *
- * v18 에서 12월 1위 롱테일이었다(네이버 4,740 → 12월 추정 ≈2.2만). 기존
- * `pension-savings-tax-credit` 은 "한도" 를 겨냥한 글이라, 이 검색어가 묻는
- * 나머지(조건·언제까지·해지·이월·받는 법)를 받는 글이 없었다.
+ * 처음에는 한 편에 조건·한도·언제까지·이월·해지를 다 담았다. 사용자가 "자동완성
+ * 키워드마다 글을 쓰라" 고 해서(2026-10-12) 키워드별 글 15편으로 나눴고, 이 글은
+ * 머리말 `irp 세액공제` 를 받으면서 질문마다 짧은 답과 해당 글로 가는 길을 둔다.
+ * 시리즈 목록은 src/data/series/irp-tax-credit.ts 한 곳에 있다.
  *
- * 소제목은 두 엔진의 자동완성에서 왔다(keywords/irp-tax-credit-2026-10-12.csv,
- * 사용자가 보낸 화면 두 장).
- *   구글  조건 · 받는 법 · 단점 · 900만원 · 한도 · 언제까지 · 계산 · 환급 ·
- *         300만원 · 이월 · 소득공제
- *   네이버 한도 · 계산 · 세액공제율 · 방법 · 해지 · 받는법 · 입금 · 개인형 ·
- *         연금저축 irp
- *
- * **반전 둘.**
- *  - "이월" 은 자동이 아니다. 시행령 제118조의3 의 전환 **신청**이다.
- *  - 퇴직금이 들어온 IRP 의 그 돈은 공제 대상이 아니다(법 제59조의3 제1항 제1호).
- *
- * 금액은 전부 src/lib/pension-credit.ts 가 계산한다.
+ * 구조: 한 줄 답 → 질문형 소제목 → 바로 아래 첫 답(qa-lead) → 자세히. FAQ 구조화
+ * 데이터에 같은 문장이 들어간다(snippet-structure.test.ts).
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import pa from "../../../rates/pension-account-2026.json";
-import yearEnd from "../../../rates/year-end-2026.json";
-import { pensionCredit, COMBINED_CAP, SAVINGS_CAP } from "../../../lib/pension-credit";
+import { won, manwon } from "../../../lib/won";
+import { pensionCredit } from "../../../lib/pension-credit";
+import { irpSeries, irpHref, IRP_WITH_SAVINGS } from "../../../data/series/irp-tax-credit";
 
 const title = "IRP 세액공제 조건과 한도 — 12월 31일까지 넣어야 올해 몫입니다";
 const description =
   "IRP 세액공제는 소득이 있는 사람이 12월 31일까지 넣은 돈에 대해 받습니다. 연금저축과 합쳐 900만원, 공제율 12~15%. 퇴직금이 들어온 몫은 빠지고, 못 받은 금액은 신청해야 다음 해로 넘어갑니다.";
 
-const won = (n: number) => n.toLocaleString("ko-KR") + "원";
 const rows = [3_000_000, 6_000_000, 9_000_000].map((irp) => ({
   irp,
   low: pensionCredit({ savings: 0, irp }, true),
   high: pensionCredit({ savings: 0, irp }, false),
 }));
-const combo = pensionCredit({ savings: 6_000_000, irp: 3_000_000 }, true);
-const lowPct = pa.creditRatePercentBelowThreshold;
-const highPct = pa.creditRatePercentAboveThreshold;
+const top = rows[2];
+
+const ANSWER = `IRP 세액공제는 소득이 있는 사람이 그해 12월 31일까지 넣은 돈의 ${pa.creditRatePercentAboveThreshold}~${pa.creditRatePercentBelowThreshold}%를 세금에서 빼 주는 제도입니다. 연금저축과 합쳐 ${manwon(pa.combinedLimit)}까지라 최대 ${manwon(top.low.withLocal)}(지방소득세 포함)이 줄어듭니다.`;
+
+const QA = [
+  { q: "IRP 세액공제란 무엇인가요?", a: "IRP(개인형 퇴직연금)에 넣은 돈의 일정 비율을 그해 소득세에서 빼 주는 제도입니다. 소득세법 제59조의3의 연금계좌세액공제이고, 연금저축과 한도를 같이 씁니다." },
+  { q: "IRP 세액공제 조건은 무엇인가요?", a: "종합소득이 있고, 내가 직접 넣은 돈이고, 그해 낼 세금이 있어야 합니다. 퇴직금으로 들어온 몫과 다른 연금계좌에서 옮겨 온 돈은 공제 대상이 아닙니다." },
+  { q: "IRP 세액공제 한도는 얼마인가요?", a: `연금저축과 합쳐 연 ${manwon(pa.combinedLimit)}입니다. 연금저축은 그중 ${manwon(pa.savingsOnlyLimit)}까지만 셉니다. 계좌에는 연 ${manwon(pa.contributionRules.annualLimit)}까지 넣을 수 있지만 공제는 ${manwon(pa.combinedLimit)}에서 멈춥니다.` },
+  { q: "IRP 세액공제 계산은 어떻게 하나요?", a: `공제 대상 금액에 ${pa.creditRatePercentBelowThreshold}%(종합소득금액 ${manwon(pa.incomeThreshold)} 이하) 또는 ${pa.creditRatePercentAboveThreshold}%를 곱하고 지방소득세 10%를 더합니다. ${manwon(9_000_000)}이면 ${manwon(top.low.withLocal)} 또는 ${manwon(top.high.withLocal)}입니다.` },
+  { q: "IRP 세액공제 언제까지 넣어야 하나요?", a: "12월 31일까지입니다. 공제는 그해(1월 1일~12월 31일) 넣은 돈에 대해 받고, 지난해 몫을 올해 소급해 넣을 수는 없습니다." },
+  { q: "IRP 세액공제 못 받은 금액은 이월되나요?", a: "자동으로는 안 되고 신청해야 넘어갑니다. 공제받지 않은 납입액을 올해 납입분으로 전환해 달라고 금융회사에 신청하면 신청한 날 넣은 것으로 봅니다(시행령 제118조의3)." },
+  { q: "IRP 세액공제 받는 법은 무엇인가요?", a: "직장인은 연말정산 때 회사에, 사업소득자는 5월 종합소득세 신고 때 반영합니다. 놓쳤다면 법정신고기한부터 5년 안에 경정청구로 되찾을 수 있습니다." },
+  { q: "IRP 세액공제 단점은 무엇인가요?", a: `돈이 묶입니다. ${pa.annuityRequirement.minAge}세 이후·가입 ${pa.annuityRequirement.minYearsSinceOpening}년이 지나야 연금으로 받을 수 있고, 그 전에 해지하면 공제받은 원금과 수익에 16.5%가 붙습니다.` },
+];
+const more: Record<number, string> = {
+  1: "irp-tax-credit-eligibility",
+  2: "irp-tax-credit-limit",
+  3: "irp-tax-credit-calculator",
+  4: "irp-tax-credit-deadline",
+  5: "irp-tax-credit-carryover",
+  6: "irp-tax-credit-how-to-claim",
+  7: "irp-tax-credit-downsides",
+};
+const labelOf = (slug: string) => irpSeries.find((s) => s.slug === slug)?.label ?? slug;
 ---
 
-<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn}>
+<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
   <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
 
-  <p>
-    IRP(개인형 퇴직연금)에 넣은 돈은 세금에서 일부를 돌려받습니다. 소득세법
-    제59조의3의 연금계좌세액공제입니다. 연말이 다가오면 이 검색이 1년 중 가장
-    많아지는데, 이유가 있습니다. <strong>12월 31일이 마감</strong>입니다.
-  </p>
-
-  <h2>IRP 세액공제 조건 — 누가 받나요</h2>
-  <p>
-    조문은 <strong>"종합소득이 있는 거주자"</strong>가 연금계좌에 낸 돈에
-    대해 공제한다고 씁니다. 근로소득도 사업소득도 종합소득이라 직장인과
-    프리랜서·사장님 모두 해당합니다. IRP 계좌 자체는
-    {pa.irp.eligibility}
-  </p>
-  <div class="callout warn">
-    <p>
-      ⚠️ <strong>퇴직금이 들어온 IRP의 그 돈은 공제 대상이 아닙니다.</strong>
-      {pa.excluded.list[0]}과 {pa.excluded.list[1]}은 빼고 셉니다
-      ({pa.excluded.article}). 공제는 내가 새로 넣은 돈에만 붙습니다.
-    </p>
-  </div>
-
-  <h2>IRP 세액공제 한도 — 300만원, 900만원은 무슨 숫자인가요</h2>
-  <p>
-    IRP 혼자서는 {won(COMBINED_CAP)}까지 셉니다. 연금저축과 같이 쓰면 둘을
-    합쳐 {won(COMBINED_CAP)}이고, 연금저축은 그중 {won(SAVINGS_CAP)}까지만
-    셉니다.
-  </p>
-  <p>
-    그래서 자동완성에 300만원과 900만원이 같이 뜹니다.
-    <strong>연금저축을 600만원 채운 사람은 IRP에 300만원</strong>, 연금저축이
-    없는 사람은 <strong>IRP에 900만원</strong>이 한도를 다 쓰는 금액입니다.
-    둘 다 공제 대상은 {won(COMBINED_CAP)}으로 같습니다.
-  </p>
-  <p>
-    IRP에 넣을 수 있는 돈은 연 {won(pa.irp.annualContributionLimit)}까지지만
-    공제는 {won(COMBINED_CAP)}에서 멈춥니다. 나머지는 노후 자금으로만 쌓입니다.
-  </p>
+  {QA.map((x, i) => (
+    <>
+      <h2>{x.q}</h2>
+      <p class="qa-lead">{x.a}</p>
+      {i === 3 && (
+        <table>
+          <thead>
+            <tr><th>IRP 납입(연금저축 없음)</th><th>{pa.creditRatePercentBelowThreshold}% 구간</th><th>{pa.creditRatePercentAboveThreshold}% 구간</th></tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr><th scope="row">{won(r.irp)}</th><td>{won(r.low.withLocal)}</td><td>{won(r.high.withLocal)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {more[i] && (
+        <p>자세히 — <a href={irpHref(more[i])}>{labelOf(more[i])}</a></p>
+      )}
+    </>
+  ))}
 
   <AdSlot />
 
-  <h2>IRP 세액공제율과 계산 — 얼마 돌려받나요</h2>
-  <p>
-    공제율은 소득에 따라 둘입니다. 종합소득금액
-    {won(pa.incomeThreshold)} 이하(근로소득만 있으면 총급여 5,500만원 이하)면
-    {lowPct}%, 넘으면 {highPct}%입니다. 여기에 지방소득세 10%가 같이 줄어듭니다.
-  </p>
-  <div class="table-scroll">
-    <table>
-      <thead>
-        <tr>
-          <th>IRP 납입(연금저축 없음)</th>
-          <th>{lowPct}% 구간<br /><small>지방소득세 포함</small></th>
-          <th>{highPct}% 구간<br /><small>지방소득세 포함</small></th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r) => (
-          <tr>
-            <th scope="row">{won(r.irp)}</th>
-            <td>{won(r.low.withLocal)}</td>
-            <td>{won(r.high.withLocal)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-  <p>
-    연금저축 600만원 + IRP 300만원도 공제 대상이 {won(combo.eligible)}이라
-    {lowPct}% 구간이면 똑같이 {won(combo.withLocal)}입니다. 조합별로 더 보려면{" "}
-    <a href="/guide/pension-savings-tax-credit/">연금저축·IRP 세액공제 한도</a>를
-    보세요.
-  </p>
-  <p>
-    이름이 헷갈리지만 <strong>소득공제가 아니라 세액공제</strong>입니다.
-    과세표준을 줄이는 게 아니라 계산이 끝난 세금에서 바로 뺍니다. 그래서 위
-    표의 금액이 그대로 줄어드는 세금입니다.
-  </p>
-
-  <h2>IRP 세액공제 언제까지 넣어야 하나요</h2>
-  <div class="callout warn">
-    <p>
-      ⚠️ <strong>12월 31일까지 입금한 돈이 올해 공제입니다.</strong>
-      {pa.deadline.rule}({pa.deadline.article}).
-    </p>
-  </div>
-  <p>
-    1년 동안 나눠 넣든 12월에 한 번에 넣든 공제 대상은 같습니다. 조문은 그해
-    넣은 합계만 봅니다. 1월 1일에 넣으면 그 돈은 다음 해 몫입니다.
-  </p>
-
-  <h2>못 받은 금액은 이월되나요 — 신청해야 넘어갑니다</h2>
-  <p>
-    자동으로 넘어가지 않습니다. 시행령 제118조의3이 <strong>전환
-    신청</strong>이라는 길을 둡니다.
-  </p>
-  <div class="callout">
-    <p>{pa.carryover.rule}.</p>
-  </div>
-  <p>
-    {pa.carryover.note} 한도를 넘겨 넣었던 해가 있다면, 한도가 남는 해에
-    금융회사에 신청해 그해 몫으로 돌릴 수 있다는 뜻입니다.
-  </p>
-
-  <AdSlot />
-
-  <h2>IRP 세액공제 받는 법</h2>
-  <p>
-    {pa.claim.rule}({pa.claim.article}).
-  </p>
+  <h2>IRP 세액공제, 질문별로 정리했습니다</h2>
+  <p>검색창에 실제로 뜨는 질문마다 한 편씩 썼습니다.</p>
   <ul>
-    <li>
-      <strong>직장인</strong> — 연말정산 때 회사에 냅니다. 소득·세액공제신고서를
-      내지 않으면 {yearEnd.noFilingPenalty.applied} 적용됩니다
-      ({yearEnd.noFilingPenalty.article}).
-    </li>
-    <li>
-      <strong>사업소득자</strong> — 5월 종합소득세 신고 때 세액공제 항목에
-      넣습니다.
-    </li>
+    {irpSeries.map((s) => (
+      <li><a href={irpHref(s.slug)}>{s.label}</a></li>
+    ))}
+    <li><a href={irpHref(IRP_WITH_SAVINGS.slug)}>연금저축 IRP 세액공제 한도</a></li>
   </ul>
-  <p>
-    직장인의 환급은 연말정산이 끝나는 {yearEnd.settlement.when}에 반영됩니다.
-    일정은 <a href="/guide/year-end-settlement/">연말정산 기간과 순서</a>에
-    있습니다.
-  </p>
-
-  <h2>IRP 세액공제의 단점 — 해지하면 돌려줍니다</h2>
-  <p>
-    {pa.irp.withdrawalPenaltyNote} 공제받은 몫을 사실상 되돌려 내는 셈입니다.
-  </p>
-  <p>
-    연금으로 받으려면 조건도 있습니다 — {pa.annuityRequirement.note} 당장
-    쓸 수도 있는 돈은 넣지 않는 게 안전한 이유입니다.
-  </p>
-
-  <h2>이 글에 없는 것</h2>
-  <ul>
-    <li>
-      <strong>연금납입확인서 제출 기한</strong> — 시행령이 "제113조 제1항 각
-      호에 따른 날"로 넘기는데, 그 조문은 읽지 않았습니다.
-    </li>
-    <li>
-      <strong>전환 신청의 납입 요건과 서식</strong> — 시행령 제40조의2 제2항과
-      재정경제부령은 읽지 않았습니다.
-    </li>
-    <li><strong>금융회사별 개설·입금 화면</strong> — 조문 밖입니다.</li>
-  </ul>
-  <p>
-    IRP 계좌 자체는 <a href="/guide/irp-account/">IRP란?</a>에 정리했습니다.
-  </p>
 </GuideLayout>

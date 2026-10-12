@@ -1,0 +1,88 @@
+---
+/**
+ * "irp 세액공제 해지" — IRP 세액공제 시리즈.
+ * 해지(연금외수령) = 기타소득 15% 원천징수(소득세법 제21조 제1항 제21호, 제129조 제1항 제6호 나목),
+ * 지방소득세까지 16.5%. 과세 대상은 공제받은 원금 + 운용수익뿐(제20조의3).
+ * 연금으로 받으면 5·4·3%(제129조 제1항 제5호의2 표).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import pa from "../../../rates/pension-account-2026.json";
+import { won, manwon } from "../../../lib/won";
+import { withdrawalTax, annuityRatePercent, NON_ANNUITY_RATE, pensionCredit } from "../../../lib/pension-credit";
+
+const credited = 9_000_000;
+const gains = 1_000_000;
+const lump = withdrawalTax({ creditedPrincipal: credited, gains }, NON_ANNUITY_RATE);
+const annuity = withdrawalTax({ creditedPrincipal: credited, gains }, annuityRatePercent(60));
+const got = pensionCredit({ savings: 0, irp: credited }, true);
+
+const title = "IRP 세액공제 해지 — 공제받은 원금과 수익에 16.5%를 냅니다";
+const description =
+  "IRP를 해지하면 세액공제받은 원금과 운용수익에 기타소득세 15%, 지방소득세 포함 16.5%가 원천징수됩니다. 공제받지 않은 원금에는 붙지 않습니다. 연금으로 받으면 나이에 따라 5.5%~3.3%입니다.";
+
+const ANSWER = `IRP를 해지하면 세액공제받은 원금과 운용수익에 ${NON_ANNUITY_RATE}%(지방소득세 포함 16.5%)가 원천징수됩니다. 공제받지 않은 원금에는 붙지 않습니다. 연금으로 받으면 나이에 따라 5%·4%·3%로 낮아집니다.`;
+
+const QA = [
+  { q: "IRP 세액공제 받고 해지하면 세금이 얼마인가요?", a: `세액공제받은 원금과 운용수익을 연금 외로 꺼내면 기타소득으로 보고 ${NON_ANNUITY_RATE}%를 원천징수합니다(소득세법 제21조 제1항 제21호·제129조 제1항 제6호). 지방소득세를 더하면 16.5%입니다.` },
+  { q: "IRP 해지하면 공제받은 것보다 더 토해내나요?", a: `그럴 수 있습니다. 15% 구간에서 ${manwon(credited)}을 공제받았다면 줄어든 세금은 ${manwon(got.withLocal)}인데, 수익 ${manwon(gains)}과 함께 해지하면 ${manwon(lump.withLocal)}이 원천징수됩니다. 수익에도 세금이 붙기 때문입니다.` },
+  { q: "공제받지 않은 돈도 해지하면 세금을 내나요?", a: "내지 않습니다. 꺼낼 때 과세되는 것은 원천징수되지 않은 퇴직소득, 세액공제받은 납입액, 운용수익입니다(소득세법 제20조의3 제1항 제2호). 공제받지 않은 원금은 이 목록에 없습니다." },
+  { q: "해지하지 않고 연금으로 받으면 세금이 얼마인가요?", a: "연금수령일 현재 나이로 70세 미만 5%, 70세 이상 80세 미만 4%, 80세 이상 3%입니다(소득세법 제129조 제1항 제5호의2). 종신계약으로 받으면 3%입니다." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead>
+      <tr><th>공제받은 원금 {manwon(credited)} + 수익 {manwon(gains)}</th><th>세율</th><th>지방소득세 포함</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">해지(연금외수령)</th><td>{NON_ANNUITY_RATE}%</td><td>{won(lump.withLocal)}</td></tr>
+      <tr><th scope="row">연금수령(70세 미만)</th><td>{annuityRatePercent(60)}%</td><td>{won(annuity.withLocal)}</td></tr>
+    </tbody>
+  </table>
+  <p>
+    연금수령은 이 금액을 한 번에 내는 것이 아니라 받을 때마다 나눠 냅니다.
+    70세 미만 기준으로도 세율이 {NON_ANNUITY_RATE}% 대 {annuityRatePercent(60)}%라,
+    같은 돈을 해지로 꺼내면 세금이 {NON_ANNUITY_RATE / annuityRatePercent(60)}배입니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <ul>
+    {pa.taxableOnWithdrawal.items.map((x) => <li>{x}</li>)}
+  </ul>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <table>
+    <thead>
+      <tr><th>{pa.withdrawalTax.annuityByAge.basis}</th><th>세율</th><th>지방소득세 포함</th></tr>
+    </thead>
+    <tbody>
+      {pa.withdrawalTax.annuityByAge.table.map((r) => (
+        <tr><th scope="row">{r.label}</th><td>{r.ratePercent}%</td><td>{Math.round(r.ratePercent * 11) / 10}%</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <p>
+    연금으로 받으려면 조건이 있습니다 — {pa.annuityRequirement.note}
+  </p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>해지 없이 일부만 꺼내는 중도인출의 사유</strong> — 근로자퇴직급여 보장법이 대통령령으로 넘기는데, 그 시행령은 읽지 않았습니다.</li>
+    <li><strong>연금수령 한도와 퇴직금 몫의 세율</strong> — 퇴직소득을 연금으로 받는 경우는 세율 구조가 따로 있습니다.</li>
+  </ul>
+</GuideLayout>

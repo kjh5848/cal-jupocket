@@ -59,3 +59,42 @@ export function pensionCredit(c: Contribution, lowIncome: boolean): Credit {
   const withLocal = incomeTax + Math.floor(incomeTax * rates.localTaxRate);
   return { eligible, incomeTax, withLocal };
 }
+
+/**
+ * 공제가 낼 세금보다 크면 — 소득세법 제61조 제2항.
+ * 세액공제 합계는 산출세액을 넘을 수 없다. 넘는 몫은 없는 것으로 하고,
+ * 그만큼은 연금계좌세액공제를 받지 않은 것으로 본다(제3항).
+ * 여기서는 연금계좌세액공제 하나만 놓고 본다(다른 공제가 있으면 그만큼 더 줄어든다).
+ */
+export function cappedByTax(credit: number, computedTax: number): { used: number; unused: number } {
+  if (credit < 0 || computedTax < 0) throw new RangeError("0 이상이어야 한다");
+  const used = Math.min(credit, computedTax);
+  return { used, unused: credit - used };
+}
+
+/**
+ * 연금계좌에서 꺼낼 때의 세금 — 소득세법 제20조의3·제21조·제129조.
+ * 과세 대상은 공제받은 원금과 운용수익뿐이다. 공제받지 않은 원금은 세금이 없다.
+ * 반환값은 소득세이고, withLocal 은 지방소득세 10% 를 더한 값이다.
+ */
+export function withdrawalTax(
+  a: { creditedPrincipal: number; gains: number; uncreditedPrincipal?: number },
+  ratePercent: number,
+): { taxable: number; incomeTax: number; withLocal: number } {
+  const taxable = a.creditedPrincipal + a.gains;
+  const incomeTax = Math.floor((taxable * ratePercent) / 100);
+  return { taxable, incomeTax, withLocal: incomeTax + Math.floor(incomeTax * rates.localTaxRate) };
+}
+
+/** 연금수령 세율(%) — 연금수령일 현재 나이. 제129조 제1항 제5호의2 가목 표. */
+export function annuityRatePercent(age: number): number {
+  const t = pensionAccount.withdrawalTax.annuityByAge.table;
+  if (age < 70) return t[0].ratePercent;
+  if (age < 80) return t[1].ratePercent;
+  return t[2].ratePercent;
+}
+
+export const NON_ANNUITY_RATE = pensionAccount.withdrawalTax.nonAnnuity.ratePercent; // 15
+
+/** 소득세에 지방소득세(소득세의 10%)를 더한 값. */
+export const withLocalTax = (incomeTax: number): number => incomeTax + Math.floor(incomeTax * rates.localTaxRate);

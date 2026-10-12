@@ -1,0 +1,75 @@
+---
+/**
+ * "irp 세액공제 입금" — IRP 세액공제 시리즈.
+ * 입금(납입)의 규칙: 연 1,800만원 한도, 여러 계좌 합산, 연금수령 개시 후 납입 불가,
+ * 회사 DC 계좌에 본인이 추가로 넣은 돈도 퇴직연금계좌 납입(시행령 제40조의2).
+ * 반전: 넣을 수 있는 돈과 공제받는 돈이 다르다. 퇴직금으로 들어온 돈은 입금해도 공제 X.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import pa from "../../../rates/pension-account-2026.json";
+import { manwon } from "../../../lib/won";
+
+const title = "IRP 세액공제 입금 — 연 1,800만원까지 넣고, 900만원까지 공제됩니다";
+const description =
+  "IRP에는 연금계좌 합계 연 1,800만원까지 입금할 수 있고, 그중 연금저축과 합쳐 900만원까지 세액공제됩니다. 퇴직금으로 들어온 돈과 다른 연금계좌에서 옮겨 온 돈은 공제 대상이 아닙니다.";
+
+const ANSWER = `IRP에는 연금계좌를 모두 합쳐 연 ${manwon(pa.contributionRules.annualLimit)}까지 입금할 수 있고, 세액공제는 연금저축과 합쳐 ${manwon(pa.combinedLimit)}까지입니다. 퇴직금으로 들어온 돈이나 다른 연금계좌에서 옮긴 돈은 입금이 돼도 공제되지 않습니다.`;
+
+const QA = [
+  { q: "IRP에는 얼마까지 입금할 수 있나요?", a: `연금계좌를 모두 합쳐 연 ${manwon(pa.contributionRules.annualLimit)}입니다(소득세법 시행령 제40조의2 제2항). ISA 만기 자금을 옮기는 경우에는 그 금액이 이 한도에 더해집니다.` },
+  { q: "IRP에 입금한 돈은 전부 세액공제되나요?", a: `아닙니다. 공제는 연금저축과 합쳐 ${manwon(pa.combinedLimit)}까지이고, 퇴직금처럼 과세가 이연된 소득과 다른 연금계좌에서 옮겨 온 돈은 빠집니다(소득세법 제59조의3 제1항).` },
+  { q: "회사 DC형 퇴직연금에 내 돈을 추가로 넣어도 공제되나요?", a: "시행령은 확정기여형(DC) 계좌도 퇴직연금계좌로 정해 두었습니다(시행령 제40조의2 제1항). 그래서 DC 계좌에 본인이 따로 넣은 돈도 연금계좌 납입액으로 세어집니다." },
+  { q: "연금을 받기 시작한 뒤에도 입금할 수 있나요?", a: "안 됩니다. 연금수령 개시를 신청한 날 이후에는 연금보험료를 납입하지 않아야 연금계좌 납입액으로 봅니다(시행령 제40조의2 제2항 제2호)." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>
+    "연금계좌가 2개 이상인 경우에는 그 합계액"이라고 조문이 적어 두었습니다.
+    IRP를 두 금융회사에 나눠 열어도, 연금저축과 IRP를 같이 써도 한도는 하나입니다.
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead>
+      <tr><th>IRP에 들어온 돈</th><th>입금 가능</th><th>세액공제</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">내가 새로 넣은 돈</th><td>연 {manwon(pa.contributionRules.annualLimit)}까지</td><td>{manwon(pa.combinedLimit)}까지(연금저축 합산)</td></tr>
+      <tr><th scope="row">퇴직금(과세이연 퇴직소득)</th><td>가능</td><td>대상 아님</td></tr>
+      <tr><th scope="row">다른 연금계좌에서 이전</th><td>가능</td><td>대상 아님</td></tr>
+      <tr><th scope="row">ISA 만기 자금({pa.isaTransfer.window.days}일 안)</th><td>한도에 더해짐</td><td>10%·최대 300만원 추가</td></tr>
+    </tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    시행령이 퇴직연금계좌로 정한 것은 넷입니다.
+  </p>
+  <ul>
+    {pa.accounts.pensionAccounts.map((x) => <li>{x}</li>)}
+  </ul>
+  <p>
+    확정급여형(DB)은 이 목록에 없습니다. DB형 직장인이 공제를 받으려면 IRP를
+    따로 열어 넣어야 합니다 — <a href="/guide/personal-irp-tax-credit/">개인형
+    IRP 세액공제</a>.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    언제까지 넣어야 그해 몫이 되는지는 <a href="/guide/irp-tax-credit-deadline/">IRP
+    세액공제 언제까지</a>에 있습니다.
+  </p>
+</GuideLayout>

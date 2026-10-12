@@ -1,0 +1,64 @@
+---
+/**
+ * "irp 세액공제 받는 법" — IRP 세액공제 시리즈. (받는법·방법도 이 글이 받는다)
+ * 근거: 시행령 제118조의2(연금납입확인서), 소득세법 제137조 제3항(신고서 미제출),
+ * 국세기본법 제45조의2 제1항·제5항(놓쳤을 때 5년 경정청구 — 연말정산한 근로자도).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import pa from "../../../rates/pension-account-2026.json";
+import yearEnd from "../../../rates/year-end-2026.json";
+
+const title = "IRP 세액공제 받는 법 — 직장인은 연말정산, 사업자는 5월, 놓치면 5년 안에 경정청구";
+const description =
+  "IRP 세액공제는 직장인은 연말정산 때, 사업소득자는 5월 종합소득세 신고 때 받습니다. 공제신고서를 안 내면 반영되지 않고, 놓쳤다면 법정신고기한부터 5년 안에 경정청구로 되찾을 수 있습니다.";
+
+const ANSWER = `직장인은 연말정산 때 회사에, 사업소득자는 5월 종합소득세 신고 때 반영합니다. 공제신고서를 내지 않으면 ${yearEnd.noFilingPenalty.applied} 적용되고, 놓쳤다면 법정신고기한부터 ${pa.claimLater.years}년 안에 경정청구로 되찾을 수 있습니다.`;
+
+const QA = [
+  { q: "IRP 세액공제는 어떻게 받나요?", a: "연금납입확인서를 원천징수의무자(회사), 납세조합 또는 관할 세무서장에게 내는 것이 조문의 방법입니다(시행령 제118조의2 제1항). 연말정산 간소화 자료로 국세청에 이미 들어와 있으면 그것으로 대신할 수 있습니다." },
+  { q: "직장인은 IRP 세액공제를 어디서 받나요?", a: `연말정산에서 받습니다. 소득·세액공제신고서를 회사에 내지 않으면 ${yearEnd.noFilingPenalty.applied} 적용되고 연금계좌 공제는 빠집니다(소득세법 제137조 제3항).` },
+  { q: "프리랜서·사업자는 IRP 세액공제를 어떻게 받나요?", a: "다음 해 5월 종합소득세 신고 때 세액공제 항목에 연금계좌 납입액을 넣습니다. 3.3%를 떼인 프리랜서도 같은 방식입니다." },
+  { q: "연말정산에서 IRP 세액공제를 빠뜨렸으면 어떻게 하나요?", a: `경정청구를 하면 됩니다. 법정신고기한이 지난 뒤 ${pa.claimLater.years}년 안에 청구할 수 있고, 연말정산으로 세금을 낸 근로자도 이 규정을 준용합니다(국세기본법 제45조의2 제1항·제5항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    회사가 알아서 넣어 주는 것이 아니라 내가 낸 서류로 계산합니다.
+    {yearEnd.noFilingPenalty.note}
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    5월 신고에서 세금이 줄면 3.3%로 미리 낸 세금과의 차이만큼 환급이 커집니다.
+    환급이 언제 들어오는지는 <a href="/guide/irp-tax-credit-refund/">IRP 세액공제
+    환급</a>에 있습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    다만 근로자의 경우 회사가 지급명세서를 기한까지 제출했어야 이 준용 규정이
+    적용됩니다. 경정청구 절차 전체는 <a href="/guide/late-filing-refund/">기한
+    지난 환급</a>에 정리했습니다.
+  </p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>연금납입확인서 제출 기한</strong> — 시행령이 "제113조 제1항 각 호에 따른 날"로 넘기는데, 그 조문은 읽지 않았습니다.</li>
+    <li><strong>홈택스 화면</strong> — 조문 밖이고 화면이 바뀝니다.</li>
+  </ul>
+</GuideLayout>

@@ -1,0 +1,67 @@
+---
+/**
+ * "irp 세액공제 단점" — IRP 세액공제 시리즈.
+ * 단점을 조문으로만 센다: 묶이는 조건(55세·5년), 해지 시 16.5%, 공제는 세금을 넘지 못함(제61조),
+ * 넣는 한도와 공제 한도의 차이, 연금 개시 후 납입 불가. 수수료·수익률은 조문 밖이라 쓰지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import pa from "../../../rates/pension-account-2026.json";
+import { manwon } from "../../../lib/won";
+import { NON_ANNUITY_RATE } from "../../../lib/pension-credit";
+
+const title = "IRP 세액공제 단점 — 55세까지 묶이고, 해지하면 16.5%를 냅니다";
+const description =
+  "IRP 세액공제의 단점은 돈이 묶인다는 것입니다. 연금으로 받으려면 55세 이후, 가입 5년이 지나야 하고, 그 전에 해지하면 공제받은 원금과 수익에 16.5%가 붙습니다. 낼 세금이 적으면 공제도 다 못 받습니다.";
+
+const ANSWER = `가장 큰 단점은 돈이 묶이는 것입니다. 연금으로 받으려면 ${pa.annuityRequirement.minAge}세 이후, 가입 ${pa.annuityRequirement.minYearsSinceOpening}년이 지나야 하고, 그 전에 해지하면 공제받은 원금과 수익에 16.5%가 붙습니다. 낼 세금이 적은 해에는 공제도 다 못 받습니다.`;
+
+const QA = [
+  { q: "IRP 세액공제의 단점은 무엇인가요?", a: `돈이 오래 묶입니다. ${pa.annuityRequirement.minAge}세 이후 연금수령을 신청하고 가입일부터 ${pa.annuityRequirement.minYearsSinceOpening}년이 지나야 연금으로 받을 수 있고, 그 전에 꺼내면 연금 외 수령으로 과세됩니다.` },
+  { q: "IRP를 중간에 해지하면 손해인가요?", a: `세액공제받은 원금과 운용수익에 ${NON_ANNUITY_RATE}%, 지방소득세를 더해 16.5%가 원천징수됩니다(소득세법 제129조). 공제로 줄어든 세금보다 해지 때 내는 세금이 더 클 수 있습니다.` },
+  { q: "소득이 적으면 IRP 세액공제가 불리한가요?", a: "공제를 다 못 쓸 수 있습니다. 세액공제 합계가 그해 산출세액을 넘으면 넘는 금액은 없는 것으로 봅니다(소득세법 제61조). 대신 그 몫은 공제받지 않은 납입액으로 남아 나중에 꺼낼 때 과세되지 않습니다." },
+  { q: "IRP에 넣은 돈을 다 공제받을 수 있나요?", a: `아닙니다. 넣을 수 있는 돈은 연 ${manwon(pa.contributionRules.annualLimit)}이지만 공제는 연금저축과 합쳐 ${manwon(pa.combinedLimit)}까지입니다. 퇴직금으로 들어온 돈도 공제 대상이 아닙니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>
+    {pa.annuityRequirement.note} 연금을 받기 시작한 뒤에는 더 넣을 수도
+    없습니다({pa.contributionRules.afterAnnuityStart}).
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    금액 예시와 연금으로 받을 때의 세율은 <a href="/guide/irp-cancellation-tax/">IRP
+    세액공제 해지</a>에 있습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    그래서 이 단점은 절반만 단점입니다. 공제를 못 쓴 돈은 다음 해 납입분으로
+    돌려 달라고 신청할 수 있습니다 — <a href="/guide/irp-tax-credit-carryover/">IRP
+    세액공제 이월</a>.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>수수료·수익률</strong> — 금융회사와 상품마다 다르고 조문 밖입니다.</li>
+    <li><strong>중도인출이 허용되는 사유</strong> — 근로자퇴직급여 보장법 시행령이 정하는데 읽지 않았습니다.</li>
+  </ul>
+  <p>
+    전체 흐름은 <a href="/guide/irp-tax-credit/">IRP 세액공제</a>에 있습니다.
+  </p>
+</GuideLayout>

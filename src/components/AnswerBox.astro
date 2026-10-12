@@ -1,0 +1,19 @@
+---
+/**
+ * 글 맨 위의 "한 줄 답".
+ *
+ * 검색어에 대한 답을 2~3문장, 숫자와 함께 둔다. AI 요약과 스니펫이 페이지에서
+ * 가장 먼저 가져가는 자리가 제목 바로 아래 단락이라, 도입 문장 대신 답을 둔다.
+ * 220자를 넘기지 않는다(snippet-structure.test.ts).
+ */
+interface Props {
+  text: string;
+  label?: string;
+}
+const { text, label = "한 줄 답" } = Astro.props;
+---
+
+<div class="answer-box">
+  <p class="answer-label">{label}</p>
+  <p class="answer-text">{text}</p>
+</div>

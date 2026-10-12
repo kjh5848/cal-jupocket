@@ -362,6 +362,33 @@ details[open] summary {
   margin-bottom: 0.5rem;
 }
 
+/* 글 맨 위 "한 줄 답" — AnswerBox.astro */
+.answer-box {
+  border: 1px solid var(--link);
+  border-radius: var(--r-md);
+  background: var(--accent-bg);
+  padding: 1rem 1.1rem;
+  margin: 1.25rem 0 1.75rem;
+}
+
+.answer-box .answer-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--link);
+  letter-spacing: 0.02em;
+  margin: 0 0 0.35rem;
+}
+
+.answer-box .answer-text {
+  font-weight: 600;
+  margin: 0;
+}
+
+/* 질문형 소제목 바로 아래 첫 답 */
+.qa-lead {
+  font-weight: 600;
+}
+
 /* 핵심 문장 강조 */
 .callout {
   border-left: 4px solid var(--link);

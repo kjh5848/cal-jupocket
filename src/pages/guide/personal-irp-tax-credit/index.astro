@@ -1,0 +1,69 @@
+---
+/**
+ * "개인형 irp 세액공제" — IRP 세액공제 시리즈.
+ * 개인형 = IRP 자체의 이름(근로자퇴직급여 보장법 제2조 제10호). DB·DC와의 차이가 질문의 실체다.
+ * 반전: 공제는 IRP만이 아니라 DC 계좌에 본인이 넣은 돈에도 된다(소득세법 시행령 제40조의2).
+ * DB는 퇴직연금계좌 목록에 없다 — DB형 직장인은 IRP를 따로 열어야 한다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import pa from "../../../rates/pension-account-2026.json";
+import { manwon } from "../../../lib/won";
+
+const L = pa.irpLaw;
+
+const title = "개인형 IRP 세액공제 — DB형 직장인은 IRP를 따로 열어야 공제됩니다";
+const description =
+  "개인형 IRP는 개인형퇴직연금제도의 계좌입니다. 세액공제는 IRP와 DC형 퇴직연금 계좌에 본인이 넣은 돈에 되고, DB형은 퇴직연금계좌 목록에 없어 IRP를 따로 열어야 합니다.";
+
+const ANSWER = `개인형 IRP는 IRP 그 자체의 이름입니다. 세액공제는 IRP와 회사 DC형 계좌에 내가 넣은 돈에 되고, 연금저축과 합쳐 ${manwon(pa.combinedLimit)}까지입니다. DB형은 공제 대상 계좌가 아니라서 DB형 직장인은 IRP를 따로 열어야 합니다.`;
+
+const QA = [
+  { q: "개인형 IRP란 무엇인가요?", a: "근로자퇴직급여 보장법의 개인형퇴직연금제도입니다. 가입자가 넣은 일시금이나 회사·본인이 낸 부담금을 적립·운용하는 제도로, 받을 급여나 낼 부담금이 미리 정해져 있지 않습니다(제2조 제10호)." },
+  { q: "개인형 IRP와 회사 퇴직연금(DB·DC)은 무엇이 다른가요?", a: "DB형은 받을 급여가 미리 정해져 있고, DC형은 회사가 낼 부담금이 미리 정해져 있습니다. IRP는 둘 다 정해져 있지 않고 가입자가 선택해 넣고 굴립니다(근로자퇴직급여 보장법 제2조)." },
+  { q: "DC형 퇴직연금에 내 돈을 넣어도 세액공제가 되나요?", a: "됩니다. 소득세법 시행령은 확정기여형(DC) 계좌를 IRP와 함께 퇴직연금계좌로 정해 두었습니다(제40조의2 제1항). DC 계좌에 본인이 추가로 넣은 돈도 연금계좌 납입액입니다." },
+  { q: "DB형 직장인은 IRP 세액공제를 어떻게 받나요?", a: "IRP를 따로 열어 넣어야 합니다. 확정급여형(DB)은 시행령의 퇴직연금계좌 목록에 없습니다. DB 가입자가 자기 부담으로 IRP를 추가로 여는 길은 근로자퇴직급여 보장법 제24조가 열어 두었습니다." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead>
+      <tr><th>제도</th><th>법이 정한 뜻</th><th>세액공제 계좌</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">확정급여형(DB)</th><td>{L.definitions.DB}</td><td>아님</td></tr>
+      <tr><th scope="row">확정기여형(DC)</th><td>{L.definitions.DC}</td><td>퇴직연금계좌</td></tr>
+      <tr><th scope="row">개인형(IRP)</th><td>{L.definitions.IRP}</td><td>퇴직연금계좌</td></tr>
+    </tbody>
+  </table>
+  <p><small>정의: {L.definitions.article} · 세액공제 계좌: {pa.accounts.article}</small></p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    회사가 DC 계좌에 넣어 주는 부담금은 내가 넣은 돈이 아니므로 이 이야기와
+    별개입니다. 공제는 내가 넣은 돈에 대해서만 생각하면 됩니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <ol>
+    {L.whoCanOpen.list.map((x) => <li>{x}</li>)}
+  </ol>
+  <p>
+    두 번째가 DB·DC 직장인이 IRP를 더 여는 경우입니다. 공제 조건 전체는{" "}
+    <a href="/guide/irp-tax-credit-eligibility/">IRP 세액공제 조건</a>에 있습니다.
+  </p>
+</GuideLayout>

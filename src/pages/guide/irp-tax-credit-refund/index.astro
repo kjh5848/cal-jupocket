@@ -1,0 +1,68 @@
+---
+/**
+ * "irp 세액공제 환급" — IRP 세액공제 시리즈.
+ * 반전: 세액공제는 '돌려받는 돈' 이 아니라 '줄어드는 세금' 이다. 현금 환급이 되는지는
+ * 이미 낸 세금(기납부세액)과 비교해서 정해진다.
+ * 시기: 직장인은 연말정산(2월분 급여), 사업자는 신고 후 환급 결정일부터 30일 안(국세기본법 제51조 제6항).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import pa from "../../../rates/pension-account-2026.json";
+import yearEnd from "../../../rates/year-end-2026.json";
+import { manwon } from "../../../lib/won";
+import { pensionCredit } from "../../../lib/pension-credit";
+
+const ex = pensionCredit({ savings: 0, irp: 9_000_000 }, true);
+
+const title = "IRP 세액공제 환급 — 돌려받는 돈이 아니라 줄어드는 세금입니다";
+const description =
+  "IRP 세액공제는 결정세액을 줄이는 것이라, 이미 낸 세금이 줄어든 세금보다 많을 때 그 차이가 환급됩니다. 직장인은 연말정산 때 급여로, 사업자는 환급 결정일부터 30일 안에 받습니다.";
+
+const ANSWER = `IRP 세액공제는 통장에 바로 들어오는 돈이 아니라 그해 세금을 줄이는 금액입니다. 이미 낸 세금이 줄어든 세금보다 많으면 그 차이가 환급되고, 직장인은 연말정산 때, 사업자는 환급 결정일부터 ${pa.refundTiming.days}일 안에 받습니다.`;
+
+const QA = [
+  { q: "IRP 세액공제 환급은 얼마나 받나요?", a: `세액공제액만큼 결정세액이 줄어듭니다. IRP ${manwon(9_000_000)}에 15% 구간이면 지방소득세 포함 ${manwon(ex.withLocal)}입니다. 이 금액이 그대로 입금되는 것은 아니고, 이미 낸 세금과 비교한 차이가 환급됩니다.` },
+  { q: "IRP 세액공제 환급은 언제 들어오나요?", a: `직장인은 연말정산을 하는 ${yearEnd.settlement.when}에 정산됩니다. 사업소득자는 5월 신고 뒤 세무서가 환급을 결정한 날부터 ${pa.refundTiming.days}일 안에 지급합니다(국세기본법 제51조 제6항).` },
+  { q: "세액공제를 받았는데 환급이 없을 수도 있나요?", a: "있습니다. 이미 낸 세금이 적어서 공제 뒤에도 더 낼 세금이 남으면 추가로 낼 금액이 줄어들 뿐 환급은 없습니다. 공제가 그해 산출세액보다 크면 넘는 몫은 없는 것으로 봅니다(소득세법 제61조)." },
+  { q: "IRP 세액공제 환급금도 나중에 세금을 내나요?", a: `환급받은 세금 자체에는 세금이 없습니다. 대신 공제받은 원금과 그 운용수익은 나중에 꺼낼 때 과세됩니다. 연금으로 받으면 ${pa.withdrawalTax.annuityByAge.table[0].ratePercent}% 이하, 연금 외로 꺼내면 ${pa.withdrawalTax.nonAnnuity.ratePercent}%입니다(소득세법 제129조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>
+    직장인은 매달 월급에서 뗀 세금이, 프리랜서는 3.3%로 떼인 세금이 "이미 낸
+    세금"입니다. 연말정산이나 5월 신고에서 세금이 확정되면 그 차액이 환급되거나
+    추가 납부가 됩니다. IRP 공제는 확정되는 세금 쪽을 줄여서 차액을 키웁니다.
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    연말정산 환급이 몇 월 급여에 들어오는지는 회사의 급여일에 따라 다릅니다.
+    일정은 <a href="/guide/year-end-settlement/">연말정산 기간과 순서</a>에
+    있습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    못 쓴 공제는 "공제받지 않은 납입액"으로 남아 다음 해로 돌릴 수 있습니다 —{" "}
+    <a href="/guide/irp-tax-credit-carryover/">IRP 세액공제 이월</a>.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    지금 세금을 덜 내는 대신 나중에 낮은 세율로 내는 구조입니다. 중간에 해지하면
+    무엇이 붙는지는 <a href="/guide/irp-cancellation-tax/">IRP 세액공제
+    해지</a>에 있습니다.
+  </p>
+</GuideLayout>

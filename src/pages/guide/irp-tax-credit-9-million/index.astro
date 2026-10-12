@@ -1,0 +1,79 @@
+---
+/**
+ * "irp 세액공제 900만원" — IRP 세액공제 시리즈.
+ * 반전: 900만원을 채워도 낼 세금이 그보다 적으면 다 못 받는다(제61조).
+ * 못 받은 몫은 '공제받지 않은 납입액' 이 되어 이월 신청과 비과세 인출 쪽으로 간다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import pa from "../../../rates/pension-account-2026.json";
+import { won, manwon } from "../../../lib/won";
+import { pensionCredit, cappedByTax } from "../../../lib/pension-credit";
+
+const low = pensionCredit({ savings: 0, irp: 9_000_000 }, true);
+const high = pensionCredit({ savings: 0, irp: 9_000_000 }, false);
+const exampleTax = 800_000; // 산출세액 예시값(가정)
+const capped = cappedByTax(low.incomeTax, exampleTax);
+
+const title = "IRP 세액공제 900만원 — 다 채우면 최대 148만 5천원, 단 세금이 그만큼 있어야 합니다";
+const description =
+  "IRP에 900만원을 넣으면 공제율 15%일 때 지방소득세 포함 148만 5천원, 12%일 때 118만 8천원이 세금에서 빠집니다. 낼 세금이 그보다 적으면 넘는 몫은 없는 것으로 봅니다.";
+
+const ANSWER = `IRP에 ${manwon(9_000_000)}을 넣으면 공제율 15%일 때 ${manwon(low.withLocal)}, 12%일 때 ${manwon(high.withLocal)}이 세금에서 빠집니다(지방소득세 포함). 다만 그해 낼 세금이 이보다 적으면 그 세금만큼만 줄어듭니다.`;
+
+const QA = [
+  { q: "IRP 세액공제 900만원 넣으면 얼마 돌려받나요?", a: `공제율 15% 구간이면 소득세 ${manwon(low.incomeTax)}에 지방소득세 10%를 더해 ${manwon(low.withLocal)}, 12% 구간이면 ${manwon(high.withLocal)}입니다. 900만원은 공제 한도라 이보다 더 넣어도 공제는 늘지 않습니다.` },
+  { q: "900만원을 다 채워도 다 못 받는 경우가 있나요?", a: "있습니다. 세액공제 합계가 그해 산출세액을 넘으면 넘는 금액은 없는 것으로 봅니다(소득세법 제61조 제2항). 소득이 적어 낼 세금이 적은 해에는 900만원을 채워도 공제를 다 쓰지 못합니다." },
+  { q: "못 받은 공제는 그냥 사라지나요?", a: "공제 금액은 사라지지만 넣은 돈은 '공제받지 않은 납입액'으로 남습니다(제61조 제3항). 이 돈은 꺼낼 때 세금이 붙지 않고, 다음 해 납입분으로 돌려 달라고 금융회사에 신청할 수도 있습니다." },
+  { q: "IRP 900만원과 연금저축 600만원+IRP 300만원은 같은가요?", a: `공제 대상은 둘 다 ${manwon(pa.combinedLimit)}으로 같습니다. 연금저축만 ${manwon(pa.savingsOnlyLimit)}까지 세고 나머지를 IRP가 채우는 구조라, 어느 쪽으로 맞춰도 돌아오는 돈은 같습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead>
+      <tr><th>공제율 구간</th><th>소득세에서</th><th>지방소득세 포함</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">{pa.creditRatePercentBelowThreshold}%</th><td>{won(low.incomeTax)}</td><td>{won(low.withLocal)}</td></tr>
+      <tr><th scope="row">{pa.creditRatePercentAboveThreshold}%</th><td>{won(high.incomeTax)}</td><td>{won(high.withLocal)}</td></tr>
+    </tbody>
+  </table>
+  <p>
+    어느 구간인지는 <a href="/guide/irp-tax-credit-rate/">IRP 세액공제율</a>에
+    정리했습니다.
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    예를 들어 그해 산출세액이 {won(exampleTax)}인 사람이라면, 15% 구간의
+    공제 {won(low.incomeTax)} 중 {won(capped.used)}만 쓰이고
+    {won(capped.unused)}은 없는 것이 됩니다. 이 계산은 연금계좌 공제 하나만 놓고 본
+    것이고, 자녀·보험료·의료비 같은 다른 세액공제가 있으면 그만큼 자리가 더
+    좁아집니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    {pa.creditCap.unusedTreatedAsNotCredited}. 이 문장 덕분에 못 쓴 공제가 그냥
+    증발하지 않습니다. 이어지는 이야기는 <a href="/guide/irp-tax-credit-carryover/">IRP
+    세액공제 이월</a>에 있습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    연금저축과 나누는 경우는 <a href="/guide/irp-tax-credit-3-million/">IRP
+    세액공제 300만원</a>에서 이어집니다.
+  </p>
+</GuideLayout>
