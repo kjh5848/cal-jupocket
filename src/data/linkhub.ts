@@ -73,6 +73,7 @@ export const hubEntries: HubEntry[] = [
   { no: 46, href: "/guide/tax-invoice-cancel/", label: "세금계산서 발행 취소", kind: "guide" },
   { no: 47, href: "/guide/tax-invoice-vs-statement/", label: "세금계산서와 계산서의 차이", kind: "guide" },
   { no: 48, href: "/guide/tax-invoice-early-issue/", label: "세금계산서 발행 후 대금 지급 기한", kind: "guide" },
+  { no: 49, href: "/guide/irp-tax-credit/", label: "IRP 세액공제 조건과 한도", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -164,6 +165,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/retirement-planning",
       "/guide/national-pension-estimate",
       "/guide/pension-savings-tax-credit",
+      "/guide/irp-tax-credit",
       "/guide/irp-account",
       "/guide/retirement-fund",
       "/guide/severance-to-freelance",

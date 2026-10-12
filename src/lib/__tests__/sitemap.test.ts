@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { resolveUpdated } from "../guide-meta";
 
 /**
  * 사이트맵 — lastmod 가 붙어야 할 곳에 붙었는지.
@@ -50,15 +51,11 @@ describe.skipIf(!built)("사이트맵", () => {
     const wrong: string[] = [];
     for (const slug of guideSlugs) {
       const src = readFileSync(join(dir, slug, "index.astro"), "utf-8");
-      let want = src.match(/updated="(\d{4}-\d{2}-\d{2})"/)?.[1];
-      if (!want) {
-        const ident = src.match(/updated=\{(\w+)\.verifiedOn\}/)?.[1];
-        const rel = ident
-          ? src.match(new RegExp(`import\\s+${ident}\\s+from\\s+["']([^"']+\\.json)["']`))?.[1]
-          : undefined;
-        if (rel) want = JSON.parse(readFileSync(join(dir, slug, rel), "utf-8")).verifiedOn;
-      }
-      if (!want) continue;
+      // 해석 로직을 여기 복사해 두면 한쪽만 고쳐질 때 이 테스트가 그 글을
+      // 조용히 건너뛴다(2026-10-12 에 실제로 그랬다). 공용 함수를 쓴다.
+      const want = resolveUpdated(src, join(dir, slug));
+      // 날짜를 못 읽은 글은 위의 "모든 가이드 글에 lastmod 가 있다" 가 잡는다.
+      expect(want, `${slug}: updated 를 못 읽었다`).toBeTruthy();
       const got = entries.find((e) => e.loc === `https://jupocket.com/guide/${slug}/`)?.lastmod;
       if (got?.slice(0, 10) !== want) wrong.push(`${slug}: 사이트맵 ${got} ≠ 글 ${want}`);
     }

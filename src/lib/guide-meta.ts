@@ -24,13 +24,15 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 export function resolveUpdated(src: string, dir: string): string | null {
   const lit = src.match(/updated="(\d{4}-\d{2}-\d{2})"/);
   if (lit) return lit[1];
-  const ident = src.match(/updated=\{(\w+)\.verifiedOn\}/)?.[1];
-  if (!ident) return null;
+  // updated={r.verifiedOn} 또는 updated={pa.taxCreditVerifiedOn} — 필드 이름은 글마다 다르다.
+  const m = src.match(/updated=\{(\w+)\.(\w+)\}/);
+  if (!m) return null;
+  const [, ident, field] = m;
   const rel = src.match(new RegExp(`import\\s+${ident}\\s+from\\s+["']([^"']+\\.json)["']`))?.[1];
   if (!rel) return null;
   const file = join(dir, rel);
   if (!existsSync(file)) return null;
-  const v = JSON.parse(readFileSync(file, "utf8")).verifiedOn;
+  const v = JSON.parse(readFileSync(file, "utf8"))[field];
   return typeof v === "string" && DATE.test(v) ? v : null;
 }
 

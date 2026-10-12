@@ -106,6 +106,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/retirement-planning/", title: "노후대비, 순서대로 정리", kind: "guide", icon: "umbrella" },
       { href: "/guide/national-pension-estimate/", title: "국민연금 예상수령액 조회 후 시점 정하기", kind: "guide", icon: "calendar" },
       { href: "/guide/pension-savings-tax-credit/", title: "연금저축·IRP 세액공제 한도", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/irp-tax-credit/", title: "IRP 세액공제 조건과 한도, 12월 31일까지", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/irp-account/", title: "IRP란? 소득 있으면 누구나 여는 계좌", kind: "guide", icon: "wallet" },
       { href: "/guide/retirement-fund/", title: "노후자금 얼마 있어야 하나", kind: "guide", icon: "chart" },
       { href: "/guide/severance-to-freelance/", title: "퇴사하고 프리랜서 시작할 때", kind: "guide", icon: "briefcase" },
@@ -149,6 +150,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/irp-tax-credit/",
   "/guide/tax-invoice-early-issue/",
   "/guide/tax-invoice-vs-statement/",
   "/guide/tax-invoice-cancel/",
