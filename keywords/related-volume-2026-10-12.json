@@ -1,0 +1,956 @@
+{
+ "fetchedOn": "2026-10-12",
+ "window": "네이버 직전 30일(≈09-12~10-11)",
+ "rows": [
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "연금저축세액공제",
+   "naver30d": 3080,
+   "sources": [
+    "seed",
+    "naver"
+   ]
+  },
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "개인연금저축 세액공제",
+   "naver30d": 160,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "연금저축 세액공제 600만원",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "연금저축 세액공제 환급",
+   "naver30d": 15,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "연금저축 세액공제 받는 법",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "연금저축 세액공제 IRP",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "연금저축세액공제한도",
+   "naver30d": 4300,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "연금저축 세액공제 계산",
+   "naver30d": 140,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "연금저축 세액공제 600만원 디시",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "irp 세액공제",
+   "naver30d": 4740,
+   "sources": [
+    "seed",
+    "naver"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "IRP 세액공제 900만원",
+   "naver30d": 15,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "IRP 세액공제 단점",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "IRP 세액공제 받는 법",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "IRP 세액공제 조건",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "irp 세액공제 한도",
+   "naver30d": 800,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "IRP 세액공제 언제까지",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "irp 세액공제 계산",
+   "naver30d": 70,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "IRP 세액공제 환급",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산",
+   "naver30d": 15550,
+   "sources": [
+    "seed"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 간소화",
+   "naver30d": 1620,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 하는 법",
+   "naver30d": 320,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 환급금 조회",
+   "naver30d": 2730,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 간소화 서비스",
+   "naver30d": 790,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 간소화 자료 조회",
+   "naver30d": 150,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "직장인 연말정산",
+   "naver30d": 140,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "개인 연말정산 하는 법",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 서류",
+   "naver30d": 170,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금",
+   "naver30d": 880,
+   "sources": [
+    "seed"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 계산기",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 미리보기",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 얼마",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 지급일",
+   "naver30d": 100,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 확인 방법",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "2026 연말정산 환급금 조회",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 신청 방법",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 조회 디시",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납",
+   "naver30d": 10,
+   "sources": [
+    "seed"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납 신청 방법",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납 할인",
+   "naver30d": 360,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납 기간",
+   "naver30d": 10,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납 할인율",
+   "naver30d": 30,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "위택스 자동차세 연납",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 납부",
+   "naver30d": 7710,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납 신청 2026",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납이란",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "원천징수영수증",
+   "naver30d": 29600,
+   "sources": [
+    "seed"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "근로자 원천징수영수증 발급",
+   "naver30d": 120,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "원천징수영수증 발급방법",
+   "naver30d": 5170,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "원천징수영수증 발급 어디서",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "원천징수영수증 보는 법",
+   "naver30d": 120,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "원천징수영수증이란",
+   "naver30d": 20,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "원천징수영수증 홈택스 발급",
+   "naver30d": 260,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "원천징수영수증 조회",
+   "naver30d": 260,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "원천징수영수증 출력",
+   "naver30d": 70,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가세 확정신고",
+   "naver30d": 80,
+   "sources": [
+    "seed"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가가치세 확정신고 방법",
+   "naver30d": 20,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가세 확정 신고기간",
+   "naver30d": 30,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "개인사업자 부가세 신고 방법",
+   "naver30d": 80,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가가치세 신고",
+   "naver30d": 2960,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가세 신고 기간",
+   "naver30d": 12690,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가가치세 신고 내역 조회",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "홈택스 부가가치세 신고",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "개인사업자 부가세 신고 기간",
+   "naver30d": 1510,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "세금계산서 선발행",
+   "keyword": "세금계산서 선발행",
+   "naver30d": 160,
+   "sources": [
+    "seed"
+   ]
+  },
+  {
+   "seed": "세금계산서 선발행",
+   "keyword": "세금계산서 선발행 방법",
+   "naver30d": 10,
+   "sources": [
+    "google",
+    "naver"
+   ]
+  },
+  {
+   "seed": "세금계산서 선발행",
+   "keyword": "세금계산서 선발행 조건",
+   "naver30d": 15,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "세금계산서 선발행",
+   "keyword": "세금계산서 선발행 이유",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "세금계산서 선발행",
+   "keyword": "세금계산서 선발행 가산세",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "세금계산서 선발행",
+   "keyword": "선발행 세금계산서 요건",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "세금계산서 선발행",
+   "keyword": "세금계산서 미래 날짜 발행",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "세금계산서 선발행",
+   "keyword": "선발행 세금계산서 30일",
+   "naver30d": 10,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "세금계산서 선발행",
+   "keyword": "세금계산서 발행 시기",
+   "naver30d": 180,
+   "sources": [
+    "google"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "irp 세액공제 금액",
+   "naver30d": 20,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "irp 세액공제 기간",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "irp 세액공제 방법",
+   "naver30d": 15,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "irp 세액공제 해지",
+   "naver30d": 25,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "irp 세액공제율",
+   "naver30d": 40,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "갑근세원천징수영수증",
+   "naver30d": 460,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "개인형 irp 세액공제",
+   "naver30d": 200,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "근로소득원천징수영수증",
+   "naver30d": 12260,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "근로원천징수영수증",
+   "naver30d": 470,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가세 확정신고 기한",
+   "naver30d": 50,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가세 확정신고 납부",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가세 확정신고 환급",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가세 확정신고서",
+   "naver30d": 220,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가세 확정신고서 발급 방법",
+   "naver30d": 60,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가세 확정신고서 출력",
+   "naver30d": 15,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "부가세 확정신고",
+   "keyword": "부가세 확정신고일",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "사업소득 원천징수영수증",
+   "naver30d": 1310,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "세금계산서 선발행",
+   "keyword": "세금계산서 선발행 후발행",
+   "naver30d": 15,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "손택스 원천징수영수증",
+   "naver30d": 170,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "IRP 세액공제",
+   "keyword": "연금저축 irp 세액공제",
+   "naver30d": 700,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "연금저축세액공제15%",
+   "naver30d": 30,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 계산기",
+   "naver30d": 3870,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 기간",
+   "naver30d": 2640,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 뜻",
+   "naver30d": 590,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 소득공제",
+   "naver30d": 8160,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 시기",
+   "naver30d": 300,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "연말정산 인적공제",
+   "naver30d": 1560,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 미지급",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 받는법",
+   "naver30d": 25,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 신청",
+   "naver30d": 15,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 언제",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 평균",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금 한도",
+   "naver30d": 90,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산 환급금",
+   "keyword": "연말정산 환급금액",
+   "naver30d": 15,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "원천징수영수증 발급",
+   "naver30d": 14100,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연말정산",
+   "keyword": "월세 연말정산",
+   "naver30d": 1430,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납 납부기간",
+   "naver30d": 15,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납 뜻",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납 방법",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납 환급",
+   "naver30d": 220,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납 후 차량 매각",
+   "naver30d": 80,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "자동차세 연납",
+   "keyword": "자동차세 연납신청",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "연금저축 세액공제",
+   "keyword": "종합소득세연금저축세액공제",
+   "naver30d": 40,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "홈택스 원천징수영수증",
+   "naver30d": 920,
+   "sources": [
+    "naver"
+   ]
+  },
+  {
+   "seed": "원천징수영수증",
+   "keyword": "홈택스 원천징수영수증 발급",
+   "naver30d": 10,
+   "sources": [
+    "naver"
+   ]
+  }
+ ],
+ "errors": []
+}
