@@ -3,7 +3,7 @@ import BaseHead from "../components/BaseHead.astro";
 import ClarityHead from "../components/ClarityHead.astro";
 import GtagHead from "../components/GtagHead.astro";
 import TrackLinks from "../components/TrackLinks.astro";
-import { GA4_ENABLED } from "../data/analytics";
+import { GA4_ENABLED, NAVER_ENABLED } from "../data/analytics";
 import AdSenseHead from "../components/AdSenseHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
@@ -69,6 +69,17 @@ const description =
             </li>
           )
         }
+        {
+          NAVER_ENABLED && (
+            <li>
+              <strong>네이버 애널리틱스</strong> — 네이버 검색으로 들어온 방문이
+              어떤 검색어에서 왔는지, 어떤 글을 읽었는지 집계하기 위해
+              사용합니다. 쿠키로 방문을 구분하지만 이름·연락처 같은 개인정보는
+              수집하지 않습니다. 브라우저 설정에서 쿠키를 차단하면 수집되지
+              않습니다.
+            </li>
+          )
+        }
       </ul>
 
       <h2>광고</h2>
@@ -92,7 +103,7 @@ const description =
 
       <p>
         이 사이트의 쿠키는 위에서 설명한 외부 서비스(Google AdSense, Microsoft
-        Clarity{GA4_ENABLED ? ", Google Analytics" : ""})가 생성하는 것이며,
+        Clarity{GA4_ENABLED ? ", Google Analytics" : ""}{NAVER_ENABLED ? ", 네이버 애널리틱스" : ""})가 생성하는 것이며,
         저희가 직접 만들지 않습니다. 브라우저
         설정에서 쿠키를 차단·삭제할 수 있으며, 그래도 계산기 이용에는
         지장이 없습니다.

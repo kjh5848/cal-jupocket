@@ -22,3 +22,20 @@ export function isValidGa4Id(id: string): boolean {
 }
 
 export const GA4_ENABLED = isValidGa4Id(GA4_MEASUREMENT_ID);
+
+/**
+ * 네이버 애널리틱스 사이트 ID(발급ID).
+ * 네이버 애널리틱스 > 사이트정보 > 주포켓 https://jupocket.com/
+ *
+ * 네이버 서치어드바이저를 열면서 같이 붙였다(2026-10-12). 한국 검색 유입의
+ * 절반쯤이 네이버로 들어오는데 GA4 의 네이버 유입은 리퍼러가 잘려 잘 안
+ * 잡힌다. 검색어까지 보려면 네이버 쪽 계측이 필요하다.
+ */
+export const NAVER_ANALYTICS_ID = "1c79a617dc25ff0";
+
+/** 네이버 발급ID 는 소문자 16진수 15자리 안팎이다. */
+export function isValidNaverId(id: string): boolean {
+  return /^[0-9a-f]{12,20}$/.test(id);
+}
+
+export const NAVER_ENABLED = isValidNaverId(NAVER_ANALYTICS_ID);
