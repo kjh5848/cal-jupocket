@@ -536,9 +536,23 @@ details[open] summary {
   font-variant-numeric: tabular-nums;
 }
 
-.calc-input-wrap input:focus {
+.calc-input-wrap input:focus,
+.calc-input-wrap select:focus {
   outline: 3px solid var(--link);
   outline-offset: 1px;
+}
+
+/* 계산기 안의 드롭다운 — 숫자 입력창과 같은 상자, 글자만 본문 크기 */
+.calc-input-wrap select {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+  background: var(--accent-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 600;
 }
 
 .calc-input-wrap .unit {

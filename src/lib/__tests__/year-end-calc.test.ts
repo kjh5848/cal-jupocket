@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { earnedIncomeDeduction, earnedIncomeTaxCredit, yearEnd } from "../year-end-calc";
+import {
+  earnedIncomeDeduction,
+  earnedIncomeTaxCredit,
+  yearEnd,
+  childTaxCredit,
+  childCreditAge,
+  childCreditEligible,
+  latestEligibleBirthYear,
+} from "../year-end-calc";
 import { taxOn } from "../deduction";
 
 /** 연말정산 어림 계산 — 조문 표와 손으로 대조한 값. */
@@ -38,5 +46,57 @@ describe("연말정산 어림", () => {
   it("세액공제는 산출세액을 넘지 않는다(제61조)", () => {
     const r = yearEnd({ pay: 15_000_000, persons: 3, pensionInsurance: 0, socialInsurance: 0, irp: 9_000_000, prepaid: 0 });
     expect(r.decided).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("자녀세액공제(제59조의2) — 금액", () => {
+  it("1명 25만원", () => expect(childTaxCredit(1)).toBe(250_000));
+  it("2명 55만원", () => expect(childTaxCredit(2)).toBe(550_000));
+  it("3명 55만 + 40만 = 95만원", () => expect(childTaxCredit(3)).toBe(950_000));
+  it("4명 55만 + 40만×2 = 135만원", () => expect(childTaxCredit(4)).toBe(1_350_000));
+  it("출산·입양 첫째 30만, 둘째 50만, 셋째 이상 70만(③)", () => {
+    expect(childTaxCredit(0, [1])).toBe(300_000);
+    expect(childTaxCredit(0, [2])).toBe(500_000);
+    expect(childTaxCredit(0, [3])).toBe(700_000);
+  });
+});
+
+describe("자녀세액공제 — 부칙 <법률 제21548호, 2026. 4. 21.>", () => {
+  it("2026~2029년분은 9·10·11·12세 이상(부칙 제2조 ②)", () => {
+    expect(childCreditAge(2026, 2010)).toBe(9);
+    expect(childCreditAge(2027, 2010)).toBe(10);
+    expect(childCreditAge(2028, 2010)).toBe(11);
+    expect(childCreditAge(2029, 2010)).toBe(12);
+  });
+  it("2030년분부터는 개정규정 13세 이상", () => expect(childCreditAge(2030, 2010)).toBe(13));
+  it("2017년생에게는 ②를 적용하지 않는다(③) — 13세", () => expect(childCreditAge(2026, 2017)).toBe(13));
+  it("나이는 그해에 그 나이가 되는 날이 있으면 된다(제53조 ⑤)", () => {
+    expect(childCreditEligible(2026, 2016)).toBe(true); // 2026년에 10세가 되는 날이 있다
+    expect(childCreditEligible(2026, 2017)).toBe(false); // ③ — 13세 기준
+    expect(childCreditEligible(2026, 2018)).toBe(false);
+  });
+  it("2026~2029년분 모두 2016년 이전 출생, 2030년분은 2017년생부터", () => {
+    for (const y of [2026, 2027, 2028, 2029]) expect(latestEligibleBirthYear(y)).toBe(2016);
+    expect(latestEligibleBirthYear(2030)).toBe(2017);
+  });
+});
+
+describe("자녀세액공제 — 연말정산에 넣으면", () => {
+  const base = { pay: 50_000_000, persons: 3, pensionInsurance: 0, socialInsurance: 0, prepaid: 0 };
+  it("자녀 2명이면 결정세액이 55만원 줄어든다", () => {
+    const a = yearEnd(base);
+    const b = yearEnd({ ...base, children: 2 });
+    expect(b.child).toBe(550_000);
+    expect(a.decided - b.decided).toBe(550_000);
+  });
+  it("기본공제 인원(본인 제외)을 넘는 자녀는 빼고 알린다", () => {
+    const r = yearEnd({ ...base, persons: 2, children: 2 });
+    expect(r.child).toBe(250_000);
+    expect(r.childClamped).toBe(true);
+  });
+  it("자녀공제가 커도 결정세액은 0 아래로 가지 않는다(제61조)", () => {
+    const r = yearEnd({ pay: 20_000_000, persons: 6, pensionInsurance: 0, socialInsurance: 0, children: 5, births: [3], prepaid: 0 });
+    expect(r.child).toBeGreaterThan(r.computedTax);
+    expect(r.decided).toBe(0);
   });
 });

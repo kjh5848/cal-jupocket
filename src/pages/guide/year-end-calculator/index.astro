@@ -1,17 +1,25 @@
 ---
 /**
  * "연말정산 계산기" — 연말정산 시리즈. (환급금 계산기·환급금 계산도 이 글)
- * 계산: src/lib/year-end-calc.ts(제47조·제50조·제51조의3·제52조·제55조·제59조·제59조의4·제61조).
- * 신용카드·의료비·교육비·기부금·자녀세액공제는 넣지 않은 '어림' 계산기다.
+ * 계산: src/lib/year-end-calc.ts(제47조·제50조·제51조의3·제52조·제55조·제59조·제59조의2·제59조의4·제61조).
+ * 신용카드·의료비·교육비·기부금은 넣지 않은 '어림' 계산기다.
+ * 자녀세액공제는 부칙 <법률 제21548호, 2026. 4. 21.> 제2조까지 읽고 넣었다 — 2026년분은 2016년 이전 출생.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import y from "../../../rates/year-end-2026.json";
-import { yearEnd } from "../../../lib/year-end-calc";
+import { yearEnd, latestEligibleBirthYear } from "../../../lib/year-end-calc";
 import { won } from "../../../lib/won";
 
 const ex = yearEnd({ pay: 50_000_000, persons: 1, pensionInsurance: 0, socialInsurance: 0, prepaid: 3_500_000 });
+const K = y.calc.childTaxCredit;
+const B = K.buchik;
+const cutoff = latestEligibleBirthYear(y.year);
+const age = B.ageByYear[String(y.year) as keyof typeof B.ageByYear];
+// 자녀 예시: 같은 급여에 자녀 2명(둘 다 기준 연도 이전 출생)
+const exKids = yearEnd({ pay: 50_000_000, persons: 3, pensionInsurance: 0, socialInsurance: 0, children: 2, prepaid: 3_500_000 });
+const exKidsOnlyPersonal = yearEnd({ pay: 50_000_000, persons: 3, pensionInsurance: 0, socialInsurance: 0, prepaid: 3_500_000 });
 
 const title = "연말정산 계산기 — 총급여와 이미 낸 세금으로 환급금을 어림합니다";
 const description =
@@ -22,7 +30,8 @@ const ANSWER = `연말정산 환급금은 '이미 뗀 세금 − 결정세액'�
 const QA = [
   { q: "연말정산 계산은 어떻게 하나요?", a: "총급여에서 근로소득공제를 빼 근로소득금액을 만들고, 인적공제·보험료 공제를 빼 과세표준을 냅니다. 세율을 곱한 산출세액에서 세액공제를 빼면 결정세액이고, 이미 뗀 세금과의 차이가 환급이나 추가 납부입니다." },
   { q: "연말정산 계산기에 무엇을 넣어야 하나요?", a: "총급여(비과세 제외), 기본공제 인원(본인 포함), 국민연금과 건강·고용·장기요양보험 본인 부담분, 연금저축·IRP 납입액, 그리고 1년 동안 이미 뗀 소득세입니다. 급여명세서나 원천징수영수증에서 볼 수 있습니다." },
-  { q: "이 연말정산 계산기에 빠진 것은 무엇인가요?", a: "신용카드 소득공제, 의료비·교육비·기부금 세액공제, 자녀세액공제, 월세 세액공제는 넣지 않았습니다. 그래서 실제 결과는 이 계산보다 돌려받는 쪽으로 더 갈 수 있습니다. 지방소득세도 따로입니다." },
+  { q: `${y.year}년 귀속 연말정산 자녀세액공제는 몇 살부터인가요?`, a: `${y.year}년분은 부칙에 따라 ${age}세 이상이지만 ${B.excludedBirthYear}년생에게는 그 부칙을 적용하지 않아, 실제로는 ${cutoff}년 이전에 태어난 기본공제대상 자녀·손자녀가 대상입니다. 1명 ${won(K.amounts.one)}, 2명 ${won(K.amounts.two)}이고 3명부터 1명당 ${won(K.amounts.perExtra)}이 더해집니다.` },
+  { q: "이 연말정산 계산기에 빠진 것은 무엇인가요?", a: "신용카드 소득공제, 의료비·교육비·기부금 세액공제, 월세 세액공제는 넣지 않았습니다. 그래서 실제 결과는 이 계산보다 돌려받는 쪽으로 더 갈 수 있습니다. 지방소득세도 따로입니다." },
 ];
 ---
 
@@ -71,6 +80,25 @@ const QA = [
       </div>
       <label><input type="checkbox" id="ye-standard" checked /> 의료비·교육비·기부금 공제를 신청하지 않는다(표준세액공제 {won(y.calc.standardTaxCredit.amount)})</label>
     </details>
+    <details>
+      <summary>자녀세액공제</summary>
+      <div class="calc-input-wrap">
+        <label for="ye-children">{cutoff}년 이전에 태어난 자녀·손자녀(기본공제대상)</label>
+        <input type="number" min="0" max="19" id="ye-children" value="0" />
+        <span class="unit">명</span>
+      </div>
+      <div class="calc-input-wrap">
+        <label for="ye-birth">{y.year}년에 출산·입양 신고한 자녀</label>
+        <select id="ye-birth">
+          <option value="0">없음</option>
+          <option value="1">첫째 ({won(K.amounts.birth[0])})</option>
+          <option value="2">둘째 ({won(K.amounts.birth[1])})</option>
+          <option value="3">셋째 이상 ({won(K.amounts.birth[2])})</option>
+        </select>
+      </div>
+      <p class="meta">자녀도 기본공제 인원에 넣어야 합니다. {B.excludedBirthYear}년생은 {y.year}년분 대상이 아닙니다(부칙 제2조 제3항).</p>
+      <p class="meta" id="ye-child-warn" hidden>기본공제 인원보다 자녀가 많아 일부를 빼고 계산했습니다. 기본공제 인원을 늘려 주세요.</p>
+    </details>
 
     <div class="result-hero" aria-live="polite" aria-atomic="true">
       <p class="label" id="ye-hero-label">돌려받는 소득세(어림)</p>
@@ -80,6 +108,7 @@ const QA = [
       <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="ye-base">{won(ex.base)}</span></div>
       <div class="stat-chip"><span class="label">산출세액</span><span class="value" id="ye-computed">{won(ex.computedTax)}</span></div>
       <div class="stat-chip"><span class="label">결정세액</span><span class="value" id="ye-decided">{won(ex.decided)}</span></div>
+      <div class="stat-chip"><span class="label">자녀세액공제</span><span class="value" id="ye-child">{won(ex.child)}</span></div>
     </div>
   </div>
 
@@ -106,8 +135,36 @@ const QA = [
   <h2>{QA[2].q}</h2>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
-    자녀세액공제는 2026년 4월 21일 개정 조문이 있는데, 어느 연도분부터 적용되는지
-    확인하지 않아 넣지 않았습니다. 신용카드 공제는{" "}
+    2026년 4월 21일 개정으로 {K.article} 제1항의 나이가 "{K.ageBefore}세 이상"에서
+    "{K.age}세 이상"으로 바뀌었고, 아동수당 지급 연령을 단계적으로 올리는 데 맞춘
+    것이라고 개정이유에 적혀 있습니다. 부칙 제2조 제2항이 2026년부터 2029년까지는
+    9·10·11·12세로 한 살씩 올리고, 제3항이 {B.excludedBirthYear}년생에게는 그 단계를
+    적용하지 않습니다. {K.ageRule.article}에 따라 그해에 그 나이가 되는 날이 하루라도
+    있으면 대상이므로, 2026년부터 2029년분까지 경계는 매년 {B.excludedBirthYear}년생이고
+    그 출생연도가 빠지므로 대상은 {cutoff}년 이전 출생입니다.
+  </p>
+  <table>
+    <thead><tr><th>과세기간분</th><th>부칙 연령기준</th><th>대상 출생연도</th></tr></thead>
+    <tbody>
+      {Object.entries(B.ageByYear).map(([yr, a]) => (
+        <tr><th scope="row">{yr}년</th><td>{a}세 이상</td><td>{latestEligibleBirthYear(Number(yr))}년 이전</td></tr>
+      ))}
+      <tr><th scope="row">2030년부터</th><td>{K.age}세 이상(개정규정)</td><td>{latestEligibleBirthYear(2030)}년 이전</td></tr>
+    </tbody>
+  </table>
+  <p>
+    예시로 총급여 5,000만원에 기본공제 3명(본인과 자녀 2명)이면 인적공제만으로
+    결정세액이 {won(exKidsOnlyPersonal.decided)}이고, 자녀 2명이 모두 {cutoff}년 이전
+    출생이면 자녀세액공제 {won(exKids.child)}이 더 빠져 {won(exKids.decided)}이 됩니다.
+    그해 출산·입양한 자녀는 나이 기준과 별개로 첫째 {won(K.amounts.birth[0])}, 둘째{" "}
+    {won(K.amounts.birth[1])}, 셋째 이상 {won(K.amounts.birth[2])}을 받습니다(제3항).
+    '첫째·둘째'를 어떻게 세는지는 조문에서 찾지 못했습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    신용카드 공제는{" "}
     <a href="/guide/year-end-card-deduction/">연말정산 신용카드 공제</a>, 월세는{" "}
     <a href="/guide/year-end-rent-credit/">연말정산 월세 세액공제</a>에 있습니다.
   </p>

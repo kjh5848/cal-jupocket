@@ -80,4 +80,13 @@ describe("범위를 지킨다", () => {
     expect(r.correction.years).toBe(5);
     expect(r.correction.rule).toContain("연말정산세액의 납부기한이 지난 후");
   });
+
+  it("자녀세액공제 부칙은 2026-10-13 원문(법률 제21548호)으로 채웠다", () => {
+    const k = r.calc.childTaxCredit;
+    expect(k.buchik.law).toContain("제21548호");
+    expect(k.buchik.ageByYear["2026"]).toBe(9);
+    expect(k.buchik.excludedBirthYear).toBe(2017);
+    expect(k.age).toBe(13);
+    expect(r.notVerified.join(" ")).not.toMatch(/자녀세액공제\(2026/);
+  });
 });
