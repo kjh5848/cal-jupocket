@@ -1,0 +1,51 @@
+---
+/**
+ * "재산세 납부방법" — 재산세 시리즈. (재산세 납부기간·분할납부·물납·납부유예·20만원 이하·소액 징수면제도 이 글)
+ * 근거: 지방세법 제115조(7월·9월, 20만원 이하 7월 일괄 가능), 제116조(납기 5일 전 고지), 제117조(1천만원 초과 물납), 제118조(250만원 초과 3개월 분할),
+ * 제118조의2(1세대 1주택 납부유예), 제119조(2천원 미만 징수 안 함).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/local-tax-2026.json";
+import x from "../../../rates/property-extra-2026.json";
+import { won, eokwon } from "../../../lib/won";
+
+const P = r.propertyTax;
+const D = x.deferral;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 property-tax-series.test.ts 가 rates 와 대조한다.
+const title = "재산세 납부방법 — 고지서대로 7월·9월에, 250만원 넘으면 3개월 나눠 내고 1천만원 넘으면 물납";
+const description =
+  "재산세는 고지서가 납기 5일 전까지 오고, 주택은 7월과 9월에 반씩 냅니다. 납부세액이 250만원을 넘으면 일부를 납부기한 뒤 3개월 안에 나눠 낼 수 있고, 1천만원을 넘으면 부동산으로 물납을 신청할 수 있습니다. 60세 이상 등 1세대 1주택자는 납부유예도 됩니다.";
+
+const ANSWER = `재산세는 고지서가 납기 개시 ${P.noticeBeforeDays}일 전까지 오고(지방세법 제116조) 주택은 7월과 9월에 반씩 냅니다. 납부세액이 ${eokwon(x.installment.over)}을 넘으면 일부를 납부기한 뒤 ${x.installment.months}개월 안에 나눠 내고(제118조), ${eokwon(x.inKind.over)}을 넘으면 물납을 신청할 수 있습니다(제117조).`;
+
+const QA = [
+  { q: "재산세는 언제 어떻게 내나요?", a: `지방자치단체가 납기 개시 ${P.noticeBeforeDays}일 전까지 고지서를 보내고(제116조 제2항), 주택은 7월 16~31일과 9월 16~30일에 반씩, 건축물은 7월, 토지는 9월에 냅니다(제115조). 주택분이 ${eokwon(P.smallAmountLumpSum)} 이하면 조례로 7월에 한 번에 걷을 수 있습니다. 납부 수단(카드·계좌 등)은 이 글에서 다루지 않았습니다.` },
+  { q: "재산세를 나눠 낼 수 있나요?", a: `납부세액이 ${eokwon(x.installment.over)}을 넘으면 지방자치단체장이 일부를 납부기한이 지난 날부터 ${x.installment.months}개월 이내에 분할납부하게 할 수 있습니다(제118조). 나눌 수 있는 금액의 세부는 시행령에 있습니다.` },
+  { q: "재산세 물납은 언제 되나요?", a: `납부세액이 ${eokwon(x.inKind.over)}을 넘으면 납세의무자의 신청을 받아 그 지방자치단체 관할구역에 있는 부동산으로 물납을 허가할 수 있습니다(제117조). 다른 지역의 부동산이나 부동산이 아닌 재산으로는 물납할 수 없습니다.` },
+  { q: "재산세 납부유예는 누가 받나요?", a: `1세대 1주택 소유자가 만 ${D.age}세 이상이거나 ${D.holdYears}년 이상 보유했고, 직전 총급여 ${eokwon(D.payLimit)} 이하(또는 종합소득금액 ${eokwon(D.incomeLimit)} 이하), 주택 재산세가 ${eokwon(D.taxOver)}을 넘고 체납이 없으면 납부기한 만료 ${D.applyBefore}일 전까지 담보를 제공하고 신청할 수 있습니다(제118조의2).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={x.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>고지서 1장당 재산세가 {won(x.minimum.under)} 미만이면 징수하지 않습니다(제119조).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>유예받은 뒤 집을 팔거나 증여·상속하면 유예 세액과 이자상당가산액을 냅니다. 유예 기간에는 납부지연가산세가 붙지 않습니다(제118조의2 제5항·제6항).</p>
+</GuideLayout>

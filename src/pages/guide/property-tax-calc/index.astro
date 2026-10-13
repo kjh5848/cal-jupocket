@@ -1,0 +1,61 @@
+---
+/**
+ * "재산세 계산" — 재산세 시리즈. (재산세 계산법·공시가격별·아파트 재산세·1주택·도시지역분·지방교육세도 이 글)
+ * 근거: 지방세법 제110조·시행령 제109조(공정시장가액비율), 제111조 제1항 제3호 나목·제111조의2(세율 표), 제112조, 제151조, 제110조 제3항(과세표준 상한 5%).
+ * 금액은 bill() 이 낸다(local-tax-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import { bill } from "../../../lib/property-tax";
+import r from "../../../rates/local-tax-2026.json";
+import x from "../../../rates/property-extra-2026.json";
+import { won, eokwon } from "../../../lib/won";
+
+const P = r.propertyTax;
+const pct = (v: number) => `${+(v * 100).toFixed(3)}%`;
+const values = [100_000_000, 300_000_000, 500_000_000, 700_000_000, 900_000_000, 1_200_000_000];
+const rows = values.map((v) => ({ v, a: bill({ standardValue: v, kind: "house" }), b: bill({ standardValue: v, kind: "house", oneHome: true }) }));
+const ex = bill({ standardValue: 300_000_000, kind: "house", oneHome: true });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 property-tax-series.test.ts 가 rates 와 대조한다.
+const title = "재산세 계산 — 공시가격 × 공정시장가액비율 × 세율에 지방교육세 20%를 더합니다";
+const description =
+  "재산세는 공시가격에 공정시장가액비율을 곱한 과세표준에 세율을 곱하고 지방교육세 20%를 더합니다. 주택은 비율 60%·세율 0.1~0.4%, 1세대 1주택은 비율 43~45%·세율 0.05~0.35%입니다. 공시가격 3억원 1세대 1주택이면 11만8,800원입니다.";
+
+const ANSWER = `재산세는 공시가격(시가표준액) × 공정시장가액비율 = 과세표준에 세율을 곱하고 지방교육세 20%를 더해 계산합니다(지방세법 제110조·제111조·제151조). 주택은 비율 ${+(P.taxBase.ratios.house * 100)}%·세율 0.1~0.4%, 1세대 1주택은 43~45%·0.05~0.35%라 공시가격 ${eokwon(300_000_000)}이면 ${won(ex.total)}입니다.`;
+
+const QA = [
+  { q: "재산세 계산 방법은 무엇인가요?", a: `① 과세표준 = 시가표준액 × 공정시장가액비율 ② 본세 = 과세표준 × 세율(초과누진) ③ 지방교육세 = 본세 × 20% ④ 도시지역이면 도시지역분 = 과세표준 × 0.14%를 더합니다. 주택 과세표준은 직전 연도 과세표준 상당액의 ${Math.round((1 + P.baseCapRate) * 100)}%를 넘지 못합니다(제110조 제3항).` },
+  { q: "공시가격별 아파트 재산세는 얼마인가요?", a: `1세대 1주택 기준(도시지역분 제외)으로 공시가격 1억원 ${won(rows[0].b.total)}, 3억원 ${won(rows[1].b.total)}, 5억원 ${won(rows[2].b.total)}, 9억원 ${won(rows[4].b.total)}입니다. 다주택 등 일반 주택이면 같은 공시가격에서 5억원 ${won(rows[2].a.total)}입니다.` },
+  { q: "1세대 1주택 재산세는 왜 낮나요?", a: `두 군데서 낮아집니다. 공정시장가액비율이 일반 주택 ${+(P.taxBase.ratios.house * 100)}% 대신 공시가격 3억원 이하 43%, 6억원 이하 44%, 초과 45%이고(시행령 제109조), 세율도 구간마다 0.05%p씩 낮은 특례 세율입니다(제111조의2). 1세대 1주택의 범위는 시행령 제110조의2가 정합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={x.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>주택 과세표준</th><th>일반 세율</th><th>1세대 1주택 특례</th></tr></thead>
+    <tbody>{P.rates.house.brackets.map((b, i) => <tr><th scope="row">{b.upTo === null ? `${eokwon(P.rates.house.brackets[i - 1].upTo!)} 초과` : `${eokwon(b.upTo)} 이하`}</th><td>{pct(b.rate)}</td><td>{pct(P.rates.houseOneHome.brackets[i].rate)}</td></tr>)}</tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>공시가격</th><th>일반 주택(본세+교육세)</th><th>1세대 1주택(본세+교육세)</th></tr></thead>
+      <tbody>{rows.map(({ v, a, b }) => <tr><th scope="row">{eokwon(v)}</th><td>{won(a.total)}</td><td>{won(b.total)}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <p>도시지역분(과세표준 0.14%)은 지방의회가 정한 지역만 붙어 표에서 뺐습니다. 직접 넣어 보려면 <a href="/property-tax/">재산세 계산기</a>를 쓰세요.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>재산세 전체 구조는 <a href="/guide/property-tax/">재산세</a>, 공시가격이 높은 주택의 종합부동산세는 <a href="/guide/comprehensive-property-tax/">종부세</a>에 있습니다.</p>
+</GuideLayout>
