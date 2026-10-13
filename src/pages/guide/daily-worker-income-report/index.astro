@@ -1,0 +1,57 @@
+---
+/**
+ * "일용직 소득신고" — 원천세·지급명세서 시리즈. (일용근로소득 지급명세서·제출기한·다음 달 말일·가산세·휴폐업도 이 글)
+ * 근거: 소득세법 제164조 제1항 단서(일용근로소득 — 지급일이 속하는 달의 다음 달 말일), 제81조의11 제1항(0.25%, 1개월 내 0.125%),
+ * 제128조(원천세 다음 달 10일).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/withholding-tax-2026.json";
+import { statementPenalty } from "../../../lib/withholding-tax";
+import { won, eokwon } from "../../../lib/won";
+
+const N = r.penalty;
+const pct = (v: number) => `${+(v * 100).toFixed(3)}%`;
+const paid = 10_000_000;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 withholding-tax-series.test.ts 가 rates 와 대조한다.
+const title = "일용직 소득신고 — 일용근로소득 지급명세서는 준 달의 다음 달 말일까지";
+const description =
+  "일용직 소득신고는 일용근로자에게 일당을 준 사업자가 지급일이 속하는 달의 다음 달 말일까지 일용근로소득 지급명세서를 내는 것입니다. 뗀 세금은 다음 달 10일까지 원천세로 냅니다. 지급명세서를 안 내면 지급액의 0.25%, 1개월 안에 내면 0.125% 가산세입니다.";
+
+const ANSWER = `일용직 소득신고는 일당을 준 사업자가 지급일이 속하는 달의 다음 달 말일까지 일용근로소득 지급명세서를 세무서에 내는 것입니다(소득세법 제164조 제1항 단서). 뗀 소득세는 다음 달 10일까지 원천세로 냅니다. 안 내면 지급액의 ${pct(N.dailyNone)} 가산세입니다(제81조의11).`;
+
+const QA = [
+  { q: "일용직 소득신고는 언제까지 하나요?", a: `일용근로자의 근로소득 지급명세서는 그 지급일이 속하는 달의 다음 달 말일까지 냅니다(제164조 제1항 단서). 10월에 일당을 줬다면 11월 말일까지입니다. 휴업·폐업·해산하면 그 날이 속하는 달의 다음 달 말일까지입니다. 다른 소득의 연 1회 지급명세서와 기한이 다릅니다.` },
+  { q: "일용직 소득신고는 원천세 신고와 다른가요?", a: `다릅니다. 원천세 신고는 뗀 세금을 다음 달 10일까지 원천징수이행상황신고서와 함께 내는 것이고(제128조), 일용근로소득 지급명세서는 누구에게 얼마를 줬는지 사람별 명세를 다음 달 말일까지 내는 것입니다. 세금이 0원이어도 지급명세서는 냅니다.` },
+  { q: "일용근로소득 지급명세서를 안 내면 가산세는 얼마인가요?", a: `제출하지 않은 분의 지급금액의 ${pct(N.dailyNone)}이고, 기한 후 1개월 안에 내면 ${pct(N.dailyNoneWithin1m)}입니다(제81조의11 제1항 제1호 가목 단서). 지급금액이 사실과 다르면 그 분의 ${pct(N.dailyNone)}입니다. 한 달 ${eokwon(paid)}을 지급했다면 ${won(statementPenalty(paid, "daily"))}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>할 일</th><th>기한</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">뗀 소득세 납부 + 원천징수이행상황신고서</th><td>다음 달 {r.payment.monthlyDay}일</td><td>제128조, 시행령 제185조</td></tr>
+      <tr><th scope="row">일용근로소득 지급명세서</th><td>다음 달 말일</td><td>제164조 제1항 단서</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    세금 계산은 <a href="/guide/daily-worker-tax/">일용직 세금</a>, 고용·산재보험의 근로내용확인신고는 이 글에서 다루지 않았습니다 —{" "}
+    <a href="/guide/daily-worker-insurance/">일용직 4대보험</a>.
+  </p>
+</GuideLayout>

@@ -135,6 +135,12 @@ export const clusters: Cluster[] = [
       { href: "/guide/comprehensive-tax-base/", title: "종합소득세 과세표준, 합산 뒤 공제", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/other-income-tax-rate/", title: "기타소득세율, 강연료는 8.8%", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/business-income-tax/", title: "사업소득세, 3.3%는 미리 떼는 돈", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/withholding-tax/", title: "원천세, 다음 달 10일까지", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/withholding-status-report/", title: "원천징수이행상황신고서, 0원도 신고", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/daily-worker-tax/", title: "일용직 세금, 15만원 초과분의 2.7%", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/daily-worker-income-report/", title: "일용직 소득신고, 다음 달 말일", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/simplified-payment-statement/", title: "간이지급명세서, 매달 다음 달 말일", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/payment-statement/", title: "지급명세서, 2월 말·3월 10일", kind: "guide", icon: "receipt", year: 2026 },
     ],
   },
   {
@@ -297,6 +303,12 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/payment-statement/",
+  "/guide/simplified-payment-statement/",
+  "/guide/daily-worker-income-report/",
+  "/guide/daily-worker-tax/",
+  "/guide/withholding-status-report/",
+  "/guide/withholding-tax/",
   "/guide/cash-receipt/",
   "/guide/business-closure/",
   "/guide/simplified-taxpayer-criteria/",

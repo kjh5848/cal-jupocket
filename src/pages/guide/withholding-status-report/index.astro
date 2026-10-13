@@ -1,0 +1,46 @@
+---
+/**
+ * "원천징수이행상황신고서" — 원천세·지급명세서 시리즈. (작성·제출기한·0원 신고·반기·홈택스도 이 글)
+ * 근거: 소득세법 제128조, 시행령 제185조(납부서와 함께 신고서 제출, 국세정보통신망 포함, 낼 세액 없는 사람분 포함)·제186조(반기).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/withholding-tax-2026.json";
+
+const P = r.payment;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 withholding-tax-series.test.ts 가 rates 와 대조한다.
+const title = "원천징수이행상황신고서 — 다음 달 10일까지, 낼 세금이 없는 사람분도 적어서 냅니다";
+const description =
+  "원천징수이행상황신고서는 한 달 동안 소득을 주고 뗀 세금을 적어 다음 달 10일까지 세무서에 내는 신고서입니다. 원천세 납부와 함께 내고 홈택스로도 됩니다. 소득은 줬는데 뗀 세금이 0원인 사람분도 포함해야 합니다. 반기납부 승인을 받았으면 7월·1월 10일입니다.";
+
+const ANSWER = `원천징수이행상황신고서는 원천징수한 소득세를 납부할 때 함께 원천징수 관할 세무서에 내는 신고서입니다(소득세법 시행령 제185조 제1항, 국세정보통신망 제출 포함). 기한은 다음 달 ${P.monthlyDay}일이고, 원천징수해 낼 세액이 없는 사람분도 포함해야 합니다(제2항).`;
+
+const QA = [
+  { q: "원천징수이행상황신고서는 언제까지 내나요?", a: `원천징수한 소득세를 내는 기한과 같습니다. 징수일이 속하는 달의 다음 달 ${P.monthlyDay}일까지 납부서와 함께 냅니다(제128조 제1항, 시행령 제185조). 반기별 납부 승인을 받은 사업장은 1~6월분을 7월 ${P.monthlyDay}일, 7~12월분을 다음 해 1월 ${P.monthlyDay}일까지 냅니다(시행령 제186조).` },
+  { q: "낼 세금이 0원이어도 신고서를 내야 하나요?", a: `원천징수이행상황신고서에는 원천징수하여 납부할 세액이 없는 자에 대한 것도 포함해야 합니다(시행령 제185조 제2항). 예를 들어 소액부징수로 세금을 떼지 않은 일용직이나 월급이 적어 간이세액표상 0원인 직원도 신고서에 포함합니다.` },
+  { q: "원천징수이행상황신고서는 어떻게 제출하나요?", a: `원천징수 관할 세무서장에게 내며 국세정보통신망(홈택스) 제출도 포함됩니다(시행령 제185조 제1항). 서식은 재정경제부령으로 정해져 있고, 칸별 작성법은 서식이 바뀔 수 있어 이 글에서 다루지 않았습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>일용근로자는 세액이 1천원 미만이면 떼지 않습니다(제86조) — <a href="/guide/daily-worker-tax/">일용직 세금</a>.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    이행상황신고서와 별도로 소득자별 명세는 지급명세서·간이지급명세서로 냅니다 —{" "}
+    <a href="/guide/payment-statement/">지급명세서</a>, <a href="/guide/simplified-payment-statement/">간이지급명세서</a>.
+  </p>
+</GuideLayout>

@@ -1,0 +1,68 @@
+---
+/**
+ * "원천세" — 원천세·지급명세서 시리즈 허브. (원천세 신고·납부기한·반기납부·세율·가산세·0원 신고도 이 글)
+ * 근거: 소득세법 제128조(다음 달 10일·반기), 제129조(원천징수세율), 시행령 제185조(이행상황신고서·0원 포함)·제186조(20명 이하·승인),
+ * 국세기본법 제47조의5·시행령 제27조의4(3% + 1일 10만분의 22, 한도 10%).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/withholding-tax-2026.json";
+import it from "../../../rates/income-tax-rate-2026.json";
+import { withholdingLatePenalty } from "../../../lib/withholding-tax";
+import { won, eokwon } from "../../../lib/won";
+import { withholdingTaxSeries as S } from "../../../data/series/withholding-tax";
+
+const P = r.payment;
+const N = r.penalty;
+const pct = (v: number) => `${+(v * 100).toFixed(3)}%`;
+const late30 = withholdingLatePenalty(1_000_000, 30);
+const late = [7, 30, 90, 365].map((d) => ({ d, x: withholdingLatePenalty(1_000_000, d) }));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 withholding-tax-series.test.ts 가 rates 와 대조한다.
+const title = "원천세 — 떼어 둔 세금은 다음 달 10일까지 내고, 20명 이하 사업장은 반기 납부 승인을 받을 수 있습니다";
+const description =
+  "원천세는 직원 월급이나 프리랜서 대가에서 떼어 둔 소득세로, 뗀 달의 다음 달 10일까지 원천징수이행상황신고서와 함께 냅니다. 상시고용 20명 이하 사업장은 승인을 받아 반기마다 낼 수 있습니다. 늦으면 3%에 하루 0.022%가 붙고 한도는 10%입니다.";
+
+const ANSWER = `원천세는 직원 월급·프리랜서 대가 등에서 떼어 둔 소득세로, 뗀 날이 속하는 달의 다음 달 ${P.monthlyDay}일까지 원천징수이행상황신고서와 함께 냅니다(소득세법 제128조, 시행령 제185조). 상시고용 ${P.halfYearStaff}명 이하 사업장은 승인을 받아 반기마다 낼 수 있습니다(시행령 제186조).`;
+
+const QA = [
+  { q: "원천세 신고·납부 기한은 언제인가요?", a: `원천징수한 소득세는 그 징수일이 속하는 달의 다음 달 ${P.monthlyDay}일까지 납부하고 원천징수이행상황신고서를 냅니다(제128조 제1항, 시행령 제185조). 10월에 월급을 주며 뗐다면 11월 ${P.monthlyDay}일까지입니다. 기한이 토요일·공휴일이면 그다음 날입니다.` },
+  { q: "원천세 반기납부는 누가 할 수 있나요?", a: `직전 연도 상시고용인원이 ${P.halfYearStaff}명 이하(금융·보험업 제외)이거나 종교단체로서 세무서 승인이나 국세청 지정을 받으면 반기 마지막 달의 다음 달 10일, 즉 7월 10일과 1월 10일에 냅니다(시행령 제186조). 반기 직전 달에 신청하고, 통지가 없으면 승인으로 봅니다.` },
+  { q: "원천세는 얼마를 떼나요?", a: `이자·배당 14%, 원천징수대상 사업소득 3%, 기타소득 20%(경비 공제 뒤), 일용근로자 6%, 근로소득은 간이세액표, 퇴직소득은 기본세율입니다(제129조, 제134조). 지방소득세 10분의 1은 따로 냅니다. 사업소득 3%에 지방세를 더한 것이 흔히 말하는 3.3%입니다.` },
+  { q: "원천세를 늦게 내면 가산세는 얼마인가요?", a: `미납세액의 ${pct(N.lateBase)}에 미납세액 × 일수 × 1일 10만분의 22를 더하고, 둘을 합한 금액은 미납세액의 ${pct(N.lateCap)}가 한도입니다(국세기본법 제47조의5, 시행령 제27조의4). ${eokwon(1_000_000)}을 30일 늦게 내면 ${won(late30.total)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>낼 세액이 없는 사람분도 신고서에 넣어야 합니다(시행령 제185조 제2항) — <a href="/guide/withholding-status-report/">원천징수이행상황신고서</a>.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    프리랜서 3.3% 계산은 <a href="/withholding/">원천징수 계산기</a>, 기타소득 경비 공제는{" "}
+    <a href="/guide/other-income-tax-rate/">기타소득세율</a>(경비 {Math.round(it.other.expense60Rate * 100)}%면 받은 돈의 8.8%)에 있습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <table>
+    <thead><tr><th>원천세 100만원을 늦게 낸 기간</th><th>3%</th><th>일수 이자</th><th>가산세</th></tr></thead>
+    <tbody>{late.map(({ d, x }) => <tr><th scope="row">{d}일</th><td>{won(x.base)}</td><td>{won(x.interest)}</td><td>{won(x.total)}{x.capped ? " (10% 한도)" : ""}</td></tr>)}</tbody>
+  </table>
+
+  <h2>원천세·지급명세서 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

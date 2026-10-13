@@ -221,6 +221,12 @@ export const hubEntries: HubEntry[] = [
   { no: 194, href: "/guide/simplified-taxpayer-criteria/", label: "간이과세자 기준", kind: "guide" },
   { no: 195, href: "/guide/business-closure/", label: "개인사업자 폐업신고", kind: "guide" },
   { no: 196, href: "/guide/cash-receipt/", label: "현금영수증 발급방법·자진발급", kind: "guide" },
+  { no: 197, href: "/guide/withholding-tax/", label: "원천세 신고·납부", kind: "guide" },
+  { no: 198, href: "/guide/withholding-status-report/", label: "원천징수이행상황신고서", kind: "guide" },
+  { no: 199, href: "/guide/daily-worker-tax/", label: "일용직 세금", kind: "guide" },
+  { no: 200, href: "/guide/daily-worker-income-report/", label: "일용직 소득신고", kind: "guide" },
+  { no: 201, href: "/guide/simplified-payment-statement/", label: "간이지급명세서", kind: "guide" },
+  { no: 202, href: "/guide/payment-statement/", label: "지급명세서", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -333,6 +339,12 @@ export const hubGroups: HubGroup[] = [
       "/guide/comprehensive-tax-base",
       "/guide/other-income-tax-rate",
       "/guide/business-income-tax",
+      "/guide/withholding-tax",
+      "/guide/withholding-status-report",
+      "/guide/daily-worker-tax",
+      "/guide/daily-worker-income-report",
+      "/guide/simplified-payment-statement",
+      "/guide/payment-statement",
     ]),
   },
   {

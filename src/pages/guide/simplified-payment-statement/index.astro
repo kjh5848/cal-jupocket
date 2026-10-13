@@ -1,0 +1,52 @@
+---
+/**
+ * "간이지급명세서" — 원천세·지급명세서 시리즈. (제출기한·매월·사업소득·인적용역·근로소득 2027·가산세도 이 글)
+ * 근거: 소득세법 제164조의3 제1항(다음 달 말일 — 사업소득·인적용역 기타소득 2024. 1. 1. 시행, 근로소득 부분 2027. 1. 1. 시행),
+ * 제164조 제7항(낸 부분은 지급명세서 낸 것으로 봄), 제81조의11 제1항 제1호 나목·제3항 제1호(2027년분 반기 제출 가산세 면제).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/withholding-tax-2026.json";
+import { statementPenalty } from "../../../lib/withholding-tax";
+import { won, eokwon } from "../../../lib/won";
+
+const N = r.penalty;
+const pct = (v: number) => `${+(v * 100).toFixed(3)}%`;
+const paid = 30_000_000;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 withholding-tax-series.test.ts 가 rates 와 대조한다.
+const title = "간이지급명세서 — 프리랜서 사업소득·인적용역은 매달 다음 달 말일, 근로소득 매달 제출은 2027년부터";
+const description =
+  "간이지급명세서는 3.3% 사업소득과 강연료 같은 인적용역 기타소득을 준 사업자가 지급한 달의 다음 달 말일까지 냅니다. 직원 근로소득을 매달 내게 한 개정은 2027년 1월 1일 시행이고, 2027년분은 반기마다 내도 가산세가 없습니다. 안 내면 지급액의 0.25%입니다.";
+
+const ANSWER = `간이지급명세서는 원천징수대상 사업소득(3.3%)과 일시적 인적용역 기타소득을 준 사업자가 지급일이 속하는 달의 다음 달 말일까지 냅니다(소득세법 제164조의3). 근로소득을 매달 내게 한 개정 부분은 2027년 1월 1일 시행입니다. 안 내면 지급액의 ${pct(N.simplifiedNone)} 가산세입니다.`;
+
+const QA = [
+  { q: "간이지급명세서 제출기한은 언제인가요?", a: `원천징수대상 사업소득과 강연료 등 일시적 인적용역 기타소득(제21조 제1항 제19호)은 지급일이 속하는 달의 다음 달 말일까지입니다(제164조의3 제1항, 2024년 1월 1일 시행분). 휴업·폐업·해산하면 그 날이 속하는 달의 다음 달 말일입니다.` },
+  { q: "직원 근로소득도 간이지급명세서를 매달 내나요?", a: `일용근로자가 아닌 근로자의 근로소득을 매달 내게 한 개정 부분은 2027년 1월 1일 시행입니다(제164조의3 시행일 부기). 그리고 2027년 지급분(반기별 납부자는 2028년분까지)은 반기 마지막 달의 다음 달 말일까지 내면 미제출 가산세를 매기지 않습니다(제81조의11 제3항 제1호).` },
+  { q: "간이지급명세서를 내면 지급명세서는 안 내도 되나요?", a: `사업소득과 인적용역 기타소득은 간이지급명세서를 낸 부분을 지급명세서를 낸 것으로 봅니다(제164조 제7항). 그래서 매달 간이지급명세서를 빠짐없이 냈다면 그 소득의 연 1회 지급명세서를 따로 낼 필요가 없습니다.` },
+  { q: "간이지급명세서를 안 내면 가산세는 얼마인가요?", a: `제출하지 않은 분의 지급금액의 ${pct(N.simplifiedNone)}이고, 기한 후 1개월 안에 내면 ${pct(N.simplifiedNoneWithin1m)}입니다(제81조의11 제1항 제1호 나목). 프리랜서에게 한 달 ${eokwon(paid)}을 줬다면 ${won(statementPenalty(paid, "simplified"))}, 1개월 안에 내면 ${won(statementPenalty(paid, "simplified", true))}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>2027년 개정 전 조문이 정한 2026년 근로소득분의 제출 주기는 현재 화면이 개정분과 합쳐져 있어 이 글에서 원문으로 대조하지 못했습니다. 날짜를 쓰지 않은 이유입니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>연 1회 지급명세서 기한은 <a href="/guide/payment-statement/">지급명세서</a>에 있습니다.</p>
+</GuideLayout>
