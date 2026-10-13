@@ -101,6 +101,9 @@ for pg in pages:
     slug = pg["slug"]
     if f"/{slug}/  /guide/{slug}/" in s:
         continue
+    # 같은 이름의 실제 페이지(예: /acquisition-tax/ 계산기)가 있으면 단축 주소를 만들지 않는다 — 계산기를 가린다(2026-10-14)
+    if os.path.exists(f"src/pages/{slug}") or os.path.exists(f"src/pages/{slug}.astro"):
+        continue
     s += f"\n/{slug}/  /guide/{slug}/  301\n/{slug}  /guide/{slug}/  301\n"
 write(p, s)
 

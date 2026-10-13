@@ -1,0 +1,63 @@
+---
+/**
+ * "아파트 취득세" — 취득세 시리즈. (아파트 취득세율·계산·85㎡·생애최초·2주택·3주택 중과·법인도 이 글)
+ * 근거: 지방세법 제11조 제1항 제8호(1%·계산식·3%), 제13조의2(8%·12%), 제151조(지방교육세), 농어촌특별세법 제5조·제4조 제11호,
+ * 주택법 제2조 제6호(85㎡), 지방세특례제한법 제36조의3(생애최초 12억원·200만원·2028년 말).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import x from "../../../rates/acquisition-extra-2026.json";
+import { acquisitionTotal } from "../../../lib/acquisition-total";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const F = x.firstHome;
+const prices = [300_000_000, 500_000_000, 700_000_000, 900_000_000, 1_200_000_000, 1_500_000_000];
+const rows = prices.map((p) => ({ p, s: acquisitionTotal(p, "house", { smallArea: true }), b: acquisitionTotal(p, "house") }));
+const ex = acquisitionTotal(500_000_000, "house", { smallArea: true });
+const ex8 = acquisitionTotal(500_000_000, "house8");
+const ex12 = acquisitionTotal(500_000_000, "house12");
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 acquisition-series.test.ts 가 rates 와 대조한다.
+const title = "아파트 취득세 — 6억원 이하 1%, 85㎡ 이하면 농특세 없음, 다주택은 8~12% 중과";
+const description =
+  "아파트 취득세는 매매가 6억원 이하 1%, 9억원 초과 3%이고 그 사이는 계산식입니다. 지방교육세가 세율의 절반의 20%만큼 붙고, 전용 85㎡ 이하면 농어촌특별세가 없습니다. 생애최초면 200만원까지 깎이고, 조정대상지역 2주택이나 3주택 이상은 8~12%로 중과됩니다.";
+
+const ANSWER = `아파트 취득세는 매매가 6억원 이하 1%, 9억원 초과 3%, 그 사이는 계산식입니다(지방세법 제11조 제1항 제8호). 전용 ${x.rural.nationalSize}㎡ 이하면 농어촌특별세가 없어 ${eokwon(500_000_000)}이면 합계 ${won(ex.total)}입니다. 생애최초는 ${eokwon(F.general)}까지 감면되고, 다주택·법인은 8~12% 중과입니다(제13조의2).`;
+
+const QA = [
+  { q: "아파트 취득세는 얼마인가요?", a: `취득세는 6억원 이하 1%, 9억원 초과 3%이고 6억~9억원은 금액에 비례해 1~3% 사이입니다. 지방교육세는 그 세율의 절반에 20%(1% 주택이면 0.1%), 농어촌특별세는 0.2%인데 전용 85㎡ 이하 주택은 비과세입니다. ${eokwon(500_000_000)} 85㎡ 이하 아파트면 ${won(ex.total)}입니다.` },
+  { q: "아파트 생애최초 취득세 감면은 얼마인가요?", a: `본인과 배우자가 주택을 가진 적이 없고 거주 목적으로 취득당시가액 ${eokwon(F.priceLimit)} 이하 주택을 사면 2028년 12월 31일까지 취득세에서 ${eokwon(F.general)}을 뺍니다(세액이 그 이하면 면제)(지방세특례제한법 제36조의3). 전용 60㎡ 이하·3억원(수도권 6억원) 이하 연립·다세대(아파트 제외) 등과 인구감소지역 주택은 ${eokwon(F.small)}입니다.` },
+  { q: "2주택·3주택이면 아파트 취득세가 어떻게 되나요?", a: `조정대상지역 주택을 1세대 2주택으로 사거나 조정대상지역 밖 주택을 3주택으로 사면 8%, 조정대상지역 3주택 이상·밖 4주택 이상·법인은 12%입니다(제13조의2). ${eokwon(500_000_000)}이면 각각 ${won(ex8.acq)}, ${won(ex12.acq)}이고 지방교육세는 0.4%입니다. 일시적 2주택은 제외됩니다.` },
+  { q: "분양권·입주권도 주택 수에 들어가나요?", a: `들어갑니다. 중과 판단 때 조합원입주권, 주택분양권, 신탁한 주택(위탁자), 재산세를 주택으로 내는 오피스텔은 주택 수에 넣습니다(제13조의3). 그래서 집이 한 채여도 분양권이 있으면 다음 아파트는 2주택 취득이 될 수 있습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={x.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>매매가</th><th>세율</th><th>취득세</th><th>지방교육세</th><th>85㎡ 이하 합계</th><th>85㎡ 초과 합계(농특세 포함)</th></tr></thead>
+      <tbody>{rows.map(({ p, s, b }) => <tr><th scope="row">{eokwon(p)}</th><td>{pct(s.rate)}</td><td>{won(s.acq)}</td><td>{won(s.edu)}</td><td>{won(s.total)}</td><td>{won(b.total)}</td></tr>)}</tbody>
+    </table>
+  </div>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>{F.joint}. 감면받으면 중과세율을 적용하지 않습니다. 감면분에 대한 지방교육세·농특세 처리와 추징 요건 세부는 이 글에서 다루지 않았습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>조정대상지역 목록과 일시적 2주택의 범위(시행령)는 이 글에서 확인하지 않았습니다. 중과 주택의 농특세도 계산하지 않았습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>세율표 전체는 <a href="/guide/acquisition-tax/">취득세</a>, 직접 계산은 <a href="/acquisition-tax/">취득세 계산기</a>에 있습니다.</p>
+</GuideLayout>
