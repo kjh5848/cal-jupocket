@@ -1,0 +1,67 @@
+---
+/**
+ * "다주택자 양도세 중과" — 양도소득세 시리즈. (중과 유예·유예 종료·유예 기간·배제·세율·조정대상지역·장기보유특별공제도 이 글)
+ * 근거: 소득세법 제104조 제7항(+20%p·+30%p), 제95조 제2항(중과 대상 장특공 제외), 시행령 제167조의10 제1항 제12호의2
+ * (2026. 4. 23. 개정 — 2026. 5. 9. 양도분까지, 토지거래허가 경과 규정).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import { capitalGains } from "../../../lib/capital-gains";
+import { won } from "../../../lib/won";
+
+const M = r.rates.multiHome;
+const pct = (v: number) => `${Math.round(v * 100)}%p`;
+const base = { kind: "house" as const, sale: 1_000_000_000, acquisition: 600_000_000, holdYears: 8 };
+const rows = [
+  { label: "중과 아님(일반, 장특공 16%)", x: capitalGains(base) },
+  { label: "2주택 중과(+20%p, 장특공 없음)", x: capitalGains({ ...base, surcharge: 0.2 }) },
+  { label: "3주택 이상 중과(+30%p, 장특공 없음)", x: capitalGains({ ...base, surcharge: 0.3 }) },
+];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "다주택자 양도세 중과 — 2026년 5월 9일로 유예가 끝나 조정대상지역은 20~30%p가 붙습니다";
+const description =
+  "다주택자 양도세 중과는 조정대상지역 주택을 2주택이면 기본세율에 20%p, 3주택 이상이면 30%p를 더하고 장기보유특별공제를 빼는 제도입니다. 2년 이상 보유 주택의 중과 배제(유예)는 2026년 5월 9일 양도분까지였고, 토지거래허가 지역 등에 경과 규정이 있습니다.";
+
+const ANSWER = `다주택자 양도세 중과는 조정대상지역 주택을 2주택이면 기본세율 + ${pct(M.twoHomesAdd)}, 3주택 이상이면 + ${pct(M.threeHomesAdd)}로 과세하고 장기보유특별공제를 빼는 제도입니다(소득세법 제104조 제7항). 2년 이상 보유 주택의 중과 배제는 2026년 5월 9일 양도분까지였습니다.`;
+
+const QA = [
+  { q: "다주택자 양도세 중과 세율은 얼마인가요?", a: `조정대상지역에 있는 주택을 1세대 2주택 상태에서 팔면 기본세율에 ${pct(M.twoHomesAdd)}, 3주택 이상이면 ${pct(M.threeHomesAdd)}를 더합니다(제104조 제7항). 보유 2년 미만이면 중과 세액과 단기세율 세액 중 큰 쪽입니다. 중과 대상은 장기보유특별공제도 받지 못합니다.` },
+  { q: "다주택자 양도세 중과 유예는 끝났나요?", a: `2년 이상 보유한 주택의 중과 배제(시행령 제167조의10 제1항 제12호의2)는 2026년 5월 9일까지 양도하는 주택에만 적용되도록 정해져 있습니다. 그 뒤 양도분은 아래 경과 규정에 해당하지 않으면 원칙대로 중과됩니다(2026년 4월 23일 개정 조문 기준).` },
+  { q: "중과 유예 종료 뒤에도 배제되는 경우가 있나요?", a: `있습니다. 토지거래허가 대상이면 5월 9일까지 허가를 신청하고 계약 후 4개월(일부 지역 6개월) 안에 양도해야 하고, 5월 10일 이후 계약했다면 2026년 9월 9일(일부 지역 11월 9일)까지 양도해야 합니다. 허가 대상이 아니면 5월 9일까지 계약하고 4개월(일부 6개월) 안에 양도해야 합니다.` },
+  { q: "다주택자 중과 대상도 장기보유특별공제를 받나요?", a: `받지 못합니다. 제104조 제7항 중과가 적용되는 주택은 장기보유특별공제에서 제외됩니다(제95조 제2항 괄호). 그래서 오래 보유한 집일수록 일반 과세와 중과의 차이가 커집니다. 조정대상지역이 아닌 곳의 주택은 처음부터 중과 대상이 아닙니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>6억원 → 10억원, 8년 보유(경비 0원)</th><th>양도소득세</th><th>지방세 포함</th></tr></thead>
+    <tbody>{rows.map((x) => <tr><th scope="row">{x.label}</th><td>{won(x.x.tax)}</td><td>{won(x.x.total)}</td></tr>)}</tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    이 경과 규정은 2026년 4월 23일 개정으로 들어왔습니다. 9월 9일 기한은 지났고 남은 것은 일부 지역의 11월 9일 기한입니다.
+    유예 연장이나 중과 폐지 논의는 공포 전이라 다루지 않습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    중과 배제 사유의 나머지 각 호(시행령 제167조의10)와 조정대상지역 목록은 이 글에서 다루지 않습니다. 2주택 비과세 특례는{" "}
+    <a href="/guide/two-homes-capital-gains/">1가구2주택 양도소득세</a>에 있습니다.
+  </p>
+</GuideLayout>

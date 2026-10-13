@@ -1,0 +1,59 @@
+---
+/**
+ * "양도세 신고기간" — 양도소득세 시리즈. (양도세 신고기한·예정신고 기간·주식 신고기간·확정신고 기간·지나면도 이 글)
+ * 근거: 소득세법 제105조 제1항(달·반기 말일부터 2개월), 제110조(다음 해 5월), 국세기본법 제5조(토요일·공휴일이면 다음 날).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import { preliminaryDue } from "../../../lib/capital-gains";
+import { shiftToBusinessDay, koDate } from "../../../lib/tax-deadline";
+
+const P = r.filing.preliminary;
+/** 3·1절(관공서의 공휴일에 관한 규정 제2조) — 하반기 주식·12월 양도분 기한이 2027년 3월 1일(월)로 밀린다. 그 밖의 공휴일 달력은 들고 있지 않다 */
+const HOLIDAYS = ["2027-03-01"];
+const due = (y: number, m: number, k: "realEstate" | "shares") => koDate(shiftToBusinessDay(preliminaryDue(y, m, k), HOLIDAYS));
+const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "양도세 신고기간 — 판 날이 아니라 그 달 말일부터 2개월, 주식은 반기 말일부터";
+const description =
+  "양도세 신고기간은 판 날이 속하는 달의 말일부터 2개월입니다. 10월에 팔았다면 12월 31일까지입니다. 국내 주식은 반기 말일부터 2개월이라 상반기 양도분은 8월 31일까지, 해외주식은 예정신고 없이 다음 해 5월에 신고합니다.";
+
+const ANSWER = `양도세 신고기간은 판 날이 속하는 달의 말일부터 ${P.realEstateMonths}개월입니다(소득세법 제105조). 2026년 10월에 팔았다면 ${due(2026, 10, "realEstate")}까지입니다. 국내 주식은 반기 말일부터 ${P.sharesHalfMonths}개월이고, 해외주식은 예정신고 없이 다음 해 5월에 확정신고합니다.`;
+
+const QA = [
+  { q: "양도세 신고기간은 어떻게 세나요?", a: `판 날(잔금일 등 양도일)부터가 아니라 그 날이 속하는 달의 말일부터 ${P.realEstateMonths}개월입니다. 그래서 같은 달에 팔면 1일이든 30일이든 기한이 같습니다. 2026년 11월에 팔았다면 ${due(2026, 11, "realEstate")}, 12월이면 ${due(2026, 12, "realEstate")}까지입니다.` },
+  { q: "주식 양도소득세 신고기간은 언제인가요?", a: `국내 주식(대주주 양도분·장외 양도분·비상장주식)은 양도일이 속하는 반기의 말일부터 ${P.sharesHalfMonths}개월입니다. 2026년 1~6월 양도분은 ${due(2026, 6, "shares")}, 7~12월 양도분은 ${due(2026, 12, "shares")}까지입니다.` },
+  { q: "해외주식 양도소득세 신고기간은 언제인가요?", a: `해외주식은 예정신고 대상이 아니라(제105조 제1항 괄호) 한 해 동안 판 것을 모아 다음 해 5월 1일부터 31일까지 확정신고합니다(제110조). 2026년에 판 해외주식은 2027년 5월에 신고합니다.` },
+  { q: "신고기한 마지막 날이 주말이면 어떻게 되나요?", a: `기한이 토요일·일요일·공휴일이면 그다음 날이 기한입니다(국세기본법 제5조). 이 글의 날짜는 주말과 3·1절을 반영해 미뤘고 그 밖의 공휴일은 대조하지 않았습니다. 기한을 넘기면 무신고·납부지연 가산세가 붙습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>2026년 부동산 양도월</th><th>예정신고 기한</th></tr></thead>
+    <tbody>{months.map((m) => <tr><th scope="row">{m}월</th><td>{due(2026, m, "realEstate")}</td></tr>)}</tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>세율과 250만원 공제는 <a href="/guide/overseas-stock-tax/">해외주식 양도소득세</a>에 있습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    예정신고·확정신고·분납은 <a href="/guide/capital-gains-filing/">양도소득세 신고</a>에 정리했습니다.
+  </p>
+</GuideLayout>

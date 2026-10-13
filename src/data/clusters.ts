@@ -225,7 +225,7 @@ export const clusters: Cluster[] = [
   },
   {
     id: "inheritance",
-    title: "상속·증여",
+    title: "상속·증여·양도",
     links: [
       { href: "/inheritance/", title: "상속세 계산기", kind: "calc", icon: "scale", blurb: "재산과 가족 구성을 넣으면 면제한도·과세표준·세액까지" },
       { href: "/guide/inheritance-tax/", title: "상속세 면제한도, 얼마부터 내나", kind: "guide", icon: "coins", year: 2026 },
@@ -244,6 +244,19 @@ export const clusters: Cluster[] = [
       { href: "/guide/inheritance-tax-filing/", title: "상속세 신고, 6개월·3% 공제", kind: "guide", icon: "scale", year: 2026 },
       { href: "/guide/inheritance-child-deduction/", title: "상속세 자녀공제, 일괄공제 5억에 묻힌다", kind: "guide", icon: "scale", year: 2026 },
       { href: "/guide/inheritance-deduction-limit/", title: "상속세 공제한도, 사전증여만큼 준다", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/capital-gains-tax/", title: "양도소득세, 차익에서 공제 빼고 세율", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/capital-gains-calculator/", title: "양도세 계산기, 비과세·장특공·중과", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/capital-gains-rate/", title: "양도소득세 세율, 2년 이상이면 6~45%", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/capital-gains-exemption/", title: "양도세 비과세 조건, 2년 보유·12억원", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/long-term-holding-deduction/", title: "장기보유특별공제, 최대 30%·80%", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/two-homes-capital-gains/", title: "1가구2주택 양도세, 일시적 2주택 2년·3년", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/multi-home-surcharge/", title: "다주택자 중과, 5월 9일로 유예 종료", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/capital-gains-filing/", title: "양도소득세 신고, 예정신고와 확정신고", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/capital-gains-deadline/", title: "양도세 신고기간, 달 말일부터 2개월", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/overseas-stock-tax/", title: "해외주식 양도세, 250만원 빼고 22%", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/stock-capital-gains/", title: "주식 양도소득세, 대주주 기준과 세율", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/land-capital-gains-rate/", title: "토지 양도세율, 비사업용은 16~55%", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/farmland-capital-gains/", title: "농지 양도세, 8년 자경 100% 감면", kind: "guide", icon: "scale", year: 2026 },
     ],
   },
 ];
@@ -253,6 +266,19 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/farmland-capital-gains/",
+  "/guide/land-capital-gains-rate/",
+  "/guide/stock-capital-gains/",
+  "/guide/overseas-stock-tax/",
+  "/guide/capital-gains-deadline/",
+  "/guide/capital-gains-filing/",
+  "/guide/multi-home-surcharge/",
+  "/guide/two-homes-capital-gains/",
+  "/guide/long-term-holding-deduction/",
+  "/guide/capital-gains-exemption/",
+  "/guide/capital-gains-rate/",
+  "/guide/capital-gains-calculator/",
+  "/guide/capital-gains-tax/",
   "/guide/inheritance-deduction-limit/",
   "/guide/inheritance-child-deduction/",
   "/guide/inheritance-tax-filing/",

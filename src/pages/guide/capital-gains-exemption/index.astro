@@ -1,0 +1,63 @@
+---
+/**
+ * "양도세 비과세 조건" — 양도소득세 시리즈. (1가구 1주택 비과세·요건·2년 거주·12억·실거주·신고 의무·비과세 특례도 이 글)
+ * 근거: 소득세법 제89조 제1항 제3호(12억 고가주택 제외), 시행령 제154조(2년 보유·조정대상지역 2년 거주·예외·거주기간 계산),
+ * 제160조(12억 초과 비율), 제155조(일시적 2주택 등 특례), 제105조 제3항(차익 없어도 예정신고).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import { capitalGains } from "../../../lib/capital-gains";
+import { won, eokwon } from "../../../lib/won";
+
+const E = r.exemption;
+const rows = [1_000_000_000, 1_300_000_000, 1_500_000_000, 2_000_000_000].map((sale) => ({
+  sale,
+  x: capitalGains({ kind: "house", sale, acquisition: 600_000_000, holdYears: 10, residenceYears: 10, oneHouseExempt: true }),
+}));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "양도세 비과세 조건 — 1세대 1주택 2년 보유, 조정대상지역에서 샀으면 2년 거주까지";
+const description =
+  "양도세 비과세 조건은 1세대가 양도일 현재 국내에 1주택만 가지고 2년 이상 보유하는 것입니다. 취득 당시 조정대상지역이었다면 보유기간 중 2년 이상 거주해야 합니다. 양도가액 12억원까지 비과세이고, 넘으면 12억원 초과분 비율만큼 과세합니다.";
+
+const ANSWER = `양도세 비과세 조건은 1세대가 양도일 현재 국내에 1주택만 가지고 ${E.holdYears}년 이상 보유하는 것입니다. 취득 당시 조정대상지역이었다면 보유기간 중 ${E.residenceYearsIfAdjusted}년 이상 거주도 해야 합니다(소득세법 시행령 제154조). 양도가액 ${eokwon(E.highPrice)}까지 비과세이고, 넘으면 초과분 비율만큼 과세합니다.`;
+
+const QA = [
+  { q: "양도세 비과세 조건은 무엇인가요?", a: `1세대가 양도일 현재 국내에 1주택을 보유하고 그 주택의 보유기간이 ${E.holdYears}년 이상이어야 합니다. 취득 당시 조정대상지역에 있던 주택은 보유기간 중 거주기간도 ${E.residenceYearsIfAdjusted}년 이상이어야 합니다(시행령 제154조 제1항). 보유기간은 그 주택의 취득일부터 양도일까지입니다.` },
+  { q: "양도세 비과세 2년 거주는 누구에게 필요한가요?", a: `취득 당시 그 주택이 조정대상지역에 있었던 경우입니다. 지금 조정대상지역인지가 아니라 산 날 기준이고, 거주기간은 주민등록표 등본상 전입일부터 전출일까지로 셉니다(제154조 제6항). 취득 당시 조정대상지역이 아니었다면 거주하지 않아도 2년 보유로 요건을 갖춥니다.` },
+  { q: "양도세 비과세 12억원은 어떻게 적용되나요?", a: `양도 당시 실지거래가액이 ${eokwon(E.highPrice)}을 넘는 고가주택은 비과세에서 빠지지만, 전부 과세하지 않고 양도차익에 (양도가액 − 12억원) ÷ 양도가액을 곱한 만큼만 과세합니다(제89조 제1항 제3호, 시행령 제160조). 장기보유특별공제도 같은 비율입니다.` },
+  { q: "보유·거주기간이 모자라도 비과세되는 경우가 있나요?", a: `있습니다. 공익사업 수용, 해외이주나 1년 이상 국외 취학·근무로 세대 전원이 출국한 뒤 2년 안에 양도, 1년 이상 거주한 집을 취학·근무·질병 등 부득이한 사유로 양도하는 경우 등은 기간 제한을 받지 않습니다(시행령 제154조 제1항 단서).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>어느 지역이 조정대상지역인지는 주택법에 따라 국토교통부가 지정·해제하며, 이 글은 지역 목록을 싣지 않습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>6억원에 사서 10년 보유·거주한 1주택을</th><th>과세 비율</th><th>과세 양도차익</th><th>세금(지방세 포함)</th></tr></thead>
+    <tbody>{rows.map(({ sale, x }) => <tr><th scope="row">{eokwon(sale)}에 팔면</th><td>{Math.round(x.ratio * 1000) / 10}%</td><td>{won(x.taxableGain)}</td><td>{x.exempt ? "비과세" : won(x.total)}</td></tr>)}</tbody>
+  </table>
+  <p>필요경비 없이 계산한 어림입니다. 장기보유특별공제는 보유·거주 각 10년이라 80%입니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    12억원을 넘어 과세분이 생기면 양도일이 속하는 달의 말일부터 2개월 안에 예정신고합니다 —{" "}
+    <a href="/guide/capital-gains-filing/">양도소득세 신고</a>. 2주택이지만 비과세되는 일시적 2주택은{" "}
+    <a href="/guide/two-homes-capital-gains/">1가구2주택 양도소득세</a>에 있습니다.
+  </p>
+</GuideLayout>

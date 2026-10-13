@@ -1,0 +1,68 @@
+---
+/**
+ * "농지 양도소득세" — 양도소득세 시리즈. (8년 자경 감면·감면 한도·비사업용 농지·세율·상속 농지도 이 글)
+ * 근거: 조세특례제한법 제69조(8년 이상 자경 농지 100% 감면, 감면신청), 제133조(과세기간별 1억원·5개 과세기간 2억원 한도),
+ * 소득세법 제104조의3(비사업용 토지), 제104조 제1항(토지 세율·비사업용 +10%p).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import { capitalGains } from "../../../lib/capital-gains";
+import { won, eokwon } from "../../../lib/won";
+
+const F = r.farmland;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const cases = [
+  { sale: 300_000_000, acquisition: 100_000_000 },
+  { sale: 600_000_000, acquisition: 100_000_000 },
+  { sale: 1_000_000_000, acquisition: 100_000_000 },
+].map((c) => {
+  const x = capitalGains({ kind: "land", holdYears: 20, ...c });
+  const relief = Math.min(Math.floor(x.tax * F.rate), F.annualCap);
+  return { ...c, x, relief, left: x.tax - relief };
+});
+const nbl = capitalGains({ kind: "land", holdYears: 20, sale: 600_000_000, acquisition: 100_000_000, nonBusinessLand: true });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "농지 양도소득세 — 8년 이상 직접 농사지었으면 100% 감면, 한 해 1억원 한도";
+const description =
+  "농지 양도소득세는 농지 소재지에 살면서 8년 이상 직접 경작한 농지라면 100% 감면됩니다. 감면세액은 한 해 1억원, 5년간 합계 2억원이 한도이고 감면신청을 해야 합니다. 직접 경작하지 않은 농지는 비사업용 토지가 되어 세율이 10%p 높아질 수 있습니다.";
+
+const ANSWER = `농지 양도소득세는 농지 소재지에 살면서 ${F.years}년 이상 직접 경작한 농지라면 ${pct(F.rate)} 감면됩니다(조세특례제한법 제69조). 감면세액은 과세기간별 ${eokwon(F.annualCap)}, 5개 과세기간 합계 ${eokwon(F.fiveYearCap)}이 한도이고(제133조) 감면신청을 해야 합니다.`;
+
+const QA = [
+  { q: "농지 양도소득세 8년 자경 감면 요건은 무엇인가요?", a: `농지 소재지에 거주하면서 ${F.years}년 이상 직접 경작한 토지를 양도해야 합니다(조세특례제한법 제69조). 주거지역 등에 편입됐다면 편입일까지 발생한 소득만 감면됩니다. 거주 범위와 직접 경작의 세부 기준은 시행령 제66조에 있어 이 글에서 따로 정리하지 않았습니다.` },
+  { q: "농지 양도소득세 감면 한도는 얼마인가요?", a: `감면받는 세액이 과세기간별로 ${eokwon(F.annualCap)}, 5개 과세기간 합계로 ${eokwon(F.fiveYearCap)}을 넘을 수 없습니다(제133조). 세금이 1억원을 넘게 나오는 큰 농지는 한도 초과분을 내야 하고, 여러 해에 나눠 팔아도 5년 합계 2억원에서 막힙니다.` },
+  { q: "농지 양도소득세율은 얼마인가요?", a: `일반 토지와 같습니다. 2년 이상 보유하면 기본세율 6~45%, 비사업용 토지로 판정되면 10%p를 더한 16~55%입니다(소득세법 제104조 제1항). 1억원에 사서 20년 보유한 농지를 6억원에 팔면 비사업용일 때 ${won(nbl.tax)}입니다(지방소득세 제외).` },
+  { q: "직접 농사짓지 않은 농지는 어떻게 되나요?", a: `소유자가 농지 소재지에 살지 않거나 스스로 경작하지 않는 농지 등은 비사업용 토지가 될 수 있습니다(제104조의3). 그러면 자경 감면을 받지 못하는 데다 세율이 ${Math.round(r.rates.nonBusinessLand.add * 100)}%p 높아집니다. 판정 기간과 예외 사유는 시행령에 있어 이 글에서 다루지 않았습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>1억원에 사서 20년 보유·자경한 농지를</th><th>양도소득세</th><th>감면({eokwon(F.annualCap)} 한도)</th><th>남는 세금</th></tr></thead>
+    <tbody>{cases.map((c) => <tr><th scope="row">{eokwon(c.sale)}에 팔면</th><td>{won(c.x.tax)}</td><td>{won(c.relief)}</td><td>{won(c.left)}</td></tr>)}</tbody>
+  </table>
+  <p>사업용 토지로 보고 장기보유특별공제 {pct(cases[0].x.ltRate)}를 반영한 양도소득세입니다. 지방소득세와 농어촌특별세 처리는 이 글에서 확인하지 않았습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>세율 표는 <a href="/guide/land-capital-gains-rate/">토지 양도소득세율</a>에 있습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    감면을 받아도 양도소득세 신고는 기한 안에 해야 합니다 — <a href="/guide/capital-gains-filing/">양도소득세 신고</a>.
+  </p>
+</GuideLayout>

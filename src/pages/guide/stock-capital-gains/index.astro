@@ -1,0 +1,73 @@
+---
+/**
+ * "주식 양도소득세" — 양도소득세 시리즈. (대주주 기준·세율·신고·소액주주·비상장주식·국내주식도 이 글)
+ * 근거: 소득세법 제94조 제1항 제3호(과세 대상 주식), 제104조 제1항(대주주 20%·25%, 1년 미만 30%, 소액주주 10%·20%),
+ * 시행령 제157조(대주주 1%·2%·4% 또는 50억원), 제105조 제1항 제2호(반기 말일부터 2개월).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import { majorShareTax, preliminaryDue } from "../../../lib/capital-gains";
+import { shiftToBusinessDay, koDate } from "../../../lib/tax-deadline";
+import { won, eokwon } from "../../../lib/won";
+
+const S = r.rates.shares;
+const M = r.majorShareholder;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const [low, high] = S.majorBrackets;
+const examples = [100_000_000, 300_000_000, 500_000_000, 1_000_000_000].map((b) => ({ b, t: majorShareTax(b) }));
+/** 3·1절(관공서의 공휴일에 관한 규정 제2조) — 하반기 기한 2027년 2월 28일(일)이 3월 1일을 넘어 2일로 밀린다 */
+const due = (m: number) => koDate(shiftToBusinessDay(preliminaryDue(2026, m, "shares"), ["2027-03-01"]));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "주식 양도소득세 — 상장주식은 대주주만, 지분 1% 또는 종목당 50억원이 기준";
+const description =
+  "국내 상장주식 양도소득세는 대주주가 팔거나 장외에서 팔 때 냅니다. 대주주는 직전 사업연도 말 지분율 1%(코스닥 2%, 코넥스 4%) 이상이거나 종목 보유액 50억원 이상입니다. 대주주 세율은 과세표준 3억원 이하 20%, 초과분 25%입니다.";
+
+const ANSWER = `국내 상장주식 양도소득세는 대주주가 팔거나 장외에서 팔 때 냅니다(소득세법 제94조). 대주주는 직전 사업연도 말 지분율 ${pct(M.kospi.ratio)}(코스닥 ${pct(M.kosdaq.ratio)}, 코넥스 ${pct(M.konex.ratio)}) 이상이거나 종목 보유액 ${eokwon(M.kospi.value)} 이상입니다. 세율은 3억원 이하 ${pct(low.rate)}, 초과분 ${pct(high.rate)}입니다.`;
+
+const QA = [
+  { q: "주식 양도소득세는 누가 내나요?", a: `국내 상장주식은 대주주가 판 것과 증권시장 밖(장외)에서 판 것만 과세됩니다. 비상장주식, 외국법인 주식·해외 상장주식은 양도하면 과세됩니다(제94조 제1항 제3호). 대주주가 아닌 사람이 장내에서 판 상장주식은 양도소득세 대상이 아닙니다.` },
+  { q: "주식 양도소득세 대주주 기준은 무엇인가요?", a: `양도일이 속하는 사업연도의 직전 사업연도 종료일 현재 지분율이 코스피 ${pct(M.kospi.ratio)}, 코스닥 ${pct(M.kosdaq.ratio)}, 코넥스 ${pct(M.konex.ratio)} 이상이거나 종목별 시가총액(보유액)이 ${eokwon(M.kospi.value)} 이상이면 대주주입니다(시행령 제157조). 최대주주 그룹은 특수관계인 지분을 합칩니다.` },
+  { q: "주식 양도소득세율은 얼마인가요?", a: `대주주는 과세표준 ${eokwon(low.upTo!)} 이하 ${pct(low.rate)}, 초과분 ${pct(high.rate)}이고 중소기업 외 주식을 1년 미만 보유했다면 ${pct(S.majorShort)}입니다. 대주주가 아닌 사람의 과세분은 중소기업 ${pct(S.minorSme)}, 그 밖 ${pct(S.minorOther)}입니다(제104조 제1항). 지방소득세 10분의 1이 더해집니다.` },
+  { q: "국내 주식 양도소득세 신고는 언제 하나요?", a: `양도일이 속하는 반기의 말일부터 2개월 안에 예정신고합니다(제105조 제1항 제2호). 2026년 상반기 양도분은 ${due(6)}, 하반기 양도분은 ${due(12)}까지입니다. 해외주식은 예정신고 없이 다음 해 5월입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>시장</th><th>지분율</th><th>또는 보유액</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">코스피</th><td>{pct(M.kospi.ratio)} 이상</td><td>{eokwon(M.kospi.value)} 이상</td></tr>
+      <tr><th scope="row">코스닥</th><td>{pct(M.kosdaq.ratio)} 이상</td><td>{eokwon(M.kosdaq.value)} 이상</td></tr>
+      <tr><th scope="row">코넥스</th><td>{pct(M.konex.ratio)} 이상</td><td>{eokwon(M.konex.value)} 이상</td></tr>
+    </tbody>
+  </table>
+  <p>대주주 기준 변경 논의는 공포된 개정이 아니면 다루지 않습니다. 이 표는 2026년 10월 1일 시행 시행령 원문 그대로입니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>대주주 과세표준</th><th>양도소득세</th></tr></thead>
+    <tbody>{examples.map(({ b, t }) => <tr><th scope="row">{eokwon(b)}</th><td>{won(t)}</td></tr>)}</tbody>
+  </table>
+  <p>{eokwon(low.upTo!)}을 넘는 부분만 {pct(high.rate)}라 {eokwon(low.upTo!)} 초과 금액은 {won(high.base!)} + 초과분 × {pct(high.rate)}입니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    해외주식은 <a href="/guide/overseas-stock-tax/">해외주식 양도소득세</a>, 기한 표는{" "}
+    <a href="/guide/capital-gains-deadline/">양도세 신고기간</a>에 있습니다.
+  </p>
+</GuideLayout>

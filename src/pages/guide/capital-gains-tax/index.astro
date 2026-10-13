@@ -1,0 +1,73 @@
+---
+/**
+ * "양도소득세" — 양도소득세 시리즈 허브(src/data/series/capital-gains.ts). 양도세·뜻·란·기준·면제도 이 글.
+ * 근거: 소득세법 제89조(비과세)·제94조(범위)·제95조·제103조·제104조, 제105조·제110조(신고), 지방세법 제103조의3.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import { capitalGainsSeries } from "../../../data/series/capital-gains";
+import { seriesHref } from "../../../data/series/types";
+import { capitalGains } from "../../../lib/capital-gains";
+import { won, eokwon } from "../../../lib/won";
+
+const ex = capitalGains({ kind: "house", sale: 800_000_000, acquisition: 500_000_000, holdYears: 5 });
+const exOne = capitalGains({ kind: "house", sale: 800_000_000, acquisition: 500_000_000, holdYears: 5, residenceYears: 5, oneHouseExempt: true });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "양도소득세 — 판 값에서 산 값과 경비를 빼고, 오래 가질수록 공제가 커집니다";
+const description =
+  "양도소득세는 집·땅·주식 등을 팔아 생긴 이익에 매기는 세금입니다. 양도가액에서 취득가액과 필요경비를 빼고 장기보유특별공제와 기본공제 250만원을 뺀 뒤 세율을 곱합니다. 1세대 1주택은 2년 보유하면 12억원까지 비과세입니다.";
+
+const ANSWER = `양도소득세는 집·땅·주식 등을 팔아 생긴 이익에 매기는 세금입니다(소득세법 제94조). 양도가액에서 취득가액과 필요경비를 빼고 장기보유특별공제와 기본공제 ${eokwon(r.basicDeduction.amount)}을 뺀 뒤 세율을 곱합니다. 1세대 1주택은 2년 보유하면 ${eokwon(r.exemption.highPrice)}까지 비과세입니다.`;
+
+const QA = [
+  { q: "양도소득세란 무엇인가요?", a: `토지·건물, 분양권 같은 부동산에 관한 권리, 주식, 회원권 등을 팔아(양도) 생긴 소득에 매기는 소득세입니다(소득세법 제94조). 근로·사업소득과 합치지 않고 따로 계산하고, 국세의 10분의 1이 지방소득세로 함께 붙습니다(지방세법 제103조의3).` },
+  { q: "양도소득세는 어떻게 계산하나요?", a: `양도가액 − 취득가액·필요경비 = 양도차익, − 장기보유특별공제(3년 이상) = 양도소득금액, − 기본공제 ${eokwon(r.basicDeduction.amount)} = 과세표준, × 세율 = 산출세액입니다. 5억원에 산 집을 5년 뒤 8억원에 판 1주택 아닌 사람은 지방소득세 포함 ${won(ex.total)}입니다.` },
+  { q: "양도소득세를 안 내는 경우가 있나요?", a: `1세대가 국내에 1주택을 2년 이상 보유하면(취득 당시 조정대상지역이면 2년 거주도) 양도가액 ${eokwon(r.exemption.highPrice)}까지 비과세입니다(제89조, 시행령 제154조). 같은 집을 1주택자가 팔면 ${exOne.exempt ? "0원" : won(exOne.total)}입니다. 8년 이상 자경한 농지는 감면됩니다.` },
+  { q: "양도소득세는 언제 신고하나요?", a: `부동산은 양도일이 속하는 달의 말일부터 ${r.filing.preliminary.realEstateMonths}개월 안에 예정신고하고(제105조), 다음 해 5월에 확정신고합니다(제110조). 예정신고를 했으면 대개 확정신고는 생략합니다. 해외주식은 예정신고 없이 다음 해 5월에 신고합니다.` },
+];
+const labelOf = (slug: string) => capitalGainsSeries.items.find((x) => x.slug === slug)?.label ?? slug;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <ul>{r.scope.items.map((x) => <li>{x}</li>)}</ul>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>예시(5억원 → 8억원, 5년 보유, 1주택 아님)</th><th>금액</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">양도차익</th><td>{won(ex.gain)}</td></tr>
+      <tr><th scope="row">장기보유특별공제({Math.round(ex.ltRate * 100)}%)</th><td>{won(ex.ltDeduction)}</td></tr>
+      <tr><th scope="row">기본공제</th><td>{won(ex.basic)}</td></tr>
+      <tr><th scope="row">과세표준</th><td>{won(ex.base)}</td></tr>
+      <tr><th scope="row">양도소득세</th><td>{won(ex.tax)}</td></tr>
+      <tr><th scope="row">지방소득세(10분의 1)</th><td>{won(ex.local)}</td></tr>
+    </tbody>
+  </table>
+  <p>자세히 — <a href={seriesHref("capital-gains-calculator")}>{labelOf("capital-gains-calculator")}</a>, <a href={seriesHref("capital-gains-rate")}>{labelOf("capital-gains-rate")}</a></p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>자세히 — <a href={seriesHref("capital-gains-exemption")}>{labelOf("capital-gains-exemption")}</a>, <a href={seriesHref("farmland-capital-gains")}>{labelOf("farmland-capital-gains")}</a></p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>자세히 — <a href={seriesHref("capital-gains-deadline")}>{labelOf("capital-gains-deadline")}</a></p>
+
+  <h2>양도소득세, 질문별로 정리했습니다</h2>
+  <ul>{capitalGainsSeries.items.map((x) => <li><a href={seriesHref(x.slug)}>{x.label}</a></li>)}</ul>
+  <p>
+    양도소득세 개편안은 공포 전이라 다루지 않습니다. 2026년 10월 13일 현재 소득세법에 실린 2027년 9월 9일 시행 개정은
+    법률 이름 변경뿐이라 계산에 영향이 없습니다.
+  </p>
+</GuideLayout>

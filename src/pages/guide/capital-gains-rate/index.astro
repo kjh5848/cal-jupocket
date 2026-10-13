@@ -1,0 +1,73 @@
+---
+/**
+ * "양도소득세 세율" — 양도소득세 시리즈. (양도세 기본세율·세율표·양도세율·구간·2026·주택·상가도 이 글)
+ * 근거: 소득세법 제104조 제1항(기본·단기·비사업용·미등기·주식)·제7항(중과), 제55조 제1항(기본세율 표), 지방세법 제103조의3.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import tr from "../../../rates/2026.json";
+import { taxOn } from "../../../lib/deduction";
+import { won, eokwon } from "../../../lib/won";
+
+const S = r.rates.shortTerm;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const B = tr.incomeTaxBrackets;
+const label = (i: number) => (B[i].upTo === null ? `${eokwon(B[i - 1].upTo!)} 초과` : i === 0 ? `${eokwon(B[i].upTo!)} 이하` : `${eokwon(B[i - 1].upTo!)} 초과 ${eokwon(B[i].upTo!)} 이하`);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "양도소득세 세율 — 2년 이상 보유하면 기본세율 6~45%, 주택은 1년 미만 70%";
+const description =
+  "양도소득세 세율은 2년 이상 보유한 부동산이면 종합소득세와 같은 기본세율 6~45%입니다. 1년 미만은 50%, 2년 미만은 40%이고 주택·분양권은 각각 70%, 60%입니다. 비사업용 토지는 10%p, 조정대상지역 다주택은 20~30%p를 더하고, 지방소득세가 10분의 1 붙습니다.";
+
+const ANSWER = `양도소득세 세율은 2년 이상 보유한 부동산이면 기본세율 6~45%입니다(소득세법 제104조 제1항 제1호, 제55조). 1년 미만 ${pct(S.otherUnder1)}, 2년 미만 ${pct(S.other1to2)}이고 주택·분양권은 ${pct(S.houseUnder1)}·${pct(S.house1to2)}입니다. 비사업용 토지는 10%p, 조정대상지역 다주택은 20~30%p를 더합니다.`;
+
+const QA = [
+  { q: "양도소득세 세율은 얼마인가요?", a: `토지·건물·부동산에 관한 권리를 2년 이상 보유했다면 기본세율(과세표준 1,400만원 이하 6%부터 10억원 초과 45%까지 8단계)을 씁니다. 보유 1년 미만은 ${pct(S.otherUnder1)}, 1년 이상 2년 미만은 ${pct(S.other1to2)}의 단일세율이고, 여러 세율에 해당하면 세액이 큰 쪽을 적용합니다(제104조 제1항).` },
+  { q: "양도세 기본세율은 종합소득세 세율과 같나요?", a: `같습니다. 제104조 제1항 제1호가 제55조 제1항(종합소득세 기본세율)을 그대로 씁니다. 다만 양도소득은 근로·사업소득과 합치지 않고 따로 과세표준을 만들어 세율을 곱합니다. 과세표준 1억원이면 ${won(taxOn(100_000_000))}입니다.` },
+  { q: "주택 양도소득세 세율은 다른가요?", a: `단기 보유일 때 더 높습니다. 주택·조합원입주권·분양권은 보유 1년 미만 ${pct(S.houseUnder1)}, 1년 이상 2년 미만 ${pct(S.house1to2)}이고, 분양권은 2년 이상도 ${pct(S.presale)}입니다. 조정대상지역 다주택은 기본세율에 20%p(3주택 이상 30%p)를 더합니다(제104조 제7항).` },
+  { q: "양도소득세 세율이 2026년에 바뀌었나요?", a: `세율표 자체는 바뀌지 않았습니다. 다만 2년 이상 보유한 조정대상지역 다주택의 중과 배제가 2026년 5월 9일까지 양도분으로 끝나, 그 뒤 양도분은 원칙대로 중과됩니다(시행령 제167조의10 제1항 제12호의2, 경과 규정 있음).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>구분</th><th>토지·상가 등</th><th>주택·입주권</th><th>분양권</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">1년 미만</th><td>{pct(S.otherUnder1)}</td><td>{pct(S.houseUnder1)}</td><td>{pct(S.houseUnder1)}</td></tr>
+        <tr><th scope="row">1년 이상 2년 미만</th><td>{pct(S.other1to2)}</td><td>{pct(S.house1to2)}</td><td>{pct(S.presale)}</td></tr>
+        <tr><th scope="row">2년 이상</th><td>기본세율</td><td>기본세율</td><td>{pct(S.presale)}</td></tr>
+        <tr><th scope="row">비사업용 토지</th><td>기본세율 + 10%p</td><td>—</td><td>—</td></tr>
+        <tr><th scope="row">미등기 양도</th><td colspan="3">{pct(r.rates.unregistered)}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>과세표준</th><th>기본세율</th><th>누진공제</th></tr></thead>
+    <tbody>{B.map((b, i) => <tr><th scope="row">{label(i)}</th><td>{pct(b.rate)}</td><td>{b.deduction ? won(b.deduction) : "없음"}</td></tr>)}</tbody>
+  </table>
+  <p>지방소득세는 국세 세율의 10분의 1이 표준세율이라(지방세법 제103조의3) 기본세율 기준으로 0.6~4.5%입니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    중과 대상과 배제 종료는 <a href="/guide/multi-home-surcharge/">다주택자 양도세 중과</a>, 토지는{" "}
+    <a href="/guide/land-capital-gains-rate/">토지 양도소득세율</a>, 주식은{" "}
+    <a href="/guide/stock-capital-gains/">주식 양도소득세</a>에 있습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+</GuideLayout>

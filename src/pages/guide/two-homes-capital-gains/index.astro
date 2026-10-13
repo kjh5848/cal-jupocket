@@ -1,0 +1,72 @@
+---
+/**
+ * "1가구2주택 양도소득세" — 양도소득세 시리즈. (1가구2주택 세금·2주택 양도세·일시적 1가구 2주택·비과세 요건·유예기간·중과·세율도 이 글)
+ * 근거: 소득세법 제89조 제1항 제3호 나목, 시행령 제155조 제1항(일시적 2주택 — 2026. 9. 30. 개정)·부칙 <대통령령 제36737호> 제2조,
+ * 제104조 제7항(조정대상지역 2주택 +20%p), 시행령 제167조의10(중과 배제).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import { capitalGains } from "../../../lib/capital-gains";
+import { won } from "../../../lib/won";
+
+const T = r.temporaryTwoHomes;
+const base = { kind: "house" as const, sale: 900_000_000, acquisition: 600_000_000, holdYears: 6 };
+const plain = capitalGains(base);
+const surcharged = capitalGains({ ...base, surcharge: 0.2 });
+const exempt = capitalGains({ ...base, residenceYears: 6, oneHouseExempt: true });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "1가구2주택 양도소득세 — 일시적 2주택이면 비과세, 조정대상지역끼리는 2년 안에 팔아야";
+const description =
+  "1가구 2주택이라도 종전 주택을 산 지 1년 뒤 새 집을 사고 정해진 기간 안에 종전 주택을 팔면 1주택처럼 비과세됩니다. 그 기간이 2026년 9월 30일 개정으로 조정대상지역끼리는 2년, 그 밖은 3년입니다. 요건을 못 갖추면 조정대상지역 2주택은 20%p 중과됩니다.";
+
+const ANSWER = `1가구 2주택이라도 종전 주택을 산 지 1년 뒤 새 집을 사고, 새 집 취득일부터 정해진 기간 안에 종전 주택을 팔면 1세대 1주택으로 보아 비과세됩니다(소득세법 시행령 제155조). 그 기간은 종전·신규 모두 조정대상지역이면 ${T.sellWithinAdjusted}년, 그 밖은 ${T.sellWithinOther}년입니다.`;
+
+const QA = [
+  { q: "일시적 1가구 2주택 양도세 비과세 요건은 무엇인가요?", a: `종전 주택을 취득한 날부터 ${T.afterYears}년 이상 지난 뒤 신규 주택을 취득하고, 신규 주택 취득일부터 정해진 기간 안에 종전 주택을 양도해야 합니다. 종전 주택은 1세대 1주택 비과세 요건(2년 보유 등)을 따로 갖춰야 합니다(시행령 제155조 제1항).` },
+  { q: "1가구2주택 양도세 유예기간은 얼마인가요?", a: `신규 주택 취득일 현재 종전 주택이 조정대상지역에 있고 신규 주택도 조정대상지역이면 ${T.sellWithinAdjusted}년, 그 밖은 ${T.sellWithinOther}년입니다. ${T.sellWithinAdjusted}년 규정은 2026년 8월 4일 이후 신규 주택 취득분부터이고, 8월 3일 이전 취득·계약금 지급은 종전대로 ${T.sellWithinOther}년입니다.` },
+  { q: "2주택 양도세는 얼마나 나오나요?", a: `비과세 요건을 못 갖추면 일반 과세이고, 조정대상지역 2주택이면 기본세율에 20%p를 더하며 장기보유특별공제도 없습니다. 6억원에 사 6년 보유한 집을 9억원에 팔면 일반 ${won(plain.total)}, 중과 ${won(surcharged.total)}입니다(지방소득세 포함, 경비 0원 가정).` },
+  { q: "1가구2주택 양도세 중과는 언제 적용되나요?", a: `조정대상지역에 있는 주택을 1세대 2주택 상태에서 팔 때입니다(제104조 제7항). 조정대상지역이 아닌 곳의 주택은 중과 대상이 아니고, 일시적 2주택 요건을 갖춘 종전 주택은 12억원 이하면 낼 세금이 없습니다. 2년 이상 보유 주택의 한시 중과 배제는 2026년 5월 9일 양도분까지였습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>종전 주택 → 신규 주택</th><th>종전 주택 양도 기한(신규 취득일부터)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">조정대상지역 → 조정대상지역(2026. 8. 4. 이후 취득)</th><td>{T.sellWithinAdjusted}년</td></tr>
+      <tr><th scope="row">그 밖의 경우</th><td>{T.sellWithinOther}년</td></tr>
+    </tbody>
+  </table>
+  <p>{T.applies}(부칙 제2조). 종부세의 일시적 2주택 기간도 같은 날 같은 방식으로 바뀌었습니다 — <a href="/guide/jongbu-reform/">종부세 개편</a>.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>6억원 → 9억원, 6년 보유</th><th>세금(지방세 포함)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">일시적 2주택 비과세 요건 충족(6년 거주)</th><td>{exempt.exempt ? "비과세" : won(exempt.total)}</td></tr>
+      <tr><th scope="row">일반 과세(장기보유특별공제 12%)</th><td>{won(plain.total)}</td></tr>
+      <tr><th scope="row">조정대상지역 2주택 중과(+20%p, 공제 없음)</th><td>{won(surcharged.total)}</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    상속주택·혼인합가·동거봉양으로 2주택이 된 경우의 특례는 시행령 제155조 제2항 이하에 있고 이 글에서는 다루지 않았습니다.
+    중과 배제 종료 과정은 <a href="/guide/multi-home-surcharge/">다주택자 양도세 중과</a>에 있습니다.
+  </p>
+</GuideLayout>

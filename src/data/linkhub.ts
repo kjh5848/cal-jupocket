@@ -177,6 +177,19 @@ export const hubEntries: HubEntry[] = [
   { no: 150, href: "/guide/inheritance-tax-filing/", label: "상속세 신고", kind: "guide" },
   { no: 151, href: "/guide/inheritance-child-deduction/", label: "상속세 자녀공제", kind: "guide" },
   { no: 152, href: "/guide/inheritance-deduction-limit/", label: "상속세 공제한도", kind: "guide" },
+  { no: 153, href: "/guide/capital-gains-tax/", label: "양도소득세", kind: "guide" },
+  { no: 154, href: "/guide/capital-gains-calculator/", label: "양도세 계산기", kind: "guide" },
+  { no: 155, href: "/guide/capital-gains-rate/", label: "양도소득세 세율", kind: "guide" },
+  { no: 156, href: "/guide/capital-gains-exemption/", label: "양도세 비과세 조건", kind: "guide" },
+  { no: 157, href: "/guide/long-term-holding-deduction/", label: "장기보유특별공제", kind: "guide" },
+  { no: 158, href: "/guide/two-homes-capital-gains/", label: "1가구2주택 양도소득세", kind: "guide" },
+  { no: 159, href: "/guide/multi-home-surcharge/", label: "다주택자 양도세 중과", kind: "guide" },
+  { no: 160, href: "/guide/capital-gains-filing/", label: "양도소득세 신고 방법", kind: "guide" },
+  { no: 161, href: "/guide/capital-gains-deadline/", label: "양도세 신고기간", kind: "guide" },
+  { no: 162, href: "/guide/overseas-stock-tax/", label: "해외주식 양도소득세", kind: "guide" },
+  { no: 163, href: "/guide/stock-capital-gains/", label: "주식 양도소득세", kind: "guide" },
+  { no: 164, href: "/guide/land-capital-gains-rate/", label: "토지 양도소득세율", kind: "guide" },
+  { no: 165, href: "/guide/farmland-capital-gains/", label: "농지 양도소득세", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -314,7 +327,7 @@ export const hubGroups: HubGroup[] = [
     ]),
   },
   {
-    label: "상속·증여",
+    label: "상속·증여·양도",
     cluster: "inheritance",
     entries: inCluster([
       "/guide/inheritance-tax",
@@ -333,6 +346,19 @@ export const hubGroups: HubGroup[] = [
       "/guide/inheritance-tax-filing",
       "/guide/inheritance-child-deduction",
       "/guide/inheritance-deduction-limit",
+      "/guide/capital-gains-tax",
+      "/guide/capital-gains-calculator",
+      "/guide/capital-gains-rate",
+      "/guide/capital-gains-exemption",
+      "/guide/long-term-holding-deduction",
+      "/guide/two-homes-capital-gains",
+      "/guide/multi-home-surcharge",
+      "/guide/capital-gains-filing",
+      "/guide/capital-gains-deadline",
+      "/guide/overseas-stock-tax",
+      "/guide/stock-capital-gains",
+      "/guide/land-capital-gains-rate",
+      "/guide/farmland-capital-gains",
     ]),
   },
   {

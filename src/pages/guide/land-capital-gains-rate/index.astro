@@ -1,0 +1,66 @@
+---
+/**
+ * "토지 양도소득세율" — 양도소득세 시리즈. (토지 양도세율·비사업용 토지 세율·땅 양도세·장기보유특별공제·단기 세율도 이 글)
+ * 근거: 소득세법 제104조 제1항(기본세율·1년 미만 50%·2년 미만 40%·비사업용 토지 +10%p, 둘 이상이면 큰 것),
+ * 제95조 제2항(장기보유특별공제 — 제외는 미등기·중과 주택), 제104조의3(비사업용 토지), 제55조 제1항(기본세율 표).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import tr from "../../../rates/2026.json";
+import { capitalGains } from "../../../lib/capital-gains";
+import { won, eokwon } from "../../../lib/won";
+
+const S = r.rates.shortTerm;
+const N = r.rates.nonBusinessLand;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const B = tr.incomeTaxBrackets;
+const label = (i: number) => (B[i].upTo === null ? `${eokwon(B[i - 1].upTo!)} 초과` : i === 0 ? `${eokwon(B[i].upTo!)} 이하` : `${eokwon(B[i - 1].upTo!)} 초과 ${eokwon(B[i].upTo!)} 이하`);
+const base = { kind: "land" as const, sale: 500_000_000, acquisition: 200_000_000, holdYears: 10 };
+const biz = capitalGains(base);
+const nbl = capitalGains({ ...base, nonBusinessLand: true });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "토지 양도소득세율 — 2년 이상이면 6~45%, 비사업용 토지는 10%p 더해 16~55%";
+const description =
+  "토지 양도소득세율은 2년 이상 보유하면 기본세율 6~45%이고, 1년 미만은 50%, 2년 미만은 40%입니다. 비사업용 토지는 기본세율에 10%p를 더해 16~55%이며 단기세율과 비교해 큰 쪽을 씁니다. 3년 이상 보유하면 장기보유특별공제를 받습니다.";
+
+const ANSWER = `토지 양도소득세율은 2년 이상 보유하면 기본세율 6~45%이고, 1년 미만 ${pct(S.otherUnder1)}, 2년 미만 ${pct(S.other1to2)}입니다(소득세법 제104조 제1항). 비사업용 토지는 기본세율에 ${Math.round(N.add * 100)}%p를 더해 16~55%이며, 단기세율과 둘 다 해당하면 세액이 큰 쪽을 씁니다.`;
+
+const QA = [
+  { q: "토지 양도소득세율은 얼마인가요?", a: `2년 이상 보유한 토지는 종합소득세와 같은 기본세율(6~45%, 8단계)입니다. 보유 1년 미만이면 ${pct(S.otherUnder1)}, 1년 이상 2년 미만이면 ${pct(S.other1to2)}의 단일세율입니다. 주택과 달리 단기세율이 70%·60%가 아닙니다. 미등기 토지는 ${pct(r.rates.unregistered)}입니다.` },
+  { q: "비사업용 토지 양도세율은 얼마인가요?", a: `기본세율에 ${Math.round(N.add * 100)}%p를 더한 16~55%입니다(제104조 제1항). 보유 2년 미만이면 단기세율로 계산한 세액과 비교해 큰 쪽을 냅니다. 어떤 땅이 비사업용인지는 제104조의3과 시행령의 기간·용도 기준으로 따로 판정합니다.` },
+  { q: "토지도 장기보유특별공제를 받나요?", a: `받습니다. 3년 이상 보유한 토지는 3년 6%부터 1년마다 2%p씩 15년 이상 30%까지 공제됩니다(제95조 제2항 표 1). 공제에서 빠지는 것은 미등기양도자산과 다주택 중과 주택뿐이라 비사업용 토지도 공제 대상입니다.` },
+  { q: "땅을 팔면 양도세가 얼마나 나오나요?", a: `2억원에 사서 10년 보유한 땅을 5억원에 팔면 장기보유특별공제 ${pct(biz.ltRate)}를 빼고 과세표준이 ${won(biz.base)}입니다. 사업용이면 ${won(biz.total)}, 비사업용 토지면 ${won(nbl.total)}입니다(지방소득세 포함, 필요경비 0원 가정).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>과세표준</th><th>토지(2년 이상)</th><th>비사업용 토지</th></tr></thead>
+    <tbody>{B.map((b, i) => <tr><th scope="row">{label(i)}</th><td>{pct(b.rate)}</td><td>{pct(b.rate + N.add)}</td></tr>)}</tbody>
+  </table>
+  <p>누진공제액은 기본세율과 같습니다 — <a href="/guide/capital-gains-rate/">양도소득세 세율</a>.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    비사업용 토지 판정 기간과 사업용으로 보는 사유는 이 글에서 확인하지 않았습니다. 농지를 8년 이상 직접 경작했다면{" "}
+    <a href="/guide/farmland-capital-gains/">농지 양도소득세</a>의 감면을 먼저 보세요. 금액을 바꿔 보려면{" "}
+    <a href="/guide/capital-gains-calculator/">양도세 계산기</a>를 쓰세요.
+  </p>
+</GuideLayout>

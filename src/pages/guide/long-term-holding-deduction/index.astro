@@ -1,0 +1,62 @@
+---
+/**
+ * "장기보유특별공제" — 양도소득세 시리즈. (표·율·1세대 1주택·거주요건·한도·다주택자·토지·계산법도 이 글)
+ * 근거: 소득세법 제95조 제2항(표 1·표 2 — img alt 로 대조)·제4항(보유기간), 시행령 제159조의4(2년 거주), 제160조(고가주택).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import { longTermRate } from "../../../lib/capital-gains";
+
+const LT = r.longTermDeduction;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const years = [3, 4, 5, 6, 7, 8, 9, 10, 12, 15];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "장기보유특별공제 — 3년 6%부터 15년 30%, 1세대 1주택은 최대 80%";
+const description =
+  "장기보유특별공제는 3년 이상 보유한 토지·건물의 양도차익에서 보유기간에 따라 빼 주는 공제입니다. 일반은 3년 6%부터 1년마다 2%p씩 15년 30%까지, 2년 이상 거주한 1세대 1주택은 보유 40%와 거주 40%를 더해 최대 80%입니다. 다주택 중과 대상은 받지 못합니다.";
+
+const ANSWER = `장기보유특별공제는 3년 이상 보유한 토지·건물의 양도차익에서 보유기간에 따라 빼 주는 공제입니다(소득세법 제95조). 일반은 3년 ${pct(LT.table1.start)}부터 15년 ${pct(LT.table1.max)}까지, 2년 이상 거주한 1세대 1주택은 보유 ${pct(LT.table2.holdMax)}와 거주 ${pct(LT.table2.resideMax)}를 더해 최대 80%입니다.`;
+
+const QA = [
+  { q: "장기보유특별공제란 무엇인가요?", a: `토지·건물(미등기·다주택 중과 대상 제외)을 3년 이상 보유하고 팔 때 양도차익에서 일정 비율을 빼 주는 공제입니다(제95조 제2항). 양도차익 − 장기보유특별공제 = 양도소득금액이 되고, 보유기간은 취득일부터 양도일까지로 셉니다(제4항).` },
+  { q: "장기보유특별공제율은 얼마인가요?", a: `일반(표 1)은 보유 3년 이상 4년 미만 ${pct(LT.table1.start)}부터 1년마다 2%p씩 늘어 15년 이상 ${pct(LT.table1.max)}입니다. 1세대 1주택(표 2)은 보유 3년 ${pct(LT.table2.holdStart)}부터 1년마다 4%p, 10년 이상 ${pct(LT.table2.holdMax)}에 거주기간 공제를 더합니다.` },
+  { q: "1세대 1주택 장기보유특별공제의 거주요건은 무엇인가요?", a: `표 2는 1세대 1주택으로서 보유기간 중 거주기간이 2년 이상이어야 적용됩니다(시행령 제159조의4). 거주 2년 이상 3년 미만은 ${pct(LT.table2.resideTwoYears)}(보유 3년 이상에 한정), 3년 ${pct(0.12)}부터 1년마다 4%p, 10년 이상 ${pct(LT.table2.resideMax)}입니다. 2년 미만 거주면 표 1을 씁니다.` },
+  { q: "다주택자도 장기보유특별공제를 받나요?", a: `중과 대상이 아니면 표 1로 받습니다. 다만 조정대상지역 다주택 중과(제104조 제7항)가 적용되는 주택은 장기보유특별공제에서 제외됩니다(제95조 제2항 괄호). 2026년 5월 9일까지 양도분은 중과 배제로 공제를 받을 수 있었지만 그 뒤로는 원칙대로입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>보유기간</th><th>일반(표 1)</th><th>1세대 1주택 보유분(표 2)</th><th>보유 = 거주일 때 합계</th></tr></thead>
+      <tbody>{years.map((y) => <tr><th scope="row">{y}년{y === 15 ? " 이상" : ""}</th><td>{pct(longTermRate({ holdYears: y }))}</td><td>{pct(Math.min(LT.table2.holdStart + (y - 3) * LT.table2.holdPerYear, LT.table2.holdMax))}</td><td>{pct(longTermRate({ holdYears: y, residenceYears: y, oneHouse: true }))}</td></tr>)}</tbody>
+    </table>
+  </div>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    12억원을 넘는 1세대 1주택은 공제액에도 (양도가액 − 12억원) ÷ 양도가액을 곱합니다(시행령 제160조) —{" "}
+    <a href="/guide/capital-gains-calculator/">양도세 계산기</a>로 확인하세요.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    장기보유특별공제 개편안·폐지 논의는 공포 전이라 다루지 않습니다. 중과 배제 종료는{" "}
+    <a href="/guide/multi-home-surcharge/">다주택자 양도세 중과</a>에 정리했습니다.
+  </p>
+</GuideLayout>

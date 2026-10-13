@@ -1,0 +1,64 @@
+---
+/**
+ * "해외주식 양도소득세" — 양도소득세 시리즈. (계산·250만원·신고·세율·신고기간·손익통산·지방소득세도 이 글)
+ * 근거: 소득세법 제94조 제1항 제3호 다목(해외 상장주식), 제102조(주식 그룹 안에서 손익 통산), 제103조(그룹별 연 250만원),
+ * 제104조 제1항(중소기업 10%·그 밖 20%), 제105조 제1항 괄호(예정신고 제외), 제110조(5월 확정신고), 지방세법 제103조의3.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/capital-gains-2026.json";
+import { overseasStockTax } from "../../../lib/capital-gains";
+import { won, eokwon } from "../../../lib/won";
+
+const S = r.rates.shares;
+const B = r.basicDeduction.amount;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const totalPct = pct(S.overseasOther * (1 + r.localTax.ratio));
+const rows = [2_500_000, 5_000_000, 10_000_000, 30_000_000, 100_000_000].map((g) => ({ g, x: overseasStockTax(g) }));
+const ex = overseasStockTax(10_000_000);
+const offset = overseasStockTax(10_000_000 - 4_000_000);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
+const title = "해외주식 양도소득세 — 1년 이익에서 250만원을 빼고 22%, 다음 해 5월에 신고";
+const description =
+  "해외주식 양도소득세는 한 해 동안 판 해외주식의 이익과 손실을 합친 뒤 250만원을 빼고 20%를 매기고, 지방소득세 2%가 더해져 22%입니다. 예정신고 없이 다음 해 5월 1일부터 31일까지 확정신고합니다. 1천만원을 벌었다면 165만원입니다.";
+
+const ANSWER = `해외주식 양도소득세는 한 해 동안 판 해외주식의 이익과 손실을 합친 뒤 ${eokwon(B)}을 빼고 ${pct(S.overseasOther)}(중소기업 ${pct(S.overseasSme)})를 매깁니다(소득세법 제103조·제104조). 지방소득세 10분의 1을 더하면 ${totalPct}입니다. 예정신고 없이 다음 해 5월에 확정신고합니다.`;
+
+const QA = [
+  { q: "해외주식 양도소득세는 어떻게 계산하나요?", a: `1월 1일부터 12월 31일까지 판 해외주식의 양도차익에서 손실을 빼고, 기본공제 ${eokwon(B)}을 뺀 금액에 ${pct(S.overseasOther)}를 곱합니다. 여기에 지방소득세로 그 10분의 1이 붙습니다. 이익이 1천만원이면 (1천만원 − 250만원) × 22%로 ${won(ex.total)}입니다.` },
+  { q: "해외주식 양도소득세 250만원 공제는 어떻게 적용되나요?", a: `양도소득 기본공제는 그룹별로 연 ${eokwon(B)}입니다(제103조). 해외주식은 국내 주식의 과세분(대주주·장외·비상장)과 같은 '주식등' 그룹이라 둘을 합쳐 한 해 ${eokwon(B)}입니다. 부동산 그룹의 250만원과는 따로입니다.` },
+  { q: "해외주식 손실이 난 종목과 손익통산이 되나요?", a: `됩니다. 양도소득금액은 그룹별로 계산하고, 같은 그룹 안에서 양도차손을 다른 자산의 양도소득금액에서 뺍니다(제102조). 한 종목에서 1천만원 이익, 다른 종목에서 400만원 손실이면 600만원 기준으로 ${won(offset.total)}입니다. 부동산 손익과는 섞이지 않습니다.` },
+  { q: "해외주식 양도소득세 신고기간은 언제인가요?", a: `해외주식은 예정신고 대상에서 빠져 있어(제105조 제1항 괄호) 한 해 동안 판 것을 모아 다음 해 5월 1일부터 31일까지 확정신고·납부합니다(제110조). 2026년에 판 해외주식은 2027년 5월에 신고합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>한 해 순이익(손익 통산 뒤)</th><th>과세표준</th><th>양도소득세 {pct(S.overseasOther)}</th><th>지방세 포함</th></tr></thead>
+    <tbody>{rows.map(({ g, x }) => <tr><th scope="row">{eokwon(g)}</th><td>{won(x.base)}</td><td>{won(x.tax)}</td><td>{won(x.total)}</td></tr>)}</tbody>
+  </table>
+  <p>중소기업 주식이 아닌 일반 해외 상장주식 기준입니다. 매매 수수료 같은 필요경비는 빼지 않고 계산했습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    양도가액·취득가액을 원화로 바꾸는 환율 기준은 이 글에서 확인하지 않았습니다. 국내 주식 과세 범위와 대주주 기준은{" "}
+    <a href="/guide/stock-capital-gains/">주식 양도소득세</a>에 있습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>국내 주식·부동산의 기한은 <a href="/guide/capital-gains-deadline/">양도세 신고기간</a>에 있습니다.</p>
+</GuideLayout>
