@@ -36,6 +36,11 @@ function render() {
   $("ye-decided").textContent = formatWon(r.decided);
   $("ye-child").textContent = formatWon(r.child);
   $("ye-child-warn").hidden = !r.childClamped;
+}
+
+/** 사용 집계는 사람이 값을 바꿨을 때만 — 로드 때 예시값으로 그리는 render() 는 세지 않는다 */
+function onUserInput() {
+  render();
   reportUse(v("ye-pay"));
 }
 
@@ -43,11 +48,11 @@ for (const id of ids) {
   inputs[id].addEventListener("input", () => {
     const n = parseAmount(inputs[id].value);
     inputs[id].value = n ? formatAmountInput(n) : "";
-    render();
+    onUserInput();
   });
 }
-persons.addEventListener("input", render);
-children.addEventListener("input", render);
-birth.addEventListener("change", render);
-standard.addEventListener("change", render);
+persons.addEventListener("input", onUserInput);
+children.addEventListener("input", onUserInput);
+birth.addEventListener("change", onUserInput);
+standard.addEventListener("change", onUserInput);
 render();
