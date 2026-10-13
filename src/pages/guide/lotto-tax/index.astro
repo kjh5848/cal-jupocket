@@ -1,0 +1,71 @@
+---
+/**
+ * "로또세금" — 로또세금 시리즈 허브. (로또 1등 세금·복권 당첨금 세금·로또 세율·200만원·종합소득세 신고·구입비 공제도 이 글)
+ * 근거: 소득세법 제21조 제1항 제2호(기타소득), 제14조 제3항 제8호 라목(분리과세), 제84조 제2호(건별 200만원 이하 과세 안 함),
+ * 제129조 제1항 제6호(20%, 3억원 초과분 30%), 제37조(필요경비), 지방세법 제103조의13(소득세의 10%). rates: lottery-2026.json
+ * 금액은 lotteryTax() 가 낸다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/lottery-2026.json";
+import { lotteryTax } from "../../../lib/lottery-tax";
+import { won, eokwon } from "../../../lib/won";
+import { lottoTaxSeries as S } from "../../../data/series/lotto-tax";
+
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const low = pct(r.rate.base * (1 + r.local.ratio));
+const high = pct(r.rate.overRate * (1 + r.local.ratio));
+const first = lotteryTax(2_000_000_000);
+const edge = lotteryTax(r.minimum.upTo + 1);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 lotto-tax-series.test.ts 가 rates 와 대조한다.
+const title = "로또세금 — 200만원 넘으면 22%, 3억원을 넘는 부분은 33%를 떼고 받습니다";
+const description =
+  "로또 당첨금은 200만원 이하면 세금이 없고, 넘으면 당첨금 전체에 소득세 20%와 지방소득세 2%를 합친 22%, 3억원을 넘는 부분은 33%를 떼고 지급합니다. 분리과세라 5월 종합소득세 신고에 넣지 않습니다.";
+
+const ANSWER = `로또 당첨금은 기타소득이라 ${eokwon(r.minimum.upTo)} 이하면 세금이 없고(소득세법 제84조), 넘으면 당첨금 전체에 소득세 ${pct(r.rate.base)}와 지방소득세를 더한 ${low}를 떼고 지급합니다. ${eokwon(r.rate.over)}을 넘는 부분은 ${high}입니다(제129조). 분리과세라 따로 신고하지 않습니다.`;
+
+const QA = [
+  { q: "로또 1등 세금은 얼마인가요?", a: `1등 당첨금이 ${eokwon(first.prize)}이라면 ${eokwon(r.rate.over)}까지 ${low}인 ${eokwon(lotteryTax(r.rate.over).total)}, 넘는 ${eokwon(first.prize - r.rate.over)}에 ${high}인 ${eokwon(first.total - lotteryTax(r.rate.over).total)}, 합계 ${eokwon(first.total)}을 떼고 ${eokwon(first.net)}을 받습니다. 1등 당첨금은 회차마다 달라 실제 금액을 넣어 계산해야 합니다.` },
+  { q: "로또 세율은 왜 22%와 33%인가요?", a: `소득세 원천징수세율이 ${pct(r.rate.base)}, 소득금액이 ${eokwon(r.rate.over)}을 넘는 부분은 ${pct(r.rate.overRate)}이고(소득세법 제129조 제1항 제6호), 지방소득세가 그 소득세의 ${pct(r.local.ratio)}만큼 붙기 때문입니다(지방세법 제103조의13). ${pct(r.rate.base)} × 1.1 = ${low}, ${pct(r.rate.overRate)} × 1.1 = ${high}입니다.` },
+  { q: "로또 200만원 이하 당첨금은 세금이 없나요?", a: `복권 당첨금이 건별로 ${eokwon(r.minimum.upTo)} 이하면 소득세를 과세하지 않습니다(제84조 제2호). 넘으면 넘은 부분이 아니라 당첨금 전체에 세금이 붙어 ${won(edge.prize)}이면 ${eokwon(edge.total)}을 떼고 ${won(edge.net)}을 받습니다. 나눠 받는 당첨금은 합계액으로 판단합니다.` },
+  { q: "로또 당첨금도 종합소득세 신고를 하나요?", a: `하지 않습니다. 「복권 및 복권기금법」에 따른 복권 당첨금은 분리과세기타소득이라 종합소득과세표준에 합산하지 않고(소득세법 제14조 제3항 제8호 라목), 지급할 때 떼는 원천징수로 세금이 끝납니다. 다른 소득이 있어도 5월 신고에 넣지 않습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>당첨금 {eokwon(first.prize)}</th><th>소득세</th><th>지방소득세</th><th>합계</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">{eokwon(r.rate.over)}까지 × {pct(r.rate.base)}</th><td>{won(first.baseTax)}</td><td>{won(Math.floor(first.baseTax * r.local.ratio))}</td><td>{won(first.baseTax + Math.floor(first.baseTax * r.local.ratio))}</td></tr>
+      <tr><th scope="row">넘는 부분 × {pct(r.rate.overRate)}</th><td>{won(first.overTax)}</td><td>{won(Math.floor(first.overTax * r.local.ratio))}</td><td>{won(first.overTax + Math.floor(first.overTax * r.local.ratio))}</td></tr>
+      <tr><th scope="row">세금 합계 / 실수령액</th><td>{won(first.tax)}</td><td>{won(first.local)}</td><td>{won(first.total)} / {won(first.net)}</td></tr>
+    </tbody>
+  </table>
+  <p>당첨금별 표는 <a href="/guide/lotto-net-amount/">로또 실수령액</a>, 직접 넣어 보려면 <a href="/guide/lotto-tax-calculator/">로또 세금 계산기</a>를 쓰세요.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>{eokwon(r.rate.over)}을 넘는 당첨금 전체가 아니라 <strong>넘는 부분만</strong> {high}입니다. 그래서 실제로 떼는 비율은 당첨금이 클수록 {low}에서 {high} 쪽으로 서서히 올라가고, {eokwon(first.prize)}이면 {(first.effective * 100).toFixed(2)}%입니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>복권 구입비를 필요경비로 빼는지는 조문에서 확인하지 못했습니다. 소득세법 제37조 제1항은 경마·경륜 같은 투표권 환급금(적중된 투표권의 단위투표금액)과 슬롯머신 당첨금(투입한 금액)의 필요경비만 정합니다. 그래서 이 사이트의 계산은 당첨금 전액에 세율을 곱했고, 구입비를 뺀다면 세금 차이는 그 금액의 {low}~{high}입니다.</p>
+
+  <h2>로또세금 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+  <p>로또 외의 상금·강연료 같은 기타소득은 <a href="/guide/other-income-tax-rate/">기타소득세율</a>에 있습니다.</p>
+</GuideLayout>

@@ -1,0 +1,74 @@
+---
+/**
+ * "로또 세금 계산기" — 로또세금 시리즈. (로또 실수령액 계산기·복권 당첨금 세금 계산·연금복권도 이 글, 계산기 포함)
+ * 계산: src/lib/lottery-tax.ts lotteryTax() — 소득세법 제84조 제2호, 제129조 제1항 제6호, 지방세법 제103조의13.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/lottery-2026.json";
+import { lotteryTax } from "../../../lib/lottery-tax";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const low = pct(r.rate.base * (1 + r.local.ratio));
+const high = pct(r.rate.overRate * (1 + r.local.ratio));
+const ex = lotteryTax(1_000_000_000);
+const presets = [2_000_000, 50_000_000, 100_000_000, 1_000_000_000, 2_000_000_000];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 lotto-tax-series.test.ts 가 rates 와 대조한다.
+const title = "로또 세금 계산기 — 당첨금을 넣으면 소득세·지방소득세와 실수령액이 나옵니다";
+const description =
+  "로또 세금 계산기는 당첨금에 소득세 20%(3억원을 넘는 부분 30%)와 그 10%인 지방소득세를 더해 세금과 실수령액을 계산합니다. 10억원이면 세금 2억9,700만원을 떼고 7억300만원을 받습니다. 200만원 이하는 0원입니다.";
+
+const ANSWER = `로또 세금 계산기는 당첨금에 소득세 ${pct(r.rate.base)}(${eokwon(r.rate.over)}을 넘는 부분 ${pct(r.rate.overRate)})를 곱하고 그 ${pct(r.local.ratio)}인 지방소득세를 더해 계산합니다(소득세법 제129조, 지방세법 제103조의13). 10억원이면 세금 ${eokwon(ex.total)}, 실수령액 ${eokwon(ex.net)}입니다.`;
+
+const QA = [
+  { q: "로또 세금은 어떻게 계산하나요?", a: `① 당첨금이 ${eokwon(r.minimum.upTo)} 이하면 0원(제84조 제2호) ② 넘으면 ${eokwon(r.rate.over)}까지 × ${pct(r.rate.base)} + 넘는 부분 × ${pct(r.rate.overRate)} = 소득세 ③ 소득세 × ${pct(r.local.ratio)} = 지방소득세 ④ 당첨금 − 소득세 − 지방소득세 = 실수령액입니다. 10억원이면 소득세 ${eokwon(ex.tax)}, 지방소득세 ${eokwon(ex.local)}입니다.` },
+  { q: "로또 세금은 언제 어떻게 떼나요?", a: `당첨금을 지급하는 쪽이 지급할 때 소득세와 지방소득세를 떼고 나머지를 줍니다(소득세법 제127조, 지방세법 제103조의13). 계산기의 실수령액이 실제로 받는 금액이고, 분리과세라 다음 해 5월 종합소득세 신고에 다시 넣지 않습니다(제14조 제3항 제8호 라목).` },
+  { q: "연금복권도 이 계산기로 되나요?", a: `${eokwon(r.minimum.upTo)} 이하 과세최저한은 나눠 받는 당첨금도 지급액 합계로 판단한다고 조문에 있습니다(제84조 제2호). 다만 매달 나눠 받는 당첨금에 ${eokwon(r.rate.over)} 초과 ${pct(r.rate.overRate)} 구간을 어떻게 적용하는지는 확인하지 못해, 이 계산기는 한 번에 받는 당첨금 기준입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">한 번에 받는 복권 당첨금 기준입니다. 당첨금 전액을 소득금액으로 보고, 원 미만은 버렸습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="lt-amount">당첨금</label>
+      <input type="text" inputmode="numeric" id="lt-amount" value="1,000,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <div class="amount-presets" role="group" aria-label="당첨금 빠르게 고르기">
+      {presets.map((p) => <button type="button" class="preset-chip" data-lt={p}>{eokwon(p)}</button>)}
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">실수령액</p>
+      <p class="big" id="lt-hero">{won(ex.net)}</p>
+      <p class="meta" id="lt-note"></p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">세금 합계</span><span class="value" id="lt-total">{won(ex.total)}</span></div>
+      <div class="stat-chip"><span class="label">소득세</span><span class="value" id="lt-tax">{won(ex.tax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세</span><span class="value" id="lt-local">{won(ex.local)}</span></div>
+      <div class="stat-chip"><span class="label">실제로 뗀 비율</span><span class="value" id="lt-eff">{(ex.effective * 100).toFixed(2)}%</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>{eokwon(r.rate.over)} 이하는 언제나 {low}, 넘는 부분은 {high}라 실제로 뗀 비율은 그 사이에 있습니다. 당첨금별 표는 <a href="/guide/lotto-net-amount/">로또 실수령액</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>{eokwon(r.minimum.upTo)} 이하 당첨금이 왜 0원인지, 복권 구입비는 왜 빼지 않았는지는 <a href="/guide/lotto-tax/">로또세금</a>에 있습니다.</p>
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <script src="../../../scripts/lottery-tax.ts"></script>
+</GuideLayout>

@@ -1,0 +1,57 @@
+---
+/**
+ * "로또 실수령액" — 로또세금 시리즈. (로또 당첨금 실수령액·1등 실수령액·당첨금별 세금표·2등 세금도 이 글)
+ * 근거: 소득세법 제84조 제2호, 제129조 제1항 제6호, 지방세법 제103조의13. 금액은 lotteryTax() 가 낸다(lottery-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/lottery-2026.json";
+import { lotteryTax } from "../../../lib/lottery-tax";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const low = pct(r.rate.base * (1 + r.local.ratio));
+const high = pct(r.rate.overRate * (1 + r.local.ratio));
+const prizes = [5_000_000, 10_000_000, 50_000_000, 100_000_000, 300_000_000, 500_000_000, 1_000_000_000, 1_500_000_000, 2_000_000_000, 3_000_000_000];
+const rows = prizes.map((p) => lotteryTax(p));
+const t = (p: number) => lotteryTax(p);
+const cap = t(r.rate.over);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 lotto-tax-series.test.ts 가 rates 와 대조한다.
+const title = "로또 실수령액 — 1억원이면 7,800만원, 10억원이면 7억300만원을 받습니다";
+const description =
+  "로또 실수령액은 당첨금에서 22%(3억원을 넘는 부분은 33%)를 뺀 금액입니다. 1억원이면 7,800만원, 10억원이면 7억300만원, 20억원이면 13억7,300만원을 받습니다. 200만원 이하는 세금 없이 그대로 받습니다.";
+
+const ANSWER = `로또 실수령액은 당첨금에서 ${low}(${eokwon(r.rate.over)}을 넘는 부분은 ${high})를 뺀 금액입니다(소득세법 제129조, 지방세법 제103조의13). 1억원이면 ${eokwon(t(100_000_000).net)}, 10억원이면 ${eokwon(t(1_000_000_000).net)}, 20억원이면 ${eokwon(t(2_000_000_000).net)}을 받고, ${eokwon(r.minimum.upTo)} 이하는 그대로 받습니다.`;
+
+const QA = [
+  { q: "로또 당첨금별 실수령액은 얼마인가요?", a: `${eokwon(r.rate.over)} 이하는 당첨금의 ${pct(1 - r.rate.base * (1 + r.local.ratio))}를 받습니다 — 5천만원이면 ${eokwon(t(50_000_000).net)}, 1억원이면 ${eokwon(t(100_000_000).net)}, 3억원이면 ${eokwon(cap.net)}입니다. 3억원을 넘으면 넘는 부분의 ${pct(1 - r.rate.overRate * (1 + r.local.ratio))}만 더해져 5억원 ${eokwon(t(500_000_000).net)}, 10억원 ${eokwon(t(1_000_000_000).net)}입니다.` },
+  { q: "로또 1등 실수령액은 어떻게 계산하나요?", a: `3억원까지는 ${low}, 넘는 부분은 ${high}를 뗍니다. 실수령액 = 당첨금 − ${eokwon(cap.total)} − (당첨금 − 3억원) × ${high}입니다. 1등이 15억원이면 ${eokwon(t(1_500_000_000).net)}, 20억원이면 ${eokwon(t(2_000_000_000).net)}, 30억원이면 ${eokwon(t(3_000_000_000).net)}입니다.` },
+  { q: "로또 2등 당첨금 세금은 얼마인가요?", a: `2등 당첨금은 회차마다 다르지만 ${eokwon(r.rate.over)} 이하라면 ${low}입니다. 5천만원이면 세금 ${eokwon(t(50_000_000).total)}을 떼고 ${eokwon(t(50_000_000).net)}, 1억원이면 ${eokwon(t(100_000_000).total)}을 떼고 ${eokwon(t(100_000_000).net)}을 받습니다. 그 회차 당첨금을 로또 세금 계산기에 넣으면 정확합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>당첨금</th><th>소득세</th><th>지방소득세</th><th>세금 합계</th><th>실수령액</th><th>실제로 뗀 비율</th></tr></thead>
+      <tbody>{rows.map((x) => <tr><th scope="row">{eokwon(x.prize)}</th><td>{won(x.tax)}</td><td>{won(x.local)}</td><td>{won(x.total)}</td><td>{won(x.net)}</td><td>{(x.effective * 100).toFixed(2)}%</td></tr>)}</tbody>
+    </table>
+  </div>
+  <p>당첨금 전액을 소득금액으로 보고 계산했습니다. 복권 구입비를 필요경비로 빼는지는 조문에서 확인하지 못해 넣지 않았습니다 — <a href="/guide/lotto-tax/">로또세금</a>에 이유가 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>당첨금을 직접 넣으려면 <a href="/guide/lotto-tax-calculator/">로또 세금 계산기</a>를 쓰세요. {eokwon(r.minimum.upTo)}을 1원이라도 넘으면 당첨금 전체에 {low}가 붙습니다.</p>
+</GuideLayout>

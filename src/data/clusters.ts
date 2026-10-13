@@ -145,6 +145,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/national-tax-refund/", title: "국세환급금, 충당 뒤 30일 안에", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/income-tax-refund-guide/", title: "종합소득세 환급, 5월 신고로", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/income-tax-refund-date/", title: "종합소득세 환급일, 7월 1일부터 이자", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/lotto-tax/", title: "로또세금 — 200만원 넘으면 22%, 3억원을 넘는 부분은 33%를 떼고 받습니다", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/lotto-net-amount/", title: "로또 실수령액 — 1억원이면 7,800만원, 10억원이면 7억300만원을 받습니다", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/lotto-tax-calculator/", title: "로또 세금 계산기 — 당첨금을 넣으면 소득세·지방소득세와 실수령액이 나옵니다", kind: "guide", icon: "coins", year: 2026 },
     ],
   },
   {
@@ -324,6 +327,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/lotto-tax-calculator/",
+  "/guide/lotto-net-amount/",
+  "/guide/lotto-tax/",
   "/guide/property-tax-basis-date/",
   "/guide/property-tax-payment/",
   "/guide/property-tax-calc/",

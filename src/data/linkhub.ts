@@ -248,6 +248,9 @@ export const hubEntries: HubEntry[] = [
   { no: 221, href: "/guide/property-tax-calc/", label: "재산세 계산", kind: "guide" },
   { no: 222, href: "/guide/property-tax-payment/", label: "재산세 납부방법·분할납부", kind: "guide" },
   { no: 223, href: "/guide/property-tax-basis-date/", label: "재산세 과세기준일", kind: "guide" },
+  { no: 224, href: "/guide/lotto-tax/", label: "로또세금 — 22%와 33%", kind: "guide" },
+  { no: 225, href: "/guide/lotto-net-amount/", label: "로또 실수령액 표", kind: "guide" },
+  { no: 226, href: "/guide/lotto-tax-calculator/", label: "로또 세금 계산기", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -370,6 +373,9 @@ export const hubGroups: HubGroup[] = [
       "/guide/national-tax-refund",
       "/guide/income-tax-refund-guide",
       "/guide/income-tax-refund-date",
+      "/guide/lotto-tax",
+      "/guide/lotto-net-amount",
+      "/guide/lotto-tax-calculator",
     ]),
   },
   {
