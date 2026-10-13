@@ -14,5 +14,6 @@ import { capitalGainsSeries } from "./capital-gains";
 import { fourInsuranceSeries } from "./four-insurance";
 import { severanceSeries } from "./severance";
 import { incomeTaxRateSeries } from "./income-tax-rate";
+import { businessFilingSeries } from "./business-filing";
 
-export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries, incomeTaxRateSeries];
+export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries, incomeTaxRateSeries, businessFilingSeries];

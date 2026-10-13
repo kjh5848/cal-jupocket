@@ -216,6 +216,11 @@ export const hubEntries: HubEntry[] = [
   { no: 189, href: "/guide/comprehensive-tax-base/", label: "종합소득세 과세표준", kind: "guide" },
   { no: 190, href: "/guide/other-income-tax-rate/", label: "기타소득세율", kind: "guide" },
   { no: 191, href: "/guide/business-income-tax/", label: "사업소득세", kind: "guide" },
+  { no: 192, href: "/guide/tax-invoice-how/", label: "세금계산서 발행방법", kind: "guide" },
+  { no: 193, href: "/guide/e-tax-invoice/", label: "전자세금계산서 발행", kind: "guide" },
+  { no: 194, href: "/guide/simplified-taxpayer-criteria/", label: "간이과세자 기준", kind: "guide" },
+  { no: 195, href: "/guide/business-closure/", label: "개인사업자 폐업신고", kind: "guide" },
+  { no: 196, href: "/guide/cash-receipt/", label: "현금영수증 발급방법·자진발급", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -356,6 +361,11 @@ export const hubGroups: HubGroup[] = [
       "/guide/vat-final-return-refund",
       "/guide/vat-e-filing-credit",
       "/guide/closing-vat-final-return",
+      "/guide/tax-invoice-how",
+      "/guide/e-tax-invoice",
+      "/guide/simplified-taxpayer-criteria",
+      "/guide/business-closure",
+      "/guide/cash-receipt",
     ]),
   },
   {

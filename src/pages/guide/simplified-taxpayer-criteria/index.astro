@@ -1,0 +1,61 @@
+---
+/**
+ * "간이과세자 기준" — 사업자 신고 시리즈. (간이과세자 기준 금액·1억400만원·업종·신규·전환 시기·배제 업종도 이 글)
+ * 근거: 부가가치세법 제61조(적용 범위·제외 사업자·신규)·제62조(7월 1일~6월 30일), 시행령 제109조(1억4백만원·배제 업종)·제110조(20일 전 통지),
+ * 제69조(4,800만원 미만 납부면제 — vat-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/business-filing-2026.json";
+import v from "../../../rates/vat-2026.json";
+import { eokwon } from "../../../lib/won";
+
+const S = r.simplified;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 business-filing-series.test.ts 가 rates 와 대조한다.
+const title = "간이과세자 기준 — 직전 연도 공급대가 1억400만원 미만 개인사업자, 다만 배제 업종은 안 됩니다";
+const description =
+  "간이과세자 기준은 직전 연도 공급대가(부가세 포함 매출)가 1억400만원에 못 미치는 개인사업자입니다. 부동산임대업·과세유흥장소는 4,800만원이 기준이고, 도매업·제조업·전문직 등 배제 업종은 금액과 관계없이 안 됩니다. 판단 결과는 7월 1일부터 적용됩니다.";
+
+const ANSWER = `간이과세자 기준은 직전 연도 공급대가(부가세 포함 매출) 합계가 ${eokwon(S.threshold)}에 못 미치는 개인사업자입니다(부가가치세법 제61조, 시행령 제109조 제1항). 부동산임대업·과세유흥장소는 ${eokwon(S.rentalOrEntertainmentLimit)}이 기준이고, 시행령의 배제 업종은 금액과 관계없이 간이과세자가 될 수 없습니다.`;
+
+const QA = [
+  { q: "간이과세자 기준 금액은 얼마인가요?", a: `직전 연도 1월 1일~12월 31일 공급대가 합계가 ${eokwon(S.threshold)} 미만이면 간이과세자입니다. 법은 8천만원부터 그 130%까지 범위에서 대통령령으로 정하게 했고 시행령이 ${eokwon(S.threshold)}으로 정했습니다(제109조 제1항). 부동산임대업·과세유흥장소는 ${eokwon(S.rentalOrEntertainmentLimit)} 이상이면 제외됩니다.` },
+  { q: "간이과세자가 될 수 없는 업종은 무엇인가요?", a: `광업, 제조업(최종소비자 대상 일부 제외), 도매업·상품중개업, 부동산매매업, 변호사·세무사·회계사·의사·약사 등 전문직, 건설업, 전기·가스·수도, 전문·과학·기술서비스업 등입니다(시행령 제109조 제2항). 전전년도 기준 복식부기의무자와 간이과세가 안 되는 다른 사업장이 있는 사람도 제외됩니다.` },
+  { q: "간이과세와 일반과세는 언제 바뀌나요?", a: `직전 연도 1년 치 공급대가로 판단해 다음 해 7월 1일부터 그다음 해 6월 30일까지 적용합니다(제62조 제1항). 세무서는 바뀌는 과세기간 시작 20일 전까지 통지하고 사업자등록증을 고쳐 발급합니다(시행령 제110조). 2025년 매출로 2026년 7월부터 바뀌는 식입니다.` },
+  { q: "새로 사업을 시작하면 간이과세자가 될 수 있나요?", a: `연 공급대가가 기준에 못 미칠 것으로 예상되면 사업자등록을 신청할 때 간이과세 적용 여부를 함께 신고하고, 그러면 최초 과세기간은 간이과세자입니다(제61조 제3항·제4항). 배제 업종이면 신고해도 안 됩니다. 직전 과세기간에 개업했다면 매출을 12개월로 환산해 판단합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>기준</th><th>금액</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">간이과세자(일반 업종)</th><td>직전 연도 공급대가 {eokwon(S.threshold)} 미만</td></tr>
+      <tr><th scope="row">부동산임대업·과세유흥장소</th><td>{eokwon(S.rentalOrEntertainmentLimit)} 미만</td></tr>
+      <tr><th scope="row">간이과세자 납부의무 면제</th><td>해당 과세기간 공급대가 {eokwon(v.simplified.paymentExemptionUnder)} 미만(제69조)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <ol>{S.excludedIndustries.map((x) => <li>{x}</li>)}</ol>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    어느 쪽이 유리한지는 <a href="/guide/simplified-vat/">간이과세 vs 일반과세</a>, 간이과세자의 세금계산서는{" "}
+    <a href="/guide/simplified-tax-invoice/">간이과세자 세금계산서 발행</a>에 있습니다.
+  </p>
+</GuideLayout>

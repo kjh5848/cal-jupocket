@@ -164,6 +164,11 @@ export const clusters: Cluster[] = [
       { href: "/guide/vat-final-return-refund/", title: "부가세 확정신고 환급, 30일 안에", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/vat-e-filing-credit/", title: "부가세 전자신고세액공제, 5천원", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/closing-vat-final-return/", title: "폐업 부가세 확정신고, 다음 달 25일", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/tax-invoice-how/", title: "세금계산서 발행방법, 기재사항 네 가지", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/e-tax-invoice/", title: "전자세금계산서 발행, 8천만원 이상 의무", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/simplified-taxpayer-criteria/", title: "간이과세자 기준, 1억400만원 미만", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/business-closure/", title: "개인사업자 폐업신고, 지체 없이", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/cash-receipt/", title: "현금영수증 발급방법, 5일 안에 자진발급", kind: "guide", icon: "receipt", year: 2026 },
     ],
   },
   {
@@ -292,6 +297,11 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/cash-receipt/",
+  "/guide/business-closure/",
+  "/guide/simplified-taxpayer-criteria/",
+  "/guide/e-tax-invoice/",
+  "/guide/tax-invoice-how/",
   "/guide/business-income-tax/",
   "/guide/other-income-tax-rate/",
   "/guide/comprehensive-tax-base/",

@@ -1,0 +1,60 @@
+---
+/**
+ * "현금영수증 발급방법" — 사업자 신고 시리즈. (현금영수증 자진발급·의무발행 10만원·가맹점 가입·미발급 가산세·발급 거부 신고도 이 글)
+ * 근거: 소득세법 제162조의3(가맹점 가입·발급 거부 금지·10만원 이상 의무발행·자진 발급), 제81조의9 제2항(가산세 5%·20%·10%),
+ * 시행령 제210조의3(2,400만원·3월 31일·1원 이상·5일 이내 무기명 발급·신고 5년).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/business-filing-2026.json";
+import { won, eokwon } from "../../../lib/won";
+
+const C = r.cashReceipt;
+const pct = (x: number) => `${Math.round(x * 100)}%`;
+const sale = 1_000_000;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 business-filing-series.test.ts 가 rates 와 대조한다.
+const title = "현금영수증 발급방법 — 요청하면 1원부터, 의무업종은 10만원 이상이면 5일 안에 자진발급";
+const description =
+  "현금영수증은 가맹점이 현금을 받고 손님이 요청하면 1원부터 발급해야 하고, 의무발행업종은 10만원 이상이면 요청이 없어도 발급해야 합니다. 손님 정보를 모르면 현금을 받은 날부터 5일 안에 무기명으로 자진발급할 수 있습니다. 의무업종이 안 하면 20% 가산세입니다.";
+
+const ANSWER = `현금영수증은 가맹점이 현금을 받고 손님이 요청하면 발급해야 하고(소득세법 제162조의3 제3항), 의무발행업종은 건당 ${eokwon(C.mandatoryOver)} 이상이면 요청이 없어도 발급해야 합니다(제4항). 손님 정보를 모르면 현금을 받은 날부터 ${C.selfIssueDays}일 안에 무기명으로 자진발급할 수 있습니다(시행령 제210조의3 제13항).`;
+
+const QA = [
+  { q: "현금영수증은 얼마부터 발급해야 하나요?", a: `현금영수증 발급대상 금액은 건당 ${C.minimumAmount}원 이상입니다(시행령 제210조의3 제6항). 가맹점은 손님이 현금으로 내고 발급을 요청하면 거부하거나 사실과 다르게 발급해서는 안 됩니다(제162조의3 제3항). 의무발행업종은 ${eokwon(C.mandatoryOver)} 이상이면 요청이 없어도 발급합니다.` },
+  { q: "현금영수증 자진발급은 어떻게 하나요?", a: `손님이 요청하지 않았거나 번호를 모를 때는 현금을 받은 날부터 ${C.selfIssueDays}일 이내에 무기명으로 발급할 수 있습니다(시행령 제210조의3 제13항). 무기명 발급의 세부 방법은 국세청장이 정하게 되어 있어(제14항), 쓰는 번호는 국세청 안내를 확인하세요.` },
+  { q: "현금영수증을 발급하지 않으면 가산세는 얼마인가요?", a: `의무발행업종이 ${eokwon(C.mandatoryOver)} 이상 현금거래에 발급하지 않으면 미발급금액의 ${pct(C.penaltyMandatory)}이고, 착오·누락으로 ${C.penaltyMandatorySelfDays}일 안에 자진 신고·발급하면 ${pct(C.penaltyMandatorySelf)}입니다(제81조의9 제2항 제3호). ${eokwon(sale)} 거래면 ${won(Math.round(sale * C.penaltyMandatory))}, 자진 발급하면 ${won(Math.round(sale * C.penaltyMandatorySelf))}입니다.` },
+  { q: "현금영수증가맹점에는 누가 가입해야 하나요?", a: `소비자상대업종으로 직전 과세기간 수입금액이 ${eokwon(C.joinThreshold)} 이상이면 그해 3월 31일까지 가입해야 합니다(시행령 제210조의3 제1항·제4항). 전문직 사업자와 의무발행업종은 금액과 관계없이 가입 대상입니다. 가맹점이 발급을 거부하면 건별 ${pct(C.penaltyRefuse)}(최소 ${won(C.penaltyRefuseMin)}) 가산세입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>사업자등록을 한 거래 상대방에게 세금계산서나 계산서를 발급했다면 의무발행업종도 현금영수증을 따로 발급하지 않아도 됩니다(제162조의3 제4항 단서).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>경우</th><th>가산세</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">의무발행업종이 {eokwon(C.mandatoryOver)} 이상 미발급</th><td>미발급금액의 {pct(C.penaltyMandatory)}</td></tr>
+      <tr><th scope="row">착오·누락으로 {C.penaltyMandatorySelfDays}일 안에 자진 신고·발급</th><td>{pct(C.penaltyMandatorySelf)}</td></tr>
+      <tr><th scope="row">가맹점이 요청을 거부·사실과 다르게 발급(신고·통보된 경우)</th><td>건별 {pct(C.penaltyRefuse)}, 최소 {won(C.penaltyRefuseMin)}</td></tr>
+    </tbody>
+  </table>
+  <p>가산세는 종합소득 산출세액이 없어도 붙습니다(제81조의9 제3항). 의무발행업종 목록(시행령 별표 3의3)은 이 글에서 옮기지 않았습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>발급을 거부당한 손님은 그날부터 5년 안에 국세청·세무서에 신고할 수 있습니다(시행령 제210조의3 제8항).</p>
+</GuideLayout>
