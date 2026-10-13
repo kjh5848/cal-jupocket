@@ -1,0 +1,56 @@
+---
+/**
+ * "근로소득세" — 소득세율·과세표준 시리즈. (근로소득세 계산·간이세액표·연말정산·일용직 6%·원천징수도 이 글)
+ * 근거: 소득세법 제134조 제1항(매월 간이세액표)·제137조 제1항(연말정산 — year-end-2026.json), 제129조 제1항 제4호(일용근로자 6%),
+ * 제14조 제3항 제2호(일용근로소득 분리), 제47조·제55조·제59조.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/income-tax-rate-2026.json";
+import y from "../../../rates/year-end-2026.json";
+import { earnedTaxByPay } from "../../../lib/income-tax-rate";
+import { won } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const ex = earnedTaxByPay(40_000_000);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 income-tax-rate-series.test.ts 가 rates 와 대조한다.
+const title = "근로소득세 — 매달은 간이세액표로 떼고, 다음 해 2월 연말정산으로 맞춥니다";
+const description =
+  "근로소득세는 회사가 매달 근로소득 간이세액표로 미리 떼고, 다음 해 2월 월급을 줄 때 연말정산으로 1년 치 세금을 다시 계산해 더 떼거나 돌려줍니다. 일용근로자는 6%로 떼고 다른 소득과 합치지 않습니다. 퇴사하면 퇴직하는 달 급여를 줄 때 정산합니다.";
+
+const ANSWER = `근로소득세는 회사가 매달 근로소득 간이세액표로 미리 떼고(소득세법 제134조), 다음 해 2월분 월급을 줄 때 연말정산으로 1년 치를 다시 계산해 차액을 정산합니다(제137조). 일용근로자는 ${pct(r.earned.dailyRate)}로 떼고 종합소득에 합치지 않습니다.`;
+
+const QA = [
+  { q: "근로소득세는 어떻게 계산하나요?", a: `① 총급여 − 근로소득공제 = 근로소득금액 ② − 인적공제·보험료 등 소득공제 = 과세표준 ③ × 기본세율(6~45%) = 산출세액 ④ − 근로소득세액공제·자녀·표준세액공제 등 = 결정세액 순서입니다(제137조 제1항). 이 결정세액에서 이미 뗀 세금을 빼 연말정산 결과가 나옵니다.` },
+  { q: "매달 떼는 근로소득세는 정확한가요?", a: `아닙니다. 매월분은 근로소득 간이세액표에 따른 어림값이라(제134조 제1항) 한 해가 끝나야 실제 세금이 정해집니다. 그 차이를 맞추는 일이 연말정산이고, 다음 연도 2월분 근로소득을 지급할 때 합니다. 퇴사하면 퇴직하는 달 급여를 줄 때 정산합니다.` },
+  { q: "일용직 근로소득세는 어떻게 떼나요?", a: `일용근로자의 근로소득은 원천징수세율 ${pct(r.earned.dailyRate)}를 적용하고(제129조 제1항 제4호 단서), 종합소득과세표준에 합산하지 않습니다(제14조 제3항 제2호). 그래서 일용근로소득은 연말정산·종합소득세 계산에 들어가지 않습니다.` },
+  { q: "연봉 4천만원이면 근로소득세는 얼마인가요?", a: `1인 가구, 4대보험 외 공제 없음, 표준세액공제 ${won(y.calc.standardTaxCredit.amount)}을 가정하면 과세표준 ${won(ex.base)}, 결정세액 ${won(ex.decided)}, 지방소득세를 더해 1년 ${won(ex.total)}입니다. 월로 나누면 약 ${won(ex.monthly)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>간이세액표의 월급·부양가족별 금액은 시행령 별표라 이 글에서 숫자로 쓰지 않았습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>일용근로자의 4대보험은 <a href="/guide/daily-worker-insurance/">일용직 4대보험</a>에 있습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    연봉별 표는 <a href="/guide/earned-income-tax-rate/">근로소득세율</a>, 직접 계산은{" "}
+    <a href="/guide/year-end-calculator/">연말정산 계산기</a>에 있습니다.
+  </p>
+</GuideLayout>

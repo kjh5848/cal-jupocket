@@ -210,6 +210,12 @@ export const hubEntries: HubEntry[] = [
   { no: 183, href: "/guide/dc-pension/", label: "퇴직연금 DC형", kind: "guide" },
   { no: 184, href: "/guide/pension-mid-withdrawal/", label: "퇴직연금 중도인출", kind: "guide" },
   { no: 185, href: "/guide/pension-termination/", label: "퇴직연금 해지", kind: "guide" },
+  { no: 186, href: "/guide/earned-income-tax-rate/", label: "근로소득세율", kind: "guide" },
+  { no: 187, href: "/guide/earned-income-tax/", label: "근로소득세", kind: "guide" },
+  { no: 188, href: "/guide/tax-base/", label: "과세표준", kind: "guide" },
+  { no: 189, href: "/guide/comprehensive-tax-base/", label: "종합소득세 과세표준", kind: "guide" },
+  { no: 190, href: "/guide/other-income-tax-rate/", label: "기타소득세율", kind: "guide" },
+  { no: 191, href: "/guide/business-income-tax/", label: "사업소득세", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -316,6 +322,12 @@ export const hubGroups: HubGroup[] = [
       "/guide/donation-credit-carryover",
       "/guide/donation-credit-standard",
       "/guide/donation-credit-business",
+      "/guide/earned-income-tax-rate",
+      "/guide/earned-income-tax",
+      "/guide/tax-base",
+      "/guide/comprehensive-tax-base",
+      "/guide/other-income-tax-rate",
+      "/guide/business-income-tax",
     ]),
   },
   {

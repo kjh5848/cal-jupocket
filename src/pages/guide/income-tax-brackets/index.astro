@@ -1,177 +1,72 @@
 ---
+/**
+ * "소득세율표" — 소득세율·과세표준 시리즈 허브(링크허브 8번, 같은 주소를 시리즈 구조로 고쳐 썼다).
+ * (종합소득세 세율 구간·누진세율·누진공제·2026·3.3%와의 차이도 이 글)
+ * 근거: 소득세법 제55조 제1항(표 — img alt 로 rates/2026.json 과 대조), 제14조(과세표준), 제129조 제1항(원천징수세율).
+ */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
-import rates from "../../../rates/2026.json";
-import { round1 } from "../../../lib/rate-display";
+import r from "../../../rates/income-tax-rate-2026.json";
+import tr from "../../../rates/2026.json";
+import { basicTax } from "../../../lib/income-tax-rate";
 import { estimateRefund } from "../../../lib/income-tax";
+import { won, eokwon } from "../../../lib/won";
+import { incomeTaxRateSeries as S } from "../../../data/series/income-tax-rate";
 
-const title = "2026년 종합소득세 세율 구간, 왜 이렇게 나올까";
+const B = tr.incomeTaxBrackets;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const label = (i: number) => (B[i].upTo === null ? `${eokwon(B[i - 1].upTo!)} 초과` : i === 0 ? `${eokwon(B[i].upTo!)} 이하` : `${eokwon(B[i - 1].upTo!)} 초과 ${eokwon(B[i].upTo!)} 이하`);
+const ex = basicTax(60_000_000);
+const insight = estimateRefund({ grossIncome: 100_000_000, expenseRate: 0.2, dependents: 1 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 income-tax-rate-series.test.ts 가 rates 와 대조한다.
+const title = "소득세율표 — 2026년 과세표준 1,400만원 이하 6%부터 10억원 초과 45%까지 8단계";
 const description =
-  "종합소득세는 누진세율표로 계산됩니다. 2026년 8단계 세율·누진공제표를 정리하고, 소득이 많아지면 실효세율이 3.3%보다 훨씬 높아질 수 있는 이유를 설명합니다.";
+  "소득세율표는 과세표준을 8개 구간으로 나눠 1,400만원 이하 6%부터 10억원 초과 45%까지 매깁니다. 초과분에만 그 구간 세율을 곱하는 누진세율이라 과세표준 6천만원이면 6천만원 전부에 24%를 곱하지 않습니다. 근로·사업·기타소득을 합친 종합소득에 같은 표를 씁니다.";
 
-const businessRatePercent = round1(rates.withholding.business * 100); // 3.3
+const ANSWER = `소득세율표는 과세표준 ${eokwon(B[0].upTo!)} 이하 ${pct(B[0].rate)}부터 ${eokwon(B[6].upTo!)} 초과 ${pct(B[7].rate)}까지 8단계입니다(소득세법 제55조 제1항). 초과분에만 그 구간 세율을 곱하는 누진세율이라, 과세표준 6천만원이면 세금은 ${won(ex.tax)}(평균 ${(ex.average * 100).toFixed(1)}%)입니다.`;
 
-// rates/2026.json의 incomeTaxBrackets 배열을 그대로 순회해 표를 만든다.
-// 값(구간 경계·세율·누진공제)은 전부 JSON에서 가져오고, 하드코딩하지 않는다.
-const bracketRows = rates.incomeTaxBrackets.map((bracket, i) => {
-  const prevUpTo = i > 0 ? rates.incomeTaxBrackets[i - 1].upTo : null;
-  const rangeLabel =
-    prevUpTo === null
-      ? `${(bracket.upTo as number).toLocaleString("ko-KR")}원 이하`
-      : bracket.upTo === null
-        ? `${prevUpTo.toLocaleString("ko-KR")}원 초과`
-        : `${prevUpTo.toLocaleString("ko-KR")}원 초과 ${bracket.upTo.toLocaleString(
-            "ko-KR",
-          )}원 이하`;
-  return {
-    rangeLabel,
-    ratePercent: round1(bracket.rate * 100),
-    deductionLabel: `${bracket.deduction.toLocaleString("ko-KR")}원`,
-  };
-});
-
-// 계산 원리 예시 — 과세표준 하나를 정해 어느 구간에 속하는지, 세액이 어떻게
-// 나오는지 직접 계산해 보여준다. 세율·누진공제는 여기서도 JSON에서 찾는다.
-const exampleTaxableBase = 78500000;
-const exampleBracket = rates.incomeTaxBrackets.find(
-  (bracket) => bracket.upTo === null || exampleTaxableBase <= bracket.upTo,
-)!;
-const exampleRatePercent = round1(exampleBracket.rate * 100);
-const exampleComputedTax =
-  Math.round(exampleTaxableBase * exampleBracket.rate) -
-  exampleBracket.deduction;
-
-// 반전 인사이트 예시 — 계산기와 동일한 estimateRefund()를 그대로 재사용해
-// "총수입은 크지만 인정받는 경비가 적은" 경우 실효세율이 얼마나 뛰는지 보여준다.
-const insightGrossIncome = 100000000;
-const insight = estimateRefund({
-  grossIncome: insightGrossIncome,
-  expenseRate: 0.2,
-  dependents: 1,
-});
-const insightEffectiveRatePercent = round1(
-  (insight.computedTax / insightGrossIncome) * 100,
-);
-const insightExtraPayment = -insight.refund; // refund가 음수면 추가납부액
+const QA = [
+  { q: "2026년 소득세율표는 어떻게 되나요?", a: `과세표준 1,400만원 이하 6%, 5,000만원 이하 15%, 8,800만원 이하 24%, 1억5천만원 이하 35%, 3억원 이하 38%, 5억원 이하 40%, 10억원 이하 42%, 10억원 초과 45%입니다(제55조 제1항). 지방소득세가 그 10분의 1만큼 더 붙습니다.` },
+  { q: "누진세율은 어떻게 계산하나요?", a: `과세표준 전체에 한 세율을 곱하지 않고 구간을 넘는 부분에만 그 구간 세율을 곱합니다. 과세표준 6천만원이면 1,400만원까지 6%, 5,000만원까지 15%, 나머지 1,000만원만 24%라 ${won(ex.tax)}입니다. '과세표준 × 세율 − 누진공제'로 계산해도 같습니다.` },
+  { q: "3.3% 떼였는데 세율표와 무슨 관계인가요?", a: `3.3%는 사업소득을 받을 때 미리 떼는 원천징수세율(제129조 제1항 제3호, 지방세 포함)이고 최종 세율이 아닙니다. 다음 해 5월 종합소득세 신고 때 이 세율표로 다시 계산해 덜 냈으면 더 내고 많이 냈으면 돌려받습니다.` },
+  { q: "근로소득세율도 같은 표인가요?", a: `같습니다. 근로소득도 근로소득공제와 인적공제 등을 뺀 과세표준에 이 기본세율을 적용합니다. 다만 매달은 간이세액표로 떼고 연말정산으로 맞추며, 근로소득세액공제가 있어 실제 부담은 표의 세율보다 훨씬 낮습니다.` },
+];
 ---
 
-<GuideLayout title={title} description={description} updated="2026-08-21">
-      <h1>{title}</h1>
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
 
-      <div class="callout">
-        <p>
-          "나는 {businessRatePercent}%만 떼였으니 세율이 낮은 사람"이라고
-          생각하기 쉽지만, 종합소득세 신고 때 실제로 적용되는 건 이{" "}
-          {businessRatePercent}%가 아니라 <strong>과세표준 구간별로 다른
-          누진세율표</strong>입니다. 소득이 많아질수록 이 표 때문에 실제
-          세율이 크게 달라집니다.
-        </p>
-      </div>
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>과세표준</th><th>세율</th><th>누진공제</th><th>구간 끝 세액</th></tr></thead>
+      <tbody>{B.map((b, i) => <tr><th scope="row">{label(i)}</th><td>{pct(b.rate)}</td><td>{b.deduction ? won(b.deduction) : "없음"}</td><td>{b.upTo ? won(basicTax(b.upTo).tax) : "—"}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <p>'구간 끝 세액'은 조문 표에 적힌 기본세액(84만원·624만원·1,536만원 …)과 같습니다 — 국가법령정보센터 원문 표와 대조했습니다.</p>
 
-      <p>
-        <a href="/guide/33-settlement/"
-          >지난 글</a
-        >에서 {businessRatePercent}% 원천징수는 예납일 뿐이고 실제 세액은
-        다음 해 5월 신고로 정산된다는 점을 살펴봤습니다. 이번 글은 그 실제
-        세액이 <strong>어떤 계산 방식</strong>으로 나오는지, 왜 소득이
-        많아지면 예납액보다 훨씬 많이 낼 수 있는지를 다룹니다.
-      </p>
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
 
-      <h2>누진세율은 어떻게 계산하나요?</h2>
-      <p>
-        누진세율은 소득 전체에 하나의 세율을 곱하는 방식이 아닙니다.{" "}
-        <strong>과세표준을 구간으로 나누고, 각 구간을 넘어가는 부분에만 그
-        구간의 세율을 적용</strong>합니다. 예를 들어 과세표준이 6천만원이면
-        6천만원 전부에 24%를 곱하는 게 아니라, 1,400만원까지는 6%,
-        1,400만원 초과~5,000만원까지는 15%, 나머지 5,000만원 초과분만
-        24%가 적용되는 식입니다.
-      </p>
-      <p>
-        이걸 매번 구간별로 나눠 계산하면 번거로우므로, 실무에서는{" "}
-        <strong>"과세표준 × 해당 구간 세율 − 누진공제액"</strong> 한 번의
-        계산으로 같은 결과를 냅니다. 아래 표의 누진공제액은 그렇게
-        구간별로 나눠 계산한 값과 똑같아지도록 미리 빼둔 보정값입니다.
-      </p>
+  <AdSlot />
 
-      <h2>2026년 종합소득세 누진세율표</h2>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>과세표준</th>
-              <th>세율</th>
-              <th>누진공제</th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              bracketRows.map((row) => (
-                <tr>
-                  <td>{row.rangeLabel}</td>
-                  <td>{row.ratePercent}%</td>
-                  <td>{row.deductionLabel}</td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    총수입 {eokwon(100_000_000)}인 프리랜서가 단순경비율 20%만 인정받고 인적공제 1명이면 결정세액(표준세액공제 반영)이 {won(insight.computedTax)}이고
+    총수입의 약 {((insight.computedTax / 100_000_000) * 100).toFixed(1)}%입니다. 3.3%로 미리 낸 돈보다 많아 5월에 더 냅니다 —{" "}
+    <a href="/guide/33-settlement/">3.3%는 종합소득세에서 정산됩니다</a>, <a href="/income-tax-refund/">종소세 환급 예상 계산기</a>.
+  </p>
 
-      <p>
-        예를 들어 과세표준이 {exampleTaxableBase.toLocaleString("ko-KR")}원이면
-        위 표에서 세율 {exampleRatePercent}% 구간에 속합니다. 계산은{" "}
-        {exampleTaxableBase.toLocaleString("ko-KR")}원 × {exampleRatePercent}% −{" "}
-        {exampleBracket.deduction.toLocaleString("ko-KR")}원(누진공제) ={" "}
-        <strong>{exampleComputedTax.toLocaleString("ko-KR")}원</strong>이
-        됩니다(세액공제 반영 전 산출세액 기준).
-      </p>
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
 
-      <AdSlot label="guide-income-tax-brackets-mid" />
-
-      <h2>{businessRatePercent}%만 뗐는데 왜 더 내라고 하나요?</h2>
-      <p>
-        원천징수 {businessRatePercent}%는 소득 규모나 경비율과 무관하게
-        총수입에 일률적으로 적용되는 숫자입니다. 하지만 위 누진세율표는
-        소득이 많아질수록, 그리고 필요경비로 인정받는 금액이 적을수록{" "}
-        <strong>더 높은 세율 구간</strong>으로 올라갑니다. 그 결과 실제로
-        낸 세금을 총수입으로 나눈 <strong>실효세율</strong>이{" "}
-        {businessRatePercent}%보다 훨씬 높아질 수 있습니다.
-      </p>
-
-      <div class="callout warn">
-        <p>
-          ⚠️ 총수입 {insightGrossIncome.toLocaleString("ko-KR")}원인 프리랜서가{" "}
-          <a href="/guide/expense-rate/">업종 단순경비율</a> 20%만
-          인정받는다고 가정하면(인적공제 1명 기준),
-          결정세액은 {insight.computedTax.toLocaleString("ko-KR")}원입니다.
-          총수입 대비 <strong>실효세율 약 {insightEffectiveRatePercent}%</strong>로,{" "}
-          {businessRatePercent}%로 예납한 {insight.prepaid.toLocaleString(
-            "ko-KR",
-          )}원보다 <strong>{insightExtraPayment.toLocaleString(
-            "ko-KR",
-          )}원을 추가로 납부</strong>해야 하는 경우입니다. 지방소득세(결정세액의
-          10%)까지 더하면 실제 부담은 이보다 더 커집니다. "{businessRatePercent}%
-          떼였으니 세금은 다 냈다"는 가정이 소득이 클수록 위험해지는
-          이유입니다.
-        </p>
-      </div>
-
-      <p>
-        내 과세표준이 어느 구간에 해당하는지, 실효세율이 얼마나 될지는
-        총수입과 경비율에 따라 다릅니다. 직접 숫자를 넣어{" "}
-        <a href="/income-tax-refund/"
-          ><strong>종소세 환급 예상 계산기</strong></a
-        >로 확인해볼 수 있습니다.{" "}
-        <a href="/guide/33-settlement/"
-          >{businessRatePercent}% 예납과 정산의 관계</a
-        >를 아직 안 보셨다면 함께 읽어보시길 권합니다.
-      </p>
-
-      <p class="actions">
-        <a class="btn" href="/income-tax-refund/"
-          >내 과세표준 구간·실효세율 계산하기</a
-        >
-      </p>
-
-      <AdSlot label="guide-income-tax-brackets-bottom" />
+  <h2>소득세율·과세표준 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
 </GuideLayout>

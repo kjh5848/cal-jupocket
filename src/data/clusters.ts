@@ -129,6 +129,12 @@ export const clusters: Cluster[] = [
       { href: "/guide/donation-credit-carryover/", title: "기부금 이월, 10년", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/donation-credit-standard/", title: "기부금 공제 신청하면 13만원은 못 받는다", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/donation-credit-business/", title: "사업자 기부금, 필요경비로", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/earned-income-tax-rate/", title: "근로소득세율, 연봉별 실효세율", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/earned-income-tax/", title: "근로소득세, 간이세액표와 연말정산", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/tax-base/", title: "과세표준, 세율을 곱하는 금액", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/comprehensive-tax-base/", title: "종합소득세 과세표준, 합산 뒤 공제", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/other-income-tax-rate/", title: "기타소득세율, 강연료는 8.8%", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/business-income-tax/", title: "사업소득세, 3.3%는 미리 떼는 돈", kind: "guide", icon: "percent", year: 2026 },
     ],
   },
   {
@@ -286,6 +292,13 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/business-income-tax/",
+  "/guide/other-income-tax-rate/",
+  "/guide/comprehensive-tax-base/",
+  "/guide/tax-base/",
+  "/guide/earned-income-tax/",
+  "/guide/earned-income-tax-rate/",
+  "/guide/income-tax-brackets/",
   "/guide/pension-termination/",
   "/guide/pension-mid-withdrawal/",
   "/guide/dc-pension/",

@@ -1,0 +1,59 @@
+---
+/**
+ * "과세표준" — 소득세율·과세표준 시리즈. (과세표준 뜻·계산·구간·소득세·양도세·퇴직소득·증여세 과세표준도 이 글)
+ * 근거: 소득세법 제14조(종합·퇴직 구분, 종합소득과세표준 = 종합소득금액 − 종합소득공제), 제48조(퇴직소득공제), 제92조(양도 —
+ * capital-gains-2026.json flow), 상속세 및 증여세법 제56조(증여세율 — gift-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/income-tax-rate-2026.json";
+import cg from "../../../rates/capital-gains-2026.json";
+import sv from "../../../rates/severance-2026.json";
+import { basicTax, earnedTaxByPay } from "../../../lib/income-tax-rate";
+import { won, eokwon } from "../../../lib/won";
+
+const ex = basicTax(30_000_000);
+const salary = earnedTaxByPay(50_000_000);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 income-tax-rate-series.test.ts 가 rates 와 대조한다.
+const title = "과세표준 — 세율을 곱하기 직전의 금액, 번 돈에서 공제를 다 뺀 값입니다";
+const description =
+  "과세표준은 세율을 곱하는 기준 금액으로, 번 돈에서 비용과 각종 공제를 모두 뺀 값입니다. 종합소득세는 종합소득금액에서 종합소득공제를 뺀 금액이고, 퇴직소득과 양도소득은 각각 따로 계산합니다. 세율표의 구간은 연봉이 아니라 이 과세표준 기준입니다.";
+
+const ANSWER = `과세표준은 세율을 곱하는 기준 금액입니다. 종합소득세는 이자·배당·사업·근로·연금·기타소득금액을 합친 종합소득금액에서 종합소득공제를 뺀 금액이고(소득세법 제14조 제2항), 퇴직소득과 양도소득은 따로 계산합니다. 세율표 구간은 연봉이 아니라 과세표준 기준입니다.`;
+
+const QA = [
+  { q: "과세표준이란 무엇인가요?", a: `세금을 계산할 때 세율을 곱하는 금액입니다. 번 돈(수입)에서 비용을 빼 소득금액을 구하고, 다시 인적공제 같은 소득공제를 뺀 값이 과세표준입니다. 과세표준 ${eokwon(30_000_000)}이면 기본세율로 ${won(ex.tax)}이고, 여기서 세액공제를 빼면 실제 세금이 됩니다.` },
+  { q: "과세표준과 연봉은 무엇이 다른가요?", a: `연봉(총급여)에서 근로소득공제를 빼야 근로소득금액이고, 거기서 인적공제·4대보험료 등을 빼야 과세표준입니다. 그래서 '연봉 5천만원이면 15% 구간'처럼 연봉을 세율표에 바로 대면 틀립니다. 연봉 5천만원 1인 가구라면 4대보험 외 공제가 없어도 과세표준은 ${won(salary.base)}입니다.` },
+  { q: "세금마다 과세표준이 다른가요?", a: `다릅니다. 종합소득과 퇴직소득은 각각 따로 계산하고(제14조 제1항), 양도소득도 따로입니다. 퇴직소득은 근속연수공제·환산급여공제를 뺀 값, 양도소득은 양도차익에서 장기보유특별공제와 기본공제 ${eokwon(cg.basicDeduction.amount)}을 뺀 값이 과세표준입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>연봉별 과세표준은 <a href="/guide/earned-income-tax-rate/">근로소득세율</a> 표에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>세금</th><th>과세표준 계산</th><th>자세히</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">종합소득세</th><td>{r.taxBase.comprehensive}</td><td><a href="/guide/comprehensive-tax-base/">종합소득세 과세표준</a></td></tr>
+        <tr><th scope="row">퇴직소득세</th><td>{sv.tax.flow}</td><td><a href="/guide/severance-tax/">퇴직금 세금</a></td></tr>
+        <tr><th scope="row">양도소득세</th><td>{cg.flow.rule}</td><td><a href="/guide/capital-gains-tax/">양도소득세</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>{r.taxBase.excluded}</p>
+</GuideLayout>

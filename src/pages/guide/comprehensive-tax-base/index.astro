@@ -1,0 +1,61 @@
+---
+/**
+ * "종합소득세 과세표준" — 소득세율·과세표준 시리즈. (종합소득세 과세표준 구간·계산·세율·근로+사업 합산도 이 글)
+ * 근거: 소득세법 제14조 제2항(종합소득금액 − 종합소득공제)·제3항(합산하지 않는 소득), 제19조 제2항(사업소득금액), 제55조 제1항.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/income-tax-rate-2026.json";
+import tr from "../../../rates/2026.json";
+import { basicTax } from "../../../lib/income-tax-rate";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const bases = [10_000_000, 14_000_000, 30_000_000, 50_000_000, 70_000_000, 88_000_000, 120_000_000, 200_000_000];
+const rows = bases.map((b) => ({ b, x: basicTax(b) }));
+/** 사업소득 총수입 6천만원, 필요경비 2천만원, 본인 기본공제만 */
+const income = 60_000_000 - 20_000_000;
+const base = income - tr.personalDeductionPerHead;
+const ex = basicTax(base);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 income-tax-rate-series.test.ts 가 rates 와 대조한다.
+const title = "종합소득세 과세표준 — 모든 종합소득금액을 더하고 소득공제를 뺀 금액에 6~45%";
+const description =
+  "종합소득세 과세표준은 이자·배당·사업·근로·연금·기타소득금액을 모두 더한 종합소득금액에서 인적공제 같은 종합소득공제를 뺀 금액입니다. 근로소득과 사업소득이 함께 있으면 합쳐서 한 번에 세율표를 적용하므로 따로 계산할 때보다 높은 구간에 들 수 있습니다.";
+
+const ANSWER = `종합소득세 과세표준은 이자·배당·사업·근로·연금·기타소득금액을 모두 더한 종합소득금액에서 종합소득공제를 뺀 금액입니다(소득세법 제14조 제2항). 여기에 기본세율 6~45%를 곱합니다. 과세표준 ${eokwon(50_000_000)}이면 산출세액 ${won(basicTax(50_000_000).tax)}입니다.`;
+
+const QA = [
+  { q: "종합소득세 과세표준은 어떻게 계산하나요?", a: `① 소득별로 소득금액을 구합니다(사업소득은 총수입금액 − 필요경비, 제19조 제2항). ② 모두 더해 종합소득금액을 만들고 ③ 기본공제(1명당 ${won(tr.personalDeductionPerHead)}) 등 종합소득공제를 뺍니다. 사업소득 총수입 6천만원, 경비 2천만원, 본인 공제만이면 과세표준 ${won(base)}입니다.` },
+  { q: "종합소득세 과세표준 구간별 세금은 얼마인가요?", a: `과세표준 1천만원 ${won(rows[0].x.tax)}, 3천만원 ${won(rows[2].x.tax)}, 5천만원 ${won(rows[3].x.tax)}, 8,800만원 ${won(rows[5].x.tax)}, 2억원 ${won(rows[7].x.tax)}입니다(산출세액, 지방소득세 별도). 세액공제·감면을 빼면 결정세액이 됩니다.` },
+  { q: "근로소득과 사업소득이 같이 있으면 어떻게 되나요?", a: `둘 다 종합소득이라 소득금액을 합친 뒤 한 번에 공제하고 세율표를 적용합니다(제14조 제2항). 각각은 낮은 구간이어도 합치면 높은 구간에 들 수 있어, 회사에서 연말정산을 했어도 5월에 사업소득과 합쳐 다시 신고해야 합니다. 일용근로소득·분리과세 소득은 합치지 않습니다(제3항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>이 예시면 산출세액이 {won(ex.tax)}(구간 세율 {pct(ex.marginal)})입니다. 업종별 경비율은 <a href="/guide/expense-rate/">단순경비율</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>과세표준</th><th>구간 세율</th><th>산출세액</th><th>평균 세율</th><th>지방소득세 포함</th></tr></thead>
+      <tbody>{rows.map(({ b, x }) => <tr><th scope="row">{eokwon(b)}</th><td>{pct(x.marginal)}</td><td>{won(x.tax)}</td><td>{(x.average * 100).toFixed(1)}%</td><td>{won(x.tax + x.local)}</td></tr>)}</tbody>
+    </table>
+  </div>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    세율표 전체는 <a href="/guide/income-tax-brackets/">소득세율표</a>, 신고 뒤 환급·추가납부 어림은{" "}
+    <a href="/income-tax-refund/">종소세 환급 예상 계산기</a>에 있습니다.
+  </p>
+</GuideLayout>

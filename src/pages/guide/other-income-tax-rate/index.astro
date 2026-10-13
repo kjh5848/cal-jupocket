@@ -1,0 +1,61 @@
+---
+/**
+ * "기타소득세율" — 소득세율·과세표준 시리즈. (기타소득세 8.8%·강연료·원고료·필요경비 60%·과세최저한 12만5천원·300만원 분리과세도 이 글)
+ * 근거: 소득세법 제129조 제1항 제6호(20%, 복권 3억원 초과분 30%, 연금외수령 15%), 제21조 제1항(기타소득 종류), 제84조 제3호(건별 5만원 이하),
+ * 제14조 제3항 제8호 가목(300만원 이하 분리과세 선택), 시행령 제87조(필요경비 60%·80%).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/income-tax-rate-2026.json";
+import { otherIncomeTax, otherIncomeExemptMax } from "../../../lib/income-tax-rate";
+import { won, eokwon } from "../../../lib/won";
+
+const O = r.other;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const ex = otherIncomeTax(1_000_000);
+const rows = [100_000, 125_000, 300_000, 1_000_000, 5_000_000].map((a) => ({ a, x: otherIncomeTax(a) }));
+const prize = otherIncomeTax(1_000_000, O.expense80Rate);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 income-tax-rate-series.test.ts 가 rates 와 대조한다.
+const title = "기타소득세율 — 20%지만 강연료·원고료는 경비 60%를 빼서 받은 돈의 8.8%";
+const description =
+  "기타소득세율은 20%이고 지방소득세를 더해 22%입니다. 다만 강연료·원고료·인세처럼 필요경비 60%가 인정되는 소득은 받은 돈의 40%에만 세율을 곱해 실제로는 8.8%입니다. 소득금액이 건별 5만원 이하면 과세하지 않아 12만5천원까지는 세금이 없습니다.";
+
+const ANSWER = `기타소득세율은 ${pct(O.rate)}(지방소득세 포함 22%)입니다(소득세법 제129조 제1항 제6호). 강연료·원고료·인세처럼 필요경비 ${pct(O.expense60Rate)}가 인정되면 받은 돈의 40%에만 곱해 실제로는 8.8%이고, 소득금액이 건별 5만원 이하면 과세하지 않아 ${won(otherIncomeExemptMax())}까지는 세금이 없습니다.`;
+
+const QA = [
+  { q: "기타소득세율은 몇 프로인가요?", a: `원천징수세율은 기타소득금액의 ${pct(O.rate)}이고 지방소득세가 그 10분의 1입니다. 복권 당첨금 등 3억원을 넘는 부분은 ${pct(O.lotteryOverRate)}, 연금계좌를 연금이 아니게 찾은 기타소득은 ${pct(O.pensionNonAnnuity)}입니다(제129조 제1항 제6호). 세율을 곱하는 대상은 받은 돈이 아니라 필요경비를 뺀 소득금액입니다.` },
+  { q: "강연료·원고료 기타소득세는 왜 8.8%인가요?", a: `일시적 강연료(제21조 제1항 제19호)와 원고료·인세(제15호) 등은 받은 금액의 60%를 필요경비로 봅니다(시행령 제87조 제1호의2). 100만원을 받으면 소득금액 40만원 × 20% = ${won(ex.tax)}, 지방소득세 ${won(ex.local)}을 더해 ${won(ex.total)}이라 받은 돈의 8.8%입니다.` },
+  { q: "기타소득 12만5천원 이하는 세금이 없나요?", a: `기타소득금액이 건별 5만원 이하면 과세하지 않습니다(제84조 제3호). 필요경비 60%면 소득금액이 받은 돈의 40%라 ${won(otherIncomeExemptMax())}까지 세금이 없고, 80% 경비 상금은 ${won(otherIncomeExemptMax(O.expense80Rate))}까지입니다. 복권 당첨금은 건별 200만원 이하가 기준입니다.` },
+  { q: "기타소득도 5월에 신고해야 하나요?", a: `원천징수된 기타소득금액 합계가 연 ${eokwon(O.separateLimit)} 이하면 분리과세로 끝낼 수 있고, 원하면 종합소득에 합산해 신고할 수 있습니다(제14조 제3항 제8호 가목). 넘으면 다른 종합소득과 합산해 5월에 신고합니다. 강연료로 치면 연 750만원이 소득금액 300만원입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>받은 돈(필요경비 60%)</th><th>소득금액</th><th>소득세</th><th>지방세 포함</th></tr></thead>
+    <tbody>{rows.map(({ a, x }) => <tr><th scope="row">{won(a)}</th><td>{won(x.income)}</td><td>{x.exempt ? "과세 안 함" : won(x.tax)}</td><td>{won(x.total)}</td></tr>)}</tbody>
+  </table>
+  <p>공익법인 상금·다수 순위 경쟁 대회 상금은 필요경비 80%라 100만원이면 {won(prize.total)}입니다(시행령 제87조 제1호).</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    지급액에서 8.8%를 떼고 받는 금액은 <a href="/withholding/">원천징수 계산기</a>로 확인하세요. 계속·반복적으로 하면
+    기타소득이 아니라 사업소득(3.3%)이 될 수 있습니다 — <a href="/guide/business-income-tax/">사업소득세</a>.
+  </p>
+</GuideLayout>
