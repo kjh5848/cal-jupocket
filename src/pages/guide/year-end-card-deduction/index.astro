@@ -1,0 +1,68 @@
+---
+/**
+ * "연말정산 신용카드 공제" — 연말정산 시리즈. (카드공제 한도도 이 글)
+ * 근거: 조세특례제한법 제126조의2 제1항(25% 문턱)·제2항(공제율)·제10항(한도, 2025. 12. 23. 개정)·제11항(추가 한도).
+ * 반전: 총급여의 25%까지는 공제가 0원이다. 그 위부터 센다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import y from "../../../rates/year-end-2026.json";
+import { won, manwon } from "../../../lib/won";
+
+const K = y.card;
+const pay = 50_000_000;
+const threshold = pay * K.threshold;
+const used = 20_000_000;
+const deduct = Math.floor((used - threshold) * K.rates.credit);
+
+const title = "연말정산 신용카드 공제 — 총급여의 25%를 넘게 쓴 몫부터, 한도 300만원";
+const description =
+  "연말정산 신용카드 공제는 카드 사용액이 총급여의 25%를 넘는 부분부터 계산합니다. 신용카드 15%, 체크카드·현금영수증 30%, 전통시장·대중교통 40%이고, 한도는 총급여 7천만원 이하 300만원입니다.";
+
+const ANSWER = `연말정산 신용카드 공제는 1년 카드 사용액이 총급여의 25%를 넘는 부분부터 계산합니다. 넘는 몫에 신용카드 15%, 체크카드·현금영수증 30%, 전통시장·대중교통 40%를 곱하고, 한도는 총급여 7천만원 이하면 ${manwon(K.limit.base.under70m)}입니다(조세특례제한법 제126조의2).`;
+
+const QA = [
+  { q: "연말정산 신용카드 공제는 어떻게 계산하나요?", a: `총급여의 25%(최저사용금액)를 넘는 사용금액부터 공제합니다. 총급여 5,000만원이면 ${manwon(threshold)}까지는 공제가 없고, 신용카드로 ${manwon(used)}을 썼다면 넘는 ${manwon(used - threshold)}의 15%인 ${won(deduct)}이 소득공제됩니다.` },
+  { q: "신용카드와 체크카드는 공제율이 다른가요?", a: "다릅니다. 신용카드는 15%, 직불·체크카드와 현금영수증은 30%, 도서·공연·박물관·체육시설 같은 문화체육 사용분은 30%(총급여 7천만원 이하), 전통시장과 대중교통은 40%입니다(제126조의2 제2항)." },
+  { q: "연말정산 카드공제 한도는 얼마인가요?", a: `총급여 7천만원 이하는 연 ${manwon(K.limit.base.under70m)}, 넘으면 ${manwon(K.limit.base.over70m)}입니다. 자녀 등 부양가족이 있으면 한도가 늘어나 7천만원 이하는 1명 ${manwon(K.limit.withChildren.under70m.one)}, 2명 이상 ${manwon(K.limit.withChildren.under70m.twoPlus)}입니다(제10항).` },
+  { q: "한도를 넘으면 더 받을 수 있는 공제가 있나요?", a: "전통시장·대중교통 사용분으로 추가 공제를 받을 수 있습니다. 한도 초과분 중 그 공제액 합계만큼을 연 200만원(총급여 7천만원 이하는 문화체육분을 합쳐 300만원) 안에서 더해 줍니다(제11항)." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>
+    25%를 채우는 순서도 조문에 있습니다. 문턱 금액은 신용카드 사용분부터 먼저 채운
+    것으로 봐서, 공제율이 낮은 신용카드가 문턱을 먼저 메우고 체크카드·전통시장
+    사용분은 그 위에 남도록 계산합니다(제126조의2 제2항 제6호).
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>총급여</th><th>기본 한도</th><th>자녀 등 1명</th><th>2명 이상</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">7천만원 이하</th><td>{won(K.limit.base.under70m)}</td><td>{won(K.limit.withChildren.under70m.one)}</td><td>{won(K.limit.withChildren.under70m.twoPlus)}</td></tr>
+      <tr><th scope="row">7천만원 초과</th><td>{won(K.limit.base.over70m)}</td><td>{won(K.limit.withChildren.over70m.one)}</td><td>{won(K.limit.withChildren.over70m.twoPlus)}</td></tr>
+    </tbody>
+  </table>
+  <p><small>{K.limit.note}</small></p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>공제 대상에서 빠지는 사용금액</strong>(제126조의2 제4항) — 읽지 않았습니다.</li>
+  </ul>
+</GuideLayout>

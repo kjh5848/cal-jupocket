@@ -1,0 +1,61 @@
+---
+/**
+ * "연말정산 소득공제" — 연말정산 시리즈.
+ * 소득공제(과세표준을 줄임)와 세액공제(세금을 줄임)를 조문 이름으로 갈라 지도처럼 보여 준다.
+ * 근거 조문 이름: 소득세법 제47조·제50조·제51조의3·제52조, 조특법 제126조의2 / 제59조~제59조의4, 조특법 제95조의2.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import y from "../../../rates/year-end-2026.json";
+import { won } from "../../../lib/won";
+import { taxOn } from "../../../lib/deduction";
+
+const per = y.calc.basicDeductionPerHead.amount;
+// 소득공제 150만원의 효과 = 과세표준이 그만큼 줄 때의 세금 차이(과세표준 3,000만원 예시)
+const saved = taxOn(30_000_000) - taxOn(30_000_000 - per);
+
+const title = "연말정산 소득공제 — 과세표준을 줄이는 쪽과 세금을 줄이는 쪽이 따로 있습니다";
+const description =
+  "연말정산 공제는 소득공제와 세액공제로 나뉩니다. 소득공제(인적공제·보험료·신용카드)는 세금을 매기기 전 소득을 줄이고, 세액공제(근로소득·연금계좌·의료비·월세)는 계산된 세금을 줄입니다.";
+
+const ANSWER = "연말정산 공제는 두 종류입니다. 소득공제는 인적공제·국민연금·건강보험료·신용카드처럼 세금을 매기기 전의 소득을 줄이고, 세액공제는 근로소득·연금계좌·의료비·월세처럼 계산이 끝난 세금을 줄입니다. 같은 금액이어도 효과가 다릅니다.";
+
+const QA = [
+  { q: "연말정산 소득공제에는 무엇이 있나요?", a: "근로소득공제(제47조), 인적공제(제50조), 연금보험료공제(제51조의3), 건강·고용보험료 등 특별소득공제(제52조), 그리고 조세특례제한법의 신용카드 등 소득공제(제126조의2)가 대표적입니다." },
+  { q: "소득공제와 세액공제는 무엇이 다른가요?", a: "소득공제는 과세표준을 줄여서 내 최고 세율만큼 효과가 나고, 세액공제는 산출세액에서 정해진 금액이나 비율을 그대로 뺍니다. 그래서 소득이 높을수록 소득공제의 효과가 커집니다." },
+  { q: "소득공제 150만원이면 세금이 얼마 줄어드나요?", a: `과세표준이 얼마인지에 따라 다릅니다. 과세표준 3,000만원인 사람이라면 인적공제 1명(${won(per)})으로 소득세가 ${won(saved)} 줄어듭니다. 그 사람의 세율 구간이 15%이기 때문입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>소득공제(과세표준을 줄임)</th><th>세액공제(세금을 줄임)</th></tr></thead>
+    <tbody>
+      <tr><td>근로소득공제 — 제47조</td><td>근로소득세액공제 — 제59조</td></tr>
+      <tr><td>인적공제(150만원/명) — 제50조</td><td>자녀세액공제 — 제59조의2</td></tr>
+      <tr><td>연금보험료공제(국민연금) — 제51조의3</td><td>연금계좌세액공제(연금저축·IRP) — 제59조의3</td></tr>
+      <tr><td>건강·고용·장기요양보험료 — 제52조</td><td>보험료·의료비·교육비·기부금 — 제59조의4</td></tr>
+      <tr><td>신용카드 등 — 조특법 제126조의2</td><td>월세 — 조특법 제95조의2</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    내 숫자로 보려면 <a href="/guide/year-end-calculator/">연말정산 계산기</a>를
+    쓰세요. 인적공제는 <a href="/guide/year-end-personal-deduction/">연말정산
+    인적공제</a>, 신용카드는 <a href="/guide/year-end-card-deduction/">연말정산
+    신용카드 공제</a>에 있습니다.
+  </p>
+</GuideLayout>

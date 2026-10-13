@@ -1,0 +1,50 @@
+---
+/**
+ * "연말정산" — 연말정산 시리즈 허브(src/data/series/year-end.ts). 뜻·하는법도 이 글.
+ * 근거: 소득세법 제134조(매달 간이세액표), 제137조(2월분 급여 때 정산·환급), 제140조(공제신고서).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import y from "../../../rates/year-end-2026.json";
+import { yearEndSeries } from "../../../data/series/year-end";
+import { seriesHref } from "../../../data/series/types";
+
+const title = "연말정산 — 매달 어림으로 뗀 세금을 2월에 실제 세금과 맞추는 일";
+const description =
+  "연말정산은 매달 월급에서 어림으로 뗀 소득세를 1년 치 실제 세금과 맞추는 일입니다. 회사가 2월분 급여를 줄 때 정산하고, 근로자는 그 전에 공제신고서를 냅니다. 더 뗐으면 돌려받고 덜 뗐으면 더 냅니다.";
+
+const ANSWER = `연말정산은 매달 월급에서 어림값으로 뗀 소득세를 1년 치 실제 세금과 맞추는 일입니다. 회사가 ${y.settlement.when} 정산하고, 근로자는 그 전에 공제신고서를 냅니다. 더 뗐으면 돌려받고, 덜 뗐으면 더 냅니다.`;
+
+const QA = [
+  { q: "연말정산이란 무엇인가요?", a: "매달 근로소득에서 간이세액표로 뗀 소득세(소득세법 제134조)를 한 해가 끝난 뒤 실제 세금으로 다시 계산해 차액을 맞추는 일입니다. 회사(원천징수의무자)가 합니다(제137조)." },
+  { q: "연말정산은 어떻게 하나요?", a: "근로자는 소득·세액공제신고서와 증명서류를 2월분 급여를 받기 전까지 회사에 내고(제140조), 회사는 그 서류로 1년 치 세금을 계산해 이미 뗀 세금과의 차액을 2월분 급여에서 정산합니다." },
+  { q: "연말정산은 언제 하나요?", a: `${y.settlement.when}입니다. 퇴사하면 퇴직하는 달의 급여를 지급할 때 합니다. 간소화 자료 개통 일정은 법이 아니라 국세청이 해마다 공고합니다.` },
+  { q: "연말정산에서 돌려받는지 더 내는지는 어떻게 정해지나요?", a: "1년 치로 확정된 결정세액과 매달 이미 뗀 세금을 비교합니다. 이미 뗀 세금이 많으면 그 차이를 돌려받고(제137조 제2항), 적으면 그 차이를 더 냅니다." },
+];
+const more: Record<number, string> = { 1: "year-end-simplified", 3: "year-end-calculator" };
+const labelOf = (slug: string) => yearEndSeries.items.find((s) => s.slug === slug)?.label ?? slug;
+---
+
+<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  {QA.map((x, i) => (
+    <>
+      <h2>{x.q}</h2>
+      <p class="qa-lead">{x.a}</p>
+      {more[i] && <p>자세히 — <a href={seriesHref(more[i])}>{labelOf(more[i])}</a></p>}
+    </>
+  ))}
+
+  <AdSlot />
+
+  <h2>연말정산, 질문별로 정리했습니다</h2>
+  <ul>
+    <li><a href={seriesHref("year-end-settlement")}>연말정산 기간과 순서</a></li>
+    {yearEndSeries.items.map((s) => (
+      <li><a href={seriesHref(s.slug)}>{s.label}</a></li>
+    ))}
+  </ul>
+</GuideLayout>

@@ -4,5 +4,6 @@ import { irpSeriesDef } from "./irp-tax-credit";
 import { vatFinalSeries } from "./vat-final-return";
 import { vehiclePrepaySeries } from "./vehicle-tax-prepay";
 import { withholdingReceiptSeries } from "./withholding-receipt";
+import { yearEndSeries } from "./year-end";
 
-export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries];
+export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries];

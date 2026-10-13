@@ -1,0 +1,116 @@
+---
+/**
+ * "연말정산 계산기" — 연말정산 시리즈. (환급금 계산기·환급금 계산도 이 글)
+ * 계산: src/lib/year-end-calc.ts(제47조·제50조·제51조의3·제52조·제55조·제59조·제59조의4·제61조).
+ * 신용카드·의료비·교육비·기부금·자녀세액공제는 넣지 않은 '어림' 계산기다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import y from "../../../rates/year-end-2026.json";
+import { yearEnd } from "../../../lib/year-end-calc";
+import { won } from "../../../lib/won";
+
+const ex = yearEnd({ pay: 50_000_000, persons: 1, pensionInsurance: 0, socialInsurance: 0, prepaid: 3_500_000 });
+
+const title = "연말정산 계산기 — 총급여와 이미 낸 세금으로 환급금을 어림합니다";
+const description =
+  "연말정산 계산기는 총급여에서 근로소득공제·인적공제·보험료를 빼 과세표준을 만들고, 세율과 세액공제를 거쳐 결정세액을 낸 뒤 이미 뗀 세금과 비교합니다. 소득세법 조문대로 계산하는 어림 계산기입니다.";
+
+const ANSWER = `연말정산 환급금은 '이미 뗀 세금 − 결정세액'입니다. 총급여 5,000만원·1인 가구 예시라면 결정세액이 ${won(ex.decided)}이고, 1년 동안 ${won(ex.prepaid)}을 뗐다면 ${won(-ex.diff)}을 돌려받습니다. 아래에서 내 숫자로 바꿔 보세요.`;
+
+const QA = [
+  { q: "연말정산 계산은 어떻게 하나요?", a: "총급여에서 근로소득공제를 빼 근로소득금액을 만들고, 인적공제·보험료 공제를 빼 과세표준을 냅니다. 세율을 곱한 산출세액에서 세액공제를 빼면 결정세액이고, 이미 뗀 세금과의 차이가 환급이나 추가 납부입니다." },
+  { q: "연말정산 계산기에 무엇을 넣어야 하나요?", a: "총급여(비과세 제외), 기본공제 인원(본인 포함), 국민연금과 건강·고용·장기요양보험 본인 부담분, 연금저축·IRP 납입액, 그리고 1년 동안 이미 뗀 소득세입니다. 급여명세서나 원천징수영수증에서 볼 수 있습니다." },
+  { q: "이 연말정산 계산기에 빠진 것은 무엇인가요?", a: "신용카드 소득공제, 의료비·교육비·기부금 세액공제, 자녀세액공제, 월세 세액공제는 넣지 않았습니다. 그래서 실제 결과는 이 계산보다 돌려받는 쪽으로 더 갈 수 있습니다. 지방소득세도 따로입니다." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">아래 값은 예시입니다. 내 숫자로 바꾸세요.</p>
+    <div class="calc-input-wrap">
+      <label for="ye-pay">총급여(비과세 제외, 1년)</label>
+      <input type="text" inputmode="numeric" id="ye-pay" value="50,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ye-persons">기본공제 인원(본인 포함)</label>
+      <input type="number" min="1" max="20" id="ye-persons" value="1" />
+      <span class="unit">명</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ye-prepaid">1년 동안 이미 뗀 소득세</label>
+      <input type="text" inputmode="numeric" id="ye-prepaid" value="3,500,000" />
+      <span class="unit">원</span>
+    </div>
+    <details>
+      <summary>보험료·연금저축·IRP</summary>
+      <div class="calc-input-wrap">
+        <label for="ye-pension">국민연금 본인 부담분</label>
+        <input type="text" inputmode="numeric" id="ye-pension" value="" placeholder="0" />
+        <span class="unit">원</span>
+      </div>
+      <div class="calc-input-wrap">
+        <label for="ye-social">건강·고용·장기요양보험 본인 부담분</label>
+        <input type="text" inputmode="numeric" id="ye-social" value="" placeholder="0" />
+        <span class="unit">원</span>
+      </div>
+      <div class="calc-input-wrap">
+        <label for="ye-savings">연금저축 납입액</label>
+        <input type="text" inputmode="numeric" id="ye-savings" value="" placeholder="0" />
+        <span class="unit">원</span>
+      </div>
+      <div class="calc-input-wrap">
+        <label for="ye-irp">IRP 납입액</label>
+        <input type="text" inputmode="numeric" id="ye-irp" value="" placeholder="0" />
+        <span class="unit">원</span>
+      </div>
+      <label><input type="checkbox" id="ye-standard" checked /> 의료비·교육비·기부금 공제를 신청하지 않는다(표준세액공제 {won(y.calc.standardTaxCredit.amount)})</label>
+    </details>
+
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label" id="ye-hero-label">돌려받는 소득세(어림)</p>
+      <p class="big" id="ye-hero">{won(Math.abs(ex.diff))}</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="ye-base">{won(ex.base)}</span></div>
+      <div class="stat-chip"><span class="label">산출세액</span><span class="value" id="ye-computed">{won(ex.computedTax)}</span></div>
+      <div class="stat-chip"><span class="label">결정세액</span><span class="value" id="ye-decided">{won(ex.decided)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>단계(예시: 총급여 5,000만원, 1인)</th><th>금액</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">근로소득공제</th><td>{won(ex.earnedDeduction)}</td><td>{y.calc.earnedIncomeDeduction.article}</td></tr>
+      <tr><th scope="row">인적공제(1명 × 150만원)</th><td>{won(ex.personal)}</td><td>{y.calc.basicDeductionPerHead.article}</td></tr>
+      <tr><th scope="row">과세표준</th><td>{won(ex.base)}</td><td>&nbsp;</td></tr>
+      <tr><th scope="row">산출세액</th><td>{won(ex.computedTax)}</td><td>소득세법 제55조</td></tr>
+      <tr><th scope="row">근로소득세액공제</th><td>{won(ex.earnedCredit)}</td><td>{y.calc.earnedIncomeTaxCredit.article}</td></tr>
+      <tr><th scope="row">표준세액공제</th><td>{won(ex.standard)}</td><td>{y.calc.standardTaxCredit.article}</td></tr>
+      <tr><th scope="row">결정세액</th><td>{won(ex.decided)}</td><td>&nbsp;</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    자녀세액공제는 2026년 4월 21일 개정 조문이 있는데, 어느 연도분부터 적용되는지
+    확인하지 않아 넣지 않았습니다. 신용카드 공제는{" "}
+    <a href="/guide/year-end-card-deduction/">연말정산 신용카드 공제</a>, 월세는{" "}
+    <a href="/guide/year-end-rent-credit/">연말정산 월세 세액공제</a>에 있습니다.
+  </p>
+
+  <script src="../../../scripts/year-end.ts"></script>
+</GuideLayout>

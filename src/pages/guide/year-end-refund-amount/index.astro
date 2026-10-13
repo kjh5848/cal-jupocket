@@ -1,0 +1,49 @@
+---
+/**
+ * "연말정산 환급금 얼마" — 연말정산 시리즈. (평균·기준·한도도 이 글. 평균은 통계라 쓰지 않는다)
+ * 근거: 소득세법 제137조 제1항·제2항(결정세액 − 이미 뗀 세금), 제61조(공제는 산출세액을 넘지 못함).
+ * 반전: 환급금의 '한도' 는 1년 동안 이미 뗀 세금이다. 낸 것보다 많이 돌려받는 구조가 아니다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import y from "../../../rates/year-end-2026.json";
+import { yearEnd } from "../../../lib/year-end-calc";
+import { won } from "../../../lib/won";
+
+const ex = yearEnd({ pay: 50_000_000, persons: 1, pensionInsurance: 0, socialInsurance: 0, prepaid: 3_500_000 });
+const exIrp = yearEnd({ pay: 50_000_000, persons: 1, pensionInsurance: 0, socialInsurance: 0, irp: 3_000_000, prepaid: 3_500_000 });
+
+const title = "연말정산 환급금 얼마 — 1년 동안 뗀 세금보다 많이 돌려받을 수는 없습니다";
+const description =
+  "연말정산 환급금은 1년 동안 매달 뗀 세금에서 확정된 결정세액을 뺀 금액입니다. 그래서 환급금의 상한은 이미 낸 세금이고, 공제가 아무리 많아도 결정세액은 0원 아래로 내려가지 않습니다.";
+
+const ANSWER = "연말정산 환급금 = 1년 동안 월급에서 뗀 소득세 − 확정된 결정세액입니다. 결정세액은 0원 아래로 내려가지 않으므로(소득세법 제61조), 아무리 공제가 많아도 이미 낸 세금보다 많이 돌려받을 수는 없습니다.";
+
+const QA = [
+  { q: "연말정산 환급금은 얼마나 받나요?", a: `이미 뗀 세금에서 결정세액을 뺀 만큼입니다(소득세법 제137조). 예를 들어 총급여 5,000만원·1인 가구가 1년간 ${won(ex.prepaid)}을 뗐다면 결정세액 ${won(ex.decided)}과의 차이인 ${won(-ex.diff)}이 돌아옵니다(어림, 다른 공제 없음).` },
+  { q: "연말정산 환급금에 한도가 있나요?", a: "이미 낸 세금이 사실상의 한도입니다. 세액공제 합계는 산출세액을 넘을 수 없어 결정세액이 0원 아래로 내려가지 않고(제61조), 환급은 그 결정세액과 이미 뗀 세금의 차이이기 때문입니다." },
+  { q: "연말정산 환급금을 늘리는 기준은 무엇인가요?", a: `결정세액을 줄이는 공제가 늘어야 합니다. 같은 예시에서 IRP에 300만원을 넣으면 15% 구간이라 환급금이 ${won(-exIrp.diff)}으로 ${won(ex.diff - exIrp.diff)} 늘어납니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    "연말정산 환급금 평균" 같은 통계 숫자는 이 글에서 쓰지 않습니다. 사람마다 이미
+    뗀 세금과 공제가 달라 평균이 내 환급금을 말해 주지 않습니다. 내 숫자는{" "}
+    <a href="/guide/year-end-calculator/">연말정산 계산기</a>로 어림해 보세요.
+  </p>
+</GuideLayout>

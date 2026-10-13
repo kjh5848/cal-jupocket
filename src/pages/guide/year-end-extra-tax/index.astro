@@ -1,0 +1,43 @@
+---
+/**
+ * "연말정산 세금 더 내는 경우" — 연말정산 시리즈. 10-12 사용자 화면의 구글 자동완성에서 왔다.
+ * 근거: 소득세법 제137조 제1항(결정세액 − 이미 뗀 세금)·제3항(신고서 미제출)·제4항(10만원 초과 분납), 제134조(간이세액표 어림).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import y from "../../../rates/year-end-2026.json";
+import { won } from "../../../lib/won";
+
+const title = "연말정산 세금 더 내는 경우 — 매달 덜 뗐거나, 서류를 안 냈거나";
+const description =
+  "연말정산에서 세금을 더 내는 경우는 매달 간이세액표로 뗀 세금이 1년 치 실제 세금보다 적었을 때입니다. 공제신고서를 안 낸 경우가 대표적이고, 추가 세금이 10만원을 넘으면 2~4월에 나눠 뗄 수 있습니다.";
+
+const ANSWER = `연말정산에서 세금을 더 내는 것은 1년 치로 확정된 세금이 매달 뗀 세금보다 많을 때입니다. 공제신고서를 안 내 ${y.noFilingPenalty.applied} 적용된 경우가 흔하고, 더 낼 세금이 ${won(y.installment.over)}을 넘으면 ${y.installment.months} 나눠 뗄 수 있습니다.`;
+
+const QA = [
+  { q: "연말정산에서 세금을 더 내는 경우는 언제인가요?", a: "결정세액이 그해 이미 뗀 세금보다 클 때입니다(소득세법 제137조 제1항). 매달 떼는 세금은 간이세액표로 정한 어림값이라(제134조) 실제 세금과 어긋날 수 있고, 그 차이를 2월에 맞춥니다." },
+  { q: "공제신고서를 안 내면 세금을 더 내나요?", a: `그럴 가능성이 큽니다. 신고서를 내지 않으면 ${y.noFilingPenalty.applied} 적용되고(제137조 제3항), 부양가족·의료비·신용카드·월세 공제가 모두 빠져 결정세액이 커집니다.` },
+  { q: "연말정산 추가 세금을 나눠 낼 수 있나요?", a: `추가 납부세액이 ${won(y.installment.over)}을 넘으면 회사가 ${y.installment.months} 나눠 원천징수할 수 있습니다(제137조 제4항). 다만 '할 수 있다'라 회사가 정하므로 미리 요청해 두는 편이 낫습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    두 회사에서 급여를 받았다면 한 곳에서 합쳐 정산하는 길이 있습니다({y.twoEmployers.article}) —{" "}
+    <a href="/guide/earned-income-withholding-receipt/">근로소득 원천징수영수증</a>.
+  </p>
+</GuideLayout>

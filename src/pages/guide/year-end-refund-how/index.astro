@@ -1,0 +1,50 @@
+---
+/**
+ * "연말정산 환급금 받는 법" — 연말정산 시리즈. (받는법·신청·신청 방법·조회·조회 방법도 이 글)
+ * 반전: 따로 신청하는 돈이 아니다. 공제신고서를 내면 회사가 정산해 급여로 준다(제137조·제140조).
+ * 놓쳤으면 5월 신고 또는 경정청구(국세기본법 제45조의2 제5항).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import y from "../../../rates/year-end-2026.json";
+
+const title = "연말정산 환급금 받는 법 — 따로 신청하지 않고, 공제신고서를 내면 급여로 들어옵니다";
+const description =
+  "연말정산 환급금은 따로 신청하는 돈이 아닙니다. 2월분 급여를 받기 전에 공제신고서를 회사에 내면 회사가 정산해 급여와 함께 돌려줍니다. 서류를 놓쳤다면 5년 안에 경정청구로 받을 수 있습니다.";
+
+const ANSWER = "연말정산 환급금은 따로 신청하지 않습니다. 2월분 급여를 받기 전에 소득·세액공제신고서와 증명서류를 회사에 내면, 회사가 1년 치 세금을 다시 계산해 더 뗀 만큼을 급여와 함께 돌려줍니다. 놓친 공제는 경정청구로 되찾습니다.";
+
+const QA = [
+  { q: "연말정산 환급금은 어떻게 받나요?", a: `${y.declarationDeadline.document}를 ${y.declarationDeadline.when}까지 회사에 내면 됩니다(소득세법 제140조). 회사가 그 서류로 정산하고, 이미 뗀 세금이 더 많으면 그 초과액을 근로자에게 돌려줍니다(제137조 제2항).` },
+  { q: "연말정산 환급금을 따로 신청해야 하나요?", a: "아닙니다. 환급은 회사의 정산 결과로 급여와 함께 나옵니다. 근로자가 할 일은 공제신고서와 증명서류를 기한 안에 내는 것이고, 내지 않으면 본인 기본공제와 표준세액공제만 적용됩니다." },
+  { q: "연말정산 환급금은 어디서 조회하나요?", a: "회사가 발급하는 근로소득 원천징수영수증에서 결정세액과 이미 낸 세금을 비교하면 됩니다. 회사는 다음 해 2월 말일까지 이 영수증을 발급해야 합니다(소득세법 제143조)." },
+  { q: "연말정산 때 공제를 빠뜨렸으면 환급을 못 받나요?", a: `받을 수 있습니다. 연말정산한 근로자는 연말정산세액의 납부기한이 지난 뒤 ${y.correction.years}년 안에 경정청구를 할 수 있습니다(국세기본법 제45조의2 제5항). 5월 종합소득세 신고로 바로잡는 방법도 있습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    영수증에서 어디를 보는지는 <a href="/guide/withholding-receipt-read/">원천징수영수증
+    보는 법</a>에 있습니다. 홈택스 조회 화면은 조문 밖이라 다루지 않습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    절차는 <a href="/guide/year-end-correction/">연말정산 경정청구</a>에 있습니다.
+  </p>
+</GuideLayout>

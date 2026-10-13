@@ -1,0 +1,59 @@
+---
+/**
+ * "연말정산 월세 세액공제" — 연말정산 시리즈. (월세 연말정산도 이 글)
+ * 근거: 조세특례제한법 제95조의2(무주택 세대주·총급여 8천만원 이하·15%/17%·연 1,000만원 한도·배우자 추가 2025. 12. 23.).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import y from "../../../rates/year-end-2026.json";
+import { won, manwon } from "../../../lib/won";
+
+const R = y.rent;
+const rentYear = 7_200_000; // 월 60만원 × 12
+const c17 = Math.floor(rentYear * R.rates.low);
+const c15 = Math.floor(rentYear * R.rates.base);
+const capMax = Math.floor(R.cap * R.rates.low);
+
+const title = "연말정산 월세 세액공제 — 총급여 8천만원 이하 무주택 세대주, 최대 17%";
+const description =
+  "연말정산 월세 세액공제는 무주택 세대주이면서 총급여 8천만원 이하인 근로자가 낸 월세의 15%(총급여 5,500만원 이하는 17%)를 세금에서 빼 줍니다. 연 1,000만원까지 셉니다.";
+
+const ANSWER = `월세 세액공제는 무주택 세대의 세대주이면서 총급여 8천만원 이하인 근로자가 낸 월세의 15%를, 총급여 5,500만원 이하면 17%를 세금에서 뺍니다. 월세는 연 ${manwon(R.cap)}까지 세므로 공제는 최대 ${manwon(capMax)}입니다(조세특례제한법 제95조의2).`;
+
+const QA = [
+  { q: "연말정산 월세 세액공제 조건은 무엇인가요?", a: "과세기간 종료일 현재 주택이 없는 세대의 세대주(세대주가 공제를 받지 않으면 세대원)이고, 총급여 8천만원 이하(종합소득금액 7천만원 초과자 제외)인 근로자여야 합니다(조세특례제한법 제95조의2 제1항)." },
+  { q: "월세 세액공제는 얼마 받나요?", a: `낸 월세의 15%, 총급여 5,500만원 이하(종합소득금액 4,500만원 초과자 제외)면 17%입니다. 월 60만원씩 1년 ${manwon(rentYear)}을 냈다면 17% 구간은 ${won(c17)}, 15% 구간은 ${won(c15)}입니다.` },
+  { q: "월세 세액공제 한도는 얼마인가요?", a: `월세액이 연 ${manwon(R.cap)}을 넘으면 넘는 금액은 없는 것으로 봅니다(제1항 단서). 그래서 공제액은 17% 구간에서도 최대 ${manwon(capMax)}입니다.` },
+  { q: "부부가 둘 다 월세 세액공제를 받을 수 있나요?", a: "2025년 12월 개정으로 길이 생겼습니다. 세대주의 배우자도 공제 요건을 갖추고 주소를 달리하는 등 대통령령 요건을 충족하면 추가로 받을 수 있고, 부부 월세 합계는 1,000만원까지입니다(제95조의2 제2항)." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    공제는 신청한 경우에 적용합니다(제3항). 월세 세액공제를 신청하면 표준세액공제
+    13만원은 받지 않습니다(소득세법 제59조의4 제9항).
+  </p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>대상 주택 규모와 '월세액' 범위</strong> — 대통령령이 정하는데 읽지 않았습니다.</li>
+    <li><strong>배우자 추가 공제의 적용 시기</strong>(부칙) — 확인하지 않았습니다.</li>
+  </ul>
+</GuideLayout>

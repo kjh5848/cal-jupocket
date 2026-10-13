@@ -20,14 +20,25 @@ import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import { formatWon } from "../../../lib/money";
 import r from "../../../rates/year-end-2026.json";
+import AnswerBox from "../../../components/AnswerBox.astro";
 
-const title = "연말정산 기간과 순서 — 2월에 끝납니다";
+const title = "연말정산 기간과 순서 — 2월 급여를 받을 때 끝납니다";
 const description =
   "연말정산은 다음 해 2월분 급여를 줄 때 끝납니다. 공제신고서는 그 2월 급여를 받기 전까지 내야 하고, 내지 않으면 본인 기본공제와 표준세액공제만 적용됩니다. 추가로 낼 세금이 10만원을 넘으면 2월부터 4월까지 나눠 뗄 수 있습니다. 소득세법 조문 원문 기준입니다.";
+
+const ANSWER = `연말정산은 ${r.settlement.when} 끝납니다. 공제신고서는 그 2월 급여를 받기 전까지 회사에 내야 하고, 내지 않으면 ${r.noFilingPenalty.applied} 적용됩니다. 퇴사하면 퇴직하는 달의 급여를 받을 때 정산합니다.`;
+
+const QA = [
+  { q: "연말정산 기간은 언제인가요?", a: `법이 정한 정산 시점은 ${r.settlement.when}입니다(소득세법 제137조). 2월분 급여가 늦거나 없으면 2월 말일이고, 퇴사자는 퇴직하는 달의 급여를 지급할 때입니다.` },
+  { q: "연말정산 서류는 언제까지 내야 하나요?", a: `${r.declarationDeadline.when}까지 ${r.declarationDeadline.document}를 회사에 냅니다(소득세법 제140조). 퇴사자는 ${r.declarationDeadline.retiree}까지입니다.` },
+  { q: "연말정산 서류를 안 내면 어떻게 되나요?", a: `${r.noFilingPenalty.applied} 적용됩니다(소득세법 제137조 제3항). 부양가족·의료비·신용카드·월세가 모두 빠지므로 대개 세금을 더 내게 됩니다.` },
+  { q: "연말정산 후 2월 월급이 확 줄어든 이유는 무엇인가요?", a: `추가로 낼 세금을 2월 급여에서 한꺼번에 뗐기 때문입니다. 추가 납부세액이 10만원을 넘으면 회사가 ${r.installment.months} 나눠 뗄 수 있지만, '할 수 있다'라 회사가 정합니다(제137조 제4항).` },
+];
 ---
 
-<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
   <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
 
   <p>
     매달 월급에서 떼는 소득세는 <strong>어림값</strong>입니다. 근로소득
@@ -36,7 +47,8 @@ const description =
     정해지고, 그 차액을 맞추는 일이 연말정산입니다.
   </p>
 
-  <h2>연말정산 기간 — 언제 끝나나</h2>
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
   <p>
     법이 정한 날은 하나입니다. <strong>{r.settlement.when}</strong>입니다.
     회사가 그때 정산해서 세금을 더 떼거나 돌려줍니다.
@@ -66,7 +78,8 @@ const description =
     퇴사하면 8월에 연말정산이 끝납니다.
   </p>
 
-  <h2>서류는 2월 급여를 받기 전까지</h2>
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
   <p>
     공제를 받으려면 <strong>{r.declarationDeadline.document}</strong>를
     회사에 내야 합니다. 기한은 <strong>{r.declarationDeadline.when}</strong>
@@ -79,7 +92,8 @@ const description =
 
   <AdSlot />
 
-  <h2>서류를 안 내면 어떻게 되나</h2>
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
   <p>
     여기가 이 글에서 가장 중요한 자리입니다. 조문이 이렇게 정해 놨습니다 —
     신고를 하지 않은 근로자에게는 <strong>{r.noFilingPenalty.applied}</strong>
@@ -95,7 +109,8 @@ const description =
     계산합니다. 간소화 자료를 내려받아 제출하는 일이 그래서 있습니다.
   </p>
 
-  <h2>2월 월급이 확 줄었다면</h2>
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
   <p>
     연말정산 결과 세금을 더 내야 하면 2월 급여에서 한꺼번에 뗍니다. 그런데
     조문에 나눠 낼 길이 있습니다.
