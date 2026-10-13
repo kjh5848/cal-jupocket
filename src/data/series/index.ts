@@ -2,5 +2,6 @@
 import type { Series } from "./types";
 import { irpSeriesDef } from "./irp-tax-credit";
 import { vatFinalSeries } from "./vat-final-return";
+import { vehiclePrepaySeries } from "./vehicle-tax-prepay";
 
-export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries];
+export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries];

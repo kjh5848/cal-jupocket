@@ -1,0 +1,54 @@
+---
+/**
+ * "자동차세 연납 신청 방법" — 자동차세 연납 시리즈. (방법·연납신청·신청 방법·조회도 이 글)
+ * 조문이 말하는 방법: 납부서에 적어 시장·군수·구청장에게 기간 중에 신고납부(시행령 제125조 제2항).
+ * 위택스 화면은 조문 밖이라 다루지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import lt from "../../../rates/local-tax-2026.json";
+
+const P = lt.vehicleTax.prepayDiscount;
+
+const title = "자동차세 연납 신청 방법 — 신청이 아니라 기간 안에 신고납부하는 것입니다";
+const description =
+  "자동차세 연납은 따로 신청해 승인받는 것이 아니라, 연납 기간 안에 납부서에 금액을 적어 시·군·구에 신고납부하는 것입니다. 한 번 연납하면 다음 해 1월에 연납 납부서를 보내 줄 수 있습니다.";
+
+const ANSWER = "자동차세 연납은 승인을 받는 신청이 아닙니다. 연납 기간 안에 납부서에 과세물건·과세표준·산출세액·납부액을 적어 자동차가 등록된 시·군·구에 신고납부하면 됩니다. 한 번 연납한 사람에게는 다음 해 1월에 연납 납부서를 보내 줄 수 있습니다.";
+
+const QA = [
+  { q: "자동차세 연납은 어떻게 신청하나요?", a: "연납 기간 중에 납부서에 과세물건, 과세표준, 산출세액, 납부액을 적어 시장·군수·구청장에게 신고납부합니다(지방세법 시행령 제125조 제2항). 승인 절차가 있는 것이 아니라 그 납부가 곧 연납입니다." },
+  { q: "자동차세 연납은 어디에 내나요?", a: "자동차 소재지의 시·군·구입니다. 자동차 소재지는 등록원부상 사용본거지이고, 그게 분명하지 않으면 소유자의 주소지입니다(시행령 제125조 제1항)." },
+  { q: "작년에 연납했으면 올해도 자동으로 되나요?", a: "자동 납부는 아닙니다. 다만 연세액을 한꺼번에 신고납부한 사람에게는 시장·군수·구청장이 다음 연도 1월 중에 연세액 납부서를 송달할 수 있습니다(시행령 제125조 제2항). 그 납부서로 기간 안에 내면 됩니다." },
+  { q: "연납하고 이사하면 다시 내야 하나요?", a: "다시 내지 않습니다. 연세액을 신고납부한 뒤 자동차 소재지가 바뀌어도 바뀐 소재지에서는 그해 자동차세를 부과하지 않습니다(시행령 제125조 제4항)." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={lt.vehicleTax.prepayDiscount.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>
+    기간은 1월·3월·6월·9월의 16일부터 말일까지입니다 —{" "}
+    <a href="/guide/vehicle-tax-prepay-period/">자동차세 연납 기간</a>.
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>위택스·지자체 납부 화면, 연납 조회 화면</strong> — 조문 밖이고 화면이 바뀝니다.</li>
+  </ul>
+</GuideLayout>

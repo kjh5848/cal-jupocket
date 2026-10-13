@@ -1,0 +1,65 @@
+---
+/**
+ * "자동차세 연납 할인율" — 자동차세 연납 시리즈. (할인·혜택도 이 글)
+ * 반전: "5% 할인" 이 아니다. 이자율 5%(시행령 제125조 제6항)에 남은 일수 비율을 곱한다
+ * (지방세법 제128조 제3항 계산식). 1월에 내도 약 4.58%.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import lt from "../../../rates/local-tax-2026.json";
+import { effectivePrepayRate, daysAfter } from "../../../lib/vehicle-tax";
+
+const P = lt.vehicleTax.prepayDiscount;
+const pct = (w: "jan" | "mar" | "jun" | "sep") => (effectivePrepayRate(w, 2027) * 100).toFixed(2);
+const janDays = daysAfter(2027, 1, 31);
+
+const title = "자동차세 연납 할인율 — 5%가 아니라 1월에 약 4.58%입니다";
+const description =
+  "자동차세 연납 할인율은 흔히 5%라고 하지만, 이자율 5%에 남은 일수 비율을 곱해 계산합니다. 1월에 내면 약 4.58%, 3월 약 3.77%, 6월 2.5%, 9월 1.25%입니다. 지방세법 제128조와 시행령 제125조 기준입니다.";
+
+const ANSWER = `자동차세 연납 할인율은 5%가 아닙니다. 이자율 ${P.interestRate * 100}%에 '남은 일수 ÷ 365'를 곱하는 계산식이라, 가장 이른 1월에 내도 약 ${pct("jan")}%이고 3월 ${pct("mar")}%, 6월 ${pct("jun")}%, 9월 ${pct("sep")}%로 줄어듭니다.`;
+
+const QA = [
+  { q: "자동차세 연납 할인율은 몇 %인가요?", a: `2027년 기준으로 1월 약 ${pct("jan")}%, 3월 약 ${pct("mar")}%, 6월 ${pct("jun")}%, 9월 ${pct("sep")}%입니다. 시행령이 정한 이자율은 ${P.interestRate * 100}%지만(제125조 제6항), 지방세법 계산식에 남은 기간 비율이 곱해집니다.` },
+  { q: "왜 5%가 아닌가요?", a: `1월 연납의 계산식은 '연세액 × 납부기한 다음 날부터 12월 31일까지의 일수 ÷ 365 × 이자율'입니다(지방세법 제128조 제3항). 1월 31일 기한이면 남은 날이 ${janDays}일이라 5%에 ${janDays}/365가 곱해집니다.` },
+  { q: "자동차세 연납 할인에 상한이 있나요?", a: "있습니다. 공제는 남은 기간 연세액의 100분의 10 범위에서 정합니다(제128조 제3항). 지금 이자율 5%로는 이 상한에 닿지 않습니다." },
+  { q: "자동차세 연납 혜택은 할인 말고 또 있나요?", a: "연납한 사람에게는 다음 해 1월 중에 연세액 납부서를 보내 줄 수 있고(시행령 제125조 제2항), 연납 뒤 이사해도 새 주소지에서 그해 자동차세를 다시 걷지 않습니다(같은 조 제4항)." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={lt.vehicleTax.prepayDiscount.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>연납 기간</th><th>계산식</th><th>실제 공제율(2027)</th></tr></thead>
+    <tbody>
+      {P.windows.map((w) => (
+        <tr><th scope="row">{w.from} ~ {w.to}</th><td>{w.formula}</td><td>약 {pct(w.key as "jan" | "mar" | "jun" | "sep")}%</td></tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    이자율 자체도 법률이 아니라 시행령이 정합니다. 시행령은 이 숫자를 2024년
+    12월 31일에 개정했습니다. 다른 글에서 다른 비율을 봤다면 그 글이 쓰인 시점을
+    확인해 보세요.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    금액으로 보려면 <a href="/guide/vehicle-tax-prepay-amount/">자동차세 연납 금액</a>을
+    보세요.
+  </p>
+</GuideLayout>

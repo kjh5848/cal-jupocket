@@ -25,14 +25,16 @@ export function resolveUpdated(src: string, dir: string): string | null {
   const lit = src.match(/updated="(\d{4}-\d{2}-\d{2})"/);
   if (lit) return lit[1];
   // updated={r.verifiedOn} 또는 updated={pa.taxCreditVerifiedOn} — 필드 이름은 글마다 다르다.
-  const m = src.match(/updated=\{(\w+)\.(\w+)\}/);
+  // 중첩 필드도 따라간다 — updated={lt.vehicleTax.prepayDiscount.verifiedOn}
+  const m = src.match(/updated=\{(\w+)((?:\.\w+)+)\}/);
   if (!m) return null;
-  const [, ident, field] = m;
+  const ident = m[1];
+  const path = m[2].slice(1).split(".");
   const rel = src.match(new RegExp(`import\\s+${ident}\\s+from\\s+["']([^"']+\\.json)["']`))?.[1];
   if (!rel) return null;
   const file = join(dir, rel);
   if (!existsSync(file)) return null;
-  const v = JSON.parse(readFileSync(file, "utf8"))[field];
+  const v = path.reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], JSON.parse(readFileSync(file, "utf8")));
   return typeof v === "string" && DATE.test(v) ? v : null;
 }
 

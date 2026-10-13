@@ -157,6 +157,12 @@ export const clusters: Cluster[] = [
       { href: "/guide/local-income-tax/", title: "지방소득세, 5월에 따로 냅니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/comprehensive-property-tax/", title: "종합부동산세, 12월에 옵니다", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/tax-year/", title: "한 해 동안 내는 세금 정리", kind: "guide", icon: "calendar" },
+      { href: "/guide/vehicle-tax-prepay/", title: "자동차세 연납, 1월에 약 4.6%", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/vehicle-tax-prepay-period/", title: "자동차세 연납 기간, 2027년은 2월 1일까지", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/vehicle-tax-prepay-discount/", title: "자동차세 연납 할인율, 5%가 아니다", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/vehicle-tax-prepay-amount/", title: "자동차세 연납 금액, 배기량별", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/vehicle-tax-prepay-how/", title: "자동차세 연납 신청 방법", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/vehicle-tax-prepay-refund/", title: "자동차세 연납 환급, 차를 팔면", kind: "guide", icon: "calendar", year: 2026 },
     ],
   },
   {
@@ -177,6 +183,12 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/vehicle-tax-prepay-refund/",
+  "/guide/vehicle-tax-prepay-how/",
+  "/guide/vehicle-tax-prepay-amount/",
+  "/guide/vehicle-tax-prepay-discount/",
+  "/guide/vehicle-tax-prepay-period/",
+  "/guide/vehicle-tax-prepay/",
   "/guide/closing-vat-final-return/",
   "/guide/vat-e-filing-credit/",
   "/guide/vat-final-return-refund/",

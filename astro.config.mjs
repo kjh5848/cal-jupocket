@@ -55,7 +55,7 @@ function guideDates() {
 
     // 식: updated={r.verifiedOn} — import 를 따라가 그 JSON 의 verifiedOn 을 읽는다.
     // 필드 이름은 글마다 다르다 — {r.verifiedOn}, {pa.taxCreditVerifiedOn}.
-    const expr = src.match(/updated=\{(\w+)\.(\w+)\}/);
+    const expr = src.match(/updated=\{(\w+)((?:\.\w+)+)\}/);
     if (!expr) continue;
     // 템플릿 리터럴 안이라 역슬래시를 두 번 쓴다. `\s` 는 그냥 s 가 된다.
     const imp = src.match(
@@ -64,7 +64,10 @@ function guideDates() {
     if (!imp) continue;
     const json = join(dir, slug, imp[1]);
     if (!existsSync(json)) continue;
-    const verifiedOn = JSON.parse(readFileSync(json, "utf8"))[expr[2]];
+    const verifiedOn = expr[2]
+      .slice(1)
+      .split(".")
+      .reduce((o, k) => (o == null ? o : o[k]), JSON.parse(readFileSync(json, "utf8")));
     if (/^\d{4}-\d{2}-\d{2}$/.test(verifiedOn ?? "")) out[`/guide/${slug}/`] = verifiedOn;
   }
   return out;

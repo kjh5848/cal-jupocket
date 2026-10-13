@@ -98,3 +98,42 @@ export const AGE = V.ageDiscount;
 export const EDU_RATE = V.localEducationTax.rate;
 export const LUMP_SUM_UNDER = V.lumpSumUnder.amount;
 export const PREPAY_CAP = V.prepayDiscount.capRate;
+
+/**
+ * 자동차세 연납 공제 — 지방세법 제128조 제3항(계산식 표), 시행령 제125조 제6항(이자율 5%).
+ *
+ * "연납 할인 5%" 라고 흔히 말하지만 계산식에 남은 일수 비율이 곱해진다. 1월(31일 기한)에
+ * 내도 2월 1일~12월 31일 일수만큼만 쳐서 실제 공제율은 5%보다 작다.
+ *
+ * jan·mar: 연세액 × 남은 일수/연 일수 × 5%
+ * jun:     제2기분 세액 × 5%
+ * sep:     제2기분 세액 × 남은 일수/184 × 5%
+ * 원 미만은 버린다(지방세 끝수 처리 규정은 따로 확인하지 않았다).
+ */
+export type PrepayWindow = "jan" | "mar" | "jun" | "sep";
+const isLeap = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+
+/** 납부기한 다음 날부터 12월 31일까지의 일수 */
+export function daysAfter(year: number, month: number, day: number): number {
+  const end = Date.UTC(year, 11, 31);
+  const next = Date.UTC(year, month - 1, day) + 86_400_000;
+  return Math.round((end - next) / 86_400_000) + 1;
+}
+
+export function prepayDiscount(annualTax: number, window: PrepayWindow, year: number): number {
+  const rate = V.prepayDiscount.interestRate;
+  const w = V.prepayDiscount.windows.find((x) => x.key === window)!;
+  const rest = daysAfter(year, w.deadlineMonth, w.deadlineDay);
+  const half = annualTax / 2; // 제2기분 세액
+  let d: number;
+  if (window === "jan" || window === "mar") d = annualTax * (rest / (isLeap(year) ? 366 : 365)) * rate;
+  else if (window === "jun") d = half * rate;
+  else d = half * (rest / 184) * rate;
+  return Math.floor(Math.min(d, annualTax * V.prepayDiscount.capRate));
+}
+
+/** 실제 공제율(연세액 대비) — 표시용 */
+export const effectivePrepayRate = (window: PrepayWindow, year: number) =>
+  prepayDiscount(1_000_000_000, window, year) / 1_000_000_000;
+
+export const PREPAY_INTEREST = V.prepayDiscount.interestRate;

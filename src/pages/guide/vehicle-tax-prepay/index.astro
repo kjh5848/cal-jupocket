@@ -1,0 +1,60 @@
+---
+/**
+ * "자동차세 연납" — 자동차세 연납 시리즈 허브(src/data/series/vehicle-tax-prepay.ts).
+ * 근거: 지방세법 제128조 제3항(계산식 표), 시행령 제125조(이자율 5%·납부서·이사), 지방세기본법 제24조.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import lt from "../../../rates/local-tax-2026.json";
+import { prepayDiscount, yearlyBase, effectivePrepayRate } from "../../../lib/vehicle-tax";
+import { won } from "../../../lib/won";
+import { vehiclePrepaySeries } from "../../../data/series/vehicle-tax-prepay";
+import { seriesHref } from "../../../data/series/types";
+
+const P = lt.vehicleTax.prepayDiscount;
+const annual = yearlyBase(2000);
+const jan = prepayDiscount(annual, "jan", 2027);
+const eff = (effectivePrepayRate("jan", 2027) * 100).toFixed(2);
+
+const title = "자동차세 연납 — 1월에 한 번에 내면 약 4.6% 덜 냅니다";
+const description =
+  "자동차세 연납은 1년치 자동차세를 미리 한 번에 내고 일부를 공제받는 제도입니다. 이자율은 5%지만 남은 일수만큼만 쳐서 1월에 내도 실제 공제는 약 4.6%입니다. 2027년 1월 연납은 2월 1일까지입니다.";
+
+const ANSWER = `자동차세 연납은 1년치 자동차세를 한꺼번에 미리 내고 일부를 공제받는 제도입니다. 법이 정한 이자율은 ${P.interestRate * 100}%지만 남은 일수만큼만 쳐서, 1월에 내도 실제로는 약 ${eff}%가 줄어듭니다. 2,000cc 신차라면 ${won(jan)}입니다.`;
+
+const QA = [
+  { q: "자동차세 연납이란 무엇인가요?", a: "6월과 12월에 나눠 내는 자동차세 1년치를 미리 한 번에 신고납부하고, 그 대신 일정 금액을 공제받는 제도입니다(지방세법 제128조 제3항). 1월·3월·6월·9월 중 한 기간에 낼 수 있습니다." },
+  { q: "자동차세 연납 할인율은 몇 %인가요?", a: `이자율은 시행령이 ${P.interestRate * 100}%로 정했지만(시행령 제125조 제6항), 계산식에 남은 일수 비율이 곱해집니다. 그래서 가장 이른 1월에 내도 실제 공제율은 약 ${eff}%입니다.` },
+  { q: "자동차세 연납은 언제 하나요?", a: "1월 16일~31일, 3월 16일~31일, 6월 16일~30일, 9월 16일~30일 네 기간입니다. 빨리 낼수록 공제가 큽니다. 2027년 1월은 31일이 일요일이라 2월 1일까지입니다(지방세기본법 제24조)." },
+  { q: "자동차세 연납하고 차를 팔면 어떻게 되나요?", a: "소유기간으로 일할계산합니다(지방세법 제129조). 판 사람이 동의하면 산 사람이 그 연세액을 낸 것으로 봅니다(제130조 제3항). 폐차하면 그 기분 세액을 일할계산합니다." },
+];
+const more: Record<number, string> = { 1: "vehicle-tax-prepay-discount", 2: "vehicle-tax-prepay-period", 3: "vehicle-tax-prepay-refund" };
+const labelOf = (slug: string) => vehiclePrepaySeries.items.find((s) => s.slug === slug)?.label ?? slug;
+---
+
+<GuideLayout title={title} description={description} updated={lt.vehicleTax.prepayDiscount.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  {QA.map((x, i) => (
+    <>
+      <h2>{x.q}</h2>
+      <p class="qa-lead">{x.a}</p>
+      {more[i] && <p>자세히 — <a href={seriesHref(more[i])}>{labelOf(more[i])}</a></p>}
+    </>
+  ))}
+
+  <AdSlot />
+
+  <h2>자동차세 연납, 질문별로 정리했습니다</h2>
+  <ul>
+    {vehiclePrepaySeries.items.map((s) => (
+      <li><a href={seriesHref(s.slug)}>{s.label}</a></li>
+    ))}
+  </ul>
+  <p>
+    연납하지 않을 때의 세액과 차령 감면은 <a href="/guide/vehicle-tax/">자동차세</a>와{" "}
+    <a href="/vehicle-tax/">자동차세 계산기</a>에 있습니다.
+  </p>
+</GuideLayout>

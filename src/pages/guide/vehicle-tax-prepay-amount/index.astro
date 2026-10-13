@@ -1,0 +1,65 @@
+---
+/**
+ * "자동차세 연납 금액" — 자동차세 연납 시리즈.
+ * 배기량별 연세액(제127조)과 1월 연납 공제(제128조 제3항·시행령 제125조 제6항)를 표로.
+ * 금액은 src/lib/vehicle-tax.ts 가 계산한다. 지방교육세(30%)는 연납 뒤 계산을 확인하지 않아 본세만.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import lt from "../../../rates/local-tax-2026.json";
+import { prepayDiscount, yearlyBase, bill } from "../../../lib/vehicle-tax";
+import { won } from "../../../lib/won";
+
+const P = lt.vehicleTax.prepayDiscount;
+const ccs = [998, 1598, 1999, 2497, 3000];
+const rows = ccs.map((cc) => {
+  const a = yearlyBase(cc);
+  const d = prepayDiscount(a, "jan", 2027);
+  return { cc, a, d, pay: a - d };
+});
+const two = rows[2];
+const old = bill({ cc: 1999, ageYears: 7 });
+const oldD = prepayDiscount(old.vehicleTax, "jan", 2027);
+
+const title = "자동차세 연납 금액 — 2,000cc급 신차는 1월에 1만 8천원가량 덜 냅니다";
+const description =
+  "자동차세 연납 금액은 연세액에서 공제액을 뺀 금액입니다. 배기량 2,000cc급 신차를 2027년 1월에 연납하면 약 1만 8천원이 공제됩니다. 배기량별 표와 차령 감면 예시를 정리했습니다.";
+
+const ANSWER = `자동차세 연납 금액은 연세액에서 연납 공제를 뺀 금액입니다. 1,999cc 신차(연세액 ${won(two.a)})를 2027년 1월에 연납하면 ${won(two.d)}이 줄어 자동차세 본세로 ${won(two.pay)}을 냅니다. 지방교육세는 따로 붙습니다.`;
+
+const QA = [
+  { q: "자동차세 연납 금액은 어떻게 계산하나요?", a: "연세액(배기량 × cc당 세액, 차령 감면 반영)에서 연납 공제(연세액 × 남은 일수 ÷ 365 × 5%)를 뺍니다(지방세법 제127조·제128조 제3항, 시행령 제125조 제6항)." },
+  { q: "배기량별 자동차세 연납 금액은 얼마인가요?", a: `2027년 1월 연납 기준으로 1,999cc 신차는 연세액 ${won(two.a)}에서 ${won(two.d)}이 줄어 ${won(two.pay)}입니다. 아래 표는 비영업용 승용차의 자동차세 본세만 계산했습니다.` },
+  { q: "오래된 차도 연납하면 금액이 줄어드나요?", a: `줄어듭니다. 차령 감면을 먼저 반영한 연세액에 연납 공제가 붙습니다. 1,999cc 7년차는 연세액이 ${won(old.vehicleTax)}로 줄고, 1월 연납 공제는 ${won(oldD)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={lt.vehicleTax.prepayDiscount.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>배기량(신차)</th><th>연세액</th><th>1월 연납 공제</th><th>연납 금액(본세)</th></tr></thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr><th scope="row">{r.cc.toLocaleString("ko-KR")}cc</th><td>{won(r.a)}</td><td>{won(r.d)}</td><td>{won(r.pay)}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <p><small>2027년 1월 연납, 비영업용 승용차, 원 미만 버림. 지방교육세(자동차세의 30%)가 연납 공제 뒤 어떻게 계산되는지는 확인하지 않아 표에 넣지 않았습니다.</small></p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    차령 감면 구조는 <a href="/guide/vehicle-tax/">자동차세</a>, 내 차 금액은{" "}
+    <a href="/vehicle-tax/">자동차세 계산기</a>로 확인하세요.
+  </p>
+</GuideLayout>

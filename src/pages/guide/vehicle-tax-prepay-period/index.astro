@@ -1,0 +1,62 @@
+---
+/**
+ * "자동차세 연납 기간" — 자동차세 연납 시리즈. (납부기간·연납신청 기간도 이 글)
+ * 근거: 지방세법 제128조 제3항 각 호(네 기간), 지방세기본법 제24조(기한이 주말이면 다음 날).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import lt from "../../../rates/local-tax-2026.json";
+import { prepayDiscount, yearlyBase } from "../../../lib/vehicle-tax";
+import { won } from "../../../lib/won";
+
+const P = lt.vehicleTax.prepayDiscount;
+const annual = yearlyBase(2000);
+const rows = P.windows.map((w) => ({ ...w, d: prepayDiscount(annual, w.key as "jan" | "mar" | "jun" | "sep", 2027) }));
+
+const title = "자동차세 연납 기간 — 1월 16~31일이 가장 크고, 2027년은 2월 1일까지";
+const description =
+  "자동차세 연납 기간은 1월 16~31일, 3월 16~31일, 6월 16~30일, 9월 16~30일 네 번입니다. 늦을수록 공제가 줄어 1월이 가장 큽니다. 2027년 1월 31일은 일요일이라 기한이 2월 1일로 넘어갑니다.";
+
+const ANSWER = `자동차세 연납 기간은 1월 16~31일, 3월 16~31일, 6월 16~30일, 9월 16~30일 네 번입니다. 늦게 낼수록 공제가 줄어 1월이 가장 큽니다. 2027년은 1월 31일이 일요일이라 2월 1일(월)까지 낼 수 있습니다.`;
+
+const QA = [
+  { q: "자동차세 연납 기간은 언제인가요?", a: "1월 16일~31일, 3월 16일~31일, 6월 16일~30일, 9월 16일~30일입니다(지방세법 제128조 제3항). 이 기간 중 한 번에 남은 연세액을 신고납부하면 공제를 받습니다." },
+  { q: "2027년 자동차세 연납 기한은 언제인가요?", a: "1월 연납은 2월 1일(월)까지입니다. 1월 31일이 일요일이라 지방세 기한이 토·일요일이나 공휴일이면 다음 날로 넘어간다는 지방세기본법 제24조에 따라 하루 미뤄집니다." },
+  { q: "1월을 놓치면 연납을 못 하나요?", a: "3월·6월·9월에도 할 수 있습니다. 다만 남은 기간이 짧아질수록 공제가 줄어서, 9월에 내면 1월의 4분의 1 수준입니다. 계산식이 남은 일수에 비례하기 때문입니다." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={lt.vehicleTax.prepayDiscount.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>연납 기간</th><th>공제 계산식</th><th>2,000cc 신차(연 {won(annual)})</th></tr></thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr><th scope="row">{r.from} ~ {r.to}</th><td>{r.formula}</td><td>{won(r.d)}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <p><small>이자율 {P.interestRate * 100}%({P.interestArticle}). 2027년 기준, 자동차세 본세만 계산했습니다.</small></p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    다만 공제 계산식의 "납부기한 다음 날부터 12월 31일까지의 일수"를 미뤄진
+    기한으로 다시 세는지는 조문이 따로 말하지 않습니다. 위 표는 조문의 1월 31일
+    기준입니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    공제율이 왜 5%보다 작은지는 <a href="/guide/vehicle-tax-prepay-discount/">자동차세
+    연납 할인율</a>에 있습니다.
+  </p>
+</GuideLayout>

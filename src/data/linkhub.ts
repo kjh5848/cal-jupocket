@@ -101,6 +101,12 @@ export const hubEntries: HubEntry[] = [
   { no: 74, href: "/guide/vat-final-return-refund/", label: "부가세 확정신고 환급", kind: "guide" },
   { no: 75, href: "/guide/vat-e-filing-credit/", label: "부가세 전자신고세액공제", kind: "guide" },
   { no: 76, href: "/guide/closing-vat-final-return/", label: "폐업 부가세 확정신고", kind: "guide" },
+  { no: 77, href: "/guide/vehicle-tax-prepay/", label: "자동차세 연납", kind: "guide" },
+  { no: 78, href: "/guide/vehicle-tax-prepay-period/", label: "자동차세 연납 기간", kind: "guide" },
+  { no: 79, href: "/guide/vehicle-tax-prepay-discount/", label: "자동차세 연납 할인율", kind: "guide" },
+  { no: 80, href: "/guide/vehicle-tax-prepay-amount/", label: "자동차세 연납 금액", kind: "guide" },
+  { no: 81, href: "/guide/vehicle-tax-prepay-how/", label: "자동차세 연납 신청 방법", kind: "guide" },
+  { no: 82, href: "/guide/vehicle-tax-prepay-refund/", label: "자동차세 연납 환급(차량 매각)", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -141,7 +147,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
-  { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax", "/guide/comprehensive-property-tax"]) },
+  { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax", "/guide/comprehensive-property-tax", "/guide/vehicle-tax-prepay", "/guide/vehicle-tax-prepay-period", "/guide/vehicle-tax-prepay-discount", "/guide/vehicle-tax-prepay-amount", "/guide/vehicle-tax-prepay-how", "/guide/vehicle-tax-prepay-refund"]) },
   {
     label: "종합소득세·원천징수",
     cluster: "income",
