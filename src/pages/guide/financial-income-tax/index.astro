@@ -1,0 +1,72 @@
+---
+/**
+ * "금융소득종합과세" — 금융소득 시리즈 허브. (금융소득세·2천만원 기준·비교과세·계산 예시·신고·연금 이자도 이 글)
+ * 근거: 소득세법 제14조 제3항 제6호(2천만원), 제62조(비교과세), 제129조 제1항 제1호·제2호(14%), 지방세법 제103조의13.
+ * 금액은 financialTax() 가 낸다(financial-income-2026.json, 기본세율 rates/2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/financial-income-2026.json";
+import { financialTax } from "../../../lib/financial-income";
+import { won, eokwon } from "../../../lib/won";
+import { financialIncomeSeries as S } from "../../../data/series/financial-income";
+
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const T = r.threshold.amount;
+const solo = financialTax({ interest: 30_000_000 });
+const worker = financialTax({ interest: 30_000_000, otherBase: 50_000_000 });
+const big = financialTax({ interest: 50_000_000, otherBase: 80_000_000 });
+const rows = [
+  { label: "이자 3천만원, 다른 소득 없음", x: solo, other: 0 },
+  { label: "이자 3천만원 + 다른 소득 과세표준 5천만원", x: worker, other: 50_000_000 },
+  { label: "이자 5천만원 + 다른 소득 과세표준 8천만원", x: big, other: 80_000_000 },
+];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 financial-income-series.test.ts 가 rates 와 대조한다.
+const title = "금융소득종합과세 — 이자·배당이 한 해 2천만원을 넘으면 다른 소득과 합쳐 5월에 신고합니다";
+const description =
+  "금융소득종합과세는 한 해 이자·배당소득 합계가 2천만원을 넘을 때 그 전액을 근로·사업소득 등과 합산해 다음 해 5월에 신고하는 제도입니다. 2천만원까지는 14%로 계산하고 넘는 부분만 누진세율을 적용하며, 14%로 계산한 세금보다 적게 나오지는 않습니다.";
+
+const ANSWER = `금융소득종합과세는 한 해 이자·배당소득이 ${eokwon(T)}을 넘으면 전액을 다른 종합소득과 합산하는 제도입니다(소득세법 제14조 제3항 제6호). ${eokwon(T)}까지는 ${pct(r.withholding.interest)}, 넘는 부분은 다른 소득과 합쳐 기본세율로 계산하고, 전액 ${pct(r.withholding.interest)}로 계산한 세금보다 적으면 그 금액을 냅니다(제62조).`;
+
+const QA = [
+  { q: "금융소득종합과세 기준은 얼마인가요?", a: `분리과세 대상이 아닌 이자소득과 배당소득을 합쳐 한 해 ${eokwon(T)}입니다. 이하면 은행·증권사가 떼는 ${pct(r.withholding.interest)}(지방소득세 포함 ${pct(r.withholding.interest * (1 + r.local.ratio))})로 끝나고, 1원이라도 넘으면 넘는 부분만이 아니라 금융소득 전액이 종합소득에 합산됩니다(제14조 제3항 제6호).` },
+  { q: "금융소득종합과세는 어떻게 계산하나요?", a: `① (${eokwon(T)} 초과분 + 다른 종합소득)에 기본세율 + ${eokwon(T)} × ${pct(r.withholding.interest)} ② 금융소득 전액 × ${pct(r.withholding.interest)} + 다른 종합소득에 기본세율 — 둘 중 큰 금액이 산출세액입니다(제62조). 그래서 다른 소득이 없거나 적으면 이미 뗀 ${pct(r.withholding.interest)}에서 더 내지 않습니다.` },
+  { q: "금융소득종합과세가 되면 세금이 얼마나 늘어나나요?", a: `다른 소득이 없고 이자가 3천만원이면 늘지 않습니다 — ①은 ${won(solo.opt1)}, ②는 ${won(solo.opt2)}이라 ②를 냅니다. 다른 소득 과세표준이 5천만원이면 초과 1천만원이 ${pct(0.24)} 구간에 걸려 소득세가 ${won(worker.extra)} 늘고, 지방소득세 ${won(worker.extraLocal)}이 더해집니다. 소득공제 전 단순 계산입니다.` },
+  { q: "금융소득종합과세는 언제 신고하나요?", a: `금융소득이 ${eokwon(T)}을 넘은 해의 다음 해 5월 1일부터 5월 31일까지 종합소득세 확정신고에 넣습니다. 이미 원천징수된 ${pct(r.withholding.interest)}는 기납부세액으로 빼고 차액만 냅니다. 근로소득만 있던 직장인도 이 해에는 연말정산으로 끝나지 않습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>예금·적금 이자, 채권 이자, 주식 배당금, 펀드 분배금이 여기에 들어갑니다. ISA·비과세종합저축처럼 조세특례제한법이 비과세하거나 분리과세하는 상품은 합계에서 빠지지만(제14조 제3항 제1호·제5호), 상품별 요건은 이 글에서 다루지 않았습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>경우</th><th>① 초과분 기본세율</th><th>② 전액 14%</th><th>산출세액(큰 쪽)</th><th>늘어나는 소득세</th></tr></thead>
+      <tbody>{rows.map(({ label, x }) => <tr><th scope="row">{label}</th><td>{won(x.opt1)}</td><td>{won(x.opt2)}</td><td>{won(x.computed)}</td><td>{won(x.extra)}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <p>①·②에는 다른 소득의 세금도 들어 있습니다. '늘어나는 소득세'는 산출세액에서 원천징수된 14%와 다른 소득만의 세금을 뺀 값이고, 지방소득세는 그 10%가 더 붙습니다. 배당소득에 붙는 Gross-up과 배당세액공제는 넣지 않은 예금이자 기준입니다 — <a href="/guide/dividend-income-tax/">배당소득세</a>.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>기본세율 구간은 <a href="/guide/income-tax-brackets/">소득세율표</a>, 신고 대상과 기한은 <a href="/guide/who-must-file/">종합소득세 신고 대상</a>에 있습니다.</p>
+
+  <h2>금융소득 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

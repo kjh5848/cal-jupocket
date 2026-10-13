@@ -1,0 +1,53 @@
+---
+/**
+ * "이자소득세" — 금융소득 시리즈. (이자소득세율 15.4%·예금 이자 세금 계산·비영업대금 27.5%·개인 간 이자·2천만원도 이 글)
+ * 근거: 소득세법 제127조 제1항 제1호, 제129조 제1항 제1호(14%, 비영업대금 25%, 온투업 14%), 제14조 제3항 제6호, 지방세법 제103조의13.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/financial-income-2026.json";
+import { won, eokwon } from "../../../lib/won";
+
+const W = r.withholding;
+const L = r.local.ratio;
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const fl = (v: number) => Math.floor(v + 1e-6);
+const with15 = (v: number) => fl(v * W.interest) + fl(fl(v * W.interest) * L);
+const amounts = [100_000, 1_000_000, 5_000_000, 10_000_000, 20_000_000];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 financial-income-series.test.ts 가 rates 와 대조한다.
+const title = "이자소득세 — 예금 이자는 15.4%를 떼고 받고, 개인에게 빌려준 돈의 이자는 27.5%입니다";
+const description =
+  "이자소득세는 이자를 줄 때 소득세 14%와 지방소득세 1.4%를 합친 15.4%를 떼는 세금입니다. 예금 이자 100만원이면 15만4천원을 떼고 84만6천원을 받습니다. 개인 간 대여 이자(비영업대금의 이익)는 27.5%이고, 한 해 2천만원을 넘으면 종합과세됩니다.";
+
+const ANSWER = `이자소득세는 은행 등이 이자를 줄 때 소득세 ${pct(W.interest)}와 지방소득세 ${pct(W.interest * L)}, 합계 ${pct(W.interest * (1 + L))}를 떼는 세금입니다(소득세법 제129조 제1항 제1호). 예금 이자 100만원이면 ${won(with15(1_000_000))}을 떼고 ${won(1_000_000 - with15(1_000_000))}을 받습니다. 개인에게 빌려준 돈의 이자는 ${pct(W.nonBusinessLoan * (1 + L))}입니다.`;
+
+const QA = [
+  { q: "이자소득세율은 몇 %인가요?", a: `원천징수세율은 ${pct(W.interest)}이고(제129조 제1항 제1호 라목), 그 소득세의 10%가 지방소득세로 붙어 실제로 떼는 비율은 ${pct(W.interest * (1 + L))}입니다(지방세법 제103조의13). 예금·적금·채권 이자가 모두 이 세율입니다. 비영업대금의 이익만 ${pct(W.nonBusinessLoan)}(합계 ${pct(W.nonBusinessLoan * (1 + L))})입니다.` },
+  { q: "예금 이자 세금은 얼마인가요?", a: `이자 × ${pct(W.interest * (1 + L))}입니다. 10만원이면 ${won(with15(100_000))}, 100만원이면 ${won(with15(1_000_000))}, 1천만원이면 ${won(with15(10_000_000))}을 떼고 받습니다. 은행이 지급할 때 떼서 내므로(소득세법 제127조) 한 해 이자·배당이 ${eokwon(r.threshold.amount)} 이하면 따로 신고하지 않습니다.` },
+  { q: "개인에게 돈을 빌려주고 받은 이자는요?", a: `돈을 빌려주는 것을 사업으로 하지 않는 사람이 일시적·우발적으로 빌려주고 받는 이자(비영업대금의 이익, 시행령 제26조 제3항)는 ${pct(W.nonBusinessLoan)}, 지방소득세를 더해 ${pct(W.nonBusinessLoan * (1 + L))}입니다(제129조 제1항 제1호 나목). 다만 금융위원회에 등록한 온라인투자연계금융업자(온투업)를 통해 받은 이자는 ${pct(W.p2pLoan)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>이자</th><th>소득세 {pct(W.interest)}</th><th>지방소득세</th><th>세후 이자</th></tr></thead>
+    <tbody>{amounts.map((a) => <tr><th scope="row">{eokwon(a)}</th><td>{won(fl(a * W.interest))}</td><td>{won(fl(fl(a * W.interest) * L))}</td><td>{won(a - with15(a))}</td></tr>)}</tbody>
+  </table>
+  <p>원 미만은 버렸습니다. 실제 은행 계산은 끝수 처리 방식에 따라 몇 원 다를 수 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>이자와 배당을 합쳐 한 해 {eokwon(r.threshold.amount)}을 넘으면 다른 소득과 합쳐 다시 계산합니다 — <a href="/guide/financial-income-tax/">금융소득종합과세</a>. 배당은 <a href="/guide/dividend-income-tax/">배당소득세</a>에 있습니다.</p>
+</GuideLayout>

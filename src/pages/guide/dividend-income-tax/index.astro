@@ -1,0 +1,62 @@
+---
+/**
+ * "배당소득세" — 금융소득 시리즈. (배당소득세율 15.4%·배당금 세금 계산·Gross-up·배당세액공제·고배당기업 분리과세 2026도 이 글)
+ * 근거: 소득세법 제129조 제1항 제2호(14%), 제17조 제3항(Gross-up 10%), 제56조(배당세액공제), 제14조 제3항 제6호,
+ * 조세특례제한법 제104조의27(2026. 1. 1. 이후 받는 고배당기업 배당 분리과세, 세율표는 img alt), 지방세법 제103조의13.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/financial-income-2026.json";
+import { highDividendTax } from "../../../lib/financial-income";
+import { won, eokwon } from "../../../lib/won";
+
+const W = r.withholding;
+const L = r.local.ratio;
+const H = r.highDividend;
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const fl = (v: number) => Math.floor(v + 1e-6);
+const d1 = 1_000_000;
+const hd = [20_000_000, 50_000_000, 300_000_000, 1_000_000_000];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 financial-income-series.test.ts 가 rates 와 대조한다.
+const title = "배당소득세 — 배당금은 15.4%를 떼고, 2026년부터 고배당기업 배당은 따로 계산할 수 있습니다";
+const description =
+  "배당소득세는 배당금을 줄 때 소득세 14%와 지방소득세를 합친 15.4%를 떼는 세금입니다. 이자·배당이 한 해 2천만원을 넘으면 종합과세되고 배당에 10% Gross-up이 붙습니다. 2026년부터 고배당기업 배당은 14~30%로 따로 계산할 수 있습니다.";
+
+const ANSWER = `배당소득세는 배당금을 줄 때 소득세 ${pct(W.dividend)}와 지방소득세를 합친 ${pct(W.dividend * (1 + L))}를 떼는 세금입니다(소득세법 제129조 제1항 제2호). 배당금 100만원이면 ${won(fl(d1 * W.dividend) + fl(fl(d1 * W.dividend) * L))}을 뗍니다. 2026년부터 고배당기업 배당은 종합소득에 합산하지 않고 따로 계산할 수 있습니다(조특법 제104조의27).`;
+
+const QA = [
+  { q: "배당소득세율은 몇 %인가요?", a: `원천징수세율은 ${pct(W.dividend)}이고 지방소득세가 그 10%라 합계 ${pct(W.dividend * (1 + L))}입니다. 출자공동사업자가 받는 배당만 ${pct(W.partnerDividend)}입니다(제129조 제1항 제2호). 한 해 이자와 배당 합계가 ${eokwon(r.threshold.amount)} 이하면 이렇게 떼고 끝나고, 넘으면 금융소득종합과세 대상입니다.` },
+  { q: "배당소득 Gross-up은 무엇인가요?", a: `법인세를 이미 낸 이익에서 나온 배당이 종합과세되면, 배당소득금액에 그 배당의 ${pct(r.grossUp.rate)}를 더하고(제17조 제3항) 더한 금액만큼 배당세액공제로 산출세액에서 다시 뺍니다(제56조 제1항). 배당세액공제 대상은 종합과세기준금액 ${eokwon(r.threshold.amount)}을 넘는 배당소득금액입니다(제56조 제4항).` },
+  { q: "2026년 고배당기업 배당 분리과세는 무엇인가요?", a: `2026년 1월 1일 이후 받는 상장 고배당기업의 배당 중 특례배당소득은 종합소득에 합산하지 않고 ${eokwon(H.brackets[0].upTo!)} 이하 ${pct(H.brackets[0].rate)}, 3억원 이하 ${pct(H.brackets[1].rate)}, 50억원 이하 ${pct(H.brackets[2].rate)}, 초과 ${pct(H.brackets[3].rate)}로 따로 계산합니다(조특법 제104조의27). 합산배제를 신청해야 하고, 2028년 사업연도 배당까지입니다.` },
+  { q: "고배당기업은 어떤 회사인가요?", a: `코넥스가 아닌 주권상장법인으로 직전 사업연도 배당이 2024년 사업연도보다 줄지 않았고, 배당성향이 40% 이상이거나 25% 이상이면서 이익배당금이 전년보다 10% 이상 늘어난 회사입니다(제104조의27 제1항). 회사가 정기주주총회 배당 결의 다음 날까지 요건 충족을 공시합니다(제4항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>2천만원을 넘었을 때의 계산은 <a href="/guide/financial-income-tax/">금융소득종합과세</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>Gross-up을 빼는 배당(자본감소 의제배당, 감면 법인의 배당 일부 등)은 제17조 제3항 각 호에 있고, 이자와 배당 중 무엇이 먼저 {eokwon(r.threshold.amount)}을 채우는지와 배당세액공제 한도는 시행령 영역이라 이 글에서 계산하지 않았습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>특례배당소득</th><th>세액(조특법 제104조의27 제2항)</th><th>평균 세율</th></tr></thead>
+    <tbody>{hd.map((a) => <tr><th scope="row">{eokwon(a)}</th><td>{won(highDividendTax(a))}</td><td>{(highDividendTax(a) / a * 100).toFixed(2)}%</td></tr>)}</tbody>
+  </table>
+  <p>지방소득세는 별도입니다. 배당 중 어디까지가 '특례배당소득'인지는 시행령이 정해 이 글에서 다루지 않았습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>예금 이자의 세금은 <a href="/guide/interest-income-tax/">이자소득세</a>에 있습니다.</p>
+</GuideLayout>

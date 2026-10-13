@@ -256,6 +256,9 @@ export const hubEntries: HubEntry[] = [
   { no: 229, href: "/guide/wage-ledger/", label: "임금대장 기재사항·보존", kind: "guide" },
   { no: 230, href: "/guide/diligent-filer/", label: "성실신고대상자 기준·기한", kind: "guide" },
   { no: 231, href: "/guide/diligent-business/", label: "성실사업자 기준·혜택", kind: "guide" },
+  { no: 232, href: "/guide/financial-income-tax/", label: "금융소득종합과세 2천만원", kind: "guide" },
+  { no: 233, href: "/guide/interest-income-tax/", label: "이자소득세 15.4%", kind: "guide" },
+  { no: 234, href: "/guide/dividend-income-tax/", label: "배당소득세·고배당 분리과세", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -386,6 +389,9 @@ export const hubGroups: HubGroup[] = [
       "/guide/wage-ledger",
       "/guide/diligent-filer",
       "/guide/diligent-business",
+      "/guide/financial-income-tax",
+      "/guide/interest-income-tax",
+      "/guide/dividend-income-tax",
     ]),
   },
   {

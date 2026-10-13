@@ -153,6 +153,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/wage-ledger/", title: "임금대장 — 근로자마다 10가지를 임금 줄 때마다 적고 3년간 보존합니다", kind: "guide", icon: "document", year: 2026 },
       { href: "/guide/diligent-filer/", title: "성실신고대상자 — 그해 수입금액이 업종별 15억·7억5천만·5억원 이상이면 6월 30일까지 신고합니다", kind: "guide", icon: "checklist", year: 2026 },
       { href: "/guide/diligent-business/", title: "성실사업자 기준 — 카드·현금영수증 가맹, 장부 신고, 사업용계좌 3분의 2 사용 세 가지", kind: "guide", icon: "checklist", year: 2026 },
+      { href: "/guide/financial-income-tax/", title: "금융소득종합과세 — 이자·배당이 한 해 2천만원을 넘으면 다른 소득과 합쳐 5월에 신고합니다", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/interest-income-tax/", title: "이자소득세 — 예금 이자는 15.4%를 떼고 받고, 개인에게 빌려준 돈의 이자는 27.5%입니다", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/dividend-income-tax/", title: "배당소득세 — 배당금은 15.4%를 떼고, 2026년부터 고배당기업 배당은 따로 계산할 수 있습니다", kind: "guide", icon: "percent", year: 2026 },
     ],
   },
   {
@@ -332,6 +335,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/dividend-income-tax/",
+  "/guide/interest-income-tax/",
+  "/guide/financial-income-tax/",
   "/guide/diligent-business/",
   "/guide/diligent-filer/",
   "/guide/wage-ledger/",
