@@ -1,0 +1,55 @@
+---
+/**
+ * "국세환급금" — 세금 환급 시리즈. (국세환급금 충당·지급 30일·환급가산금·양도·소멸시효도 이 글)
+ * 근거: 국세기본법 제51조(결정·충당·동의·30일), 제52조(환급가산금 — refund-2026.json 연 3.1%·기산일), 제53조(양도), 제54조(5년).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/tax-refund-2026.json";
+import rf from "../../../rates/refund-2026.json";
+import { refundInterest } from "../../../lib/tax-refund";
+import { won, eokwon } from "../../../lib/won";
+
+const RI = rf.refundInterest;
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const amount = 1_000_000;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 tax-refund-series.test.ts 가 rates 와 대조한다.
+const title = "국세환급금 — 체납·고지 세금에 먼저 충당하고, 남은 돈은 결정일부터 30일 안에 지급";
+const description =
+  "국세환급금은 세무서가 결정하면 체납된 세금에 먼저 충당하고, 고지된 세금이나 자진납부 세금에는 납세자가 동의할 때만 충당한 뒤 남은 돈을 결정일부터 30일 안에 지급합니다. 늦게 받으면 연 3.1%의 환급가산금이 붙고, 받을 권리는 5년간 쓰지 않으면 사라집니다.";
+
+const ANSWER = `국세환급금은 세무서가 결정하면 체납된 세금 등에 먼저 충당하고, 남은 돈을 결정일부터 ${r.payment.days}일 안에 지급합니다(국세기본법 제51조). 환급이 늦어지면 기산일부터 연 ${pct(RI.annualRate)}의 국세환급가산금이 더해지고(제52조), 받을 권리는 ${r.limitation.years}년이 지나면 사라집니다(제54조).`;
+
+const QA = [
+  { q: "국세환급금은 어디에 먼저 충당되나요?", a: `결정된 국세환급금은 ① 납부고지로 내는 국세 ② 체납된 국세와 강제징수비(다른 세무서 체납 포함) ③ 자진납부하는 국세에 충당합니다(제51조 제2항). 다만 ①(납부기한 전 징수 사유가 아닐 때)과 ③에 충당하려면 납세자의 동의가 필요하고, 체납 세금에는 동의 없이 충당합니다.` },
+  { q: "국세환급금은 언제 지급되나요?", a: `세무서는 환급할 금액이 생기면 즉시 국세환급금으로 결정하고(제51조 제1항), 충당하고 남은 금액을 국세환급금 결정을 한 날부터 ${r.payment.days}일 내에 지급합니다(제6항). 지급은 한국은행이 세무서 소관 수입금 중에서 합니다(제7항).` },
+  { q: "국세환급가산금은 얼마인가요?", a: `국세환급금을 충당하거나 지급할 때 기산일부터 충당·지급결정일까지의 기간에 연 ${pct(RI.annualRate)}(연 1천분의 31)를 곱해 더합니다(제52조, 시행규칙 제19조의3). 환급금 ${eokwon(amount)}이 30일 늦으면 ${won(refundInterest(amount, 30))}입니다. 고충민원 처리로 주는 환급에는 붙지 않습니다.` },
+  { q: "국세환급금을 다른 사람에게 넘길 수 있나요?", a: `넘길 수 있습니다. 납세자는 국세환급금에 관한 권리를 대통령령에 따라 타인에게 양도할 수 있고(제53조 제1항), 세무서는 양도인이나 양수인에게 낼 국세가 있으면 먼저 충당한 뒤 남은 금액에 대해 양도 요구에 따릅니다(제2항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    기산일은 환급세액을 신고했다면 신고일(법정신고기일 전이면 그 기일)부터 30일이 지난 날의 다음 날입니다(시행령 제43조의3).
+    종합소득세는 <a href="/guide/income-tax-refund-date/">종합소득세 환급일</a>에 날짜로 정리했습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>시효와 조회는 <a href="/guide/tax-refund-lookup/">세금 환급금 조회</a>에 있습니다.</p>
+</GuideLayout>

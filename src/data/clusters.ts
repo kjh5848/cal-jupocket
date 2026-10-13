@@ -141,6 +141,10 @@ export const clusters: Cluster[] = [
       { href: "/guide/daily-worker-income-report/", title: "일용직 소득신고, 다음 달 말일", kind: "guide", icon: "receipt", year: 2026 },
       { href: "/guide/simplified-payment-statement/", title: "간이지급명세서, 매달 다음 달 말일", kind: "guide", icon: "receipt", year: 2026 },
       { href: "/guide/payment-statement/", title: "지급명세서, 2월 말·3월 10일", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/tax-refund-lookup/", title: "세금 환급금 조회, 5년 지나면 소멸", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/national-tax-refund/", title: "국세환급금, 충당 뒤 30일 안에", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/income-tax-refund-guide/", title: "종합소득세 환급, 5월 신고로", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/income-tax-refund-date/", title: "종합소득세 환급일, 7월 1일부터 이자", kind: "guide", icon: "coins", year: 2026 },
     ],
   },
   {
@@ -303,6 +307,10 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/income-tax-refund-date/",
+  "/guide/income-tax-refund-guide/",
+  "/guide/national-tax-refund/",
+  "/guide/tax-refund-lookup/",
   "/guide/payment-statement/",
   "/guide/simplified-payment-statement/",
   "/guide/daily-worker-income-report/",

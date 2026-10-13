@@ -227,6 +227,10 @@ export const hubEntries: HubEntry[] = [
   { no: 200, href: "/guide/daily-worker-income-report/", label: "일용직 소득신고", kind: "guide" },
   { no: 201, href: "/guide/simplified-payment-statement/", label: "간이지급명세서", kind: "guide" },
   { no: 202, href: "/guide/payment-statement/", label: "지급명세서", kind: "guide" },
+  { no: 203, href: "/guide/tax-refund-lookup/", label: "세금 환급금 조회", kind: "guide" },
+  { no: 204, href: "/guide/national-tax-refund/", label: "국세환급금", kind: "guide" },
+  { no: 205, href: "/guide/income-tax-refund-guide/", label: "종합소득세 환급", kind: "guide" },
+  { no: 206, href: "/guide/income-tax-refund-date/", label: "종합소득세 환급일", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -345,6 +349,10 @@ export const hubGroups: HubGroup[] = [
       "/guide/daily-worker-income-report",
       "/guide/simplified-payment-statement",
       "/guide/payment-statement",
+      "/guide/tax-refund-lookup",
+      "/guide/national-tax-refund",
+      "/guide/income-tax-refund-guide",
+      "/guide/income-tax-refund-date",
     ]),
   },
   {

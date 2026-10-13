@@ -1,0 +1,65 @@
+---
+/**
+ * "종합소득세 환급일" — 세금 환급 시리즈. (종소세 환급일·언제 들어오나·지급일·6월·늦으면 가산금도 이 글)
+ * 근거: 국세기본법 제51조 제6항(결정일부터 30일 내 지급), 제52조·시행령 제43조의3 제1항 제4호(신고일 또는 법정신고기일부터 30일이 지난 날의
+ * 다음 날부터 환급가산금), 시행규칙 제19조의3(연 3.1%), 소득세법 제70조(5월 31일).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/tax-refund-2026.json";
+import rf from "../../../rates/refund-2026.json";
+import { incomeTaxRefundInterestStart, refundInterest } from "../../../lib/tax-refund";
+import { koDate } from "../../../lib/tax-deadline";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const start = incomeTaxRefundInterestStart(2027);
+const lastFree = new Date(start.getTime() - 86_400_000);
+const amount = 1_000_000;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 tax-refund-series.test.ts 가 rates 와 대조한다.
+const title = "종합소득세 환급일 — 법이 정한 지급일은 없고, 6월 30일을 넘기면 7월 1일부터 이자가 붙습니다";
+const description =
+  "종합소득세 환급일은 법에 날짜로 정해져 있지 않습니다. 세무서가 환급을 결정한 날부터 30일 안에 지급하고, 5월에 신고했다면 법정신고기일 5월 31일부터 30일이 지난 날의 다음 날인 7월 1일부터 연 3.1%의 환급가산금이 붙습니다.";
+
+const ANSWER = `종합소득세 환급일은 법에 날짜로 정해져 있지 않습니다. 세무서는 환급을 결정한 날부터 ${r.payment.days}일 안에 지급하고(국세기본법 제51조 제6항), 5월에 신고했다면 5월 31일부터 30일이 지난 날의 다음 날인 ${koDate(start)}부터 연 ${pct(rf.refundInterest.annualRate)} 환급가산금이 붙습니다(제52조, 시행령 제43조의3).`;
+
+const QA = [
+  { q: "종합소득세 환급금은 언제 들어오나요?", a: `법은 '국세환급금 결정일부터 30일 내 지급'만 정하고 달력 날짜는 정하지 않습니다(제51조 제6항). 다만 5월 신고분은 ${koDate(lastFree)}이 지나면 그다음 날부터 환급가산금을 더해야 하므로, 이 날짜가 사실상의 기준이 됩니다. 은행 입금 처리 기간은 법에 없습니다.` },
+  { q: "환급가산금 기산일은 어떻게 정해지나요?", a: `환급세액을 신고한 경우 신고를 한 날(신고한 날이 법정신고기일 전이면 그 법정신고기일)부터 30일이 지난 날의 다음 날입니다(시행령 제43조의3 제1항 제4호). 종합소득세 법정신고기일은 5월 31일이라 5월 중 언제 신고했든 ${koDate(start)}이 기산일입니다.` },
+  { q: "환급이 늦어지면 이자를 받나요?", a: `받습니다. 기산일부터 지급결정일까지의 기간에 연 ${pct(rf.refundInterest.annualRate)}를 곱한 국세환급가산금이 더해집니다(제52조). 환급금 ${eokwon(amount)}이 30일 늦으면 ${won(refundInterest(amount, 30))}입니다. 경정청구·불복 없이 고충민원 처리로 받는 환급에는 붙지 않습니다.` },
+  { q: "6월 이후에 신고하면 환급일은 언제인가요?", a: `세무서는 기한 후 신고에 대해 3개월 안에 결정·통지하고, 경정청구에는 2개월 안에 답해야 하며(제45조의3·제45조의2), 지급은 결정 뒤 30일 안입니다. 이때의 환급가산금 기산일은 신고·결정 경위에 따라 달라 이 글에서 날짜로 쓰지 않았습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>2026년 귀속 종합소득세(2027년 5월 신고)</th><th>날짜</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">법정신고기일</th><td>{koDate(new Date(Date.UTC(2027, 4, 31)))}</td></tr>
+      <tr><th scope="row">30일이 지나는 날</th><td>{koDate(lastFree)}</td></tr>
+      <tr><th scope="row">환급가산금 기산일</th><td>{koDate(start)}</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    환급 받는 조건은 <a href="/guide/income-tax-refund-guide/">종합소득세 환급</a>, 충당 순서는{" "}
+    <a href="/guide/national-tax-refund/">국세환급금</a>에 있습니다.
+  </p>
+</GuideLayout>
