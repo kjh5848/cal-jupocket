@@ -90,15 +90,55 @@ describe("어림값이라는 것을 남겨 둔다", () => {
     expect(r.isNationalTaxNote).toContain("재산세는 지방세");
   });
 
-  it("세액을 낮추는 공제들을 안 읽었다고 적어 뒀다", () => {
-    const s = r.notVerified.join(" ");
-    expect(s).toMatch(/고령자|장기보유/);
-    expect(s).toMatch(/재산세액 공제/);
-    expect(s).toMatch(/세부담 상한/);
+  it("빈칸이던 세액공제·세부담 상한은 2026-10-13 원문으로 채웠다", () => {
+    // 앞 버전은 '안 읽었다' 를 지켰다. 원문을 읽고 채웠으므로 확인된 값을 고정한다.
+    expect(r.oneHomeCredit.age.map((x) => x.rate)).toEqual([0.2, 0.3, 0.4]);
+    expect(r.oneHomeCredit.hold.map((x) => x.rate)).toEqual([0.2, 0.4, 0.5]);
+    expect(r.oneHomeCredit.cap).toBe(0.8);
+    expect(r.burdenCap.rate).toBe(1.5);
+    // 재산세액 공제는 식만 읽고 계산기에는 넣지 않았다 — 그 사실은 남긴다
+    expect(r.notVerified.join(" ")).toMatch(/재산세액 공제/);
   });
 
   it("세율표가 조문 표에서 왔음을 밝힌다", () => {
     expect(r.rates.upTo2Homes.article).toContain("(표)");
     expect(r.rates.from3Homes.article).toContain("(표)");
+  });
+});
+
+describe("1세대 1주택 세액공제·농특세(2026-10-13 추가)", async () => {
+  const { oneHomeCreditRate, estimate, jointCompare, compute } = await import("../comprehensive-property-tax");
+  it("나이: 60세 20%, 65세 30%, 70세 40%", () => {
+    expect(oneHomeCreditRate(59, 0).age).toBe(0);
+    expect(oneHomeCreditRate(60, 0).age).toBe(0.2);
+    expect(oneHomeCreditRate(65, 0).age).toBe(0.3);
+    expect(oneHomeCreditRate(70, 0).age).toBe(0.4);
+  });
+  it("보유: 5년 20%, 10년 40%, 15년 50%", () => {
+    expect(oneHomeCreditRate(0, 4).hold).toBe(0);
+    expect(oneHomeCreditRate(0, 5).hold).toBe(0.2);
+    expect(oneHomeCreditRate(0, 10).hold).toBe(0.4);
+    expect(oneHomeCreditRate(0, 15).hold).toBe(0.5);
+  });
+  it("합계는 80%까지(제9조 ⑤)", () => expect(oneHomeCreditRate(72, 16).total).toBe(0.8));
+  it("공시가격 20억 1세대 1주택: 과세표준 4.8억 → 150만 + 1.8억×0.7% = 276만원", () => {
+    expect(compute({ totalPrice: 2_000_000_000, oneHome: true }).tax).toBe(2_760_000);
+  });
+  it("공제 없으면 농특세 20%를 더한다", () => {
+    const e = estimate({ totalPrice: 2_000_000_000, oneHome: true, age: 50, years: 3 });
+    expect(e.rural).toBe(552_000);
+    expect(e.total).toBe(3_312_000);
+  });
+  it("70세·15년이면 80% 공제", () => {
+    const e = estimate({ totalPrice: 2_000_000_000, oneHome: true, age: 70, years: 15 });
+    expect(e.credit).toBe(2_208_000);
+    expect(e.afterCredit).toBe(552_000);
+  });
+  it("공동명의: 공시가격 18억이면 각자 9억이라 둘 다 0원", () => {
+    expect(jointCompare(1_800_000_000, 50, 3).separate).toBe(0);
+  });
+  it("공동명의: 공시가격 30억·70세·15년이면 1주택자 신청이 더 적다", () => {
+    const j = jointCompare(3_000_000_000, 70, 15);
+    expect(j.asOne).toBeLessThan(j.separate);
   });
 });

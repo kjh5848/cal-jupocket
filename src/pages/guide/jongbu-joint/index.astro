@@ -1,0 +1,80 @@
+---
+/**
+ * "종부세 공동명의" — 종부세 시리즈.
+ * 근거: 종합부동산세법 제10조의2(공동명의 1주택자 특례, 9월 16~30일 신청), 시행령 제5조의2(요건·합의·지분 합산·나이 기준),
+ * 시행령 제4조의3 제3항 제1호(공동 소유는 각자 소유로 본다), 제8조 제1항(12억·9억), 제9조 제5항~제8항(세액공제).
+ * 계산: comprehensive-property-tax.ts jointCompare() — 지분 반반, 재산세액 공제 전 상한값.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/comprehensive-property-2026.json";
+import { jointCompare, deductionFor } from "../../../lib/comprehensive-property-tax";
+import { won, eokwon } from "../../../lib/won";
+
+const J = r.jointOwnership;
+const prices = [1_800_000_000, 2_400_000_000, 3_000_000_000, 4_000_000_000];
+const cell = (v: number) => (v === 0 ? "0원" : won(v));
+const young = prices.map((p) => ({ p, ...jointCompare(p, 50, 3) }));
+const old = prices.map((p) => ({ p, ...jointCompare(p, 70, 15) }));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 jongbu-series.test.ts 가 rates 와 대조한다.
+const title = "종부세 공동명의 — 부부 각자 9억원 공제, 신청하면 1주택자로 12억원과 세액공제";
+const description =
+  "부부 공동명의 1주택은 기본적으로 각자 1주택을 가진 것으로 보아 각자 9억원씩 공제합니다. 9월 16일~30일에 신청하면 1명을 1세대 1주택자로 보아 12억원 공제와 나이·보유기간 세액공제를 받습니다. 어느 쪽이 유리한지는 공시가격과 나이·보유기간에 달려 있습니다.";
+
+const ANSWER = `부부 공동명의 1주택은 기본적으로 각자 1주택을 가진 것으로 보아 각자 ${eokwon(deductionFor(false))}씩, 합쳐 ${eokwon(deductionFor(false) * 2)}을 공제합니다. 9월 16일~30일에 신청하면 1명을 1세대 1주택자로 보아 ${eokwon(deductionFor(true))} 공제와 나이·보유기간 세액공제를 받습니다(종합부동산세법 제10조의2).`;
+
+const QA = [
+  { q: "종부세 공동명의는 어떻게 계산하나요?", a: `1주택을 여러 사람이 공동 소유하면 공동 소유자 각자가 그 주택을 소유한 것으로 봅니다(시행령 제4조의3 제3항 제1호). 그래서 부부는 각자 지분의 공시가격에서 ${eokwon(deductionFor(false))}씩 빼고 따로 계산합니다. 1세대 1주택자 세액공제는 받지 못합니다.` },
+  { q: "종부세 공동명의 1주택자 신청은 무엇인가요?", a: `세대원 1명과 그 배우자만 1주택을 공동 소유하고 다른 주택이 없으면, 부부가 합의로 정한 1명을 납세의무자로 하여 1세대 1주택자처럼 계산할 수 있습니다(제10조의2, 시행령 제5조의2). 배우자 지분을 합산하고 나이·보유기간은 그 사람 기준입니다.` },
+  { q: "종부세 공동명의 신청은 언제 하나요?", a: `해당 연도 9월 16일부터 9월 30일까지 관할세무서장에게 신청합니다(제10조의2 제2항). 다음 해부터는 신청 사항이 바뀐 경우에만 같은 기간에 변경신청합니다(시행령 제5조의2 제5항). 신청하지 않으면 기본 방식(각자 ${eokwon(deductionFor(false))} 공제)으로 계산됩니다.` },
+  { q: "종부세 공동명의는 어느 쪽이 유리한가요?", a: `공시가격 합계가 ${eokwon(deductionFor(false) * 2)} 이하면 기본 방식에서 부부 모두 0원이라 신청할 이유가 없습니다. 그 위에서는 나이가 많고 오래 보유할수록 1주택자 신청이 유리해져, 아래 표에서 만 70세·15년 보유는 18억원을 넘는 예시 모두 신청 쪽이 적습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    배우자가 다른 주택의 부속토지를 가진 경우는 제외됩니다(시행령 제5조의2 제2항 단서). 재산세액
+    공제와 세부담 상한도 주택 지분 전체로 계산합니다(같은 조 제7항).
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>지분을 반반으로 보고 종부세와 농어촌특별세를 합한 값입니다. 재산세액 공제 전이라 실제는 이보다 작습니다.</p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th rowspan="2">공시가격 합계</th><th colspan="2">만 50세·3년 보유</th><th colspan="2">만 70세·15년 보유</th></tr>
+        <tr><th>각자 9억원</th><th>1주택자 신청</th><th>각자 9억원</th><th>1주택자 신청</th></tr>
+      </thead>
+      <tbody>
+        {prices.map((p, i) => (
+          <tr>
+            <th scope="row">{eokwon(p)}</th>
+            <td>{cell(young[i].separate)}</td><td>{cell(young[i].asOne)}</td>
+            <td>{cell(old[i].separate)}</td><td>{cell(old[i].asOne)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>
+    나이·보유기간 공제가 없으면 공제액이 큰 기본 방식({eokwon(deductionFor(false) * 2)})이 유리하고,
+    공제가 커질수록 신청 쪽이 유리해집니다. 내 조건은{" "}
+    <a href="/guide/jongbu-calculator/">종부세 계산기</a>로 두 경우를 각각 넣어 비교하세요.
+  </p>
+</GuideLayout>

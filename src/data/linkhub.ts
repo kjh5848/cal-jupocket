@@ -139,6 +139,13 @@ export const hubEntries: HubEntry[] = [
   { no: 112, href: "/guide/earned-incentive-apply/", label: "근로장려금 신청 기간", kind: "guide" },
   { no: 113, href: "/guide/earned-incentive-half-year/", label: "근로장려금 반기 신청", kind: "guide" },
   { no: 114, href: "/guide/earned-incentive-pay-date/", label: "근로장려금 지급일", kind: "guide" },
+  { no: 115, href: "/guide/jongbu-criteria/", label: "종부세 기준·대상", kind: "guide" },
+  { no: 116, href: "/guide/jongbu-calculator/", label: "종부세 계산기", kind: "guide" },
+  { no: 117, href: "/guide/jongbu-rate/", label: "종부세 세율", kind: "guide" },
+  { no: 118, href: "/guide/jongbu-payment/", label: "종부세 납부기간", kind: "guide" },
+  { no: 119, href: "/guide/jongbu-joint/", label: "종부세 공동명의", kind: "guide" },
+  { no: 120, href: "/guide/jongbu-multi-home/", label: "다주택자 종부세", kind: "guide" },
+  { no: 121, href: "/guide/jongbu-reform/", label: "종부세 개편", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -179,7 +186,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
-  { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax", "/guide/comprehensive-property-tax", "/guide/vehicle-tax-prepay", "/guide/vehicle-tax-prepay-period", "/guide/vehicle-tax-prepay-discount", "/guide/vehicle-tax-prepay-amount", "/guide/vehicle-tax-prepay-how", "/guide/vehicle-tax-prepay-refund"]) },
+  { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax", "/guide/comprehensive-property-tax", "/guide/vehicle-tax-prepay", "/guide/vehicle-tax-prepay-period", "/guide/vehicle-tax-prepay-discount", "/guide/vehicle-tax-prepay-amount", "/guide/vehicle-tax-prepay-how", "/guide/vehicle-tax-prepay-refund", "/guide/jongbu-criteria", "/guide/jongbu-calculator", "/guide/jongbu-rate", "/guide/jongbu-payment", "/guide/jongbu-joint", "/guide/jongbu-multi-home", "/guide/jongbu-reform"]) },
   {
     label: "종합소득세·원천징수",
     cluster: "income",

@@ -1,0 +1,83 @@
+---
+/**
+ * "종부세 세율" — 종부세 시리즈. (종부세율도 이 글)
+ * 근거: 종합부동산세법 제9조 제1항(2주택 이하·3주택 이상 표)·제2항(법인 2.7%·5%), 제14조(토지 표), 농어촌특별세법 제5조.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/comprehensive-property-2026.json";
+import { eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${(v * 100).toFixed(1).replace(/\.0$/, "")}%`;
+const A = r.rates.upTo2Homes.brackets;
+const B = r.rates.from3Homes.brackets;
+const label = (i: number) => {
+  const prev = i === 0 ? null : A[i - 1].upTo!;
+  const up = A[i].upTo;
+  return up === null ? `${eokwon(prev!)} 초과` : prev === null ? `${eokwon(up)} 이하` : `${eokwon(prev)} 초과 ${eokwon(up)} 이하`;
+};
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 jongbu-series.test.ts 가 rates 와 대조한다.
+const title = "종부세 세율 — 0.5%부터 2.7%까지, 3주택 이상은 과세표준 12억원 위에서 최고 5%";
+const description =
+  "종부세 세율은 과세표준에 따라 2주택 이하 0.5~2.7%, 3주택 이상 0.5~5%입니다. 과세표준 12억원까지는 두 표가 같고 그 위에서 갈립니다. 일반 법인은 2주택 이하 2.7%, 3주택 이상 5% 단일세율이고, 종부세액의 20%가 농어촌특별세로 붙습니다.";
+
+const ANSWER = `종부세 세율은 과세표준에 따라 2주택 이하 ${pct(A[0].rate)}~${pct(A[A.length - 1].rate)}, 3주택 이상 ${pct(B[0].rate)}~${pct(B[B.length - 1].rate)}입니다(종합부동산세법 제9조 제1항). 과세표준 ${eokwon(r.rates.sameUntil)}까지는 두 표가 같습니다. 일반 법인은 ${pct(r.corporation.upTo2Homes)}·${pct(r.corporation.from3Homes)} 단일세율입니다.`;
+
+const QA = [
+  { q: "종부세 세율은 얼마인가요?", a: `개인 주택분은 과세표준 구간별 누진세율입니다. 2주택 이하는 ${pct(A[0].rate)}에서 시작해 94억원 초과 ${pct(A[A.length - 1].rate)}까지, 3주택 이상은 같은 ${pct(B[0].rate)}에서 시작해 최고 ${pct(B[B.length - 1].rate)}까지 올라갑니다(제9조 제1항 표).` },
+  { q: "종부세율은 주택 수에 따라 다른가요?", a: `과세표준 ${eokwon(r.rates.sameUntil)}까지는 2주택 이하와 3주택 이상의 세율이 같습니다. 그 위 구간부터 3주택 이상이 더 높아, 12억원 초과 25억원 이하 구간은 1.3% 대 2%입니다. 주택 수는 공동소유면 각자 1주택으로 셉니다.` },
+  { q: "법인 종부세율은 얼마인가요?", a: `공익법인·공공주택사업자 등이 아닌 일반 법인은 2주택 이하 ${pct(r.corporation.upTo2Homes)}, 3주택 이상 ${pct(r.corporation.from3Homes)}의 단일세율입니다(제9조 제2항 제3호). 공제금액이 0원이고(제8조 제1항 제2호) 세부담 상한도 적용하지 않습니다(제10조 단서).` },
+  { q: "토지 종부세율은 얼마인가요?", a: `종합합산과세대상 토지는 과세표준 15억원 이하 1%, 45억원 이하 2%, 초과 3%입니다. 별도합산과세대상 토지는 200억원 이하 0.5%, 400억원 이하 0.6%, 초과 0.7%입니다(제14조 제1항·제4항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>과세표준</th><th>2주택 이하</th><th>3주택 이상</th></tr></thead>
+      <tbody>
+        {A.map((a, i) => {
+          const b = B[i];
+          return (
+            <tr>
+              <th scope="row">{label(i)}</th>
+              <td>{a.base ? `${eokwon(a.base)} + ` : ""}{pct(a.rate)}</td>
+              <td>{a.rate === b.rate && a.base === b.base ? "같음" : `${b.base ? `${eokwon(b.base)} + ` : ""}${pct(b.rate)}`}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+  <p>
+    '{eokwon(A[1].base)} + {pct(A[1].rate)}'는 앞 구간까지의 세액에 그 구간을 넘는 금액의 세율을
+    더한다는 뜻입니다. 과세표준은 공시가격에서 공제액을 빼고 60%를 곱한 금액이라, 세율표의 금액은
+    공시가격이 아닙니다 — <a href="/guide/jongbu-calculator/">종부세 계산기</a>.
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    3주택 이상 판단에서 빠지는 주택(상속주택 일부, 일시적 2주택의 신규주택, 지방 저가주택 등)은{" "}
+    <a href="/guide/jongbu-multi-home/">다주택자 종부세</a>에 정리했습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    어느 토지가 종합합산·별도합산인지는 지방세법이 정하며 이 글에서는 읽지 않았습니다. 주택·토지
+    모두 종부세액의 {pct(r.ruralTax.rate)}가 농어촌특별세로 붙습니다({r.ruralTax.article}).
+  </p>
+</GuideLayout>

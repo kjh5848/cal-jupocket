@@ -1,247 +1,113 @@
 ---
 /**
- * "종합부동산세" — 서른세 번째 글(43번). 34번 허브의 12월 칸이다.
+ * "종부세" — 종부세 시리즈 허브(src/data/series/jongbu.ts). 43번 글을 같은 주소로 고쳐 썼다(2026-10-13).
+ * 뜻·종부세란·종합부동산세·보유세 차이도 이 글.
  *
  * 이 글의 축은 **재산세와의 대비**다. 같은 날(6월 1일) 같은 집에 정해지는데
  * 하나는 지방세(시·군·구)이고 하나는 국세(세무서)다. 고지서가 따로 온다.
  *
- * ⚠️ 이 글은 **뼈대만** 말한다. 고령자·장기보유 세액공제, 재산세액 공제,
- * 세부담 상한을 읽지 않았고 그것들이 실제 세액을 크게 낮춘다. 그래서
- * 금액을 "이만큼 나온다"가 아니라 **"이보다 크지 않다"**로 쓴다. 이
- * 구분을 흐리면 이 사이트가 파는 것이 무너진다.
+ * 금액은 "이만큼 나온다"가 아니라 **"이보다 크지 않다"**로 쓴다. 재산세액 공제와
+ * 세부담 상한을 계산에 넣지 않았기 때문이다(둘 다 세액을 낮추기만 한다).
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
-import {
-  deductionFor,
-  taxBase,
-  compute,
-  installmentAmount,
-  RATIO,
-  PAYMENT,
-  SAME_UNTIL,
-} from "../../../lib/comprehensive-property-tax";
-import { formatWon, formatMan } from "../../../lib/money";
+import { deductionFor, estimate, RATIO, PAYMENT } from "../../../lib/comprehensive-property-tax";
+import { formatWon } from "../../../lib/money";
+import { eokwon } from "../../../lib/won";
 import r from "../../../rates/comprehensive-property-2026.json";
+import { jongbuSeries } from "../../../data/series/jongbu";
+import { seriesHref } from "../../../data/series/types";
 
-const title = "종합부동산세 — 12월에 오고, 재산세와 걷는 곳이 다릅니다";
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 jongbu-series.test.ts 가 rates 와 대조한다.
+const title = "종부세(종합부동산세) — 12월에 오고, 재산세와 걷는 곳이 다릅니다";
 const description =
-  "종부세 과세기준일은 재산세와 같은 6월 1일인데 고지서는 12월 1~15일에 따로 옵니다. 재산세는 지방세, 종부세는 국세라 걷는 곳이 다릅니다. 1세대 1주택은 공시가격 12억, 그 밖은 9억을 빼고 60%를 곱한 금액이 과세표준입니다. 종합부동산세법 조문 원문 기준입니다.";
+  "종부세(종합부동산세)는 6월 1일 현재 주택 공시가격 합계가 1세대 1주택 12억원, 그 밖 9억원을 넘는 사람에게 세무서가 12월 1일~15일에 걷는 국세입니다. 재산세와 같은 날 정해지지만 재산세는 지방세라 고지서가 따로 옵니다.";
 
-const 예시 = [900_000_000, 1_200_000_000, 1_500_000_000, 2_000_000_000, 3_000_000_000];
-const pct = (v: number) => `${(v * 100).toFixed(1).replace(/\.0$/, "")}%`;
-const 천분 = (v: number) => `1,000분의 ${v * 1000}`;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const 예시 = [1_200_000_000, 1_500_000_000, 2_000_000_000, 3_000_000_000];
+
+const ANSWER = `종부세(종합부동산세)는 6월 1일 현재 주택 공시가격 합계가 1세대 1주택 ${eokwon(deductionFor(true))}, 그 밖 ${eokwon(deductionFor(false))}을 넘는 사람에게 세무서가 ${PAYMENT.from}~${PAYMENT.to}에 걷는 국세입니다. 재산세와 같은 날 정해지지만 재산세는 지방세라 고지서가 따로 옵니다.`;
+
+const QA = [
+  { q: "종부세란 무엇인가요?", a: `주택과 토지를 많이 가진 사람에게 재산세와 별도로 매기는 국세입니다. 과세기준일(${r.assessmentDate.date}) 현재 주택분 재산세를 내는 사람 중 공시가격 합계가 공제액을 넘는 사람이 대상이고(종합부동산세법 제7조·제8조), 관할세무서장이 부과합니다(제16조).` },
+  { q: "종부세와 재산세(보유세)는 무엇이 다른가요?", a: `둘 다 6월 1일 현재 가진 부동산에 붙는 보유세입니다. 재산세는 시·군·구가 걷는 지방세로 집이 있으면 모두 내고 7월·9월에 옵니다. 종부세는 세무서가 걷는 국세로 공제액을 넘는 사람만 내고 12월에 옵니다.` },
+  { q: "종부세는 누가 내나요?", a: `주택은 공시가격 합계가 1세대 1주택자 ${eokwon(deductionFor(true))}, 그 밖은 ${eokwon(deductionFor(false))}을 넘는 사람입니다(제8조 제1항). 토지는 종합합산 대상이 ${eokwon(r.land.comprehensive.threshold)}, 별도합산 대상이 ${eokwon(r.land.separate.threshold)}을 넘으면 냅니다(제12조).` },
+  { q: "종부세는 언제 내나요?", a: `${PAYMENT.from}부터 ${PAYMENT.to}까지입니다(제16조 제1항). 고지서는 납부기간 시작 ${PAYMENT.noticeBeforeDays}일 전까지 옵니다. 세액이 250만원을 넘으면 나눠 낼 수 있고, 종부세액의 ${pct(r.ruralTax.rate)}인 농어촌특별세가 함께 붙습니다.` },
+];
+const more: Record<number, string> = { 2: "jongbu-criteria", 3: "jongbu-payment" };
+const labelOf = (slug: string) => jongbuSeries.items.find((x) => x.slug === slug)?.label ?? slug;
 ---
 
-<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
   <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
 
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
   <p>
-    종합부동산세는 재산세와 <strong>같은 날에 정해집니다.</strong> 과세기준일이
-    {r.assessmentDate.date}로 똑같고, 그날 주택분 재산세를 내는 사람이 종부세
-    대상입니다. 그런데 고지서는 따로 옵니다 — 재산세는 7월과 9월, 종부세는
-    12월입니다.
+    줄여서 종부세라고 부릅니다. 과세표준은 공시가격 합계에서 공제액을 빼고{" "}
+    {pct(RATIO)}(공정시장가액비율)를 곱해 만듭니다. 빼고 남은 금액이 0보다 작으면 0이라,
+    공시가격이 공제액 이하인 집에는 종부세가 없습니다.
   </p>
 
-  <h2>재산세와 무엇이 다른가</h2>
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
   <table>
-    <thead>
-      <tr><th>&nbsp;</th><th>재산세</th><th>종합부동산세</th></tr>
-    </thead>
+    <thead><tr><th>&nbsp;</th><th>재산세</th><th>종부세</th></tr></thead>
     <tbody>
-      <tr>
-        <th scope="row">누가 걷나</th>
-        <td>시·군·구 (<strong>지방세</strong>)</td>
-        <td>세무서 (<strong>국세</strong>)</td>
-      </tr>
-      <tr>
-        <th scope="row">어디서 내나</th>
-        <td>위택스</td>
-        <td>홈택스</td>
-      </tr>
-      <tr>
-        <th scope="row">과세기준일</th>
-        <td>6월 1일</td>
-        <td>6월 1일 (같다)</td>
-      </tr>
-      <tr>
-        <th scope="row">언제 오나</th>
-        <td>7월 · 9월</td>
-        <td>{PAYMENT.from} ~ {PAYMENT.to}</td>
-      </tr>
-      <tr>
-        <th scope="row">누가 내나</th>
-        <td>집이 있으면 전부</td>
-        <td>공시가격이 공제를 넘는 사람만</td>
-      </tr>
+      <tr><th scope="row">누가 걷나</th><td>시·군·구 (지방세)</td><td>세무서 (국세)</td></tr>
+      <tr><th scope="row">어디서 내나</th><td>위택스</td><td>홈택스</td></tr>
+      <tr><th scope="row">과세기준일</th><td>6월 1일</td><td>6월 1일 (같다)</td></tr>
+      <tr><th scope="row">언제 오나</th><td>7월 · 9월</td><td>{PAYMENT.from} ~ {PAYMENT.to}</td></tr>
+      <tr><th scope="row">누가 내나</th><td>집이 있으면 전부</td><td>공시가격이 공제를 넘는 사람만</td></tr>
     </tbody>
   </table>
   <p>
-    같은 집에 두 개가 붙습니다. 그래서 종부세를 내는 사람은 7월·9월에 재산세를
-    내고 12월에 또 냅니다.{" "}
-    <a href="/guide/property-tax/">재산세 부과기준과 납부기간</a>에 그쪽
-    숫자가 있습니다.
+    같은 집에 두 세금이 붙지만, 종부세 과세표준에 해당하는 부분의 재산세는 종부세에서
+    빼 줍니다(제9조 제3항). 재산세 쪽 숫자는{" "}
+    <a href="/guide/property-tax/">재산세 부과기준과 납부기간</a>에 있습니다.
   </p>
 
   <AdSlot />
 
-  <h2>대부분은 0원입니다</h2>
-  <p>
-    과세표준을 만들 때 공시가격에서 먼저 빼는 금액이 있습니다.
-  </p>
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
   <table>
-    <thead>
-      <tr><th>누구</th><th>공제</th></tr>
-    </thead>
+    <thead><tr><th>공시가격(1세대 1주택)</th><th>과세표준</th><th>종부세+농특세 (이보다 크지 않다)</th></tr></thead>
     <tbody>
-      <tr>
-        <th scope="row">1세대 1주택자</th>
-        <td>{formatMan(deductionFor(true))}</td>
-      </tr>
-      <tr>
-        <th scope="row">그 밖</th>
-        <td>{formatMan(deductionFor(false))}</td>
-      </tr>
+      {예시.map((p) => {
+        const c = estimate({ totalPrice: p, oneHome: true });
+        return (
+          <tr><th scope="row">{eokwon(p)}</th><td>{formatWon(c.base)}</td><td>{c.exempt ? "없음" : formatWon(c.total)}</td></tr>
+        );
+      })}
     </tbody>
   </table>
   <p>
-    빼고 남은 금액이 <strong>0보다 작으면 0으로 봅니다.</strong> 그래서
-    1세대 1주택이고 공시가격이 {formatMan(deductionFor(true))} 이하면 종부세가
-    아예 없습니다. 집이 여럿이어도 합계가 {formatMan(deductionFor(false))}{" "}
-    이하면 마찬가지입니다.
-  </p>
-  <p>
-    공제하고 남은 금액에 <strong>{pct(RATIO)}</strong>를 곱한 것이
-    과세표준입니다. 공정시장가액비율이라고 부르는데, 2019~2021년에는
-    85·90·95%였다가 지금은 60%로 돌아와 있습니다.
+    나이·보유기간 공제와 재산세액 공제를 넣지 않은 값이라 실제 고지서는 이보다 작습니다.
+    자세히 — <a href={seriesHref(more[2])}>{labelOf(more[2])}</a>,{" "}
+    <a href={seriesHref("jongbu-calculator")}>종부세 계산기</a>
   </p>
 
-  <h2>세율 — 12억까지는 주택 수와 무관합니다</h2>
-  <p>
-    과세표준 {formatMan(SAME_UNTIL)}까지는 2주택 이하와 3주택 이상의 표가
-    같습니다. 그 위부터 갈립니다.
-  </p>
-  <table>
-    <thead>
-      <tr><th>과세표준</th><th>2주택 이하</th><th>3주택 이상</th></tr>
-    </thead>
-    <tbody>
-      {
-        r.rates.upTo2Homes.brackets.map((b, i) => {
-          const c = r.rates.from3Homes.brackets[i];
-          const prev = i === 0 ? null : r.rates.upTo2Homes.brackets[i - 1].upTo;
-          const label =
-            b.upTo === null
-              ? `${formatMan(prev!)} 초과`
-              : prev === null
-                ? `${formatMan(b.upTo)} 이하`
-                : `${formatMan(prev)} 초과 ~ ${formatMan(b.upTo)} 이하`;
-          const same = b.rate === c.rate && b.base === c.base;
-          return (
-            <tr>
-              <th scope="row">{label}</th>
-              <td>{천분(b.rate)}{b.base ? ` (+${formatMan(b.base)})` : ""}</td>
-              <td>
-                {same ? "같음" : `${천분(c.rate)}${c.base ? ` (+${formatMan(c.base)})` : ""}`}
-              </td>
-            </tr>
-          );
-        })
-      }
-    </tbody>
-  </table>
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>자세히 — <a href={seriesHref(more[3])}>{labelOf(more[3])}</a></p>
 
-  <h2>공시가격으로 보면</h2>
-  <p>
-    1세대 1주택 기준입니다. <strong>아래 금액은 실제 고지서보다
-    큽니다</strong> — 이유는 그 다음에 적었습니다.
-  </p>
-  <table>
-    <thead>
-      <tr><th>공시가격</th><th>과세표준</th><th>세액 (뼈대)</th></tr>
-    </thead>
-    <tbody>
-      {
-        예시.map((p) => {
-          const c = compute({ totalPrice: p, oneHome: true });
-          return (
-            <tr>
-              <th scope="row">{formatMan(p)}</th>
-              <td>{c.base === 0 ? "0원" : formatWon(c.base)}</td>
-              <td>{c.exempt ? "없음" : formatWon(c.tax)}</td>
-            </tr>
-          );
-        })
-      }
-    </tbody>
-  </table>
-
-  <div class="callout warn">
-    <p>
-      ⚠️ <strong>위 세액은 뼈대만 계산한 값입니다.</strong> 실제 고지서는 이보다
-      작습니다. 조문에 세액을 낮추는 장치가 여럿 있는데, 이번에 읽지 않아
-      넣지 않았습니다 — <strong>고령자·장기보유 세액공제</strong>,
-      <strong>재산세액 공제</strong>(같은 집에 붙은 재산세를 빼 줍니다),
-      <strong>세부담 상한</strong>. 그래서 이 숫자는 "이만큼 나온다"가 아니라
-      <strong>"이보다 크지 않다"</strong>로 읽어야 합니다.
-    </p>
-  </div>
-
-  <AdSlot />
-
-  <h2>12월 1일부터 15일까지</h2>
-  <p>
-    관할세무서장이 세액을 정해 <strong>{PAYMENT.from}부터 {PAYMENT.to}까지</strong>{" "}
-    부과·징수합니다. 고지서는 납부기간 시작 {PAYMENT.noticeBeforeDays}일
-    전까지 옵니다.
-  </p>
-  <p>
-    고지서를 받는 대신 <strong>직접 신고</strong>할 수도 있습니다. 같은
-    기간에 신고하면 세무서의 결정은 없었던 것으로 봅니다. 공제 대상을
-    빠뜨리고 고지된 경우에 쓰는 길입니다.
-  </p>
-
-  <h2>나눠 낼 수 있습니다</h2>
-  <table>
-    <thead>
-      <tr><th>세액</th><th>나눌 수 있는 금액</th><th>예</th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <th scope="row">250만원 이하</th>
-        <td>없음</td>
-        <td>—</td>
-      </tr>
-      <tr>
-        <th scope="row">250만원 초과 ~ 500만원</th>
-        <td>세액 − 250만원</td>
-        <td>400만원이면 {formatWon(installmentAmount(4_000_000))}</td>
-      </tr>
-      <tr>
-        <th scope="row">500만원 초과</th>
-        <td>세액의 50% 이하</td>
-        <td>1,000만원이면 {formatWon(installmentAmount(10_000_000))}</td>
-      </tr>
-    </tbody>
-  </table>
-  <p>
-    <strong>납부기한까지 신청해야</strong> 합니다. 신청하면 세무서가 고지서를
-    둘로 나눠 다시 보냅니다.
-  </p>
+  <h2>종부세, 질문별로 정리했습니다</h2>
+  <ul>
+    {jongbuSeries.items.map((x) => (
+      <li><a href={seriesHref(x.slug)}>{x.label}</a></li>
+    ))}
+  </ul>
 
   <h2>이 글에 없는 것</h2>
   <ul>
-    <li><strong>토지분 종합부동산세</strong> — 주택만 다뤘습니다.</li>
-    <li>
-      <strong>1세대 1주택자 고령자·장기보유 세액공제</strong> — 세액을 크게
-      낮춥니다. 조문을 읽지 않았습니다.
-    </li>
-    <li><strong>재산세액 공제</strong> · <strong>세부담 상한</strong></li>
-    <li><strong>합산배제 주택</strong> — 임대주택·사원용주택 등</li>
-    <li><strong>납부유예</strong> — 고령자 등에게 있는 제도</li>
+    <li><strong>재산세액 공제의 실제 금액</strong> — 계산식은 읽었지만 지방세법 표준세율이 엮여 계산에 넣지 않았습니다.</li>
+    <li><strong>세부담 상한</strong>의 직전 연도 세액 계산, <strong>납부유예</strong></li>
+    <li><strong>합산배제 임대주택의 요건</strong></li>
   </ul>
   <p>
-    확인되는 대로 채웁니다. 한 해 전체 일정은{" "}
-    <a href="/guide/tax-year/">한 해 동안 내는 세금</a>에 있습니다.
+    한 해 전체 일정은 <a href="/guide/tax-year/">한 해 동안 내는 세금</a>에 있습니다.
   </p>
 </GuideLayout>

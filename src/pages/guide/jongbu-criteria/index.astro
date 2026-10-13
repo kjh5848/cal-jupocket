@@ -1,0 +1,81 @@
+---
+/**
+ * "종부세 기준" — 종부세 시리즈. (대상·대상자도 이 글)
+ * 근거: 종합부동산세법 제7조(주택분 납세의무자), 제8조 제1항(12억·9억·0원)·제2항~제5항(합산배제·1세대 1주택 특례),
+ * 제12조(토지 5억·80억), 시행령 제2조의3(1세대 1주택자), 제4조의2(일시적 2주택·상속주택·지방 저가주택).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/comprehensive-property-2026.json";
+import { deductionFor } from "../../../lib/comprehensive-property-tax";
+import { eokwon } from "../../../lib/won";
+
+const D = r.oneHousehold.deemed;
+const T2 = D.temporaryTwoHomes;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 jongbu-series.test.ts 가 rates 와 대조한다.
+const title = "종부세 기준 — 1세대 1주택 공시가격 12억원, 그 밖은 9억원을 넘으면 대상입니다";
+const description =
+  "종부세 기준은 6월 1일 현재 주택 공시가격 합계입니다. 1세대 1주택자는 12억원, 그 밖은 9억원을 넘으면 종부세 대상자이고, 일반 법인은 공제가 없습니다. 토지는 종합합산 5억원, 별도합산 80억원이 기준입니다.";
+
+const ANSWER = `종부세 기준은 6월 1일 현재 주택 공시가격 합계입니다. 1세대 1주택자는 ${eokwon(deductionFor(true))}, 그 밖은 ${eokwon(deductionFor(false))}을 넘으면 대상이고(종합부동산세법 제8조 제1항), 일반 법인은 공제가 0원입니다. 토지는 종합합산 ${eokwon(r.land.comprehensive.threshold)}, 별도합산 ${eokwon(r.land.separate.threshold)}이 기준입니다.`;
+
+const QA = [
+  { q: "종부세 기준은 무엇인가요?", a: `과세기준일인 6월 1일 현재 가진 주택의 공시가격 합계입니다. 여기서 1세대 1주택자는 ${eokwon(deductionFor(true))}, 그 밖은 ${eokwon(deductionFor(false))}을 빼고 남는 금액이 있어야 과세됩니다(제8조 제1항). 시세나 산 값이 아니라 공시가격이 기준입니다.` },
+  { q: "종부세 대상자는 누구인가요?", a: `6월 1일 현재 주택분 재산세를 내는 사람 중 공시가격 합계가 공제액을 넘는 사람입니다(제7조 제1항, 제8조 제1항). 개인은 사람별로 합산하므로, 부부가 따로 가진 주택은 각자 따로 9억원씩 공제합니다.` },
+  { q: "종부세에서 1세대 1주택자는 누구인가요?", a: `세대원 중 1명만이 주택분 재산세 대상인 1주택만 가진 경우 그 주택을 가진 거주자입니다(시행령 제2조의3). 부부가 공동명의로 1주택을 가지면 기본은 각자 1주택이지만, 신청하면 1명을 1세대 1주택자로 볼 수 있습니다(제10조의2).` },
+  { q: "2주택인데 1세대 1주택자로 보는 경우가 있나요?", a: `있습니다. 일시적 2주택(신규주택 취득 후 조정대상지역 간 ${T2.adjustedToAdjusted}년, 그 밖 ${T2.other}년 이내), 상속주택, 공시가격 4억원 이하 지방 저가주택, 다른 주택의 부속토지를 함께 가진 경우입니다(제8조 제4항). 9월 16일~30일에 신청해야 합니다.` },
+  { q: "토지 종부세 기준은 얼마인가요?", a: `종합합산과세대상 토지는 공시가격 합계 ${eokwon(r.land.comprehensive.threshold)} 초과, 별도합산과세대상 토지는 ${eokwon(r.land.separate.threshold)} 초과가 기준입니다(제12조 제1항). 어떤 토지가 어느 쪽인지는 지방세법이 정하는데 이 글에서는 읽지 않았습니다. 그 금액을 뺀 나머지에 100%를 곱해 과세표준을 만듭니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>누구</th><th>공시가격에서 빼는 금액</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">1세대 1주택자</th><td>{eokwon(r.taxBase.deduction.oneHouseholdOneHome)}</td><td>제8조 제1항 제1호</td></tr>
+      <tr><th scope="row">그 밖의 개인</th><td>{eokwon(r.taxBase.deduction.other)}</td><td>같은 항 제3호</td></tr>
+      <tr><th scope="row">일반 법인(2.7%·5% 세율)</th><td>0원</td><td>같은 항 제2호</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    임대주택·사원용 주택·미분양주택 같은 합산배제 주택은 과세표준 합산에서 빠집니다. 대신
+    {" "}{r.exclusionReport.period}에 보유현황을 신고해야 합니다(제8조 제2항·제3항). 합산배제
+    임대주택의 세부 요건은 이 글에서 읽지 않았습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    다가구주택은 1주택으로 봅니다. 공동명의를 1주택자로 신청할지는{" "}
+    <a href="/guide/jongbu-joint/">종부세 공동명의</a>에서 계산해 비교했습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <ul>
+    {D.cases.map((x) => <li>{x}</li>)}
+  </ul>
+  <p>
+    {T2.rule} — {T2.article}. 이 내용은 2026년 9월 30일 시행령 개정으로 바뀐 것이라{" "}
+    <a href="/guide/jongbu-reform/">종부세 개편</a>에 따로 정리했습니다.
+  </p>
+
+  <h2>{QA[4].q}</h2>
+  <p class="qa-lead">{QA[4].a}</p>
+  <ul>
+    <li>{r.land.comprehensive.rule}</li>
+    <li>{r.land.separate.rule}</li>
+  </ul>
+</GuideLayout>

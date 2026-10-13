@@ -195,6 +195,13 @@ export const clusters: Cluster[] = [
       { href: "/guide/vehicle-tax-prepay-amount/", title: "자동차세 연납 금액, 배기량별", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/vehicle-tax-prepay-how/", title: "자동차세 연납 신청 방법", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/vehicle-tax-prepay-refund/", title: "자동차세 연납 환급, 차를 팔면", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/jongbu-criteria/", title: "종부세 기준, 12억·9억원", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/jongbu-calculator/", title: "종부세 계산기, 공제·농특세까지", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/jongbu-rate/", title: "종부세 세율, 0.5%~2.7%·최고 5%", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/jongbu-payment/", title: "종부세 납부기간, 12월 1~15일", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/jongbu-joint/", title: "종부세 공동명의, 각자 9억 vs 1주택자", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/jongbu-multi-home/", title: "다주택자 종부세, 공제 9억원", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/jongbu-reform/", title: "종부세 개편, 일시적 2주택 3년→2년", kind: "guide", icon: "calendar", year: 2026 },
     ],
   },
   {
@@ -215,6 +222,13 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/jongbu-reform/",
+  "/guide/jongbu-multi-home/",
+  "/guide/jongbu-joint/",
+  "/guide/jongbu-payment/",
+  "/guide/jongbu-rate/",
+  "/guide/jongbu-calculator/",
+  "/guide/jongbu-criteria/",
   "/guide/earned-incentive-pay-date/",
   "/guide/earned-incentive-half-year/",
   "/guide/earned-incentive-apply/",

@@ -1,0 +1,73 @@
+---
+/**
+ * "종부세 개편" — 종부세 시리즈. (개편안도 이 글)
+ * 근거: 종합부동산세법 시행령 개정 <대통령령 제36739호, 2026. 9. 30.> 개정이유·개정문·부칙 제2조,
+ * 종합부동산세법 개정 <법률 제21224호, 2025. 12. 23.> 개정이유·개정문.
+ * 원칙: 확정된 개정만 숫자로 쓴다. 국회에서 논의 중인 개편안의 숫자는 쓰지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/comprehensive-property-2026.json";
+import { deductionFor } from "../../../lib/comprehensive-property-tax";
+import { eokwon } from "../../../lib/won";
+
+const T2 = r.oneHousehold.deemed.temporaryTwoHomes;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 jongbu-series.test.ts 가 rates 와 대조한다.
+const title = "종부세 개편 — 2026년 9월에 바뀐 것은 조정대상지역 일시적 2주택 기간 3년→2년입니다";
+const description =
+  "2026년 9월 30일 종합부동산세법 시행령 개정으로, 조정대상지역에 집이 있는 1주택자가 2026년 8월 4일 이후 조정대상지역에 새 집을 사면 일시적 2주택으로 1주택자 대우를 받는 기간이 3년에서 2년으로 줄었습니다. 세율과 12억원·9억원 공제는 그대로입니다.";
+
+const ANSWER = `2026년 9월 30일 시행령 개정으로, 조정대상지역에 집이 있는 1주택자가 2026년 8월 4일 이후 조정대상지역에 새 집을 사면 일시적 2주택으로 1주택자 대우를 받는 기간이 3년에서 ${T2.adjustedToAdjusted}년으로 줄었습니다. 세율과 ${eokwon(deductionFor(true))}·${eokwon(deductionFor(false))} 공제는 그대로입니다.`;
+
+const QA = [
+  { q: "종부세 개편으로 무엇이 바뀌었나요?", a: `2026년 9월 30일 공포된 종합부동산세법 시행령 개정(10월 1일 시행)이 일시적 2주택 기간을 바꿨습니다. 종전주택과 신규주택이 모두 조정대상지역이면 ${T2.adjustedToAdjusted}년, 그 밖은 전처럼 ${T2.other}년입니다(시행령 제4조의2 제1항).` },
+  { q: "일시적 2주택 2년은 언제 산 집부터 적용되나요?", a: `조정대상지역에 종전주택을 가진 1세대 1주택자가 2026년 8월 4일 이후 조정대상지역에 있는 신규주택을 취득한 경우부터입니다. 8월 3일 이전에 취득했거나 계약금을 낸 사실이 증명되면 종전 규정(3년)을 따릅니다(부칙 제2조).` },
+  { q: "종부세 세율이나 공제금액도 바뀌었나요?", a: `이번 시행령 개정과 2025년 12월 23일 법률 개정에서 세율과 공제금액(1세대 1주택 ${eokwon(deductionFor(true))}, 그 밖 ${eokwon(deductionFor(false))})은 바뀌지 않았습니다. 2025년 12월 법률 개정은 신탁재산 납세의무자와 합산배제 추징 근거를 정비한 것입니다.` },
+  { q: "종부세 개편안은 확정됐나요?", a: `이 글은 국가법령정보센터에 공포된 법령만 다룹니다. 2026년 10월 13일 현재 현행 종합부동산세법은 2026년 1월 1일 시행판이고, 그 뒤 공포된 법률 개정은 찾지 못했습니다. 논의 중인 개편안은 확정 전이라 숫자를 쓰지 않습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>신규주택 취득 상황</th><th>1주택자로 보는 기간</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">종전·신규 모두 조정대상지역(2026. 8. 4. 이후 취득)</th><td>{T2.adjustedToAdjusted}년</td></tr>
+      <tr><th scope="row">그 밖의 경우</th><td>{T2.other}년</td></tr>
+    </tbody>
+  </table>
+  <p>
+    같은 개정에서 수도권 밖 준공 후 미분양 주택에 대한 합산배제·주택 수 제외 특례의 대상이
+    '2026년 12월 31일까지 취득분'에서 '2027년 12월 31일까지 취득분'으로 늘었습니다(개정이유).
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    조정대상지역 공고가 있기 전에 신규주택을 취득했거나 계약금을 낸 경우도 2년 규정에서 빠집니다
+    (시행령 제4조의2 제1항 제1호 괄호). 일시적 2주택 특례는 9월 16일~30일에 신청해야 적용됩니다 —{" "}
+    <a href="/guide/jongbu-criteria/">종부세 기준</a>.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    현재 세율은 <a href="/guide/jongbu-rate/">종부세 세율</a>, 공제와 대상은{" "}
+    <a href="/guide/jongbu-criteria/">종부세 기준</a>에 있습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    개정안이 국회를 통과해 공포되면 그때 원문을 읽고 이 글과 계산기를 고칩니다. 개정안 단계의 숫자를
+    옮기면, 확정되지 않은 세금을 확정된 것처럼 쓰게 됩니다.
+  </p>
+</GuideLayout>

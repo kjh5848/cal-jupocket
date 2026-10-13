@@ -1,0 +1,127 @@
+---
+/**
+ * "종부세 계산기" — 종부세 시리즈. (계산·과세표준도 이 글, 계산기 포함)
+ * 계산: src/lib/comprehensive-property-tax.ts estimate() — 제8조(과세표준)·제9조(세율·1세대 1주택 공제)·농어촌특별세법 제5조.
+ * 재산세액 공제(제9조 ③)와 세부담 상한(제10조)은 넣지 않았다 → 값은 "이보다 크지 않다".
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/comprehensive-property-2026.json";
+import { estimate, deductionFor, RATIO } from "../../../lib/comprehensive-property-tax";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const ex = estimate({ totalPrice: 2_000_000_000, oneHome: true, age: 50, years: 3 });
+const exOld = estimate({ totalPrice: 2_000_000_000, oneHome: true, age: 70, years: 15 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 jongbu-series.test.ts 가 rates 와 대조한다.
+const title = "종부세 계산기 — 공시가격에서 12억원(또는 9억원)을 빼고 60%를 곱해 시작합니다";
+const description =
+  "종부세 계산은 공시가격 합계에서 1세대 1주택 12억원, 그 밖 9억원을 빼고 60%를 곱한 과세표준에 세율을 적용합니다. 1세대 1주택자는 나이·보유기간 공제를 최대 80%까지 받고, 농어촌특별세 20%가 붙습니다. 재산세액 공제 전 상한값을 계산합니다.";
+
+const ANSWER = `종부세는 공시가격 합계에서 1세대 1주택 ${eokwon(deductionFor(true))}, 그 밖 ${eokwon(deductionFor(false))}을 빼고 ${pct(RATIO)}를 곱한 과세표준에 세율을 적용해 계산합니다. 1세대 1주택자는 나이·보유기간 공제를 최대 ${pct(r.oneHomeCredit.cap)}까지 받고, 농어촌특별세 ${pct(r.ruralTax.rate)}가 붙습니다.`;
+
+const QA = [
+  { q: "종부세 계산은 어떻게 하나요?", a: `① 공시가격 합계에서 공제액(1세대 1주택 ${eokwon(deductionFor(true))}, 그 밖 ${eokwon(deductionFor(false))})을 빼고 ${pct(RATIO)}를 곱해 과세표준을 만들고 ② 세율을 적용한 뒤 ③ 재산세액을 빼고 ④ 1세대 1주택자는 나이·보유기간 공제를 뺍니다. ⑤ 그 종부세의 ${pct(r.ruralTax.rate)}가 농어촌특별세입니다.` },
+  { q: "종부세 과세표준은 어떻게 구하나요?", a: `납세의무자별로 주택 공시가격을 합산하고 공제액을 뺀 뒤 공정시장가액비율 ${pct(RATIO)}를 곱합니다(종합부동산세법 제8조 제1항, 시행령 제2조의4). 빼고 남은 금액이 0보다 작으면 0이라 그 경우 종부세가 없습니다.` },
+  { q: "종부세 계산기 결과가 고지서보다 큰 이유는 무엇인가요?", a: `같은 집에 부과된 재산세를 종부세에서 빼 주는 재산세액 공제(제9조 제3항)와, 전년보다 1.5배 넘게 오르지 않게 하는 세부담 상한(제10조)을 넣지 않았기 때문입니다. 둘 다 세액을 낮추기만 하므로 이 계산기 값은 상한입니다.` },
+  { q: "1세대 1주택자 종부세 공제는 얼마인가요?", a: `6월 1일 현재 만 60세 이상이면 20~40%, 5년 이상 보유했으면 20~50%를 세액에서 뺍니다(제9조 제6항·제8항). 두 공제는 합계 ${pct(r.oneHomeCredit.cap)}까지 함께 받습니다(제5항). 예를 들어 만 70세·15년 보유면 ${pct(r.oneHomeCredit.cap)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">재산세액 공제·세부담 상한 전의 값이라 실제 고지서는 이보다 작거나 같습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="jb-price">주택 공시가격 합계(6월 1일 현재, 본인 명의)</label>
+      <input type="text" inputmode="numeric" id="jb-price" value="2,000,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="jb-kind">구분</label>
+      <select id="jb-kind">
+        <option value="one">1세대 1주택자</option>
+        <option value="two">2주택 이하</option>
+        <option value="three">3주택 이상</option>
+      </select>
+    </div>
+    <div id="jb-one-fields">
+      <div class="calc-input-wrap">
+        <label for="jb-age">6월 1일 현재 만 나이</label>
+        <input type="number" min="0" max="120" id="jb-age" value="50" />
+        <span class="unit">세</span>
+      </div>
+      <div class="calc-input-wrap">
+        <label for="jb-years">보유기간</label>
+        <input type="number" min="0" max="80" id="jb-years" value="3" />
+        <span class="unit">년</span>
+      </div>
+    </div>
+
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">종부세 + 농어촌특별세 (이보다 크지 않다)</p>
+      <p class="big" id="jb-hero">{won(ex.total)}</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="jb-base">{won(ex.base)}</span></div>
+      <div class="stat-chip"><span class="label">세율 적용 세액</span><span class="value" id="jb-tax">{won(ex.tax)}</span></div>
+      <div class="stat-chip"><span class="label">1주택 공제</span><span class="value" id="jb-credit">{won(ex.credit)}</span></div>
+      <div class="stat-chip"><span class="label">농어촌특별세</span><span class="value" id="jb-rural">{won(ex.rural)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>단계(공시가격 20억원, 1세대 1주택, 만 50세·3년)</th><th>금액</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">공시가격 − {eokwon(ex.deduction)}</th><td>{won(2_000_000_000 - ex.deduction)}</td></tr>
+      <tr><th scope="row">× {pct(RATIO)} = 과세표준</th><td>{won(ex.base)}</td></tr>
+      <tr><th scope="row">세율 적용</th><td>{won(ex.tax)}</td></tr>
+      <tr><th scope="row">1세대 1주택 공제(해당 없음)</th><td>{won(ex.credit)}</td></tr>
+      <tr><th scope="row">농어촌특별세 {pct(r.ruralTax.rate)}</th><td>{won(ex.rural)}</td></tr>
+      <tr><th scope="row">합계(재산세액 공제 전)</th><td>{won(ex.total)}</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    재산세액 공제 계산식은 {r.propertyTaxCredit.formula}입니다({r.propertyTaxCredit.article}).
+    재산세 표준세율이 엮여 있어 이 계산기에는 넣지 않았습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <table>
+    <thead><tr><th>6월 1일 현재 나이</th><th>공제율</th></tr></thead>
+    <tbody>
+      {r.oneHomeCredit.age.map((x) => (
+        <tr><th scope="row">만 {x.from}세 이상{x.to ? ` ${x.to}세 미만` : ""}</th><td>{pct(x.rate)}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>보유기간</th><th>공제율</th></tr></thead>
+    <tbody>
+      {r.oneHomeCredit.hold.map((x) => (
+        <tr><th scope="row">{x.from}년 이상{x.to ? ` ${x.to}년 미만` : ""}</th><td>{pct(x.rate)}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <p>
+    같은 공시가격 20억원이라도 만 70세·15년 보유면 공제 {pct(exOld.creditRate)}가 적용돼
+    합계가 {won(ex.total)}에서 {won(exOld.total)}으로 줄어듭니다(재산세액 공제 전).
+  </p>
+
+  <script src="../../../scripts/jongbu.ts"></script>
+</GuideLayout>

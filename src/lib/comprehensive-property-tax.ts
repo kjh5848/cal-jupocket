@@ -12,9 +12,9 @@
  * 공제가 1세대 1주택 12억, 그 밖 9억이라 **대부분의 사람에게 0원**이다.
  * 뺀 금액이 0보다 작으면 0으로 본다(제8조 ① 단서).
  *
- * ⚠️ 이 파일은 **뼈대만** 계산한다. 고령자·장기보유 세액공제와 재산세액
- * 공제, 세부담 상한을 넣지 않았다 — 조문을 읽지 않았고, 그것들이 실제
- * 세액을 크게 낮춘다. 그래서 여기 값은 **상한에 가까운 어림값**이다.
+ * 2026-10-13: 1세대 1주택자 나이·보유기간 세액공제(제9조 ⑤~⑨)와 농어촌특별세(20%)를
+ * 원문으로 읽고 넣었다({@link estimate}). 재산세액 공제(제9조 ③)와 세부담 상한(제10조)은
+ * 넣지 않았다 — 둘 다 세액을 낮추기만 하므로, 여기 값은 **"이보다 크지 않다"** 는 상한이다.
  */
 import rates from "../rates/comprehensive-property-2026.json";
 
@@ -73,6 +73,53 @@ export function installmentAmount(tax: number): number {
   if (tax > high.over) return Math.floor(tax * 0.5);
   if (tax > low.over) return tax - low.over;
   return 0;
+}
+
+/** 1세대 1주택자 세액공제율 — 나이(제6항 표) + 보유기간(제8항 표), 합계 80%까지(제5항) */
+export function oneHomeCreditRate(age: number, years: number) {
+  const pick = (rows: { from: number; to: number | null; rate: number }[], v: number) =>
+    rows.find((x) => v >= x.from && (x.to === null || v < x.to))?.rate ?? 0;
+  const a = pick(C.oneHomeCredit.age, age);
+  const h = pick(C.oneHomeCredit.hold, years);
+  return { age: a, hold: h, total: Math.min(a + h, C.oneHomeCredit.cap) };
+}
+
+export interface Estimate extends Result {
+  /** 1세대 1주택 세액공제액(재산세액 공제 전 산출세액 기준이라 실제보다 크거나 같다) */
+  credit: number;
+  creditRate: number;
+  /** 종부세(재산세액 공제·세부담 상한 전) */
+  afterCredit: number;
+  /** 농어촌특별세 20% */
+  rural: number;
+  /** 종부세 + 농특세 — 이보다 크지 않다 */
+  total: number;
+}
+
+/**
+ * 종부세 상한 어림. 1세대 1주택이면 나이·보유기간 공제를 적용한다.
+ * 실제로는 재산세액 공제 후 세액에 공제율을 곱하므로, 공제 전 세액에 곱한 이 값은
+ * 최종 세액의 상한이 된다: (T − P)(1 − r) ≤ T(1 − r).
+ */
+export function estimate(opts: { totalPrice: number; oneHome?: boolean; homes?: HomeCount; age?: number; years?: number }): Estimate {
+  const r0 = compute(opts);
+  const rate = opts.oneHome ? oneHomeCreditRate(opts.age ?? 0, opts.years ?? 0).total : 0;
+  const credit = Math.floor(r0.tax * rate);
+  const afterCredit = r0.tax - credit;
+  const rural = Math.floor(afterCredit * C.ruralTax.rate);
+  return { ...r0, credit, creditRate: rate, afterCredit, rural, total: afterCredit + rural };
+}
+
+/**
+ * 부부 공동명의 1주택 — 각자 9억 공제(기본) vs 1명을 1세대 1주택자로 신청(12억 공제 + 세액공제).
+ * 지분은 반반으로 본다. 둘 다 재산세액 공제 전 상한값.
+ */
+export function jointCompare(totalPrice: number, age: number, years: number) {
+  const half = Math.floor(totalPrice / 2);
+  const each = estimate({ totalPrice: half, oneHome: false });
+  const separate = each.total * 2;
+  const asOne = estimate({ totalPrice, oneHome: true, age, years });
+  return { separate, asOne: asOne.total, each, one: asOne };
 }
 
 export const RATIO = C.taxBase.ratio;
