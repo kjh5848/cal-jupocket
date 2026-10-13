@@ -1,0 +1,67 @@
+---
+/**
+ * "상속세 자녀공제" — 상속세 시리즈. (자녀 상속세 면제한도·미성년자공제도 이 글)
+ * 근거: 상속세 및 증여세법 제20조 제1항 제1호(자녀 1명 5천만원, 태아 포함)·제2호(미성년자 1천만원 × 19세까지 연수)·
+ * 후단(합산), 제3항(1년 미만 올림), 제21조(기초 2억 + 인적공제 vs 일괄공제 5억 중 큰 쪽).
+ * 반전: 자녀 6명까지는 기초 2억 + 자녀공제가 일괄공제 5억을 넘지 못한다 — 자녀공제가 '안 보이는' 이유.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/inheritance-2026.json";
+import { personalTotal, taxFreeCeiling } from "../../../lib/inheritance";
+import { eokwon } from "../../../lib/won";
+
+const P = r.otherPersonal;
+const rows = [1, 2, 3, 4, 6, 7].map((n) => {
+  const itemized = r.basicDeduction.amount + personalTotal({ children: n });
+  return { n, itemized, chosen: Math.max(itemized, r.lumpSum.amount) };
+});
+// 미성년 자녀 1명(10세) — 자녀 5천만 + 미성년 9년 × 1천만
+const minorItem = r.basicDeduction.amount + personalTotal({ children: 2, minorYears: 9 });
+const withSpouse = taxFreeCeiling({ hasSpouse: true, children: 2 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "상속세 자녀공제 — 1명당 5천만원이지만, 대부분은 일괄공제 5억원에 묻힙니다";
+const description =
+  "상속세 자녀공제는 자녀 1명당 5천만원이고, 미성년 자녀는 19세까지 남은 연수 × 1천만원이 더 붙습니다. 다만 기초공제 2억원과 인적공제 합계를 일괄공제 5억원과 비교해 큰 쪽만 쓰므로, 자녀가 6명 이하면 대개 일괄공제 5억원이 적용됩니다.";
+
+const ANSWER = `상속세 자녀공제는 자녀 1명당 ${eokwon(P.child)}이고, 미성년 자녀는 19세까지 남은 연수 × ${eokwon(P.minorPerYear)}이 더 붙습니다(상속세 및 증여세법 제20조). 다만 기초공제 ${eokwon(r.basicDeduction.amount)} + 인적공제를 일괄공제 ${eokwon(r.lumpSum.amount)}과 비교해 큰 쪽만 쓰므로(제21조), 자녀가 6명 이하면 대개 5억원입니다.`;
+
+const QA = [
+  { q: "상속세 자녀공제는 얼마인가요?", a: `자녀(태아 포함) 1명에 ${eokwon(P.child)}입니다(제20조 제1항 제1호). 자녀가 미성년자이면 미성년자공제(1천만원 × 19세가 될 때까지의 연수, 1년 미만은 1년)를 합산하고, 장애인이면 장애인공제도 합산합니다(같은 항 후단, 제3항).` },
+  { q: "자녀 상속세 면제한도는 얼마인가요?", a: `자녀만 상속받으면 기초공제 ${eokwon(r.basicDeduction.amount)} + 자녀공제와 일괄공제 ${eokwon(r.lumpSum.amount)} 중 큰 금액입니다. 자녀 6명까지는 ${eokwon(r.lumpSum.amount)}이 더 크거나 같아 사실상 5억원이고, 배우자도 있으면 배우자공제 최소 5억원이 더해져 ${eokwon(withSpouse)}입니다.` },
+  { q: "미성년 자녀가 있으면 공제가 늘어나나요?", a: `늘어날 수 있습니다. 예를 들어 자녀 2명 중 한 명이 10세면 기초 ${eokwon(r.basicDeduction.amount)} + 자녀 ${eokwon(P.child * 2)} + 미성년 9년 × ${eokwon(P.minorPerYear)} = ${eokwon(minorItem)}입니다. 이 경우도 일괄공제 ${eokwon(r.lumpSum.amount)}보다 작아 5억원이 적용됩니다.` },
+  { q: "자녀공제가 일괄공제보다 커지려면 어떻게 되나요?", a: `기초공제 ${eokwon(r.basicDeduction.amount)} + 인적공제 합계가 ${eokwon(r.lumpSum.amount)}을 넘어야 합니다. 자녀만으로는 7명부터이고, 어린 미성년 자녀나 장애인 공제가 있으면 더 일찍 넘을 수 있습니다. 이때는 반드시 신고해야 그 금액을 받습니다(제21조 제1항 단서).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>성년 자녀 수(배우자 없음)</th><th>기초 + 자녀공제</th><th>실제 적용(큰 쪽)</th></tr></thead>
+    <tbody>
+      {rows.map((x) => <tr><th scope="row">{x.n}명</th><td>{eokwon(x.itemized)}</td><td>{eokwon(x.chosen)}</td></tr>)}
+    </tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    배우자가 단독으로 상속받으면 일괄공제를 쓸 수 없고 기초 + 인적공제만 받습니다(제21조 제2항). 가족 구성별
+    면제한도는 <a href="/guide/inheritance-tax/">상속세 면제한도</a>, 계산은{" "}
+    <a href="/inheritance/">상속세 계산기</a>에 있습니다.
+  </p>
+</GuideLayout>

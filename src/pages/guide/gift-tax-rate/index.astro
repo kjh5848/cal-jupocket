@@ -1,0 +1,71 @@
+---
+/**
+ * "증여세 세율" — 증여세 시리즈. (세율표·증여세율·구간·누진공제·5억·2026도 이 글)
+ * 근거: 상속세 및 증여세법 제56조(제26조 세율 준용), 제26조(표 — img alt 로 대조), 제57조(세대생략 할증), 제69조 제2항(신고세액공제 3%).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/gift-2026.json";
+import { computeGift } from "../../../lib/gift";
+import { won, eokwon } from "../../../lib/won";
+
+const B = r.brackets;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const label = (i: number) => (B[i].upTo === null ? `${eokwon(B[i - 1].upTo!)} 초과` : i === 0 ? `${eokwon(B[i].upTo!)} 이하` : `${eokwon(B[i - 1].upTo!)} 초과 ${eokwon(B[i].upTo!)} 이하`);
+const examples = [100_000_000, 300_000_000, 500_000_000, 1_000_000_000].map((a) => ({ a, g: computeGift({ amount: a, relation: "ascendant" }) }));
+const five = computeGift({ amount: 500_000_000, relation: "ascendant" });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "증여세 세율 — 과세표준 1억원 이하 10%부터 30억원 초과 50%까지, 상속세와 같습니다";
+const description =
+  "증여세 세율은 과세표준 1억원 이하 10%, 5억원 이하 20%, 10억원 이하 30%, 30억원 이하 40%, 30억원 초과 50%입니다. 상속세 세율표를 그대로 씁니다. 손자녀에게 바로 주면 30% 할증되고, 기한 안에 신고하면 3%를 공제합니다.";
+
+const ANSWER = `증여세 세율은 과세표준 ${eokwon(B[0].upTo!)} 이하 ${pct(B[0].rate)}, ${eokwon(B[1].upTo!)} 이하 ${pct(B[1].rate)}, ${eokwon(B[2].upTo!)} 이하 ${pct(B[2].rate)}, ${eokwon(B[3].upTo!)} 이하 ${pct(B[3].rate)}, 그 초과 ${pct(B[4].rate)}입니다(상속세 및 증여세법 제56조, 제26조). 상속세와 같은 표입니다.`;
+
+const QA = [
+  { q: "증여세 세율은 얼마인가요?", a: `과세표준(증여재산가액 − 증여재산공제)에 따라 ${pct(B[0].rate)}·${pct(B[1].rate)}·${pct(B[2].rate)}·${pct(B[3].rate)}·${pct(B[4].rate)}의 5단계 초과누진세율입니다. 증여세는 상속세 세율 조문(제26조)을 그대로 준용하므로(제56조) 두 세금의 세율표가 같습니다.` },
+  { q: "증여세 누진공제는 어떻게 쓰나요?", a: `과세표준 × 그 구간 세율 − 누진공제액으로 한 번에 계산합니다. 누진공제는 ${eokwon(B[1].deduction)}(20% 구간), ${eokwon(B[2].deduction)}(30%), ${eokwon(B[3].deduction)}(40%), ${eokwon(B[4].deduction)}(50%)입니다. 조문 표의 '앞 구간 세액 + 초과분 × 세율'과 같은 값이 나옵니다.` },
+  { q: "증여세 5억이면 세율이 몇 %인가요?", a: `부모가 성년 자녀에게 5억원을 주면 공제 ${eokwon(five.deductions.total)}을 뺀 과세표준 ${won(five.base)}이 ${five.ratePercent}% 구간이라 산출세액 ${won(five.computed)}, 신고세액공제 3%를 빼면 ${won(five.payable)}입니다. 실효세율로는 약 ${Math.round(five.effectiveRate * 1000) / 10}%입니다.` },
+  { q: "손자녀에게 증여하면 세율이 달라지나요?", a: `세율표는 같지만 산출세액에 ${pct(r.generationSkip.rate)}를 더합니다. 받는 사람이 증여자의 자녀가 아닌 직계비속이면 할증하고, 미성년자이면서 증여재산가액이 20억원을 넘으면 ${pct(r.generationSkip.minorRate)}입니다(제57조). 자녀가 사망해 손자녀가 받으면 할증하지 않습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>과세표준</th><th>세율</th><th>누진공제</th></tr></thead>
+    <tbody>
+      {B.map((b, i) => <tr><th scope="row">{label(i)}</th><td>{pct(b.rate)}</td><td>{b.deduction ? eokwon(b.deduction) : "없음"}</td></tr>)}
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>부모 → 성년 자녀</th><th>과세표준</th><th>구간</th><th>낼 세금(신고 3% 공제 후)</th></tr></thead>
+    <tbody>
+      {examples.map((x) => <tr><th scope="row">{eokwon(x.a)}</th><td>{won(x.g.base)}</td><td>{x.g.ratePercent}%</td><td>{won(x.g.payable)}</td></tr>)}
+    </tbody>
+  </table>
+  <p>
+    10년 안에 같은 부모에게 받은 다른 증여가 없다고 가정한 값입니다. 내 금액은{" "}
+    <a href="/guide/gift-tax-calculator/">증여세 계산기</a>에서 바로 계산됩니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    세율이 2026년에 바뀌었는지 — 2026-10-13 현재 시행 중인 법은 {r.lawVersion}이고, 위 세율표는 그 원문에서
+    확인했습니다. 논의 중인 개편안 숫자는 쓰지 않습니다.
+  </p>
+</GuideLayout>

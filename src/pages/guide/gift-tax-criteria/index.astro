@@ -1,0 +1,66 @@
+---
+/**
+ * "증여세 기준" — 증여세 시리즈. (과세가액·10년 합산·증여세 한도 기준도 이 글)
+ * 근거: 상속세 및 증여세법 제47조 제1항(과세가액 — 채무 인수액 차감)·제2항(동일인 10년 합산, 직계존속 배우자 포함, 1천만원 이상)·
+ * 제3항(부담부증여 채무 추정), 제53조(공제 10년 한도), 제55조(과세표준·50만원 미만).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/gift-2026.json";
+import { computeGift } from "../../../lib/gift";
+import { won, eokwon } from "../../../lib/won";
+
+const A = r.priorGiftAggregation;
+const first = computeGift({ amount: 30_000_000, relation: "ascendant" });
+const second = computeGift({ amount: 30_000_000 + 30_000_000, relation: "ascendant" });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "증여세 기준 — 같은 사람에게 10년 동안 받은 금액을 합쳐서 봅니다";
+const description =
+  "증여세 기준은 증여일 현재 받은 재산가액에서 함께 넘겨받은 채무를 뺀 금액입니다. 같은 사람에게 10년 안에 받은 금액이 1천만원 이상이면 합산하고, 아버지와 어머니는 같은 사람으로 봅니다. 공제도 10년 한도라 나눠 받아도 한도는 늘지 않습니다.";
+
+const ANSWER = `증여세 기준은 증여일 현재 받은 재산가액에서 함께 넘겨받은 채무를 뺀 금액입니다(상속세 및 증여세법 제47조 제1항). 같은 사람에게 ${A.windowYears}년 안에 받은 금액이 ${eokwon(A.threshold)} 이상이면 합산하고, 아버지와 어머니는 같은 사람으로 봅니다(제2항). 공제도 10년 한도입니다.`;
+
+const QA = [
+  { q: "증여세 기준금액은 무엇인가요?", a: `증여세 과세가액입니다. 증여일 현재 증여재산가액(합산배제증여재산 제외)에서 그 재산에 담보된 채무로서 받는 사람이 인수한 금액을 뺀 금액입니다(제47조 제1항). 여기서 관계별 공제를 빼면 과세표준이 되고, 50만원 미만이면 과세하지 않습니다(제55조).` },
+  { q: "증여세는 10년 합산인가요?", a: `네. 해당 증여일 전 ${A.windowYears}년 이내에 같은 사람에게 받은 증여재산가액의 합이 ${eokwon(A.threshold)} 이상이면 과세가액에 더합니다(제47조 제2항). 증여자가 직계존속이면 그 배우자도 같은 사람으로 보아, 아버지와 어머니에게 각각 받은 금액이 합쳐집니다.` },
+  { q: "나눠서 받으면 증여세가 줄어드나요?", a: `10년 안이면 줄지 않습니다. 합산될 뿐 아니라 공제도 10년 동안 받은 공제를 합쳐 한도를 넘으면 공제하지 않습니다(제53조). 부모에게 3,000만원을 받고 몇 년 뒤 3,000만원을 또 받으면 두 번째 때 6,000만원으로 계산해 ${won(second.payable)}이 됩니다.` },
+  { q: "빚과 함께 증여받으면 기준이 어떻게 되나요?", a: `받는 사람이 인수한 담보 채무는 과세가액에서 뺍니다(제47조 제1항). 다만 배우자 간이나 직계존비속 간 부담부증여는 채무를 인수한 경우에도 인수되지 않은 것으로 추정합니다(제3항). 국가·지자체 채무처럼 객관적으로 인정되는 것은 예외입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>부모 → 성년 자녀</th><th>과세가액</th><th>공제</th><th>낼 세금</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">처음 3,000만원</th><td>{won(first.amount)}</td><td>{won(first.deductions.total)}</td><td>{won(first.payable)}</td></tr>
+      <tr><th scope="row">10년 안에 또 3,000만원(합산)</th><td>{won(second.amount)}</td><td>{won(second.deductions.total)}</td><td>{won(second.payable)}</td></tr>
+    </tbody>
+  </table>
+  <p>
+    두 번째 신고 때는 첫 증여에 대해 이미 낸 세액을 빼는 납부세액공제(제58조)가 있지만, 이 예시는 첫 증여의
+    세금이 0원이라 뺄 것이 없습니다. 공제가 10년마다 다시 생기는 원리는{" "}
+    <a href="/guide/gift-tax/">증여세 면제한도</a>에 있습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    부담부증여에서 넘어간 채무 부분에는 양도소득세가 따로 걸리는데, 그 계산은 이 글에서 다루지 않습니다.
+    부동산은 금액을 시가로 평가합니다 — <a href="/guide/gift-property-value/">부동산 증여 평가</a>.
+  </p>
+</GuideLayout>

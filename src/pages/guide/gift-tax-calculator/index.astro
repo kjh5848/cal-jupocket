@@ -1,0 +1,87 @@
+---
+/**
+ * "증여세 계산기" — 증여세 시리즈. (증여세 계산도 이 글, 계산기 포함)
+ * 계산: src/lib/gift.ts computeGift() — 제47조(10년 합산은 '이미 쓴 공제' 입력으로), 제53조·제53조의2(공제), 제55조(50만원 미만),
+ * 제56조(세율), 제69조 제2항(신고세액공제 3%). 세대생략 할증·재산 평가·부담부증여는 계산하지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/gift-2026.json";
+import { computeGift } from "../../../lib/gift";
+import { won, eokwon } from "../../../lib/won";
+
+const ex = computeGift({ amount: 100_000_000, relation: "ascendant" });
+const exMB = computeGift({ amount: 200_000_000, relation: "ascendant", marriageBirth: r.marriageBirthDeduction.amount });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "증여세 계산기 — 받은 금액에서 관계별 공제를 빼고 세율을 곱합니다";
+const description =
+  "증여세 계산은 받은 금액에서 관계별 증여재산공제(배우자 6억원, 성년 자녀 5천만원 등)와 결혼·출산공제를 빼고 10~50% 세율을 곱한 뒤 신고세액공제 3%를 뺍니다. 10년 안에 같은 사람에게 받은 금액은 합산하고, 과세표준 50만원 미만은 부과하지 않습니다.";
+
+const ANSWER = `증여세는 받은 금액에서 관계별 증여재산공제와 결혼·출산공제를 빼 과세표준을 만들고, 10~50% 세율을 곱한 뒤 신고세액공제 3%를 빼서 계산합니다(상속세 및 증여세법 제53조·제56조·제69조). 부모에게 1억원을 받은 성년 자녀라면 ${won(ex.payable)}입니다.`;
+
+const QA = [
+  { q: "증여세 계산은 어떻게 하나요?", a: `① 받은 금액(10년 안에 같은 사람에게 받은 금액 합산) ② − 증여재산공제(10년 한도) ③ − 결혼·출산공제(부모에게 받을 때) = 과세표준 ④ × 세율 − 누진공제 = 산출세액 ⑤ − 신고세액공제 3% 순서입니다. 과세표준이 50만원 미만이면 세금이 없습니다(제55조 제2항).` },
+  { q: "부모에게 1억원을 받으면 증여세가 얼마인가요?", a: `성년 자녀라면 공제 ${eokwon(ex.deductions.total)}을 뺀 ${won(ex.base)}이 과세표준이고, ${ex.ratePercent}%를 곱한 ${won(ex.computed)}에서 신고세액공제를 빼 ${won(ex.payable)}입니다. 결혼이나 출산으로 1억원 공제를 함께 받으면 0원입니다.` },
+  { q: "결혼할 때 2억원을 받으면 증여세가 얼마인가요?", a: `부모에게 혼인신고일 전후 2년 안에 받았다면 5천만원 + 결혼공제 1억원을 빼 과세표준이 ${won(exMB.base)}이고, 산출세액 ${won(exMB.computed)}에서 신고세액공제를 빼 ${won(exMB.payable)}입니다(제53조의2).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">세대생략 할증, 재산 평가, 부담부증여는 넣지 않은 어림입니다.</p>
+    <div class="calc-input-wrap">
+      <label for="gt-amount">받은 금액</label>
+      <input type="text" inputmode="numeric" id="gt-amount" value="100,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="gt-relation">준 사람</label>
+      <select id="gt-relation">
+        <option value="ascendant">부모·조부모(직계존속)</option>
+        <option value="spouse">배우자</option>
+        <option value="descendant">자녀·손자녀(직계비속)</option>
+        <option value="relative">그 밖의 친족(4촌 혈족·3촌 인척)</option>
+        <option value="other">그 밖의 사람</option>
+      </select>
+    </div>
+    <label><input type="checkbox" id="gt-minor" /> 받는 사람이 미성년자(직계존속에게 받을 때 공제 2천만원)</label>
+    <label><input type="checkbox" id="gt-mb" /> 결혼(혼인신고 전후 2년)·출산(2년 이내) 공제를 받는다</label>
+    <div class="calc-input-wrap">
+      <label for="gt-used">10년 안에 같은 관계에서 이미 공제받은 금액</label>
+      <input type="text" inputmode="numeric" id="gt-used" value="" placeholder="0" />
+      <span class="unit">원</span>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">낼 증여세(신고 3% 공제 후)</p>
+      <p class="big" id="gt-hero">{won(ex.payable)}</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">공제 합계</span><span class="value" id="gt-ded">{won(ex.deductions.total)}</span></div>
+      <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="gt-base">{won(ex.base)}</span></div>
+      <div class="stat-chip"><span class="label">산출세액</span><span class="value" id="gt-computed">{won(ex.computed)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    결혼·출산공제는 둘을 합해 평생 1억원이 한도입니다. 세율표와 구간별 예시는{" "}
+    <a href="/guide/gift-tax-rate/">증여세 세율</a>에 있습니다. 부동산이면 금액을 시가로 평가해야 해서{" "}
+    <a href="/guide/gift-property-value/">부동산 증여 평가</a>를 먼저 보세요.
+  </p>
+
+  <script src="../../../scripts/gift-tax.ts"></script>
+</GuideLayout>

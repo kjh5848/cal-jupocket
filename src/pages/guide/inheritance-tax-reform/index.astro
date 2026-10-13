@@ -1,0 +1,62 @@
+---
+/**
+ * "상속세 개편" — 상속세 시리즈. (개정·면제한도 개정·면제한도 상향·세율 인하·2026도 이 글)
+ * 근거: 국가법령정보센터 현행 상속세 및 증여세법 [시행 2026. 1. 2.] [법률 제21065호, 2025. 10. 1., 타법개정] 원문.
+ * 원칙: 확정·공포된 법만 숫자로 쓴다. 논의 중인 개편안(유산취득세 전환·자녀공제 확대 등)의 숫자는 쓰지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/inheritance-2026.json";
+import { eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const B = r.brackets;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "상속세 개편 — 2026년 10월 현재 공제·세율은 그대로, 개편안은 아직 법이 아닙니다";
+const description =
+  "상속세 개편은 2026년 10월 13일 현재 법으로 확정되지 않았습니다. 시행 중인 상속세 및 증여세법(2026년 1월 2일 시행)의 일괄공제 5억원, 자녀공제 1명 5천만원, 최고세율 50%가 그대로입니다. 개편안은 통과·공포·시행 전까지 적용되지 않습니다.";
+
+const ANSWER = `상속세 개편은 2026년 10월 13일 현재 법으로 확정되지 않았습니다. 시행 중인 상속세 및 증여세법(2026년 1월 2일 시행)의 일괄공제 ${eokwon(r.lumpSum.amount)}, 자녀공제 1명 ${eokwon(r.otherPersonal.child)}, 배우자공제 최소 ${eokwon(r.spouse.minimum)}, 최고세율 ${pct(B[B.length - 1].rate)}가 그대로입니다.`;
+
+const QA = [
+  { q: "상속세 개편은 확정됐나요?", a: `2026-10-13 국가법령정보센터에서 확인한 현행 법률은 2026년 1월 2일 시행판(법률 제21065호, 2025년 10월 1일 타법개정)이고, 그 뒤 공포된 상속세 개정은 찾지 못했습니다. 그래서 오늘 상속이 개시되면 아래의 현행 공제와 세율이 적용됩니다.` },
+  { q: "상속세 면제한도가 상향됐나요?", a: `현행 법에서는 상향되지 않았습니다. 기초공제 ${eokwon(r.basicDeduction.amount)}, 자녀 1명 ${eokwon(r.otherPersonal.child)}, 일괄공제 ${eokwon(r.lumpSum.amount)}, 배우자공제 최소 ${eokwon(r.spouse.minimum)}·최대 30억원이 그대로입니다(제18조~제21조). 면제한도 상향을 다룬 기사는 개정안 단계의 이야기입니다.` },
+  { q: "상속세 세율이 인하됐나요?", a: `현행 법의 세율은 과세표준 1억원 이하 ${pct(B[0].rate)}부터 30억원 초과 ${pct(B[4].rate)}까지 그대로입니다(제26조). 세율 인하나 최고세율 조정은 법률 개정이 필요하고, 개정은 국회 통과와 공포를 거쳐 시행일이 와야 적용됩니다.` },
+  { q: "상속세 개편안이 확정되면 언제부터 적용되나요?", a: `개정 법률의 부칙이 정한 시행일과 적용례에 따릅니다. 어느 사망일·어느 상속분부터 새 규정을 적용하는지는 그 법의 부칙에 적히므로, 확정되면 부칙 원문을 읽고 이 글과 계산기를 고칩니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>현행 공제(2026-10-13 확인)</th><th>금액</th><th>조문</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">기초공제</th><td>{eokwon(r.basicDeduction.amount)}</td><td>제18조</td></tr>
+      <tr><th scope="row">자녀공제</th><td>1명 {eokwon(r.otherPersonal.child)}</td><td>제20조</td></tr>
+      <tr><th scope="row">일괄공제</th><td>{eokwon(r.lumpSum.amount)}</td><td>제21조</td></tr>
+      <tr><th scope="row">배우자공제</th><td>최소 {eokwon(r.spouse.minimum)}, 최대 30억원</td><td>제19조</td></tr>
+      <tr><th scope="row">금융재산공제</th><td>순금융재산 20%, 한도 {eokwon(r.financial.cap)}</td><td>제22조</td></tr>
+    </tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>세율표 전체는 <a href="/guide/inheritance-tax-rate/">상속세 세율</a>에 있습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    개정안 단계의 숫자를 옮기면 확정되지 않은 세금을 확정된 것처럼 쓰게 되어 이 사이트는 쓰지 않습니다.
+  </p>
+</GuideLayout>

@@ -1,0 +1,71 @@
+---
+/**
+ * "상속세" — 상속세 시리즈 허브(src/data/series/gift-inheritance.ts). 뜻·기준·공제·계산·증여세 차이도 이 글.
+ * 근거: 상속세 및 증여세법 제13조·제14조(과세가액), 제18조~제22조(공제), 제26조(세율), 제67조(신고 6개월).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/inheritance-2026.json";
+import { inheritanceSeries } from "../../../data/series/gift-inheritance";
+import { seriesHref } from "../../../data/series/types";
+import { computeInheritance } from "../../../lib/inheritance";
+import { won, eokwon } from "../../../lib/won";
+
+const ex = computeInheritance({ estate: 1_500_000_000, hasSpouse: true, children: 2 });
+const exNo = computeInheritance({ estate: 1_500_000_000, hasSpouse: false, children: 2 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "상속세 — 배우자와 자녀가 있으면 10억원, 자녀만 있으면 5억원까지 0원입니다";
+const description =
+  "상속세는 사망한 사람의 재산 전체에 매기는 세금으로, 상속인이 사망한 달의 말일부터 6개월 안에 신고합니다. 일괄공제 5억원과 배우자공제 최소 5억원 때문에 배우자와 자녀가 있으면 10억원, 자녀만 있으면 5억원까지는 세금이 없습니다.";
+
+const ANSWER = `상속세는 사망한 사람의 재산 전체에 매기는 세금으로, 상속인이 사망한 달의 말일부터 ${r.deadline.months}개월 안에 신고합니다(상속세 및 증여세법 제67조). 일괄공제 ${eokwon(r.lumpSum.amount)}과 배우자공제 최소 ${eokwon(r.spouse.minimum)} 때문에 배우자와 자녀가 있으면 10억원, 자녀만 있으면 5억원까지 0원입니다.`;
+
+const QA = [
+  { q: "상속세란 무엇인가요?", a: `사람이 사망해 재산이 상속인에게 넘어갈 때 그 재산 전체에 매기는 세금입니다. 상속재산에서 공과금·장례비·채무를 빼고 사전증여재산을 더한 과세가액(제13조·제14조)에서 상속공제를 빼고 10~50% 세율을 곱합니다.` },
+  { q: "상속세 기준은 얼마부터인가요?", a: `고정 금액이 아니라 공제 합계가 기준입니다. 자녀만 있으면 일괄공제 ${eokwon(r.lumpSum.amount)}, 배우자도 있으면 배우자공제가 최소 ${eokwon(r.spouse.minimum)} 더해져 10억원까지 세금이 없습니다(제19조·제21조). 배우자가 실제로 더 받으면 공제도 커집니다(최대 30억원).` },
+  { q: "상속세 공제에는 무엇이 있나요?", a: `기초공제 ${eokwon(r.basicDeduction.amount)}+그 밖의 인적공제(자녀 1명 ${eokwon(r.otherPersonal.child)} 등)와 일괄공제 ${eokwon(r.lumpSum.amount)} 중 큰 쪽, 배우자공제(5억~30억원), 금융재산공제(순금융재산 20%, 2억원 한도) 등입니다(제18조~제22조). 합계는 공제 한도(제24조)를 넘지 못합니다.` },
+  { q: "상속세 계산은 어떻게 하나요?", a: `과세가액 − 상속공제 = 과세표준, × 세율 − 누진공제 = 산출세액, − 신고세액공제 3%입니다. 과세가액 15억원에 배우자와 자녀 2명이면 공제 ${eokwon(ex.deductions.total)}을 빼 ${won(ex.payable)}, 배우자 없이 자녀 2명이면 ${won(exNo.payable)}입니다(배우자는 법정 최소 공제만 가정).` },
+];
+const labelOf = (slug: string) => [...inheritanceSeries.items, ...(inheritanceSeries.existing ?? [])].find((x) => x.slug === slug)?.label ?? slug;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <ul>
+    <li>{r.aggregation.rule}({r.aggregation.article})</li>
+    <li>증여세와 세율표는 같지만 계산 단위와 신고기한이 다릅니다 — <a href="/guide/gift-tax-guide/">증여세</a></li>
+  </ul>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>자세히 — <a href={seriesHref("inheritance-tax")}>{labelOf("inheritance-tax")}</a></p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    자세히 — <a href={seriesHref("inheritance-child-deduction")}>{labelOf("inheritance-child-deduction")}</a>,{" "}
+    <a href={seriesHref("inheritance-deduction-limit")}>{labelOf("inheritance-deduction-limit")}</a>
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    내 숫자는 <a href="/inheritance/">상속세 계산기</a>에서 바로 계산됩니다. 세율표는{" "}
+    <a href={seriesHref("inheritance-tax-rate")}>{labelOf("inheritance-tax-rate")}</a>에 있습니다.
+  </p>
+
+  <h2>상속세, 질문별로 정리했습니다</h2>
+  <ul>
+    <li><a href={seriesHref("inheritance-tax")}>{labelOf("inheritance-tax")}</a></li>
+    {inheritanceSeries.items.map((x) => <li><a href={seriesHref(x.slug)}>{x.label}</a></li>)}
+    <li><a href="/inheritance/">상속세 계산기</a></li>
+  </ul>
+</GuideLayout>

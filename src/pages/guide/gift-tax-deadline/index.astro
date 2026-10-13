@@ -1,0 +1,65 @@
+---
+/**
+ * "증여세 신고기한" — 증여세 시리즈. (신고기간·신고기한 지나면·신고 안하면·신고 안해도 되는 경우도 이 글)
+ * 근거: 상속세 및 증여세법 제68조 제1항(달의 말일부터 3개월), 제69조 제2항(기한 내 신고 3%), 제55조 제2항(50만원 미만 부과 안 함),
+ * 국세기본법 제5조(기한이 공휴일·토요일이면 다음 날).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/gift-2026.json";
+import { shiftToBusinessDay, koDate } from "../../../lib/tax-deadline";
+import { won } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+/** 증여받은 날 → 그 달 말일부터 3개월이 되는 날(그 달의 말일), 주말이면 다음 날 */
+const due = (y: number, m: number) => shiftToBusinessDay(new Date(Date.UTC(y, m - 1 + r.deadline.months + 1, 0)));
+const examples = [[2026, 6, 10], [2026, 10, 13], [2026, 11, 30], [2026, 12, 24]].map(([y, m, d]) => ({ got: new Date(Date.UTC(y, m - 1, d)), due: due(y, m) }));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "증여세 신고기한 — 증여받은 달의 말일부터 3개월, 상속세 6개월과 다릅니다";
+const description =
+  "증여세 신고기한은 증여받은 날이 속하는 달의 말일부터 3개월입니다. 6월 10일에 받았다면 9월 30일까지입니다. 기한을 넘기면 신고세액공제 3%가 사라지고 가산세가 붙습니다. 상속세는 6개월이라 헷갈리기 쉽습니다.";
+
+const ANSWER = `증여세 신고기한은 증여받은 날이 속하는 달의 말일부터 ${r.deadline.months}개월입니다(상속세 및 증여세법 제68조 제1항). 6월 10일에 받았다면 9월 30일까지입니다. 기한을 넘기면 신고세액공제 ${pct(r.filingCredit.rate)}가 사라지고 가산세가 붙습니다. 상속세는 6개월입니다.`;
+
+const QA = [
+  { q: "증여세 신고기한은 언제까지인가요?", a: `증여받은 날이 속하는 달의 말일부터 ${r.deadline.months}개월 이내입니다(제68조 제1항). 받은 날이 아니라 그 달의 말일부터 세므로, 10월 13일에 받았다면 10월 31일부터 3개월인 ${koDate(due(2026, 10))}까지입니다. 그날이 공휴일·토요일이면 다음 날까지입니다.` },
+  { q: "증여세 신고기한이 지나면 어떻게 되나요?", a: `기한 안에 신고해야 받는 신고세액공제 ${pct(r.filingCredit.rate)}를 받지 못하고(제69조 제2항), 무신고·납부지연 가산세가 붙습니다. 가산세는 늦게라도 빨리 신고할수록 줄어드는 구조라, 놓쳤다면 바로 기한 후 신고를 하는 편이 낫습니다.` },
+  { q: "증여세 신고를 안 해도 되는 경우가 있나요?", a: `신고 의무는 '증여세 납부의무가 있는 자'에게 있고(제68조 제1항), 과세표준이 50만원 미만이면 증여세를 부과하지 않습니다(제55조 제2항). 공제 한도 안이라 낼 세금이 없을 때 신고할 의무가 있는지에 대한 해석은 조문만으로는 정리되지 않아 이 글에서 단정하지 않습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>증여받은 날</th><th>신고기한</th></tr></thead>
+    <tbody>
+      {examples.map((x) => <tr><th scope="row">{koDate(x.got)}</th><td>{koDate(x.due)}</td></tr>)}
+    </tbody>
+  </table>
+  <p>주말만 반영해 미뤘고, 공휴일 달력은 대조하지 않았습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    가산세 계산은 <a href="/guide/late-filing-penalty/">신고 기한을 놓쳤다면</a>과{" "}
+    <a href="/penalty/">가산세 계산기</a>에 있습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    세금이 없는 증여의 신고 의무에 대한 해석·예규는 이 글에서 확인하지 않았습니다. 다만 10년 안에
+    같은 사람에게 또 받으면 합산되므로(제47조 제2항) 받은 날짜와 금액은 남겨 두어야 계산할 수 있습니다.
+    세금이 얼마인지는{" "}
+    <a href="/guide/gift-tax-calculator/">증여세 계산기</a>로 확인하세요. 예를 들어 부모에게 받은 5천만원은
+    공제 안이라 {won(0)}입니다.
+  </p>
+</GuideLayout>

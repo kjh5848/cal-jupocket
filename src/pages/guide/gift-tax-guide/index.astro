@@ -1,0 +1,80 @@
+---
+/**
+ * "증여세" — 증여세 시리즈 허브(src/data/series/gift-inheritance.ts). 뜻·누가 내나요·상속세 차이·면제 대상도 이 글.
+ * 근거: 상속세 및 증여세법 제4조의2(납부의무), 제13조·제47조(과세가액), 제53조·제53조의2(공제), 제56조(세율 — 제26조 준용),
+ * 제67조·제68조(신고기한).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/gift-2026.json";
+import ih from "../../../rates/inheritance-2026.json";
+import { giftSeries } from "../../../data/series/gift-inheritance";
+import { seriesHref } from "../../../data/series/types";
+import { computeGift } from "../../../lib/gift";
+import { won, eokwon } from "../../../lib/won";
+
+const items = r.relationDeduction.items;
+const amt = (k: string) => items.find((i) => i.key === k)!;
+const ex = computeGift({ amount: 100_000_000, relation: "ascendant" });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "증여세 — 받은 사람이 3개월 안에 신고하고, 10년 합산으로 계산합니다";
+const description =
+  "증여세는 재산을 무상으로 받은 사람이 내는 세금입니다. 증여받은 날이 속하는 달의 말일부터 3개월 안에 신고하고, 같은 사람에게 10년 동안 받은 금액을 합쳐 계산합니다. 배우자 6억원, 부모에게 받는 성년 자녀 5천만원까지는 공제됩니다.";
+
+const ANSWER = `증여세는 재산을 무상으로 받은 사람(수증자)이 내는 세금입니다(상속세 및 증여세법 제4조의2). 증여받은 날이 속하는 달의 말일부터 ${r.deadline.months}개월 안에 신고하고, 같은 사람에게 10년 동안 받은 금액을 합쳐 계산합니다. 배우자 ${eokwon(amt("spouse").amount)}, 부모에게 받는 성년 자녀 ${eokwon(amt("ascendant").amount)}까지는 공제됩니다.`;
+
+const QA = [
+  { q: "증여세란 무엇인가요?", a: `타인에게 재산을 무상으로 받았을 때 받은 사람에게 매기는 세금입니다. 받은 재산가액에서 관계별 증여재산공제를 빼고 10~50% 누진세율을 곱합니다(제56조가 상속세 세율 제26조를 준용). 1억원을 부모에게 받은 성년 자녀라면 신고 기준 ${won(ex.payable)}입니다.` },
+  { q: "증여세는 누가 내나요?", a: `증여받은 사람(수증자)이 냅니다(제4조의2 제1항). 다만 수증자의 주소가 불분명하거나 낼 능력이 없어 세금을 걷기 어려운 경우, 수증자가 비거주자인 경우에는 준 사람(증여자)이 연대해 낼 의무가 있습니다(같은 조 제6항).` },
+  { q: "증여세와 상속세는 무엇이 다른가요?", a: `세율표는 같습니다(제56조). 다른 것은 계산 단위와 공제, 기한입니다. 상속세는 사망한 사람의 재산 전체로 과세가액을 계산하고(제13조) 신고기한이 ${ih.deadline.months}개월, 증여세는 받은 사람별로 계산하고(제47조) 신고기한이 ${r.deadline.months}개월입니다.` },
+  { q: "증여세 면제 대상은 얼마까지인가요?", a: `세법에 '면제'라는 항목은 없고 증여재산공제가 그 역할을 합니다. 10년 동안 배우자 ${eokwon(amt("spouse").amount)}, 직계존속(성년) ${eokwon(amt("ascendant").amount)}(미성년 ${eokwon(amt("ascendant").minorAmount!)}), 직계비속 ${eokwon(amt("descendant").amount)}, 그 밖의 친족 ${eokwon(amt("relative").amount)}까지 공제합니다(제53조).` },
+];
+const labelOf = (slug: string) => [...giftSeries.items, ...(giftSeries.existing ?? [])].find((x) => x.slug === slug)?.label ?? slug;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>자세히 — <a href={seriesHref("gift-tax-rate")}>{labelOf("gift-tax-rate")}</a>, <a href={seriesHref("gift-tax-calculator")}>{labelOf("gift-tax-calculator")}</a></p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    수증자에게 소득세나 법인세가 부과되는 재산이면 증여세를 부과하지 않습니다(제4조의2 제3항).
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>&nbsp;</th><th>증여세</th><th>상속세</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">내는 사람</th><td>받은 사람(수증자)</td><td>상속인·수유자</td></tr>
+      <tr><th scope="row">계산 단위</th><td>받은 사람별, 같은 사람에게 10년 합산</td><td>사망한 사람의 재산 전체</td></tr>
+      <tr><th scope="row">신고기한</th><td>달의 말일부터 {r.deadline.months}개월</td><td>달의 말일부터 {ih.deadline.months}개월</td></tr>
+      <tr><th scope="row">세율</th><td colspan="2">같음 — 10%~50% 5단계</td></tr>
+      <tr><th scope="row">신고세액공제</th><td colspan="2">같음 — 3%</td></tr>
+    </tbody>
+  </table>
+  <p>상속세는 <a href="/guide/inheritance-tax-guide/">상속세</a>에 따로 정리했습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    결혼·출산 때 부모에게 받으면 1억원이 더 붙습니다 —{" "}
+    <a href={seriesHref("gift-tax")}>{labelOf("gift-tax")}</a>.
+  </p>
+
+  <h2>증여세, 질문별로 정리했습니다</h2>
+  <ul>
+    <li><a href={seriesHref("gift-tax")}>{labelOf("gift-tax")}</a></li>
+    {giftSeries.items.map((x) => <li><a href={seriesHref(x.slug)}>{x.label}</a></li>)}
+    <li><a href="/guide/gift-property-value/">부동산 증여, 공시가격으로 신고해도 되나</a></li>
+  </ul>
+</GuideLayout>

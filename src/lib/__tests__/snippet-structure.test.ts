@@ -46,7 +46,8 @@ for (const p of pages) {
 
     it("FAQ 질문이 <h2> 로, 답이 바로 아래 qa-lead 로 보인다", () => {
       // 소제목과 그 바로 다음 qa-lead 단락을 짝으로 뽑는다(사이에 다른 요소가 있으면 짝이 안 된다).
-      const pairs = [...html.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>\s*<p class="qa-lead"[^>]*>([\s\S]*?)<\/p>/g)].map(
+      // 소제목 안에 다른 <h2> 가 끼지 않게 막는다 — 답 없는 소제목 뒤에서 게으른 매치가 다음 소제목까지 삼키던 버그(2026-10-13).
+      const pairs = [...html.matchAll(/<h2[^>]*>((?:(?!<\/?h2)[\s\S])*?)<\/h2>\s*<p class="qa-lead"[^>]*>([\s\S]*?)<\/p>/g)].map(
         (m) => [text(m[1]), text(m[2])] as const,
       );
       for (const q of ld?.mainEntity ?? []) {

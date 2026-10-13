@@ -1,0 +1,66 @@
+---
+/**
+ * "상속세 공제한도" — 상속세 시리즈. (공제 적용 한도·사전증여·유증·상속포기도 이 글)
+ * 근거: 상속세 및 증여세법 제24조(공제 적용의 한도), 제13조 제1항(사전증여 가산 10년·5년), 제19조(배우자공제 한도 30억).
+ * 계산: inheritance.ts deductionLimit().
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/inheritance-2026.json";
+import { deductionLimit, taxOn } from "../../../lib/inheritance";
+import { won, eokwon } from "../../../lib/won";
+
+// 예시: 상속재산 6억 + 3년 전 자녀에게 증여한 4억(증여세 과세표준 3.5억) = 과세가액 10억, 배우자와 자녀
+const taxable = 1_000_000_000;
+const priorGiftBase = 350_000_000;
+const deductions = r.lumpSum.amount + r.spouse.minimum;
+const limit = deductionLimit({ taxable, priorGiftBase });
+const used = Math.min(deductions, limit);
+const base = taxable - used;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "상속세 공제한도 — 사전증여·유증·상속포기분만큼 공제가 줄어듭니다";
+const description =
+  "상속세 공제한도는 상속세 과세가액에서 상속인이 아닌 사람에게 준 유증, 상속포기로 후순위가 받은 재산, 그리고 과세가액이 5억원을 넘을 때 더해진 사전증여재산의 과세표준을 뺀 금액입니다. 미리 증여한 만큼 일괄공제·배우자공제를 다 쓰지 못할 수 있습니다.";
+
+const ANSWER = `상속공제 합계는 과세가액에서 ① 상속인 아닌 사람에게 간 유증 ② 상속포기로 후순위가 받은 재산 ③ 과세가액이 ${eokwon(r.deductionLimit.giftAddThreshold)}을 넘을 때 더한 사전증여재산의 과세표준을 뺀 금액을 넘지 못합니다(상속세 및 증여세법 제24조). 미리 증여한 만큼 공제를 다 쓰지 못할 수 있습니다.`;
+
+const QA = [
+  { q: "상속세 공제한도란 무엇인가요?", a: `기초·인적·일괄·배우자·금융재산공제 등을 아무리 더해도 넘을 수 없는 상한입니다. 상속세 과세가액에서 상속인이 아닌 사람에게 유증한 재산, 선순위 상속인의 포기로 다음 순위가 받은 재산, 가산한 사전증여재산의 과세표준을 뺀 금액이 한도입니다(제24조).` },
+  { q: "사전증여가 있으면 공제한도가 어떻게 되나요?", a: `상속개시 전 10년(상속인 아닌 사람은 5년) 안에 증여한 재산은 상속세 과세가액에 더하지만(제13조), 과세가액이 5억원을 넘으면 그 증여재산의 과세표준만큼 공제한도가 줄어듭니다(제24조 제3호). 그래서 미리 준 재산만큼은 상속공제가 적용되지 않는 결과가 됩니다.` },
+  { q: "상속세 공제한도 계산 예시를 보여 주세요.", a: `상속재산 6억원에 3년 전 자녀에게 증여한 재산(과세표준 3.5억원)을 더해 과세가액이 10억원이면, 공제한도는 10억원 − 3.5억원 = ${eokwon(limit)}입니다. 배우자와 자녀가 있어 공제 합계가 ${eokwon(deductions)}이어도 ${eokwon(used)}만 공제되어 과세표준 ${eokwon(base)}이 남습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>{r.deductionLimit.rule}.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>단계</th><th>금액</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">상속세 과세가액(사전증여 가산 후)</th><td>{eokwon(taxable)}</td></tr>
+      <tr><th scope="row">공제한도 = 과세가액 − 사전증여 과세표준</th><td>{eokwon(limit)}</td></tr>
+      <tr><th scope="row">공제 합계(일괄 5억 + 배우자 최소 5억)</th><td>{eokwon(deductions)}</td></tr>
+      <tr><th scope="row">실제 공제(작은 쪽)</th><td>{eokwon(used)}</td></tr>
+      <tr><th scope="row">과세표준</th><td>{eokwon(base)}</td></tr>
+      <tr><th scope="row">산출세액</th><td>{won(taxOn(base))}</td></tr>
+    </tbody>
+  </table>
+  <p>
+    이미 낸 증여세는 상속세에서 빼 주는 증여세액공제가 따로 있는데, 그 계산은 이 글에서 다루지 않았습니다. 배우자공제는
+    실제 받은 금액이 커도 30억원과 법정상속분 기준 한도를 넘지 못합니다(제19조) — <a href="/guide/inheritance-tax/">상속세 면제한도</a>.
+  </p>
+</GuideLayout>

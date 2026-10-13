@@ -18,6 +18,7 @@
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AdSlot from "../../../components/AdSlot.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
 import r from "../../../rates/gift-2026.json";
 import {
   computeGift,
@@ -77,14 +78,23 @@ const REUSED = computeGift({
   usedWithin10y: ASCENDANT_CAP,
 });
 
+const ONE = computeGift({ amount: 억, relation: "ascendant" });
+const ANSWER = `증여세 면제한도(증여재산공제)는 10년 동안 배우자 ${formatMan(relationCap("spouse"))}, 부모에게 받는 성년 자녀 ${formatMan(ASCENDANT_CAP)}(미성년 ${formatMan(MINOR_CAP)}), 자녀에게 받는 부모 ${formatMan(relationCap("descendant"))}, 그 밖의 친족 ${formatMan(relationCap("relative"))}입니다(상속세 및 증여세법 제53조). 결혼·출산이면 부모에게 받을 때 ${formatMan(MB)}이 더 붙습니다.`;
+const QA = [
+  { q: "증여세 면제한도, 누구에게 얼마인가요?", a: `준 사람과의 관계로 정해집니다. 배우자 ${formatMan(relationCap("spouse"))}, 직계존속(부모·조부모) ${formatMan(ASCENDANT_CAP)}(받는 사람이 미성년자면 ${formatMan(MINOR_CAP)}), 직계비속 ${formatMan(relationCap("descendant"))}, 4촌 이내 혈족·3촌 이내 인척 ${formatMan(relationCap("relative"))}이고 이 금액까지는 세금이 0원입니다(제53조).` },
+  { q: "왜 여기저기 “10년”이 붙나요?", a: `공제가 한 번 쓰는 금액이 아니라 10년 한도이기 때문입니다. 증여받기 전 10년 안에 공제받은 금액을 합쳐 한도를 넘으면 공제하지 않고(제53조), 같은 사람에게 10년 안에 받은 금액도 합산합니다(제47조 제2항). 10년이 지나면 한도가 다시 생깁니다.` },
+  { q: `자녀에게 ${formatMan(억)}을 주면 세금이 얼마인가요?`, a: `부모가 성년 자녀에게 ${formatMan(억)}을 주면 ${formatMan(ASCENDANT_CAP)}을 공제한 과세표준에 10%를 곱하고 신고세액공제 3%를 빼 ${formatWon(ONE.payable)}입니다. 혼인신고 전후 2년이나 출산 후 2년 안이면 ${formatMan(MB)}이 더 공제돼 0원입니다(제53조의2).` },
+  { q: "2026년 증여세 개정, 언제부터 적용되나요?", a: `2026-10-13 현재 시행 중인 상속세 및 증여세법은 2026년 1월 2일 시행판이고, 이 글의 공제와 세율은 그 원문에서 확인했습니다. 국회에서 논의 중인 개정안의 숫자는 통과·공포·시행 전이라 싣지 않습니다.` },
+];
 const srcNts = r.sources.find((s) => s.label.includes("항목별"))!;
 const srcDeadline = r.sources.find((s) => s.label.includes("유의사항"))!;
 const srcFlow = r.sources.find((s) => s.label.includes("흐름도"))!;
 const srcLaw = r.sources.find((s) => s.label.includes("법령 원문"))!;
 ---
 
-<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
   <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
 
   <div class="callout">
     <p>
@@ -102,7 +112,8 @@ const srcLaw = r.sources.find((s) => s.label.includes("법령 원문"))!;
     </p>
   </div>
 
-  <h2>증여세 면제한도, 누구에게 얼마인가요?</h2>
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
   <p>
     준 사람이 나에게 어떤 관계인지로 갈립니다. 이 금액까지는 세금이 0원입니다.
   </p>
@@ -151,7 +162,8 @@ const srcLaw = r.sources.find((s) => s.label.includes("법령 원문"))!;
 
   <AdSlot label="guide-gift-tax-mid" />
 
-  <h2>왜 여기저기 “10년”이 붙나요?</h2>
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
   <p>
     증여세에서 10년은 두 군데에 나옵니다. 둘은 다른 규칙인데 자주 섞입니다.
   </p>
@@ -241,7 +253,8 @@ const srcLaw = r.sources.find((s) => s.label.includes("법령 원문"))!;
     <strong>이자상당액은 붙습니다.</strong>
   </p>
 
-  <h2>자녀에게 {formatMan(억)}을 주면 세금이 얼마인가요?</h2>
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
   <p>
     부모가 성년 자녀에게 줄 때입니다. 오른쪽은 결혼·출산{" "}
     {formatMan(MB)} 공제를 함께 받는 경우입니다.
@@ -404,7 +417,8 @@ const srcLaw = r.sources.find((s) => s.label.includes("법령 원문"))!;
     붙지 않습니다.
   </p>
 
-  <h2>2026년 증여세 개정, 언제부터 적용되나요?</h2>
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
   <p>
     <strong>{r.lawVersion}</strong>이 지금 시행 중인 법입니다. 이 글의 공제
     금액과 세율은 그 법과 국세청 안내에서 {r.verifiedOn}에 확인한 값이고,

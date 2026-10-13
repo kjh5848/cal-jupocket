@@ -15,6 +15,7 @@
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AdSlot from "../../../components/AdSlot.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
 import r from "../../../rates/inheritance-2026.json";
 import {
   computeInheritance,
@@ -62,14 +63,22 @@ const childBreakEven = (() => {
   return null;
 })();
 
+const ANSWER = `상속세 면제한도는 배우자와 자녀가 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: true, children: 2 }))}, 자녀만 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: false, children: 2 }))}입니다. 일괄공제 ${formatMan(r.lumpSum.amount)}과 배우자공제 최소 ${formatMan(r.spouse.minimum)}이 그 경계를 만듭니다(상속세 및 증여세법 제19조·제21조). 이 금액까지는 상속세가 0원입니다.`;
+const QA = [
+  { q: "상속세 면제한도, 우리 집은 얼마인가요?", a: `가족 구성으로 정해집니다. 배우자와 자녀가 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: true, children: 2 }))}, 배우자만 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: true, children: 0 }))}, 자녀만 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: false, children: 2 }))}입니다. 법에 '면제한도'라는 항목은 없고 상속공제 합계가 그 역할을 합니다.` },
+  { q: "배우자가 있고 없고로 얼마나 달라지나요?", a: `배우자가 있으면 실제로 받은 금액이 없거나 5억원 미만이어도 배우자공제 ${formatMan(r.spouse.minimum)}을 받습니다(제19조 제4항). 실제 상속분이 더 크면 그 금액을 공제하되 법정상속분 기준 한도와 30억원 중 작은 금액이 상한입니다(제1항).` },
+  { q: `${formatMan(EX)}을 물려받으면 얼마인가요?`, a: `과세가액 ${formatMan(EX)}에 배우자와 자녀 2명이면 공제가 ${formatMan(exWith.deductions.total)}이라 세금이 ${formatWon(exWith.payable)}이고, 배우자 없이 자녀 2명이면 공제 ${formatMan(exWithout.deductions.total)}을 빼고 신고세액공제 후 ${formatWon(exWithout.payable)}입니다.` },
+  { q: "2026년 상속세 개정, 언제부터 적용되나요?", a: `2026-10-13 현재 시행 중인 상속세 및 증여세법은 2026년 1월 2일 시행판이고, 공제와 세율은 그 원문에서 확인했습니다. 면제한도 상향이나 세율 인하 같은 개편안은 공포·시행 전이라 숫자를 싣지 않습니다.` },
+];
 const srcRate = r.sources.find((s) => s.label.includes("세율"))!;
 const srcDeduct = r.sources.find((s) => s.label.includes("상속공제"))!;
 const srcCredit = r.sources.find((s) => s.label.includes("세액공제"))!;
 const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한"))!;
 ---
 
-<GuideLayout title={title} description={description} updated={r.verifiedOn}>
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
   <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
 
   <div class="callout">
     <p>
@@ -87,7 +96,8 @@ const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한")
     </p>
   </div>
 
-  <h2>상속세 면제한도, 우리 집은 얼마인가요?</h2>
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
   <p>
     가족 구성에 따라 경계가 다릅니다. 이 금액까지는 세금이 0원입니다.
   </p>
@@ -133,7 +143,8 @@ const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한")
 
   <AdSlot label="guide-inheritance-tax-mid" />
 
-  <h2>배우자가 있고 없고로 얼마나 달라지나요?</h2>
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
   <p>
     자녀 2명 기준으로, 배우자 유무만 바꿔 보면 이렇습니다.
     신고세액공제 {pct(r.filingCredit.rate)}%를 뺀 금액입니다.
@@ -174,7 +185,8 @@ const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한")
     {formatMan(r.spouse.minimum)} 공제"입니다.
   </p>
 
-  <h2>{formatMan(EX)}을 물려받으면 얼마인가요?</h2>
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
   <p>
     가장 많이 묻는 금액입니다. 자녀 2명 기준으로 단계별로 풀어보면
     이렇습니다.
@@ -351,7 +363,8 @@ const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한")
     </li>
   </ol>
 
-  <h2>2026년 상속세 개정, 언제부터 적용되나요?</h2>
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
   <p>
     <strong>{r.lawVersion}</strong>이 지금 시행 중인 법입니다. 이 글과
     계산기의 세율·공제 금액은 그 법과 국세청 안내에서

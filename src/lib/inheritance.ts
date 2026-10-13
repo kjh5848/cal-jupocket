@@ -37,6 +37,11 @@ export interface Household {
   children?: number;
   /** 65세 이상 상속인·동거가족 수(배우자 제외). */
   elderly?: number;
+  /**
+   * 미성년자 상속인·동거가족이 19세가 될 때까지 남은 연수의 합(제20조 제1항 제2호).
+   * 1년 미만은 1년으로 센다(제3항) — 호출하는 쪽이 올림해서 넘긴다.
+   */
+  minorYears?: number;
 }
 
 export interface Deductions {
@@ -60,7 +65,7 @@ export interface Deductions {
 export function deductionsFor(h: Household): Deductions {
   const p = rates.otherPersonal;
   const personal =
-    (h.children ?? 0) * p.child + (h.elderly ?? 0) * p.elderly;
+    (h.children ?? 0) * p.child + (h.elderly ?? 0) * p.elderly + (h.minorYears ?? 0) * p.minorPerYear;
   const itemized = rates.basicDeduction.amount + personal;
   const lumpSum = rates.lumpSum.amount;
 
@@ -119,7 +124,8 @@ export interface InheritanceResult {
 export function computeInheritance(h: Household): InheritanceResult {
   const deductions = deductionsFor(h);
   const base = Math.max(0, h.estate - deductions.total);
-  const computed = taxOn(base);
+  // 과세표준 50만원 미만이면 상속세를 부과하지 않는다(제25조 제2항) — 과세표준은 그대로, 세액만 0
+  const computed = base < rates.minimumBase.amount ? 0 : taxOn(base);
   const filingCredit = won(computed * rates.filingCredit.rate);
   const payable = computed - filingCredit;
   return {
@@ -142,4 +148,20 @@ export function computeInheritance(h: Household): InheritanceResult {
  */
 export function taxFreeCeiling(h: Omit<Household, "estate">): number {
   return deductionsFor({ ...h, estate: 0 }).total;
+}
+
+/**
+ * 상속공제 적용 한도 — 제24조.
+ * 공제 합계는 과세가액에서 ① 상속인 아닌 사람에게 간 유증 등 ② 선순위 포기로 후순위가 받은 재산
+ * ③ (과세가액 5억 초과 시) 가산한 사전증여재산의 과세표준을 뺀 금액을 넘지 못한다.
+ */
+export function deductionLimit(o: { taxable: number; bequestToNonHeirs?: number; renounced?: number; priorGiftBase?: number }): number {
+  const gift = o.taxable > rates.deductionLimit.giftAddThreshold ? (o.priorGiftBase ?? 0) : 0;
+  return Math.max(0, o.taxable - (o.bequestToNonHeirs ?? 0) - (o.renounced ?? 0) - gift);
+}
+
+/** 그 밖의 인적공제(제20조)만의 합 — 기초공제 2억과 더해 일괄공제 5억과 비교한다 */
+export function personalTotal(o: { children?: number; elderly?: number; minorYears?: number }): number {
+  const p = rates.otherPersonal;
+  return (o.children ?? 0) * p.child + (o.elderly ?? 0) * p.elderly + (o.minorYears ?? 0) * p.minorPerYear;
 }

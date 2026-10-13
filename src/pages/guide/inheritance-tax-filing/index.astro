@@ -1,0 +1,72 @@
+---
+/**
+ * "상속세 신고" — 상속세 시리즈. (신고기한·신고 안해도 되는 경우·신고세액공제·분납·연부연납도 이 글)
+ * 근거: 상속세 및 증여세법 제67조(6개월·외국 9개월·첨부서류), 제21조 제1항 단서(신고 없으면 일괄공제 5억만),
+ * 제69조 제1항(3%), 제70조(자진납부·분납 1천만원), 제71조(연부연납 2천만원·10년), 제25조 제2항(50만원 미만).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/inheritance-2026.json";
+import { computeInheritance } from "../../../lib/inheritance";
+import { shiftToBusinessDay, koDate } from "../../../lib/tax-deadline";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const due = (y: number, m: number, months: number) => shiftToBusinessDay(new Date(Date.UTC(y, m - 1 + months + 1, 0)));
+// 자녀 7명이면 기초 2억 + 3.5억 = 5.5억 > 일괄공제 5억 — 신고하지 않으면 5억만
+const seven = computeInheritance({ estate: 800_000_000, hasSpouse: false, children: 7 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "상속세 신고 — 사망한 달의 말일부터 6개월, 기한 안에 하면 3%를 깎아 줍니다";
+const description =
+  "상속세 신고는 상속인이 상속개시일이 속하는 달의 말일부터 6개월(외국에 주소가 있으면 9개월) 안에 합니다. 기한 안에 신고하면 산출세액의 3%를 공제하고, 1천만원을 넘으면 나눠 내고 2천만원을 넘으면 연부연납을 신청할 수 있습니다.";
+
+const ANSWER = `상속세 신고는 상속인·수유자가 상속개시일이 속하는 달의 말일부터 ${r.deadline.months}개월(외국에 주소가 있으면 ${r.deadline.monthsNonResident}개월) 안에 합니다(상속세 및 증여세법 제67조). 기한 안에 신고하면 산출세액의 ${pct(r.filingCredit.rate)}를 공제하고(제69조), ${eokwon(r.installment.over)}을 넘으면 나눠 낼 수 있습니다.`;
+
+const QA = [
+  { q: "상속세 신고기한은 언제까지인가요?", a: `상속개시일(사망일)이 속하는 달의 말일부터 ${r.deadline.months}개월 이내이고, 피상속인이나 상속인이 외국에 주소를 두면 ${r.deadline.monthsNonResident}개월입니다(제67조 제1항·제4항). 2026년 10월 13일에 사망했다면 ${koDate(due(2026, 10, r.deadline.months))}까지입니다.` },
+  { q: "상속세 신고는 어떻게 하나요?", a: `상속인 또는 수유자가 상속세 과세가액과 과세표준을 납세지 관할 세무서장에게 신고하고, 상속재산의 종류·수량·평가가액, 재산분할, 각종 공제를 증명하는 서류를 붙입니다(제67조 제1항·제2항). 같은 기한까지 세금을 냅니다(제70조).` },
+  { q: "상속세 신고를 안 해도 되는 경우가 있나요?", a: `신고 의무는 상속세 납부의무가 있는 상속인에게 있고, 과세표준이 50만원 미만이면 상속세를 부과하지 않습니다(제25조 제2항). 다만 신고하지 않으면 일괄공제는 5억원만 받으므로(제21조 제1항 단서), 자녀가 많아 기초+인적공제가 5억원을 넘는 집은 신고해야 그 차이를 받습니다.` },
+  { q: "상속세를 나눠 낼 수 있나요?", a: `낼 세금이 ${eokwon(r.installment.over)}을 넘으면 일부를 납부기한 뒤 ${r.installment.months}개월 안에 나눠 낼 수 있습니다(제70조 제2항). ${eokwon(r.yearlyInstallment.over)}을 넘으면 담보를 제공하고 최대 ${r.yearlyInstallment.inheritanceYears}년 연부연납을 신청할 수 있고, 매회 분할액은 1천만원을 넘어야 합니다(제71조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>사망일</th><th>신고기한(국내)</th><th>외국 주소</th></tr></thead>
+    <tbody>
+      {[[2026, 3, 5], [2026, 6, 20], [2026, 10, 13]].map(([y, m, d]) => (
+        <tr><th scope="row">{koDate(new Date(Date.UTC(y, m - 1, d)))}</th><td>{koDate(due(y, m, r.deadline.months))}</td><td>{koDate(due(y, m, r.deadline.monthsNonResident))}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <p>주말만 반영해 미뤘고 공휴일 달력은 대조하지 않았습니다. 상속인이 확정되지 않았다면 확정된 날부터 30일 안에 상속관계를 따로 제출합니다(제67조 제5항).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>홈택스 신고 화면과 신고서 서식은 이 글에서 다루지 않습니다. 배우자공제는 신고기한 다음 날부터 9개월 안에 재산을 분할(등기 등)해야 실제 받은 금액으로 공제됩니다(제19조 제2항).</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    예를 들어 자녀 7명이면 기초공제 {eokwon(r.basicDeduction.amount)} + 자녀공제 {eokwon(r.otherPersonal.child * 7)} =
+    {" "}{eokwon(seven.deductions.itemized)}으로 일괄공제 {eokwon(r.lumpSum.amount)}보다 큽니다. 신고하면 이 금액을, 신고하지 않으면
+    {" "}{eokwon(r.lumpSum.amount)}만 공제받습니다 — <a href="/guide/inheritance-child-deduction/">상속세 자녀공제</a>.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    기한 안에 신고하면 산출세액(세대생략 할증 포함)에서 징수유예·공제·감면액을 뺀 금액의 {pct(r.filingCredit.rate)}를
+    공제합니다(제69조 제1항). 금액별 세금은 <a href="/inheritance/">상속세 계산기</a>로 확인하세요. 예시 금액은{" "}
+    {won(computeInheritance({ estate: 1_500_000_000, hasSpouse: false, children: 2 }).payable)}(과세가액 15억원, 자녀 2명)입니다.
+  </p>
+</GuideLayout>

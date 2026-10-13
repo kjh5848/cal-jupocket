@@ -1,0 +1,60 @@
+---
+/**
+ * "증여세 신고" — 증여세 시리즈. (신고방법·증여신고·신고는 누가 하나요·자녀 증여세 신고·신고서류·신고세액공제도 이 글)
+ * 근거: 상속세 및 증여세법 제4조의2(수증자), 제68조(신고·첨부서류), 제69조 제2항(신고세액공제 3%), 제70조(자진납부·분납),
+ * 제71조(연부연납), 제53조 제2호(미성년자 2천만원).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/gift-2026.json";
+import { computeGift } from "../../../lib/gift";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const minorEx = computeGift({ amount: 30_000_000, relation: "ascendant", minor: true });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
+const title = "증여세 신고 — 받은 사람이 관할 세무서에 신고하고, 기한 안에 하면 3%를 깎아 줍니다";
+const description =
+  "증여세 신고는 증여받은 사람이 증여받은 날이 속하는 달의 말일부터 3개월 안에 납세지 관할 세무서에 합니다. 재산의 종류·수량·평가가액과 공제를 증명할 서류를 붙이고, 기한 안에 신고하면 산출세액의 3%를 공제합니다. 1천만원을 넘으면 나눠 낼 수 있습니다.";
+
+const ANSWER = `증여세 신고는 증여받은 사람이 증여받은 날이 속하는 달의 말일부터 ${r.deadline.months}개월 안에 납세지 관할 세무서에 합니다(상속세 및 증여세법 제68조). 재산의 종류·수량·평가가액과 공제를 증명할 서류를 붙이고, 기한 안에 신고하면 산출세액의 ${pct(r.filingCredit.rate)}를 공제합니다(제69조).`;
+
+const QA = [
+  { q: "증여세 신고는 누가 하나요?", a: `증여세 납부의무가 있는 사람, 곧 증여받은 사람(수증자)이 합니다(제68조 제1항, 제4조의2). 미성년 자녀가 받았어도 신고 주체는 자녀이고, 증여자는 수증자가 낼 능력이 없는 경우 등에만 연대해 낼 의무를 집니다.` },
+  { q: "증여세 신고방법은 무엇인가요?", a: `증여세 과세가액과 과세표준을 납세지 관할 세무서장에게 신고하고, 신고서에 증여재산의 종류·수량·평가가액과 각종 공제를 증명할 서류를 붙입니다(제68조). 신고하면서 같은 기한까지 세금을 냅니다(제70조 제1항).` },
+  { q: "증여세 신고세액공제는 얼마인가요?", a: `기한 안에 신고하면 산출세액(세대생략 할증 포함)에서 징수유예·다른 공제·감면액을 뺀 금액의 ${pct(r.filingCredit.rate)}를 공제합니다(제69조 제2항). 기한을 넘기면 이 공제가 없고 가산세가 붙습니다.` },
+  { q: "자녀 증여세 신고는 어떻게 다른가요?", a: `미성년 자녀가 직계존속에게 받으면 공제가 ${eokwon(r.relationDeduction.items.find((i) => i.key === "ascendant")!.minorAmount!)}입니다(제53조 제2호 단서). 3,000만원을 받았다면 과세표준 ${won(minorEx.base)}에 낼 세금은 ${won(minorEx.payable)}입니다. 신고 절차와 기한은 성인과 같습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <ul>
+    <li>세금이 {eokwon(r.installment.over)}을 넘으면 일부를 납부기한 뒤 {r.installment.months}개월 안에 나눠 낼 수 있습니다({r.installment.article}).</li>
+    <li>{eokwon(r.yearlyInstallment.over)}을 넘으면 담보를 제공하고 최대 {r.yearlyInstallment.giftYears}년 연부연납을 신청할 수 있습니다({r.yearlyInstallment.article}).</li>
+  </ul>
+  <p>홈택스 신고 화면과 신고서 서식은 이 글에서 다루지 않습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    기한 계산은 <a href="/guide/gift-tax-deadline/">증여세 신고기한</a>에 날짜 예시와 함께 정리했습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    금액별 세금은 <a href="/guide/gift-tax-calculator/">증여세 계산기</a>에서 '미성년자'를 체크하면 바로 나옵니다.
+  </p>
+</GuideLayout>
