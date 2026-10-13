@@ -1,0 +1,78 @@
+---
+/**
+ * "퇴직금 세금" — 퇴직금·퇴직연금 시리즈 허브. (퇴직소득세·세율·몇프로·16.5·계산방법·얼마나 떼나요도 이 글)
+ * 근거: 소득세법 제14조 제6항·제48조(근속연수공제·환산급여공제 — img alt 대조)·제55조 제2항(÷12 × 근속연수)·제129조 제1항 제7호,
+ * 지방세법 제92조 제4항, 제129조 제1항 제6호 나목(연금외수령 기타소득 15% — 16.5% 의 출처).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/severance-2026.json";
+import { severanceTax } from "../../../lib/severance";
+import { won, eokwon } from "../../../lib/won";
+import { severanceSeries as S } from "../../../data/series/severance";
+
+const ex = severanceTax(100_000_000, 10);
+const pctx = (v: number) => `${(v * 100).toFixed(2)}%`;
+const rows = [
+  { a: 30_000_000, y: 5 }, { a: 50_000_000, y: 10 }, { a: 100_000_000, y: 10 }, { a: 100_000_000, y: 20 }, { a: 200_000_000, y: 20 }, { a: 300_000_000, y: 30 },
+].map((c) => ({ ...c, x: severanceTax(c.a, c.y) }));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 severance-series.test.ts 가 rates 와 대조한다.
+const title = "퇴직금 세금 — 퇴직소득세는 정해진 몇 %가 아니라 근속연수로 나눠 계산합니다";
+const description =
+  "퇴직금 세금(퇴직소득세)은 고정 세율이 아닙니다. 퇴직금에서 근속연수공제를 빼고 12배로 환산해 환산급여공제를 뺀 뒤 기본세율을 곱하고 다시 근속연수만큼으로 되돌립니다. 퇴직금 1억원을 10년 일하고 받으면 지방소득세 포함 4,262,500원입니다.";
+
+const ANSWER = `퇴직금 세금(퇴직소득세)은 정해진 비율이 아닙니다. 퇴직금 − 근속연수공제 → ÷ 근속연수 × 12 → − 환산급여공제 → × 기본세율 → ÷ 12 × 근속연수로 계산합니다(소득세법 제48조·제55조). 퇴직금 1억원, 근속 10년이면 소득세 ${won(ex.tax)}에 지방소득세를 더해 ${won(ex.total)}입니다.`;
+
+const QA = [
+  { q: "퇴직소득세는 어떻게 계산하나요?", a: `① 퇴직금에서 근속연수공제를 빼고 ② 근속연수로 나눠 12를 곱한 '환산급여'에서 환산급여공제를 빼 과세표준을 구합니다. ③ 기본세율(6~45%)을 곱한 뒤 ④ 12로 나누고 근속연수를 곱합니다(제48조·제55조 제2항). 근속연수의 1년 미만 끝수는 1년으로 봅니다.` },
+  { q: "퇴직금 세금은 몇 프로인가요?", a: `고정된 비율이 없습니다. 퇴직금 1억원이면 10년 근속은 실효세율 ${pctx(rows[2].x.effective)}, 20년 근속은 ${pctx(rows[3].x.effective)}(지방소득세 포함)로, 같은 금액이라도 오래 일할수록 낮아집니다. 근속연수공제가 퇴직금보다 크면 세금이 없습니다.` },
+  { q: "퇴직금 세금이 16.5%인가요?", a: `아닙니다. 16.5%는 IRP·연금저축에서 세액공제받은 원금과 운용수익을 연금이 아닌 방식으로 찾을 때의 기타소득세 15%와 지방소득세입니다(제129조 제1항 제6호 나목). 회사에서 받은 퇴직금은 퇴직소득세로 따로 계산하고, IRP에 넣어 두었다가 찾아도 퇴직소득세로 냅니다.` },
+  { q: "퇴직소득세는 누가 언제 떼나요?", a: `회사(원천징수의무자)가 퇴직금을 줄 때 기본세율로 계산해 떼고(제129조 제1항 제7호) 다음 달 말일까지 영수증을 발급합니다. 퇴직금이 IRP 등 연금계좌로 가면 연금외수령 전까지 떼지 않습니다. 퇴직소득은 종합소득과 합치지 않고 따로 과세표준을 계산합니다(제14조 제6항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>퇴직금 1억원, 근속 10년</th><th>금액</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">근속연수공제(500만원 + 200만원 × 5)</th><td>{won(ex.serviceDeduction)}</td></tr>
+      <tr><th scope="row">환산급여((1억원 − 공제) ÷ 10 × 12)</th><td>{won(ex.converted)}</td></tr>
+      <tr><th scope="row">환산급여공제</th><td>{won(ex.convertedDeduction)}</td></tr>
+      <tr><th scope="row">과세표준</th><td>{won(ex.base)}</td></tr>
+      <tr><th scope="row">퇴직소득세(기본세율 ÷ 12 × 10)</th><td>{won(ex.tax)}</td></tr>
+      <tr><th scope="row">지방소득세</th><td>{won(ex.local)}</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>퇴직금</th><th>근속</th><th>세금(지방세 포함)</th><th>실효세율</th></tr></thead>
+    <tbody>{rows.map(({ a, y, x }) => <tr><th scope="row">{eokwon(a)}</th><td>{y}년</td><td>{won(x.total)}</td><td>{pctx(x.effective)}</td></tr>)}</tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>IRP 공제분 해지는 <a href="/guide/irp-cancellation-tax/">IRP 세액공제 해지</a>에 따로 정리했습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    영수증은 <a href="/guide/severance-withholding-receipt/">퇴직소득 원천징수영수증</a>, 금액 확인은{" "}
+    <a href="/guide/severance-tax-calculator/">퇴직금 세금 계산기</a>를 쓰세요.
+  </p>
+
+  <h2>퇴직금·퇴직연금 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

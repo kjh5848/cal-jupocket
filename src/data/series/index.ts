@@ -12,5 +12,6 @@ import { medicalCreditSeries, educationCreditSeries, donationCreditSeries } from
 import { giftSeries, inheritanceSeries } from "./gift-inheritance";
 import { capitalGainsSeries } from "./capital-gains";
 import { fourInsuranceSeries } from "./four-insurance";
+import { severanceSeries } from "./severance";
 
-export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries];
+export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries];

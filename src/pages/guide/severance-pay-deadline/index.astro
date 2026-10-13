@@ -1,0 +1,56 @@
+---
+/**
+ * "퇴직금 지급기한" — 퇴직금·퇴직연금 시리즈. (14일·연장·합의·늦으면·지연이자·시효도 이 글)
+ * 근거: 근로자퇴직급여 보장법 제9조 제1항(14일, 합의로 연장)·제10조(3년 시효), 근로기준법 제36조(금품 청산 14일)·
+ * 제37조 제1항 제1호(퇴직급여 일시금 지연이자), 시행령 제17조(연 100분의 20)·제18조(지연이자 적용 제외 사유).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/severance-2026.json";
+import { won } from "../../../lib/won";
+
+const D = r.deadline;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+/** 퇴직금 1천만원을 30일 늦게 받으면 — 연 20% 일할 */
+const lateDays = 30;
+const late = Math.floor((10_000_000 * D.lateInterest * lateDays) / 365);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 severance-series.test.ts 가 rates 와 대조한다.
+const title = "퇴직금 지급기한 — 퇴직한 날부터 14일, 넘기면 연 20% 지연이자";
+const description =
+  "퇴직금 지급기한은 퇴직한 날부터 14일입니다. 특별한 사정이 있으면 근로자와 합의해 늘릴 수 있지만, 14일이 되는 날까지 일시금으로 주지 않으면 그다음 날부터 연 20%의 지연이자가 붙습니다. 퇴직금을 받을 권리는 3년이 지나면 시효로 사라집니다.";
+
+const ANSWER = `퇴직금 지급기한은 퇴직한 날(지급사유 발생일)부터 ${D.days}일입니다(근로자퇴직급여 보장법 제9조). 특별한 사정이 있으면 당사자 합의로 늘릴 수 있고, ${D.days}일이 되는 날까지 주지 않으면 그다음 날부터 연 ${pct(D.lateInterest)} 지연이자가 붙습니다(근로기준법 제37조, 시행령 제17조).`;
+
+const QA = [
+  { q: "퇴직금 지급기한은 언제까지인가요?", a: `사용자는 근로자가 퇴직한 경우 지급사유가 발생한 날부터 ${D.days}일 이내에 퇴직금을 줘야 합니다(제9조 제1항). 임금·보상금 등 다른 금품도 같은 ${D.days}일입니다(근로기준법 제36조). 이 퇴직금은 원칙적으로 근로자의 IRP 계정으로 이전하는 방법으로 줍니다(제9조 제2항).` },
+  { q: "퇴직금 지급기한을 연장할 수 있나요?", a: `특별한 사정이 있으면 당사자 간 합의로 지급기일을 연장할 수 있습니다(제9조 제1항 단서). 합의가 없는데 사용자가 일방적으로 늦출 수는 없습니다. 합의했더라도 지연이자 규정의 적용 여부는 별개로 따져야 합니다.` },
+  { q: "퇴직금을 늦게 주면 어떻게 되나요?", a: `퇴직급여 일시금을 ${D.days}일이 되는 날까지 주지 않으면 그다음 날부터 지급하는 날까지 연 ${pct(D.lateInterest)}의 지연이자를 줘야 합니다(근로기준법 제37조 제1항 제1호, 시행령 제17조). 1천만원을 30일 늦게 받으면 약 ${won(late)}입니다. 도산 등 대통령령 사유는 제외됩니다.` },
+  { q: "퇴직금을 못 받으면 언제까지 청구할 수 있나요?", a: `퇴직금을 받을 권리는 ${r.pay.limitationYears}년간 행사하지 않으면 시효로 소멸합니다(근로자퇴직급여 보장법 제10조). 늦어지는 동안에도 시효는 흐르므로 지급 요구를 미루지 않는 편이 안전합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    지연이자 제외 사유는 임금채권보장법상 도산 등, 법령상 자금 확보가 어려운 경우, 퇴직금의 존재 여부를 법원이나
+    노동위원회에서 다투는 것이 적절한 경우 등입니다(근로기준법 시행령 제18조).
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>받은 퇴직금의 세금은 <a href="/guide/severance-tax/">퇴직금 세금</a>에 있습니다.</p>
+</GuideLayout>

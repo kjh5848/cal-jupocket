@@ -1,0 +1,63 @@
+---
+/**
+ * "연금소득세" — 퇴직금·퇴직연금 시리즈. (연금소득세율·1,500만원·분리과세·종합과세·15%·사적연금도 이 글)
+ * 근거: 소득세법 제129조 제1항 제5호의2(나이별 5·4·3%, 종신 3%, 낮은 쪽)·제5호의3(퇴직소득 연금수령 70·60·50%)·제6호 나목(연금외수령 15%),
+ * 제14조 제3항 제9호(분리과세연금소득 — 연 1,500만원 이하), 제64조의4(초과하면 종합과세 또는 15% 선택).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/severance-2026.json";
+import { eokwon } from "../../../lib/won";
+
+const N = r.pensionIncome;
+const P = r.pensionReceipt;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 severance-series.test.ts 가 rates 와 대조한다.
+const title = "연금소득세 — 연금저축·IRP를 연금으로 받으면 나이별 5%·4%·3%, 연 1,500만원 넘으면 선택";
+const description =
+  "연금소득세는 연금저축·IRP에서 세액공제받은 원금과 운용수익을 연금으로 받을 때 70세 미만 5%, 80세 미만 4%, 80세 이상 3%로 원천징수합니다. 이런 사적연금이 연 1,500만원 이하면 분리과세로 끝나고, 넘으면 종합과세와 15% 분리과세 중 고릅니다.";
+
+const ANSWER = `연금소득세는 연금계좌에서 세액공제받은 원금과 운용수익을 연금으로 받을 때 나이에 따라 ${pct(N.byAge[0].rate)}(70세 미만)·${pct(N.byAge[1].rate)}·${pct(N.byAge[2].rate)}(80세 이상)로 원천징수합니다(소득세법 제129조). 이런 사적연금 합계가 연 ${eokwon(N.separateLimit)} 이하면 분리과세, 넘으면 종합과세와 ${pct(N.optionRate)} 분리과세 중 고릅니다.`;
+
+const QA = [
+  { q: "연금소득세율은 얼마인가요?", a: `세액공제받은 납입액과 운용수익을 연금으로 받으면 연금 받는 날 나이 기준 70세 미만 ${pct(N.byAge[0].rate)}, 70세 이상 80세 미만 ${pct(N.byAge[1].rate)}, 80세 이상 ${pct(N.byAge[2].rate)}입니다. 사망할 때까지 받는 종신계약은 ${pct(N.lifetime)}이고, 두 요건을 함께 갖추면 낮은 세율을 씁니다(제129조 제1항 제5호의2).` },
+  { q: "연금소득 1,500만원 기준은 무엇인가요?", a: `퇴직소득을 연금으로 받는 것과 의료목적 등 부득이한 인출을 뺀 사적연금 합계가 연 ${eokwon(N.separateLimit)} 이하면 원천징수로 끝나는 분리과세입니다(제14조 제3항 제9호 다목). 원하면 종합소득에 합산할 수도 있습니다.` },
+  { q: "연금소득이 1,500만원을 넘으면 어떻게 되나요?", a: `분리과세 대상이 아닌 연금소득이 있으면 종합소득 결정세액과, 그 연금소득에 ${pct(N.optionRate)}를 곱한 금액 + 나머지 종합소득 결정세액 중 하나를 고를 수 있습니다(제64조의4). 다른 소득이 많으면 15% 쪽이, 적으면 종합과세 쪽이 유리할 수 있습니다.` },
+  { q: "퇴직금을 연금으로 받는 것도 연금소득세인가요?", a: `연금소득이지만 세율 구조가 다릅니다. IRP에 넣은 퇴직금을 연금으로 받으면 원래 퇴직소득세의 ${pct(P.upTo10)}(10년차까지)·${pct(P.upTo20)}·${pct(P.over20)}를 원천징수하고(제129조 제1항 제5호의3), 1,500만원 판단에 넣지 않는 분리과세 연금소득입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>연금계좌에서 꺼내는 돈</th><th>연금으로 받을 때</th><th>연금이 아니게 찾을 때</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">세액공제받은 원금·운용수익</th><td>{N.byAge.map((b) => `${b.label} ${pct(b.rate)}`).join(" · ")}</td><td>기타소득 {pct(N.nonAnnuity)}</td></tr>
+      <tr><th scope="row">IRP로 옮긴 퇴직금</th><td>퇴직소득세의 {pct(P.upTo10)}·{pct(P.upTo20)}·{pct(P.over20)}</td><td>퇴직소득세 그대로</td></tr>
+      <tr><th scope="row">세액공제받지 않은 원금</th><td colspan="2">과세 대상 아님(소득세법 제20조의3)</td></tr>
+    </tbody>
+  </table>
+  <p>지방소득세가 각각 10분의 1만큼 더해집니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>국민연금 같은 공적연금은 이 글의 사적연금과 과세 방식이 달라 다루지 않았습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    퇴직금 쪽은 <a href="/guide/pension-receipt-method/">퇴직연금 수령방법</a>, 공제분 해지는{" "}
+    <a href="/guide/irp-cancellation-tax/">IRP 세액공제 해지</a>에 있습니다.
+  </p>
+</GuideLayout>

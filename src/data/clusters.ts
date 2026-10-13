@@ -199,6 +199,16 @@ export const clusters: Cluster[] = [
       { href: "/guide/four-insurance-eligibility/", title: "4대보험 가입조건, 월 60시간", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/daily-worker-insurance/", title: "일용직 4대보험, 월 8일 기준", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/health-insurance-refund/", title: "건강보험 환급금, 3년 안에", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/severance-tax/", title: "퇴직금 세금, 근속연수로 나눠 계산", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/severance-tax-calculator/", title: "퇴직금 세금 계산기", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/severance-pay-deadline/", title: "퇴직금 지급기한, 14일", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/severance-interim-settlement/", title: "퇴직금 중간정산, 법정 사유만", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/severance-irp/", title: "퇴직금 IRP, 원칙은 IRP 이전", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/pension-receipt-method/", title: "퇴직연금 수령방법, 연금이면 30~50% 감면", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/pension-income-tax/", title: "연금소득세, 5%·4%·3%", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/dc-pension/", title: "퇴직연금 DC형, 12분의 1 이상", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/pension-mid-withdrawal/", title: "퇴직연금 중도인출, 법정 사유", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/pension-termination/", title: "퇴직연금 해지, 미뤄 둔 세금", kind: "guide", icon: "umbrella", year: 2026 },
     ],
   },
   /*
@@ -276,6 +286,16 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/pension-termination/",
+  "/guide/pension-mid-withdrawal/",
+  "/guide/dc-pension/",
+  "/guide/pension-income-tax/",
+  "/guide/pension-receipt-method/",
+  "/guide/severance-irp/",
+  "/guide/severance-interim-settlement/",
+  "/guide/severance-pay-deadline/",
+  "/guide/severance-tax-calculator/",
+  "/guide/severance-tax/",
   "/guide/health-insurance-refund/",
   "/guide/daily-worker-insurance/",
   "/guide/four-insurance-eligibility/",

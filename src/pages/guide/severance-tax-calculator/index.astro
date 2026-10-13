@@ -1,0 +1,80 @@
+---
+/**
+ * "퇴직금 세금 계산기" — 퇴직금·퇴직연금 시리즈. (퇴직소득세 계산기·모의계산·자동 계산·계산 예시도 이 글, 계산기 포함)
+ * 계산: src/lib/severance.ts severanceTax() — 소득세법 제48조(근속연수공제·환산급여공제)·제55조 제2항, 지방세법 제92조 제4항,
+ * 제129조 제1항 제5호의3(연금수령 70%).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/severance-2026.json";
+import { severanceTax, pensionReceiptRatio } from "../../../lib/severance";
+import { won, eokwon } from "../../../lib/won";
+
+const ex = severanceTax(100_000_000, 10);
+const short = severanceTax(30_000_000, 3);
+const P = r.pensionReceipt;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 severance-series.test.ts 가 rates 와 대조한다.
+const title = "퇴직금 세금 계산기 — 퇴직금과 근속연수만 넣으면 퇴직소득세·지방소득세가 나옵니다";
+const description =
+  "퇴직금 세금 계산기는 퇴직금과 근속연수로 근속연수공제·환산급여공제를 적용해 퇴직소득세와 지방소득세를 계산합니다. 근속연수의 1년 미만 끝수는 1년으로 올립니다. IRP에 넣어 연금으로 받으면 10년차까지 세금의 70%만 냅니다.";
+
+const ANSWER = `퇴직금 세금 계산기는 퇴직금과 근속연수로 근속연수공제와 환산급여공제를 빼고 기본세율을 적용해 퇴직소득세를 구합니다(소득세법 제48조·제55조). 퇴직금 1억원·근속 10년이면 소득세 ${won(ex.tax)}, 지방소득세 ${won(ex.local)}, 합계 ${won(ex.total)}입니다.`;
+
+const QA = [
+  { q: "퇴직소득세 계산 예시를 보여 주세요.", a: `퇴직금 1억원, 근속 10년이면 근속연수공제 ${won(ex.serviceDeduction)}을 빼고 ÷ 10 × 12로 환산급여 ${won(ex.converted)}, 환산급여공제 ${won(ex.convertedDeduction)}을 빼 과세표준 ${won(ex.base)}입니다. 기본세율로 계산한 세액을 12로 나누고 10을 곱하면 ${won(ex.tax)}입니다.` },
+  { q: "근속연수는 어떻게 넣나요?", a: `입사일부터 퇴사일까지의 기간을 연 단위로 넣고, 1년 미만 끝수는 1년으로 올립니다(제48조 제1항). 9년 2개월이면 10년입니다. 중간정산을 받았다면 그 뒤 기간만 새 퇴직금의 계속근로기간이 되지만, 세법상 근속연수 계산 세부는 시행령을 확인하세요.` },
+  { q: "퇴직금을 연금으로 받으면 세금이 얼마나 줄어드나요?", a: `IRP 등 연금계좌에 넣었다가 연금으로 받으면 원래 퇴직소득세의 ${pct(P.upTo10)}(실제 수령 10년차까지), ${pct(P.upTo20)}(11~20년차), ${pct(P.over20)}(21년차부터)만 원천징수합니다(제129조 제1항 제5호의3). 1억원·10년 예시면 일시금 ${won(ex.total)}이 연금수령 초기 기준 ${won(Math.floor(ex.total * pensionReceiptRatio(1)))}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">일반 근로자의 퇴직금 어림입니다. 임원 퇴직소득 한도, 근속연수의 개월 단위 세부, 중간정산 합산은 넣지 않았습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="sv-amount">퇴직금(비과세 제외)</label>
+      <input type="text" inputmode="numeric" id="sv-amount" value="100,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="sv-years">근속연수(1년 미만 끝수는 올림)</label>
+      <input type="number" min="0" max="60" step="0.1" id="sv-years" value="10" />
+      <span class="unit">년</span>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">퇴직소득세 + 지방소득세</p>
+      <p class="big" id="sv-hero">{won(ex.total)}</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">퇴직소득세</span><span class="value" id="sv-tax">{won(ex.tax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세</span><span class="value" id="sv-local">{won(ex.local)}</span></div>
+      <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="sv-base">{won(ex.base)}</span></div>
+      <div class="stat-chip"><span class="label">세후 퇴직금</span><span class="value" id="sv-net">{won(ex.net)}</span></div>
+      <div class="stat-chip"><span class="label">실효세율</span><span class="value" id="sv-eff">{(ex.effective * 100).toFixed(2)}%</span></div>
+      <div class="stat-chip"><span class="label">연금수령 시(10년차까지 70%)</span><span class="value" id="sv-pension">{won(Math.floor(ex.total * pensionReceiptRatio(1)))}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>근속 3년에 퇴직금 {eokwon(30_000_000)}이면 세금이 {won(short.total)}입니다. 근속연수공제가 작아도 환산급여공제가 커서 적게 나옵니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    계산 구조는 <a href="/guide/severance-tax/">퇴직금 세금</a>, IRP 이전 의무는{" "}
+    <a href="/guide/severance-irp/">퇴직금 IRP</a>에 있습니다.
+  </p>
+
+  <script src="../../../scripts/severance.ts"></script>
+</GuideLayout>

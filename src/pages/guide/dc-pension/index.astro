@@ -1,0 +1,64 @@
+---
+/**
+ * "퇴직연금 DC형" — 퇴직금·퇴직연금 시리즈. (DC형 뜻·부담금·운용·퇴사·IRP 이전·세금·DB형 차이도 이 글)
+ * 근거: 근로자퇴직급여 보장법 제2조(DB·DC 정의 — pension-account-2026.json irpLaw), 제20조(연간 임금총액 12분의 1 이상, 매년 1회 이상,
+ * 퇴직 때 미납분 14일, IRP 그대로 이전), 제21조(반기 1회 운용방법 변경·세 가지 이상 제시), 제22조·시행령 제14조(중도인출).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/severance-2026.json";
+import { won } from "../../../lib/won";
+
+const D = r.dc;
+/** 연봉 4,800만원이면 12분의 1 = 400만원 */
+const yearly = 48_000_000;
+const contrib = Math.floor(yearly / 12);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 severance-series.test.ts 가 rates 와 대조한다.
+const title = "퇴직연금 DC형 — 회사가 연간 임금총액의 12분의 1 이상을 넣고, 굴리는 건 내 몫";
+const description =
+  "퇴직연금 DC형은 회사가 매년 1회 이상 연간 임금총액의 12분의 1 이상을 내 계정에 넣고, 운용 방법은 가입자가 반기마다 바꿀 수 있는 제도입니다. 받을 돈은 운용 결과에 따라 달라집니다. 퇴사할 때는 운용 중인 자산을 그대로 IRP로 옮겨 달라고 할 수 있습니다.";
+
+const ANSWER = `퇴직연금 DC형(확정기여형)은 회사가 가입자 연간 임금총액의 12분의 1 이상을 매년 1회 이상 현금으로 넣고(근로자퇴직급여 보장법 제20조), 가입자가 운용 방법을 골라 결과에 따라 받는 돈이 달라지는 제도입니다. 연간 임금총액 4,800만원이면 회사 부담은 연 ${won(contrib)} 이상입니다.`;
+
+const QA = [
+  { q: "퇴직연금 DC형은 DB형과 무엇이 다른가요?", a: `DB형(확정급여형)은 근로자가 받을 급여 수준이 미리 정해져 있고, DC형(확정기여형)은 사용자가 낼 부담금 수준이 미리 정해져 있습니다(제2조). DC형은 회사가 연간 임금총액의 12분의 1 이상을 넣은 뒤로는 운용 결과가 가입자 몫이라 수익도 손실도 가입자에게 돌아갑니다.` },
+  { q: "퇴직연금 DC형 운용은 어떻게 하나요?", a: `가입자는 적립금 운용방법을 스스로 고르고 반기마다 1회 이상 바꿀 수 있으며, 퇴직연금사업자는 반기마다 위험과 수익구조가 다른 세 가지 이상의 운용방법을 제시해야 합니다(제21조). 가입자는 회사 부담금 외에 추가 부담금을 넣을 수도 있습니다(제20조 제2항).` },
+  { q: "퇴직연금 DC형은 퇴사하면 어떻게 되나요?", a: `회사가 미납한 부담금이 있으면 퇴직 등 사유가 생긴 날부터 14일 안에 지연이자와 함께 넣어야 합니다(제20조 제5항). 가입자는 운용 중인 자산을 팔지 않고 그대로 IRP 계정으로 옮겨 달라고 요청할 수 있고, 사업자는 이전해야 합니다(제20조 제6항·제7항).` },
+  { q: "퇴직연금 DC형은 중도에 꺼낼 수 있나요?", a: `주택구입 등 대통령령 사유가 있을 때만 중도인출할 수 있습니다(제22조). 무주택자 주택 구입·전세, 6개월 이상 요양 의료비(임금총액의 12.5% 초과), 5년 내 파산·개인회생, 재난, 퇴직연금 담보대출 상환 등입니다(시행령 제14조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th></th><th>DB형(확정급여형)</th><th>DC형(확정기여형)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">미리 정해진 것</th><td>받을 급여 수준</td><td>회사 부담금(연간 임금총액의 12분의 1 이상)</td></tr>
+      <tr><th scope="row">운용 결과</th><td>회사가 진다</td><td>가입자가 진다</td></tr>
+      <tr><th scope="row">퇴직할 때</th><td>급여를 IRP로 이전(제17조 제4항)</td><td>자산을 그대로 IRP로 이전 요청 가능(제20조 제6항)</td></tr>
+      <tr><th scope="row">중도인출</th><td>법에 규정 없음(담보 제공은 가능, 제7조)</td><td>법정 사유가 있으면 가능(제22조)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>어떤 상품에 넣을지는 투자 판단이라 이 글에서 권하지 않습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    사유별 정리는 <a href="/guide/pension-mid-withdrawal/">퇴직연금 중도인출</a>, 받을 때 세금은{" "}
+    <a href="/guide/pension-receipt-method/">퇴직연금 수령방법</a>에 있습니다.
+  </p>
+</GuideLayout>

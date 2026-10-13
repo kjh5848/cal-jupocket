@@ -200,6 +200,16 @@ export const hubEntries: HubEntry[] = [
   { no: 173, href: "/guide/four-insurance-eligibility/", label: "4대보험 가입조건", kind: "guide" },
   { no: 174, href: "/guide/daily-worker-insurance/", label: "일용직 4대보험", kind: "guide" },
   { no: 175, href: "/guide/health-insurance-refund/", label: "건강보험 환급금", kind: "guide" },
+  { no: 176, href: "/guide/severance-tax/", label: "퇴직금 세금(퇴직소득세)", kind: "guide" },
+  { no: 177, href: "/guide/severance-tax-calculator/", label: "퇴직금 세금 계산기", kind: "guide" },
+  { no: 178, href: "/guide/severance-pay-deadline/", label: "퇴직금 지급기한", kind: "guide" },
+  { no: 179, href: "/guide/severance-interim-settlement/", label: "퇴직금 중간정산", kind: "guide" },
+  { no: 180, href: "/guide/severance-irp/", label: "퇴직금 IRP·수령방법", kind: "guide" },
+  { no: 181, href: "/guide/pension-receipt-method/", label: "퇴직연금 수령방법", kind: "guide" },
+  { no: 182, href: "/guide/pension-income-tax/", label: "연금소득세", kind: "guide" },
+  { no: 183, href: "/guide/dc-pension/", label: "퇴직연금 DC형", kind: "guide" },
+  { no: 184, href: "/guide/pension-mid-withdrawal/", label: "퇴직연금 중도인출", kind: "guide" },
+  { no: 185, href: "/guide/pension-termination/", label: "퇴직연금 해지", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -409,6 +419,16 @@ export const hubGroups: HubGroup[] = [
       "/guide/four-insurance-eligibility",
       "/guide/daily-worker-insurance",
       "/guide/health-insurance-refund",
+      "/guide/severance-tax",
+      "/guide/severance-tax-calculator",
+      "/guide/severance-pay-deadline",
+      "/guide/severance-interim-settlement",
+      "/guide/severance-irp",
+      "/guide/pension-receipt-method",
+      "/guide/pension-income-tax",
+      "/guide/dc-pension",
+      "/guide/pension-mid-withdrawal",
+      "/guide/pension-termination",
     ]),
   },
 ];

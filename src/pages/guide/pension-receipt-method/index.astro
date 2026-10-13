@@ -1,0 +1,62 @@
+---
+/**
+ * "퇴직연금 수령방법" — 퇴직금·퇴직연금 시리즈. (DB형·DC형·IRP 수령방법·연금·일시금·세금·퇴직 후도 이 글)
+ * 근거: 근로자퇴직급여 보장법 제9조 제2항(퇴직금 IRP 이전)·제17조 제4항(DB 급여 IRP 이전)·제20조 제6항(DC 자산 그대로 IRP 이전), 시행령 제18조 제1항(55세·5년),
+ * 소득세법 제129조 제1항 제5호의3(퇴직소득 연금수령 70·60·50%)·제5호의2(공제분 5·4·3%)·제14조 제3항 제9호 가목(분리과세).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/severance-2026.json";
+import { severanceTax } from "../../../lib/severance";
+import { won } from "../../../lib/won";
+
+const P = r.pensionReceipt;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const ex = severanceTax(150_000_000, 20);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 severance-series.test.ts 가 rates 와 대조한다.
+const title = "퇴직연금 수령방법 — 55세 이후 연금으로 받으면 퇴직소득세가 30~50% 줄어듭니다";
+const description =
+  "퇴직연금은 퇴직하면 IRP로 옮겨지고 55세 이후 연금(5년 이상)이나 일시금으로 받습니다. 일시금은 퇴직소득세를 그대로 내지만, 연금으로 받으면 10년차까지 70%, 20년차까지 60%, 그 뒤 50%만 원천징수해 30~50%가 줄고 분리과세로 끝납니다.";
+
+const ANSWER = `퇴직연금은 퇴직하면 IRP로 옮겨지고, 55세 이후 연금(지급기간 5년 이상)이나 일시금으로 받습니다(근로자퇴직급여 보장법 시행령 제18조). 일시금은 퇴직소득세를 그대로 내지만 연금으로 받으면 실제 수령 10년차까지 ${pct(P.upTo10)}, 20년차까지 ${pct(P.upTo20)}, 그 뒤 ${pct(P.over20)}만 냅니다(소득세법 제129조).`;
+
+const QA = [
+  { q: "퇴직연금 수령방법은 어떤 것이 있나요?", a: `55세 이상이면 IRP에서 연금으로 받거나(지급기간 5년 이상) 일시금으로 받을 수 있습니다(시행령 제18조 제1항). DB형 퇴직급여는 IRP로 이전하는 방법으로 지급하고(법 제17조 제4항), DC형은 운용 중인 자산을 팔지 않고 그대로 IRP로 옮겨 달라고 할 수 있습니다(제20조 제6항).` },
+  { q: "퇴직연금을 연금으로 받으면 세금이 얼마나 줄어드나요?", a: `퇴직소득을 연금으로 받으면 연금외수령 때 원천징수세율의 ${pct(P.upTo10)}(실제 수령 10년차까지), ${pct(P.upTo20)}(11~20년차), ${pct(P.over20)}(21년차부터)를 적용합니다(제129조 제1항 제5호의3). 이 연금소득은 분리과세라 다른 소득과 합치지 않습니다(제14조 제3항 제9호 가목).` },
+  { q: "퇴직연금을 일시금으로 받으면 세금은?", a: `원래 퇴직소득세를 그대로 냅니다. 퇴직금 1억5천만원, 근속 20년이면 지방소득세 포함 ${won(ex.total)}이고, 같은 돈을 연금으로 10년 안에 받으면 약 ${won(Math.floor(ex.total * P.upTo10))}, 11~20년차에 받으면 약 ${won(Math.floor(ex.total * P.upTo20))}입니다.` },
+  { q: "IRP에 내가 추가로 넣은 돈도 같은 세율인가요?", a: `아닙니다. 퇴직금 부분은 위 비율이지만, 본인이 넣고 세액공제를 받은 돈과 운용수익은 연금으로 받으면 나이에 따라 5%(70세 미만)·4%·3%, 연금이 아니게 찾으면 기타소득 15%입니다. 이 부분은 연금소득세 글에서 다룹니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>연금 실제 수령연차</th><th>퇴직소득세 대비 원천징수</th><th>줄어드는 몫</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">10년 이하</th><td>{pct(P.upTo10)}</td><td>{pct(1 - P.upTo10)}</td></tr>
+      <tr><th scope="row">10년 초과 20년 이하</th><td>{pct(P.upTo20)}</td><td>{pct(1 - P.upTo20)}</td></tr>
+      <tr><th scope="row">20년 초과</th><td>{pct(P.over20)}</td><td>{pct(1 - P.over20)}</td></tr>
+    </tbody>
+  </table>
+  <p>해마다 연금으로 꺼낼 수 있는 한도(연금수령한도)와 수령연차를 세는 방법은 시행령에 있어 이 글에서 숫자로 쓰지 않았습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    <a href="/guide/pension-income-tax/">연금소득세</a>, 퇴직금 계산은 <a href="/guide/severance-tax-calculator/">퇴직금 세금 계산기</a>에 있습니다.
+  </p>
+</GuideLayout>
