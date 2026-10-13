@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { irpSeries, IRP_HUB, IRP_WITH_SAVINGS } from "../../data/series/irp-tax-credit";
+import { allSeries } from "../../data/series";
 
 /**
  * AI 요약·스니펫용 구조 — 자동완성 키워드 시리즈 글마다 대조한다.
@@ -13,7 +13,7 @@ import { irpSeries, IRP_HUB, IRP_WITH_SAVINGS } from "../../data/series/irp-tax-
  *     FAQ 의 답과 같다 — 구조화 데이터에만 있고 화면에 없는 답은 정책 위반이다
  *  5. 첫 답은 40~220자. 너무 짧으면 답이 안 되고, 길면 스니펫이 자른다
  */
-const pages = [IRP_HUB, IRP_WITH_SAVINGS, ...irpSeries];
+const pages = allSeries.flatMap((s) => [s.hub, ...(s.existing ?? []), ...s.items]);
 const norm = (s: string) => s.replace(/\s+/g, "").toLowerCase();
 const text = (h: string) =>
   h.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, " ").trim();

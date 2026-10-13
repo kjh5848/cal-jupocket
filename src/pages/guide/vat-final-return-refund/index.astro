@@ -1,0 +1,52 @@
+---
+/**
+ * "부가세 확정신고 환급" — 부가세 확정신고 시리즈.
+ * 근거: 부가가치세법 제59조(30일·조기환급 15일·사유 셋), 국세기본법 제52조(환급가산금, refund-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import vf from "../../../rates/vat-final-2026.json";
+import rf from "../../../rates/refund-2026.json";
+
+const title = "부가세 확정신고 환급 — 기한 지나고 30일 안에, 조기환급이면 15일";
+const description =
+  "부가세 확정신고로 생긴 환급세액은 확정신고기한이 지난 뒤 30일 안에 돌려받습니다. 수출 등 영세율, 사업 설비 투자, 재무구조개선계획 이행 중이면 조기환급으로 15일 안에 받을 수 있습니다.";
+
+const ANSWER = `부가세 확정신고 환급은 확정신고기한이 지난 뒤 ${vf.refund.days}일 안에 받습니다. 수출 같은 영세율 거래나 사업 설비 투자가 있으면 조기환급으로 ${vf.refund.earlyDays}일 안에 받을 수 있습니다(부가가치세법 제59조).`;
+
+const QA = [
+  { q: "부가세 확정신고 환급은 언제 받나요?", a: `세무서장이 확정신고기한이 지난 후 ${vf.refund.days}일 이내에 환급해야 합니다(부가가치세법 제59조 제1항). 신고를 일찍 해도 기준은 신고한 날이 아니라 확정신고기한입니다.` },
+  { q: "부가세 조기환급은 누가 받을 수 있나요?", a: "세 가지 경우입니다. 영세율을 적용받는 경우, 사업 설비를 신설·취득·확장·증축하는 경우, 재무구조개선계획을 이행 중인 경우입니다(제59조 제2항). 이때는 15일 이내에 환급합니다." },
+  { q: "부가세 환급세액은 왜 생기나요?", a: "매입할 때 낸 부가세(매입세액)가 팔 때 받은 부가세(매출세액)보다 크면 그 차이가 환급세액입니다. 설비를 크게 산 기간이나 수출이 많은 기간에 주로 생깁니다." },
+  { q: "환급이 늦어지면 이자를 받나요?", a: `국세환급가산금이 붙습니다. 이율은 ${rf.refundInterest.annualRateFraction}이고(국세기본법 시행규칙), 신고로 생긴 환급은 신고한 날(법정신고기일 전이면 그 기일)부터 30일이 지난 다음 날부터 셉니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={vf.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <ul>
+    {vf.refund.earlyCases.map((x) => <li>{x}</li>)}
+  </ul>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    예정고지를 받은 개인사업자는 확정된 세금이 이미 낸 고지 금액보다 적을 때도
+    환급세액이 생깁니다 — <a href="/guide/individual-vat-final-return/">개인사업자
+    부가세 확정신고</a>.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p><small>{rf.refundInterest.note}</small></p>
+</GuideLayout>

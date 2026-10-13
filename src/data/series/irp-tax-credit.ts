@@ -9,13 +9,8 @@
  * 허브(/guide/irp-tax-credit/)가 이 목록을 그대로 그리고,
  * snippet-structure.test.ts 가 이 목록의 글마다 구조를 대조한다.
  */
-export interface SeriesItem {
-  slug: string;
-  /** 자동완성에 뜬 그대로의 메인 키워드 */
-  keyword: string;
-  /** 링크허브 라벨(30자 이내) */
-  label: string;
-}
+import type { Series, SeriesItem } from "./types";
+export type { SeriesItem } from "./types";
 
 export const IRP_HUB = { slug: "irp-tax-credit", keyword: "irp 세액공제" };
 
@@ -41,3 +36,11 @@ export const irpSeries: SeriesItem[] = [
 export const IRP_WITH_SAVINGS = { slug: "pension-savings-tax-credit", keyword: "연금저축 irp 세액공제" };
 
 export const irpHref = (slug: string) => `/guide/${slug}/`;
+
+export const irpSeriesDef: Series = {
+  id: "irp-tax-credit",
+  cluster: "retirement",
+  hub: { ...IRP_HUB, label: "IRP 세액공제 조건과 한도" },
+  items: irpSeries,
+  existing: [{ ...IRP_WITH_SAVINGS, label: "연금저축·IRP 세액공제 한도" }],
+};

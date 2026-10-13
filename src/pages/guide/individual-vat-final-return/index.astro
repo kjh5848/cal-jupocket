@@ -1,0 +1,62 @@
+---
+/**
+ * "개인사업자 부가세 확정신고" — 부가세 확정신고 시리즈.
+ * 반전: 개인 일반과세자는 대부분 예정신고를 하지 않고 예정고지를 받는다(제48조 제3항).
+ * 그래서 확정신고가 6개월치 전체가 되고, 예정고지로 낸 돈을 빼고 낸다(제49조 제2항).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import vf from "../../../rates/vat-final-2026.json";
+import { manwon } from "../../../lib/won";
+
+const title = "개인사업자 부가세 확정신고 — 예정고지를 받았다면 6개월치를 한 번에";
+const description =
+  "개인사업자는 대부분 예정신고 대신 직전 기간 세금의 50%를 예정고지로 냅니다. 그래서 부가세 확정신고 때 6개월치 전체를 신고하고, 예정고지로 낸 금액을 빼고 납부합니다.";
+
+const ANSWER = `개인사업자는 대부분 예정신고를 하지 않고, 4월·10월에 직전 기간 세금의 50%를 예정고지로 냅니다. 그래서 확정신고 때 6개월치 전체를 신고하고, 예정고지로 낸 돈을 빼고 나머지를 냅니다. 고지 금액이 ${manwon(vf.preliminary.noticeThreshold)} 미만이면 고지 자체가 없습니다.`;
+
+const QA = [
+  { q: "개인사업자도 부가세 예정신고를 하나요?", a: `대부분 하지 않습니다. 세무서가 개인사업자에게는 직전 과세기간 납부세액의 50%를 예정신고기간이 끝난 뒤 25일까지 징수합니다(부가가치세법 제48조 제3항). 징수할 금액이 ${manwon(vf.preliminary.noticeThreshold)} 미만이면 걷지 않습니다.` },
+  { q: "개인사업자 부가세 확정신고는 몇 달치를 하나요?", a: "예정신고를 하지 않았다면 6개월치 전체입니다. 확정신고 때 다시 신고하지 않는 것은 예정신고로 이미 신고한 몫뿐이라(제49조 제1항 단서), 예정고지만 받은 개인은 과세기간 전부를 신고합니다." },
+  { q: "예정고지로 낸 세금은 어떻게 정산되나요?", a: "확정신고 때 낼 세금에서 뺍니다(제49조 제2항). 확정된 6개월치 세금이 예정고지로 낸 금액보다 적으면 그 차이는 환급세액이 됩니다." },
+  { q: "개인사업자가 예정신고를 할 수도 있나요?", a: "휴업이나 사업 부진으로 실적이 나빠진 경우 등 대통령령으로 정하는 사유가 있으면 예정신고를 하고 그 기간의 세금을 낼 수 있습니다. 이때 예정고지 결정은 없었던 것으로 봅니다(제48조 제4항)." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={vf.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>시점</th><th>개인 일반과세자가 하는 일</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">4월 25일까지</th><td>1기 예정고지 납부(직전 기간 세금의 50%)</td></tr>
+      <tr><th scope="row">7월 25일까지</th><td>1기 확정신고 — 1~6월 전체, 예정고지분 빼고 납부</td></tr>
+      <tr><th scope="row">10월 25일까지</th><td>2기 예정고지 납부</td></tr>
+      <tr><th scope="row">다음 해 1월 25일까지</th><td>2기 확정신고 — 7~12월 전체</td></tr>
+    </tbody>
+  </table>
+  <p><small>25일이 주말·공휴일이면 다음 날로 넘어갑니다(국세기본법 제5조).</small></p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    예정고지 금액이 어떻게 계산되는지는 <a href="/guide/vat-prepayment/">부가세
+    예정고지</a>에 있습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    법인은 반대로 예정신고가 원칙입니다 — <a href="/guide/corporate-vat-final-return/">법인
+    부가세 확정신고</a>.
+  </p>
+</GuideLayout>

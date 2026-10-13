@@ -1,0 +1,63 @@
+---
+/**
+ * "부가세 확정신고" — 부가세 확정신고 시리즈 허브(src/data/series/vat-final-return.ts).
+ * 질문마다 짧은 답과 해당 글로 가는 길. 근거: 부가가치세법 제5조·제48조·제49조·제59조·제67조.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import vf from "../../../rates/vat-final-2026.json";
+import { vatFinalDeadline, koDate } from "../../../lib/tax-deadline";
+import { vatFinalSeries } from "../../../data/series/vat-final-return";
+import { seriesHref } from "../../../data/series/types";
+
+const d2 = koDate(vatFinalDeadline(2026, 12));
+const d1 = koDate(vatFinalDeadline(2027, 6));
+
+const title = "부가세 확정신고 — 1월 25일과 7월 25일, 6개월치를 정산합니다";
+const description =
+  "부가세 확정신고는 과세기간(1~6월, 7~12월)이 끝난 뒤 25일 안에 합니다. 2026년 2기는 2027년 1월 25일까지입니다. 간이과세자는 1년에 한 번, 폐업하면 폐업한 달의 다음 달 25일까지입니다.";
+
+const ANSWER = `부가세 확정신고는 과세기간이 끝난 뒤 25일 안에 합니다. 일반과세자는 1~6월분을 7월 25일까지, 7~12월분을 다음 해 1월 25일까지 신고하고, 2026년 2기는 ${d2}이 기한입니다. 간이과세자는 1년치를 1월 25일까지 한 번 신고합니다.`;
+
+const QA = [
+  { q: "부가세 확정신고란 무엇인가요?", a: "과세기간 동안의 매출세액에서 매입세액을 빼 낼 세금이나 돌려받을 세금을 확정해 신고하는 것입니다. 부가가치세법 제49조가 과세기간이 끝난 후 25일 이내에 관할 세무서장에게 신고하라고 정합니다." },
+  { q: "부가세 확정신고 기간은 언제인가요?", a: `일반과세자는 제1기(1~6월)를 7월 1일~25일에, 제2기(7~12월)를 다음 해 1월 1일~25일에 신고합니다. 2026년 2기는 ${d2}, 2027년 1기는 ${d1}이 기한입니다.` },
+  { q: "예정신고와 확정신고는 무엇이 다른가요?", a: "예정신고는 과세기간의 앞 3개월(1~3월, 7~9월)을 중간에 신고하는 것이고, 확정신고는 과세기간 전체를 마무리하는 신고입니다. 예정신고한 몫은 확정신고 때 다시 신고하지 않습니다(제49조 제1항)." },
+  { q: "개인사업자와 법인은 확정신고가 다른가요?", a: "개인사업자는 대부분 예정신고 대신 예정고지(직전 과세기간 세액의 50%)를 받으므로 확정신고 때 6개월치를 신고합니다. 법인은 예정신고가 원칙이라 확정신고는 남은 3개월치를 신고합니다(제48조)." },
+  { q: "부가세 확정신고에서 환급은 언제 받나요?", a: `확정신고기한이 지난 후 ${vf.refund.days}일 이내에 받습니다. 영세율이나 사업 설비 투자처럼 조기환급 사유가 있으면 ${vf.refund.earlyDays}일 이내입니다(부가가치세법 제59조).` },
+];
+const more: Record<number, string> = {
+  1: "vat-final-return-period",
+  3: "individual-vat-final-return",
+  4: "vat-final-return-refund",
+};
+const labelOf = (slug: string) => vatFinalSeries.items.find((s) => s.slug === slug)?.label ?? slug;
+---
+
+<GuideLayout title={title} description={description} updated={vf.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  {QA.map((x, i) => (
+    <>
+      <h2>{x.q}</h2>
+      <p class="qa-lead">{x.a}</p>
+      {more[i] && <p>자세히 — <a href={seriesHref(more[i])}>{labelOf(more[i])}</a></p>}
+    </>
+  ))}
+
+  <AdSlot />
+
+  <h2>부가세 확정신고, 질문별로 정리했습니다</h2>
+  <p>검색창에 실제로 뜨는 질문마다 한 편씩 썼습니다.</p>
+  <ul>
+    {vatFinalSeries.items.map((s) => (
+      <li><a href={seriesHref(s.slug)}>{s.label}</a></li>
+    ))}
+  </ul>
+  <p>
+    예정고지는 <a href="/guide/vat-prepayment/">부가세 예정고지</a>, 가산세는{" "}
+    <a href="/guide/vat-penalty/">부가세 가산세</a>에 있습니다.
+  </p>
+</GuideLayout>

@@ -1,0 +1,58 @@
+---
+/**
+ * "법인 부가세 확정신고" — 부가세 확정신고 시리즈.
+ * 법인은 예정신고가 원칙(제48조 제1항)이라 확정신고는 예정신고하지 않은 3개월분(제49조 제1항 단서).
+ * 일부 법인은 예정고지 대상(제48조 제3항 '대통령령으로 정하는 법인사업자') — 범위는 읽지 않았다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import vf from "../../../rates/vat-final-2026.json";
+import { vatFinalDeadline, koDate } from "../../../lib/tax-deadline";
+
+const d = koDate(vatFinalDeadline(2026, 12));
+
+const title = "법인 부가세 확정신고 — 예정신고한 3개월은 빼고 남은 3개월을 신고합니다";
+const description =
+  "법인은 부가세 예정신고가 원칙이라 확정신고 때는 예정신고하지 않은 3개월(4~6월, 10~12월)분을 신고합니다. 기한은 개인과 같이 과세기간이 끝난 뒤 25일이고, 2026년 2기는 2027년 1월 25일까지입니다.";
+
+const ANSWER = `법인은 1~3월, 7~9월을 예정신고하는 것이 원칙이라 확정신고 때는 남은 3개월(4~6월, 10~12월)분을 신고합니다. 기한은 개인과 같은 25일이고, 2026년 2기는 ${d}까지입니다.`;
+
+const QA = [
+  { q: "법인 부가세 확정신고는 몇 달치를 하나요?", a: "예정신고를 했다면 남은 3개월분입니다. 예정신고한 사업자는 이미 신고한 과세표준과 납부한 세액은 확정신고 때 다시 신고하지 않습니다(부가가치세법 제49조 제1항 단서)." },
+  { q: "법인은 부가세 예정신고가 의무인가요?", a: "원칙은 그렇습니다. 사업자는 예정신고기간이 끝난 후 25일 이내에 신고해야 하고(제48조 제1항), 예정고지로 대신하는 것은 개인사업자와 대통령령으로 정하는 법인사업자뿐입니다(같은 조 제3항)." },
+  { q: "법인 부가세 확정신고 기한은 언제인가요?", a: `개인과 같습니다. 1기는 7월 25일, 2기는 다음 해 1월 25일까지이고(제49조), 2026년 2기는 ${d}입니다. 폐업하면 폐업일이 속한 달의 다음 달 25일까지입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={vf.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>구분</th><th>예정신고(4월·10월)</th><th>확정신고(7월·1월)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">예정신고하는 법인</th><td>1~3월 / 7~9월</td><td>4~6월 / 10~12월</td></tr>
+      <tr><th scope="row">예정고지 받는 개인</th><td>고지 금액 납부만</td><td>6개월 전체(고지분 빼고 납부)</td></tr>
+    </tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    예정고지를 받는 "대통령령으로 정하는 법인사업자"가 어떤 법인인지는 시행령에
+    있는데, 이 글에서는 읽지 않았습니다. 세무서에서 예정고지서를 받았다면 그 법인은
+    개인사업자처럼 확정신고 때 6개월치를 신고하게 됩니다.
+  </p>
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    개인사업자와의 차이는 <a href="/guide/individual-vat-final-return/">개인사업자
+    부가세 확정신고</a>에 있습니다.
+  </p>
+</GuideLayout>

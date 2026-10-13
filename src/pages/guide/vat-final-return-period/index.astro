@@ -1,0 +1,71 @@
+---
+/**
+ * "부가세 확정신고 기간" — 부가세 확정신고 시리즈. (기한·확정신고기한·확정신고일도 이 글)
+ * 근거: 부가가치세법 제5조(과세기간 표)·제49조(25일)·제67조(간이), 국세기본법 제5조(주말·공휴일).
+ * 날짜는 src/lib/tax-deadline.ts 가 계산한다(공휴일은 넘기지 않으면 주말만 미룬다).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import vf from "../../../rates/vat-final-2026.json";
+import pen from "../../../rates/penalty-2026.json";
+import { vatFinalDeadline, koDate } from "../../../lib/tax-deadline";
+
+const rows = [
+  { label: "2026년 제1기(1~6월)", d: vatFinalDeadline(2026, 6) },
+  { label: "2026년 제2기(7~12월)", d: vatFinalDeadline(2026, 12) },
+  { label: "2027년 제1기(1~6월)", d: vatFinalDeadline(2027, 6) },
+  { label: "2027년 제2기(7~12월)", d: vatFinalDeadline(2027, 12) },
+];
+const d2 = koDate(rows[1].d);
+const pct = (x: number) => `${Math.round(x * 1000) / 10}%`;
+
+const title = "부가세 확정신고 기간 — 2026년 2기는 2027년 1월 25일까지입니다";
+const description =
+  "부가세 확정신고 기간은 과세기간이 끝난 다음 날부터 25일까지입니다. 1~6월분은 7월 25일, 7~12월분은 다음 해 1월 25일까지이고, 기한이 주말이나 공휴일이면 다음 날로 넘어갑니다.";
+
+const ANSWER = `부가세 확정신고 기간은 과세기간이 끝난 뒤 25일까지입니다. 1~6월분은 7월 1일~25일, 7~12월분은 다음 해 1월 1일~25일이고, 2026년 2기는 ${d2}이 기한입니다. 25일이 주말이나 공휴일이면 다음 날로 넘어갑니다.`;
+
+const QA = [
+  { q: "부가세 확정신고 기간은 언제인가요?", a: "일반과세자는 제1기(1~6월)를 7월 1일부터 25일까지, 제2기(7~12월)를 다음 해 1월 1일부터 25일까지 신고합니다. 부가가치세법 제49조가 과세기간이 끝난 후 25일 이내로 정합니다." },
+  { q: "부가세 확정신고 기한이 주말이면 어떻게 되나요?", a: `그다음 날이 기한입니다. 신고·납부 기한이 토요일·일요일, 공휴일·대체공휴일, 노동절이면 다음 날을 기한으로 합니다(국세기본법 제5조). 2026년 1기는 7월 25일이 토요일이라 ${koDate(rows[0].d)}이었습니다.` },
+  { q: "간이과세자와 폐업한 사업자도 기간이 같나요?", a: "다릅니다. 간이과세자는 1월 1일~12월 31일이 한 과세기간이라 다음 해 1월 25일까지 한 번 신고합니다(제67조). 폐업하면 폐업일이 속한 달의 다음 달 25일까지입니다(제49조)." },
+  { q: "부가세 확정신고 기한을 넘기면 어떻게 되나요?", a: `신고를 안 하면 무신고가산세 ${pct(pen.noReport.general)}, 늦게 내면 하루 ${pen.latePayment.dailyRateFraction}의 납부지연가산세가 붙습니다(국세기본법). 기한 후 1개월 안에 신고하면 무신고가산세의 ${pct(pen.lateFilingRelief[0].relief)}를 감면받습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={vf.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>과세기간</th><th>확정신고 기한</th></tr></thead>
+    <tbody>
+      {rows.map((r) => <tr><th scope="row">{r.label}</th><td>{koDate(r.d)}</td></tr>)}
+    </tbody>
+  </table>
+  <p><small>주말은 반영했습니다. 공휴일·대체공휴일이 겹치면 하루 더 미뤄집니다.</small></p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    새로 사업을 시작했다면 첫 과세기간은 사업 개시일부터 그 기간의 종료일까지이고
+    (제5조 제2항), 기한은 똑같이 과세기간이 끝난 뒤 25일입니다. 간이과세자는 <a href="/guide/simplified-vat-final-return/">간이과세자
+    부가세 확정신고</a>, 폐업은 <a href="/guide/closing-vat-final-return/">폐업 부가세
+    확정신고</a>에 있습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    가산세 전체 구조는 <a href="/guide/late-filing-penalty/">신고를 놓쳤을 때의
+    가산세</a>와 <a href="/guide/vat-penalty/">부가세 가산세</a>에 있습니다.
+  </p>
+</GuideLayout>

@@ -1,0 +1,65 @@
+---
+/**
+ * "1기 부가세 확정신고" — 부가세 확정신고 시리즈.
+ * 제1기 = 1월 1일~6월 30일(제5조 표), 확정신고는 7월 25일까지(제49조).
+ * 1기 안에 예정신고기간(1~3월)이 있어서, 확정신고 때 무엇을 신고하는지가 개인·법인마다 다르다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import vf from "../../../rates/vat-final-2026.json";
+import { vatFinalDeadline, koDate } from "../../../lib/tax-deadline";
+
+const next = koDate(vatFinalDeadline(2027, 6));
+const past = koDate(vatFinalDeadline(2026, 6));
+
+const title = "1기 부가세 확정신고 — 1~6월분을 7월 25일까지 신고합니다";
+const description =
+  "1기 부가세 확정신고는 1월 1일~6월 30일 과세기간을 7월 1일~25일에 신고하는 것입니다. 2027년 1기는 7월 25일이 일요일이라 7월 26일까지입니다. 개인은 6개월치, 예정신고한 법인은 4~6월분을 신고합니다.";
+
+const ANSWER = `1기 부가세 확정신고는 1월 1일~6월 30일분을 7월 1일~25일에 신고하는 것입니다. 2027년 1기는 25일이 일요일이라 ${next}이 기한입니다. 예정고지를 받은 개인사업자는 6개월치를, 1~3월을 예정신고한 사업자는 4~6월분을 신고합니다.`;
+
+const QA = [
+  { q: "1기 부가세 확정신고 기간은 언제인가요?", a: "제1기 과세기간은 1월 1일부터 6월 30일까지이고(부가가치세법 제5조), 확정신고는 그 뒤 25일 안인 7월 1일부터 25일까지입니다(제49조)." },
+  { q: "2027년 1기 부가세 확정신고 기한은 언제인가요?", a: `${next}입니다. 7월 25일이 일요일이라 국세기본법 제5조에 따라 다음 날로 넘어갑니다. 2026년 1기는 25일이 토요일이라 ${past}이었습니다.` },
+  { q: "1기 확정신고 때는 몇 달치를 신고하나요?", a: "1~3월을 예정신고한 사업자는 4~6월분만 신고합니다. 이미 신고한 몫은 다시 신고하지 않기 때문입니다(제49조 제1항). 예정신고 대신 예정고지를 받은 개인사업자는 1~6월 전체를 신고합니다." },
+  { q: "1기 확정신고 때 4월에 낸 예정고지 세금은 어떻게 되나요?", a: "확정신고로 낼 세금에서 뺍니다. 제48조 제3항에 따라 징수된 예정고지 금액은 확정신고 시 납부세액에서 빼고 납부한다고 제49조 제2항이 정합니다." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={vf.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>구분</th><th>기간</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">제1기 과세기간</th><td>1월 1일 ~ 6월 30일</td></tr>
+      <tr><th scope="row">그 안의 예정신고기간</th><td>1월 1일 ~ 3월 31일 (4월 25일까지 신고·고지)</td></tr>
+      <tr><th scope="row">확정신고</th><td>7월 1일 ~ 7월 25일</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    개인과 법인이 왜 갈리는지는 <a href="/guide/individual-vat-final-return/">개인사업자
+    부가세 확정신고</a>와 <a href="/guide/corporate-vat-final-return/">법인 부가세
+    확정신고</a>에 있습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    예정고지 금액이 어떻게 정해지는지는 <a href="/guide/vat-prepayment/">부가세
+    예정고지</a>, 7~12월분은 <a href="/guide/vat-final-return-second-half/">2기 부가세
+    확정신고</a>에 있습니다.
+  </p>
+</GuideLayout>

@@ -1,0 +1,65 @@
+---
+/**
+ * "2기 부가세 확정신고" — 부가세 확정신고 시리즈. 1월 묶음의 중심.
+ * 제2기 = 7월 1일~12월 31일, 확정신고는 다음 해 1월 25일까지(제49조).
+ * 같은 날이 간이과세자의 1년치 신고 기한이기도 하다(제67조).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import vf from "../../../rates/vat-final-2026.json";
+import { vatFinalDeadline, koDate } from "../../../lib/tax-deadline";
+
+const d = koDate(vatFinalDeadline(2026, 12));
+
+const title = "2기 부가세 확정신고 — 2026년 7~12월분은 2027년 1월 25일까지";
+const description =
+  "2기 부가세 확정신고는 7월 1일~12월 31일 과세기간을 다음 해 1월 1일~25일에 신고하는 것입니다. 2026년 2기는 2027년 1월 25일(월)까지이고, 간이과세자의 1년치 신고도 같은 날까지입니다.";
+
+const ANSWER = `2기 부가세 확정신고는 7월 1일~12월 31일분을 다음 해 1월 1일~25일에 신고하는 것입니다. 2026년 2기는 ${d}이 기한이고, 간이과세자의 1년치 신고 기한도 같은 날입니다.`;
+
+const QA = [
+  { q: "2기 부가세 확정신고 기간은 언제인가요?", a: "제2기 과세기간은 7월 1일부터 12월 31일까지이고(부가가치세법 제5조), 확정신고는 다음 해 1월 1일부터 25일까지입니다(제49조)." },
+  { q: "2026년 2기 부가세 확정신고 기한은 언제인가요?", a: `${d}입니다. 2027년 1월 25일은 월요일이라 미뤄지지 않습니다. 기한이 주말·공휴일이면 다음 날로 넘어가는 규칙(국세기본법 제5조)이 이번에는 적용되지 않습니다.` },
+  { q: "2기 확정신고 때는 몇 달치를 신고하나요?", a: "7~9월을 예정신고한 사업자는 10~12월분만, 예정고지를 받은 개인사업자는 7~12월 전체를 신고합니다. 10월에 낸 예정고지 금액은 확정신고로 낼 세금에서 뺍니다(제49조)." },
+  { q: "간이과세자도 1월 25일에 신고하나요?", a: "네. 간이과세자는 1월 1일~12월 31일이 한 과세기간이라 다음 해 1월 25일까지 1년치를 한 번에 신고합니다(제67조). 일반과세자의 2기 확정신고와 기한이 같습니다." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={vf.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>구분</th><th>기간</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">제2기 과세기간</th><td>7월 1일 ~ 12월 31일</td></tr>
+      <tr><th scope="row">그 안의 예정신고기간</th><td>7월 1일 ~ 9월 30일 (10월 25일까지 신고·고지)</td></tr>
+      <tr><th scope="row">확정신고</th><td>다음 해 1월 1일 ~ 1월 25일</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="callout warn">
+    <p>
+      ⚠️ 신고 전에 6개월치 세금계산서를 거래처별로 맞추는 시간이 듭니다. 25일
+      직전으로 미루면 빠듯합니다.
+    </p>
+  </div>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    간이과세자는 <a href="/guide/simplified-vat-final-return/">간이과세자 부가세
+    확정신고</a>, 1~6월분은 <a href="/guide/vat-final-return-first-half/">1기 부가세
+    확정신고</a>에 있습니다.
+  </p>
+</GuideLayout>

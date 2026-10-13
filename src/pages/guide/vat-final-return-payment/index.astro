@@ -1,0 +1,60 @@
+---
+/**
+ * "부가세 확정신고 납부" — 부가세 확정신고 시리즈.
+ * 납부 기한 = 신고 기한(제49조 제2항: 확정신고서와 함께). 빼고 내는 것 셋.
+ * 늦으면 납부지연가산세(국세기본법 제47조의4, penalty-2026.json), 안 하면 무신고가산세.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import vf from "../../../rates/vat-final-2026.json";
+import pen from "../../../rates/penalty-2026.json";
+import { won } from "../../../lib/won";
+import { vatFinalDeadline, koDate } from "../../../lib/tax-deadline";
+
+const d = koDate(vatFinalDeadline(2026, 12));
+const pct = (x: number) => `${Math.round(x * 1000) / 10}%`;
+const tax = 1_000_000;
+const lateDays = 30;
+const lateFee = Math.floor(tax * pen.latePayment.dailyRate * lateDays);
+
+const title = "부가세 확정신고 납부 — 신고 기한과 같은 날까지, 늦으면 하루 0.022%";
+const description =
+  "부가세 확정신고 납부 기한은 신고 기한과 같습니다. 예정고지로 낸 금액과 조기환급 미환급분은 빼고 내고, 늦게 내면 하루 0.022%의 납부지연가산세가 붙습니다. 2026년 2기는 2027년 1월 25일까지입니다.";
+
+const ANSWER = `부가세 확정신고 세금은 신고와 같은 날까지 냅니다. 2026년 2기는 ${d}까지이고, 예정고지로 낸 금액은 빼고 냅니다. 하루 늦을 때마다 ${pen.latePayment.dailyRateFraction}(${(pen.latePayment.dailyRate * 100).toFixed(3)}%)가 붙습니다.`;
+
+const QA = [
+  { q: "부가세 확정신고 납부 기한은 언제인가요?", a: "신고 기한과 같습니다. 확정신고 때 납부세액을 확정신고서와 함께 세무서에 내거나 납부서로 한국은행 등에 내야 한다고 부가가치세법 제49조 제2항이 정합니다. 과세기간이 끝난 후 25일까지입니다." },
+  { q: "부가세 확정신고 때 무엇을 빼고 내나요?", a: "세 가지입니다. 조기환급을 받을 세액 중 아직 환급되지 않은 세액, 예정고지로 징수되는 금액, 수시부과한 세액을 확정신고 시의 납부세액에서 빼고 냅니다(제49조 제2항)." },
+  { q: "부가세를 늦게 내면 가산세가 얼마인가요?", a: `납부지연가산세로 하루 ${pen.latePayment.dailyRateFraction}가 붙습니다(국세기본법 제47조의4). ${won(tax)}을 ${lateDays}일 늦게 내면 ${won(lateFee)}입니다. 고지 뒤에도 안 내면 미납세액의 ${pct(pen.latePayment.noticeSurcharge)}가 더해집니다.` },
+  { q: "신고는 했는데 돈이 없어 못 내면 어떻게 되나요?", a: `신고만 기한 안에 했다면 무신고가산세(${pct(pen.noReport.general)})는 붙지 않고, 납부지연가산세만 날짜만큼 붙습니다. 신고까지 놓치면 둘 다 붙으므로 신고는 기한 안에 먼저 하는 편이 낫습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={vf.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <ul>
+    {vf.final.deductOnPayment.map((x) => <li>{x}</li>)}
+  </ul>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p><small>{pen.latePayment.note}</small></p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    가산세 전체는 <a href="/guide/late-filing-penalty/">신고를 놓쳤을 때의 가산세</a>,
+    부가세만의 가산세는 <a href="/guide/vat-penalty/">부가세 가산세</a>에 있습니다.
+  </p>
+</GuideLayout>
