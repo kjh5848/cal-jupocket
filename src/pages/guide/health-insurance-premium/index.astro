@@ -1,0 +1,63 @@
+---
+/**
+ * "건강보험료 계산" — 4대보험 시리즈. (건강보험료·직장가입자·계산 방법·계산식·산정기준·상한액·납부·2026도 이 글)
+ * 근거: 국민건강보험법 제69조(보수월액보험료·보수 외 소득월액보험료·상하한)·제70조(보수월액)·제73조(1천분의 80 범위)·
+ * 제76조(반씩 부담)·제78조(다음 달 10일), 시행령 제32조(상한 30배·15배, 하한)·제33조(보수 범위)·제44조(1만분의 719).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/four-insurance-2026.json";
+import { payroll } from "../../../lib/four-insurance";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${+(v * 100).toFixed(4)}%`;
+const H = r.health;
+const rows = [2_000_000, 3_000_000, 4_000_000, 5_000_000, 7_000_000, 10_000_000].map((p) => ({ p, x: payroll(p) }));
+const ex = payroll(3_000_000);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 four-insurance-series.test.ts 가 rates 와 대조한다.
+const title = "건강보험료 계산 — 직장가입자는 보수월액 × 7.19%를 회사와 반씩, 본인 몫 3.595%";
+const description =
+  "직장가입자 건강보험료는 비과세를 뺀 보수월액에 2026년 보험료율 7.19%를 곱하고 회사와 반씩 냅니다. 본인 몫은 3.595%이고 장기요양보험료가 따로 붙습니다. 그 달 보험료는 다음 달 10일까지 내며, 월 보험료에는 고시로 정한 상한과 하한이 있습니다.";
+
+const ANSWER = `직장가입자 건강보험료는 보수월액 × ${pct(H.rate)}이고 본인과 회사가 반씩 냅니다(국민건강보험법 제69조·제76조, 시행령 제44조). 본인 몫은 ${pct(H.rate * H.employeeShare)}라 월급 300만원이면 ${won(ex.health)}이고, 여기에 장기요양보험료 ${won(ex.care)}이 함께 고지됩니다.`;
+
+const QA = [
+  { q: "건강보험료 계산 방법은 무엇인가요?", a: `보수월액보험료 = 보수월액 × 보험료율 ${pct(H.rate)}입니다(제69조 제4항). 보수월액은 근로 대가로 받은 금품에서 퇴직금, 비과세 근로소득 등을 뺀 금액으로 정합니다(시행령 제33조). 이 금액을 근로자와 사업주가 100분의 50씩 부담합니다.` },
+  { q: "직장가입자 건강보험료는 월급별로 얼마인가요?", a: `본인 몫은 월급 200만원 ${won(rows[0].x.health)}, 300만원 ${won(rows[1].x.health)}, 500만원 ${won(rows[3].x.health)}, 1천만원 ${won(rows[5].x.health)}입니다. 장기요양보험료는 각각 그 건강보험료에 약 13.14%를 곱한 만큼 더해집니다. 원 단위 어림입니다.` },
+  { q: "건강보험료 상한액은 얼마인가요?", a: `상한은 전전년도 직장가입자 평균 보수월액보험료의 30배(보수 외 소득·지역가입자는 15배)를 고려해 보건복지부장관이 고시하고, 하한도 고시로 정합니다(시행령 제32조). 고시 금액은 이 글에서 확인하지 않아 숫자로 쓰지 않았습니다.` },
+  { q: "건강보험료는 언제 내나요?", a: `그 달 보험료를 다음 달 10일까지 냅니다(제78조 제1항). 직장가입자는 회사가 월급에서 떼어 냅니다. 자격을 얻은 날이 속한 달의 다음 달부터 걷되, 매월 1일에 입사했으면 그 달부터 냅니다(제69조 제2항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>
+    월급에 포함되지 않은 소득(보수 외 소득)이 대통령령으로 정하는 금액을 넘으면 '보수 외 소득월액보험료'를 따로 내고,
+    이건 회사 부담 없이 본인이 전액 냅니다(제71조·제76조 제2항). 그 기준 금액은 이 글에서 확인하지 않았습니다.
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>월급(비과세 제외)</th><th>건강보험(본인)</th><th>장기요양(본인)</th><th>회사도 같은 금액</th></tr></thead>
+    <tbody>{rows.map(({ p, x }) => <tr><th scope="row">{eokwon(p)}</th><td>{won(x.health)}</td><td>{won(x.care)}</td><td>{won(x.health + x.care)}</td></tr>)}</tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    지역가입자는 소득과 재산 점수로 따로 계산합니다 — <a href="/guide/regional-health-insurance/">지역건강보험료 계산</a>.
+    4대보험 전체는 <a href="/guide/four-insurance-calculator/">4대보험 계산기</a>로 확인하세요.
+  </p>
+</GuideLayout>

@@ -1,0 +1,59 @@
+---
+/**
+ * "장기요양보험료" — 4대보험 시리즈. (장기요양보험료율·계산·2026·인상·경감도 이 글)
+ * 근거: 노인장기요양보험법 제8조(건강보험료와 통합 징수·구분 고지)·제9조(건강보험료 × 비율 — 2026. 11. 27.부터 다섯째자리 반올림,
+ * 법률 제21690호), 시행령 제4조(100만분의 9,448)·제5조(중증 장애인 등 30% 경감), 국민건강보험법 시행령 제44조(1만분의 719).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/four-insurance-2026.json";
+import { payroll, careRatio } from "../../../lib/four-insurance";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${+(v * 100).toFixed(4)}%`;
+const C = r.longTermCare;
+const before = careRatio("2026-11-26");
+const after = careRatio("2026-11-27");
+const rows = [2_000_000, 3_000_000, 5_000_000, 10_000_000].map((p) => ({ p, a: payroll(p, { onDate: "2026-11-26" }), b: payroll(p, { onDate: "2026-11-27" }) }));
+const ex = payroll(3_000_000);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 four-insurance-series.test.ts 가 rates 와 대조한다.
+const title = "장기요양보험료 — 2026년 요율 0.9448%, 건강보험료에 약 13.14%를 곱해 함께 냅니다";
+const description =
+  "장기요양보험료는 2026년 요율이 소득의 0.9448%이고, 건강보험료에 건강보험료율 대비 장기요양보험료율의 비율(약 13.14%)을 곱해 건강보험료와 함께 걷습니다. 11월 27일부터는 이 비율을 소수점 다섯째자리에서 반올림합니다.";
+
+const ANSWER = `장기요양보험료는 2026년 요율이 소득의 ${pct(C.rate)}이고, 건강보험료 × (${pct(C.rate)} ÷ ${pct(r.health.rate)})로 계산해 건강보험료와 함께 걷습니다(노인장기요양보험법 제9조, 시행령 제4조). 직장인 본인 몫은 월급 300만원이면 ${won(ex.care)}입니다.`;
+
+const QA = [
+  { q: "장기요양보험료는 어떻게 계산하나요?", a: `건강보험료(감면·면제분을 뺀 금액)에 '건강보험료율 대비 장기요양보험료율의 비율'을 곱합니다(제9조 제1항). 2026년은 ${pct(C.rate)} ÷ ${pct(r.health.rate)} = 약 ${(before * 100).toFixed(4)}%입니다. 직장가입자는 건강보험처럼 회사와 반씩 냅니다.` },
+  { q: "장기요양보험료율 2026년은 얼마인가요?", a: `시행령 제4조가 정한 2026년 장기요양보험료율은 100만분의 9,448, 즉 소득의 ${pct(C.rate)}입니다(2025년 12월 30일 개정). 건강보험료율 ${pct(r.health.rate)}와 함께 보면 건강보험료의 약 13.14%가 장기요양보험료로 붙는다는 뜻입니다.` },
+  { q: "2026년 11월 27일부터 무엇이 바뀌나요?", a: `2026년 5월 26일 개정(법률 제21690호)으로 11월 27일부터 그 비율을 소수점 이하 다섯째자리에서 반올림합니다. 약 ${before.toFixed(6)}이던 비율이 ${after}로 고정돼, 원 단위에서 몇 원 정도 달라질 수 있습니다.` },
+  { q: "장기요양보험료를 줄일 수 있나요?", a: `장애의 정도가 심한 등록 장애인이나 고시된 희귀난치성질환자가 장기요양 수급자로 결정되지 못한 경우 장기요양보험료의 ${Math.round(C.disabledReduction * 100)}%를 경감합니다(시행령 제5조). 공단이 확인할 수 없으면 신청을 받아 경감합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>월급(비과세 제외)</th><th>11월 26일까지</th><th>11월 27일부터</th></tr></thead>
+    <tbody>{rows.map(({ p, a, b }) => <tr><th scope="row">{eokwon(p)}</th><td>{won(a.care)}</td><td>{won(b.care)}</td></tr>)}</tbody>
+  </table>
+  <p>본인 몫, 원 미만 버림 어림입니다. 실제 고지액의 끝자리 처리 규칙은 이 글에서 확인하지 않았습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>4대보험 전체 요율은 <a href="/guide/four-insurance-rate/">4대보험 요율</a>에 있습니다.</p>
+</GuideLayout>

@@ -190,6 +190,16 @@ export const hubEntries: HubEntry[] = [
   { no: 163, href: "/guide/stock-capital-gains/", label: "주식 양도소득세", kind: "guide" },
   { no: 164, href: "/guide/land-capital-gains-rate/", label: "토지 양도소득세율", kind: "guide" },
   { no: 165, href: "/guide/farmland-capital-gains/", label: "농지 양도소득세", kind: "guide" },
+  { no: 166, href: "/guide/four-insurance/", label: "4대보험", kind: "guide" },
+  { no: 167, href: "/guide/four-insurance-calculator/", label: "4대보험 계산기", kind: "guide" },
+  { no: 168, href: "/guide/four-insurance-rate/", label: "4대보험 요율", kind: "guide" },
+  { no: 169, href: "/guide/health-insurance-premium/", label: "건강보험료 계산", kind: "guide" },
+  { no: 170, href: "/guide/regional-health-insurance/", label: "지역건강보험료 계산", kind: "guide" },
+  { no: 171, href: "/guide/long-term-care-premium/", label: "장기요양보험료", kind: "guide" },
+  { no: 172, href: "/guide/employment-insurance-premium/", label: "고용보험료", kind: "guide" },
+  { no: 173, href: "/guide/four-insurance-eligibility/", label: "4대보험 가입조건", kind: "guide" },
+  { no: 174, href: "/guide/daily-worker-insurance/", label: "일용직 4대보험", kind: "guide" },
+  { no: 175, href: "/guide/health-insurance-refund/", label: "건강보험 환급금", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -362,7 +372,7 @@ export const hubGroups: HubGroup[] = [
     ]),
   },
   {
-    label: "노후·연금",
+    label: "노후·연금·4대보험",
     cluster: "retirement",
     entries: inCluster([
       "/guide/pension-premium-2026",
@@ -389,6 +399,16 @@ export const hubGroups: HubGroup[] = [
       "/guide/retirement-fund",
       "/guide/severance-to-freelance",
       "/guide/retirement-pension-loan",
+      "/guide/four-insurance",
+      "/guide/four-insurance-calculator",
+      "/guide/four-insurance-rate",
+      "/guide/health-insurance-premium",
+      "/guide/regional-health-insurance",
+      "/guide/long-term-care-premium",
+      "/guide/employment-insurance-premium",
+      "/guide/four-insurance-eligibility",
+      "/guide/daily-worker-insurance",
+      "/guide/health-insurance-refund",
     ]),
   },
 ];

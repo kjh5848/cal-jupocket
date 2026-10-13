@@ -1,0 +1,57 @@
+---
+/**
+ * "고용보험료" — 4대보험 시리즈. (고용보험료율·근로자 부담·사업주 부담·실업급여 보험료·65세도 이 글)
+ * 근거: 보험료징수법 제13조(근로자 = 실업급여 보험료율의 2분의 1, 사업주 = 고용안정·직능개발 + 실업급여 2분의 1, 65세 이후 고용),
+ * 시행령 제12조(실업급여 1천분의 18, 고용안정·직능개발 1만분의 25·45·65·85, 3년 유예).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/four-insurance-2026.json";
+import { payroll } from "../../../lib/four-insurance";
+import { won } from "../../../lib/won";
+
+const pct = (v: number) => `${+(v * 100).toFixed(4)}%`;
+const E = r.employment;
+const ew = E.unemployment * E.workerShare;
+const ex = payroll(3_000_000);
+const rows = [2_000_000, 3_000_000, 5_000_000].map((p) => ({ p, x: payroll(p) }));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 four-insurance-series.test.ts 가 rates 와 대조한다.
+const title = "고용보험료 — 근로자는 월급의 0.9%, 사업주는 0.9%에 회사 규모별 0.25~0.85%를 더 냅니다";
+const description =
+  "고용보험료는 실업급여 보험료율 1.8%를 근로자와 사업주가 반씩 나눠 근로자는 월급의 0.9%를 냅니다. 사업주는 고용안정·직업능력개발 보험료를 150명 미만 0.25%부터 1천명 이상 0.85%까지 더 냅니다. 65세 이후 새로 고용되면 실업급여 보험료가 없습니다.";
+
+const ANSWER = `고용보험료는 실업급여 보험료율 ${pct(E.unemployment)}를 반씩 나눠 근로자가 월급의 ${pct(ew)}를 냅니다(보험료징수법 제13조, 시행령 제12조). 사업주는 같은 ${pct(ew)}에 고용안정·직업능력개발 보험료 0.25~0.85%를 더 냅니다. 월급 300만원이면 근로자 ${won(ex.employment)}입니다.`;
+
+const QA = [
+  { q: "고용보험료율은 얼마인가요?", a: `실업급여 보험료율은 1천분의 18(${pct(E.unemployment)})이고 근로자와 사업주가 2분의 1씩 냅니다. 고용안정·직업능력개발 보험료율은 사업주만 내며 상시근로자 150명 미만 ${pct(E.stability[0].rate)}, 150명 이상 우선지원대상기업 ${pct(E.stability[1].rate)}, 1천명 미만 ${pct(E.stability[2].rate)}, 1천명 이상 ${pct(E.stability[3].rate)}입니다.` },
+  { q: "근로자 고용보험료는 월급별로 얼마인가요?", a: `근로자 몫은 보수 × ${pct(ew)}라 월급 200만원 ${won(rows[0].x.employment)}, 300만원 ${won(rows[1].x.employment)}, 500만원 ${won(rows[2].x.employment)}입니다. 국민연금과 달리 상한이 없어 월급에 비례해 늘어납니다. 사업주는 150명 미만이면 같은 월급에 ${pct(ew + E.stability[0].rate)}를 냅니다.` },
+  { q: "65세 이후에도 고용보험료를 내나요?", a: `65세 이후에 새로 고용된 사람은 고용보험료 중 실업급여 보험료를 걷지 않습니다(제13조 제3항). 65세 전부터 피보험자격을 유지하다 계속 고용된 사람은 그대로 냅니다. 이 조항은 실업급여 보험료만 빼므로 사업주의 고용안정·직업능력개발 보험료는 남습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>상시근로자 수</th><th>근로자</th><th>사업주</th></tr></thead>
+    <tbody>{E.stability.map((s) => <tr><th scope="row">{s.label}</th><td>{pct(ew)}</td><td>{pct(ew + s.rate)}</td></tr>)}</tbody>
+  </table>
+  <p>상시근로자 수가 늘어 요율이 오르면 다음 보험연도부터 3년 동안은 종전 요율을 적용합니다(시행령 제12조 제4항, 상호출자제한기업집단 제외).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    고용보험이 적용되는 근로시간 기준은 <a href="/guide/four-insurance-eligibility/">4대보험 가입조건</a>,
+    일용근로자는 <a href="/guide/daily-worker-insurance/">일용직 4대보험</a>에 있습니다.
+  </p>
+</GuideLayout>

@@ -1,0 +1,61 @@
+---
+/**
+ * "지역건강보험료 계산" — 4대보험 시리즈. (지역가입자 건강보험료·계산기·재산·백수·개인사업자·프리랜서도 이 글)
+ * 근거: 국민건강보험법 제69조 제5항(소득 + 재산, 세대 단위)·제71조 제2항(연간 소득 ÷ 12)·제72조(재산보험료부과점수)·
+ * 제76조 제3항(세대 연대)·제78조(분기 납부 가능), 시행령 제44조(1만분의 719, 점수당 211.5원).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/four-insurance-2026.json";
+import { regionalHealth } from "../../../lib/four-insurance";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${+(v * 100).toFixed(4)}%`;
+const H = r.health;
+const ex = regionalHealth(2_000_000, 500);
+const rows = [
+  { inc: 1_000_000, pts: 0 },
+  { inc: 2_000_000, pts: 0 },
+  { inc: 2_000_000, pts: 500 },
+  { inc: 4_000_000, pts: 1000 },
+].map((c) => ({ ...c, x: regionalHealth(c.inc, c.pts) }));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 four-insurance-series.test.ts 가 rates 와 대조한다.
+const title = "지역건강보험료 계산 — 소득월액 × 7.19%에 재산 점수 × 211.5원을 더합니다";
+const description =
+  "지역건강보험료는 세대의 소득월액에 2026년 보험료율 7.19%를 곱한 금액과 재산보험료부과점수에 점수당 211.5원을 곱한 금액을 더해 계산합니다. 회사 부담이 없어 전액 본인 세대가 내고, 장기요양보험료가 함께 붙습니다.";
+
+const ANSWER = `지역건강보험료는 소득월액 × ${pct(H.rate)} + 재산보험료부과점수 × ${H.regionalPointValue}원이고 세대 단위로 매깁니다(국민건강보험법 제69조 제5항, 시행령 제44조). 회사 부담이 없어 전액 세대가 냅니다. 소득월액 200만원에 재산 500점이면 ${won(ex.health)}에 장기요양 ${won(ex.care)}이 더해집니다.`;
+
+const QA = [
+  { q: "지역건강보험료는 어떻게 계산하나요?", a: `① 소득: 연간 소득을 12로 나눈 소득월액 × ${pct(H.rate)} ② 재산: 재산보험료부과점수 × 점수당 ${H.regionalPointValue}원 — 두 금액을 더한 것이 세대의 월 보험료입니다(제69조 제5항·제71조 제2항). 소득월액의 평가 방법과 재산 점수표는 시행령에 있습니다.` },
+  { q: "지역가입자 건강보험료 계산 예시를 보여 주세요.", a: `소득월액 200만원, 재산 점수 500점인 세대는 소득분 ${won(ex.income)} + 재산분 ${won(ex.property)} = ${won(ex.health)}이고, 장기요양보험료 ${won(ex.care)}을 더해 ${won(ex.total)}입니다. 재산 점수는 재산 금액이 아니라 점수표로 바꾼 값입니다.` },
+  { q: "직장가입자와 지역가입자 건강보험료는 무엇이 다른가요?", a: `직장가입자는 보수월액 × ${pct(H.rate)}를 회사와 반씩 내고 재산은 보지 않습니다. 지역가입자는 같은 요율에 재산 점수까지 더해 세대가 전액 냅니다(제76조 제3항). 퇴사해 지역가입자가 되면 같은 소득이라도 보험료가 크게 오를 수 있는 이유입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>소득월액</th><th>재산 점수</th><th>건강보험료</th><th>장기요양 포함</th></tr></thead>
+    <tbody>{rows.map(({ inc, pts, x }) => <tr><th scope="row">{eokwon(inc)}</th><td>{pts}점</td><td>{won(x.health)}</td><td>{won(x.total)}</td></tr>)}</tbody>
+  </table>
+  <p>재산 점수를 재산 금액에서 구하는 표, 자동차·전월세 반영, 하한·상한 고시 금액은 이 글에서 확인하지 않았습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    지역가입자 보험료는 분기별로 낼 수도 있습니다(제78조 제1항 단서). 직장가입자 계산은{" "}
+    <a href="/guide/health-insurance-premium/">건강보험료 계산</a>에 있습니다.
+  </p>
+</GuideLayout>

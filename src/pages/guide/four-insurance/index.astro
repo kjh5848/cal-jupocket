@@ -1,0 +1,69 @@
+---
+/**
+ * "4대보험" — 4대보험 시리즈 허브. (4대보험 종류·몇프로·세금·산재·누가 내나도 이 글)
+ * 근거: 국민연금법 제88조·부칙 <법률 제20903호> 제4조, 국민건강보험법 제73조·제76조·시행령 제44조,
+ * 노인장기요양보험법 제9조·시행령 제4조, 보험료징수법 제13조·시행령 제12조.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/four-insurance-2026.json";
+import pp from "../../../rates/pension-premium-2026.json";
+import { payroll, pensionRate, careRatio, workerRateSum } from "../../../lib/four-insurance";
+import { won, eokwon } from "../../../lib/won";
+import { fourInsuranceSeries as S } from "../../../data/series/four-insurance";
+
+const pct = (v: number) => `${+(v * 100).toFixed(4)}%`;
+const hw = r.health.rate * r.health.employeeShare;
+const ex = payroll(3_000_000);
+const sum = `${(workerRateSum() * 100).toFixed(2)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 four-insurance-series.test.ts 가 rates 와 대조한다.
+const title = "4대보험 — 국민연금·건강보험·고용보험·산재보험, 2026년 직장인은 월급의 약 9.72%";
+const description =
+  "4대보험은 국민연금·건강보험(장기요양 포함)·고용보험·산재보험입니다. 2026년 직장인 몫은 국민연금 4.75%, 건강보험 3.595%, 장기요양 약 0.47%, 고용보험 0.9%로 합계 약 9.72%이고, 산재보험은 사업주가 전부 냅니다. 월급 300만원이면 29만원 남짓입니다.";
+
+const ANSWER = `4대보험은 국민연금·건강보험·고용보험·산재보험입니다. 2026년 직장인은 국민연금 ${pct(pensionRate())}, 건강보험 ${pct(hw)}, 장기요양(건강보험료의 약 ${(careRatio() * 100).toFixed(2)}%), 고용보험 ${pct(r.employment.unemployment * r.employment.workerShare)}를 월급에서 떼고, 사업주도 거의 같은 금액을 냅니다. 산재보험은 사업주만 냅니다.`;
+
+const QA = [
+  { q: "4대보험 종류는 무엇인가요?", a: `국민연금(노후 연금), 건강보험(진료비, 장기요양보험료를 함께 걷음), 고용보험(실업급여·고용안정), 산재보험(업무상 재해 보상) 네 가지입니다. 보험료는 건강보험공단이 국민연금·건강·장기요양을 걷고, 고용·산재는 보험료징수법에 따라 걷습니다.` },
+  { q: "4대보험은 월급에서 몇 프로 떼나요?", a: `2026년 근로자 몫은 국민연금 ${pct(pensionRate())}, 건강보험 ${pct(hw)}, 장기요양보험료(건강보험료 × ${(careRatio() * 100).toFixed(2)}%), 고용보험 ${pct(r.employment.unemployment * r.employment.workerShare)}로 합계 약 ${sum}입니다. 월급 300만원이면 ${won(ex.total)}입니다.` },
+  { q: "4대보험은 회사도 내나요?", a: `냅니다. 국민연금·건강보험·장기요양은 본인과 사업주가 절반씩, 고용보험은 실업급여 몫을 절반씩 내고 사업주가 고용안정·직업능력개발 보험료(규모별 0.25~0.85%)를 더 냅니다. 산재보험료는 사업주가 전액 부담합니다(보험료징수법 제13조).` },
+  { q: "4대보험은 세금인가요?", a: `세금이 아니라 각 사회보험법에 따른 보험료입니다. 월급에서 떼는 근로소득세·지방소득세와는 따로 계산되고, 기준도 다릅니다. 국민연금은 기준소득월액 상한(월 ${eokwon(pp.standardIncomeCeiling)})에서 멈추고, 건강보험료 상한은 전전년도 평균 보험료의 30배를 고려해 고시합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>월급 300만원(비과세 제외)</th><th>근로자</th><th>사업주</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">국민연금 {pct(pensionRate())}</th><td>{won(ex.pension)}</td><td>{won(ex.employer.pension)}</td></tr>
+      <tr><th scope="row">건강보험 {pct(hw)}</th><td>{won(ex.health)}</td><td>{won(ex.employer.health)}</td></tr>
+      <tr><th scope="row">장기요양보험</th><td>{won(ex.care)}</td><td>{won(ex.employer.care)}</td></tr>
+      <tr><th scope="row">고용보험</th><td>{won(ex.employment)}</td><td>{won(ex.employer.employment)}</td></tr>
+      <tr><th scope="row">합계(산재 제외)</th><td>{won(ex.total)}</td><td>{won(ex.employer.total)}</td></tr>
+    </tbody>
+  </table>
+  <p>사업주 고용보험은 상시근로자 150명 미만 기준입니다. 원 단위 어림이라 고지액과 몇십 원 다를 수 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <h2>4대보험 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

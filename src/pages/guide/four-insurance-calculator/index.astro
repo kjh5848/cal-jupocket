@@ -1,0 +1,93 @@
+---
+/**
+ * "4대보험 계산기" — 4대보험 시리즈. (월급·급여·실수령액·2026·알바 4대보험 계산도 이 글, 계산기 포함)
+ * 계산: src/lib/four-insurance.ts payroll() — 국민연금법 제88조·부칙 제4조(4.75%), 국민건강보험법 시행령 제44조(7.19%),
+ * 노인장기요양보험법 제9조·시행령 제4조(0.9448%), 보험료징수법 제13조·시행령 제12조(0.9%, 사업주 고용안정 0.25~0.85%).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/four-insurance-2026.json";
+import pp from "../../../rates/pension-premium-2026.json";
+import { payroll, pensionRate } from "../../../lib/four-insurance";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${+(v * 100).toFixed(4)}%`;
+const ex = payroll(3_000_000);
+const rows = [2_000_000, 2_500_000, 3_000_000, 4_000_000, 5_000_000, 7_000_000].map((p) => ({ p, x: payroll(p) }));
+const capped = payroll(10_000_000);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 four-insurance-series.test.ts 가 rates 와 대조한다.
+const title = "4대보험 계산기 — 2026년 월급에서 떼는 국민연금·건강·장기요양·고용보험료";
+const description =
+  "4대보험 계산기는 비과세를 뺀 월급에 국민연금 4.75%, 건강보험 3.595%, 장기요양(건강보험료 × 비율), 고용보험 0.9%를 곱해 근로자 공제액을 구합니다. 국민연금은 기준소득월액 659만원에서 멈춥니다. 월급 300만원이면 29만원 남짓입니다.";
+
+const ANSWER = `4대보험은 비과세를 뺀 월급에 국민연금 ${pct(pensionRate())}, 건강보험 ${pct(r.health.rate * r.health.employeeShare)}, 고용보험 ${pct(r.employment.unemployment * r.employment.workerShare)}를 곱하고 건강보험료에 장기요양 비율을 곱해 더합니다. 월급 300만원이면 근로자 공제 ${won(ex.total)}, 사업주 부담 ${won(ex.employer.total)}입니다.`;
+
+const QA = [
+  { q: "4대보험 계산은 어떻게 하나요?", a: `국민연금은 기준소득월액(천원 미만 버림, 상한 ${eokwon(pp.standardIncomeCeiling)}·하한 ${eokwon(pp.standardIncomeFloor)}) × ${pct(pensionRate())}, 건강보험은 보수월액 × ${pct(r.health.rate)}의 절반, 장기요양은 건강보험료 × (0.9448 ÷ 7.19), 고용보험은 보수 × ${pct(r.employment.unemployment)}의 절반입니다.` },
+  { q: "월급별 4대보험은 얼마인가요?", a: `2026년 근로자 공제액은 월급 200만원 ${won(rows[0].x.total)}, 300만원 ${won(rows[2].x.total)}, 500만원 ${won(rows[4].x.total)}입니다. 월급이 659만원을 넘으면 국민연금만 ${won(capped.pension)}에서 멈추고 나머지는 계속 비례해 늘어납니다.` },
+  { q: "4대보험을 떼고 실수령액은 얼마인가요?", a: `월급 300만원이면 4대보험 ${won(ex.total)}을 빼고 ${won(ex.pay - ex.total)}입니다. 실제 실수령액은 여기서 근로소득세와 지방소득세(간이세액표)를 더 떼므로 이보다 적습니다. 이 계산기는 4대보험까지만 계산합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">근로자 한 사람의 한 달 보험료 어림입니다. 원 미만만 버려 고지액과 몇십 원 다를 수 있고, 산재보험(사업주 전액)은 빠져 있습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="fi-pay">월급(비과세 제외)</label>
+      <input type="text" inputmode="numeric" id="fi-pay" value="3,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <details>
+      <summary>회사 규모·65세·11월 27일 이후</summary>
+      <div class="calc-input-wrap">
+        <label for="fi-tier">상시근로자 수(사업주 고용안정·직업능력개발 보험료)</label>
+        <select id="fi-tier">
+          {r.employment.stability.map((s, i) => <option value={i}>{s.label} — {pct(s.rate)}</option>)}
+        </select>
+      </div>
+      <label><input type="checkbox" id="fi-65" /> 65세 이후 새로 고용됐다(실업급여 보험료 없음)</label>
+      <label><input type="checkbox" id="fi-1127" /> 2026년 11월 27일 이후(장기요양 비율을 0.1314로 반올림)</label>
+    </details>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">근로자가 내는 4대보험(한 달)</p>
+      <p class="big" id="fi-hero">{won(ex.total)}</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">국민연금</span><span class="value" id="fi-pension">{won(ex.pension)}</span></div>
+      <div class="stat-chip"><span class="label">건강보험</span><span class="value" id="fi-health">{won(ex.health)}</span></div>
+      <div class="stat-chip"><span class="label">장기요양</span><span class="value" id="fi-care">{won(ex.care)}</span></div>
+      <div class="stat-chip"><span class="label">고용보험</span><span class="value" id="fi-emp">{won(ex.employment)}</span></div>
+      <div class="stat-chip"><span class="label">월급 − 4대보험</span><span class="value" id="fi-net">{won(ex.pay - ex.total)}</span></div>
+      <div class="stat-chip"><span class="label">사업주 부담(산재 제외)</span><span class="value" id="fi-employer">{won(ex.employer.total)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>월급</th><th>국민연금</th><th>건강</th><th>장기요양</th><th>고용</th><th>합계</th></tr></thead>
+      <tbody>{rows.map(({ p, x }) => <tr><th scope="row">{eokwon(p)}</th><td>{won(x.pension)}</td><td>{won(x.health)}</td><td>{won(x.care)}</td><td>{won(x.employment)}</td><td>{won(x.total)}</td></tr>)}</tbody>
+    </table>
+  </div>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    요율 근거는 <a href="/guide/four-insurance-rate/">4대보험 요율</a>, 건강보험 상한·납부기한은{" "}
+    <a href="/guide/health-insurance-premium/">건강보험료 계산</a>에 있습니다. 지역가입자 국민연금은{" "}
+    <a href="/national-pension-premium/">국민연금 보험료 계산기</a>를 쓰세요.
+  </p>
+
+  <script src="../../../scripts/four-insurance.ts"></script>
+</GuideLayout>

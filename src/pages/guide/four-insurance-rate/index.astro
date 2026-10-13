@@ -1,0 +1,72 @@
+---
+/**
+ * "4대보험 요율" — 4대보험 시리즈. (2026·2027 요율·요율표·합계·인상·사업주 부담도 이 글)
+ * 근거: 국민연금법 제88조·부칙 <법률 제20903호> 제4조(2026 4.75%·2027 5%), 국민건강보험법 시행령 제44조(1만분의 719),
+ * 노인장기요양보험법 시행령 제4조(100만분의 9,448)·법 제9조(2026. 11. 27. 비율 반올림), 보험료징수법 시행령 제12조.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/four-insurance-2026.json";
+import { pensionRate, careRatio, workerRateSum } from "../../../lib/four-insurance";
+
+const pct = (v: number) => `${+(v * 100).toFixed(4)}%`;
+const H = r.health;
+const E = r.employment;
+const hw = H.rate * H.employeeShare;
+const ew = E.unemployment * E.workerShare;
+const careTotal = H.rate * careRatio();
+const sum = `${(workerRateSum() * 100).toFixed(2)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 four-insurance-series.test.ts 가 rates 와 대조한다.
+const title = "4대보험 요율 — 2026년 국민연금 9.5%·건강보험 7.19%·장기요양 0.9448%·고용보험 1.8%";
+const description =
+  "2026년 4대보험 요율은 국민연금 9.5%, 건강보험 7.19%, 장기요양 0.9448%, 고용보험 실업급여 1.8%이고 근로자와 사업주가 반씩 냅니다. 2027년 국민연금은 법에 10%로 정해져 있고, 건강보험·장기요양 2027년 요율은 아직 시행령에 없습니다.";
+
+const ANSWER = `2026년 4대보험 요율은 국민연금 ${pct(pensionRate() * 2)}, 건강보험 ${pct(H.rate)}, 장기요양 ${pct(careTotal)}(소득 대비), 고용보험 실업급여 ${pct(E.unemployment)}입니다. 근로자와 사업주가 반씩 내 근로자 몫은 합계 약 ${sum}입니다. 산재보험은 업종별 요율을 사업주가 냅니다.`;
+
+const QA = [
+  { q: "2026년 4대보험 요율은 얼마인가요?", a: `국민연금 ${pct(pensionRate() * 2)}(근로자·사업주 각 ${pct(pensionRate())}), 건강보험 ${pct(H.rate)}(각 ${pct(hw)}), 장기요양 소득 대비 ${pct(careTotal)}(각 절반), 고용보험 실업급여 ${pct(E.unemployment)}(각 ${pct(ew)})입니다. 사업주는 고용안정·직업능력개발 보험료와 산재보험료를 더 냅니다.` },
+  { q: "2027년 4대보험 요율은 정해졌나요?", a: `국민연금만 정해져 있습니다. 2025년 4월 개정 부칙이 2027년 ${pct(pensionRate(2027) * 2)}(각 ${pct(pensionRate(2027))})부터 해마다 0.5%p씩 올려 2033년 13%로 정했습니다. 건강보험료율·장기요양보험료율은 2026년 10월 13일 현재 시행령에 2027년 값이 없습니다.` },
+  { q: "4대보험 요율 합계는 몇 프로인가요?", a: `근로자 몫만 더하면 국민연금 ${pct(pensionRate())} + 건강 ${pct(hw)} + 장기요양 약 ${pct(+(hw * careRatio()).toFixed(6))} + 고용 ${pct(ew)}로 약 ${sum}입니다. 사업주는 같은 몫에 고용안정 0.25~0.85%와 산재보험료가 더해져 근로자보다 많이 냅니다.` },
+  { q: "장기요양보험료율은 어떻게 적용되나요?", a: `장기요양보험료는 건강보험료에 '건강보험료율 대비 장기요양보험료율의 비율'(0.9448 ÷ 7.19)을 곱해 걷습니다(노인장기요양보험법 제9조). 2026년 11월 27일부터 이 비율을 소수점 다섯째자리에서 반올림해 ${(careRatio("2026-11-27") * 100).toFixed(2)}%로 씁니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>2026년</th><th>전체 요율</th><th>근로자</th><th>사업주</th><th>근거</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">국민연금</th><td>{pct(pensionRate() * 2)}</td><td>{pct(pensionRate())}</td><td>{pct(pensionRate())}</td><td>국민연금법 부칙 제4조</td></tr>
+        <tr><th scope="row">건강보험</th><td>{pct(H.rate)}</td><td>{pct(hw)}</td><td>{pct(hw)}</td><td>건강보험법 시행령 제44조</td></tr>
+        <tr><th scope="row">장기요양</th><td>{pct(careTotal)}</td><td colspan="2">건강보험료 × {(careRatio() * 100).toFixed(2)}%를 반씩</td><td>장기요양법 시행령 제4조</td></tr>
+        <tr><th scope="row">고용(실업급여)</th><td>{pct(E.unemployment)}</td><td>{pct(ew)}</td><td>{pct(ew)}</td><td>징수법 시행령 제12조</td></tr>
+        <tr><th scope="row">고용안정·직능개발</th><td>—</td><td>없음</td><td>0.25~0.85%</td><td>징수법 시행령 제12조</td></tr>
+        <tr><th scope="row">산재</th><td>업종별</td><td>없음</td><td>전액</td><td>징수법 제13조</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>연도</th><th>국민연금(사업장, 각각)</th><th>지역가입자</th></tr></thead>
+    <tbody>{r.pension.byYear.map((y) => <tr><th scope="row">{y.year}년</th><td>{pct(y.each)}</td><td>{pct(y.regional)}</td></tr>)}</tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>금액으로 바꿔 보려면 <a href="/guide/four-insurance-calculator/">4대보험 계산기</a>를 쓰세요.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>자세한 계산은 <a href="/guide/long-term-care-premium/">장기요양보험료</a>에 있습니다.</p>
+</GuideLayout>

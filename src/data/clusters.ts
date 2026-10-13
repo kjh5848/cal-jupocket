@@ -162,7 +162,7 @@ export const clusters: Cluster[] = [
   },
   {
     id: "retirement",
-    title: "노후·연금",
+    title: "노후·연금·4대보험",
     links: [
       { href: "/national-pension-premium/", title: "국민연금 보험료 계산기 (지역가입)", kind: "calc", icon: "calculator", blurb: "월소득으로 2026년 요율(9.5%) 월·연 보험료" },
       { href: "/guide/pension-premium-2026/", title: "국민연금 보험료, 지역가입자는 얼마 내나", kind: "guide", icon: "percent", year: 2026 },
@@ -189,6 +189,16 @@ export const clusters: Cluster[] = [
       { href: "/guide/retirement-fund/", title: "노후자금 얼마 있어야 하나", kind: "guide", icon: "chart" },
       { href: "/guide/severance-to-freelance/", title: "퇴사하고 프리랜서 시작할 때", kind: "guide", icon: "briefcase" },
       { href: "/guide/retirement-pension-loan/", title: "퇴직연금 담보대출, 중도인출과 뭐가 다른가", kind: "guide", icon: "wallet" },
+      { href: "/guide/four-insurance/", title: "4대보험, 직장인 몫은 월급의 약 9.72%", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/four-insurance-calculator/", title: "4대보험 계산기, 월급에서 떼는 네 가지", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/four-insurance-rate/", title: "4대보험 요율, 2026년·2027년", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/health-insurance-premium/", title: "건강보험료 계산, 보수월액 × 7.19%", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/regional-health-insurance/", title: "지역건강보험료, 소득 + 재산 점수", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/long-term-care-premium/", title: "장기요양보험료, 11월 27일부터 반올림", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/employment-insurance-premium/", title: "고용보험료, 근로자 0.9%", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/four-insurance-eligibility/", title: "4대보험 가입조건, 월 60시간", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/daily-worker-insurance/", title: "일용직 4대보험, 월 8일 기준", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/health-insurance-refund/", title: "건강보험 환급금, 3년 안에", kind: "guide", icon: "percent", year: 2026 },
     ],
   },
   /*
@@ -266,6 +276,16 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/health-insurance-refund/",
+  "/guide/daily-worker-insurance/",
+  "/guide/four-insurance-eligibility/",
+  "/guide/employment-insurance-premium/",
+  "/guide/long-term-care-premium/",
+  "/guide/regional-health-insurance/",
+  "/guide/health-insurance-premium/",
+  "/guide/four-insurance-rate/",
+  "/guide/four-insurance-calculator/",
+  "/guide/four-insurance/",
   "/guide/farmland-capital-gains/",
   "/guide/land-capital-gains-rate/",
   "/guide/stock-capital-gains/",
