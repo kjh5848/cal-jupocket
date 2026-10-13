@@ -265,6 +265,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/apartment-acquisition-tax/", title: "아파트 취득세, 6억원 이하 1%", kind: "guide", icon: "receipt", year: 2026 },
       { href: "/guide/real-estate-acquisition-tax/", title: "부동산 취득세, 토지·상가 4.6%", kind: "guide", icon: "receipt", year: 2026 },
       { href: "/guide/officetel-acquisition-tax/", title: "오피스텔 취득세, 주거용도 4.6%", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/resident-tax/", title: "주민세, 개인분·사업소분·종업원분", kind: "guide", icon: "receipt", year: 2026 },
     ],
   },
   {
@@ -310,6 +311,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/resident-tax/",
   "/guide/officetel-acquisition-tax/",
   "/guide/real-estate-acquisition-tax/",
   "/guide/apartment-acquisition-tax/",

@@ -1,0 +1,74 @@
+---
+/**
+ * "주민세" — 지방세 시리즈 허브. (주민세 개인분·사업소분·종업원분·납부기간·8월·금액·면제도 이 글)
+ * 근거: 지방세법 제74조(세 가지), 제75조(납세의무자·제외), 제78조·제79조(개인분 1만원 이하 조례, 7월 1일 기준, 8월 16~31일 — local-tax-2026.json),
+ * 제81조~제83조(사업소분), 제84조의3·제84조의4·제84조의6(종업원분).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/local-tax-2026.json";
+import x from "../../../rates/local-extra-2026.json";
+import { won, eokwon } from "../../../lib/won";
+import { localTaxSeries as S } from "../../../data/series/local-tax";
+
+const P = r.residentTax;
+const B = x.business;
+const E = x.employee;
+const area = 500;
+const shopTax = B.individual + (area > B.areaExempt ? area * B.perSqm : 0);
+const pay = 300_000_000;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 local-tax-series.test.ts 가 rates 와 대조한다.
+const title = "주민세 — 개인분은 8월 16일~31일 1만원 이하, 사업장은 8월에 사업소분을 신고납부";
+const description =
+  "주민세는 개인분·사업소분·종업원분 세 가지입니다. 개인분은 7월 1일 주소지 기준으로 8월 16일부터 31일까지 내고 금액은 시·군·구 조례로 1만원 이하입니다. 사업소분은 기본 5만원에 330㎡ 초과면 ㎡당 250원을 더해 8월에 신고납부하고, 종업원분은 급여총액의 0.5%입니다.";
+
+const ANSWER = `주민세는 개인분·사업소분·종업원분 세 가지입니다(지방세법 제74조). 개인분은 7월 1일 주소지 기준으로 8월 16일~31일에 내고 금액은 조례로 ${eokwon(P.rateCap)} 이하입니다. 사업소분은 기본 ${eokwon(B.individual)}에 연면적 ${B.areaExempt}㎡ 초과면 ㎡당 ${B.perSqm}원을 더해 8월에 신고납부합니다.`;
+
+const QA = [
+  { q: "주민세 개인분은 언제 얼마를 내나요?", a: `과세기준일 7월 1일 현재 주소를 둔 개인이 8월 16일부터 31일까지 냅니다(제79조). 세율은 ${eokwon(P.rateCap)}을 넘지 않는 범위에서 시·군·구 조례로 정하고, 주민 청구가 있으면 ${won(P.rateCapOnRequest)} 한도로 읍·면·동별로 달리 정할 수 있습니다(제78조). 실제 금액은 지역 조례마다 다릅니다.` },
+  { q: "주민세 개인분을 안 내도 되는 사람은?", a: `국민기초생활보장 수급자, 미성년자(성년자와 같은 세대인 경우 제외), 세대원 등 대통령령으로 정하는 사람, 외국인등록 후 1년이 지나지 않은 외국인은 개인분 납세의무자가 아닙니다(제75조 제1항). 세대주가 아닌 세대원은 대개 따로 내지 않는 구조입니다.` },
+  { q: "주민세 사업소분은 얼마인가요?", a: `기본세율은 개인 사업주 ${eokwon(B.individual)}, 법인은 자본금 30억원 이하 ${eokwon(B.corp30)}·50억원 이하 ${eokwon(B.corp50)}·초과 ${eokwon(B.corpOver50)}입니다. 여기에 사업소 연면적 1㎡당 ${B.perSqm}원을 더하되 ${B.areaExempt}㎡ 이하면 연면적분은 없습니다(제81조·제82조). 7월 1일 기준으로 8월 1일~31일에 신고납부합니다.` },
+  { q: "주민세 종업원분은 무엇인가요?", a: `사업소 종업원 급여총액의 ${(E.rate * 100).toFixed(1)}%를 사업주가 매월 다음 달 10일까지 신고납부하는 세금입니다(제84조의3·제84조의6). 최근 1년간 월평균 급여총액이 대통령령 금액의 50배 이하면 부과하지 않습니다(제84조의4). 한 달 급여총액 ${eokwon(pay)}이면 ${won(pay * E.rate)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={x.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>주민세</th><th>누가</th><th>기준일·기한</th><th>세액</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">개인분</th><td>주소를 둔 개인</td><td>7월 1일 기준, 8월 16~31일</td><td>조례(1만원 이하)</td></tr>
+      <tr><th scope="row">사업소분</th><td>사업소를 둔 사업주</td><td>7월 1일 기준, 8월 1~31일 신고납부</td><td>기본 5만원~20만원 + 연면적</td></tr>
+      <tr><th scope="row">종업원분</th><td>사업주(종업원 급여)</td><td>매월, 다음 달 10일</td><td>급여총액 × 0.5%</td></tr>
+    </tbody>
+  </table>
+  <p>개인분의 실제 금액은 시·군·구 조례를 봐야 나와서 이 글은 날짜와 구조만 씁니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    개인 사업주가 연면적 {area}㎡ 사업소를 쓰면 기본 {won(B.individual)} + {area}㎡ × {B.perSqm}원 = {won(shopTax)}입니다.
+    오염물질 배출 사업소는 ㎡당 {B.perSqmPolluting}원이고, 지자체는 조례로 세율을 50% 범위에서 가감할 수 있습니다.
+    개인 사업주는 대통령령으로 정하는 규모 이상의 사업소가 있어야 납세의무가 있는데, 그 규모는 이 글에서 확인하지 않았습니다.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>지방세의 또 다른 축인 <a href="/guide/local-income-tax/">지방소득세</a>는 소득세와 함께 냅니다.</p>
+
+  <h2>지방세 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>
