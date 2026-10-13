@@ -8,6 +8,9 @@
 import y from "../rates/year-end-2026.json";
 import { taxOn } from "./deduction";
 import { pensionCredit } from "./pension-credit";
+import ded from "../rates/deduction-2026.json";
+
+const DESCENDANT_MAX_AGE = ded.age.descendant;
 
 const C = y.calc;
 
@@ -49,6 +52,16 @@ export function latestEligibleBirthYear(taxYear: number): number {
   let b = taxYear;
   while (!childCreditEligible(taxYear, b)) b--;
   return b;
+}
+
+/**
+ * 그 과세기간분 ① 공제 대상 출생연도 범위 — 위는 부칙의 나이, 아래는 기본공제 요건 20세 이하(제50조 ① 3호 나목).
+ * 20세 이하도 제53조 ⑤로 본다: 그해에 20세인 날이 있으면 된다 → 대체로 그해 − 21년생까지(1월 1일생은 경계).
+ * 장애인은 아래 한도가 없다.
+ * 2026년분 → 2005~2016년생
+ */
+export function childCreditBirthRange(taxYear: number): { from: number; to: number } {
+  return { from: taxYear - DESCENDANT_MAX_AGE - 1, to: latestEligibleBirthYear(taxYear) };
 }
 
 /** 출산·입양 순서 — 제59조의2 ③ 각 호. 3은 '셋째 이상' */

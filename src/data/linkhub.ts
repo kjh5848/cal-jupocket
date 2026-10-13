@@ -127,6 +127,7 @@ export const hubEntries: HubEntry[] = [
   { no: 100, href: "/guide/year-end-refund-unpaid/", label: "연말정산 환급금 미지급", kind: "guide" },
   { no: 101, href: "/guide/year-end-extra-tax/", label: "연말정산 세금 더 내는 경우", kind: "guide" },
   { no: 102, href: "/guide/year-end-correction/", label: "연말정산 경정청구", kind: "guide" },
+  { no: 103, href: "/guide/year-end-child-tax-credit/", label: "연말정산 자녀세액공제", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -202,6 +203,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/year-end-refund-unpaid",
       "/guide/year-end-extra-tax",
       "/guide/year-end-correction",
+      "/guide/year-end-child-tax-credit",
     ]),
   },
   {

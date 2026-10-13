@@ -12,6 +12,9 @@
  *   뜻·하는법 → 허브
  * 디시·분개·회계처리는 쓰지 않았다(커뮤니티 이름, 회계 기준).
  * '세금 더 내는 경우' 는 10-12 사용자 화면의 구글 자동완성에서 왔다.
+ * 자녀세액공제(10-13 추가): 자동완성 '자녀세액공제'·'연말정산 자녀세액공제'(33) —
+ *   나이·나이 2026·나이 개정·8세·10세·2026 → 나이 / 금액 / 대상·조건·요건·기준·기본공제·소득 → 대상
+ *   장애인 → 장애인 / 개정 → 나이 절. 자녀장려금(조특법)·7세 미만은 쓰지 않았다(읽지 않음)
  */
 import type { Series } from "./types";
 
@@ -33,5 +36,6 @@ export const yearEndSeries: Series = {
     { slug: "year-end-refund-unpaid", keyword: "연말정산 환급금 미지급", label: "연말정산 환급금 미지급" },
     { slug: "year-end-extra-tax", keyword: "연말정산 세금 더 내는 경우", label: "연말정산 세금 더 내는 경우" },
     { slug: "year-end-correction", keyword: "연말정산 경정청구", label: "연말정산 경정청구" },
+    { slug: "year-end-child-tax-credit", keyword: "연말정산 자녀세액공제", label: "연말정산 자녀세액공제" },
   ],
 };

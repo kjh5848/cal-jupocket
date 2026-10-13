@@ -7,8 +7,11 @@ import {
   childCreditAge,
   childCreditEligible,
   latestEligibleBirthYear,
+  childCreditBirthRange,
 } from "../year-end-calc";
 import { taxOn } from "../deduction";
+import { readFileSync } from "node:fs";
+import y from "../../rates/year-end-2026.json";
 
 /** 연말정산 어림 계산 — 조문 표와 손으로 대조한 값. */
 describe("근로소득공제(제47조)", () => {
@@ -98,5 +101,26 @@ describe("자녀세액공제 — 연말정산에 넣으면", () => {
     const r = yearEnd({ pay: 20_000_000, persons: 6, pensionInsurance: 0, socialInsurance: 0, children: 5, births: [3], prepaid: 0 });
     expect(r.child).toBeGreaterThan(r.computedTax);
     expect(r.decided).toBe(0);
+  });
+});
+
+describe("자녀세액공제 — 출생연도 범위", () => {
+  it("2026년분은 2005~2016년생(20세 이하는 그해 1월 1일에 20세면 된다)", () =>
+    expect(childCreditBirthRange(2026)).toEqual({ from: 2005, to: 2016 }));
+});
+
+describe("자녀세액공제 글 — 제목·설명은 문자열이라 rates 와 대조한다", () => {
+  const src = readFileSync("src/pages/guide/year-end-child-tax-credit/index.astro", "utf-8");
+  const head = (src.match(/^const title = "([^"]+)";/m)?.[1] ?? "") + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
+  const B = y.calc.childTaxCredit.buchik;
+  it("나이·출생연도", () => {
+    expect(head).toContain(`${B.ageByYear["2026"]}세 이상`);
+    expect(head).toContain(`${latestEligibleBirthYear(2026)}년 이전 출생`);
+    expect(head).toContain(`${B.excludedBirthYear}년생`);
+    expect(head).toContain(`${y.calc.childTaxCredit.age}세 기준`);
+  });
+  it("금액", () => {
+    const A = y.calc.childTaxCredit.amounts;
+    for (const n of [A.one, A.two, A.perExtra]) expect(head).toContain(`${n / 10_000}만원`);
   });
 });

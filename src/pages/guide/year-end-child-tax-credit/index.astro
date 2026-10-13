@@ -1,0 +1,134 @@
+---
+/**
+ * "연말정산 자녀세액공제" — 연말정산 시리즈. (자녀세액공제 나이·금액·대상·조건·요건·기준·개정·2026·장애인도 이 글)
+ * 근거: 소득세법 제59조의2(2026. 4. 21. 개정), 부칙 <법률 제21548호> 제2조, 제53조 제5항, 제50조(기본공제 요건), 개정이유.
+ * 반전: 부칙의 연도별 나이로 세면 2026~2029년분 경계가 매년 2017년생인데, 부칙 ③이 바로 그 2017년생을 뺀다.
+ * 자녀장려금(조세특례제한법)은 읽지 않아 쓰지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import y from "../../../rates/year-end-2026.json";
+import ded from "../../../rates/deduction-2026.json";
+import { childTaxCredit, childCreditBirthRange, latestEligibleBirthYear, yearEnd } from "../../../lib/year-end-calc";
+import { won, manwon } from "../../../lib/won";
+
+const K = y.calc.childTaxCredit;
+const B = K.buchik;
+const A = K.amounts;
+const range = childCreditBirthRange(y.year);
+const age = B.ageByYear[String(y.year) as keyof typeof B.ageByYear];
+const split = childTaxCredit(1) * 2;
+const together = childTaxCredit(2);
+// 예시: 총급여 5,000만원, 본인 + 자녀 2명
+const noKids = yearEnd({ pay: 50_000_000, persons: 3, pensionInsurance: 0, socialInsurance: 0, prepaid: 0 });
+const kids = yearEnd({ pay: 50_000_000, persons: 3, pensionInsurance: 0, socialInsurance: 0, children: 2, prepaid: 0 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 아래 테스트가 rates 와 대조한다.
+const title = "연말정산 자녀세액공제 — 2026년분은 9세 이상, 그런데 2017년생은 빠집니다";
+const description =
+  "2026년분 연말정산 자녀세액공제는 기본공제대상 자녀·손자녀 중 2016년 이전 출생이 대상입니다. 1명 25만원, 2명 55만원, 2명을 넘는 1명당 40만원입니다. 부칙의 나이는 9세 이상이지만 2017년생은 13세 기준이라 2029년분까지 받지 못합니다.";
+
+const ANSWER = `${y.year}년분 연말정산 자녀세액공제는 기본공제대상 자녀·손자녀 중 ${range.to}년 이전에 태어난 사람에게 1명 ${won(A.one)}, 2명 ${won(A.two)}, 2명을 넘는 1명당 ${won(A.perExtra)}입니다. 부칙상 나이는 ${age}세 이상이지만 ${B.excludedBirthYear}년생은 그 부칙에서 빠져 2029년분까지 받지 못합니다.`;
+
+const QA = [
+  { q: `${y.year}년 자녀세액공제 나이 기준은 몇 살인가요?`, a: `${y.year}년분은 ${age}세 이상입니다(${B.ageByYearArticle}). 조문은 2026년 4월 21일 "${K.ageBefore}세 이상"에서 "${K.age}세 이상"으로 바뀌었지만, 2029년분까지는 부칙이 9·10·11·12세로 한 살씩 올립니다. 그해에 그 나이가 되는 날이 하루라도 있으면 됩니다.` },
+  { q: `${B.excludedBirthYear}년생 자녀는 왜 자녀세액공제를 못 받나요?`, a: `${B.excludedArticle}이 ${B.excludedBirthYear}년생에게는 연도별 나이(제2항)를 적용하지 않아 개정 조문의 ${K.age}세 이상이 그대로 걸리기 때문입니다. 2026~2029년분의 경계가 매년 ${B.excludedBirthYear}년생이라, 이들은 ${K.age}세가 되는 ${B.excludedBirthYear + K.age}년분부터 대상이 됩니다.` },
+  { q: "자녀세액공제 금액은 얼마인가요?", a: `공제대상 자녀가 1명이면 연 ${won(A.one)}, 2명이면 연 ${won(A.two)}, 3명 이상이면 ${won(A.two)}에 2명을 넘는 1명당 ${won(A.perExtra)}을 더합니다(소득세법 제59조의2 제1항). 소득공제가 아니라 세액에서 바로 빼는 세액공제입니다.` },
+  { q: "자녀세액공제 대상과 조건은 무엇인가요?", a: `기본공제대상자에 해당하는 자녀(입양자·위탁아동 포함)와 손자녀로서 나이 기준을 넘긴 사람입니다. 그래서 기본공제 요건인 ${ded.age.descendant}세 이하, 연 소득금액 ${manwon(ded.incomeTest.amount)} 이하(근로소득만 있으면 총급여 ${manwon(ded.incomeTest.salaryOnly)} 이하)도 갖춰야 합니다.` },
+  { q: "출산·입양한 해에도 자녀세액공제를 받나요?", a: `받습니다. 그해 출산하거나 입양 신고한 공제대상자녀가 첫째면 연 ${won(A.birth[0])}, 둘째면 연 ${won(A.birth[1])}, 셋째 이상이면 연 ${won(A.birth[2])}입니다(제59조의2 제3항). 나이 기준이 붙는 제1항과는 따로 계산합니다.` },
+  { q: `장애인 자녀는 ${ded.age.descendant}세가 넘어도 자녀세액공제를 받나요?`, a: `자녀세액공제는 기본공제대상자인 자녀가 대상이고, 기본공제에서 장애인은 나이 제한을 받지 않습니다(제50조 제1항 제3호 단서). 조문대로 읽으면 ${ded.age.descendant}세를 넘은 장애인 자녀도 소득 요건을 갖추면 대상입니다.` },
+  { q: "맞벌이 부부는 누가 자녀세액공제를 받나요?", a: `자녀를 기본공제대상자로 넣은 쪽입니다. 같은 자녀는 부부 중 한 사람의 기본공제에만 넣을 수 있으므로(제50조 제3항), 그 자녀의 자녀세액공제도 그 사람이 받습니다. 한 자녀를 둘이 나눠 받지는 않습니다.` },
+];
+
+const rows = [1, 2, 3, 4, 5].map((n) => ({ n, credit: childTaxCredit(n) }));
+---
+
+<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>과세기간분</th><th>나이 기준</th><th>받는 출생연도</th></tr></thead>
+    <tbody>
+      {Object.entries(B.ageByYear).map(([yr, a]) => (
+        <tr><th scope="row">{yr}년</th><td>{a}세 이상</td><td>{latestEligibleBirthYear(Number(yr))}년 이전</td></tr>
+      ))}
+      <tr><th scope="row">2030년부터</th><td>{K.age}세 이상</td><td>{latestEligibleBirthYear(2030)}년 이전</td></tr>
+    </tbody>
+  </table>
+  <p>
+    나이를 세는 법은 {K.ageRule.article}이 정합니다. 그해 중 그 나이에 해당하는 날이
+    있으면 대상으로 봅니다. 그래서 '만 9세 생일이 지났나'를 따질 필요 없이 출생연도로
+    보면 됩니다. 위쪽 경계는 기본공제 요건인 {ded.age.descendant}세 이하라, {y.year}년분은
+    대체로 {range.from}년생부터 {range.to}년생까지입니다.
+  </p>
+  <p>
+    개정이유에는 아동수당 지급 연령을 8세 미만에서 13세 미만으로 2030년까지 한 살씩
+    올리는 데 맞춘 것이라고 적혀 있습니다.
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    표의 '받는 출생연도'가 2026년부터 2029년까지 모두 {latestEligibleBirthYear(2026)}년
+    이전으로 같은 이유가 이것입니다. 연도별 나이만 보면 2026년분 9세 이상에
+    2017년생이 걸리고, 2027년분 10세 이상에도 2017년생이 걸립니다. 그 해마다 걸리는
+    사람을 부칙 제3항이 뺍니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>공제대상 자녀 수</th><th>자녀세액공제(연)</th></tr></thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr><th scope="row">{r.n}명</th><td>{won(r.credit)}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <p>
+    예를 들어 총급여 5,000만원에 본인과 자녀 2명을 기본공제로 넣으면, 인적공제까지만
+    반영한 결정세액이 {won(noKids.decided)}이고 자녀 2명이 모두 {range.to}년 이전
+    출생이면 {won(kids.child)}이 더 빠져 {won(kids.decided)}이 됩니다(어림, 다른 공제
+    없음). 세액공제 합계는 산출세액을 넘지 못합니다({y.calc.creditCap.article}). 내 숫자는{" "}
+    <a href="/guide/year-end-calculator/">연말정산 계산기</a>에 자녀 수를 넣어 보세요.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    기본공제 요건은 <a href="/guide/year-end-personal-deduction/">연말정산 인적공제</a>에
+    정리했습니다. 기본공제에 넣지 않은 자녀는 나이가 맞아도 자녀세액공제를 받지
+    못합니다.
+  </p>
+
+  <h2>{QA[4].q}</h2>
+  <p class="qa-lead">{QA[4].a}</p>
+  <p>
+    그해 태어난 아이는 나이 기준에 걸려 제1항 인원에는 들지 않지만, 제3항 금액은
+    받습니다. 다만 '첫째·둘째'를 어떻게 세는지(성인이 된 자녀를 포함하는지 등)는
+    조문에서 찾지 못했습니다.
+  </p>
+
+  <h2>{QA[5].q}</h2>
+  <p class="qa-lead">{QA[5].a}</p>
+
+  <h2>{QA[6].q}</h2>
+  <p class="qa-lead">{QA[6].a}</p>
+  <p>
+    자녀가 둘이면 한 명씩 나눠 넣을 수는 있습니다. 그러면 자녀세액공제는 각자 1명분이라
+    합쳐 {won(split)}이고, 한 사람에게 2명을 몰면 {won(together)}입니다. 다만 인적공제는
+    세율이 높은 쪽에서 더 크게 줄어드니, 두 공제를 같이 보고 정해야 합니다.
+  </p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>자녀장려금</strong> — 조세특례제한법의 제도라 이번에 읽지 않았습니다.</li>
+    <li><strong>2025년분 이전의 나이 기준과 금액</strong> — 개정 직전 조문이 "{K.ageBefore}세 이상"이었다는 것만 개정문에서 확인했습니다. 그 전 해들에 어느 조문이 적용됐는지는 읽지 않았습니다.</li>
+  </ul>
+</GuideLayout>

@@ -98,6 +98,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/year-end-refund-unpaid/", title: "연말정산 환급금 미지급", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/year-end-extra-tax/", title: "연말정산 세금 더 내는 경우", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/year-end-correction/", title: "연말정산 경정청구, 5년 안에", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/year-end-child-tax-credit/", title: "연말정산 자녀세액공제, 2017년생은 빠진다", kind: "guide", icon: "calendar", year: 2026 },
     ],
   },
   {
@@ -203,6 +204,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/year-end-child-tax-credit/",
   "/guide/year-end-correction/",
   "/guide/year-end-extra-tax/",
   "/guide/year-end-refund-unpaid/",
