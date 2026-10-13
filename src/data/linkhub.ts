@@ -133,6 +133,12 @@ export const hubEntries: HubEntry[] = [
   { no: 106, href: "/guide/child-incentive-eligibility/", label: "자녀장려금 신청 조건", kind: "guide" },
   { no: 107, href: "/guide/child-incentive-apply/", label: "자녀장려금 신청 기간", kind: "guide" },
   { no: 108, href: "/guide/child-incentive-pay-date/", label: "자녀장려금 지급일", kind: "guide" },
+  { no: 109, href: "/guide/earned-incentive/", label: "근로장려금", kind: "guide" },
+  { no: 110, href: "/guide/earned-incentive-eligibility/", label: "근로장려금 대상·조건", kind: "guide" },
+  { no: 111, href: "/guide/earned-incentive-amount/", label: "근로장려금 금액", kind: "guide" },
+  { no: 112, href: "/guide/earned-incentive-apply/", label: "근로장려금 신청 기간", kind: "guide" },
+  { no: 113, href: "/guide/earned-incentive-half-year/", label: "근로장려금 반기 신청", kind: "guide" },
+  { no: 114, href: "/guide/earned-incentive-pay-date/", label: "근로장려금 지급일", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -214,6 +220,12 @@ export const hubGroups: HubGroup[] = [
       "/guide/child-incentive-eligibility",
       "/guide/child-incentive-apply",
       "/guide/child-incentive-pay-date",
+      "/guide/earned-incentive",
+      "/guide/earned-incentive-eligibility",
+      "/guide/earned-incentive-amount",
+      "/guide/earned-incentive-apply",
+      "/guide/earned-incentive-half-year",
+      "/guide/earned-incentive-pay-date",
     ]),
   },
   {

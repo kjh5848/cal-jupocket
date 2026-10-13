@@ -1,0 +1,76 @@
+---
+/**
+ * "근로장려금 신청 기간" — 근로장려금 시리즈. (신청·신청기간·신청방법·근로장려금신청도 이 글)
+ * 근거: 조세특례제한법 제100조의6 제1항·제4항·제7항·제8항·제11항, 제100조의7 제2항(95%),
+ * 시행령 제100조의7 제2항(증거자료)·제3항(지급명세서 열람)·제4항(가구 내 1명).
+ * 기한 계산: child-incentive.ts schedule()(정기·기한 후), earned-incentive.ts halfYearSchedule()(반기). 주말만 미룬다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/earned-incentive-2026.json";
+import { schedule } from "../../../lib/child-incentive";
+import { halfYearSchedule } from "../../../lib/earned-incentive";
+import { koDate } from "../../../lib/tax-deadline";
+
+const now = schedule(r.year);
+const h = halfYearSchedule(r.year);
+const pct = Math.round(r.reductions.late.rate * 100);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 earned-incentive.test.ts 가 rates 와 대조한다.
+const title = "근로장려금 신청 기간 — 정기는 5월, 반기는 9월과 3월, 놓치면 6개월 안에 95%";
+const description =
+  "근로장려금 신청 기간은 다음 해 5월 종합소득세 확정신고 기간입니다. 근로소득만 있으면 상반기분은 그해 9월 1일~15일, 하반기분은 다음 해 3월 1일~15일에 반기 신청할 수 있습니다. 정기 신청을 놓치면 6개월 안에 신청하되 95%만 받습니다.";
+
+const ANSWER = `근로장려금 정기 신청은 다음 해 5월입니다. ${r.year}년 소득분은 ${koDate(now.from)}부터 ${koDate(now.deadline)}까지이고, 근로소득만 있으면 하반기분을 ${koDate(h.second.from)}~${koDate(h.second.deadline)}에 반기 신청할 수도 있습니다. 놓치면 6개월 안에 신청하되 ${pct}%만 받습니다.`;
+
+const QA = [
+  { q: "근로장려금 신청 기간은 언제인가요?", a: `정기 신청은 종합소득세 확정신고 기간인 다음 해 5월 1일부터 5월 31일까지입니다(조세특례제한법 제100조의6 제1항). 그해 근로소득만 있었다면 상반기분은 그해 9월 1일~15일, 하반기분은 다음 해 3월 1일~15일에 반기 신청할 수 있습니다(같은 조 제7항).` },
+  { q: "근로장려금 신청 방법은 무엇인가요?", a: `신청자격·총급여액 등·산정액을 적은 근로장려금신청서에 원천징수영수증이나 급여 통장 사본 같은 증거자료를 붙여 세무서에 냅니다. 국세청이 보여 주는 지급명세서 금액을 그대로 적어 내면 증거자료를 내지 않아도 됩니다(시행령 제100조의7 제2항).` },
+  { q: "근로장려금 신청 기간을 놓치면 어떻게 되나요?", a: `정기 신청기간이 끝난 다음 날부터 6개월 안에 신청할 수 있습니다(제100조의6 제8항). 대신 산정액의 ${pct}%만 받습니다(제100조의7 제2항). ${r.year}년 소득분은 ${koDate(now.lateTo)}까지입니다.` },
+  { q: "부부가 둘 다 근로장려금을 신청하면 어떻게 되나요?", a: `가구 안에서 둘 이상이 신청하면 한 명이 신청한 것으로 봅니다(제100조의6 제4항). 합의한 사람이 있으면 그 사람, 없으면 총급여액 등이 많은 사람, 그해 근로장려금이 많은 사람, 직전 해에 받은 사람 순입니다(시행령 제100조의7 제4항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>{r.year}년 소득분</th><th>신청 기간</th><th>누가</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">상반기 반기 신청</th><td>{koDate(h.first.from)} ~ {koDate(h.first.deadline)}</td><td>반기 동안 근로소득만 있는 사람</td></tr>
+      <tr><th scope="row">하반기 반기 신청</th><td>{koDate(h.second.from)} ~ {koDate(h.second.deadline)}</td><td>반기 동안 근로소득만 있는 사람</td></tr>
+      <tr><th scope="row">정기 신청</th><td>{koDate(now.from)} ~ {koDate(now.deadline)}</td><td>모두</td></tr>
+      <tr><th scope="row">기한 후 신청({pct}%)</th><td>{koDate(now.lateFrom)} ~ {koDate(now.lateTo)}</td><td>정기 신청을 놓친 사람</td></tr>
+    </tbody>
+  </table>
+  <p>
+    주말만 반영한 날짜이고, 공휴일 달력은 대조하지 않았습니다. 근로소득 외의 소득이 있는 사람이 반기 신청을
+    해도 정기 신청을 한 것으로 봅니다(제100조의6 제3항). 반기 신청은{" "}
+    <a href="/guide/earned-incentive-half-year/">근로장려금 반기 신청</a>에 따로 정리했습니다.
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <ul>
+    <li>정기 신청은 종합소득세 확정신고와 함께 해야 적용됩니다. 결정일까지 기한 후 신고를 하면 확정신고를 한 것으로 봅니다(제100조의6 제5항).</li>
+    <li>누락되지 않도록, 동의하면 세무서가 직권으로 신청할 수 있습니다(제100조의6 제11항).</li>
+    <li>신청서에 누락이나 오류가 있으면 세무서가 20일 이내 기간을 정해 보정을 요구할 수 있습니다(시행령 제100조의7 제11항).</li>
+  </ul>
+  <p>홈택스·손택스 신청 화면은 이 글에서 다루지 않습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    금액은 <a href="/guide/earned-incentive-amount/">근로장려금 금액</a>, 받는 날은{" "}
+    <a href="/guide/earned-incentive-pay-date/">근로장려금 지급일</a>에 있습니다.
+  </p>
+</GuideLayout>

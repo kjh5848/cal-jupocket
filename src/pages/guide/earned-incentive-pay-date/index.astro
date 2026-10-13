@@ -1,0 +1,86 @@
+---
+/**
+ * "근로장려금 지급일" — 근로장려금 시리즈. (지급일 디시·조회도 이 글)
+ * 근거: 조세특례제한법 제100조의7 제1항(정기는 확정신고 기한, 반기는 반기별 기한이 지난 후 3개월 안에 결정, 2개월 연장),
+ * 제100조의8 제3항(정기 30일·반기 15일 안에 통지·환급)·제4항(체납 30%)·제6항(압류 금지), 시행령 제100조의9 제1항·제2항.
+ * 법은 늦은 쪽 기한만 정한다. 국세청이 실제로 지급하는 날은 해마다 공지하므로 쓰지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/earned-incentive-2026.json";
+import ci from "../../../rates/child-incentive-2026.json";
+import { schedule } from "../../../lib/child-incentive";
+import { halfYearSchedule } from "../../../lib/earned-incentive";
+import { eokwon } from "../../../lib/won";
+import { koDate } from "../../../lib/tax-deadline";
+
+const D = ci.decision;
+const now = schedule(r.year);
+const prev = schedule(r.year - 1);
+const h = halfYearSchedule(r.year);
+const hPrev = halfYearSchedule(r.year - 1);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 earned-incentive.test.ts 가 rates 와 대조한다.
+const title = "근로장려금 지급일 — 신청기한 뒤 3개월 안에 결정, 정기분은 30일 안에 지급합니다";
+const description =
+  "근로장려금 지급일은 법이 날짜로 정하지 않습니다. 정기 신청분은 5월 신청기한이 지난 뒤 3개월 안에 결정하고 결정일부터 30일 안에, 반기 신청분은 반기 기한 뒤 3개월 안에 결정하고 15일 안에 지급해야 합니다.";
+
+const ANSWER = `근로장려금 지급일은 법이 특정 날짜로 정하지 않습니다. 정기분은 5월 신청기한이 지난 뒤 ${D.months}개월 안에 결정하고 결정일부터 ${ci.refund.days}일 안에, 반기분은 반기 기한 뒤 ${D.months}개월 안에 결정하고 ${r.halfYear.decisionDays}일 안에 지급합니다. ${r.year}년 정기분은 ${koDate(now.decideBy)}까지 결정됩니다.`;
+
+const QA = [
+  { q: "근로장려금 지급일은 언제인가요?", a: `법은 늦은 쪽 기한만 정합니다. 정기 신청은 확정신고 기한이 지난 후 ${D.months}개월 안에 결정하고(조세특례제한법 제100조의7 제1항), 결정일부터 ${ci.refund.days}일 안에 통지·환급합니다(제100조의8 제3항). 실제 지급일은 국세청이 해마다 알립니다.` },
+  { q: "2026년 근로장려금 지급일은 언제였나요?", a: `2026년에 받는 근로장려금은 ${r.year - 1}년 하반기분·정기분과 ${r.year}년 상반기분입니다. 법상 결정 기한은 하반기분 ${koDate(hPrev.second.decideBy)}, 정기분 ${koDate(prev.decideBy)}, 상반기분 ${koDate(h.first.decideBy)}입니다.` },
+  { q: "근로장려금 조회는 어떻게 하나요?", a: `세무서장은 결정 내용·이유·결정일자를 적은 근로장려금결정통지서로 알려야 합니다(시행령 제100조의9 제2항). 신청 금액과 결정 금액이 같으면 전자송달로 통지할 수 있습니다. 계좌를 신고했다면 계좌이체로 받습니다(같은 조 제1항).` },
+  { q: "근로장려금이 생각보다 적게 들어왔다면 왜 그런가요?", a: `국세 체납액이 있으면 환급할 근로장려금의 30%까지 체납액에 먼저 충당합니다(제100조의8 제4항). 재산이 ${eokwon(r.reductions.assets.from)} 이상이면 절반, 기한 후 신청이면 95%로 결정되는 것도 확인할 점입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>구분</th><th>신청기한</th><th>법상 결정 기한</th><th>환급</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">{r.year - 1}년 하반기분</th><td>{koDate(hPrev.second.deadline)}</td><td>{koDate(hPrev.second.decideBy)}</td><td>결정일부터 {r.halfYear.decisionDays}일 안</td></tr>
+      <tr><th scope="row">{r.year - 1}년 정기분</th><td>{koDate(prev.deadline)}</td><td>{koDate(prev.decideBy)}</td><td>결정일부터 {ci.refund.days}일 안</td></tr>
+      <tr><th scope="row">{r.year}년 상반기분</th><td>{koDate(h.first.deadline)}</td><td>{koDate(h.first.decideBy)}</td><td>결정일부터 {r.halfYear.decisionDays}일 안</td></tr>
+      <tr><th scope="row">{r.year}년 하반기분</th><td>{koDate(h.second.deadline)}</td><td>{koDate(h.second.decideBy)}</td><td>결정일부터 {r.halfYear.decisionDays}일 안</td></tr>
+      <tr><th scope="row">{r.year}년 정기분</th><td>{koDate(now.deadline)}</td><td>{koDate(now.decideBy)}</td><td>결정일부터 {ci.refund.days}일 안</td></tr>
+    </tbody>
+  </table>
+  <p>
+    결정 기한은 신청기한 다음 날부터 {D.months}개월로 세었습니다. 사실 확인이 필요한 경우 등
+    대통령령이 정한 사유가 있으면 {D.extendMonths}개월까지 연장할 수 있습니다. 주말만 반영했고 공휴일
+    달력은 대조하지 않았습니다. 기한 후 신청은 신청일이 속하는 달의 말일이 지난 후 {D.months}개월
+    안에 결정합니다.
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    반기 신청 일정은 <a href="/guide/earned-incentive-half-year/">근로장려금 반기 신청</a>에
+    자세히 정리했습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>홈택스·손택스 조회 화면은 이 글에서 다루지 않습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    환급받은 근로장려금 중 연 {eokwon(r.reductions.noSeizure.amount)} 이하는 압류할 수
+    없습니다({r.reductions.noSeizure.article}).
+  </p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>국세청이 실제로 지급하는 날</strong> — 법령이 아니라 해마다 공지되는 일정이라 쓰지 않습니다.</li>
+  </ul>
+</GuideLayout>

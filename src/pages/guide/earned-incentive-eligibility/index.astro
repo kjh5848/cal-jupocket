@@ -1,0 +1,90 @@
+---
+/**
+ * "근로장려금 대상" — 근로장려금 시리즈. (조건·조건 확인·조건 나이·기준·대상자 확인도 이 글)
+ * 근거: 조세특례제한법 제100조의3 제1항·제2항·제5항, 제100조의6 제10항(신청 안내), 시행령 제100조의2 제4항(제외자),
+ * 시행령 제100조의7 제3항(지급명세서 금액 열람).
+ * 반전: 신청자 본인의 나이 요건은 현행 조문에 없다. 나이는 가구를 가르는 직계존속·부양자녀에만 나온다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/earned-incentive-2026.json";
+import ci from "../../../rates/child-incentive-2026.json";
+import { eokwon } from "../../../lib/won";
+
+const E = r.eligibility;
+const H = r.household;
+const X = E.excludedByDecree;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 earned-incentive.test.ts 가 rates 와 대조한다.
+const title = "근로장려금 대상 — 조건은 가구별 총소득과 재산 2억4천만원, 신청자 나이 요건은 없습니다";
+const description =
+  "근로장려금 대상은 근로·사업·종교인소득이 있고 부부 합산 총소득이 단독 2,200만원, 홑벌이 3,200만원, 맞벌이 4,400만원 미만이며 재산이 2억4천만원 미만인 가구입니다. 현행 조문에 신청자 본인의 나이 요건은 없습니다.";
+
+const ANSWER = `근로장려금 대상은 근로·사업·종교인소득이 있고, 부부 합산 총소득이 단독 ${eokwon(E.totalIncomeUnder.single)}·홑벌이 ${eokwon(E.totalIncomeUnder.oneEarner)}·맞벌이 ${eokwon(E.totalIncomeUnder.dual)} 미만이며, 가구원 재산이 ${eokwon(E.assetsUnder)} 미만인 가구입니다(조세특례제한법 제100조의3). 신청자 나이 요건은 없습니다.`;
+
+const QA = [
+  { q: "근로장려금 대상은 누구인가요?", a: `그해 근로소득·사업소득·종교인소득이 있는 거주자로서, 부부 합산 연간 총소득이 가구 구성별 기준 미만이고 가구원 재산 합계가 ${eokwon(E.assetsUnder)} 미만인 사람입니다(제100조의3 제1항). 직장인, 자영업자, 프리랜서 모두 해당할 수 있습니다.` },
+  { q: "근로장려금 조건은 무엇인가요?", a: `두 가지입니다. 부부 합산 총소득이 단독가구 ${eokwon(E.totalIncomeUnder.single)}, 홑벌이 가구 ${eokwon(E.totalIncomeUnder.oneEarner)}, 맞벌이 가구 ${eokwon(E.totalIncomeUnder.dual)} 미만일 것, 그리고 가구원의 토지·건물·자동차·예금 등 재산 합계가 ${eokwon(E.assetsUnder)} 미만일 것입니다.` },
+  { q: "근로장려금 조건에 나이 제한이 있나요?", a: `신청자 본인의 나이 요건은 현행 조문에 없습니다(제100조의3 제1항 제1호는 삭제). 나이는 가구를 나눌 때만 나옵니다. 배우자 없이 ${H.parentAge}세 이상 부모를 모시면 홑벌이, 부양자녀는 ${ci.dependentChild.ageUnder}세 미만이어야 합니다.` },
+  { q: "근로장려금 기준에서 단독·홑벌이·맞벌이는 어떻게 나누나요?", a: `배우자·부양자녀·요건을 갖춘 직계존속이 모두 없으면 단독가구입니다. 배우자의 총급여액 등이 ${eokwon(H.dualThreshold)} 미만이거나 배우자 없이 부양자녀·직계존속이 있으면 홑벌이, 부부 각각 ${eokwon(H.dualThreshold)} 이상이면 맞벌이입니다(제100조의3 제5항).` },
+  { q: "근로장려금 대상자 확인은 어떻게 하나요?", a: `세무서는 회사가 낸 지급명세서 같은 과세자료로 신청 안내를 할 수 있고(제100조의6 제10항), 국세청은 지급명세서에 적힌 근로·사업소득 지급액을 신청자가 열람할 수 있게 해야 합니다(시행령 제100조의7 제3항).` },
+  { q: "근로장려금을 받을 수 없는 사람은 누구인가요?", a: `그해 12월 31일 현재 계속 근무하는 상용근로자로서 월평균 근로소득이 ${eokwon(X.monthlyPayFrom)} 이상인 사람과 그 배우자, 부가가치세법 시행령이 정한 일부 전문직 사업자와 그 배우자는 제외됩니다(시행령 제100조의2 제4항). 다른 사람의 부양자녀인 사람도 신청할 수 없습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>가구</th><th>부부 합산 총소득</th><th>가구원 재산</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">단독</th><td>{eokwon(E.totalIncomeUnder.single)} 미만</td><td rowspan="3">{eokwon(E.assetsUnder)} 미만</td></tr>
+      <tr><th scope="row">홑벌이</th><td>{eokwon(E.totalIncomeUnder.oneEarner)} 미만</td></tr>
+      <tr><th scope="row">맞벌이</th><td>{eokwon(E.totalIncomeUnder.dual)} 미만</td></tr>
+    </tbody>
+  </table>
+  <p>
+    재산이 {eokwon(r.reductions.assets.from)} 이상이면 신청은 되지만 금액이 절반으로 줄어듭니다
+    ({r.reductions.assets.article}). '연간 총소득'에 무엇이 들어가는지와 재산 평가 방법은 시행령에
+    맡겨져 있고, 이 글에서는 읽지 않았습니다.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    홑벌이로 보는 직계존속은 소득금액 100만원 이하, 주민등록상 함께 살며 생계를 같이 하고,{" "}
+    {H.parentAge}세 이상이어야 합니다. 장애인은 나이를 보지 않습니다(제100조의3 제5항 제2호 나목).
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <ul>
+    <li>{H.single}</li>
+    <li>{H.oneEarner}</li>
+    <li>{H.dual}</li>
+  </ul>
+
+  <h2>{QA[4].q}</h2>
+  <p class="qa-lead">{QA[4].a}</p>
+  <p>
+    안내를 못 받았다고 대상이 아닌 것은 아닙니다. '할 수 있다'는 조문이라 안내 여부와 자격은
+    따로입니다. 홈택스·손택스 조회 화면은 이 글에서 다루지 않습니다.
+  </p>
+
+  <h2>{QA[5].q}</h2>
+  <p class="qa-lead">{QA[5].a}</p>
+  <ul>
+    {X.rules.map((x) => <li>{x}</li>)}
+    <li>{E.excluded.rule} ({E.excluded.article})</li>
+  </ul>
+  <p>월평균 근로소득 {eokwon(X.monthlyPayFrom)}을 어떻게 계산하는지는 재정경제부령에 있고, 이 글에서는 읽지 않았습니다.</p>
+</GuideLayout>

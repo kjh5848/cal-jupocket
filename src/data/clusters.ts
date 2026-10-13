@@ -104,6 +104,12 @@ export const clusters: Cluster[] = [
       { href: "/guide/child-incentive-eligibility/", title: "자녀장려금 신청 조건, 총소득·재산·자녀", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/child-incentive-apply/", title: "자녀장려금 신청 기간, 5월", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/child-incentive-pay-date/", title: "자녀장려금 지급일, 결정 뒤 30일", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/earned-incentive/", title: "근로장려금, 단독 165만·홑벌이 285만·맞벌이 330만원", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/earned-incentive-eligibility/", title: "근로장려금 대상, 나이 요건은 없다", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/earned-incentive-amount/", title: "근로장려금 금액, 가구·소득별 계산", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/earned-incentive-apply/", title: "근로장려금 신청 기간, 5월·9월·3월", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/earned-incentive-half-year/", title: "근로장려금 반기 신청, 상반기분 35%", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/earned-incentive-pay-date/", title: "근로장려금 지급일, 결정 뒤 30일", kind: "guide", icon: "calendar", year: 2026 },
     ],
   },
   {
@@ -209,6 +215,12 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/earned-incentive-pay-date/",
+  "/guide/earned-incentive-half-year/",
+  "/guide/earned-incentive-apply/",
+  "/guide/earned-incentive-amount/",
+  "/guide/earned-incentive-eligibility/",
+  "/guide/earned-incentive/",
   "/guide/child-incentive-pay-date/",
   "/guide/child-incentive-apply/",
   "/guide/child-incentive-eligibility/",

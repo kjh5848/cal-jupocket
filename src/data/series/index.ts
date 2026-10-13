@@ -6,5 +6,6 @@ import { vehiclePrepaySeries } from "./vehicle-tax-prepay";
 import { withholdingReceiptSeries } from "./withholding-receipt";
 import { yearEndSeries } from "./year-end";
 import { childIncentiveSeries } from "./child-incentive";
+import { earnedIncentiveSeries } from "./earned-incentive";
 
-export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries];
+export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries];

@@ -1,0 +1,130 @@
+---
+/**
+ * "근로장려금 금액" — 근로장려금 시리즈. (액수·지급액 계산·지급액 조회도 이 글, 계산기 포함)
+ * 근거: 조세특례제한법 제100조의5 제1항(가구별 식)·제3항(배우자 합산)·제4항(재산 50%), 제100조의7 제2항(95%)·제3항(최소 금액),
+ * 제100조의8 제3항·제4항(30일 내 통지·체납 30% 충당), 시행령 제100조의9 제2항(결정통지서).
+ * 실제 금액은 시행령 별표 11 산정표 — 읽지 않았다. 그래서 계산기는 '어림' 이다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/earned-incentive-2026.json";
+import { earnedIncentive, formulaAmount, type EarnedHousehold } from "../../../lib/earned-incentive";
+import { won, eokwon } from "../../../lib/won";
+
+const F = r.formula;
+const R = r.reductions;
+const M = R.minimum;
+const pays = [5_000_000, 10_000_000, 15_000_000, 20_000_000, 25_000_000, 30_000_000, 35_000_000, 40_000_000];
+const hh: EarnedHousehold[] = ["single", "oneEarner", "dual"];
+const cell = (h: EarnedHousehold, p: number) => {
+  const x = earnedIncentive({ household: h, pay: p });
+  return x.eligible ? won(x.amount) : "대상 아님";
+};
+const ex = earnedIncentive({ household: "oneEarner", pay: 20_000_000 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 earned-incentive.test.ts 가 rates 와 대조한다.
+const title = "근로장려금 금액 — 단독 최대 165만원, 홑벌이 285만원, 맞벌이 330만원";
+const description =
+  "근로장려금 금액은 가구에 따라 최대 165만원(단독), 285만원(홑벌이), 330만원(맞벌이)입니다. 소득이 적을 때는 벌수록 늘고, 가운데 구간에서는 최대 금액, 그 위로는 줄어듭니다. 재산 1억7천만원 이상이면 절반입니다.";
+
+const ANSWER = `근로장려금 금액은 최대 단독 ${eokwon(F.single.max)}, 홑벌이 ${eokwon(F.oneEarner.max)}, 맞벌이 ${eokwon(F.dual.max)}입니다. 소득이 적을 때는 벌수록 늘고, 가운데 구간은 최대 금액으로 평평하고, 그 위로는 벌수록 줄어듭니다. 재산이 ${eokwon(R.assets.from)} 이상이면 절반입니다.`;
+
+const QA = [
+  { q: "근로장려금 금액은 얼마인가요?", a: `가구별 최대 금액은 단독 ${eokwon(F.single.max)}, 홑벌이 ${eokwon(F.oneEarner.max)}, 맞벌이 ${eokwon(F.dual.max)}입니다(조세특례제한법 제100조의5 제1항). 총급여액 등이 단독 ${eokwon(F.single.riseUnder)}~${eokwon(F.single.flatUnder)}, 홑벌이 ${eokwon(F.oneEarner.riseUnder)}~${eokwon(F.oneEarner.flatUnder)}, 맞벌이 ${eokwon(F.dual.riseUnder)}~${eokwon(F.dual.flatUnder)} 구간에서 최대 금액을 받습니다.` },
+  { q: "근로장려금 지급액 계산은 어떻게 하나요?", a: `세 구간으로 나눕니다. 예를 들어 홑벌이는 ${eokwon(F.oneEarner.riseUnder)} 미만이면 총급여액 등×285/700, ${eokwon(F.oneEarner.riseUnder)}~${eokwon(F.oneEarner.flatUnder)}이면 ${eokwon(F.oneEarner.max)}, 그 위 ${eokwon(F.oneEarner.upTo)} 미만이면 ${eokwon(F.oneEarner.max)} − (총급여액 등 − ${eokwon(F.oneEarner.flatUnder)})×285/1,800입니다.` },
+  { q: "근로장려금 액수가 줄어드는 경우는 언제인가요?", a: `재산 합계가 ${eokwon(R.assets.from)} 이상이면 절반(제100조의5 제4항), 신청기간을 놓쳐 6개월 안에 늦게 신청하면 95%입니다(제100조의7 제2항). 국세 체납이 있으면 환급액의 30%까지 체납액에 먼저 충당합니다(제100조의8 제4항).` },
+  { q: "근로장려금 지급액 조회는 언제 할 수 있나요?", a: `세무서장은 결정일부터 30일 안에 결정 내용·이유·결정일자를 적은 근로장려금결정통지서로 알리고, 같은 기한까지 환급합니다(제100조의8 제3항, 시행령 제100조의9 제2항). 신청한 금액과 결정 금액이 같으면 전자송달로 통지할 수 있습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">법 조문 식으로 한 어림입니다. 실제 금액은 산정표(구간별)로 정해져 조금 다를 수 있습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="ei-household">가구</label>
+      <select id="ei-household">
+        <option value="single">단독</option>
+        <option value="oneEarner" selected>홑벌이</option>
+        <option value="dual">맞벌이</option>
+      </select>
+    </div>
+    <p class="meta">배우자·부양자녀·{r.household.parentAge}세 이상 부모가 없으면 단독, 부부 각각 {eokwon(r.household.dualThreshold)} 이상 벌면 맞벌이, 그 밖은 홑벌이입니다.</p>
+    <div class="calc-input-wrap">
+      <label for="ei-pay">총급여액 등(부부 합산, 1년)</label>
+      <input type="text" inputmode="numeric" id="ei-pay" value="20,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <details>
+      <summary>재산·늦은 신청</summary>
+      <div class="calc-input-wrap">
+        <label for="ei-assets">가구원 재산 합계</label>
+        <input type="text" inputmode="numeric" id="ei-assets" value="" placeholder="0" />
+        <span class="unit">원</span>
+      </div>
+      <label><input type="checkbox" id="ei-late" /> 5월 신청기간을 놓쳐 6개월 안에 신청(95%)</label>
+    </details>
+
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">근로장려금(어림)</p>
+      <p class="big" id="ei-hero">{won(ex.amount)}</p>
+    </div>
+    <p class="meta" id="ei-note" hidden></p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>총급여액 등</th><th>단독</th><th>홑벌이</th><th>맞벌이</th></tr></thead>
+      <tbody>
+        {pays.map((p) => (
+          <tr><th scope="row">{eokwon(p)}</th>{hh.map((h) => <td>{cell(h, p)}</td>)}</tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>법 조문 식으로 계산하고 최소 금액 규정을 적용한 값입니다(재산 감액 없음).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <ul>
+    <li>단독: {eokwon(F.single.riseUnder)} 미만 ×165/400, {eokwon(F.single.flatUnder)} 미만 {eokwon(F.single.max)}, {eokwon(F.single.upTo)} 미만 {eokwon(F.single.max)} − (총급여액 등 − {eokwon(F.single.flatUnder)})×165/1,300</li>
+    <li>홑벌이: {eokwon(F.oneEarner.riseUnder)} 미만 ×285/700, {eokwon(F.oneEarner.flatUnder)} 미만 {eokwon(F.oneEarner.max)}, {eokwon(F.oneEarner.upTo)} 미만 {eokwon(F.oneEarner.max)} − (총급여액 등 − {eokwon(F.oneEarner.flatUnder)})×285/1,800</li>
+    <li>맞벌이: {eokwon(F.dual.riseUnder)} 미만 ×330/800, {eokwon(F.dual.flatUnder)} 미만 {eokwon(F.dual.max)}, {eokwon(F.dual.upTo)} 미만 {eokwon(F.dual.max)} − (총급여액 등 − {eokwon(F.dual.flatUnder)})×330/2,700</li>
+  </ul>
+  <p>
+    예를 들어 홑벌이 가구가 총급여액 등 2,000만원이면{" "}
+    {won(Math.floor(formulaAmount("oneEarner", 20_000_000).amount))}입니다. 배우자에게도 소득이 있으면
+    신청한 사람의 총급여액 등에 배우자 것을 합산합니다(제100조의5 제3항).
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <ul>
+    <li>계산한 금액이 {eokwon(M.none)} 미만 — 없는 것으로 결정</li>
+    <li>벌수록 느는 구간에서 {eokwon(M.none)} 이상 {eokwon(M.risingFloor)} 미만 — {eokwon(M.risingFloor)}으로 결정</li>
+    <li>벌수록 주는 구간에서 {eokwon(M.none)} 이상 {eokwon(M.taperFloor)} 미만 — {eokwon(M.taperFloor)}으로 결정 ({M.article})</li>
+    <li>환급받은 근로장려금 중 연 {eokwon(R.noSeizure.amount)} 이하는 압류할 수 없습니다 ({R.noSeizure.article})</li>
+  </ul>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    결정이 언제 나오는지는 <a href="/guide/earned-incentive-pay-date/">근로장려금 지급일</a>에
+    정리했습니다. 홈택스·손택스 조회 화면은 이 글에서 다루지 않습니다.
+  </p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>시행령 별표 11 근로장려금산정표</strong> — 구간별 실제 금액표는 읽지 않았습니다.</li>
+    <li><strong>'총급여액 등'에서 빠지는 소득과 사업소득 조정률</strong> — 시행령 제100조의3·제100조의6에 있고 이 글에서는 다루지 않습니다.</li>
+  </ul>
+
+  <script src="../../../scripts/earned-incentive.ts"></script>
+</GuideLayout>
