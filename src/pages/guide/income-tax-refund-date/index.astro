@@ -12,10 +12,13 @@ import rf from "../../../rates/refund-2026.json";
 import { incomeTaxRefundInterestStart, refundInterest } from "../../../lib/tax-refund";
 import { koDate } from "../../../lib/tax-deadline";
 import { won, eokwon } from "../../../lib/won";
+import fl from "../../../rates/filing-2026.json";
 
 const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
 const start = incomeTaxRefundInterestStart(2027);
 const lastFree = new Date(start.getTime() - 86_400_000);
+/** 성실신고확인대상자는 6월 30일까지 신고(filing-2026.json) — 기산일도 그만큼 늦다 */
+const diligentStart = incomeTaxRefundInterestStart(2027, 6, 30);
 const amount = 1_000_000;
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 tax-refund-series.test.ts 가 rates 와 대조한다.
@@ -27,7 +30,7 @@ const ANSWER = `종합소득세 환급일은 법에 날짜로 정해져 있지 �
 
 const QA = [
   { q: "종합소득세 환급금은 언제 들어오나요?", a: `법은 '국세환급금 결정일부터 30일 내 지급'만 정하고 달력 날짜는 정하지 않습니다(제51조 제6항). 다만 5월 신고분은 ${koDate(lastFree)}이 지나면 그다음 날부터 환급가산금을 더해야 하므로, 이 날짜가 사실상의 기준이 됩니다. 은행 입금 처리 기간은 법에 없습니다.` },
-  { q: "환급가산금 기산일은 어떻게 정해지나요?", a: `환급세액을 신고한 경우 신고를 한 날(신고한 날이 법정신고기일 전이면 그 법정신고기일)부터 30일이 지난 날의 다음 날입니다(시행령 제43조의3 제1항 제4호). 종합소득세 법정신고기일은 5월 31일이라 5월 중 언제 신고했든 ${koDate(start)}이 기산일입니다.` },
+  { q: "환급가산금 기산일은 어떻게 정해지나요?", a: `환급세액을 신고한 경우 신고를 한 날(신고한 날이 법정신고기일 전이면 그 법정신고기일)부터 30일이 지난 날의 다음 날입니다(시행령 제43조의3 제1항 제4호). 일반 신고자는 법정신고기일이 5월 31일이라 5월 중 언제 신고했든 ${koDate(start)}이 기산일입니다. ${fl.deadline.diligentFilerNote}라 ${koDate(diligentStart)}입니다.` },
   { q: "환급이 늦어지면 이자를 받나요?", a: `받습니다. 기산일부터 지급결정일까지의 기간에 연 ${pct(rf.refundInterest.annualRate)}를 곱한 국세환급가산금이 더해집니다(제52조). 환급금 ${eokwon(amount)}이 30일 늦으면 ${won(refundInterest(amount, 30))}입니다. 경정청구·불복 없이 고충민원 처리로 받는 환급에는 붙지 않습니다.` },
   { q: "6월 이후에 신고하면 환급일은 언제인가요?", a: `세무서는 기한 후 신고에 대해 3개월 안에 결정·통지하고, 경정청구에는 2개월 안에 답해야 하며(제45조의3·제45조의2), 지급은 결정 뒤 30일 안입니다. 이때의 환급가산금 기산일은 신고·결정 경위에 따라 달라 이 글에서 날짜로 쓰지 않았습니다.` },
 ];
@@ -40,7 +43,7 @@ const QA = [
   <h2>{QA[0].q}</h2>
   <p class="qa-lead">{QA[0].a}</p>
   <table>
-    <thead><tr><th>2026년 귀속 종합소득세(2027년 5월 신고)</th><th>날짜</th></tr></thead>
+    <thead><tr><th>2026년 귀속 종합소득세(2027년 5월 신고, 일반 신고자)</th><th>날짜</th></tr></thead>
     <tbody>
       <tr><th scope="row">법정신고기일</th><td>{koDate(new Date(Date.UTC(2027, 4, 31)))}</td></tr>
       <tr><th scope="row">30일이 지나는 날</th><td>{koDate(lastFree)}</td></tr>

@@ -6,8 +6,8 @@ import rf from "../rates/refund-2026.json";
 import r from "../rates/tax-refund-2026.json";
 
 /** 종합소득세 환급가산금 기산일 — 5월 31일(법정신고기일)부터 30일이 지난 날의 다음 날 */
-export function incomeTaxRefundInterestStart(year: number): Date {
-  const due = Date.UTC(year, r.incomeTax.dueMonth - 1, r.incomeTax.dueDay);
+export function incomeTaxRefundInterestStart(year: number, dueMonth = r.incomeTax.dueMonth, dueDay = r.incomeTax.dueDay): Date {
+  const due = Date.UTC(year, dueMonth - 1, dueDay);
   return new Date(due + (r.payment.days + 1) * 86_400_000);
 }
 
