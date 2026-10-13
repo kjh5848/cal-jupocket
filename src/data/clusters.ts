@@ -148,6 +148,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/lotto-tax/", title: "로또세금 — 200만원 넘으면 22%, 3억원을 넘는 부분은 33%를 떼고 받습니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/lotto-net-amount/", title: "로또 실수령액 — 1억원이면 7,800만원, 10억원이면 7억300만원을 받습니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/lotto-tax-calculator/", title: "로또 세금 계산기 — 당첨금을 넣으면 소득세·지방소득세와 실수령액이 나옵니다", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/payslip/", title: "급여명세서 — 월급날마다 6가지 항목을 적어 줘야 하고, 5명 미만 사업장도 같습니다", kind: "guide", icon: "document", year: 2026 },
+      { href: "/guide/payslip-issue/", title: "급여명세서 발급 — 월급을 주는 날 함께, 종이나 전자문서로 줘야 합니다", kind: "guide", icon: "document", year: 2026 },
+      { href: "/guide/wage-ledger/", title: "임금대장 — 근로자마다 10가지를 임금 줄 때마다 적고 3년간 보존합니다", kind: "guide", icon: "document", year: 2026 },
     ],
   },
   {
@@ -327,6 +330,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/wage-ledger/",
+  "/guide/payslip-issue/",
+  "/guide/payslip/",
   "/guide/lotto-tax-calculator/",
   "/guide/lotto-net-amount/",
   "/guide/lotto-tax/",

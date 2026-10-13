@@ -1,0 +1,74 @@
+---
+/**
+ * "급여명세서" — 급여명세서 시리즈 허브. (임금명세서·급여명세서 양식·필수 기재사항·교부 의무·과태료·5인 미만·월급명세서도 이 글)
+ * 근거: 근로기준법 제48조 제2항(임금명세서 교부), 시행령 제27조의2(기재사항 6가지), 제11조·시행령 제7조 별표 1(4명 이하에도 적용),
+ * 제116조 제2항 제2호·시행령 별표 7(과태료). rates: payslip-2026.json. 예시 공제액은 four-insurance.ts payroll() 이 낸다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/payslip-2026.json";
+import { payroll } from "../../../lib/four-insurance";
+import { won, eokwon } from "../../../lib/won";
+import { payslipSeries as S } from "../../../data/series/payslip";
+
+const F = r.fines;
+const man = (v: number) => eokwon(v);
+const pay = 3_000_000;
+const ex = payroll(pay);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 payslip-series.test.ts 가 rates 와 대조한다.
+const title = "급여명세서 — 월급날마다 6가지 항목을 적어 줘야 하고, 5명 미만 사업장도 같습니다";
+const description =
+  "급여명세서(임금명세서)는 사용자가 임금을 줄 때마다 근로자에게 서면이나 전자문서로 줘야 합니다. 성명·지급일·총액·항목별 금액·계산방법·공제내역 6가지를 적고, 5명 미만 사업장도 같습니다. 주지 않으면 1차 30만원 과태료입니다.";
+
+const ANSWER = `급여명세서(임금명세서)는 사용자가 임금을 지급하는 때마다 근로자에게 서면이나 전자문서로 줘야 합니다(근로기준법 제48조 제2항). 근로자 정보·지급일·총액·항목별 금액·계산방법·공제내역 6가지를 적고(시행령 제27조의2), 5명 미만 사업장에도 적용되며, 주지 않으면 과태료가 붙습니다.`;
+
+const QA = [
+  { q: "급여명세서는 꼭 줘야 하나요?", a: `네. 2021년 11월 19일부터 사용자는 임금을 지급하는 때에 근로자에게 임금명세서를 서면(전자문서 포함)으로 교부해야 합니다(제48조 제2항). 정규직·아르바이트·일용직을 가리지 않고 근로자라면 해당하고, 근로기준법 일부만 적용되는 상시 4명 이하 사업장에도 이 조문은 적용됩니다(시행령 별표 1).` },
+  { q: "급여명세서 필수 기재사항은 무엇인가요?", a: `① 성명·생년월일·사원번호 등 근로자를 특정할 정보 ② 임금지급일 ③ 임금 총액 ④ 기본급·수당·상여금·성과금 등 항목별 금액 ⑤ 출근일수·시간에 따라 달라지는 항목의 계산방법(연장·야간·휴일근로 시간 수 포함) ⑥ 4대보험료·소득세 같은 공제 항목별 금액과 총액입니다(시행령 제27조의2).` },
+  { q: "급여명세서를 안 주면 과태료는 얼마인가요?", a: `임금명세서를 교부하지 않으면 1차 ${man(F.payslipNotIssued[0])}, 2차 ${man(F.payslipNotIssued[1])}, 3차 이상 ${man(F.payslipNotIssued[2])}, 기재사항을 빠뜨리거나 사실과 다르게 적으면 ${man(F.payslipWrong[0])}·${man(F.payslipWrong[1])}·${man(F.payslipWrong[2])}입니다(시행령 별표 7). 법정 상한은 ${man(F.max)}이고 고용노동부장관이 부과합니다(제116조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>법률 용어는 '임금명세서'이고, 회사에서 흔히 부르는 급여명세서·월급명세서가 같은 것입니다. 종이로 줘도 되고 전자문서로 줘도 됩니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>아래는 6가지를 다 갖춘 꼴의 예시입니다. 월 {won(pay)}을 받는 직장인 기준이고, 4대보험료는 2026년 요율로 계산했습니다. 소득세는 근로소득 간이세액표 금액이라 이 사이트가 대조하지 않아 숫자를 비워 두었습니다.</p>
+  <div class="table-scroll">
+    <table>
+      <caption>임금명세서 예시 (①근로자 정보와 ②지급일은 표 위에 적는다)</caption>
+      <thead><tr><th>구분</th><th>항목</th><th>금액</th><th>계산방법</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" rowspan="2">③④ 지급</th><td>기본급</td><td>{won(pay)}</td><td>월 고정</td></tr>
+        <tr><td>지급 총액</td><td>{won(pay)}</td><td>—</td></tr>
+        <tr><th scope="row" rowspan="7">⑥ 공제</th><td>국민연금</td><td>{won(ex.pension)}</td><td>기준소득월액 × 근로자 부담률</td></tr>
+        <tr><td>건강보험</td><td>{won(ex.health)}</td><td>보수월액 × 근로자 부담률</td></tr>
+        <tr><td>장기요양보험</td><td>{won(ex.care)}</td><td>건강보험료 × 비율</td></tr>
+        <tr><td>고용보험</td><td>{won(ex.employment)}</td><td>보수 × 근로자 부담률</td></tr>
+        <tr><td>소득세</td><td>간이세액표 금액</td><td>근로소득 간이세액표</td></tr>
+        <tr><td>지방소득세</td><td>소득세의 10%</td><td>—</td></tr>
+        <tr><td>공제 총액</td><td>{won(ex.total)} + 소득세·지방소득세</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>연장·야간·휴일근로 수당이 있으면 ⑤에 따라 그 시간 수와 계산식을 적어야 합니다. 4대보험료 계산은 <a href="/guide/four-insurance-calculator/">4대보험 계산기</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>가중 금액은 최근 1년 안에 같은 위반으로 과태료 처분을 받은 경우에 적용하고, 사소한 부주의이거나 바로잡으려 노력했으면 절반 범위에서 줄일 수 있습니다(별표 7 일반기준). 근로자 한 명마다·달마다 따로 붙는지는 이 글에서 확인하지 못했습니다.</p>
+
+  <h2>급여명세서 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

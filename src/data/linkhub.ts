@@ -251,6 +251,9 @@ export const hubEntries: HubEntry[] = [
   { no: 224, href: "/guide/lotto-tax/", label: "로또세금 — 22%와 33%", kind: "guide" },
   { no: 225, href: "/guide/lotto-net-amount/", label: "로또 실수령액 표", kind: "guide" },
   { no: 226, href: "/guide/lotto-tax-calculator/", label: "로또 세금 계산기", kind: "guide" },
+  { no: 227, href: "/guide/payslip/", label: "급여명세서 — 6가지 기재사항", kind: "guide" },
+  { no: 228, href: "/guide/payslip-issue/", label: "급여명세서 발급·조회", kind: "guide" },
+  { no: 229, href: "/guide/wage-ledger/", label: "임금대장 기재사항·보존", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -376,6 +379,9 @@ export const hubGroups: HubGroup[] = [
       "/guide/lotto-tax",
       "/guide/lotto-net-amount",
       "/guide/lotto-tax-calculator",
+      "/guide/payslip",
+      "/guide/payslip-issue",
+      "/guide/wage-ledger",
     ]),
   },
   {

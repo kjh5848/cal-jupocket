@@ -1,0 +1,57 @@
+---
+/**
+ * "임금대장" — 급여명세서 시리즈. (임금대장 양식·기재사항·보존기간·일용직·5인 미만·과태료·임금명세서와 차이도 이 글)
+ * 근거: 근로기준법 제48조 제1항, 시행령 제27조(기재사항 10가지, 일용직·4명 이하 생략 가능), 제42조·시행령 제22조(3년 보존),
+ * 제116조 제2항 제2호·시행령 별표 7(과태료). rates: payslip-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/payslip-2026.json";
+import { eokwon } from "../../../lib/won";
+
+const F = r.fines;
+const L = r.ledger;
+// 임금대장 10가지 각각이 임금명세서(시행령 제27조의2)의 어느 항목과 겹치는지
+const inSlip = ["있음(①)", "있음(①)", "없음", "없음", "출근일수·시간으로 달라지는 항목만 계산방법(⑤)", "없음", "없음", "있음(⑤ 안에 시간 수)", "있음(④)", "있음(⑥)"];
+const won3 = (a: number[]) => a.map((v) => eokwon(v)).join("·");
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 payslip-series.test.ts 가 rates 와 대조한다.
+const title = "임금대장 — 근로자마다 10가지를 임금 줄 때마다 적고 3년간 보존합니다";
+const description =
+  "임금대장은 사용자가 사업장별로 만들어 임금을 지급할 때마다 근로자별 성명·업무·근로일수·근로시간·항목별 임금·공제액 등 10가지를 적는 장부입니다. 마지막으로 적은 날부터 3년간 보존해야 하고, 작성하지 않으면 1차 30만원 과태료입니다.";
+
+const ANSWER = `임금대장은 사용자가 사업장별로 작성해 임금을 지급할 때마다 근로자 개인별로 적는 장부입니다(근로기준법 제48조 제1항). 성명·고용일·업무·근로일수·근로시간·항목별 임금·공제액 등 10가지를 적고(시행령 제27조), 마지막으로 적은 날부터 ${L.keepYears}년간 보존합니다(제42조).`;
+
+const QA = [
+  { q: "임금대장 기재사항은 무엇인가요?", a: `① 성명 ② 생년월일·사원번호 등 특정 정보 ③ 고용 연월일 ④ 종사 업무 ⑤ 임금·가족수당의 계산기초 ⑥ 근로일수 ⑦ 근로시간수 ⑧ 연장·야간·휴일근로 시간수 ⑨ 기본급·수당 등 내역별 금액 ⑩ 공제한 금액입니다(시행령 제27조 제1항). 근로자 개인별로 적습니다.` },
+  { q: "일용직이나 5인 미만 사업장도 임금대장을 써야 하나요?", a: `씁니다. 다만 사용기간이 30일 미만인 일용근로자는 ②특정 정보와 ⑤계산기초를, 상시 4명 이하 사업장 근로자와 제63조 적용 제외 근로자는 ⑦근로시간수와 ⑧연장·야간·휴일 시간수를 적지 않을 수 있습니다(시행령 제27조 제2항·제3항).` },
+  { q: "임금대장 보존기간과 과태료는요?", a: `임금대장은 마지막으로 써 넣은 날부터 ${L.keepYears}년간 보존합니다(제42조, 시행령 제22조). 작성하지 않으면 1차·2차·3차 이상 ${won3(F.ledgerNotMade)}, 일부를 적지 않으면 ${won3(F.ledgerPartial)}, 보존 의무를 어기면 ${won3(F.keepViolation)}의 과태료입니다(시행령 별표 7).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>번호</th><th>임금대장 기재사항(시행령 제27조)</th><th>임금명세서에도 있나</th></tr></thead>
+      <tbody>
+        {L.items.map((it, i) => <tr><th scope="row">{i + 1}</th><td>{it}</td><td>{inSlip[i]}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+  <p>임금명세서는 근로자에게 주는 문서이고 임금대장은 사업장이 갖고 있는 장부입니다. 명세서에는 고용일·업무·근로일수가 없고 대신 임금지급일과 임금 총액이 들어갑니다 — <a href="/guide/payslip/">급여명세서</a>.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>근로계약서·임금 결정과 지급방법에 관한 서류·고용과 퇴직에 관한 서류도 같은 {L.keepYears}년 보존 대상입니다(시행령 제22조 제1항). 지난 급여 내역을 다시 받는 방법은 <a href="/guide/payslip-issue/">급여명세서 발급</a>에 있습니다.</p>
+</GuideLayout>
