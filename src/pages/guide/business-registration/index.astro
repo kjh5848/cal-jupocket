@@ -1,0 +1,59 @@
+---
+/**
+ * "사업자등록" — 사업자등록 시리즈 허브. (사업자등록 신청·기한·서류·방법·홈택스·미등록 가산세도 이 글)
+ * 근거: 부가가치세법 제8조 제1항·제2항(사업장마다 20일, 개업 전 가능, 다른 세무서도), 시행령 제11조(신청서·첨부서류·2일 발급),
+ * 제60조 제1항 제1호(미등록 가산세 1% — vat-penalty-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/business-registration-2026.json";
+import vp from "../../../rates/vat-penalty-2026.json";
+import { won, eokwon } from "../../../lib/won";
+import { businessRegistrationSeries as S } from "../../../data/series/business-registration";
+
+const A = r.apply;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const sales = 30_000_000;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 registration-corporate-series.test.ts 가 rates 와 대조한다.
+const title = "사업자등록 — 사업 시작일부터 20일 안에, 사업장마다 아무 세무서나 홈택스로 신청";
+const description =
+  "사업자등록은 사업장마다 사업을 시작한 날부터 20일 안에 신청하고, 시작하기 전에도 할 수 있습니다. 관할이 아닌 세무서나 홈택스로 내도 되고, 가게를 빌렸다면 임대차계약서 사본, 허가 업종이면 허가증 사본을 붙입니다. 늦으면 그동안 매출의 1%가 가산세입니다.";
+
+const ANSWER = `사업자등록은 사업장마다 사업 개시일부터 ${A.days}일 안에 신청하고, 시작하기 전에도 할 수 있습니다(부가가치세법 제8조 제1항). 관할이 아닌 세무서나 홈택스로 내도 되고(제2항, 시행령 제11조), 세무서는 신청일부터 ${r.issue.days}일 안에 사업자등록증을 발급합니다. 늦으면 그동안 공급가액의 ${pct(vp.registration.lateRegistration)}가 가산세입니다.`;
+
+const QA = [
+  { q: "사업자등록은 언제까지 해야 하나요?", a: `사업장마다 사업 개시일부터 ${A.days}일 이내에 사업장 관할 세무서장에게 신청해야 합니다. 신규로 사업을 시작하려는 사람은 사업 개시일 이전에도 신청할 수 있습니다(제8조 제1항). 이 기한을 넘기면 사업 개시일부터 등록 신청일 직전일까지 공급가액의 ${pct(vp.registration.lateRegistration)}가 가산세입니다(제60조 제1항 제1호).` },
+  { q: "사업자등록 신청에 필요한 서류는 무엇인가요?", a: `신청서에는 인적사항, 신청 사유, 사업 개시(또는 설치 착수) 연월일을 적습니다. 허가·등록·신고 업종이면 그 증명 사본, 사업장을 빌렸으면 임대차계약서 사본, 상가 일부만 빌렸으면 도면, 미성년자면 법정대리인 동의서를 붙입니다(시행령 제11조 제1항·제3항).` },
+  { q: "사업자등록은 어디서 하나요?", a: `사업장 관할 세무서뿐 아니라 신청인이 편한 다른 세무서에 내도 관할 세무서에 신청한 것으로 보고(제8조 제2항), 국세정보통신망(홈택스) 제출도 됩니다(시행령 제11조 제1항). 사업장이 둘 이상이면 본점에서 사업자 단위로 한 번에 등록할 수도 있습니다(제8조 제3항).` },
+  { q: "사업자등록을 늦게 하면 손해가 얼마인가요?", a: `미등록 가산세는 사업 개시일부터 등록 신청 전날까지 공급가액 합계의 ${pct(vp.registration.lateRegistration)}입니다. 그 사이 매출이 ${eokwon(sales)}이면 ${won(Math.round(sales * vp.registration.lateRegistration))}입니다. 남의 명의로 등록하거나 쓰면 ${pct(vp.registration.otherName)}입니다(제60조 제1항 제2호).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <ul>{A.documents.map((d) => <li>{d}</li>)}</ul>
+  <p>{A.beforeLicense}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>홈택스 신청 화면의 순서는 바뀔 수 있어 이 글에서 적지 않았습니다. 간이과세를 원하면 신청할 때 함께 신고합니다 — <a href="/guide/individual-business-registration/">개인사업자 등록</a>.</p>
+
+  <h2>사업자등록 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

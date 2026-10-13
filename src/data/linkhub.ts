@@ -235,6 +235,16 @@ export const hubEntries: HubEntry[] = [
   { no: 208, href: "/guide/real-estate-acquisition-tax/", label: "부동산 취득세", kind: "guide" },
   { no: 209, href: "/guide/officetel-acquisition-tax/", label: "오피스텔 취득세", kind: "guide" },
   { no: 210, href: "/guide/resident-tax/", label: "주민세", kind: "guide" },
+  { no: 211, href: "/guide/business-registration/", label: "사업자등록 신청", kind: "guide" },
+  { no: 212, href: "/guide/business-registration-certificate/", label: "사업자등록증 발급", kind: "guide" },
+  { no: 213, href: "/guide/business-registration-change/", label: "사업자등록증 주소변경·재발급", kind: "guide" },
+  { no: 214, href: "/guide/individual-business-registration/", label: "개인사업자·간이사업자 등록", kind: "guide" },
+  { no: 215, href: "/guide/corporate-business-registration/", label: "법인사업자등록증 발급", kind: "guide" },
+  { no: 216, href: "/guide/corporate-tax/", label: "법인세", kind: "guide" },
+  { no: 217, href: "/guide/corporate-tax-rate/", label: "법인세율", kind: "guide" },
+  { no: 218, href: "/guide/corporate-tax-deadline/", label: "법인세 신고기간", kind: "guide" },
+  { no: 219, href: "/guide/corporate-tax-prepayment/", label: "법인세 중간예납", kind: "guide" },
+  { no: 220, href: "/guide/corporate-tax-base/", label: "법인세 과세표준", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -360,7 +370,7 @@ export const hubGroups: HubGroup[] = [
     ]),
   },
   {
-    label: "부가가치세",
+    label: "부가가치세·사업자·법인세",
     cluster: "vat",
     entries: inCluster([
       "/guide/vat-freelancer",
@@ -390,6 +400,16 @@ export const hubGroups: HubGroup[] = [
       "/guide/simplified-taxpayer-criteria",
       "/guide/business-closure",
       "/guide/cash-receipt",
+      "/guide/business-registration",
+      "/guide/business-registration-certificate",
+      "/guide/business-registration-change",
+      "/guide/individual-business-registration",
+      "/guide/corporate-business-registration",
+      "/guide/corporate-tax",
+      "/guide/corporate-tax-rate",
+      "/guide/corporate-tax-deadline",
+      "/guide/corporate-tax-prepayment",
+      "/guide/corporate-tax-base",
     ]),
   },
   {

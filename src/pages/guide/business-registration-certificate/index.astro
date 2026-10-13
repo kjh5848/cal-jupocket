@@ -1,0 +1,45 @@
+---
+/**
+ * "사업자등록증 발급" — 사업자등록 시리즈. (사업자등록증·발급 기간·며칠·등록번호·거부·보정도 이 글)
+ * 근거: 부가가치세법 제8조 제7항, 시행령 제11조 제5항(신청일부터 2일, 5일 연장)·제7항(거부)·제13항(보정 10일)·제12조(등록번호).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/business-registration-2026.json";
+
+const I = r.issue;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 registration-corporate-series.test.ts 가 rates 와 대조한다.
+const title = "사업자등록증 발급 — 신청일부터 2일 안에, 현장 확인이 필요하면 5일까지 늘어납니다";
+const description =
+  "사업자등록증은 세무서가 신청일부터 2일 안에(토요일·공휴일 제외) 발급해야 합니다. 사업장 시설이나 현황을 확인해야 하면 5일 이내에서 늘릴 수 있고, 서류 보정을 요구하면 그 기간은 빼고 셉니다. 사업을 실제로 시작하지 않을 것으로 보이면 등록을 거부할 수 있습니다.";
+
+const ANSWER = `사업자등록증은 세무서장이 신청일부터 ${I.days}일 안에(토요일·공휴일 등은 빼고) 발급해야 합니다(부가가치세법 시행령 제11조 제5항). 사업장 시설·현황을 확인해야 하면 ${I.extendDays}일 이내에서 늘릴 수 있고, 보정을 요구한 기간은 빼고 셉니다(제13항).`;
+
+const QA = [
+  { q: "사업자등록증은 며칠 만에 나오나요?", a: `신청일부터 ${I.days}일 이내입니다(시행령 제11조 제5항). 이때 토요일·일요일·공휴일 등 국세기본법 제5조 제1항의 날은 세지 않습니다. 사업장 시설이나 사업 현황을 확인하기 위해 국세청장이 필요하다고 인정하면 발급기한을 ${I.extendDays}일 이내에서 연장하고 조사한 사실에 따라 발급합니다.` },
+  { q: "사업자등록증 발급이 늦어지는 경우는?", a: `세무서장은 신청 내용을 보정할 필요가 있으면 ${I.fixDays}일 이내의 기간을 정해 보정을 요구할 수 있고, 그 보정기간은 발급기한에 넣지 않습니다(제11조 제13항). 개업 전 신청인데 사업을 사실상 시작하지 않을 것으로 인정되면 등록을 거부할 수도 있습니다(제7항).` },
+  { q: "사업자등록번호는 어떻게 정해지나요?", a: `등록번호는 사업장마다 관할 세무서장이 부여합니다. 사업자 단위 과세로 등록하면 본점(주사무소)에 번호 하나만 받습니다(시행령 제12조 제1항). 사업장을 하나 더 내면 그 사업장도 따로 등록해 번호를 받는 것이 원칙입니다(법 제8조 제1항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    신청 서류와 기한은 <a href="/guide/business-registration/">사업자등록</a>, 상호·주소가 바뀌었을 때는{" "}
+    <a href="/guide/business-registration-change/">사업자등록증 주소변경·재발급</a>에 있습니다. 사업자등록증명 발급(민원)은 이 글에서 다루지 않았습니다.
+  </p>
+</GuideLayout>

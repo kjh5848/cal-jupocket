@@ -1,0 +1,52 @@
+---
+/**
+ * "법인세 신고기간" — 법인세 시리즈. (법인세 신고기한·3월·성실신고 4월·결산월별·분납·결손 신고도 이 글)
+ * 근거: 법인세법 제60조 제1항(종료 달 말일부터 3개월, 성실신고확인서 4개월)·제3항(결손도 신고)·제5항(첨부 없으면 미신고), 제64조 제2항(분납).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/corporate-tax-2026.json";
+import { corporateDeadline } from "../../../lib/corporate-tax";
+import { shiftToBusinessDay, koDate } from "../../../lib/tax-deadline";
+import { eokwon } from "../../../lib/won";
+
+const F = r.filing;
+const due = (y: number, m: number, d = false) => koDate(shiftToBusinessDay(corporateDeadline(y, m, d)));
+const ends = [3, 6, 9, 12];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 registration-corporate-series.test.ts 가 rates 와 대조한다.
+const title = "법인세 신고기간 — 결산 달 말일부터 3개월, 12월 결산이면 3월 31일, 성실신고확인 법인은 4월";
+const description =
+  "법인세 신고기간은 사업연도 종료일이 속하는 달의 말일부터 3개월입니다. 12월 결산 법인은 다음 해 3월 31일까지 신고·납부하고, 성실신고확인서를 내는 법인은 4개월로 4월 30일입니다. 결손이어도 신고하고, 낼 세금이 1천만원을 넘으면 나눠 낼 수 있습니다.";
+
+const ANSWER = `법인세 신고기간은 사업연도 종료일이 속하는 달의 말일부터 ${F.months}개월입니다(법인세법 제60조 제1항). 12월 결산 법인은 다음 해 3월 31일, 성실신고확인서를 내는 법인은 ${F.monthsDiligent}개월이라 4월 30일입니다. 소득이 없거나 결손이어도 신고합니다(제3항).`;
+
+const QA = [
+  { q: "법인세 신고기한은 언제인가요?", a: `사업연도 종료일이 속하는 달의 말일부터 ${F.months}개월 이내입니다. 12월 31일 결산이면 ${due(2026, 12)}, 6월 결산이면 ${due(2026, 6)}입니다(2026 사업연도 기준). 성실신고확인서를 제출하는 법인은 ${F.monthsDiligent}개월이라 12월 결산이면 ${due(2026, 12, true)}입니다.` },
+  { q: "적자여도 법인세 신고를 해야 하나요?", a: `해야 합니다. 신고 의무는 각 사업연도의 소득금액이 없거나 결손금이 있는 법인에도 적용됩니다(제60조 제3항). 결손금을 신고해 두어야 이후 15년 안에 생기는 소득에서 이월결손금으로 뺄 수 있습니다(제13조 제1항 제1호 나목).` },
+  { q: "법인세를 나눠 낼 수 있나요?", a: `낼 세액이 ${eokwon(F.installmentOver)}을 넘으면 일부를 납부기한이 지난 날부터 ${F.installmentMonths}개월(중소기업 ${F.installmentMonthsSme}개월) 안에 나눠 낼 수 있습니다(제64조 제2항). 나눠 낼 수 있는 금액의 세부는 시행령에 있습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>2026 사업연도 결산월</th><th>신고·납부기한</th><th>성실신고확인 법인</th></tr></thead>
+    <tbody>{ends.map((m) => <tr><th scope="row">{m}월</th><td>{due(2026, m)}</td><td>{due(2026, m, true)}</td></tr>)}</tbody>
+  </table>
+  <p>기한이 토요일·공휴일이면 다음 날입니다(주말만 반영). 재무제표·세무조정계산서를 붙이지 않으면 신고로 보지 않습니다(제60조 제5항).</p>
+
+  <AdSlot />
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>사업연도 중간의 납부는 <a href="/guide/corporate-tax-prepayment/">법인세 중간예납</a>, 세율은 <a href="/guide/corporate-tax-rate/">법인세율</a>에 있습니다.</p>
+</GuideLayout>

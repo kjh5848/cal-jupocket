@@ -1,0 +1,49 @@
+---
+/**
+ * "개인사업자 등록" — 사업자등록 시리즈. (간이사업자 등록·간이과세 신청·일반과세·미성년자·개업 전 등록도 이 글)
+ * 근거: 부가가치세법 제8조 제1항, 제61조 제3항·제4항(등록 때 간이과세 적용 신고 → 최초 과세기간 간이), 시행령 제109조 제4항(신청서에 연간공급대가예상액),
+ * 시행령 제11조 제3항(미성년자 법정대리인 동의서), 제15조(6개월 이상 미개업 말소). business-filing-2026.json(1억400만원·배제 업종).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/business-registration-2026.json";
+import bf from "../../../rates/business-filing-2026.json";
+import { eokwon } from "../../../lib/won";
+
+const S = bf.simplified;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 registration-corporate-series.test.ts 가 rates 와 대조한다.
+const title = "개인사업자 등록 — 간이사업자로 하려면 등록 신청서에 연간 예상 매출을 적어 함께 신고";
+const description =
+  "개인사업자 등록은 사업장마다 개업일부터 20일 안에 세무서나 홈택스로 신청합니다. 간이사업자로 시작하려면 등록 신청 때 간이과세 적용을 함께 신고하거나 신청서에 연간 예상 공급대가를 적으면 됩니다. 예상 매출이 1억400만원 미만이고 배제 업종이 아니어야 합니다.";
+
+const ANSWER = `개인사업자 등록은 사업장마다 개업일부터 ${r.apply.days}일 안에 세무서나 홈택스로 신청합니다(부가가치세법 제8조). 간이사업자로 시작하려면 등록 신청 때 간이과세 적용 여부를 함께 신고하면 최초 과세기간은 간이과세자가 됩니다(제61조 제3항·제4항). 예상 공급대가가 ${eokwon(S.threshold)} 미만이고 배제 업종이 아니어야 합니다.`;
+
+const QA = [
+  { q: "간이사업자로 등록하려면 어떻게 하나요?", a: `개업 첫해 공급대가가 ${eokwon(S.threshold)}에 못 미칠 것으로 예상되면 사업자등록을 신청할 때 간이과세적용신고서를 함께 내면 됩니다. 등록 신청서에 연간 공급대가 예상액을 적어 내면 그 신고서를 낸 것으로 봅니다(시행령 제109조 제4항). 그러면 최초 과세기간은 간이과세자입니다.` },
+  { q: "간이사업자로 등록할 수 없는 경우는?", a: `광업, 제조업(일부 제외), 도매업, 부동산매매업, 변호사·세무사·의사 등 전문직, 건설업, 전문·과학·기술서비스업 등 시행령 제109조 제2항의 배제 업종과 간이과세가 안 되는 다른 사업장이 있는 사람은 신고해도 간이과세자가 아닙니다(제61조 제1항 단서·제4항 단서).` },
+  { q: "개인사업자 등록은 개업 전에 해도 되나요?", a: `됩니다. 신규로 사업을 시작하려는 사람은 사업 개시일 이전에도 등록을 신청할 수 있습니다(제8조 제1항 단서). 다만 사업을 사실상 시작하지 않을 것으로 보이면 거부될 수 있고, 등록 후 정당한 사유 없이 6개월 이상 사업을 시작하지 않으면 말소될 수 있습니다(시행령 제11조 제7항·제15조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>간이과세 적용 기간과 이후 전환은 <a href="/guide/simplified-taxpayer-criteria/">간이과세자 기준</a>, 어느 쪽이 유리한지는 <a href="/guide/simplified-vat/">간이과세 vs 일반과세</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    미성년자는 법정대리인 동의서를 추가로 냅니다(시행령 제11조 제3항). 면세사업자의 등록(소득세법 제168조)은 이 글에서 다루지 않았습니다.
+    서류와 기한은 <a href="/guide/business-registration/">사업자등록</a>에 있습니다.
+  </p>
+</GuideLayout>

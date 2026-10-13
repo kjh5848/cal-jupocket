@@ -19,5 +19,7 @@ import { withholdingTaxSeries } from "./withholding-tax";
 import { taxRefundSeries } from "./tax-refund";
 import { acquisitionSeries } from "./acquisition";
 import { localTaxSeries } from "./local-tax";
+import { businessRegistrationSeries } from "./business-registration";
+import { corporateTaxSeries } from "./corporate-tax";
 
-export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries, incomeTaxRateSeries, businessFilingSeries, withholdingTaxSeries, taxRefundSeries, acquisitionSeries, localTaxSeries];
+export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries, incomeTaxRateSeries, businessFilingSeries, withholdingTaxSeries, taxRefundSeries, acquisitionSeries, localTaxSeries, businessRegistrationSeries, corporateTaxSeries];

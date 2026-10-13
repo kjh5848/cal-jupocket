@@ -16,5 +16,5 @@ export function eokwon(n: number): string {
   const eok = Math.floor(n / 100_000_000);
   const man = Math.floor((n % 100_000_000) / 10_000);
   const manPart = !man ? "" : man % 1000 === 0 ? `${man / 1000}천만` : `${man.toLocaleString("ko-KR")}만`;
-  return `${eok ? `${eok}억` : ""}${manPart || (eok ? "" : "0")}원`;
+  return `${eok ? `${eok.toLocaleString("ko-KR")}억` : ""}${manPart || (eok ? "" : "0")}원`;
 }

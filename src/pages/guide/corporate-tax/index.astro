@@ -1,0 +1,55 @@
+---
+/**
+ * "법인세" — 법인세 시리즈 허브. (법인세 계산·세율·신고·중간예납·2026 인상·분납도 이 글)
+ * 근거: 법인세법 제13조·제14조(과세표준), 제55조(10·20·22·25% — img alt), 부칙 <법률 제21217호> 제5조(2026. 1. 1. 이후 개시 사업연도),
+ * 제60조(3개월), 제63조(중간예납), 제64조(1천만원 초과 분납).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/corporate-tax-2026.json";
+import { corporateTax, corporateTaxBeforeRaise } from "../../../lib/corporate-tax";
+import { won, eokwon } from "../../../lib/won";
+import { corporateTaxSeries as S } from "../../../data/series/corporate-tax";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const B = r.brackets;
+const ex = 300_000_000;
+const F = r.filing;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 registration-corporate-series.test.ts 가 rates 와 대조한다.
+const title = "법인세 — 2026년 시작 사업연도부터 10·20·22·25%로 1%p씩 올랐습니다";
+const description =
+  "법인세는 과세표준에 2억원 이하 10%, 200억원 이하 20%, 3천억원 이하 22%, 초과 25%를 곱합니다. 2025년 12월 개정으로 2026년 1월 1일 이후 시작하는 사업연도부터 구간마다 1%p 올랐고, 결산 달 말일부터 3개월 안에 신고합니다.";
+
+const ANSWER = `법인세는 과세표준에 2억원 이하 ${pct(B[0].rate)}, 200억원 이하 ${pct(B[1].rate)}, 3천억원 이하 ${pct(B[2].rate)}, 초과 ${pct(B[3].rate)}를 곱합니다(법인세법 제55조). 2025년 12월 개정으로 2026년 1월 1일 이후 시작하는 사업연도부터 구간마다 1%p 올랐고(부칙 제5조), 사업연도 종료 달 말일부터 ${F.months}개월 안에 신고합니다(제60조).`;
+
+const QA = [
+  { q: "법인세는 어떻게 계산하나요?", a: `① 익금 − 손금 = 각 사업연도 소득(제14조) ② − 15년 이내 이월결손금(일반 소득의 80%, 중소기업 100% 한도)·비과세소득·소득공제 = 과세표준(제13조) ③ × 세율 = 산출세액 ④ − 감면·세액공제·중간예납·원천징수세액 = 낼 세액(제64조) 순서입니다.` },
+  { q: "2026년 법인세율은 얼마인가요?", a: `2026년 1월 1일 이후 시작하는 사업연도는 과세표준 2억원 이하 ${pct(B[0].rate)}, 200억원 이하 ${pct(B[1].rate)}, 3천억원 이하 ${pct(B[2].rate)}, 3천억원 초과 ${pct(B[3].rate)}입니다. 개정이유는 '구간별로 1퍼센트씩 인상'이라고 밝힙니다. 과세표준 ${eokwon(ex)}이면 ${won(corporateTax(ex))}으로 인상 전보다 ${won(corporateTax(ex) - corporateTaxBeforeRaise(ex))} 많습니다.` },
+  { q: "법인세 신고·납부는 언제 하나요?", a: `사업연도 종료일이 속하는 달의 말일부터 ${F.months}개월 안입니다(성실신고확인서 제출 법인 ${F.monthsDiligent}개월). 12월 결산 법인은 다음 해 3월 31일입니다. 소득이 없거나 결손이어도 신고하고, 낼 세액이 ${eokwon(F.installmentOver)}을 넘으면 1개월(중소기업 2개월) 안에 나눠 낼 수 있습니다(제60조·제64조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>세율표와 금액별 비교는 <a href="/guide/corporate-tax-rate/">법인세율</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>재무상태표·포괄손익계산서·이익잉여금처분계산서·세무조정계산서를 붙이지 않으면 신고로 보지 않습니다(제60조 제5항).</p>
+
+  <h2>법인세 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

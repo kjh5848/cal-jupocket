@@ -149,7 +149,7 @@ export const clusters: Cluster[] = [
   },
   {
     id: "vat",
-    title: "부가가치세",
+    title: "부가가치세·사업자·법인세",
     links: [
       { href: "/vat/", title: "부가세 계산기", kind: "calc", icon: "calculator", blurb: "공급가액↔합계 양방향 + 간이과세 업종별 납부세액" },
       { href: "/guide/vat-freelancer/", title: "프리랜서도 부가세를 내야 하나요?", kind: "guide", icon: "receipt" },
@@ -179,6 +179,16 @@ export const clusters: Cluster[] = [
       { href: "/guide/simplified-taxpayer-criteria/", title: "간이과세자 기준, 1억400만원 미만", kind: "guide", icon: "receipt", year: 2026 },
       { href: "/guide/business-closure/", title: "개인사업자 폐업신고, 지체 없이", kind: "guide", icon: "receipt", year: 2026 },
       { href: "/guide/cash-receipt/", title: "현금영수증 발급방법, 5일 안에 자진발급", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/business-registration/", title: "사업자등록, 개업일부터 20일 안에", kind: "guide", icon: "briefcase", year: 2026 },
+      { href: "/guide/business-registration-certificate/", title: "사업자등록증 발급, 신청일부터 2일", kind: "guide", icon: "briefcase", year: 2026 },
+      { href: "/guide/business-registration-change/", title: "사업자등록증 주소변경, 2일 안에 재발급", kind: "guide", icon: "briefcase", year: 2026 },
+      { href: "/guide/individual-business-registration/", title: "개인사업자 등록, 간이는 함께 신고", kind: "guide", icon: "briefcase", year: 2026 },
+      { href: "/guide/corporate-business-registration/", title: "법인사업자등록, 설립신고와 한 번에", kind: "guide", icon: "briefcase", year: 2026 },
+      { href: "/guide/corporate-tax/", title: "법인세, 2026년부터 1%p 인상", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/corporate-tax-rate/", title: "법인세율, 10·20·22·25%", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/corporate-tax-deadline/", title: "법인세 신고기간, 결산 후 3개월", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/corporate-tax-prepayment/", title: "법인세 중간예납, 12월 결산 8월 31일", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/corporate-tax-base/", title: "법인세 과세표준, 이월결손금 80%", kind: "guide", icon: "percent", year: 2026 },
     ],
   },
   {
@@ -311,6 +321,16 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/corporate-tax-base/",
+  "/guide/corporate-tax-prepayment/",
+  "/guide/corporate-tax-deadline/",
+  "/guide/corporate-tax-rate/",
+  "/guide/corporate-tax/",
+  "/guide/corporate-business-registration/",
+  "/guide/individual-business-registration/",
+  "/guide/business-registration-change/",
+  "/guide/business-registration-certificate/",
+  "/guide/business-registration/",
   "/guide/resident-tax/",
   "/guide/officetel-acquisition-tax/",
   "/guide/real-estate-acquisition-tax/",
