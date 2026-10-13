@@ -1,0 +1,47 @@
+---
+/**
+ * "원천징수영수증 보는법" — 원천징수영수증 시리즈.
+ * 칸 이름은 서식(시행규칙)이라 읽지 않았다. 조문의 계산 순서(소득세법 제137조 제1항)로 어디를 봐야 하는지 설명한다.
+ * 핵심: 결정세액 − 이미 낸 세금 = 더 낼 세금(음수면 환급).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import w from "../../../rates/withholding-receipt-2026.json";
+
+const title = "원천징수영수증 보는법 — 결정세액과 이미 낸 세금, 두 줄만 보면 됩니다";
+const description =
+  "원천징수영수증은 결정세액과 이미 낸 세금(기납부세액) 두 줄을 먼저 봅니다. 결정세액이 더 크면 그 차이를 더 내고, 이미 낸 세금이 더 크면 돌려받습니다. 소득세법 제137조의 계산 순서로 설명합니다.";
+
+const ANSWER = "원천징수영수증은 두 줄만 먼저 보면 됩니다. 1년 치 세금이 확정된 '결정세액'과, 매달 월급에서 이미 떼어 간 '기납부세액'입니다. 결정세액이 더 크면 차이를 더 내고, 기납부세액이 더 크면 그만큼 돌려받습니다.";
+
+const QA = [
+  { q: "원천징수영수증에서 무엇을 먼저 봐야 하나요?", a: "결정세액과 이미 낸 세금(기납부세액)입니다. 연말정산은 결정세액에서 그해에 이미 원천징수한 세액을 빼는 것으로 끝나므로(소득세법 제137조 제1항), 두 숫자의 차이가 환급이나 추가 납부입니다." },
+  { q: "결정세액은 어떻게 나온 숫자인가요?", a: "근로소득금액에서 소득공제를 빼 과세표준을 만들고, 세율을 곱해 산출세액을 낸 뒤, 세액공제를 뺀 값입니다(제137조 제1항). 내가 낸 소득·세액공제 서류가 이 단계에 들어갑니다." },
+  { q: "결정세액에서 이미 낸 세금을 뺀 값이 마이너스면 무슨 뜻인가요?", a: "돌려받는다는 뜻입니다. 결정세액보다 이미 낸 세금이 많아 차이가 음수가 된 것이고, 그만큼 환급됩니다. 양수면 그만큼 더 냅니다." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={w.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <ol>
+    {w.readingOrder.steps.map((x) => <li>{x}</li>)}
+  </ol>
+  <p><small>{w.readingOrder.article}의 계산 순서입니다. 영수증의 실제 칸 이름은 서식(시행규칙)을 따르며, 이 글은 그 서식을 읽지 않았습니다.</small></p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    환급이 언제 들어오는지는 <a href="/guide/year-end-settlement/">연말정산 기간과
+    순서</a>에 있습니다.
+  </p>
+</GuideLayout>

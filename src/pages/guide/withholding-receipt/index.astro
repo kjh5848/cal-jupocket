@@ -1,0 +1,57 @@
+---
+/**
+ * "원천징수영수증" — 원천징수영수증 시리즈 허브(src/data/series/withholding-receipt.ts).
+ * 소득 종류마다 발급 조문과 기한이 다르다: 근로 제143조, 사업 제144조, 퇴직 제146조.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import w from "../../../rates/withholding-receipt-2026.json";
+import { withholdingReceiptSeries } from "../../../data/series/withholding-receipt";
+import { seriesHref } from "../../../data/series/types";
+
+const title = "원천징수영수증 — 세금을 떼고 준 쪽이 발급하는 서류, 소득마다 기한이 다릅니다";
+const description =
+  "원천징수영수증은 소득을 주면서 세금을 미리 뗀 회사나 거래처가 발급하는 서류입니다. 근로소득은 다음 해 2월 말일까지, 3.3% 사업소득은 지급할 때, 퇴직소득은 지급한 달의 다음 달 말일까지 발급합니다.";
+
+const ANSWER = "원천징수영수증은 소득을 주면서 세금을 미리 뗀 쪽(회사·거래처)이 '얼마를 주고 얼마를 뗐는지' 적어 주는 서류입니다. 근로소득은 다음 해 2월 말일까지, 3.3% 사업소득은 지급할 때, 퇴직소득은 지급한 달의 다음 달 말일까지 발급합니다.";
+
+const QA = [
+  { q: "원천징수영수증이란 무엇인가요?", a: "소득을 지급하면서 소득세를 미리 떼어 낸 원천징수의무자가, 지급한 금액과 뗀 세금 등을 적어 소득을 받은 사람에게 발급하는 서류입니다. 소득세법이 소득 종류마다 발급 의무를 따로 정합니다." },
+  { q: "원천징수영수증은 누가 발급하나요?", a: "돈을 준 쪽입니다. 근로소득은 급여를 준 회사(제143조), 사업소득은 대가를 준 거래처(제144조), 퇴직소득은 퇴직금을 준 쪽(제146조)이 발급합니다. 세무서가 발급하는 서류가 아닙니다." },
+  { q: "원천징수영수증은 언제 받을 수 있나요?", a: `근로소득은 ${w.earned.deadline}, 사업소득은 ${w.business.deadline}, 퇴직소득은 ${w.severance.deadline} 발급해야 합니다. 중도에 퇴사했다면 근로소득 기한이 더 이릅니다.` },
+];
+const more: Record<number, string> = { 2: "withholding-receipt-issue" };
+const labelOf = (slug: string) => withholdingReceiptSeries.items.find((s) => s.slug === slug)?.label ?? slug;
+---
+
+<GuideLayout title={title} description={description} updated={w.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  {QA.map((x, i) => (
+    <>
+      <h2>{x.q}</h2>
+      <p class="qa-lead">{x.a}</p>
+      {more[i] && <p>자세히 — <a href={seriesHref(more[i])}>{labelOf(more[i])}</a></p>}
+    </>
+  ))}
+
+  <table>
+    <thead><tr><th>소득</th><th>발급하는 쪽</th><th>기한</th><th>조문</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">근로소득</th><td>회사</td><td>{w.earned.deadline}</td><td>{w.earned.article}</td></tr>
+      <tr><th scope="row">사업소득(3.3%)</th><td>거래처</td><td>{w.business.deadline}</td><td>{w.business.article}</td></tr>
+      <tr><th scope="row">퇴직소득</th><td>퇴직금 지급자</td><td>{w.severance.deadline}</td><td>{w.severance.article}</td></tr>
+    </tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>원천징수영수증, 질문별로 정리했습니다</h2>
+  <ul>
+    {withholdingReceiptSeries.items.map((s) => (
+      <li><a href={seriesHref(s.slug)}>{s.label}</a></li>
+    ))}
+  </ul>
+</GuideLayout>

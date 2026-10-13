@@ -78,6 +78,13 @@ export const clusters: Cluster[] = [
       { href: "/guide/late-filing-penalty/", title: "종합소득세·부가세 신고 기한을 놓쳤다면", kind: "guide", icon: "checklist", year: 2026 },
       { href: "/guide/late-filing-refund/", title: "기한후신고 환급, 언제까지 되고 언제 들어오나", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/income-prepayment/", title: "종합소득세 중간예납, 11월 고지서는 얼마가 나오나", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/withholding-receipt/", title: "원천징수영수증, 소득마다 발급 기한이 다르다", kind: "guide", icon: "receipt" },
+      { href: "/guide/earned-income-withholding-receipt/", title: "근로소득 원천징수영수증, 2월 말일까지", kind: "guide", icon: "receipt" },
+      { href: "/guide/business-income-withholding-receipt/", title: "사업소득 원천징수영수증, 지급할 때", kind: "guide", icon: "receipt" },
+      { href: "/guide/severance-withholding-receipt/", title: "퇴직소득 원천징수영수증, 다음 달 말일까지", kind: "guide", icon: "receipt" },
+      { href: "/guide/withholding-receipt-issue/", title: "원천징수영수증 발급", kind: "guide", icon: "receipt" },
+      { href: "/guide/withholding-receipt-read/", title: "원천징수영수증 보는 법", kind: "guide", icon: "receipt" },
+      { href: "/guide/withholding-receipt-vs-income-certificate/", title: "원천징수영수증과 소득금액증명원의 차이", kind: "guide", icon: "receipt" },
     ],
   },
   {
@@ -183,6 +190,13 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/withholding-receipt-vs-income-certificate/",
+  "/guide/withholding-receipt-read/",
+  "/guide/withholding-receipt-issue/",
+  "/guide/severance-withholding-receipt/",
+  "/guide/business-income-withholding-receipt/",
+  "/guide/earned-income-withholding-receipt/",
+  "/guide/withholding-receipt/",
   "/guide/vehicle-tax-prepay-refund/",
   "/guide/vehicle-tax-prepay-how/",
   "/guide/vehicle-tax-prepay-amount/",

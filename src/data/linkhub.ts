@@ -107,6 +107,13 @@ export const hubEntries: HubEntry[] = [
   { no: 80, href: "/guide/vehicle-tax-prepay-amount/", label: "자동차세 연납 금액", kind: "guide" },
   { no: 81, href: "/guide/vehicle-tax-prepay-how/", label: "자동차세 연납 신청 방법", kind: "guide" },
   { no: 82, href: "/guide/vehicle-tax-prepay-refund/", label: "자동차세 연납 환급(차량 매각)", kind: "guide" },
+  { no: 83, href: "/guide/withholding-receipt/", label: "원천징수영수증", kind: "guide" },
+  { no: 84, href: "/guide/earned-income-withholding-receipt/", label: "근로소득 원천징수영수증", kind: "guide" },
+  { no: 85, href: "/guide/business-income-withholding-receipt/", label: "사업소득 원천징수영수증(3.3%)", kind: "guide" },
+  { no: 86, href: "/guide/severance-withholding-receipt/", label: "퇴직소득 원천징수영수증", kind: "guide" },
+  { no: 87, href: "/guide/withholding-receipt-issue/", label: "원천징수영수증 발급", kind: "guide" },
+  { no: 88, href: "/guide/withholding-receipt-read/", label: "원천징수영수증 보는 법", kind: "guide" },
+  { no: 89, href: "/guide/withholding-receipt-vs-income-certificate/", label: "원천징수영수증과 소득금액증명원", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -162,6 +169,13 @@ export const hubGroups: HubGroup[] = [
       "/guide/late-filing-refund",
       "/guide/income-prepayment",
       "/guide/year-end-settlement",
+      "/guide/withholding-receipt",
+      "/guide/earned-income-withholding-receipt",
+      "/guide/business-income-withholding-receipt",
+      "/guide/severance-withholding-receipt",
+      "/guide/withholding-receipt-issue",
+      "/guide/withholding-receipt-read",
+      "/guide/withholding-receipt-vs-income-certificate",
     ]),
   },
   {

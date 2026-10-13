@@ -1,0 +1,48 @@
+---
+/**
+ * "퇴직소득원천징수영수증" — 원천징수영수증 시리즈.
+ * 근거: 소득세법 제146조(지급일이 속하는 달의 다음 달 말일·연금계좌 이체 시 사유 기재), 제147조(미지급 의제).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import w from "../../../rates/withholding-receipt-2026.json";
+
+const S = w.severance;
+
+const title = "퇴직소득원천징수영수증 — 퇴직금을 준 달의 다음 달 말일까지 받습니다";
+const description =
+  "퇴직소득 원천징수영수증은 퇴직금을 지급한 달의 다음 달 말일까지 발급해야 합니다. 퇴직금을 IRP 같은 연금계좌로 받아 세금을 떼지 않았다면 그 사유가 영수증에 적힙니다. 소득세법 제146조 기준입니다.";
+
+const ANSWER = "퇴직소득 원천징수영수증은 퇴직금을 준 쪽이 지급일이 속하는 달의 다음 달 말일까지 발급해야 합니다. 퇴직금을 IRP 같은 연금계좌로 받아 세금을 떼지 않았다면 그 사유를 함께 적어 발급합니다.";
+
+const QA = [
+  { q: "퇴직소득 원천징수영수증은 언제 받나요?", a: `${S.deadline}입니다. 퇴직소득을 지급하는 자가 퇴직소득의 금액 등을 적은 원천징수영수증을 발급해야 한다고 소득세법 제146조 제3항이 정합니다.` },
+  { q: "퇴직금을 IRP로 받으면 원천징수영수증이 어떻게 되나요?", a: "세금을 떼지 않은 사유가 함께 적힙니다. 퇴직금이 연금계좌로 지급되거나 받은 날부터 60일 안에 연금계좌에 넣으면 연금외수령 전까지 원천징수하지 않고(제146조 제2항), 영수증에 그 사유를 적습니다." },
+  { q: "퇴직금을 늦게 받으면 원천징수는 언제로 보나요?", a: "1~11월에 퇴직했는데 퇴직금을 12월 31일까지 받지 못하면 12월 31일에, 12월에 퇴직했는데 다음 해 2월 말일까지 받지 못하면 그날 받은 것으로 보아 원천징수합니다(제147조)." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={w.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    이때 IRP에 들어간 퇴직금은 세액공제 대상이 아닙니다 —{" "}
+    <a href="/guide/irp-tax-credit-eligibility/">IRP 세액공제 조건</a>.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    퇴직금 자체의 계산은 <a href="/guide/severance-to-freelance/">퇴사하고 프리랜서
+    시작할 때</a>에 정리했습니다.
+  </p>
+</GuideLayout>

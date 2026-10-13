@@ -1,0 +1,57 @@
+---
+/**
+ * "근로소득원천징수영수증" — 원천징수영수증 시리즈. (근로·갑근세 원천징수영수증도 이 글)
+ * 근거: 소득세법 제143조(2월 말일·중도퇴사·일용·종된 근무지).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import w from "../../../rates/withholding-receipt-2026.json";
+
+const E = w.earned;
+
+const title = "근로소득원천징수영수증 — 회사가 다음 해 2월 말일까지 줘야 합니다";
+const description =
+  "근로소득 원천징수영수증은 회사가 다음 해 2월 말일까지 발급해야 하는 서류입니다. 중도 퇴사자는 마지막 급여 지급일이 속한 달의 다음 달 말일, 일용근로자는 지급한 달의 다음 달 말일이 기한입니다. 소득세법 제143조 기준입니다.";
+
+const ANSWER = "근로소득 원천징수영수증은 회사가 그해 급여와 뗀 세금을 적어 다음 해 2월 말일까지 발급해야 합니다. 중간에 퇴사했다면 마지막 급여를 받은 달의 다음 달 말일까지이고, 일용근로자는 지급한 달의 다음 달 말일까지입니다.";
+
+const QA = [
+  { q: "근로소득 원천징수영수증은 언제 발급하나요?", a: `${E.deadline}입니다. 근로소득을 지급하는 원천징수의무자가 근로소득의 금액 등을 적은 원천징수영수증을 근로소득자에게 발급해야 한다고 소득세법 제143조 제1항이 정합니다.` },
+  { q: "중간에 퇴사하면 근로소득 원천징수영수증은 언제 받나요?", a: `${E.midYearLeaver}입니다(제143조 제1항 단서). 그해 연말정산은 퇴직하는 달 급여를 줄 때 하므로, 이 영수증에 그 결과가 담깁니다.` },
+  { q: "갑근세 원천징수영수증과 근로소득 원천징수영수증은 같은 건가요?", a: "같은 것을 부르는 말입니다. 갑근세는 근로소득세를 부르던 옛말이고, 지금 조문에는 '근로소득에 대한 원천징수영수증'으로 적혀 있습니다(제143조)." },
+  { q: "회사가 두 곳이면 원천징수영수증을 어디서 받나요?", a: "두 곳 모두에서 받습니다. 연말정산을 한 곳에서 합치려면 다른 회사(종된 근무지)에 영수증을 요청해 주된 근무지에 내야 하고, 요청을 받은 회사는 지체 없이 발급해야 합니다(제143조 제2항)." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={w.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>근로자</th><th>발급 기한</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">1년 내내 근무</th><td>{E.deadline}</td></tr>
+      <tr><th scope="row">중도 퇴사</th><td>{E.midYearLeaver.replace("과세기간 중도에 퇴직한 사람에게는 ", "")}</td></tr>
+      <tr><th scope="row">일용근로자</th><td>{E.daily.replace("일용근로자에게는 ", "")}</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    영수증을 받았으면 어디를 봐야 하는지는 <a href="/guide/withholding-receipt-read/">원천징수영수증
+    보는 법</a>, 연말정산 일정은 <a href="/guide/year-end-settlement/">연말정산 기간과
+    순서</a>에 있습니다.
+  </p>
+</GuideLayout>
