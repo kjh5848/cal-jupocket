@@ -128,6 +128,11 @@ export const hubEntries: HubEntry[] = [
   { no: 101, href: "/guide/year-end-extra-tax/", label: "연말정산 세금 더 내는 경우", kind: "guide" },
   { no: 102, href: "/guide/year-end-correction/", label: "연말정산 경정청구", kind: "guide" },
   { no: 103, href: "/guide/year-end-child-tax-credit/", label: "연말정산 자녀세액공제", kind: "guide" },
+  { no: 104, href: "/guide/child-incentive/", label: "자녀장려금", kind: "guide" },
+  { no: 105, href: "/guide/child-incentive-amount/", label: "자녀장려금 금액", kind: "guide" },
+  { no: 106, href: "/guide/child-incentive-eligibility/", label: "자녀장려금 신청 조건", kind: "guide" },
+  { no: 107, href: "/guide/child-incentive-apply/", label: "자녀장려금 신청 기간", kind: "guide" },
+  { no: 108, href: "/guide/child-incentive-pay-date/", label: "자녀장려금 지급일", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -204,6 +209,11 @@ export const hubGroups: HubGroup[] = [
       "/guide/year-end-extra-tax",
       "/guide/year-end-correction",
       "/guide/year-end-child-tax-credit",
+      "/guide/child-incentive",
+      "/guide/child-incentive-amount",
+      "/guide/child-incentive-eligibility",
+      "/guide/child-incentive-apply",
+      "/guide/child-incentive-pay-date",
     ]),
   },
   {

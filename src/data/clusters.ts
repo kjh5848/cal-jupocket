@@ -99,6 +99,11 @@ export const clusters: Cluster[] = [
       { href: "/guide/year-end-extra-tax/", title: "연말정산 세금 더 내는 경우", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/year-end-correction/", title: "연말정산 경정청구, 5년 안에", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/year-end-child-tax-credit/", title: "연말정산 자녀세액공제, 2017년생은 빠진다", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/child-incentive/", title: "자녀장려금, 18세 미만 자녀 1명당 최대 100만원", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/child-incentive-amount/", title: "자녀장려금 금액, 소득별로 계산", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/child-incentive-eligibility/", title: "자녀장려금 신청 조건, 총소득·재산·자녀", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/child-incentive-apply/", title: "자녀장려금 신청 기간, 5월", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/child-incentive-pay-date/", title: "자녀장려금 지급일, 결정 뒤 30일", kind: "guide", icon: "calendar", year: 2026 },
     ],
   },
   {
@@ -204,6 +209,11 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/child-incentive-pay-date/",
+  "/guide/child-incentive-apply/",
+  "/guide/child-incentive-eligibility/",
+  "/guide/child-incentive-amount/",
+  "/guide/child-incentive/",
   "/guide/year-end-child-tax-credit/",
   "/guide/year-end-correction/",
   "/guide/year-end-extra-tax/",

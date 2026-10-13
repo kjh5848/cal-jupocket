@@ -1,0 +1,81 @@
+---
+/**
+ * "자녀장려금" — 자녀장려금 시리즈 허브(src/data/series/child-incentive.ts). 내용·기준·2026·2027도 이 글.
+ * 근거: 조세특례제한법 제100조의27(목적), 제100조의28(신청자격), 제100조의29(산정), 제100조의30(신청·자녀세액공제 중복 불가),
+ * 시행령 제100조의31 제2항(자녀세액공제 받은 금액을 뺀다).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/child-incentive-2026.json";
+import { childIncentiveSeries } from "../../../data/series/child-incentive";
+import { seriesHref } from "../../../data/series/types";
+import { childIncentive, schedule } from "../../../lib/child-incentive";
+import { childTaxCredit } from "../../../lib/year-end-calc";
+import { won, eokwon } from "../../../lib/won";
+import { koDate } from "../../../lib/tax-deadline";
+
+const E = r.eligibility;
+const s = schedule(r.year);
+// 예시: 홑벌이 총급여 3,000만원, 18세 미만 자녀 2명
+const ex = childIncentive({ household: "single", pay: 30_000_000, children: 2 });
+const exCredit = childIncentive({ household: "single", pay: 30_000_000, children: 2, childTaxCredit: childTaxCredit(2) });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 child-incentive.test.ts 가 rates 와 대조한다.
+const title = "자녀장려금 — 18세 미만 자녀 1명당 최대 100만원, 5월에 신청합니다";
+const description =
+  "자녀장려금은 부부 합산 총소득 7천만원 미만, 재산 2억4천만원 미만 가구가 18세 미만 부양자녀 1명당 최대 100만원을 받는 제도입니다. 5월 종합소득세 확정신고 기간에 신청하고, 자녀세액공제를 받았다면 그만큼 빠집니다.";
+
+const ANSWER = `자녀장려금은 부부 합산 총소득 ${eokwon(E.totalIncomeUnder)} 미만, 재산 ${eokwon(E.assetsUnder)} 미만 가구가 ${r.dependentChild.ageUnder}세 미만 부양자녀 1명당 최대 ${eokwon(r.formula.perChildMax)}을 받는 제도입니다. 5월 종합소득세 확정신고 기간에 신청하고, 자녀세액공제를 받았다면 그만큼 빠집니다.`;
+
+const QA = [
+  { q: "자녀장려금이란 무엇인가요?", a: `저소득 가구의 자녀양육비를 지원하려고 세무서가 결정해 환급하는 돈입니다(조세특례제한법 제100조의27). 결정된 금액은 이미 낸 소득세로 보아 환급하고(제100조의7 제4항 준용), 근로·사업·종교인소득이 있는 가구가 5월에 신청합니다.` },
+  { q: "자녀장려금 기준은 무엇인가요?", a: `부부 합산 연간 총소득 ${eokwon(E.totalIncomeUnder)} 미만, 가구원 재산 ${eokwon(E.assetsUnder)} 미만, ${r.dependentChild.ageUnder}세 미만 부양자녀가 있어야 합니다(제100조의28 제1항). 금액은 1명당 최대 ${eokwon(r.formula.perChildMax)}이고 소득이 많을수록 ${eokwon(r.formula.perChildAtCap)}까지 줄어듭니다.` },
+  { q: "자녀장려금과 자녀세액공제는 같이 받을 수 있나요?", a: `중복해서 적용하지 않습니다(제100조의30 제2항). 자녀세액공제를 받았다면 세무서가 자녀장려금을 결정할 때 그 공제액을 뺍니다(시행령 제100조의31 제2항). 빼고 남은 금액이 ${eokwon(r.reductions.floor.amount)} 미만이면 ${eokwon(r.reductions.floor.amount)}으로 결정합니다.` },
+  { q: "2027년 자녀장려금은 언제 신청하나요?", a: `${r.year}년 소득분을 ${koDate(s.from)}부터 ${koDate(s.deadline)}까지, 종합소득세 확정신고 기간에 신청합니다(제100조의30 제1항). 놓치면 ${koDate(s.lateTo)}까지 신청할 수 있지만 금액의 95%만 받습니다.` },
+];
+const more: Record<number, string> = { 1: "child-incentive-eligibility", 2: "child-incentive-amount", 3: "child-incentive-apply" };
+const labelOf = (slug: string) => childIncentiveSeries.items.find((x) => x.slug === slug)?.label ?? slug;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>자세히 — <a href={seriesHref(more[1])}>{labelOf(more[1])}</a></p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    예를 들어 홑벌이 가구가 총급여 3,000만원에 18세 미만 자녀가 2명이면 법 조문 식으로
+    자녀장려금이 {won(ex.amount)}입니다. 그런데 두 자녀 모두 자녀세액공제 나이 기준을
+    넘겨 연말정산에서 {won(childTaxCredit(2))}을 공제받았다면 그만큼 빠져{" "}
+    {won(exCredit.amount)}이 됩니다(어림, 실제는 산정표). 자녀세액공제 나이 기준은{" "}
+    <a href="/guide/year-end-child-tax-credit/">연말정산 자녀세액공제</a>에 있습니다.
+  </p>
+  <p>자세히 — <a href={seriesHref(more[2])}>{labelOf(more[2])}</a></p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>자세히 — <a href={seriesHref(more[3])}>{labelOf(more[3])}</a></p>
+
+  <h2>자녀장려금, 질문별로 정리했습니다</h2>
+  <ul>
+    {childIncentiveSeries.items.map((x) => (
+      <li><a href={seriesHref(x.slug)}>{x.label}</a></li>
+    ))}
+  </ul>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>시행령 별표 11의2 자녀장려금산정표</strong> — 실제 금액은 총급여액 구간별 이 표로 정합니다. 읽지 않아, 이 시리즈의 금액은 법 조문 식으로 한 어림입니다.</li>
+    <li><strong>근로장려금</strong> — 같은 법 제100조의2 이하의 별개 제도입니다. 이 시리즈는 자녀장려금만 다룹니다.</li>
+  </ul>
+</GuideLayout>

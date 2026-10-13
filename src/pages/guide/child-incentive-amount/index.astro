@@ -1,0 +1,130 @@
+---
+/**
+ * "자녀장려금 금액" — 자녀장려금 시리즈. (금액 확인·지급액 계산도 이 글, 계산기 포함)
+ * 근거: 조세특례제한법 제100조의29 제1항(홑벌이·맞벌이 식), 제100조의31 제2항(3만원), 준용 제100조의5 제4항(재산 50%)·
+ * 제100조의7 제2항(기한 후 95%)·제100조의8 제3항·제4항(30일 내 통지·체납 30% 충당), 시행령 제100조의31 제2항(자녀세액공제 차감).
+ * 실제 금액은 시행령 별표 11의2 산정표 — 읽지 않았다. 그래서 계산기는 '어림' 이다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/child-incentive-2026.json";
+import { childIncentive, perChild } from "../../../lib/child-incentive";
+import { won, eokwon } from "../../../lib/won";
+
+const F = r.formula;
+const R = r.reductions;
+const pays = [20_000_000, 30_000_000, 40_000_000, 50_000_000, 60_000_000];
+const ex = childIncentive({ household: "single", pay: 30_000_000, children: 2 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 child-incentive.test.ts 가 rates 와 대조한다.
+const title = "자녀장려금 금액 — 1명당 최대 100만원, 소득이 많을수록 50만원까지 줄어듭니다";
+const description =
+  "자녀장려금 금액은 부양자녀 1명당 최대 100만원입니다. 홑벌이는 총급여액 등 2,100만원, 맞벌이는 2,500만원부터 줄어 7천만원 직전에 1명당 50만원이 됩니다. 재산 1억7천만원 이상이면 절반, 자녀세액공제를 받았으면 그만큼 빠집니다.";
+
+const ANSWER = `자녀장려금 금액은 부양자녀 1명당 최대 ${eokwon(F.perChildMax)}입니다. 홑벌이는 총급여액 등 ${eokwon(F.single.flatUnder)}, 맞벌이는 ${eokwon(F.dual.flatUnder)}부터 줄어 ${eokwon(F.single.upTo)} 직전에 1명당 ${eokwon(F.perChildAtCap)}이 됩니다. 재산 ${eokwon(R.assets.from)} 이상이면 절반입니다.`;
+
+const QA = [
+  { q: "자녀장려금 금액은 얼마인가요?", a: `부양자녀 1명당 최대 ${eokwon(F.perChildMax)}입니다(조세특례제한법 제100조의29 제1항). 홑벌이 가구는 총급여액 등 ${eokwon(F.single.flatUnder)} 미만, 맞벌이 가구는 ${eokwon(F.dual.flatUnder)} 미만이면 1명당 ${eokwon(F.perChildMax)}을 다 받고, 그 위로는 소득이 늘수록 줄어듭니다.` },
+  { q: "자녀장려금 지급액 계산은 어떻게 하나요?", a: `홑벌이는 부양자녀 수 × [100만원 − (총급여액 등 − 2,100만원) × 50/4,900], 맞벌이는 부양자녀 수 × [100만원 − (총급여액 등 − 2,500만원) × 50/4,500]입니다. 실제 금액은 이 식을 구간별로 정리한 시행령 산정표(별표 11의2)로 정합니다.` },
+  { q: "자녀장려금 금액이 줄어드는 경우는 언제인가요?", a: `재산 합계가 ${eokwon(R.assets.from)} 이상이면 절반, 신청기간을 놓쳐 6개월 안에 늦게 신청하면 95%만 받습니다. 자녀세액공제를 받았다면 그 금액을 빼고, 국세 체납이 있으면 환급액의 30%까지 체납액에 먼저 충당합니다.` },
+  { q: "자녀장려금 금액 확인은 언제 할 수 있나요?", a: `세무서장은 자녀장려금을 결정한 날부터 30일 안에 결정 사실을 신청자에게 통지하고, 같은 기한까지 환급해야 합니다(제100조의8 제3항 준용). 결정 통지로 확정 금액을 확인합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">법 조문 식으로 한 어림입니다. 실제 금액은 산정표(구간별)로 정해져 조금 다를 수 있습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="ci-household">가구</label>
+      <select id="ci-household">
+        <option value="single">홑벌이</option>
+        <option value="dual">맞벌이</option>
+      </select>
+    </div>
+    <p class="meta">맞벌이는 부부 각각의 총급여액 등이 {eokwon(r.household.dualThreshold)} 이상인 가구, 그 밖에 배우자가 없거나 배우자 소득이 그보다 적으면 홑벌이입니다.</p>
+    <div class="calc-input-wrap">
+      <label for="ci-pay">총급여액 등(부부 합산, 1년)</label>
+      <input type="text" inputmode="numeric" id="ci-pay" value="30,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ci-children">18세 미만 부양자녀</label>
+      <input type="number" min="0" max="20" id="ci-children" value="2" />
+      <span class="unit">명</span>
+    </div>
+    <details>
+      <summary>재산·자녀세액공제·늦은 신청</summary>
+      <div class="calc-input-wrap">
+        <label for="ci-assets">가구원 재산 합계</label>
+        <input type="text" inputmode="numeric" id="ci-assets" value="" placeholder="0" />
+        <span class="unit">원</span>
+      </div>
+      <div class="calc-input-wrap">
+        <label for="ci-credit">연말정산·종합소득세에서 받은 자녀세액공제(부부 합산)</label>
+        <input type="text" inputmode="numeric" id="ci-credit" value="" placeholder="0" />
+        <span class="unit">원</span>
+      </div>
+      <label><input type="checkbox" id="ci-late" /> 5월 신청기간을 놓쳐 6개월 안에 신청(95%)</label>
+    </details>
+
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label" id="ci-hero-label">자녀장려금(어림)</p>
+      <p class="big" id="ci-hero">{won(ex.amount)}</p>
+    </div>
+    <p class="meta" id="ci-note" hidden></p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>총급여액 등</th><th>홑벌이(1명당)</th><th>맞벌이(1명당)</th></tr></thead>
+    <tbody>
+      {pays.map((p) => (
+        <tr><th scope="row">{eokwon(p)}</th><td>{won(Math.floor(perChild("single", p)))}</td><td>{won(Math.floor(perChild("dual", p)))}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <p>
+    법 조문 식으로 계산한 값입니다. 총소득 합계가 {eokwon(r.eligibility.totalIncomeUnder)} 이상이면
+    신청 자격 자체가 없습니다(제100조의28 제1항 제2호).
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    예를 들어 홑벌이 가구가 총급여액 등 3,000만원에 자녀가 2명이면 1명당{" "}
+    {won(Math.floor(perChild("single", 30_000_000)))}, 합쳐 {won(ex.amount)}입니다. 배우자에게도
+    근로·사업소득이 있으면 신청한 사람의 총급여액 등에 배우자 것을 합산합니다(제100조의5 제3항 준용).
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <ul>
+    <li>재산 {eokwon(R.assets.from)} 이상 {eokwon(r.eligibility.assetsUnder)} 미만 — 50% ({R.assets.article})</li>
+    <li>신청기간 종료 다음 날부터 6개월 안에 신청 — 95% ({R.late.article})</li>
+    <li>자녀세액공제를 받음 — 그 금액만큼 차감 ({R.childTaxCredit.article})</li>
+    <li>깎이고 남은 금액이 {eokwon(R.floor.amount)} 미만 — {eokwon(R.floor.amount)}으로 결정(0원 이하는 제외, {R.floor.article})</li>
+    <li>국세 체납액이 있음 — 환급액의 30%까지 체납액에 충당 ({R.arrears.article})</li>
+  </ul>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    결정이 언제 나오는지는 <a href="/guide/child-incentive-pay-date/">자녀장려금 지급일</a>에
+    정리했습니다. 홈택스·손택스 조회 화면은 이 글에서 다루지 않습니다.
+  </p>
+
+  <h2>이 글에 없는 것</h2>
+  <ul>
+    <li><strong>시행령 별표 11의2 자녀장려금산정표</strong> — 구간별 실제 금액표는 읽지 않았습니다.</li>
+    <li><strong>'총급여액 등'에서 빠지는 소득과 사업소득 환산 방법</strong> — 대통령령 위임 부분이라 읽지 않았습니다.</li>
+  </ul>
+
+  <script src="../../../scripts/child-incentive.ts"></script>
+</GuideLayout>
