@@ -1,0 +1,110 @@
+---
+/**
+ * "의료비 세액공제 한도" — 의료비 세액공제 시리즈. (기준·계산·계산기·세액공제율도 이 글, 계산기 포함)
+ * 근거: 소득세법 제59조의4 제2항 제1호~제4호(3% 기준, 700만원 한도, 미달액 차감 순서), 제61조(산출세액 한도).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { medicalCredit } from "../../../lib/special-credit";
+import { won, eokwon } from "../../../lib/won";
+
+const M = r.medical;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const ex = medicalCredit({ pay: 50_000_000, general: 1_000_000, special: 3_000_000 });
+const exCap = medicalCredit({ pay: 50_000_000, general: 10_000_000 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "의료비 세액공제 한도 — 가족 의료비는 700만원, 본인·65세 이상은 한도가 없습니다";
+const description =
+  "의료비 세액공제 한도는 가족(일반) 의료비 연 700만원입니다. 본인, 6세 이하, 65세 이상, 장애인, 중증질환자 의료비와 미숙아·난임시술비는 한도가 없습니다. 기준은 총급여 3%이고, 공제율은 15%(미숙아 20%, 난임 30%)입니다.";
+
+const ANSWER = `의료비 세액공제 한도는 가족(일반) 의료비 연 ${eokwon(M.generalCap)}입니다. 본인·6세 이하·65세 이상·장애인·중증질환자 의료비와 미숙아·난임시술비는 한도가 없습니다(소득세법 제59조의4 제2항). 기준은 총급여 ${pct(M.thresholdRate)}, 공제율은 ${pct(M.rates.general)}입니다.`;
+
+const QA = [
+  { q: "의료비 세액공제 한도는 얼마인가요?", a: `가족(일반) 의료비는 총급여 ${pct(M.thresholdRate)}를 넘는 금액이 연 ${eokwon(M.generalCap)}을 넘으면 ${eokwon(M.generalCap)}까지만 공제합니다(제1호 단서). 본인·6세 이하·65세 이상·장애인 등(제2호), 미숙아(제3호), 난임시술(제4호) 의료비에는 이 한도가 없습니다.` },
+  { q: "의료비 세액공제 기준 3%는 어떻게 적용하나요?", a: `총급여에 ${pct(M.thresholdRate)}를 곱한 금액을 먼저 가족 의료비에서 뺍니다. 가족 의료비가 그보다 적으면 모자란 금액을 본인 등 의료비에서, 그래도 모자라면 미숙아·난임시술 의료비에서 차례로 뺍니다(제2호~제4호 단서).` },
+  { q: "의료비 세액공제 계산은 어떻게 하나요?", a: `(가족 의료비 − 총급여 3%, 최대 ${eokwon(M.generalCap)}) × ${pct(M.rates.general)} + 본인 등 의료비 × ${pct(M.rates.special)} + 미숙아 × ${pct(M.rates.premature)} + 난임시술 × ${pct(M.rates.infertility)}입니다. 총급여 5,000만원에 가족 100만원·본인 300만원이면 ${won(ex.credit)}입니다.` },
+  { q: "의료비 세액공제액이 세금보다 많으면 어떻게 되나요?", a: `의료비 등 특별세액공제 합계가 근로소득 산출세액을 넘으면 넘는 금액은 없는 것으로 봅니다(제61조 제1항). 다음 해로 넘기는 이월은 기부금에만 있어(제61조 제2항), 그해 결정세액이 0원이 되면 남는 의료비 공제는 사라집니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">산출세액 한도(제61조) 전의 의료비 세액공제액입니다.</p>
+    <div class="calc-input-wrap">
+      <label for="mc-pay">총급여(1년)</label>
+      <input type="text" inputmode="numeric" id="mc-pay" value="50,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="mc-general">가족(일반) 의료비</label>
+      <input type="text" inputmode="numeric" id="mc-general" value="1,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="mc-special">본인·6세 이하·65세 이상·장애인 의료비</label>
+      <input type="text" inputmode="numeric" id="mc-special" value="3,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <details>
+      <summary>미숙아·난임시술</summary>
+      <div class="calc-input-wrap">
+        <label for="mc-premature">미숙아·선천성이상아 의료비</label>
+        <input type="text" inputmode="numeric" id="mc-premature" value="" placeholder="0" />
+        <span class="unit">원</span>
+      </div>
+      <div class="calc-input-wrap">
+        <label for="mc-infertility">난임시술비</label>
+        <input type="text" inputmode="numeric" id="mc-infertility" value="" placeholder="0" />
+        <span class="unit">원</span>
+      </div>
+    </details>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">의료비 세액공제(어림)</p>
+      <p class="big" id="mc-hero">{won(ex.credit)}</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">총급여 3%</span><span class="value" id="mc-threshold">{won(ex.threshold)}</span></div>
+      <div class="stat-chip"><span class="label">공제 대상 가족 의료비</span><span class="value" id="mc-gbase">{won(ex.gBase)}</span></div>
+      <div class="stat-chip"><span class="label">공제 대상 본인 등</span><span class="value" id="mc-sbase">{won(ex.sBase)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>
+    예를 들어 총급여 5,000만원에 가족 의료비만 1,000만원이면 3%인 {won(exCap.threshold)}을 빼고도
+    850만원이지만, 한도 때문에 {won(exCap.gBase)}만 공제 대상이 되어 {won(exCap.credit)}을
+    공제받습니다.
+  </p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>단계(총급여 5,000만원, 가족 100만원·본인 300만원)</th><th>금액</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">총급여 3%</th><td>{won(ex.threshold)}</td></tr>
+      <tr><th scope="row">가족 의료비 − 3% (모자라면 0)</th><td>{won(ex.gBase)}</td></tr>
+      <tr><th scope="row">본인 의료비 − 모자란 50만원</th><td>{won(ex.sBase)}</td></tr>
+      <tr><th scope="row">× {pct(M.rates.special)}</th><td>{won(ex.credit)}</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    연말정산 전체 흐름은 <a href="/guide/year-end-calculator/">연말정산 계산기</a>에서 볼 수 있습니다.
+  </p>
+
+  <script src="../../../scripts/medical-credit.ts"></script>
+</GuideLayout>

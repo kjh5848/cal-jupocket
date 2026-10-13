@@ -1,0 +1,57 @@
+---
+/**
+ * "종교 기부금 세액공제" — 기부금 세액공제 시리즈.
+ * 근거: 소득세법 제59조의4 제4항 제2호 가목(종교단체 한도), 제34조 제3항 제1호(일반기부금에 종교 포함), 제61조 제2항(이월).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { donationCredit } from "../../../lib/special-credit";
+import { won } from "../../../lib/won";
+
+const L = r.donation.generalLimit;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const onlyRel = donationCredit({ income: 40_000_000, religious: 6_000_000 });
+const mixed = donationCredit({ income: 40_000_000, religious: 6_000_000, general: 2_000_000 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "종교 기부금 세액공제 — 종교단체에만 내면 한도는 소득금액의 10%입니다";
+const description =
+  "종교단체 기부금도 일반기부금이라 15% 세액공제를 받지만, 한도가 따로 계산됩니다. 종교단체에 기부한 금액이 있으면 한도는 소득금액의 10%에 '소득금액 20%와 종교단체 외 기부금 중 적은 금액'을 더한 금액입니다. 종교단체에만 냈다면 사실상 10%가 한도입니다.";
+
+const ANSWER = `종교단체 기부금도 일반기부금이라 ${pct(r.donation.rate)} 세액공제를 받지만, 종교단체 기부금이 있으면 한도가 소득금액 × ${pct(L.religiousRate)} + (소득금액 × ${pct(L.otherRate)}와 종교단체 외 기부금 중 적은 금액)입니다(소득세법 제59조의4 제4항 제2호 가목). 종교단체에만 냈다면 한도는 ${pct(L.religiousRate)}입니다.`;
+
+const QA = [
+  { q: "종교 기부금도 세액공제가 되나요?", a: `됩니다. 종교는 사회복지·문화·교육·자선 등과 함께 일반기부금의 공익 목적에 들어 있습니다(제34조 제3항 제1호). 공제율은 다른 기부금과 같이 ${pct(r.donation.rate)}(합계 1천만원 초과분 ${pct(r.donation.highRate)})입니다.` },
+  { q: "종교 기부금 세액공제 한도는 얼마인가요?", a: `소득금액의 ${pct(L.religiousRate)}에 '소득금액의 ${pct(L.otherRate)}와 종교단체 외에 기부한 금액 중 적은 금액'을 더한 금액입니다. 소득금액 4,000만원에 종교단체에만 600만원을 냈다면 한도는 ${won(onlyRel.limit)}이라 ${won(onlyRel.carry)}은 다음 해로 넘어갑니다.` },
+  { q: "종교단체와 다른 곳에 함께 기부하면 어떻게 되나요?", a: `종교단체 외 기부금만큼(소득금액 ${pct(L.otherRate)} 한도) 전체 한도가 늘어납니다. 같은 소득금액 4,000만원에 종교 600만원과 복지단체 200만원을 냈다면 한도가 ${won(onlyRel.limit)}에서 ${won(mixed.limit)}으로 늘어 ${won(mixed.generalIn)}을 올해 공제받고, 나머지 ${won(mixed.carry)}은 이월됩니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>소득금액 4,000만원</th><th>한도</th><th>올해 공제 대상</th><th>이월</th><th>세액공제</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">종교 600만원</th><td>{won(onlyRel.limit)}</td><td>{won(onlyRel.generalIn)}</td><td>{won(onlyRel.carry)}</td><td>{won(onlyRel.credit)}</td></tr>
+      <tr><th scope="row">종교 600만원 + 복지단체 200만원</th><td>{won(mixed.limit)}</td><td>{won(mixed.generalIn)}</td><td>{won(mixed.carry)}</td><td>{won(mixed.credit)}</td></tr>
+    </tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    한도를 넘은 금액은 10년간 이월됩니다 — <a href="/guide/donation-credit-carryover/">기부금 세액공제 이월</a>.
+    어떤 단체가 '종교단체'로 인정되는지는 시행령 범위라 이 글에서 확인하지 않았습니다.
+  </p>
+</GuideLayout>

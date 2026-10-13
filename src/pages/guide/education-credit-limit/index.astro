@@ -1,0 +1,67 @@
+---
+/**
+ * "교육비 세액공제 한도" — 교육비 세액공제 시리즈. (금액·계산·세액공제율도 이 글)
+ * 근거: 소득세법 제59조의4 제3항 제1호 단서(대학생 900만원·취학 전·초중고 300만원), 제2호(본인), 제3호(장애인 특수교육비),
+ * 시행령 제118조의6 제1항 제4호(교복 50만원)·제6호(현장체험학습 30만원).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { educationCredit } from "../../../lib/special-credit";
+import { won, eokwon } from "../../../lib/won";
+
+const E = r.education;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const rows: { label: string; kind: "self" | "university" | "school"; amount: number }[] = [
+  { label: "초등학생 학비 200만원", kind: "school", amount: 2_000_000 },
+  { label: "고등학생 학비 500만원", kind: "school", amount: 5_000_000 },
+  { label: "대학생 등록금 1,000만원", kind: "university", amount: 10_000_000 },
+  { label: "본인 대학원 1,200만원", kind: "self", amount: 12_000_000 },
+];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "교육비 세액공제 한도 — 대학생 900만원, 취학 전·초중고 300만원, 본인은 한도 없음";
+const description =
+  "교육비 세액공제 한도는 자녀 등 1명당 대학생 연 900만원, 취학 전 아동과 초·중·고등학생 연 300만원입니다. 본인 교육비와 장애인 특수교육비는 한도가 없고, 공제율은 15%입니다. 교복은 1명당 50만원, 현장체험학습은 30만원까지 넣습니다.";
+
+const ANSWER = `교육비 세액공제 한도는 자녀 등 1명당 대학생 연 ${eokwon(E.caps.university)}, 취학 전 아동과 초·중·고등학생 연 ${eokwon(E.caps.school)}입니다(소득세법 제59조의4 제3항). 본인 교육비와 장애인 특수교육비는 한도가 없고, 공제율은 ${pct(E.rate)}입니다.`;
+
+const QA = [
+  { q: "교육비 세액공제 한도는 얼마인가요?", a: `기본공제대상자인 배우자·자녀 등은 1명당 대학생 연 ${eokwon(E.caps.university)}, 초등학교 취학 전 아동과 초·중·고등학생 연 ${eokwon(E.caps.school)}입니다(제1호 단서). 본인 교육비(제2호)와 장애인 특수교육비(제3호)에는 금액 한도를 두지 않았습니다.` },
+  { q: "교육비 세액공제 금액은 어떻게 계산하나요?", a: `사람마다 한도 안의 교육비를 더하고 ${pct(E.rate)}를 곱합니다. 예를 들어 고등학생 학비 500만원은 ${eokwon(E.caps.school)}까지만 들어가 ${won(educationCredit([{ kind: "school", amount: 5_000_000 }]).credit)}, 대학생 등록금 1,000만원은 ${eokwon(E.caps.university)}까지 들어가 ${won(educationCredit([{ kind: "university", amount: 10_000_000 }]).credit)}입니다.` },
+  { q: "교복·체험학습비에도 한도가 있나요?", a: `있습니다. 교복구입비는 중·고등학생 1명당 연 ${eokwon(E.items.uniformCap)}, 학교 교육과정으로 하는 현장체험학습비는 1명당 연 ${eokwon(E.items.fieldTripCap)}까지 교육비로 봅니다(시행령 제118조의6 제1항 제4호·제6호). 이 금액도 1명당 한도 안에서 합산됩니다.` },
+  { q: "교육비 세액공제율은 몇 퍼센트인가요?", a: `${pct(E.rate)}입니다(제59조의4 제3항). 의료비처럼 총급여 기준 문턱이 없어 첫 1원부터 공제되지만, 특별세액공제 합계가 근로소득 산출세액을 넘으면 넘는 부분은 없는 것으로 봅니다(제61조 제1항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>예시</th><th>공제 대상</th><th>세액공제</th></tr></thead>
+    <tbody>
+      {rows.map((x) => {
+        const c = educationCredit([{ kind: x.kind, amount: x.amount }]);
+        return <tr><th scope="row">{x.label}</th><td>{won(c.base)}</td><td>{won(c.credit)}</td></tr>;
+      })}
+    </tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    장학금 등 비과세로 받은 금액으로 낸 교육비는 공제하지 않습니다(시행령 제118조의6 제2항).
+  </p>
+</GuideLayout>

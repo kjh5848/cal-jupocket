@@ -1,0 +1,47 @@
+---
+/**
+ * "교육비 세액공제 학자금 대출" — 교육비 세액공제 시리즈.
+ * 근거: 소득세법 제59조의4 제3항 제1호 단서(직계비속등이 학자금 대출로 낸 교육비 제외)·제2호 라목(본인 상환액),
+ * 시행령 제118조의6 제12항·제13항.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "교육비 세액공제 학자금 대출 — 대출로 낸 등록금은 갚을 때 본인이 공제받습니다";
+const description =
+  "학자금 대출로 낸 등록금은 대출을 받은 해가 아니라 원리금을 갚을 때 본인 교육비로 15% 세액공제를 받습니다. 자녀가 학자금 대출로 낸 등록금은 부모 쪽 교육비 공제에서 빠집니다. 연체로 더 낸 금액과 감면·지원받은 금액은 제외합니다.";
+
+const ANSWER = `학자금 대출로 낸 등록금은 대출받은 해가 아니라 원리금을 갚을 때 본인 교육비로 ${pct(r.education.rate)} 세액공제를 받습니다(소득세법 제59조의4 제3항 제2호 라목). 자녀가 학자금 대출로 낸 등록금은 부모 쪽 공제에서 빠지고, 연체로 더 낸 금액은 제외합니다.`;
+
+const QA = [
+  { q: "학자금 대출 상환액도 교육비 세액공제가 되나요?", a: `됩니다. 대통령령으로 정하는 학자금 대출의 원리금을 상환하며 지출한 금액은 본인 교육비로 공제합니다(제2호 라목). 대상 대출은 등록금 대출로, 한국장학재단의 취업 후 상환·일반 상환 학자금대출 등입니다(시행령 제118조의6 제12항).` },
+  { q: "학자금 대출로 낸 등록금을 부모가 공제받을 수 있나요?", a: `없습니다. 직계비속 등이 학자금 대출을 받아 지급한 교육비는 부모 쪽 교육비 공제에서 제외한다고 정합니다(제59조의4 제3항 제1호 단서). 그래서 학자금 대출로 낸 등록금은 갚는 본인이 상환할 때 공제받는 구조가 됩니다.` },
+  { q: "학자금 대출 상환액 중 빠지는 금액은 무엇인가요?", a: `상환 연체로 추가로 낸 금액, 원리금 중 감면·면제받은 금액, 지방자치단체나 공공기관 등의 학자금 지원으로 상환한 금액은 빠집니다(시행령 제118조의6 제13항). 본인이 실제로 부담해 갚은 원리금만 대상입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>{r.education.studentLoan.rule}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    본인 교육비라 금액 한도는 없습니다. 국세청은 공제 대상인지 확인하려고 한국장학재단 등에 대출·상환
+    내역을 요청할 수 있습니다(제59조의4 제7항) — <a href="/guide/education-credit/">교육비세액공제</a>.
+  </p>
+</GuideLayout>

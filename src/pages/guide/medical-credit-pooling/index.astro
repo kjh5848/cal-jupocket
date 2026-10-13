@@ -1,0 +1,68 @@
+---
+/**
+ * "의료비 세액공제 몰아주기" — 의료비 세액공제 시리즈. (부부·배우자·연말정산 의료비 몰아주기도 이 글)
+ * 근거: 소득세법 제59조의4 제2항(총급여 3% 기준, 가족 나이·소득 제한 없음), 시행령 제118조의5 제1항(직접 부담).
+ * 반전: 3% 문턱은 '공제받는 사람의 총급여' 기준이라, 총급여가 적은 쪽으로 모을수록 문턱이 낮다.
+ * 계산: special-credit.ts medicalCredit().
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { medicalCredit } from "../../../lib/special-credit";
+import { won } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+// 예시: 남편 총급여 7,000만원, 아내 3,000만원, 아내 의료비 300만원(본인 의료비)
+const toHigh = medicalCredit({ pay: 70_000_000, general: 3_000_000 });
+const toLow = medicalCredit({ pay: 30_000_000, special: 3_000_000 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "의료비 세액공제 몰아주기 — 총급여 3% 문턱이 낮은 쪽으로 모으는 게 보통 유리합니다";
+const description =
+  "맞벌이 부부의 의료비 몰아주기는 한쪽이 가족 의료비를 직접 부담해 그 사람이 공제받는 방법입니다. 의료비 공제는 공제받는 사람 총급여의 3%를 넘는 부분부터라 총급여가 적은 쪽이 문턱이 낮습니다. 다만 결정세액이 0원이 되면 남는 공제는 사라집니다.";
+
+const ANSWER = `의료비 세액공제 몰아주기는 맞벌이 부부 중 한 사람이 가족 의료비를 직접 부담해 그 사람이 공제받는 방법입니다. 공제는 공제받는 사람 총급여의 ${pct(r.medical.thresholdRate)}를 넘는 부분부터라(소득세법 제59조의4 제2항) 총급여가 적은 쪽이 문턱이 낮습니다. 단, 그 사람의 세금보다 많이 공제받지는 못합니다.`;
+
+const QA = [
+  { q: "의료비 몰아주기가 되는 이유는 무엇인가요?", a: `의료비 공제는 근로자가 직접 부담한 의료비가 대상이고(시행령 제118조의5 제1항), 가족의 나이와 소득을 따지지 않습니다(제59조의4 제2항). 그래서 배우자에게 소득이 있어도 한쪽이 부부 의료비를 직접 냈다면 그 사람이 공제받을 수 있습니다.` },
+  { q: "의료비 몰아주기는 누구에게 하는 게 유리한가요?", a: `보통 총급여가 적은 쪽입니다. 공제는 공제받는 사람 총급여의 ${pct(r.medical.thresholdRate)}를 넘는 부분부터라, 총급여 7,000만원이면 210만원, 3,000만원이면 90만원까지는 공제가 없습니다. 다만 공제액이 그 사람의 결정세액보다 크면 남는 부분은 사라집니다.` },
+  { q: "부부 의료비 몰아주기 예시를 보여 주세요.", a: `아내 의료비 300만원을 총급여 7,000만원인 남편이 내면 210만원을 넘는 90만원의 15%인 ${won(toHigh.credit)}, 총급여 3,000만원인 아내가 내면 본인 의료비라 90만원을 넘는 210만원의 15%인 ${won(toLow.credit)}입니다.` },
+  { q: "의료비 몰아주기에서 주의할 점은 무엇인가요?", a: `누가 '직접 부담'했는지가 기준이라 실제로 그 사람이 낸 기록이 있어야 합니다. 또 의료비 등 특별세액공제가 근로소득 산출세액을 넘으면 넘는 부분은 없는 것이 되므로(제61조 제1항), 세금이 적은 쪽에 너무 많이 모으면 손해일 수 있습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>누가 냈나(아내 의료비 300만원)</th><th>총급여 3%</th><th>공제 대상</th><th>세액공제</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">남편(총급여 7,000만원)</th><td>{won(toHigh.threshold)}</td><td>{won(toHigh.gBase)}</td><td>{won(toHigh.credit)}</td></tr>
+      <tr><th scope="row">아내(총급여 3,000만원)</th><td>{won(toLow.threshold)}</td><td>{won(toLow.sBase)}</td><td>{won(toLow.credit)}</td></tr>
+    </tbody>
+  </table>
+  <p>
+    아내가 내면 본인 의료비라 한도도 없습니다. 산출세액 한도(제61조) 전 값이라, 아내의 결정세액이
+    {" "}{won(toLow.credit)}보다 적으면 그만큼은 공제받지 못합니다. 직접{" "}
+    <a href="/guide/medical-credit-limit/">의료비 세액공제 계산기</a>에 넣어 비교해 보세요.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    부부가 각자 낸 의료비를 연말정산 때 어느 쪽으로 옮길 수 있는지, 홈택스 간소화 자료를 어떻게
+    나누는지는 법령이 아니라 운영 절차라 이 글에서 다루지 않습니다.
+  </p>
+</GuideLayout>

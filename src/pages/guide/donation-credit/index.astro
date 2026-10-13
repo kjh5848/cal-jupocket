@@ -1,0 +1,72 @@
+---
+/**
+ * "기부금세액공제" — 기부금 세액공제 시리즈 허브(src/data/series/special-credit.ts). 연말정산 기부금도 이 글.
+ * 근거: 소득세법 제59조의4 제4항, 제34조, 제61조 제2항, 조특법 제58조·제76조.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { donationCreditSeries } from "../../../data/series/special-credit";
+import { seriesHref } from "../../../data/series/types";
+import { donationCredit, hometownCredit } from "../../../lib/special-credit";
+import { won, eokwon } from "../../../lib/won";
+
+const D = r.donation;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const ex = donationCredit({ income: 40_000_000, general: 1_000_000 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "기부금세액공제 — 기부금의 15%, 1천만원 넘는 부분은 30%를 세금에서 뺍니다";
+const description =
+  "연말정산 기부금세액공제는 그해 낸 기부금의 15%(1천만원 초과분은 30%)를 세금에서 뺍니다. 일반기부금은 소득금액의 30%(종교단체는 10%+α)까지 인정되고, 못 받은 금액은 10년간 이월됩니다. 고향사랑기부금과 정치자금은 10만원까지 거의 전액을 돌려받는 별도 공제입니다.";
+
+const ANSWER = `기부금세액공제는 그해 낸 기부금의 ${pct(D.rate)}, ${eokwon(D.highFrom)} 넘는 부분은 ${pct(D.highRate)}를 세금에서 뺍니다(소득세법 제59조의4 제4항). 일반기부금은 소득금액의 30%(종교단체는 10%+α)까지 인정되고, 못 받은 금액은 ${D.carryover.years}년간 이월됩니다.`;
+
+const QA = [
+  { q: "기부금세액공제란 무엇인가요?", a: `거주자가 그해 낸 특례기부금과 일반기부금을 합한 금액의 ${pct(D.rate)}(${eokwon(D.highFrom)} 초과분은 ${pct(D.highRate)})를 종합소득산출세액에서 빼는 공제입니다(제59조의4 제4항). 기본공제대상인 배우자·부양가족이 낸 기부금도 나이와 관계없이 합칩니다.` },
+  { q: "연말정산 기부금은 얼마나 돌려받나요?", a: `1천만원까지는 낸 금액의 ${pct(D.rate)}입니다. 소득금액 4,000만원인 사람이 일반기부금 100만원을 냈다면 ${won(ex.credit)}을 공제받습니다. 다만 공제액이 결정세액보다 크면 남는 부분은 다음 해로 넘어갑니다(제61조 제2항).` },
+  { q: "기부금세액공제는 누가 받을 수 있나요?", a: `근로소득자 등 거주자가 받습니다. 사업소득만 있는 사람은 세액공제 대신 기부금을 필요경비에 넣고(제34조), 연말정산하는 일부 사업소득자(제73조 제1항 제4호)는 세액공제도 받습니다(제59조의4 제4항, 시행령 제118조의7 제3항).` },
+  { q: "고향사랑기부금도 기부금세액공제인가요?", a: `별도 공제입니다. 조세특례제한법 제58조에 따라 10만원까지는 기부금의 110분의 100, 20만원까지는 40%를 공제합니다. 10만원을 기부하면 ${won(hometownCredit(100_000))}을 돌려받고, 이 공제를 받은 금액은 소득세법 기부금 공제를 다시 받지 않습니다.` },
+];
+const labelOf = (slug: string) => donationCreditSeries.items.find((x) => x.slug === slug)?.label ?? slug;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>기부금</th><th>공제</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">특례기부금·일반기부금</th><td>{pct(D.rate)}(1천만원 초과분 {pct(D.highRate)})</td><td>소득세법 제59조의4 제4항</td></tr>
+      <tr><th scope="row">고향사랑기부금</th><td>10만원까지 100/110, 20만원까지 40%, 그 위 15%</td><td>조특법 제58조</td></tr>
+      <tr><th scope="row">정치자금</th><td>10만원까지 100/110, 그 위 15%(3천만원 초과 25%)</td><td>조특법 제76조</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>자세히 — <a href={seriesHref("donation-credit-rate")}>{labelOf("donation-credit-rate")}</a>, <a href={seriesHref("donation-credit-limit")}>{labelOf("donation-credit-limit")}</a></p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>자세히 — <a href={seriesHref("donation-credit-business")}>{labelOf("donation-credit-business")}</a></p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>자세히 — <a href={seriesHref("hometown-donation-credit")}>{labelOf("hometown-donation-credit")}</a></p>
+
+  <h2>기부금 세액공제, 질문별로 정리했습니다</h2>
+  <ul>
+    {donationCreditSeries.items.map((x) => <li><a href={seriesHref(x.slug)}>{x.label}</a></li>)}
+  </ul>
+  <p>
+    기부금영수증 서식과 등록 방법은 시행령·화면 절차라 이 시리즈에서 다루지 않습니다. 의료비·교육비는{" "}
+    <a href="/guide/medical-credit/">의료비세액공제</a>, <a href="/guide/education-credit/">교육비세액공제</a>에 있습니다.
+  </p>
+</GuideLayout>

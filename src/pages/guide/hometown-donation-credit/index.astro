@@ -1,0 +1,65 @@
+---
+/**
+ * "고향사랑기부금 세액공제" — 기부금 세액공제 시리즈. (연말정산 기부금 고향사랑도 이 글)
+ * 근거: 조세특례제한법 제58조(2026. 1. 1. 이후 기부분부터 현행 — 부칙 <법률 제21223호> 제13조), 소득세법 제59조의4 제9항(표준세액공제).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { hometownCredit } from "../../../lib/special-credit";
+import { won, eokwon } from "../../../lib/won";
+
+const amounts = [100_000, 200_000, 300_000, 500_000, 1_000_000];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "고향사랑기부금 세액공제 — 10만원까지 110분의 100, 20만원까지 40%를 돌려받습니다";
+const description =
+  "고향사랑기부금 세액공제는 10만원까지 기부금의 110분의 100, 10만원 초과 20만원 이하는 40%, 그 위 2천만원까지는 15%입니다. 2026년 기부분부터 이 조문이 적용되며, 10만원을 내면 90,909원, 20만원을 내면 130,909원을 돌려받습니다.";
+
+const ANSWER = `고향사랑기부금 세액공제는 10만원까지 기부금의 110분의 100, 10만원 초과 20만원 이하는 40%, 그 위 2천만원까지는 15%입니다(조세특례제한법 제58조). 2026년 기부분부터 이 조문이 적용되며, 10만원을 내면 ${won(hometownCredit(100_000))}, 20만원을 내면 ${won(hometownCredit(200_000))}을 돌려받습니다.`;
+
+const QA = [
+  { q: "고향사랑기부금 세액공제는 얼마인가요?", a: `10만원 이하는 기부금 × 110분의 100, 10만원 초과 20만원 이하 부분은 40%, 20만원 초과 2천만원 이하 부분은 15%입니다. 특별재난지역으로 선포된 지방자치단체에 정해진 기간 안에 기부하면 마지막 구간이 30%입니다(제58조 제1항).` },
+  { q: "고향사랑기부금 20만원을 내면 얼마를 돌려받나요?", a: `${won(hometownCredit(200_000))}입니다. 첫 10만원에서 ${won(hometownCredit(100_000))}, 다음 10만원의 40%인 40,000원을 더합니다. 이 계산식은 2026년 1월 1일 이후 기부하는 경우부터 적용됩니다(조특법 부칙 제13조, 법률 제21223호).` },
+  { q: "고향사랑기부금도 연말정산에서 공제받나요?", a: `종합소득산출세액에서 공제하는 세액공제라 근로소득자는 연말정산에서 받습니다. 공제액은 산출세액을 한도로 하고(제58조 제2항), 이 공제를 받은 기부금은 소득세법 기부금 세액공제를 다시 받지 않습니다(제3항).` },
+  { q: "고향사랑기부금 세액공제는 표준세액공제와 함께 받나요?", a: `조문대로 읽으면 함께 받습니다. 근로소득자의 표준세액공제 13만원은 소득세법 제59조의4 제6항 등의 공제를 신청하지 않을 때 주는데(제9항 제1호), 고향사랑기부금 공제(조특법 제58조)는 그 목록에 없습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>기부금</th><th>세액공제</th><th>돌려받는 비율</th></tr></thead>
+    <tbody>
+      {amounts.map((x) => {
+        const c = hometownCredit(x);
+        return <tr><th scope="row">{eokwon(x)}</th><td>{won(c)}</td><td>{Math.round((c / x) * 1000) / 10}%</td></tr>;
+      })}
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    사업자는 10만원 이하는 같은 세액공제, 10만원 초과분은 이월결손금을 뺀 소득금액 범위에서
+    필요경비에 넣습니다(제58조 제1항 단서).
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    같은 구조로 읽히는 공제가 정치자금(조특법 제76조)입니다 —{" "}
+    <a href="/guide/donation-credit-standard/">기부금과 표준세액공제</a>. 2025년 12월 개정에서 이 조문의
+    무엇이 바뀌었는지는 개정문을 확인하지 않아, 현행 조문만 옮겼습니다.
+  </p>
+</GuideLayout>

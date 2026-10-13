@@ -1,0 +1,54 @@
+---
+/**
+ * "의료비세액공제 안경" — 의료비 세액공제 시리즈. (산후조리원·보청기도 이 글)
+ * 근거: 소득세법 시행령 제118조의5 제1항 제4호(안경 1명당 50만원)·제5호(보청기)·제7호(산후조리원 출산 1회당 200만원)·제2항(미용·성형 제외).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { eokwon } from "../../../lib/won";
+
+const S = r.medical.scope;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "의료비세액공제 안경·산후조리원 — 안경은 1명당 50만원, 산후조리원은 출산 1회당 200만원까지";
+const description =
+  "의료비세액공제에서 시력보정용 안경·콘택트렌즈는 가족 1명당 연 50만원, 산후조리원 비용은 출산 1회당 200만원까지 의료비로 인정됩니다. 보청기와 처방받은 의료기기도 대상이고, 미용·성형수술과 건강증진용 의약품은 빠집니다.";
+
+const ANSWER = `의료비세액공제에서 시력보정용 안경·콘택트렌즈는 가족 1명당 연 ${eokwon(S.glassesCap)}, 산후조리원 비용은 출산 1회당 ${eokwon(S.postnatalCap)}까지 의료비로 인정됩니다(소득세법 시행령 제118조의5 제1항). 보청기도 대상이고, 미용·성형수술과 건강증진용 의약품은 빠집니다.`;
+
+const QA = [
+  { q: "안경 구입비도 의료비 세액공제가 되나요?", a: `됩니다. 시력보정용 안경이나 콘택트렌즈 구입비는 기본공제대상자(나이·소득 제한 없음) 1명당 연 ${eokwon(S.glassesCap)} 이내에서 의료비로 봅니다(시행령 제118조의5 제1항 제4호). 4인 가족이면 1명마다 따로 ${eokwon(S.glassesCap)}까지입니다.` },
+  { q: "산후조리원 비용도 의료비 세액공제가 되나요?", a: `됩니다. 모자보건법에 따른 산후조리원에 산후조리와 요양의 대가로 낸 비용은 출산 1회당 ${eokwon(S.postnatalCap)} 이내에서 의료비로 봅니다(제7호). 출산한 본인 의료비이므로 총급여 3%를 넘는 부분에 한도 없이 15%가 적용됩니다.` },
+  { q: "의료비 세액공제가 안 되는 비용은 무엇인가요?", a: `미용·성형수술을 위한 비용과 건강증진을 위한 의약품 구입비는 의료비에 포함하지 않습니다(시행령 제118조의5 제2항). 보험회사에서 받은 실손의료보험금으로 충당한 부분도 빠집니다(같은 조 제1항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>공제 대상 의료비 전체 목록입니다(시행령 제118조의5 제1항).</p>
+  <ul>
+    {S.items.map((x) => <li>{x}</li>)}
+  </ul>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>
+    출산 관련해서는 미숙아·선천성이상아 의료비 20%, 난임시술비 30%도 따로 있습니다 —{" "}
+    <a href="/guide/medical-credit-limit/">의료비 세액공제 한도</a>.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    실손보험금을 빼는 방법은 <a href="/guide/medical-credit-insurance/">의료비 세액공제 실손보험</a>에
+    정리했습니다.
+  </p>
+</GuideLayout>

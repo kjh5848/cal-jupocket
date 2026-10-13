@@ -1,0 +1,77 @@
+---
+/**
+ * "의료비세액공제" — 의료비 세액공제 시리즈 허브(src/data/series/special-credit.ts). 연말정산 의료비·의료비 공제도 이 글.
+ * 근거: 소득세법 제59조의4 제2항·제6항, 시행령 제118조의5.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { medicalCreditSeries } from "../../../data/series/special-credit";
+import { seriesHref } from "../../../data/series/types";
+import { medicalCredit } from "../../../lib/special-credit";
+import { won, eokwon } from "../../../lib/won";
+
+const M = r.medical;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const ex = medicalCredit({ pay: 50_000_000, general: 2_500_000 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "의료비세액공제 — 총급여 3%를 넘게 쓴 의료비의 15%를 돌려받습니다";
+const description =
+  "연말정산 의료비세액공제는 근로자가 본인과 가족을 위해 쓴 의료비 중 총급여 3%를 넘는 금액의 15%를 세금에서 뺍니다. 가족 의료비는 연 700만원 한도이고, 본인·65세 이상·6세 이하·장애인 의료비는 한도가 없습니다. 미숙아 20%, 난임시술 30%입니다.";
+
+const ANSWER = `의료비세액공제는 근로자가 본인과 기본공제대상자(나이·소득 무관)를 위해 쓴 의료비 중 총급여 ${pct(M.thresholdRate)}를 넘는 금액의 ${pct(M.rates.general)}를 세금에서 뺍니다(소득세법 제59조의4 제2항). 가족 의료비는 연 ${eokwon(M.generalCap)} 한도, 본인·65세 이상·6세 이하·장애인은 한도가 없습니다.`;
+
+const QA = [
+  { q: "의료비세액공제란 무엇인가요?", a: `근로소득이 있는 사람이 그해 지급한 의료비 일부를 종합소득산출세액에서 빼 주는 특별세액공제입니다. 총급여의 ${pct(M.thresholdRate)}까지는 공제가 없고, 그 위 금액에 ${pct(M.rates.general)}(미숙아 ${pct(M.rates.premature)}, 난임시술 ${pct(M.rates.infertility)})를 곱합니다. 연말정산에서 신청해야 적용됩니다(제6항).` },
+  { q: "연말정산 의료비는 얼마부터 공제되나요?", a: `총급여의 ${pct(M.thresholdRate)}를 넘는 부분부터입니다. 총급여 5,000만원이면 ${won(ex.threshold)}까지는 공제가 없고, 가족 의료비로 250만원을 썼다면 넘는 ${won(ex.gBase)}의 ${pct(M.rates.general)}인 ${won(ex.credit)}을 공제받습니다.` },
+  { q: "의료비세액공제 대상 의료비는 무엇인가요?", a: `근로자가 직접 부담한 진료비, 치료·요양용 의약품(한약 포함), 처방에 따른 의료기기, 보청기, 장기요양 본인부담금 등입니다. 안경·콘택트렌즈는 1명당 연 ${eokwon(M.scope.glassesCap)}, 산후조리원은 출산 1회당 ${eokwon(M.scope.postnatalCap)}까지이고, 미용·성형과 건강증진 의약품은 빠집니다.` },
+  { q: "의료비세액공제는 가족 누구 것까지 되나요?", a: `본인과 기본공제대상자입니다. 의료비 공제에서는 기본공제대상자의 나이와 소득을 따지지 않으므로(제59조의4 제2항), 소득이 있는 배우자나 20세 넘은 자녀, 생계를 같이하는 60세 미만 부모의 의료비도 근로자가 직접 부담했다면 대상이 됩니다.` },
+];
+const labelOf = (slug: string) => medicalCreditSeries.items.find((x) => x.slug === slug)?.label ?? slug;
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>구분</th><th>공제율</th><th>한도</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">가족(일반) 의료비</th><td>{pct(M.rates.general)}</td><td>연 {eokwon(M.generalCap)}</td></tr>
+      <tr><th scope="row">본인·6세 이하·65세 이상·장애인·중증질환자 등</th><td>{pct(M.rates.special)}</td><td>없음</td></tr>
+      <tr><th scope="row">미숙아·선천성이상아</th><td>{pct(M.rates.premature)}</td><td>없음</td></tr>
+      <tr><th scope="row">난임시술</th><td>{pct(M.rates.infertility)}</td><td>없음</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>자세히 — <a href={seriesHref("medical-credit-limit")}>{labelOf("medical-credit-limit")}</a>(계산기)</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    보험회사에서 받은 실손의료보험금은 의료비에서 뺍니다(시행령 제118조의5 제1항) —{" "}
+    <a href={seriesHref("medical-credit-insurance")}>{labelOf("medical-credit-insurance")}</a>.
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>자세히 — <a href={seriesHref("medical-credit-eligibility")}>{labelOf("medical-credit-eligibility")}</a></p>
+
+  <h2>의료비 세액공제, 질문별로 정리했습니다</h2>
+  <ul>
+    {medicalCreditSeries.items.map((x) => <li><a href={seriesHref(x.slug)}>{x.label}</a></li>)}
+  </ul>
+  <p>
+    교육비·기부금은 <a href="/guide/education-credit/">교육비세액공제</a>,{" "}
+    <a href="/guide/donation-credit/">기부금세액공제</a>에 있습니다. 연말정산 전체는{" "}
+    <a href="/guide/year-end-tax/">연말정산</a>을 보세요.
+  </p>
+</GuideLayout>

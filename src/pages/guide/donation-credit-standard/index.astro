@@ -1,0 +1,64 @@
+---
+/**
+ * "기부금세액공제 표준세액공제" — 기부금 세액공제 시리즈. (표준세액공제 중복도 이 글)
+ * 근거: 소득세법 제59조의4 제6항·제9항 제1호(근로자 13만원), 제9항 제2호(근로소득 없는 종합소득자 7만원·성실사업자 12만원),
+ * 조특법 제58조·제76조(목록에 없는 공제).
+ * 반전: 소득세법 기부금 공제를 신청하면 13만원을 잃지만, 고향사랑·정치자금 공제는 목록에 없다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import y from "../../../rates/year-end-2026.json";
+import { donationCredit } from "../../../lib/special-credit";
+import { won, eokwon } from "../../../lib/won";
+
+const std = y.calc.standardTaxCredit.amount;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const breakEven = Math.ceil(std / r.donation.rate);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "기부금세액공제 표준세액공제 — 기부금 공제를 신청하면 13만원은 못 받습니다";
+const description =
+  "근로소득자가 기부금 세액공제를 신청하면 표준세액공제 13만원은 받지 못합니다. 보험료·의료비·교육비·기부금 세액공제를 신청하지 않을 때만 13만원을 주기 때문입니다. 반면 고향사랑기부금과 정치자금 세액공제는 그 목록에 없어 13만원과 함께 받는다고 읽힙니다.";
+
+const ANSWER = `근로소득자가 기부금 세액공제를 신청하면 표준세액공제 ${eokwon(std)}은 받지 못합니다. 보험료·의료비·교육비·기부금 세액공제(소득세법 제59조의4 제6항) 등을 신청하지 않을 때만 ${eokwon(std)}을 주기 때문입니다(제9항 제1호). 고향사랑기부금·정치자금 공제는 그 목록에 없습니다.`;
+
+const QA = [
+  { q: "기부금세액공제와 표준세액공제를 중복으로 받을 수 있나요?", a: `근로소득자는 안 됩니다. 표준세액공제 ${eokwon(std)}은 제6항(보험료·의료비·교육비·기부금 세액공제), 주택자금 등 특별소득공제, 월세 세액공제 신청을 하지 않은 경우에 줍니다(제59조의4 제9항 제1호). 기부금 세액공제를 신청하면 이 조건에서 벗어납니다.` },
+  { q: "기부금이 얼마 이상이어야 표준세액공제보다 유리한가요?", a: `기부금만 있다면 공제율 ${pct(r.donation.rate)}로 ${won(std)}을 넘으려면 기부금이 약 ${won(breakEven)} 이상이어야 합니다. 의료비·교육비 등 다른 특별세액공제를 함께 받으면 그 합계로 비교합니다. 연말정산에서는 둘 중 큰 쪽을 고르는 셈입니다.` },
+  { q: "고향사랑기부금은 표준세액공제와 함께 받나요?", a: `조문대로 읽으면 함께 받습니다. 표준세액공제 배제 조건에 들어가는 것은 소득세법 제59조의4 제6항 등이고, 고향사랑기부금(조특법 제58조)과 정치자금(제76조) 세액공제는 그 목록에 없습니다.` },
+  { q: "근로소득이 없는 사람의 표준세액공제는 얼마인가요?", a: `근로소득이 없는 종합소득자는 조특법 제122조의3 세액공제를 신청하지 않으면 연 7만원, 성실사업자는 연 12만원입니다(제9항 제2호). 제2호의 조건에는 기부금 세액공제(제4항) 신청이 들어 있지 않습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>기부금(일반)</th><th>기부금 세액공제</th><th>표준세액공제</th><th>유리한 쪽</th></tr></thead>
+    <tbody>
+      {[300_000, 800_000, 900_000, 1_500_000].map((x) => {
+        const c = donationCredit({ income: 100_000_000, general: x }).credit;
+        return <tr><th scope="row">{eokwon(x)}</th><td>{won(c)}</td><td>{won(std)}</td><td>{c > std ? "기부금 공제" : "표준세액공제"}</td></tr>;
+      })}
+    </tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    자세히 — <a href="/guide/hometown-donation-credit/">고향사랑기부금 세액공제</a>
+  </p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+</GuideLayout>

@@ -1,0 +1,67 @@
+---
+/**
+ * "기부금 세액공제율" — 기부금 세액공제 시리즈. (공제율·비율·10만원·100%·혜택·계산도 이 글)
+ * 근거: 소득세법 제59조의4 제4항(15%, 1천만원 초과 30%), 조특법 제58조(고향사랑)·제76조(정치자금 — 10만원까지 110분의 100).
+ * 반전: '10만원 100%' 는 소득세법 기부금이 아니라 고향사랑·정치자금 이야기다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { donationCredit, hometownCredit, politicalCredit } from "../../../lib/special-credit";
+import { won, eokwon } from "../../../lib/won";
+
+const D = r.donation;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const amounts = [100_000, 1_000_000, 5_000_000, 10_000_000, 15_000_000];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "기부금 세액공제율 — 15%, 1천만원 초과분 30%, '10만원 100%'는 고향사랑·정치자금입니다";
+const description =
+  "기부금 세액공제율은 15%이고 기부금 합계가 1천만원을 넘는 부분은 30%입니다. 흔히 말하는 '10만원까지 100%'는 일반 기부금이 아니라 고향사랑기부금과 정치자금에 적용되는 110분의 100 공제입니다. 10만원을 내면 90,909원을 돌려받습니다.";
+
+const ANSWER = `기부금 세액공제율은 ${pct(D.rate)}이고, 기부금 합계가 ${eokwon(D.highFrom)}을 넘는 부분은 ${pct(D.highRate)}입니다(소득세법 제59조의4 제4항). 흔히 말하는 '10만원까지 100%'는 고향사랑기부금·정치자금의 110분의 100 공제로, 10만원을 내면 ${won(hometownCredit(100_000))}을 돌려받습니다.`;
+
+const QA = [
+  { q: "기부금 세액공제율은 몇 퍼센트인가요?", a: `특례기부금과 한도 안 일반기부금을 합한 금액의 ${pct(D.rate)}이고, 그 합계가 ${eokwon(D.highFrom)}을 넘으면 넘는 부분에 ${pct(D.highRate)}를 적용합니다(제59조의4 제4항). 사업소득 필요경비에 넣은 기부금은 이 계산에서 뺍니다.` },
+  { q: "기부금 세액공제 10만원 100%는 무엇인가요?", a: `고향사랑기부금(조특법 제58조)과 정당에 낸 정치자금(제76조)의 공제입니다. 둘 다 10만원까지는 기부금의 110분의 100을 산출세액에서 빼서, 10만원을 내면 ${won(hometownCredit(100_000))}을 돌려받습니다. 교회·복지단체 같은 일반기부금은 처음부터 ${pct(D.rate)}입니다.` },
+  { q: "기부금 세액공제 계산은 어떻게 하나요?", a: `일반기부금은 소득금액 한도 안의 금액에 ${pct(D.rate)}를 곱합니다. 100만원이면 ${won(donationCredit({ income: 100_000_000, general: 1_000_000 }).credit)}, 1,500만원이면 1천만원까지 ${pct(D.rate)}와 넘는 500만원의 ${pct(D.highRate)}를 더해 ${won(donationCredit({ income: 100_000_000, general: 15_000_000 }).credit)}입니다(한도 안이라고 가정).` },
+  { q: "정치자금과 고향사랑기부금은 10만원을 넘으면 어떻게 되나요?", a: `정치자금은 10만원 초과분에 15%(3천만원 초과분 25%)를 적용합니다. 고향사랑기부금은 10만원 초과 20만원 이하 부분에 40%, 20만원 초과 2천만원 이하 부분에 15%(특별재난지역은 30%)입니다(조특법 제58조·제76조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>낸 금액</th><th>일반기부금</th><th>고향사랑기부금</th><th>정치자금</th></tr></thead>
+    <tbody>
+      {amounts.map((x) => (
+        <tr>
+          <th scope="row">{eokwon(x)}</th>
+          <td>{won(donationCredit({ income: 1_000_000_000, general: x }).credit)}</td>
+          <td>{won(hometownCredit(x))}</td>
+          <td>{won(politicalCredit(x))}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <p>소득금액 한도와 산출세액 한도 안이라고 가정한 값입니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    고향사랑기부금은 <a href="/guide/hometown-donation-credit/">고향사랑기부금 세액공제</a>에 따로 정리했습니다.
+  </p>
+</GuideLayout>

@@ -1,0 +1,64 @@
+---
+/**
+ * "교육비 세액공제 학원비" — 교육비 세액공제 시리즈. (학원·수영·예체능·초등학생 학원비도 이 글)
+ * 근거: 소득세법 제59조의4 제3항 제1호 라목(취학 전 아동)·마목(9세 미만 또는 2학년 이하 초등학생 예능 학원·체육시설, 2026년 지급분부터),
+ * 시행령 제118조의6 제6항~제10항.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { eokwon } from "../../../lib/won";
+
+const E = r.education;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "교육비 세액공제 학원비 — 취학 전 아동, 그리고 2026년부터 초등 1~2학년 예체능까지";
+const description =
+  "교육비 세액공제에서 학원비는 초등학교 취학 전 아동의 학원·체육시설 수강료와, 2026년 지급분부터 9세 미만 또는 2학년 이하 초등학생의 예능 학원·체육시설 수강료만 공제됩니다. 월 단위로 주 1회 이상 하는 과정이어야 하고, 1명당 300만원 한도입니다.";
+
+const ANSWER = `교육비 세액공제에서 학원비는 초등학교 취학 전 아동의 학원·체육시설 수강료와, 2026년 지급분부터 9세 미만 또는 2학년 이하 초등학생의 예능 학원·체육시설 수강료만 공제됩니다(소득세법 제59조의4 제3항). 월 단위·주 1회 이상 과정이어야 하고, 1명당 ${eokwon(E.caps.school)} 한도입니다.`;
+
+const QA = [
+  { q: "학원비도 교육비 세액공제가 되나요?", a: `일부만 됩니다. 초등학교 취학 전 아동이 다니는 학원·체육시설(라목)과, 2026년에 낸 교육비부터 과세기간 종료일 현재 9세 미만 또는 2학년 이하인 초등학생의 예능 학원·체육시설(마목)입니다. 그 밖의 초·중·고등학생 학원비는 공제 목록에 없습니다.` },
+  { q: "초등학생 학원비 교육비 세액공제는 어떻게 되나요?", a: `2026년분부터 초등 1~2학년(또는 9세 미만)의 예능분야 학원과 체육시설 수강료가 새로 들어갔습니다(시행령 제118조의6 제8항~제10항). 국어·영어·수학 같은 교과 학원비는 이 목록에 없고, 3학년 이상은 예능 학원도 대상이 아닙니다.` },
+  { q: "수영장·태권도 같은 체육시설도 되나요?", a: `취학 전 아동과 초등 1~2학년이라면 됩니다. 체육시설업자가 운영하는 체육시설, 국가·지자체·청소년수련시설 운영자가 운영하는 체육시설에서 월 단위로 주 1회 이상 하는 교습과정의 수강료가 대상입니다(시행령 제118조의6 제6항·제7항·제10항).` },
+  { q: "학원비 교육비 세액공제 한도는 얼마인가요?", a: `취학 전 아동과 초등학생은 1명당 연 ${eokwon(E.caps.school)} 한도 안에서 학비·급식비 등과 합산해 ${pct(E.rate)}를 공제합니다(제59조의4 제3항 제1호 단서). 학원비만 따로 정한 한도는 없습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>누가</th><th>공제되는 학원·시설</th><th>2025년분</th><th>2026년분</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">취학 전 아동</th><td>학원·체육시설(월 단위, 주 1회 이상)</td><td>됨</td><td>됨</td></tr>
+      <tr><th scope="row">초등 1~2학년(또는 9세 미만)</th><td>예능 학원·체육시설(월 단위, 주 1회 이상)</td><td>안 됨</td><td>됨</td></tr>
+      <tr><th scope="row">그 밖의 초·중·고등학생</th><td>—</td><td>안 됨</td><td>안 됨</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <ul>
+    <li>{E.academy.preschool}</li>
+    <li>{E.academy.lowerElementary}</li>
+  </ul>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>
+    학교 방과후 수업료와 교재비는 학년과 관계없이 교육비에 들어갑니다(시행령 제118조의6 제1항 제5호) —{" "}
+    <a href="/guide/education-credit/">교육비세액공제</a>.
+  </p>
+</GuideLayout>

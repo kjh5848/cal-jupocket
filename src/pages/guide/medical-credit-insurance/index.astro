@@ -1,0 +1,60 @@
+---
+/**
+ * "의료비 세액공제 실손보험" — 의료비 세액공제 시리즈. (실비·실손보험 제외 방법도 이 글)
+ * 근거: 소득세법 시행령 제118조의5 제1항 괄호(실손의료보험금 제외), 소득세법 제59조의4 제2항.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/special-credit-2026.json";
+import { medicalCredit } from "../../../lib/special-credit";
+import { won } from "../../../lib/won";
+
+// 예시: 총급여 4,000만원, 본인 의료비 500만원, 실손보험금 300만원
+const before = medicalCredit({ pay: 40_000_000, special: 5_000_000 });
+const after = medicalCredit({ pay: 40_000_000, special: 2_000_000 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 special-credit-series.test.ts 가 rates 와 대조한다.
+const title = "의료비 세액공제 실손보험 — 실손보험금으로 받은 금액은 의료비에서 뺍니다";
+const description =
+  "의료비 세액공제에서 실손의료보험금으로 돌려받은 금액은 공제 대상 의료비에서 뺍니다. 소득세법 시행령은 근로자가 직접 부담한 의료비만 대상으로 하고, 보험회사 등에서 받은 실손의료보험금은 제외한다고 정합니다. 빼지 않고 공제받았다면 나중에 추징될 수 있습니다.";
+
+const ANSWER = `의료비 세액공제에서 실손의료보험금으로 돌려받은 금액은 공제 대상 의료비에서 뺍니다. 시행령은 근로자가 직접 부담한 의료비만 대상으로 하고, 보험회사 등에서 받은 실손의료보험금은 제외한다고 정합니다(소득세법 시행령 제118조의5 제1항).`;
+
+const QA = [
+  { q: "실손보험금을 받은 의료비도 세액공제가 되나요?", a: `실손보험금으로 받은 부분은 안 됩니다. 의료비 세액공제 대상은 해당 근로자가 직접 부담하는 의료비이고, 보험회사 등으로부터 지급받은 실손의료보험금은 제외한다고 시행령이 정합니다(제118조의5 제1항). 내 돈으로 남은 부분만 대상입니다.` },
+  { q: "의료비 세액공제에서 실비는 어떻게 빼나요?", a: `그해 지급한 의료비에서 그 의료비에 대해 받은 실손의료보험금을 뺀 금액으로 계산합니다. 예를 들어 총급여 4,000만원에 본인 의료비 500만원, 실손보험금 300만원이면 200만원만 넣어 공제액이 ${won(before.credit)}에서 ${won(after.credit)}으로 줄어듭니다.` },
+  { q: "실손보험금을 빼지 않고 공제받으면 어떻게 되나요?", a: `공제 대상이 아닌 금액으로 세액공제를 받은 것이라 덜 낸 세금을 다시 내야 할 수 있습니다. 반대로 실손보험금을 다음 해에 받았을 때 어느 해 의료비에서 빼는지, 가산세가 붙는지는 이 글에서 확인하지 않았습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>총급여 4,000만원, 본인 의료비</th><th>공제 대상</th><th>세액공제</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">실손보험금을 빼지 않으면(500만원)</th><td>{won(before.sBase)}</td><td>{won(before.credit)}</td></tr>
+      <tr><th scope="row">실손보험금 300만원을 빼면(200만원)</th><td>{won(after.sBase)}</td><td>{won(after.credit)}</td></tr>
+    </tbody>
+  </table>
+  <p>
+    직접 넣어 보려면 <a href="/guide/medical-credit-limit/">의료비 세액공제 계산기</a>에 실손보험금을
+    뺀 금액을 입력하세요.
+  </p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    연말정산 뒤에 빠뜨리거나 잘못 넣은 것을 바로잡는 절차는{" "}
+    <a href="/guide/year-end-correction/">연말정산 경정청구</a>에 있습니다.
+  </p>
+</GuideLayout>
