@@ -1,0 +1,69 @@
+---
+/**
+ * "성실신고대상자" — 성실신고 시리즈 허브. (성실신고확인대상자 기준·업종별 수입금액·신고기한 6월 30일·미제출 가산세·확인비용 세액공제·혜택도 이 글)
+ * 근거: 소득세법 제70조의2, 시행령 제133조(15억원·7억5천만원·5억원), 제81조의2(가산세 5% vs 0.02%),
+ * 조세특례제한법 제126조의6(확인비용 60%, 120만원), 제122조의3(의료비·교육비·월세). rates: diligent-filer-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/diligent-filer-2026.json";
+import { diligentPenalty, diligentCostCredit } from "../../../lib/diligent-filer";
+import { won, eokwon } from "../../../lib/won";
+import { diligentSeries as S } from "../../../data/series/diligent";
+
+const T = r.threshold;
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const g = T.groups.map((x) => eokwon(x.amount));
+const pen = diligentPenalty({ computedTax: 50_000_000, businessIncome: 1, totalIncome: 1, revenue: 1_000_000_000 });
+const penLow = diligentPenalty({ computedTax: 0, businessIncome: 1, totalIncome: 1, revenue: 800_000_000 });
+const credit = diligentCostCredit(3_000_000);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 diligent-series.test.ts 가 rates 와 대조한다.
+const title = "성실신고대상자 — 그해 수입금액이 업종별 15억·7억5천만·5억원 이상이면 6월 30일까지 신고합니다";
+const description =
+  "성실신고확인대상자는 그해 수입금액이 도소매업 등 15억원, 제조·음식점업 등 7억5천만원, 서비스·부동산임대업 등 5억원 이상인 개인사업자입니다. 세무사 확인서를 붙여 6월 30일까지 신고하고, 확인비용의 60%를 120만원 한도로 세액공제받습니다.";
+
+const ANSWER = `성실신고확인대상자는 해당 연도 수입금액이 업종별로 ${g[0]}(도소매업 등), ${g[1]}(제조·음식점업 등), ${g[2]}(서비스·부동산임대업 등) 이상인 개인사업자입니다(소득세법 시행령 제133조). 세무사 등의 성실신고확인서를 붙여 다음 해 ${r.deadline.to}까지 종합소득세를 신고합니다(제70조의2).`;
+
+const QA = [
+  { q: "성실신고대상자 기준은 무엇인가요?", a: `해당 과세기간의 수입금액 합계(사업용 유형자산 양도 수입 제외)가 ① 농업·광업·도소매업·부동산매매업 등 ${g[0]} ② 제조업·숙박음식점업·건설업·운수업·정보통신업 등 ${g[1]} ③ 부동산임대업·전문서비스업·교육·보건·개인서비스업 등 ${g[2]} 이상이면 대상입니다(시행령 제133조 제1항). 직전 연도가 아니라 신고하는 그해 수입금액으로 봅니다.` },
+  { q: "성실신고 신고기한은 언제인가요?", a: `성실신고확인서를 제출하는 사업자는 종합소득세를 다음 연도 ${r.deadline.from}부터 ${r.deadline.to}까지 신고합니다(소득세법 제70조의2 제2항). 일반 사업자의 5월 31일보다 한 달 늦고, 2026년 귀속분이면 2027년 ${r.deadline.to}까지입니다. 확인서는 세무사·공인회계사·세무법인·회계법인이 작성합니다.` },
+  { q: "성실신고확인서를 안 내면 가산세는요?", a: `${r.deadline.to}까지 내지 않으면 ① 종합소득산출세액 × 사업소득 비중 × ${pct(r.penalty.rate)}와 ② 사업 수입금액 × ${pct(r.penalty.revenueRate)} 중 큰 금액을 가산세로 냅니다(제81조의2). 산출세액 5천만원·수입금액 10억원이면 ${won(pen)}이고, 산출세액이 없어도 수입금액 8억원이면 ${won(penLow)}입니다.` },
+  { q: "성실신고대상자가 받는 혜택은 무엇인가요?", a: `확인에 직접 쓴 비용의 ${pct(r.costCredit.rate)}를 사업소득 소득세에서 공제하고 한도는 ${eokwon(r.costCredit.cap)}입니다(조특법 제126조의6) — 비용 3백만원이면 ${won(credit)}. 확인서를 낸 사업자는 의료비·교육비 ${pct(r.medicalEdu.rate)} 세액공제, 종합소득금액 7천만원 이하면 월세 세액공제도 받습니다(제122조의3, 2026년 과세연도까지).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>해당 연도 수입금액</th><th>업종(소득세법 시행령 제133조 제1항)</th></tr></thead>
+      <tbody>{T.groups.map((x) => <tr><th scope="row">{eokwon(x.amount)} 이상</th><td>{x.industries}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <p>도소매업이나 제조업이라도 시행령 별표 3의3의 사업서비스업이면 {g[2]} 기준이고, 업종을 겸영하거나 사업장이 둘 이상이면 시행령 제208조 제7항을 준용해 환산한 수입금액으로 판단합니다(제133조 제2항). 환산식은 이 글에서 다루지 않았습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>세무사가 스스로 성실신고확인대상자이면 자기 확인서를 쓸 수 없습니다(제133조 제4항). 일반 신고기한과 대상자는 <a href="/guide/who-must-file/">종합소득세 신고 대상</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>사업소득 비중은 사업소득금액 ÷ 종합소득금액이고 0과 1 사이로 자릅니다. 경정으로 산출세액이 생기면 경정된 세액으로 다시 계산합니다(제81조의2 제2항).</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>공제받은 뒤 사업소득금액을 과소 신고한 것이 드러나 그 금액이 경정된 사업소득금액의 {pct(r.costCredit.clawbackRatio)} 이상이면 공제세액을 전부 추징하고, 그다음 과세연도부터 {r.costCredit.banYears}개 과세연도 동안 확인비용 공제를 하지 않습니다(조특법 제126조의6 제2항·제3항).</p>
+
+  <h2>성실신고 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

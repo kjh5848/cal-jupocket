@@ -151,6 +151,8 @@ export const clusters: Cluster[] = [
       { href: "/guide/payslip/", title: "급여명세서 — 월급날마다 6가지 항목을 적어 줘야 하고, 5명 미만 사업장도 같습니다", kind: "guide", icon: "document", year: 2026 },
       { href: "/guide/payslip-issue/", title: "급여명세서 발급 — 월급을 주는 날 함께, 종이나 전자문서로 줘야 합니다", kind: "guide", icon: "document", year: 2026 },
       { href: "/guide/wage-ledger/", title: "임금대장 — 근로자마다 10가지를 임금 줄 때마다 적고 3년간 보존합니다", kind: "guide", icon: "document", year: 2026 },
+      { href: "/guide/diligent-filer/", title: "성실신고대상자 — 그해 수입금액이 업종별 15억·7억5천만·5억원 이상이면 6월 30일까지 신고합니다", kind: "guide", icon: "checklist", year: 2026 },
+      { href: "/guide/diligent-business/", title: "성실사업자 기준 — 카드·현금영수증 가맹, 장부 신고, 사업용계좌 3분의 2 사용 세 가지", kind: "guide", icon: "checklist", year: 2026 },
     ],
   },
   {
@@ -330,6 +332,8 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/diligent-business/",
+  "/guide/diligent-filer/",
   "/guide/wage-ledger/",
   "/guide/payslip-issue/",
   "/guide/payslip/",

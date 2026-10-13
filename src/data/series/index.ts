@@ -24,5 +24,6 @@ import { corporateTaxSeries } from "./corporate-tax";
 import { propertyTaxSeries } from "./property-tax";
 import { lottoTaxSeries } from "./lotto-tax";
 import { payslipSeries } from "./payslip";
+import { diligentSeries } from "./diligent";
 
-export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries, incomeTaxRateSeries, businessFilingSeries, withholdingTaxSeries, taxRefundSeries, acquisitionSeries, localTaxSeries, businessRegistrationSeries, corporateTaxSeries, propertyTaxSeries, lottoTaxSeries, payslipSeries];
+export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries, incomeTaxRateSeries, businessFilingSeries, withholdingTaxSeries, taxRefundSeries, acquisitionSeries, localTaxSeries, businessRegistrationSeries, corporateTaxSeries, propertyTaxSeries, lottoTaxSeries, payslipSeries, diligentSeries];

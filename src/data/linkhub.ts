@@ -254,6 +254,8 @@ export const hubEntries: HubEntry[] = [
   { no: 227, href: "/guide/payslip/", label: "급여명세서 — 6가지 기재사항", kind: "guide" },
   { no: 228, href: "/guide/payslip-issue/", label: "급여명세서 발급·조회", kind: "guide" },
   { no: 229, href: "/guide/wage-ledger/", label: "임금대장 기재사항·보존", kind: "guide" },
+  { no: 230, href: "/guide/diligent-filer/", label: "성실신고대상자 기준·기한", kind: "guide" },
+  { no: 231, href: "/guide/diligent-business/", label: "성실사업자 기준·혜택", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -382,6 +384,8 @@ export const hubGroups: HubGroup[] = [
       "/guide/payslip",
       "/guide/payslip-issue",
       "/guide/wage-ledger",
+      "/guide/diligent-filer",
+      "/guide/diligent-business",
     ]),
   },
   {
