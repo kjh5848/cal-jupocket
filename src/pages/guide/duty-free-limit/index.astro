@@ -22,8 +22,8 @@ const description =
 const ANSWER = `한국에 들어올 때 면세한도는 여행자 1명당 미화 ${T.basicUsd}달러입니다(관세법 시행규칙 제48조 제2항). 술 ${T.liquor.liters}리터·${T.liquor.usd}달러 이하, 담배 궐련 ${T.tobacco.cigarettes}개비, 향수 ${T.perfumeMl}mL는 따로 면세됩니다(제3항). 넘으면 자진신고 시 관세 ${pct(r.selfReport.rate)} 경감(${eokwon(r.selfReport.cap)} 한도), 미신고 시 가산세 ${pct(r.penalty.rate)}입니다.`;
 
 const QA = [
-  { q: "해외여행 면세한도는 얼마인가요?", a: `여행자 1명의 휴대품 또는 별송품 과세가격 합계 기준 미화 ${T.basicUsd}달러 이하입니다(시행규칙 제48조 제2항). 출국할 때 면세점에서 산 물건도 이 ${T.basicUsd}달러에서 빼고 계산합니다. 몸에 착용하거나 휴대할 필요가 있는 물품 중 국내에서 가지고 나간 것은 포함하지 않습니다.` },
-  { q: "면세한도를 넘으면 세금은 얼마인가요?", a: `넘는 물품에 관세가 부과되고, 여행자 휴대품은 간이세율을 쓸 수 있습니다. 일반 물품 ${pct(r.simpleRates.general)}, 의류·신발 ${pct(r.simpleRates.clothing)}, 고급시계·가방은 ${won(r.simpleRates.luxuryBagOver)}을 넘는 금액의 ${pct(r.simpleRates.luxuryRate)} 등입니다(관세법 시행령 별표 2). 공제·환산 세부는 관세청 고시라 이 글에서 계산하지 않았습니다.` },
+  { q: "해외여행 면세한도는 얼마인가요?", a: `여행자 1명의 휴대품 또는 별송품 과세가격 합계 기준 미화 ${T.basicUsd}달러 이하입니다(시행규칙 제48조 제2항). 출국 면세점에서 산 물건도 들고 들어오면 이 합계에 들어가고, 입국장 면세점 등에서 산 내국물품은 ${T.basicUsd}달러에서 그 가격을 뺍니다(관세법 제196조). 국내에서 가지고 나간 몸에 지닌 물품은 빠집니다.` },
+  { q: "면세한도를 넘으면 세금은 얼마인가요?", a: `여행자 휴대품은 관세·부가가치세 등을 합쳐 정한 간이세율을 쓸 수 있습니다(관세법 제81조). 일반 물품 ${pct(r.simpleRates.general)}, 의류·신발 ${pct(r.simpleRates.clothing)}, 고급시계·가방은 ${won(r.simpleRates.luxuryBagBase)} + ${won(r.simpleRates.luxuryBagOver)} 초과분의 ${pct(r.simpleRates.luxuryRate)}입니다(시행령 별표 2). 공제·환산 세부는 관세청 고시라 계산하지 않았습니다.` },
   { q: "자진신고하면 얼마나 깎아 주나요?", a: `여행자 휴대품 신고서를 써서 자진신고하면 그 물품 관세의 ${pct(r.selfReport.rate)}를 ${eokwon(r.selfReport.cap)}을 넘지 않는 범위에서 경감합니다(관세법 제96조 제2항). 신고하지 않다가 걸려 과세되면 납부할 세액의 ${pct(r.penalty.rate)}, 반복해서 신고하지 않은 경우 등은 ${pct(r.penalty.repeatRate)}를 가산세로 냅니다(제241조 제5항).` },
 ];
 ---
