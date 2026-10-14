@@ -295,6 +295,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/parental-leave-pay-apply/", title: "육아휴직급여 신청 — 휴직 시작 1개월 뒤부터 끝난 뒤 12개월 안에 해야 합니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/parental-leave-period/", title: "육아휴직 기간 — 1년, 부모가 각각 3개월 이상 쓰면 6개월 더해 1년 6개월입니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/maternity-leave-pay/", title: "출산휴가급여 — 90일 통상임금을 받되 고용보험은 상한 660만원, 우선지원 대상기업이 아니면 마지막 30일분만 줍니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/minimum-wage/", title: "최저임금 — 2026년 시급 10,320원, 주 40시간 월급 2,156,880원이고 5명 미만 사업장도 같습니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/minimum-wage-2027/", title: "최저임금 2027 — 시급 10,700원으로 380원(3.7%) 오르고, 주 40시간 월급은 2,236,300원입니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/minimum-wage-calculator/", title: "최저임금 계산기", kind: "calc", icon: "calculator", blurb: "월급·주 근무시간 → 환산 시급과 최저임금 위반 여부" },
     ],
   },
   {
@@ -377,6 +380,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/minimum-wage-calculator/",
+  "/guide/minimum-wage-2027/",
+  "/guide/minimum-wage/",
   "/guide/direct-purchase-customs/",
   "/guide/japan-duty-free-limit/",
   "/guide/liquor-duty-free-limit/",

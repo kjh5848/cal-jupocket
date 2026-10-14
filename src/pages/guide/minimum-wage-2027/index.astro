@@ -1,0 +1,61 @@
+---
+/**
+ * "최저임금 2027" — 최저임금 시리즈. (2027 최저임금·내년 최저임금·인상률·2027 월급·연봉·주휴 포함 시급도 이 글)
+ * 근거: 2027년 적용 최저임금 고시(고용노동부고시 제2026-60호, 2026. 8. 5.), 2026년 고시(제2025-47호). rates: labor-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/labor-2026.json";
+import { minWage, minimumMonthly, weeklyHolidayPay } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+import { unemploymentBenefit } from "../../../lib/unemployment";
+
+const m26 = minWage(2026);
+const m27 = minWage(2027);
+const mon27 = r.minWage["2027"].monthly;
+const raise = ((m27 - m26) / m26) * 100;
+const raiseTxt = `${raise.toFixed(1)}%`;
+const ub27 = unemploymentBenefit({ wage3m: 9_000_000, insuredYears: 4, year: 2027 }).minDaily;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 minimum-wage-series.test.ts 가 rates 와 대조한다.
+const title = "최저임금 2027 — 시급 10,700원으로 380원(3.7%) 오르고, 주 40시간 월급은 2,236,300원입니다";
+const description =
+  "2027년 최저임금은 시급 10,700원으로 2026년 10,320원보다 380원(3.7%) 오릅니다. 주 40시간이면 월급 2,236,300원, 연 26,835,600원이고, 주휴수당을 넣은 시급은 12,840원입니다. 2027년 1월 1일부터 모든 사업장에 적용됩니다.";
+
+const ANSWER = `2027년 최저임금은 시급 ${won(m27)}입니다(고용노동부고시 제2026-60호). 2026년 ${won(m26)}보다 ${won(m27 - m26)}(${raiseTxt}) 올랐고, 주 40시간이면 월 ${won(mon27)}입니다. 2027년 1월 1일부터 12월 31일까지 사업 종류와 관계없이 모든 사업장에 같은 금액이 적용됩니다.`;
+
+const QA = [
+  { q: "2027년 최저임금은 얼마인가요?", a: `시간급 ${won(m27)}입니다. 2026년 8월 5일 고시됐고 2027년 1월 1일부터 적용됩니다(고시 제2026-60호). 사업의 종류별로 나누지 않고, 도급제 근로자에 대해서도 따로 정하지 않았습니다. 하루 8시간이면 일급 ${won(m27 * 8)}입니다.` },
+  { q: "2027년 최저임금 월급과 연봉은 얼마인가요?", a: `주 40시간 근무하면 주휴 8시간을 포함한 월 ${r.minWage.monthlyHours}시간 기준 월 ${won(mon27)}이고, 12개월이면 연 ${won(mon27 * 12)}입니다. 주 20시간이면 월 약 ${won(minimumMonthly(2027, 20))}, 주 30시간이면 약 ${won(minimumMonthly(2027, 30))}입니다(최저임금법 시행령 제5조 산식).` },
+  { q: "2027년 주휴수당 포함 시급은 얼마인가요?", a: `주 15시간 이상 일하고 개근하면 주휴수당이 붙어 실제 시급은 ${won(m27)} × 1.2 = ${won(weeklyHolidayPay(m27, 40).hourlyWithHoliday)}이 됩니다. 주 40시간이면 1주 주휴수당은 ${won(weeklyHolidayPay(m27, 40).weekly)}, 주 20시간이면 ${won(weeklyHolidayPay(m27, 20).weekly)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>구분</th><th>2026년</th><th>2027년</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">시급</th><td>{won(m26)}</td><td>{won(m27)}</td></tr>
+      <tr><th scope="row">일급(8시간)</th><td>{won(m26 * 8)}</td><td>{won(m27 * 8)}</td></tr>
+      <tr><th scope="row">월급(주 40시간, 209시간)</th><td>{won(r.minWage["2026"].monthly)}</td><td>{won(mon27)}</td></tr>
+      <tr><th scope="row">연봉(월급 × 12)</th><td>{won(r.minWage["2026"].monthly * 12)}</td><td>{won(mon27 * 12)}</td></tr>
+      <tr><th scope="row">고시</th><td>{r.minWage["2026"].notice}</td><td>{r.minWage["2027"].notice}</td></tr>
+    </tbody>
+  </table>
+  <p>인상률 {raiseTxt}는 두 고시의 시급으로 계산한 값입니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>2027년 최저임금이 오르면 실업급여 하한도 함께 올라 주 40시간 기준 하루 {won(ub27)}이 됩니다 — <a href="/guide/unemployment-benefit/">실업급여</a>. 적용 범위와 수습 감액은 <a href="/guide/minimum-wage/">최저임금</a>에 있습니다.</p>
+</GuideLayout>

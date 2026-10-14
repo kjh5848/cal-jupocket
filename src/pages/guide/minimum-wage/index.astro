@@ -1,0 +1,64 @@
+---
+/**
+ * "최저임금" — 최저임금 시리즈 허브. (2026 최저임금·시급·월급·연봉·5인 미만·수습 90%·산입범위·위반 신고·벌칙도 이 글)
+ * 근거: 2026·2027년 적용 최저임금 고시, 최저임금법 제3조(적용 범위)·제5조(수습)·제6조(산입범위·무효)·제7조·제28조(벌칙),
+ * 시행령 제3조·제5조, 부칙(법률 제15666호). 금액은 labor.ts 가 낸다(labor-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/labor-2026.json";
+import { minWage, minimumMonthly } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+import { minimumWageSeries as S } from "../../../data/series/minimum-wage";
+
+const L = r.minWageLaw;
+const m26 = minWage(2026);
+const mon26 = r.minWage["2026"].monthly;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const probation = Math.floor(m26 * L.probation);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 minimum-wage-series.test.ts 가 rates 와 대조한다.
+const title = "최저임금 — 2026년 시급 10,320원, 주 40시간 월급 2,156,880원이고 5명 미만 사업장도 같습니다";
+const description =
+  "2026년 최저임금은 시급 10,320원이고, 주 40시간 근무하면 주휴시간을 넣은 월 209시간 기준 월급 2,156,880원입니다. 근로자를 쓰는 모든 사업장에 적용되고, 1년 이상 계약한 수습 3개월은 90%까지 줄일 수 있습니다. 2027년은 10,700원입니다.";
+
+const ANSWER = `2026년 최저임금은 시급 ${won(m26)}이고, 주 40시간이면 주휴 8시간을 넣은 월 ${r.minWage.monthlyHours}시간 기준 월급 ${won(mon26)}입니다(고용노동부고시 제2025-47호). 근로자를 사용하는 모든 사업장에 적용되며(최저임금법 제3조), 2027년은 ${won(minWage(2027))}입니다.`;
+
+const QA = [
+  { q: "2026년 최저임금은 얼마인가요?", a: `시간급 ${won(m26)}이고, 사업 종류와 관계없이 모든 사업장에 같은 금액이 2026년 1월 1일부터 12월 31일까지 적용됩니다. 주 40시간 근무하면 월 ${won(mon26)}, 12개월이면 연 ${won(mon26 * 12)}입니다. 하루 8시간이면 일급 ${won(m26 * 8)}입니다.` },
+  { q: "5인 미만 사업장이나 알바도 최저임금이 적용되나요?", a: `적용됩니다. 최저임금법은 근로자를 사용하는 모든 사업 또는 사업장에 적용되고 상시 근로자 수로 나누지 않습니다(제3조 제1항). 동거하는 친족만 쓰는 사업, 가사사용인, 선원법이 적용되는 선원만 빠집니다. 정신·신체장애로 근로능력이 현저히 낮은 사람 등은 고용노동부장관 인가가 있어야 제외됩니다(제7조).` },
+  { q: "수습기간에는 최저임금보다 적게 줘도 되나요?", a: `1년 이상 근로계약을 맺고 수습을 시작한 날부터 3개월 이내라면 시급의 ${pct(1 - L.probation)}를 뺀 금액, 2026년 기준 ${won(probation)}까지 줄 수 있습니다(제5조 제2항, 시행령 제3조). 계약기간이 1년 미만이거나 수습 3개월이 지나면 안 되고, 단순노무업무로 고시된 직종은 수습이어도 감액할 수 없습니다.` },
+  { q: "최저임금에 어떤 돈이 들어가나요?", a: `매월 1회 이상 정기적으로 주는 임금이 들어갑니다. 연장·야간·휴일근로 수당처럼 소정근로시간 외에 대해 주는 임금은 빠집니다. 매달 나누어 주는 정기상여금과 식비·교통비 같은 현금 복리후생비는 2024년부터 전액 들어갑니다(제6조 제4항, 부칙 법률 제15666호 제2조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>1주 소정근로시간</th><th>2026년 월 최저임금</th><th>2027년 월 최저임금</th></tr></thead>
+    <tbody>{[15, 20, 30, 40].map((h) => <tr><th scope="row">{h}시간</th><td>{won(minimumMonthly(2026, h))}</td><td>{won(minimumMonthly(2027, h))}</td></tr>)}</tbody>
+  </table>
+  <p>월 금액은 (주 소정근로시간 + 주휴시간) × 1년 평균 주 수 ÷ 12시간으로 계산합니다(최저임금법 시행령 제5조). 주 40시간은 고시가 정한 209시간을 썼습니다. 주휴수당은 <a href="/guide/weekly-holiday-pay/">주휴수당</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>최저임금보다 적게 정한 근로계약 부분은 무효이고 최저임금을 주기로 한 것으로 봅니다(제6조 제3항). 최저임금보다 적게 주면 3년 이하 징역 또는 2천만원 이하 벌금입니다(제28조). 내 월급이 기준을 넘는지는 <a href="/guide/minimum-wage-calculator/">최저임금 계산기</a>로 확인하세요.</p>
+
+  <h2>최저임금 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

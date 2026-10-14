@@ -75,3 +75,24 @@ export function annualLeavePay(dailyWage: number, unusedDays: number): number {
 export function partTimeLeaveHours(fullDays: number, weeklyHours: number, normalWeeklyHours = W.maxWeeklyHours): number {
   return Math.ceil(fullDays * (weeklyHours / normalWeeklyHours) * 8 - 1e-9);
 }
+
+/** 최저임금 적용기준 월 시간 — 주 40시간은 고시의 209시간, 그 밖은 시행령 제5조 산식 (주 시간 + 주휴) × 365/7 ÷ 12 */
+export function minWageMonthlyHours(weeklyHours = 40): number {
+  const h = Math.min(Math.max(0, weeklyHours), W.maxWeeklyHours);
+  if (h === W.maxWeeklyHours) return r.minWage.monthlyHours;
+  return Math.round((h + weeklyHolidayHours(h)) * WEEKS_PER_MONTH * 100) / 100;
+}
+
+/** 그해 최저임금 월급(주 소정근로시간 기준). 수습 3개월은 90% */
+export function minimumMonthly(year: 2026 | 2027 = 2026, weeklyHours = 40, probation = false): number {
+  const hourly = minWage(year) * (probation ? r.minWageLaw.probation : 1);
+  return fl(hourly * minWageMonthlyHours(weeklyHours));
+}
+
+/** 월급(산입되는 임금)을 시간급으로 환산해 최저임금과 비교 */
+export function checkMinWage(monthlyPay: number, weeklyHours = 40, year: 2026 | 2027 = 2026, probation = false) {
+  const hours = minWageMonthlyHours(weeklyHours);
+  const hourly = hours > 0 ? fl(monthlyPay / hours) : 0;
+  const min = fl(minWage(year) * (probation ? r.minWageLaw.probation : 1));
+  return { hours, hourly, min, ok: hourly >= min, shortfall: Math.max(0, fl(min * hours) - monthlyPay) };
+}

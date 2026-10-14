@@ -1,0 +1,77 @@
+---
+/**
+ * "최저임금 계산기" — 최저임금 시리즈. (최저임금 위반 확인·월급 시급 환산·최저임금 월급 계산·수습 최저임금도 이 글, 계산기 포함)
+ * 계산: src/lib/labor.ts checkMinWage()·minimumMonthly() — 최저임금법 제5조·제6조, 시행령 제3조·제5조, 2026·2027 고시.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/labor-2026.json";
+import { checkMinWage, minimumMonthly, minWage, minWageMonthlyHours } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+
+const ex = checkMinWage(2_100_000);
+const pt = checkMinWage(1_100_000, 20);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 minimum-wage-series.test.ts 가 rates 와 대조한다.
+const title = "최저임금 계산기 — 월급과 주 근무시간을 넣으면 시급으로 바꿔 최저임금을 넘는지 알려 줍니다";
+const description =
+  "최저임금 계산기는 매달 받는 임금(기본급과 매월 주는 수당·상여금·식비 등)을 주휴시간을 넣은 월 근로시간으로 나눠 시급으로 환산하고 최저임금과 비교합니다. 주 40시간에 월 210만원이면 시급 10,047원으로 2026년 최저임금 10,320원에 못 미칩니다.";
+
+const ANSWER = `최저임금 위반 여부는 매달 받는 임금을 '1개월 최저임금 적용기준 시간'으로 나눈 시급으로 봅니다(최저임금법 시행령 제5조). 주 40시간은 ${r.minWage.monthlyHours}시간이라 월 210만원이면 시급이 ${won(ex.hourly)}이라 2026년 최저임금 ${won(minWage(2026))}에 못 미치고, 월 ${won(ex.shortfall)}이 모자랍니다.`;
+
+const QA = [
+  { q: "월급이 최저임금을 넘는지 어떻게 계산하나요?", a: `① 매월 1회 이상 정기적으로 받는 임금(기본급, 매월 주는 수당·상여금·식비 등)을 더하고 연장·야간·휴일수당은 뺍니다(제6조 제4항) ② (주 소정근로시간 + 주휴시간) × 365 ÷ 7 ÷ 12로 월 시간을 구해 ③ ①을 ②로 나눈 시급을 최저임금과 비교합니다(시행령 제5조).` },
+  { q: "주 20시간 알바 월급은 최저임금이 얼마인가요?", a: `주 20시간이면 주휴 4시간을 더한 24시간에 1년 평균 주 수를 곱해 12로 나눈 월 ${minWageMonthlyHours(20)}시간이 기준입니다. 2026년 최저임금으로 월 약 ${won(minimumMonthly(2026, 20))}이고, 월 110만원이면 시급이 ${won(pt.hourly)}이라 기준을 넘습니다.` },
+  { q: "수습이면 최저임금이 얼마인가요?", a: `1년 이상 근로계약의 수습 3개월 동안은 시급 최저임금의 90%를 기준으로 할 수 있어 2026년 ${won(Math.floor(minWage(2026) * r.minWageLaw.probation))}, 주 40시간 월 ${won(minimumMonthly(2026, 40, true))}입니다(최저임금법 제5조 제2항, 시행령 제3조). 단순노무업무로 고시된 직종은 감액할 수 없습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">매월 받는 임금 중 최저임금에 들어가는 금액(연장·야간·휴일수당 제외)을 넣으세요. 주 40시간은 고시의 209시간, 그 밖은 시행령 제5조 산식으로 월 시간을 계산합니다.</p>
+    <div class="calc-input-wrap">
+      <label for="mw-pay">월 임금(최저임금 산입분)</label>
+      <input type="text" inputmode="numeric" id="mw-pay" value="2,100,000" /><span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="mw-hours">1주 소정근로시간</label>
+      <input type="number" min="1" max="40" step="0.5" id="mw-hours" value="40" /><span class="unit">시간</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="mw-year">기준 연도</label>
+      <select id="mw-year"><option value="2026" selected>2026년 ({won(minWage(2026))})</option><option value="2027">2027년 ({won(minWage(2027))})</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="mw-prob">수습 3개월(1년 이상 계약)</label>
+      <select id="mw-prob"><option value="0" selected>아니오</option><option value="1">예 — 90% 적용</option></select>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">환산 시급</p>
+      <p class="big" id="mw-hero">{won(ex.hourly)}</p>
+      <p class="meta" id="mw-note">2026년 최저임금 {won(ex.min)}보다 낮습니다. 월 {won(ex.shortfall)}이 모자랍니다.</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">월 기준시간</span><span class="value" id="mw-h">{ex.hours}시간</span></div>
+      <div class="stat-chip"><span class="label">기준 시급</span><span class="value" id="mw-min">{won(ex.min)}</span></div>
+      <div class="stat-chip"><span class="label">최저 월급</span><span class="value" id="mw-month">{won(minimumMonthly(2026, 40))}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>적용 범위와 위반 시 벌칙은 <a href="/guide/minimum-wage/">최저임금</a>, 2027년 금액은 <a href="/guide/minimum-wage-2027/">최저임금 2027</a>에 있습니다.</p>
+
+  <script src="../../../scripts/minimum-wage.ts"></script>
+</GuideLayout>
