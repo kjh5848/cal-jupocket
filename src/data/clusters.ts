@@ -333,6 +333,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/property-tax-calc/", title: "재산세 계산, 공시가격 × 비율 × 세율", kind: "guide", icon: "home", year: 2026 },
       { href: "/guide/property-tax-payment/", title: "재산세 납부방법, 250만원 넘으면 분할", kind: "guide", icon: "home", year: 2026 },
       { href: "/guide/property-tax-basis-date/", title: "재산세 과세기준일, 6월 1일", kind: "guide", icon: "home", year: 2026 },
+      { href: "/guide/electric-car-tax/", title: "전기차 세금 — 자동차세는 1년 13만원이고, 취득세 140만원·개소세 300만원 감면은 2026년 말까지입니다", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/electric-car-tax-exemption/", title: "전기차 세금 감면 — 취득세 140만원·개별소비세 300만원, 법에 적힌 기한은 2026년 12월 31일입니다", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/electric-car-tax-calculator/", title: "전기차 세금 계산기", kind: "calc", icon: "calculator", blurb: "차값 → 전기차 취득세 감면액과 1년 자동차세" },
     ],
   },
   {
@@ -380,6 +383,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/electric-car-tax-calculator/",
+  "/guide/electric-car-tax-exemption/",
+  "/guide/electric-car-tax/",
   "/guide/minimum-wage-calculator/",
   "/guide/minimum-wage-2027/",
   "/guide/minimum-wage/",

@@ -1,0 +1,73 @@
+---
+/**
+ * "전기차 세금" — 전기차 세금 시리즈 허브. (전기차 자동차세·전기차 세금 기준·인상·개편·혜택도 이 글)
+ * 근거: 지방세법 제127조 제1항 제3호·제3항, 제128조, 제150조 제7호, 제151조, 시행령 제123조 제2호,
+ * 지방세특례제한법 제66조 제4항, 조세특례제한법 제109조. rates: electric-car-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/electric-car-2026.json";
+import { evVehicleTax } from "../../../lib/electric-car";
+import { yearlyBase, EDU_RATE } from "../../../lib/vehicle-tax";
+import { won, manwon } from "../../../lib/won";
+import { electricCarSeries as S } from "../../../data/series/electric-car";
+
+const E = r.exemption;
+const ev = evVehicleTax();
+const biz = evVehicleTax(true);
+const gas2000 = yearlyBase(2000);
+const gas2000Total = gas2000 + Math.floor(gas2000 * EDU_RATE);
+const until = (d: string) => d.replace(/^(\d{4})-(\d{2})-(\d{2})$/, (_, y, m, dd) => `${y}년 ${Number(m)}월 ${Number(dd)}일`);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 electric-car-series.test.ts 가 rates 와 대조한다.
+const title = "전기차 세금 — 자동차세는 1년 13만원이고, 취득세 140만원·개소세 300만원 감면은 2026년 말까지입니다";
+const description =
+  "전기차 자동차세는 배기량이 아니라 1대당 정액이라 비영업용은 연 10만원에 지방교육세를 더해 13만원이고, 오래 타도 깎이지 않습니다. 새 차를 살 때 취득세는 140만원, 개별소비세는 300만원까지 감면되지만 법에 적힌 기한은 2026년 12월 31일입니다.";
+
+const ANSWER = `전기차 자동차세는 배기량이 아니라 1대당 정액이라 비영업용은 연 ${won(ev.base)}, 지방교육세 30%를 더해 ${won(ev.total)}입니다(지방세법 제127조 제1항 제3호). 새로 살 때 취득세는 ${manwon(E.acquisition.cap)}, 개별소비세는 ${manwon(E.excise.cap)}까지 깎이고, 두 감면 모두 법에 적힌 기한은 ${until(E.acquisition.until)}입니다.`;
+
+const QA = [
+  { q: "전기차 자동차세는 얼마인가요?", a: `전기차는 '그 밖의 승용자동차'(지방세법 시행령 제123조 제2호)라 배기량 대신 1대당 연 ${won(ev.base)}입니다. 비영업용은 지방교육세 ${won(ev.edu)}을 더해 ${won(ev.total)}이고, 6월과 12월에 ${won(ev.perHalf)}씩 나옵니다. 영업용은 ${won(biz.base)}이고 지방교육세가 붙지 않습니다(제150조 제7호).` },
+  { q: "전기차도 오래 타면 자동차세가 깎이나요?", a: `깎이지 않습니다. 차령 3년부터 해마다 5%씩 줄이는 규정(제127조 제1항 제2호)은 배기량으로 세금을 매기는 제1호 승용자동차만 대상입니다. 전기차는 10년을 타도 연 ${won(ev.total)}입니다. 같은 비영업용 2,000cc 휘발유차는 새 차 기준 지방교육세 포함 ${won(gas2000Total)}입니다.` },
+  { q: "전기차 세금 감면은 언제 끝나나요?", a: `취득세 감면은 ${until(E.acquisition.until)}까지 취득한 차(지방세특례제한법 제66조 제4항), 개별소비세 감면은 ${until(E.excise.until)}까지 제조장이나 보세구역에서 반출된 차(조세특례제한법 제109조 제6항)에 적용됩니다. 2026년 10월 14일 확인한 법률 문언이고, 기한을 늘리려면 법 개정이 있어야 합니다.` },
+  { q: "전기차 자동차세가 오른다는 말은 사실인가요?", a: `2026년 10월 14일 확인한 지방세법 원문(2026. 7. 1. 시행)은 전기차를 1대당 ${won(ev.base)}으로 정하고 있고, 무게나 차값으로 매기는 규정은 없습니다. 바뀌려면 지방세법 개정이 필요합니다. 다만 지방자치단체가 조례로 표준세율의 50%까지 더 올릴 수는 있습니다(제127조 제3항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>구분</th><th>자동차세(1년)</th><th>지방교육세</th><th>합계</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">비영업용 전기차</th><td>{won(ev.base)}</td><td>{won(ev.edu)}</td><td>{won(ev.total)}</td></tr>
+      <tr><th scope="row">영업용 전기차</th><td>{won(biz.base)}</td><td>없음</td><td>{won(biz.total)}</td></tr>
+    </tbody>
+  </table>
+  <p>연세액이 10만원 이하인 자동차세는 6월(제1기분)에 1년치를 한꺼번에 부과할 수도 있고, 그때는 제2기분 세액의 10% 범위에서 일부를 빼 줍니다(지방세법 제128조 제4항). 빼 주는 금액의 계산식은 이 글에서 계산하지 않았습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>배기량 차의 자동차세와 차령 감면은 <a href="/guide/vehicle-tax/">자동차세</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>감면 한도와 하이브리드·수소차 기한은 <a href="/guide/electric-car-tax-exemption/">전기차 세금 감면</a>, 차값별 취득세는 <a href="/guide/electric-car-tax-calculator/">전기차 세금 계산기</a>에 있습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <h2>쓰지 않은 것</h2>
+  <p>개별소비세 금액(세율표를 읽지 않았습니다), 도시철도채권 등 공채 매입 감면(지방자치단체 조례), 구매보조금 금액(환경부·지자체 공고)은 법률 원문으로 확인하지 않아 쓰지 않았습니다.</p>
+
+  <h2>전기차 세금 시리즈</h2>
+  <ul>
+    {[S.hub, ...S.items].map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

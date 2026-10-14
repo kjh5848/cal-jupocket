@@ -1,0 +1,72 @@
+---
+/**
+ * "전기차 세금 계산기" — 전기차 세금 시리즈. (전기차 세금 계산·전기차 취득세 계산·보조금과 취득세도 이 글, 계산기 포함)
+ * 계산: src/lib/electric-car.ts evAcquisitionTax()·evVehicleTax() — 지방세법 제12조·제127조, 시행령 제18조, 지방세특례제한법 제66조 제4항.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/electric-car-2026.json";
+import { evAcquisitionTax, evVehicleTax } from "../../../lib/electric-car";
+import { won, manwon, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const P = 40_000_000;
+const ex = evAcquisitionTax(P);
+const ev = evVehicleTax();
+const p50 = evAcquisitionTax(50_000_000);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 electric-car-series.test.ts 가 rates 와 대조한다.
+const title = "전기차 세금 계산기 — 차값을 넣으면 취득세 감면액과 1년 자동차세를 계산합니다";
+const description =
+  "전기차 세금 계산기는 부가가치세를 뺀 차값에 취득세율 7%를 곱하고 140만원 감면을 뺀 취득세와 1년 자동차세 13만원을 보여 줍니다. 4천만원이면 취득세 140만원이고, 구매보조금을 받아도 취득세 과세표준에서는 빠지지 않습니다.";
+
+const ANSWER = `전기차 취득세는 부가가치세를 뺀 차값 × ${pct(r.acquisitionTax.rate)}에서 ${manwon(r.exemption.acquisition.cap)}을 뺍니다(지방세법 제12조, 지방세특례제한법 제66조 제4항). 차값 ${eokwon(P)}이면 ${manwon(ex.gross)} − ${manwon(ex.exempt)} = ${manwon(ex.tax)}이고, 그 뒤 매년 자동차세는 지방교육세 포함 ${won(ev.total)}입니다.`;
+
+const QA = [
+  { q: "전기차 취득세는 어떻게 계산하나요?", a: `① 차값에서 부가가치세를 뺍니다(지방세법 시행령 제18조 제2항 제4호) ② 비영업용 승용차 세율 ${pct(r.acquisitionTax.rate)}를 곱합니다 ③ 2026년 12월 31일까지 취득하면 ${manwon(r.exemption.acquisition.cap)}을 뺍니다. 차값 5천만원이면 ${manwon(p50.gross)} − ${manwon(p50.exempt)} = ${manwon(p50.tax)}입니다.` },
+  { q: "보조금을 받으면 취득세도 줄어드나요?", a: `줄지 않습니다. 취득을 지원하려고 보조금 등 명칭과 관계없이 비용을 지급한 자가 낸 돈도 취득가격에 들어갑니다(지방세법 제10조의3 제1항 제3호, 시행령 제18조 제3항 제2호). 그래서 보조금을 받아 실제로 낸 돈이 적어도 취득세는 보조금을 빼기 전 차값으로 계산합니다.` },
+  { q: "2027년에 사면 얼마인가요?", a: `계산기의 취득 시기를 2027년 이후로 바꾸면 감면 없이 계산합니다. 2026년 10월 14일 확인한 지방세특례제한법은 전기차 취득세 감면을 2026년 12월 31일 취득분까지로 정하고 있어, 법이 그대로라면 차값 ${eokwon(P)}의 취득세는 ${manwon(ex.gross)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">부가가치세를 뺀 차값을 넣으세요. 보조금을 빼기 전 금액입니다. 비영업용 승용 전기차 기준이고, 경자동차(세율 4%)는 다른 감면과 겹칠 수 있어 계산하지 않습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="ev-price">차값(부가가치세 제외)</label>
+      <input type="text" inputmode="numeric" id="ev-price" value="40,000,000" /><span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ev-when">취득 시기</label>
+      <select id="ev-when"><option value="2026-12-31" selected>2026년 12월 31일까지</option><option value="2027-01-01">2027년 1월 1일 이후</option></select>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">낼 취득세</p>
+      <p class="big" id="ev-hero">{won(ex.tax)}</p>
+      <p class="meta" id="ev-note">취득세 {won(ex.gross)}에서 {won(ex.exempt)}이 감면됩니다.</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">감면 전 취득세</span><span class="value" id="ev-gross">{won(ex.gross)}</span></div>
+      <div class="stat-chip"><span class="label">감면액</span><span class="value" id="ev-exempt">{won(ex.exempt)}</span></div>
+      <div class="stat-chip"><span class="label">1년 자동차세</span><span class="value">{won(ev.total)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>감면 기한과 개별소비세 감면은 <a href="/guide/electric-car-tax-exemption/">전기차 세금 감면</a>, 자동차세가 왜 정액인지는 <a href="/guide/electric-car-tax/">전기차 세금</a>에 있습니다. 개별소비세 금액과 공채 매입은 이 계산기에 넣지 않았습니다.</p>
+
+  <script src="../../../scripts/electric-car.ts"></script>
+</GuideLayout>

@@ -1,0 +1,65 @@
+---
+/**
+ * "전기차 세금 감면" — 전기차 세금 시리즈. (전기차 세금 감면 종료·혜택·면제·할인·공제, 하이브리드·수소차 감면도 이 글)
+ * 근거: 지방세특례제한법 제66조 제3항~제5항, 조세특례제한법 제109조, 지방세법 제12조 제1항 제2호. rates: electric-car-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/electric-car-2026.json";
+import { evAcquisitionTax, evFullExemptPrice } from "../../../lib/electric-car";
+import { won, manwon, eokwon } from "../../../lib/won";
+
+const E = r.exemption;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const until = (d: string) => d.replace(/^(\d{4})-(\d{2})-(\d{2})$/, (_, y, m, dd) => `${y}년 ${Number(m)}월 ${Number(dd)}일`);
+const full = evFullExemptPrice();
+const p40 = 40_000_000;
+const now40 = evAcquisitionTax(p40, "2026-12-31");
+const after40 = evAcquisitionTax(p40, "2027-01-01");
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 electric-car-series.test.ts 가 rates 와 대조한다.
+const title = "전기차 세금 감면 — 취득세 140만원·개별소비세 300만원, 법에 적힌 기한은 2026년 12월 31일입니다";
+const description =
+  "전기차를 새로 사면 취득세는 140만원, 개별소비세는 300만원까지 감면됩니다. 취득세는 2026년 12월 31일까지 취득한 차, 개별소비세는 그날까지 공장에서 반출된 차가 기준입니다. 기한이 지나면 4천만원 전기차 취득세가 140만원에서 280만원이 됩니다.";
+
+const ANSWER = `전기차 취득세는 ${manwon(E.acquisition.cap)}까지 면제되고(지방세특례제한법 제66조 제4항), 개별소비세는 ${manwon(E.excise.cap)}까지 감면됩니다(조세특례제한법 제109조 제4항·제5항). 법에 적힌 기한은 둘 다 ${until(E.acquisition.until)}이고, 기준일은 취득세는 취득한 날, 개별소비세는 제조장이나 보세구역에서 반출된 날입니다.`;
+
+const QA = [
+  { q: "전기차 세금 감면은 얼마인가요?", a: `취득세는 세액이 ${manwon(E.acquisition.cap)} 이하면 전액 면제, 넘으면 ${manwon(E.acquisition.cap)}을 뺍니다. 비영업용 승용차 취득세율이 ${pct(r.acquisitionTax.rate)}라 부가가치세를 뺀 차값 ${eokwon(full)}까지는 취득세가 0원입니다. 개별소비세는 세액이 ${manwon(E.excise.cap)} 이하면 전액, 넘으면 ${manwon(E.excise.cap)}을 감면합니다.` },
+  { q: "감면이 끝나면 세금이 얼마나 늘어나나요?", a: `법이 그대로라면 2027년 1월 1일 이후 취득한 전기차는 취득세 감면이 없습니다. 부가가치세를 뺀 차값 ${eokwon(p40)}이면 지금은 취득세 ${manwon(now40.tax)}이지만 감면이 없으면 ${manwon(after40.tax)}입니다. 개별소비세도 2027년 이후 반출분부터 감면이 없어지는데, 세율표를 확인하지 않아 금액은 계산하지 않았습니다.` },
+  { q: "계약을 2026년에 하면 감면을 받나요?", a: `기준일이 계약일이 아닙니다. 취득세 감면은 '${until(E.acquisition.until)}까지 취득하는 경우'이고, 개별소비세 감면은 그날까지 제조장 또는 보세구역에서 반출되는 자동차에만 적용됩니다(조세특례제한법 제109조 제6항). 연말에 계약해도 출고·취득이 2027년으로 넘어가면 현재 법으로는 감면 대상이 아닙니다.` },
+  { q: "하이브리드차와 수소차도 감면되나요?", a: `하이브리드차 취득세 감면(${manwon(E.acquisitionHybridEnded.cap)})은 ${until(E.acquisitionHybridEnded.until)}로 끝났고(지방세특례제한법 제66조 제3항), 개별소비세 감면 ${manwon(E.exciseHybrid.cap)}은 ${until(E.exciseHybrid.until)}까지입니다. 수소전기차는 취득세 ${manwon(E.acquisitionHydrogen.cap)}을 ${until(E.acquisitionHydrogen.until)}까지, 개별소비세 ${manwon(E.exciseHydrogen.cap)}을 ${until(E.exciseHydrogen.until)}까지 감면합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>구분</th><th>감면 한도</th><th>법에 적힌 기한</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">전기차 취득세</th><td>{manwon(E.acquisition.cap)}</td><td>{until(E.acquisition.until)} 취득</td><td>{E.acquisition.article}</td></tr>
+      <tr><th scope="row">전기차 개별소비세</th><td>{manwon(E.excise.cap)}</td><td>{until(E.excise.until)} 반출</td><td>{E.excise.article}</td></tr>
+      <tr><th scope="row">수소차 취득세</th><td>{manwon(E.acquisitionHydrogen.cap)}</td><td>{until(E.acquisitionHydrogen.until)} 취득</td><td>{E.acquisitionHydrogen.article}</td></tr>
+      <tr><th scope="row">수소차 개별소비세</th><td>{manwon(E.exciseHydrogen.cap)}</td><td>{until(E.exciseHydrogen.until)} 반출</td><td>{E.exciseHydrogen.article}</td></tr>
+      <tr><th scope="row">하이브리드 개별소비세</th><td>{manwon(E.exciseHybrid.cap)}</td><td>{until(E.exciseHybrid.until)} 반출</td><td>{E.exciseHybrid.article}</td></tr>
+    </tbody>
+  </table>
+  <p>감면은 「환경친화적 자동차의 개발 및 보급 촉진에 관한 법률」에 따라 고시된 자동차가 대상입니다. 2026년 10월 14일에 확인한 법률 문언이고, 국회에서 기한을 늘리는 개정이 통과되면 달라집니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>차값을 넣어 취득세를 바로 보려면 <a href="/guide/electric-car-tax-calculator/">전기차 세금 계산기</a>, 매년 내는 자동차세는 <a href="/guide/electric-car-tax/">전기차 세금</a>에 있습니다.</p>
+</GuideLayout>
