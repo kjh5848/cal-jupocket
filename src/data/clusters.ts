@@ -270,7 +270,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/annual-leave-pay/", title: "연차수당 — 쓰지 못하고 넘어간 연차 하루마다 1일 통상임금을 받습니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/annual-leave-days/", title: "연차 발생기준 — 입사 첫해는 한 달 개근마다 1일, 1년 80% 출근하면 15일, 2년마다 1일씩 늘어 25일까지", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/annual-leave-calculator/", title: "연차 계산기", kind: "calc", icon: "calculator", blurb: "입사일·기준일 → 생긴 연차, 월급·남은 일수 → 연차수당" },
-      { href: "/guide/unemployment-benefit/", title: "실업급여 — 18개월 중 180일 이상 일하고 원치 않게 그만두면 하루 66,048~68,100원을 120~270일 받습니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/unemployment-benefit/", title: "실업급여 — 18개월 중 180일 이상 일하고 원치 않게 그만두면 주 40시간 기준 하루 66,048~68,100원을 120~270일 받습니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/unemployment-benefit-criteria/", title: "실업급여 조건 — 18개월 중 180일 가입, 비자발적 이직, 재취업 노력이면 자진 퇴사도 받을 수 있습니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/unemployment-benefit-calculator/", title: "실업급여 계산기", kind: "calc", icon: "calculator", blurb: "월급·근무시간·나이·가입기간 → 하루 구직급여·받는 날수·총액" },
       { href: "/guide/unemployment-benefit-apply/", title: "실업급여 신청방법 — 이직 후 바로 실업 신고, 수급자격 인정, 1~4주마다 실업인정 세 단계입니다", kind: "guide", icon: "wallet", year: 2026 },

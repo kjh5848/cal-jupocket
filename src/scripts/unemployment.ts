@@ -22,6 +22,12 @@ const parse = (v: string) => {
 
 function render() {
   const d = parse(leave.value) ?? new Date();
+  // 2026. 1. 1. 전 이직자는 종전 상한(시행령 부칙), 2028. 1. 1.부터는 기초일액 산정 방식이 바뀐다(법 제45조 개정) — 계산하지 않는다
+  if (d < new Date(2026, 0, 1) || d > new Date(2027, 11, 31)) {
+    for (const id of ["ub-hero", "ub-daily", "ub-days", "ub-avg", "ub-which"]) $(id).textContent = "—";
+    $("ub-note").textContent = "2026년 1월 1일~2027년 12월 31일 이직만 계산합니다. 그 전은 종전 상한, 2028년부터는 기초일액 산정 방식이 바뀝니다.";
+    return;
+  }
   const h = Number(hours.value) || 0;
   const x = unemploymentBenefit({
     wage3m: parseAmount(pay.value) * 3,
