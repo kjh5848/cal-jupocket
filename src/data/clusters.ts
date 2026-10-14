@@ -377,9 +377,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/farmland-capital-gains/", title: "농지 양도세, 8년 자경 100% 감면", kind: "guide", icon: "scale", year: 2026 },
       { href: "/guide/child-gift-limit/", title: "자녀 증여 한도 — 성인 자녀 10년간 5천만원, 미성년 자녀 2천만원까지 세금이 없습니다", kind: "guide", icon: "scale", year: 2026 },
       { href: "/guide/child-wedding-gift/", title: "자녀 결혼자금 증여 — 혼인신고 전후 2년 안이면 1억원을 더해 1억5천만원까지 세금이 없습니다", kind: "guide", icon: "scale", year: 2026 },
-      { href: "/guide/divorce-property-tax/", title: "이혼 재산분할 세금 — 양도세·증여세는 원칙적으로 없고 취득세는 1.5%, 위자료로 넘기면 양도세입니다", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/divorce-property-tax/", title: "이혼 재산분할 세금 — 양도세·증여세는 원칙적으로 없고 취득세는 1.5%, 위자료로 넘기면 양도세 대상입니다", kind: "guide", icon: "scale", year: 2026 },
       { href: "/guide/divorce-acquisition-tax/", title: "재산분할 취득세 — 무상취득 3.5%에서 2%를 뺀 1.5%, 5억원 집이면 지방교육세 포함 900만원입니다", kind: "guide", icon: "scale", year: 2026 },
-      { href: "/guide/divorce-alimony-tax/", title: "위자료 세금 — 위자료로 집을 넘기면 넘긴 사람이 양도세를 내고, 재산분할로 넘기면 내지 않습니다", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/divorce-alimony-tax/", title: "위자료 세금 — 위자료로 집을 넘기면 양도세 과세대상이 되고, 재산분할로 넘기면 양도가 아닙니다", kind: "guide", icon: "scale", year: 2026 },
     ],
   },
 ];
