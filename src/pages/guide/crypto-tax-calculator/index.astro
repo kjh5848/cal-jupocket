@@ -1,0 +1,83 @@
+---
+/**
+ * "코인 세금 계산기" — 코인 세금 시리즈. (가상자산 세금 계산·코인 세금 계산·250만원 공제·의제취득가액도 이 글, 계산기 포함)
+ * 계산: src/lib/crypto-tax.ts cryptoTax() — 소득세법 제37조 제1항 제3호·제5항, 제64조의3 제2항, 제84조 제3호, 지방세법 제93조 제18항.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/crypto-2026.json";
+import { cryptoTax } from "../../../lib/crypto-tax";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const ex = cryptoTax({ proceeds: 60_000_000, cost: 10_000_000 });
+const exFv = cryptoTax({ proceeds: 60_000_000, cost: 10_000_000, fairValue2026: 40_000_000 });
+const gains = [2_500_000, 5_000_000, 10_000_000, 30_000_000, 50_000_000, 100_000_000];
+const rows = gains.map((g) => ({ g, x: cryptoTax({ proceeds: g, cost: 0 }) }));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 crypto-series.test.ts 가 rates 와 대조한다.
+const title = "코인 세금 계산기 — 판 금액과 산 금액, 2026년 말 시가를 넣으면 2027년부터의 세금이 나옵니다";
+const description =
+  "코인 세금 계산기는 1년 양도가액에서 취득가액(2027년 전 보유분은 2026년 12월 31일 시가와 큰 쪽)과 수수료를 빼고 250만원을 공제한 뒤 22%를 곱합니다. 1천만원에 사서 6천만원에 팔면 1,045만원이고, 2026년 말 시가가 4천만원이면 385만원입니다.";
+
+const ANSWER = `코인 세금 = (양도가액 − 취득가액 − 수수료 − ${eokwon(r.deduction)}) × ${pct(r.rate + r.localRate)}입니다(소득세법 제64조의3, 지방세법 제93조). 2027년 1월 1일 전 보유분의 취득가액은 2026년 12월 31일 시가와 실제 취득가액 중 큰 금액입니다(제37조 제5항). 1천만원에 사서 6천만원에 팔면 ${won(ex.total)}입니다.`;
+
+const QA = [
+  { q: "코인 세금은 어떻게 계산하나요?", a: `① 1년 동안 판 금액 합계(양도가액) ② 그 코인을 산 금액(취득가액, 2027년 전 보유분은 2026년 말 시가와 큰 쪽) ③ 거래 수수료 등 부대비용을 빼 가상자산소득금액을 구하고 ④ ${eokwon(r.deduction)}을 뺀 금액에 소득세 ${pct(r.rate)}와 지방소득세 ${pct(r.localRate)}를 곱합니다(제37조·제64조의3).` },
+  { q: "2026년 말 시가는 왜 넣나요?", a: `2027년 1월 1일 전에 이미 갖고 있던 코인은 2026년 12월 31일 당시 시가와 실제 취득가액 중 큰 금액을 취득가액으로 보기 때문입니다(제37조 제5항). 1천만원에 산 코인이 2026년 말 4천만원이고 6천만원에 팔면 4천만원을 빼서 세금은 ${won(exFv.total)}, 시가 규정이 없다면 ${won(ex.total)}입니다.` },
+  { q: "이익별 코인 세금은 얼마인가요?", a: `1년 이익이 ${eokwon(r.deduction)} 이하면 0원입니다(제84조 제3호). 500만원이면 ${won(rows[1].x.total)}, 1천만원이면 ${won(rows[2].x.total)}, 5천만원이면 ${won(rows[4].x.total)}, 1억원이면 ${won(rows[5].x.total)}입니다. 세율이 누진이 아니라 ${pct(r.rate + r.localRate)} 하나라 이익에 거의 비례합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">한 해(2027년 이후) 모든 코인 거래를 합친 금액을 넣으세요. 필요경비 계산 방식(선입선출 등)과 해외 거래소 환산의 시행령 세부는 넣지 않았습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="ct-proceeds">판 금액 합계(양도가액)</label>
+      <input type="text" inputmode="numeric" id="ct-proceeds" value="60,000,000" /><span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ct-cost">산 금액 합계(실제 취득가액)</label>
+      <input type="text" inputmode="numeric" id="ct-cost" value="10,000,000" /><span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ct-fv">2027년 전 보유분의 2026. 12. 31. 시가 합계(없으면 0)</label>
+      <input type="text" inputmode="numeric" id="ct-fv" value="0" /><span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ct-fees">거래 수수료 등</label>
+      <input type="text" inputmode="numeric" id="ct-fees" value="0" /><span class="unit">원</span>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">코인 세금(소득세 + 지방소득세)</p>
+      <p class="big" id="ct-hero">{won(ex.total)}</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">가상자산소득금액</span><span class="value" id="ct-income">{won(ex.income)}</span></div>
+      <div class="stat-chip"><span class="label">소득세 20%</span><span class="value" id="ct-tax">{won(ex.tax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세 2%</span><span class="value" id="ct-local">{won(ex.local)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>1년 이익</th><th>과세 대상(−250만원)</th><th>세금(22%)</th></tr></thead>
+    <tbody>{rows.map(({ g, x }) => <tr><th scope="row">{eokwon(g)}</th><td>{won(x.taxable)}</td><td>{won(x.total)}</td></tr>)}</tbody>
+  </table>
+  <p>시행 시기와 유예 경과는 <a href="/guide/crypto-tax-delay/">가상자산 과세 유예</a>, 신고는 <a href="/guide/crypto-tax/">코인 과세</a>에 있습니다.</p>
+
+  <script src="../../../scripts/crypto-tax.ts"></script>
+</GuideLayout>

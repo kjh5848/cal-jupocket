@@ -1,0 +1,61 @@
+---
+/**
+ * "코인 과세" — 코인 세금 시리즈 허브. (코인 세금·가상자산 과세·비트코인 세금·기준·언제부터·해외거래소·신고·2027도 이 글)
+ * 근거: 소득세법 제21조 제1항 제27호(기타소득), 제37조(필요경비·2026말 시가), 제64조의3 제2항(250만원·20%), 제70조 제2항(5월 신고),
+ * 제84조 제3호, 제127조 제1항 제6호 다목(원천징수 제외), 부칙 제5조(2027. 1. 1.), 지방세법 제93조 제18항(2%). rates: crypto-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/crypto-2026.json";
+import { cryptoTax } from "../../../lib/crypto-tax";
+import { won, eokwon } from "../../../lib/won";
+import { cryptoSeries as S } from "../../../data/series/crypto";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const total = pct(r.rate + r.localRate);
+const ex = cryptoTax({ proceeds: 20_000_000, cost: 10_000_000 });
+const ex2 = cryptoTax({ proceeds: 110_000_000, cost: 10_000_000 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 crypto-series.test.ts 가 rates 와 대조한다.
+const title = "코인 과세 — 2027년 1월 1일 이후 파는 코인부터 1년 이익에서 250만원을 빼고 22%를 냅니다";
+const description =
+  "코인(가상자산) 과세는 현행 소득세법상 2027년 1월 1일 이후 양도·대여분부터 시작합니다. 1년 동안의 이익(양도가액 − 취득가액 − 수수료)에서 250만원을 빼고 소득세 20%와 지방소득세 2%를 더해 22%를 내고, 다음 해 5월에 직접 신고합니다.";
+
+const ANSWER = `코인 과세는 2027년 1월 1일 이후 가상자산을 양도·대여하는 분부터입니다(소득세법 부칙 제5조). 1년 이익(가상자산소득금액)에서 ${eokwon(r.deduction)}을 빼고 소득세 ${pct(r.rate)}(제64조의3)와 지방소득세 ${pct(r.localRate)}(지방세법 제93조)를 더해 ${total}입니다. 1천만원을 벌면 ${won(ex.total)}입니다.`;
+
+const QA = [
+  { q: "코인 세금은 언제부터 내나요?", a: `현행 법은 2027년 1월 1일 이후 가상자산을 양도하거나 대여하는 분부터 과세합니다(소득세법 부칙 법률 제17757호 제5조). 2026년까지 판 코인에는 이 세금이 없습니다. 이 적용 시기는 2021년·2022년·2024년 세 번 개정돼 미뤄졌습니다.` },
+  { q: "코인 세금은 얼마인가요?", a: `가상자산소득금액 = 양도가액 − 취득가액 − 부대비용이고, 여기서 ${eokwon(r.deduction)}을 뺀 금액에 소득세 ${pct(r.rate)}와 지방소득세 ${pct(r.localRate)}를 매깁니다. 1년 이익이 1천만원이면 ${won(ex.total)}, 1억원이면 ${won(ex2.total)}입니다. 이익이 ${eokwon(r.deduction)} 이하면 세금이 없습니다(제84조 제3호).` },
+  { q: "지금 갖고 있는 코인은 어떻게 계산하나요?", a: `2027년 1월 1일 전에 이미 보유한 가상자산은 2026년 12월 31일 당시 시가와 실제 취득가액 중 큰 금액을 취득가액으로 봅니다(소득세법 제37조 제5항). 그래서 2026년 말까지 오른 부분은 과세되지 않고, 그 뒤에 오른 부분만 과세 대상이 됩니다.` },
+  { q: "코인 세금은 어떻게 신고하나요?", a: `종합소득에 합산하지 않는 분리과세지만 다음 해 5월 1일부터 31일까지 종합소득세 확정신고 때 직접 신고합니다(제70조 제2항). 거주자의 가상자산소득은 원천징수 대상에서 빠져 거래소가 떼어 주지 않습니다(제127조 제1항 제6호 다목). 2027년 이익은 2028년 5월에 신고합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>미뤄진 경과와 지금 법에 적힌 것은 <a href="/guide/crypto-tax-delay/">가상자산 과세 유예</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>한 해 동안 사고판 여러 코인의 이익과 손실을 합쳐 소득금액을 구합니다(기타소득금액은 해당 과세기간의 총수입금액에서 필요경비를 뺀 금액 — 제21조 제3항). 직접 넣어 보려면 <a href="/guide/crypto-tax-calculator/">코인 세금 계산기</a>를 쓰세요.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>국내 가상자산사업자는 거래내역을 세무서에 제출해야 합니다(제164조의4). 과세 대상을 정한 제21조 제1항 제27호는 거래 장소를 나누지 않아 해외 거래소 거래도 거주자의 가상자산소득이면 포함됩니다. 필요경비 계산 방식(선입선출 등)의 시행령 세부는 이 글에서 다루지 않았습니다.</p>
+
+  <h2>코인 세금 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+  <p>미국 주식 같은 해외주식은 다른 세금입니다 — <a href="/guide/overseas-stock-tax/">해외주식 양도소득세</a>.</p>
+</GuideLayout>

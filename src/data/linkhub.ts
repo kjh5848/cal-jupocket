@@ -285,6 +285,9 @@ export const hubEntries: HubEntry[] = [
   { no: 258, href: "/guide/health-dependent/", label: "건강보험 피부양자 — 2천만원·5억4천", kind: "guide" },
   { no: 259, href: "/guide/health-dependent-criteria/", label: "피부양자 조건·소득·재산", kind: "guide" },
   { no: 260, href: "/guide/health-dependent-registration/", label: "피부양자 등록·90일·서류", kind: "guide" },
+  { no: 261, href: "/guide/crypto-tax/", label: "코인 과세 — 2027년·250만원·22%", kind: "guide" },
+  { no: 262, href: "/guide/crypto-tax-delay/", label: "가상자산 과세 유예", kind: "guide" },
+  { no: 263, href: "/guide/crypto-tax-calculator/", label: "코인 세금 계산기", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -416,6 +419,9 @@ export const hubGroups: HubGroup[] = [
       "/guide/financial-income-tax",
       "/guide/interest-income-tax",
       "/guide/dividend-income-tax",
+      "/guide/crypto-tax",
+      "/guide/crypto-tax-delay",
+      "/guide/crypto-tax-calculator",
     ]),
   },
   {

@@ -156,6 +156,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/financial-income-tax/", title: "금융소득종합과세 — 이자·배당이 한 해 2천만원을 넘으면 다른 소득과 합쳐 5월에 신고합니다", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/interest-income-tax/", title: "이자소득세 — 예금 이자는 15.4%를 떼고 받고, 개인에게 빌려준 돈의 이자는 27.5%입니다", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/dividend-income-tax/", title: "배당소득세 — 배당금은 15.4%를 떼고, 2026년부터 고배당기업 배당은 따로 계산할 수 있습니다", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/crypto-tax/", title: "코인 과세 — 2027년 1월 1일 이후 파는 코인부터 1년 이익에서 250만원을 빼고 22%를 냅니다", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/crypto-tax-delay/", title: "가상자산 과세 유예 — 지금 법은 2027년 1월 1일 시행이고, 적용 시기는 세 번 미뤄졌습니다", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/crypto-tax-calculator/", title: "코인 세금 계산기", kind: "calc", icon: "calculator", blurb: "양도가액·취득가액·2026년 말 시가 → 2027년부터의 코인 세금" },
     ],
   },
   {
@@ -370,6 +373,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/crypto-tax-calculator/",
+  "/guide/crypto-tax-delay/",
+  "/guide/crypto-tax/",
   "/guide/health-dependent-registration/",
   "/guide/health-dependent-criteria/",
   "/guide/health-dependent/",
