@@ -282,6 +282,9 @@ export const hubEntries: HubEntry[] = [
   { no: 255, href: "/guide/parental-leave-pay-apply/", label: "육아휴직급여 신청기간", kind: "guide" },
   { no: 256, href: "/guide/parental-leave-period/", label: "육아휴직 기간·단기 육아휴직", kind: "guide" },
   { no: 257, href: "/guide/maternity-leave-pay/", label: "출산휴가급여·상한 660만원", kind: "guide" },
+  { no: 258, href: "/guide/health-dependent/", label: "건강보험 피부양자 — 2천만원·5억4천", kind: "guide" },
+  { no: 259, href: "/guide/health-dependent-criteria/", label: "피부양자 조건·소득·재산", kind: "guide" },
+  { no: 260, href: "/guide/health-dependent-registration/", label: "피부양자 등록·90일·서류", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -548,6 +551,9 @@ export const hubGroups: HubGroup[] = [
       "/guide/basic-pension-criteria",
       "/guide/basic-pension-calculator",
       "/guide/basic-pension-apply",
+      "/guide/health-dependent",
+      "/guide/health-dependent-criteria",
+      "/guide/health-dependent-registration",
     ]),
   },
 ];

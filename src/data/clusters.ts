@@ -256,6 +256,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/basic-pension-criteria/", title: "기초연금 기준 — 소득인정액이 혼자 월 247만원, 부부 월 395만2천원 이하여야 합니다", kind: "guide", icon: "umbrella", year: 2026 },
       { href: "/guide/basic-pension-calculator/", title: "기초연금 모의계산", kind: "calc", icon: "calculator", blurb: "소득·재산 → 소득인정액과 2026년 기초연금 어림" },
       { href: "/guide/basic-pension-apply/", title: "기초연금 신청 — 시장·군수·구청장에게 신청한 달부터 받으니 65세가 되면 바로 하세요", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/health-dependent/", title: "건강보험 피부양자 — 직장가입자의 가족 중 소득 2천만원·재산 5억4천만원 이하면 보험료 없이 됩니다", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/health-dependent-criteria/", title: "건강보험 피부양자 조건 — 소득 연 2천만원 이하, 사업소득 없음, 재산 과세표준 5억4천만원 이하", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/health-dependent-registration/", title: "건강보험 피부양자 등록 — 직장가입자가 신고서를 내고, 90일 안에 하면 입사일로 소급됩니다", kind: "guide", icon: "umbrella", year: 2026 },
     ],
   },
   /*
@@ -367,6 +370,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/health-dependent-registration/",
+  "/guide/health-dependent-criteria/",
+  "/guide/health-dependent/",
   "/guide/maternity-leave-pay/",
   "/guide/parental-leave-period/",
   "/guide/parental-leave-pay-apply/",

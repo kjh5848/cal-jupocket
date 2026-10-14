@@ -1,0 +1,52 @@
+---
+/**
+ * "건강보험 피부양자" — 피부양자 시리즈 허브. (피부양자 뜻·범위·부모님·형제자매·자격 상실·탈락·11월도 이 글)
+ * 근거: 국민건강보험법 제5조 제2항(범위), 제6조 제3항, 시행령 제41조(소득·반영 시기), 시행규칙 제2조·별표 1·별표 1의2. rates: health-dependent-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/health-dependent-2026.json";
+import { eokwon } from "../../../lib/won";
+import { healthDependentSeries as S } from "../../../data/series/health-dependent";
+
+const I = r.income;
+const P = r.property;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 health-dependent-series.test.ts 가 rates 와 대조한다.
+const title = "건강보험 피부양자 — 직장가입자의 가족 중 소득 2천만원·재산 5억4천만원 이하면 보험료 없이 됩니다";
+const description =
+  "건강보험 피부양자는 직장가입자의 배우자·부모·자녀·형제자매 중 직장가입자에게 생계를 의존하고 연 소득 2천만원 이하, 재산세 과세표준 5억4천만원 이하(소득 1천만원 이하면 9억원)인 사람입니다. 피부양자는 따로 보험료를 내지 않습니다.";
+
+const ANSWER = `건강보험 피부양자는 직장가입자의 배우자, 직계존속·직계비속(배우자 쪽 포함)과 그 배우자, 형제자매 중 직장가입자에게 주로 생계를 의존하고 소득·재산이 기준 이하인 사람입니다(국민건강보험법 제5조 제2항). 기준은 연 소득 ${eokwon(I.limit)} 이하, 재산세 과세표준 ${eokwon(P.base)} 이하입니다(시행규칙 별표 1의2).`;
+
+const QA = [
+  { q: "건강보험 피부양자는 누가 될 수 있나요?", a: `직장가입자의 ① 배우자 ② 직계존속(배우자의 부모 포함) ③ 직계비속(배우자의 자녀 포함)과 그 배우자 ④ 형제·자매입니다(제5조 제2항). 지역가입자에게는 피부양자가 없습니다. 같이 살지 않으면 부모는 함께 사는 형제자매에게 소득이 없을 때, 자녀는 미혼일 때 등 조건이 붙습니다(시행규칙 별표 1).` },
+  { q: "피부양자 소득·재산 기준은 얼마인가요?", a: `소득(이자·배당·사업·근로·연금·기타, 공적연금은 전액) 합계가 연 ${eokwon(I.limit)} 이하이고 사업소득이 없어야 합니다. 재산은 재산세 과세표준 합계 ${eokwon(P.base)} 이하이거나, ${eokwon(P.upper)} 이하이면서 소득 ${eokwon(P.upperIncome)} 이하여야 합니다(별표 1의2). 형제자매는 재산 ${eokwon(P.siblings)} 이하입니다.` },
+  { q: "피부양자는 언제 탈락하나요?", a: `소득 기준은 1~10월에는 전전년도, 11~12월에는 전년도 소득 자료로 봅니다(연금은 전년도)(시행령 제41조 제3항). 그래서 새 소득 자료가 반영되는 11월에 기준을 넘으면 탈락할 수 있습니다. 공단이 요건 미충족을 확인한 날의 다음 날 자격을 잃고 지역가입자가 됩니다(시행규칙 제2조 제3항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>형제·자매는 30세 미만, 65세 이상, 등록 장애인, 상이등급 국가유공자 등이면서 미혼이고 부모가 없거나 부모에게 소득이 없을 때만 인정됩니다(별표 1 제10호). 사위·며느리는 따로 살면 인정되지 않습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>기혼자는 부부 모두 소득 기준을 채워야 합니다. 자세한 조건과 확인 방법은 <a href="/guide/health-dependent-criteria/">건강보험 피부양자 조건</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>사업소득 등이 생겨 소득 기준을 넘게 되면 신고한 경우 그 소득이 생긴 달의 다음 달 말일, 신고하지 않았으면 생긴 달의 말일에 자격을 잃습니다. 거짓으로 취득했으면 취득일로 거슬러 올라갑니다(시행규칙 제2조 제3항). 지역가입자 보험료는 <a href="/guide/regional-health-insurance/">지역 건강보험료</a>에 있습니다.</p>
+
+  <h2>피부양자 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

@@ -1,0 +1,59 @@
+---
+/**
+ * "건강보험 피부양자 조건" — 피부양자 시리즈. (피부양자 소득 기준·재산 기준·연금 2천만원·사업소득·부모님 피부양자·형제자매·기혼자도 이 글)
+ * 근거: 국민건강보험법 시행규칙 별표 1의2(2025. 4. 23. 개정), 별표 1, 시행령 제41조. 판정: checkDependent(). rates: health-dependent-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/health-dependent-2026.json";
+import { checkDependent } from "../../../lib/health-dependent";
+import { eokwon } from "../../../lib/won";
+
+const I = r.income;
+const P = r.property;
+const cases = [
+  { label: "국민연금 연 1,800만원, 집 과세표준 4억원", x: checkDependent({ income: 18_000_000, propertyBase: 400_000_000 }) },
+  { label: "연금 연 1,200만원, 집 과세표준 7억원", x: checkDependent({ income: 12_000_000, propertyBase: 700_000_000 }) },
+  { label: "연금 연 900만원, 집 과세표준 7억원", x: checkDependent({ income: 9_000_000, propertyBase: 700_000_000 }) },
+  { label: "연금 연 2,100만원, 재산 없음", x: checkDependent({ income: 21_000_000, propertyBase: 0 }) },
+  { label: "사업자등록 없이 사업소득 연 400만원", x: checkDependent({ income: 4_000_000, business: 4_000_000, propertyBase: 0 }) },
+];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 health-dependent-series.test.ts 가 rates 와 대조한다.
+const title = "건강보험 피부양자 조건 — 소득 연 2천만원 이하, 사업소득 없음, 재산 과세표준 5억4천만원 이하";
+const description =
+  "건강보험 피부양자 조건은 소득 합계 연 2천만원 이하(공적연금 전액 포함), 사업소득 없음(사업자등록 없이 500만원 이하는 예외), 재산세 과세표준 5억4천만원 이하입니다. 재산이 9억원 이하면 소득이 1천만원 이하여야 하고, 형제자매는 재산 1억8천만원 이하입니다.";
+
+const ANSWER = `건강보험 피부양자 조건은 ① 소득 합계 연 ${eokwon(I.limit)} 이하 ② 사업소득 없음 ③ 재산세 과세표준 합계 ${eokwon(P.base)} 이하(또는 ${eokwon(P.upper)} 이하이면서 소득 ${eokwon(P.upperIncome)} 이하)입니다(국민건강보험법 시행규칙 별표 1의2). 기혼자는 부부 모두 소득 기준을 채워야 합니다.`;
+
+const QA = [
+  { q: "피부양자 소득 2천만원에는 무엇이 들어가나요?", a: `이자·배당·사업·근로·연금·기타소득의 합계이고 비과세소득은 빠집니다. 국민연금 같은 공적연금은 소득세법의 연금소득 계산과 달리 그해 받은 연금 전부를 넣습니다(시행령 제41조 제1항). 이 합계가 연 ${eokwon(I.limit)}을 넘으면 피부양자가 될 수 없습니다.` },
+  { q: "사업소득이 조금 있으면 안 되나요?", a: `원칙은 사업소득이 없어야 합니다. 다만 사업자등록이 없고(주택임대소득은 제외) 사업소득 합계가 연 ${eokwon(I.businessAllow)} 이하면 없는 것으로 봅니다. 등록 장애인, 상이등급 국가유공자·보훈보상대상자도 연 ${eokwon(I.businessAllow)} 이하면 같습니다(별표 1의2 제1호 나목).` },
+  { q: "피부양자 재산 기준은 어떻게 보나요?", a: `시가가 아니라 재산세 과세표준(지방세법 제110조) 합계로 봅니다. ${eokwon(P.base)} 이하면 충족, ${eokwon(P.base)} 초과 ${eokwon(P.upper)} 이하면 소득이 연 ${eokwon(P.upperIncome)} 이하일 때만 충족입니다. 형제·자매는 ${eokwon(P.siblings)} 이하여야 합니다(별표 1의2 제2호).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>소득 자료는 1~10월 판정에는 전전년도, 11~12월에는 전년도 자료를 씁니다. 연금소득은 1~10월에도 전년도 자료입니다(시행령 제41조 제3항).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>부모님 예시(혼자, 부양요건 충족 가정)</th><th>소득</th><th>재산</th><th>피부양자</th></tr></thead>
+      <tbody>{cases.map(({ label, x }) => <tr><th scope="row">{label}</th><td>{x.incomeOk ? "충족" : "초과"}</td><td>{x.propertyOk ? "충족" : "초과"}</td><td>{x.eligible ? "가능" : "불가"}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <p>주택의 재산세 과세표준은 공시가격에 공정시장가액비율을 곱한 금액입니다 — <a href="/guide/property-tax-calc/">재산세 계산</a>. 등록 방법은 <a href="/guide/health-dependent-registration/">건강보험 피부양자 등록</a>에 있습니다.</p>
+</GuideLayout>
