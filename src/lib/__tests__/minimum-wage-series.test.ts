@@ -18,6 +18,17 @@ describe("최저임금 계산", () => {
     const x = checkMinWage(2_100_000);
     expect([x.hourly, x.ok, x.shortfall]).toEqual([10_047, false, 56_880]);
   });
+  it("표의 최저 월급을 넣으면 통과하고, 1원 적으면 모자란다", () => {
+    for (const y of [2026, 2027] as const)
+      for (const h of [15, 20, 30, 40])
+        for (const p of [false, true]) {
+          const m = minimumMonthly(y, h, p);
+          const ok = checkMinWage(m, h, y, p);
+          expect([ok.ok, ok.shortfall, ok.hourly >= ok.min], `${y} ${h} ${p}`).toEqual([true, 0, true]);
+          const no = checkMinWage(m - 1, h, y, p);
+          expect([no.ok, no.shortfall, no.hourly < no.min], `${y} ${h} ${p} -1`).toEqual([false, 1, true]);
+        }
+  });
 });
 
 const m26 = minWage(2026);

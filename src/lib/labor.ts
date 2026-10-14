@@ -76,23 +76,30 @@ export function partTimeLeaveHours(fullDays: number, weeklyHours: number, normal
   return Math.ceil(fullDays * (weeklyHours / normalWeeklyHours) * 8 - 1e-9);
 }
 
-/** 최저임금 적용기준 월 시간 — 주 40시간은 고시의 209시간, 그 밖은 시행령 제5조 산식 (주 시간 + 주휴) × 365/7 ÷ 12 */
-export function minWageMonthlyHours(weeklyHours = 40): number {
+/** 최저임금 적용기준 월 시간(계산용, 반올림 없음) — 주 40시간은 고시의 209시간, 그 밖은 시행령 제5조 산식 (주 시간 + 주휴) × 365/7 ÷ 12 */
+function minWageHoursExact(weeklyHours: number): number {
   const h = Math.min(Math.max(0, weeklyHours), W.maxWeeklyHours);
   if (h === W.maxWeeklyHours) return r.minWage.monthlyHours;
-  return Math.round((h + weeklyHolidayHours(h)) * WEEKS_PER_MONTH * 100) / 100;
+  return (h + weeklyHolidayHours(h)) * WEEKS_PER_MONTH;
 }
 
-/** 그해 최저임금 월급(주 소정근로시간 기준). 수습 3개월은 90% */
+/** 표시용 월 시간 — 소수 둘째 자리까지. 계산은 minWageHoursExact 로 한다(시행령 제5조에 반올림 규정이 없다) */
+export function minWageMonthlyHours(weeklyHours = 40): number {
+  return Math.round(minWageHoursExact(weeklyHours) * 100) / 100;
+}
+
+const minHourly = (year: 2026 | 2027, probation: boolean) => fl(minWage(year) * (probation ? r.minWageLaw.probation : 1));
+
+/** 그해 최저임금을 맞추는 가장 적은 월급(1원 미만 올림). 주 40시간은 고시 월 환산액과 같다. 수습 3개월은 90% */
 export function minimumMonthly(year: 2026 | 2027 = 2026, weeklyHours = 40, probation = false): number {
-  const hourly = minWage(year) * (probation ? r.minWageLaw.probation : 1);
-  return fl(hourly * minWageMonthlyHours(weeklyHours));
+  return Math.ceil(minHourly(year, probation) * minWageHoursExact(weeklyHours) - 1e-6);
 }
 
-/** 월급(산입되는 임금)을 시간급으로 환산해 최저임금과 비교 */
+/** 월급(산입되는 임금)을 시간급으로 환산해 최저임금과 비교. 판정은 월급 ≥ minimumMonthly 와 같다 */
 export function checkMinWage(monthlyPay: number, weeklyHours = 40, year: 2026 | 2027 = 2026, probation = false) {
-  const hours = minWageMonthlyHours(weeklyHours);
-  const hourly = hours > 0 ? fl(monthlyPay / hours) : 0;
-  const min = fl(minWage(year) * (probation ? r.minWageLaw.probation : 1));
-  return { hours, hourly, min, ok: hourly >= min, shortfall: Math.max(0, fl(min * hours) - monthlyPay) };
+  const exact = minWageHoursExact(weeklyHours);
+  const hourly = exact > 0 ? fl(monthlyPay / exact) : 0;
+  const min = minHourly(year, probation);
+  const need = minimumMonthly(year, weeklyHours, probation);
+  return { hours: minWageMonthlyHours(weeklyHours), hourly, min, ok: exact > 0 && monthlyPay >= need, shortfall: Math.max(0, need - monthlyPay) };
 }

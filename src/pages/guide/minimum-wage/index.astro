@@ -43,7 +43,7 @@ const QA = [
     <thead><tr><th>1주 소정근로시간</th><th>2026년 월 최저임금</th><th>2027년 월 최저임금</th></tr></thead>
     <tbody>{[15, 20, 30, 40].map((h) => <tr><th scope="row">{h}시간</th><td>{won(minimumMonthly(2026, h))}</td><td>{won(minimumMonthly(2027, h))}</td></tr>)}</tbody>
   </table>
-  <p>월 금액은 (주 소정근로시간 + 주휴시간) × 1년 평균 주 수 ÷ 12시간으로 계산합니다(최저임금법 시행령 제5조). 주 40시간은 고시가 정한 209시간을 썼습니다. 주휴수당은 <a href="/guide/weekly-holiday-pay/">주휴수당</a>에 있습니다.</p>
+  <p>월 금액은 (주 소정근로시간 + 주휴시간) × 1년 평균 주 수 ÷ 12시간으로 계산합니다(최저임금법 시행령 제5조). 주 40시간은 고시가 정한 209시간을 썼고, 그 밖은 시간을 반올림하지 않고 산식 그대로 곱한 뒤 1원 미만을 올렸습니다. 주휴수당은 <a href="/guide/weekly-holiday-pay/">주휴수당</a>에 있습니다.</p>
 
   <h2>{QA[1].q}</h2>
   <p class="qa-lead">{QA[1].a}</p>
