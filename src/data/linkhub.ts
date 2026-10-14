@@ -270,6 +270,11 @@ export const hubEntries: HubEntry[] = [
   { no: 243, href: "/guide/unemployment-benefit-calculator/", label: "실업급여 계산기", kind: "calc" },
   { no: 244, href: "/guide/unemployment-benefit-apply/", label: "실업급여 신청방법·실업인정", kind: "guide" },
   { no: 245, href: "/guide/unemployment-benefit-period/", label: "실업급여 수급기간·일수", kind: "guide" },
+  { no: 246, href: "/guide/basic-pension/", label: "기초연금 — 65세·월 349,700원", kind: "guide" },
+  { no: 247, href: "/guide/basic-pension-amount/", label: "기초연금 금액·부부·국민연금", kind: "guide" },
+  { no: 248, href: "/guide/basic-pension-criteria/", label: "기초연금 기준·소득인정액", kind: "guide" },
+  { no: 249, href: "/guide/basic-pension-calculator/", label: "기초연금 모의계산", kind: "calc" },
+  { no: 250, href: "/guide/basic-pension-apply/", label: "기초연금 신청·서류", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -529,6 +534,11 @@ export const hubGroups: HubGroup[] = [
       "/guide/dc-pension",
       "/guide/pension-mid-withdrawal",
       "/guide/pension-termination",
+      "/guide/basic-pension",
+      "/guide/basic-pension-amount",
+      "/guide/basic-pension-criteria",
+      "/guide/basic-pension-calculator",
+      "/guide/basic-pension-apply",
     ]),
   },
 ];

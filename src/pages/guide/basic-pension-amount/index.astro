@@ -1,0 +1,59 @@
+---
+/**
+ * "기초연금 금액" — 기초연금 시리즈. (기초연금액·2026 금액·부부 수령액·국민연금 연계 감액·노령연금 차이·소득역전 감액·최소 금액도 이 글)
+ * 근거: 기초연금법 제5조(기준연금액·국민연금 연계)·제6조(150% 이하 전액)·제7조(상한)·제8조(부부 20%·소득역전),
+ * 시행령 제10조(150~200%)·제11조(감액 지급수준), 고시 제2026-156호 제3조. rates: basic-pension-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/basic-pension-2026.json";
+import { basicPension, npsFullUpTo, npsFloor } from "../../../lib/basic-pension";
+import { won } from "../../../lib/won";
+
+const B = r.basePension;
+const couple = basicPension({ recognized: 0, couple: true });
+const s1 = basicPension({ recognized: 2_300_000, couple: false });
+const s2 = basicPension({ recognized: 2_450_000, couple: false });
+const npsTwice = B * 2;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 basic-pension-series.test.ts 가 rates 와 대조한다.
+const title = "기초연금 금액 — 2026년 월 349,700원, 부부는 각각 279,760원이고 국민연금이 많으면 줄어듭니다";
+const description =
+  "2026년 기초연금 기준연금액은 월 349,700원입니다. 부부가 함께 받으면 각각 20%를 줄여 279,760원씩 받고, 국민연금이 기준연금액의 150%(524,550원)를 넘으면 줄어들 수 있지만 174,850원은 남습니다. 소득인정액이 선정기준액에 가까우면 차액만큼 받습니다.";
+
+const ANSWER = `2026년 기초연금 기준연금액은 월 ${won(B)}입니다(보건복지부고시 제2026-156호). 부부가 둘 다 받으면 각각 20%를 줄여 ${won(couple.each)}씩 받고(기초연금법 제8조), 국민연금 급여액이 ${won(npsFullUpTo())}을 넘으면 줄어들 수 있지만 ${won(npsFloor())}은 남습니다(제5조·제6조).`;
+
+const QA = [
+  { q: "부부가 기초연금을 받으면 얼마인가요?", a: `본인과 배우자가 모두 수급권자면 각각의 기초연금액에서 20%를 뺍니다(제8조 제1항). 2026년에는 ${won(B)} × 80% = ${won(couple.each)}씩, 두 사람 합계 ${won(couple.total)}입니다. 부부 중 한 사람만 받으면 감액하지 않습니다.` },
+  { q: "국민연금 받으면 기초연금이 얼마나 줄어드나요?", a: `국민연금 급여액(부양가족연금 제외)이 ${won(npsFullUpTo())} 이하면 전액입니다(제6조 제1항). 그 이상이면 기준연금액에서 소득재분배급여금액(A급여 기반)의 3분의 2를 빼고 부가연금액 ${won(npsFloor())}을 더해 계산하므로 아무리 줄어도 ${won(npsFloor())}은 받습니다(제5조 제5항). ${won(npsTwice)} 이하 구간은 시행령 제10조로 덜 줄어듭니다.` },
+  { q: "소득인정액이 기준에 가까우면 얼마를 받나요?", a: `소득인정액과 기초연금을 더해 선정기준액을 넘으면 '선정기준액 − 소득인정액'을 받습니다(제8조 제2항, 시행령 제11조). 혼자 사는 노인의 소득인정액이 월 230만원이면 ${won(s1.total)}, 245만원이면 ${won(s2.total)}이고, 기준연금액의 10%인 ${won(Math.floor(B * r.amount.reversalMin))}보다 적어지지는 않습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>부부가 함께 감액 구간에 들어가면 두 사람 합계로 '선정기준액 − 소득인정액'을 계산하고, 최소는 기준연금액의 20%입니다. 지급액은 두 사람에게 비례해 나눕니다(시행령 제11조 제2항·제5항).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>국민연금 급여액(월)</th><th>기초연금</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">{won(npsFullUpTo())} 이하</th><td>기준연금액 {won(B)} 전액</td><td>제6조 제1항</td></tr>
+      <tr><th scope="row">{won(npsFullUpTo())} 초과 ~ {won(npsTwice)} 이하</th><td>'{won(Math.floor(B * 2.5))} − 국민연금 급여액'과 제5조 산정액 중 큰 금액</td><td>시행령 제10조</td></tr>
+      <tr><th scope="row">{won(npsTwice)} 초과</th><td>기준연금액 − A급여 기반 금액 × 2/3 + {won(npsFloor())}</td><td>제5조 제5항</td></tr>
+    </tbody>
+  </table>
+  <p>A급여 기반 소득재분배급여금액은 국민연금 가입기간과 지급 당시 금액으로 시행령 별표 1에 따라 정해져 개인마다 다릅니다. 이 글은 경계 금액까지만 계산했습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>받을 수 있는지와 소득인정액 계산은 <a href="/guide/basic-pension-criteria/">기초연금 기준</a>, 직접 넣어 보려면 <a href="/guide/basic-pension-calculator/">기초연금 모의계산</a>을 쓰세요.</p>
+</GuideLayout>

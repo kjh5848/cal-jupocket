@@ -251,6 +251,11 @@ export const clusters: Cluster[] = [
       { href: "/guide/dc-pension/", title: "퇴직연금 DC형, 12분의 1 이상", kind: "guide", icon: "umbrella", year: 2026 },
       { href: "/guide/pension-mid-withdrawal/", title: "퇴직연금 중도인출, 법정 사유", kind: "guide", icon: "umbrella", year: 2026 },
       { href: "/guide/pension-termination/", title: "퇴직연금 해지, 미뤄 둔 세금", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/basic-pension/", title: "기초연금 — 65세 이상, 소득인정액 월 247만원 이하면 2026년 최대 월 349,700원을 받습니다", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/basic-pension-amount/", title: "기초연금 금액 — 2026년 월 349,700원, 부부는 각각 279,760원이고 국민연금이 많으면 줄어듭니다", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/basic-pension-criteria/", title: "기초연금 기준 — 소득인정액이 혼자 월 247만원, 부부 월 395만2천원 이하여야 합니다", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/basic-pension-calculator/", title: "기초연금 모의계산", kind: "calc", icon: "calculator", blurb: "소득·재산 → 소득인정액과 2026년 기초연금 어림" },
+      { href: "/guide/basic-pension-apply/", title: "기초연금 신청 — 시장·군수·구청장에게 신청한 달부터 받으니 65세가 되면 바로 하세요", kind: "guide", icon: "umbrella", year: 2026 },
     ],
   },
   /*
@@ -355,6 +360,11 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/basic-pension-apply/",
+  "/guide/basic-pension-calculator/",
+  "/guide/basic-pension-criteria/",
+  "/guide/basic-pension-amount/",
+  "/guide/basic-pension/",
   "/guide/unemployment-benefit-period/",
   "/guide/unemployment-benefit-apply/",
   "/guide/unemployment-benefit-calculator/",

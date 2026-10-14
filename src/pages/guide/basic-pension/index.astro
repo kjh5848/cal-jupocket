@@ -1,0 +1,65 @@
+---
+/**
+ * "기초연금" — 기초연금 시리즈 허브. (기초연금 나이·대상·자격·2026 금액·선정기준액·부부·국민연금 차이·지급일도 이 글)
+ * 근거: 기초연금법 제3조(65세·선정기준액·하위 70%·직역연금 제외), 제5조~제8조(기준연금액·국민연금 연계·부부 20%), 제14조(신청한 달부터),
+ * 보건복지부고시 제2026-156호(기준연금액 349,700원, 선정기준액 247만원·395만2천원). rates: basic-pension-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/basic-pension-2026.json";
+import { basicPension, npsFullUpTo, npsFloor } from "../../../lib/basic-pension";
+import { won, eokwon } from "../../../lib/won";
+import { basicPensionSeries as S } from "../../../data/series/basic-pension";
+
+const B = r.basePension;
+const couple = basicPension({ recognized: 0, couple: true });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 basic-pension-series.test.ts 가 rates 와 대조한다.
+const title = "기초연금 — 65세 이상, 소득인정액 월 247만원 이하면 2026년 최대 월 349,700원을 받습니다";
+const description =
+  "기초연금은 65세 이상이고 소득인정액이 선정기준액(2026년 혼자 월 247만원, 부부 월 395만2천원) 이하인 사람에게 줍니다. 2026년 기준연금액은 월 349,700원이고, 부부가 함께 받으면 각각 20%를 줄여 279,760원씩 받습니다. 신청한 달부터 지급됩니다.";
+
+const ANSWER = `기초연금은 ${r.age}세 이상이고 소득인정액이 선정기준액 이하인 사람에게 지급합니다(기초연금법 제3조). 2026년 선정기준액은 혼자 사는 노인 월 ${eokwon(r.selection.single)}, 부부 월 ${eokwon(r.selection.couple)}이고, 기준연금액은 월 ${won(B)}입니다(보건복지부고시 제2026-156호). 부부가 함께 받으면 각각 20% 감액합니다(제8조).`;
+
+const QA = [
+  { q: "기초연금은 몇 살부터 받나요?", a: `${r.age}세 이상입니다(제3조 제1항). 다만 나이만으로 주지 않고 소득인정액이 선정기준액 이하여야 하며, 선정기준액은 ${r.age}세 이상 중 수급자가 100분의 70 수준이 되도록 정합니다(제2항). 공무원·사학·군인연금 퇴직연금 등을 받는 사람과 그 배우자는 받지 못합니다(제3항).` },
+  { q: "2026년 기초연금은 얼마인가요?", a: `기준연금액은 월 ${won(B)}입니다. 부부가 둘 다 받으면 각각 20%를 줄여 ${won(couple.each)}씩, 합계 ${won(couple.total)}입니다(제8조 제1항). 소득인정액과 기초연금을 더해 선정기준액을 넘으면 넘는 만큼 줄이되 기준연금액의 10%(부부 20%)는 남깁니다(시행령 제11조).` },
+  { q: "국민연금을 받으면 기초연금이 줄어드나요?", a: `국민연금 급여액이 기준연금액의 150%(${won(npsFullUpTo())}) 이하면 줄지 않습니다(제6조 제1항). 그보다 많으면 국민연금의 소득재분배 부분(A급여 기반)의 3분의 2만큼 줄 수 있지만, 기준연금액의 2분의 1인 ${won(npsFloor())}은 부가연금액으로 늘 남습니다(제5조 제5항).` },
+  { q: "기초연금은 언제부터 받나요?", a: `신청한 날이 속하는 달부터 매월 받습니다(제14조 제1항). 65세가 돼도 신청하지 않으면 그 전 달 몫은 받지 못합니다. 시장·군수·구청장에게 신청하고, 접수일부터 30일(조사가 길면 60일) 안에 결과를 알려 줍니다(시행규칙 제8조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>소득인정액은 실제 월 소득이 아니라 소득평가액과 재산을 소득으로 바꾼 금액을 더한 값입니다(제2조 제4호). 계산 방법은 <a href="/guide/basic-pension-criteria/">기초연금 기준</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>2026년</th><th>혼자 사는 노인</th><th>부부(둘 다 수급)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">선정기준액(월 소득인정액)</th><td>{won(r.selection.single)}</td><td>{won(r.selection.couple)}</td></tr>
+      <tr><th scope="row">기초연금(감액 전)</th><td>{won(B)}</td><td>{won(couple.each)} × 2 = {won(couple.total)}</td></tr>
+    </tbody>
+  </table>
+  <p>기준연금액은 전년도 금액에 전국소비자물가변동률을 반영해 매년 고시하고, 1월부터 12월까지 적용합니다(제5조 제2항). 내 금액을 넣어 보려면 <a href="/guide/basic-pension-calculator/">기초연금 모의계산</a>을 쓰세요.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <h2>기초연금 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+  <p>국민연금 쪽 금액은 <a href="/guide/national-pension-estimate/">국민연금 예상수령액</a>에 있습니다.</p>
+</GuideLayout>
