@@ -284,7 +284,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/parental-leave-pay-calculator/", title: "육아휴직 급여 계산기", kind: "calc", icon: "calculator", blurb: "월 통상임금·휴직 개월·6+6·한부모 → 달마다 받는 금액과 총액" },
       { href: "/guide/parental-leave-pay-apply/", title: "육아휴직급여 신청 — 휴직 시작 1개월 뒤부터 끝난 뒤 12개월 안에 해야 합니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/parental-leave-period/", title: "육아휴직 기간 — 1년, 부모가 각각 3개월 이상 쓰면 6개월 더해 1년 6개월입니다", kind: "guide", icon: "wallet", year: 2026 },
-      { href: "/guide/maternity-leave-pay/", title: "출산휴가급여 — 90일 통상임금을 받되 고용보험은 상한 660만원, 대기업은 마지막 30일분만 줍니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/maternity-leave-pay/", title: "출산휴가급여 — 90일 통상임금을 받되 고용보험은 상한 660만원, 우선지원 대상기업이 아니면 마지막 30일분만 줍니다", kind: "guide", icon: "wallet", year: 2026 },
     ],
   },
   {
