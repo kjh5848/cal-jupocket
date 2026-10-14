@@ -259,6 +259,12 @@ export const hubEntries: HubEntry[] = [
   { no: 232, href: "/guide/financial-income-tax/", label: "금융소득종합과세 2천만원", kind: "guide" },
   { no: 233, href: "/guide/interest-income-tax/", label: "이자소득세 15.4%", kind: "guide" },
   { no: 234, href: "/guide/dividend-income-tax/", label: "배당소득세·고배당 분리과세", kind: "guide" },
+  { no: 235, href: "/guide/weekly-holiday-pay/", label: "주휴수당 — 주 15시간·개근", kind: "guide" },
+  { no: 236, href: "/guide/weekly-holiday-pay-calculator/", label: "주휴수당 계산기", kind: "calc" },
+  { no: 237, href: "/guide/weekly-holiday-pay-criteria/", label: "주휴수당 조건·지급기준", kind: "guide" },
+  { no: 238, href: "/guide/annual-leave-pay/", label: "연차수당 지급기준·계산법", kind: "guide" },
+  { no: 239, href: "/guide/annual-leave-days/", label: "연차 발생기준·근속별 일수", kind: "guide" },
+  { no: 240, href: "/guide/annual-leave-calculator/", label: "연차 계산기", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -299,6 +305,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
+  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator"]) },
   { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax", "/guide/comprehensive-property-tax", "/guide/vehicle-tax-prepay", "/guide/vehicle-tax-prepay-period", "/guide/vehicle-tax-prepay-discount", "/guide/vehicle-tax-prepay-amount", "/guide/vehicle-tax-prepay-how", "/guide/vehicle-tax-prepay-refund", "/guide/jongbu-criteria", "/guide/jongbu-calculator", "/guide/jongbu-rate", "/guide/jongbu-payment", "/guide/jongbu-joint", "/guide/jongbu-multi-home", "/guide/jongbu-reform", "/guide/apartment-acquisition-tax", "/guide/real-estate-acquisition-tax", "/guide/officetel-acquisition-tax", "/guide/resident-tax", "/guide/property-tax-calc", "/guide/property-tax-payment", "/guide/property-tax-basis-date"]) },
   {
     label: "종합소득세·원천징수",

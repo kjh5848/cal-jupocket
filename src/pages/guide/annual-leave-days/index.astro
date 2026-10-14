@@ -1,0 +1,55 @@
+---
+/**
+ * "연차 발생기준" — 연차 시리즈. (연차 일수·1년 미만 연차·입사 첫해 11일·근속별 연차표·25일 한도·80% 출근·단시간·5인 미만·2027 개정도 이 글)
+ * 근거: 근로기준법 제60조 제1항·제2항·제4항·제6항, 제18조 제3항, 시행령 별표 1·별표 2 제4호 나목, 2027. 6. 10. 시행 개정. rates: labor-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/labor-2026.json";
+import { annualLeaveDays, partTimeLeaveHours } from "../../../lib/labor";
+
+const A = r.annualLeave;
+const years = [1, 2, 3, 4, 5, 7, 9, 11, 15, 19, 21, 25];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 annual-leave-series.test.ts 가 rates 와 대조한다.
+const title = "연차 발생기준 — 입사 첫해는 한 달 개근마다 1일, 1년 80% 출근하면 15일, 2년마다 1일씩 늘어 25일까지";
+const description =
+  "연차 발생기준은 입사 첫해에는 한 달 개근할 때마다 1일(최대 11일), 1년 동안 80% 이상 출근하면 15일이고, 3년째부터 2년마다 1일씩 더해 25일까지 늘어납니다. 주 15시간 미만이거나 5명 미만 사업장에는 연차가 없습니다.";
+
+const ANSWER = `연차는 입사 첫해에 한 달 개근할 때마다 ${A.monthly}일(최대 ${A.firstYearMax}일)이 생기고, 1년간 80% 이상 출근하면 ${A.full}일입니다(근로기준법 제60조 제1항·제2항). 3년 이상 근속하면 최초 1년을 넘는 근속 2년마다 1일씩 더해 최대 ${A.cap}일이고(제4항), 주 15시간 미만·5명 미만 사업장은 해당하지 않습니다.`;
+
+const QA = [
+  { q: "1년 미만 연차는 며칠인가요?", a: `계속 근로 1년 미만인 근로자는 1개월 개근할 때마다 ${A.monthly}일의 유급휴가가 생깁니다(제60조 제2항). 입사 첫해 12개월 중 마지막 달은 1년이 차는 시점이라 월 단위 휴가는 최대 ${A.firstYearMax}일이고, 1년을 채우면 그다음 해에 쓸 ${A.full}일이 따로 생깁니다. 첫해 월 단위 휴가는 최초 1년이 끝날 때까지 써야 합니다.` },
+  { q: "근속연수별 연차는 며칠인가요?", a: `1년·2년 근속 ${annualLeaveDays(1)}일, 3년·4년 ${annualLeaveDays(3)}일, 5년 ${annualLeaveDays(5)}일, 10년 ${annualLeaveDays(10)}일, 20년 ${annualLeaveDays(20)}일이고 21년부터 ${A.cap}일에서 멈춥니다. 최초 1년을 넘는 계속 근로 연수 매 2년에 1일을 더하고 가산을 포함한 총 휴가는 ${A.cap}일이 한도이기 때문입니다(제60조 제4항).` },
+  { q: "80% 출근은 어떻게 세나요?", a: `1년간 출근해야 할 날 중 80% 이상 출근하면 ${A.full}일, 못 미치면 그해는 1개월 개근마다 1일입니다(제60조 제1항·제2항). 업무상 부상·질병 휴업, 출산전후휴가, 육아휴직 기간과 육아기·임신기 근로시간 단축으로 줄어든 시간은 출근한 것으로 봅니다(제60조 제6항).` },
+  { q: "알바·5인 미만 사업장도 연차가 생기나요?", a: `4주 평균 주 15시간 이상인 아르바이트·단시간근로자는 생기고, 시간 단위로 계산합니다(시행령 별표 2) — 주 20시간이면 ${A.full}일 대신 ${partTimeLeaveHours(A.full, 20)}시간입니다. 주 15시간 미만(제18조 제3항)이거나 상시 4명 이하 사업장(시행령 별표 1)에는 연차휴가가 적용되지 않습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>근속(다 채운 해)</th>{years.map((y) => <th>{y}년</th>)}</tr></thead>
+      <tbody><tr><th scope="row">그해 생기는 연차</th>{years.map((y) => <td>{annualLeaveDays(y)}일</td>)}</tr></tbody>
+    </table>
+  </div>
+  <p>매년 80% 이상 출근했다고 보고 낸 표입니다. 입사일이 아닌 회계연도(1월 1일) 기준으로 일괄 부여하는 회사는 계산 방식이 달라 이 표와 어긋날 수 있습니다. 내 입사일로 세려면 <a href="/guide/annual-leave-calculator/">연차 계산기</a>를 쓰세요.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>단시간근로자의 연차 시간 = 통상근로자 연차일수 × 단시간근로자 소정근로시간 ÷ 통상근로자 소정근로시간 × 8시간이고, 1시간 미만은 1시간으로 봅니다(별표 2 제4호 나목). 2027년 6월 10일부터는 연차를 시간 단위로 나눠 청구할 수 있게 됩니다(제60조 제5항 신설). 쓰지 못한 연차의 돈은 <a href="/guide/annual-leave-pay/">연차수당</a>에 있습니다.</p>
+</GuideLayout>

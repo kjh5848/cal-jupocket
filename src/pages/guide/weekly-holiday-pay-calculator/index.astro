@@ -1,0 +1,82 @@
+---
+/**
+ * "주휴수당 계산기" — 주휴수당 시리즈. (주휴수당 계산법·계산·주휴수당 포함 시급·월 주휴수당·주휴시간도 이 글, 계산기 포함)
+ * 계산: src/lib/labor.ts weeklyHolidayPay() — 근로기준법 제18조 제3항·제55조, 시행령 별표 2(1일 소정근로시간),
+ * 시행령 제6조 제2항 제4호(1년 평균 주 수 ÷ 12), 2026·2027 최저임금 고시.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/labor-2026.json";
+import { weeklyHolidayPay, minWage } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+
+const W = r.weeklyHoliday;
+const m26 = minWage(2026);
+const m27 = minWage(2027);
+const ex = weeklyHolidayPay(m26, 20);
+const full = weeklyHolidayPay(m26, 40);
+const odd = weeklyHolidayPay(12_000, 18);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 weekly-holiday-series.test.ts 가 rates 와 대조한다.
+const title = "주휴수당 계산기 — 시급과 1주 근무시간을 넣으면 주휴수당과 주휴 포함 시급이 나옵니다";
+const description =
+  "주휴수당 계산법은 1주 소정근로시간 ÷ 5 × 시급입니다(주 5일 사업장, 주 15시간 이상). 2026년 최저시급 10,320원으로 주 20시간이면 주휴시간 4시간, 주휴수당 41,280원이고, 주휴수당을 포함한 시급은 12,384원입니다.";
+
+const ANSWER = `주휴수당 = 1일 소정근로시간 × 시급이고, 주 5일 사업장의 1일 소정근로시간은 1주 소정근로시간 ÷ 5입니다(근로기준법 시행령 별표 2). 2026년 최저시급 ${won(m26)}에 주 20시간이면 주휴시간 ${ex.hours}시간, 주휴수당 ${won(ex.weekly)}이고, 주 ${W.minWeeklyHours}시간 미만이면 0원입니다(제18조 제3항).`;
+
+const QA = [
+  { q: "주휴수당 계산법은 무엇인가요?", a: `① 4주 평균 1주 소정근로시간이 ${W.minWeeklyHours}시간 이상인지 보고 ② 1일 소정근로시간 = 4주 소정근로시간 ÷ 4주 통상근로자 소정근로일수(주 5일 사업장이면 1주 시간 ÷ 5) ③ 그 시간 × 시급이 1주 주휴수당입니다(시행령 별표 2). 1주 소정근로시간은 40시간을 넘을 수 없어 주휴는 최대 8시간입니다.` },
+  { q: "주휴수당 포함 시급은 얼마인가요?", a: `주휴수당을 일한 시간에 나눠 얹으면 시급 × (1주 근무시간 + 주휴시간) ÷ 1주 근무시간입니다. 주 5일 사업장에서 주 15시간 이상이면 비율이 늘 1.2배라 2026년 최저시급 ${won(m26)}은 ${won(full.hourlyWithHoliday)}, 2027년 ${won(m27)}은 ${won(weeklyHolidayPay(m27, 40).hourlyWithHoliday)}입니다.` },
+  { q: "한 달 주휴수당은 얼마인가요?", a: `1주 주휴수당 × 1년 평균 주 수(365 ÷ 7) ÷ 12로 어림합니다(시행령 제6조 제2항 제4호의 월 환산 방식). 최저시급 주 40시간이면 월 약 ${won(full.monthly)}, 주 20시간이면 약 ${won(ex.monthly)}입니다. 실제 지급액은 그달에 개근한 주의 수에 따라 달라집니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">주 5일 사업장에서 그 주를 개근했다고 보고 계산합니다. 1주 소정근로시간은 4주 평균으로 넣으세요.</p>
+    <div class="calc-input-wrap">
+      <label for="wh-wage">시급</label>
+      <input type="text" inputmode="numeric" id="wh-wage" value={m26.toLocaleString("ko-KR")} />
+      <span class="unit">원</span>
+    </div>
+    <div class="amount-presets" role="group" aria-label="시급 고르기">
+      <button type="button" class="preset-chip" data-wh-wage={m26}>2026 최저 {won(m26)}</button>
+      <button type="button" class="preset-chip" data-wh-wage={m27}>2027 최저 {won(m27)}</button>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="wh-hours">1주 소정근로시간</label>
+      <input type="number" min="0" max="40" step="0.5" id="wh-hours" value="20" />
+      <span class="unit">시간</span>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">1주 주휴수당</p>
+      <p class="big" id="wh-hero">{won(ex.weekly)}</p>
+      <p class="meta" id="wh-note"></p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">주휴시간</span><span class="value" id="wh-h">{ex.hours}시간</span></div>
+      <div class="stat-chip"><span class="label">월 평균 주휴수당</span><span class="value" id="wh-month">{won(ex.monthly)}</span></div>
+      <div class="stat-chip"><span class="label">주휴 포함 시급</span><span class="value" id="wh-incl">{won(ex.hourlyWithHoliday)}</span></div>
+      <div class="stat-chip"><span class="label">1주 임금(근무+주휴)</span><span class="value" id="wh-week">{won(ex.weekTotal)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>예: 시급 {won(12_000)}에 주 3일 6시간(주 18시간)이면 1일 소정근로시간은 18 ÷ 5 = {odd.hours}시간이라 주휴수당은 {won(odd.weekly)}입니다. 하루 6시간을 일해도 주휴는 6시간이 아닙니다 — 별표 2가 통상근로자의 근로일수로 나누게 하기 때문입니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>최저임금 고시의 월 환산액 {won(r.minWage["2026"].monthly)}은 주휴 8시간을 넣은 월 {r.minWage.monthlyHours}시간 기준입니다. 받을 수 있는지부터 보려면 <a href="/guide/weekly-holiday-pay-criteria/">주휴수당 조건</a>, 전체 정리는 <a href="/guide/weekly-holiday-pay/">주휴수당</a>에 있습니다.</p>
+
+  <script src="../../../scripts/weekly-holiday.ts"></script>
+</GuideLayout>

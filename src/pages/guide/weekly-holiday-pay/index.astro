@@ -1,0 +1,69 @@
+---
+/**
+ * "주휴수당" — 주휴수당 시리즈 허브. (주휴수당 뜻·이란·얼마·알바·5인 미만·2026·2027 최저시급 기준도 이 글)
+ * 근거: 근로기준법 제55조 제1항, 시행령 제30조 제1항(개근), 제18조 제3항(주 15시간), 시행령 별표 1(4명 이하에도 적용),
+ * 별표 2(단시간근로자 1일 소정근로시간), 2026·2027 최저임금 고시. 금액은 weeklyHolidayPay() 가 낸다(labor-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/labor-2026.json";
+import { weeklyHolidayPay, minWage } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+import { weeklyHolidaySeries as S } from "../../../data/series/weekly-holiday";
+
+const W = r.weeklyHoliday;
+const m26 = minWage(2026);
+const m27 = minWage(2027);
+const full = weeklyHolidayPay(m26, 40);
+const half = weeklyHolidayPay(m26, 20);
+const hoursList = [15, 20, 25, 30, 40];
+const rows = hoursList.map((h) => ({ h, a: weeklyHolidayPay(m26, h), b: weeklyHolidayPay(m27, h) }));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 weekly-holiday-series.test.ts 가 rates 와 대조한다.
+const title = "주휴수당 — 주 15시간 이상 일하고 그 주를 개근하면 하루치 임금을 더 받습니다";
+const description =
+  "주휴수당은 1주 소정근로시간이 15시간 이상인 근로자가 그 주에 정한 날을 모두 출근하면 받는 유급휴일 임금입니다. 5명 미만 사업장 알바도 받습니다. 2026년 최저시급 10,320원으로 주 40시간이면 82,560원, 주 20시간이면 41,280원입니다.";
+
+const ANSWER = `주휴수당은 1주 동안 정한 근로일을 개근한 근로자에게 주는 유급휴일의 임금입니다(근로기준법 제55조 제1항, 시행령 제30조). 1주 소정근로시간이 ${W.minWeeklyHours}시간 이상이어야 하고(제18조 제3항), 2026년 최저시급 ${won(m26)}이면 주 40시간 ${won(full.weekly)}, 주 20시간 ${won(half.weekly)}입니다.`;
+
+const QA = [
+  { q: "주휴수당이란 무엇인가요?", a: `사용자는 근로자에게 1주에 평균 1회 이상 유급휴일을 줘야 하고(제55조 제1항), 이 휴일은 그 주의 소정근로일을 개근한 사람에게 줍니다(시행령 제30조 제1항). 일하지 않는 휴일인데도 하루치 임금이 나오는 것이 주휴수당입니다. 정규직·계약직·아르바이트를 가리지 않습니다.` },
+  { q: "주휴수당 조건은 무엇인가요?", a: `① 4주 평균 1주 소정근로시간이 ${W.minWeeklyHours}시간 이상이고(제18조 제3항) ② 그 주에 일하기로 정한 날을 모두 출근해야 합니다(시행령 제30조). 상시 4명 이하 사업장에도 제55조 제1항이 적용돼(시행령 별표 1) 5명 미만 가게 아르바이트도 받습니다.` },
+  { q: "주휴수당은 얼마인가요?", a: `1일 소정근로시간 × 시급입니다. 주 5일 사업장이면 1일 소정근로시간 = 1주 소정근로시간 ÷ 5라(시행령 별표 2), 2026년 최저시급 ${won(m26)} 기준 주 40시간 ${won(full.weekly)}, 주 20시간 ${won(half.weekly)}, 주 15시간 ${won(weeklyHolidayPay(m26, 15).weekly)}입니다.` },
+  { q: "2027년 주휴수당은 얼마나 오르나요?", a: `2027년 최저임금이 시간급 ${won(m27)}으로 고시돼(고용노동부고시 제2026-60호) 주 40시간 주휴수당은 ${won(weeklyHolidayPay(m27, 40).weekly)}, 주 20시간은 ${won(weeklyHolidayPay(m27, 20).weekly)}이 됩니다. 2027년 1월 1일부터 12월 31일까지 모든 사업장에 같은 금액이 적용됩니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>15시간은 한 주만 보지 않고 4주 동안을 평균합니다. 결근한 주에는 그 주의 주휴수당이 없고, 다음 주 개근하면 다시 생깁니다. 조건의 세부는 <a href="/guide/weekly-holiday-pay-criteria/">주휴수당 조건</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>1주 소정근로시간</th><th>주휴시간</th><th>2026년(시급 {won(m26)})</th><th>2027년(시급 {won(m27)})</th></tr></thead>
+      <tbody>{rows.map(({ h, a, b }) => <tr><th scope="row">{h}시간</th><td>{a.hours}시간</td><td>{won(a.weekly)}</td><td>{won(b.weekly)}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <p>최저시급으로 일하는 주 40시간 근로자의 월급이 {won(r.minWage["2026"].monthly)}인 것도 이 때문입니다 — 최저임금 고시는 주휴 8시간을 넣은 월 {r.minWage.monthlyHours}시간으로 월 환산액을 냅니다. 시급과 시간을 넣어 보려면 <a href="/guide/weekly-holiday-pay-calculator/">주휴수당 계산기</a>를 쓰세요.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <h2>주휴수당 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+  <p>쓰지 못한 연차를 돈으로 받는 것은 <a href="/guide/annual-leave-pay/">연차수당</a>입니다.</p>
+</GuideLayout>

@@ -1,0 +1,67 @@
+---
+/**
+ * "연차수당" — 연차 시리즈 허브. (연차수당 지급기준·계산법·계산·통상임금·지급일·퇴사시·미지급·소멸시효·사용촉진도 이 글)
+ * 근거: 근로기준법 제60조(연차 발생·통상임금 또는 평균임금·1년 소멸), 제61조(사용 촉진 시 보상 의무 없음), 제36조(퇴직 14일 청산),
+ * 제49조(임금 시효 3년), 시행령 제6조(통상임금), 별표 1(4명 이하 미적용). 금액은 labor.ts 가 낸다(labor-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/labor-2026.json";
+import { annualLeavePay, hourlyFromMonthly40, minWage } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+import { annualLeaveSeries as S } from "../../../data/series/annual-leave";
+
+const A = r.annualLeave;
+const m26 = minWage(2026);
+const dailyMin = m26 * 8;
+const pay3m = 3_000_000;
+const hourly3m = hourlyFromMonthly40(pay3m);
+const daily3m = hourly3m * 8;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 annual-leave-series.test.ts 가 rates 와 대조한다.
+const title = "연차수당 — 쓰지 못하고 넘어간 연차 하루마다 1일 통상임금을 받습니다";
+const description =
+  "연차수당은 1년 동안 쓰지 못하고 소멸한 연차 하루마다 받는 1일치 임금입니다. 계산법은 1일 통상임금 × 남은 일수이고, 주 40시간 최저시급이면 하루 82,560원입니다. 회사가 법정 절차로 사용을 촉진했으면 주지 않아도 되고, 5명 미만 사업장에는 연차가 없습니다.";
+
+const ANSWER = `연차수당은 1년 동안 쓰지 못하고 소멸한 연차휴가에 대해 받는 임금입니다(근로기준법 제60조). 계산은 1일 통상임금 × 남은 일수이고, 2026년 최저시급 주 40시간이면 하루 ${won(dailyMin)}입니다. 회사가 제61조의 서면 사용 촉진을 했다면 수당 지급 의무가 없습니다.`;
+
+const QA = [
+  { q: "연차수당 지급기준은 무엇인가요?", a: `연차휴가는 1년간(1년 미만 근로자의 월 단위 휴가는 최초 1년의 근로가 끝날 때까지) 쓰지 않으면 소멸합니다(제60조). 이때 남은 휴가에 대해 수당이 생기는데, 사용자가 제61조의 서면 촉구·시기 지정을 거쳤는데도 근로자가 쓰지 않았다면 보상할 의무가 없습니다. 사용자 탓에 못 쓴 휴가는 소멸하지 않습니다.` },
+  { q: "연차수당 계산법은 무엇인가요?", a: `1일 통상임금 × 쓰지 못한 연차 일수입니다. 1일 통상임금은 시간급 × 1일 소정근로시간이고, 월급제는 월급을 월 통상임금 산정 기준시간(주 40시간이면 209시간)으로 나눠 시간급을 구합니다(시행령 제6조). 월급 300만원·주 40시간이면 하루 ${won(daily3m)}, 5일이면 ${won(annualLeavePay(daily3m, 5))}입니다.` },
+  { q: "퇴사할 때 남은 연차수당은요?", a: `근로자가 퇴직하면 사용자는 14일 이내에 임금과 그 밖의 모든 금품을 지급해야 합니다(제36조). 이미 소멸해 수당으로 바뀐 연차가 있다면 이때 함께 정산됩니다. 퇴직하는 해에 아직 쓸 수 있던 연차를 수당으로 주는지는 조문이 직접 정하지 않아 이 글에서 단정하지 않았습니다.` },
+  { q: "연차수당을 못 받았으면 언제까지 청구하나요?", a: `연차수당은 임금이라 3년간 행사하지 않으면 시효로 소멸합니다(제49조). 퇴직했다면 퇴직일부터 14일이 지난 날부터 미지급 임금에 지연이자도 붙습니다(제37조). 상시 4명 이하 사업장에는 연차휴가 조항(제60조)이 적용되지 않아(시행령 별표 1) 연차수당도 없습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>사용 촉진은 서면이어야 합니다. 연차를 쓸 수 있는 기간이 끝나기 6개월 전을 기준으로 10일 안에 남은 일수를 알리고 사용 시기를 정해 달라고 촉구하고, 근로자가 10일 안에 정하지 않으면 끝나기 2개월 전까지 회사가 사용 시기를 정해 통보해야 합니다(제61조 제1항). 입사 첫해의 월 단위 연차는 3개월·1개월 기준입니다(제2항).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>월급(주 40시간)</th><th>시간급(÷{r.minWage.monthlyHours})</th><th>1일 통상임금(×8)</th><th>5일 연차수당</th></tr></thead>
+    <tbody>{[r.minWage["2026"].monthly, 2_500_000, 3_000_000, 4_000_000].map((m) => { const d = hourlyFromMonthly40(m) * 8; return <tr><th scope="row">{won(m)}</th><td>{won(hourlyFromMonthly40(m))}</td><td>{won(d)}</td><td>{won(annualLeavePay(d, 5))}</td></tr>; })}</tbody>
+  </table>
+  <p>시간급은 원 미만을 버렸습니다. 휴가 기간의 임금을 통상임금으로 줄지 평균임금으로 줄지는 취업규칙 등이 정합니다(제60조). 통상임금에 어떤 수당이 들어가는지는 회사마다 달라 이 표는 기본급만 있는 경우입니다. 직접 넣어 보려면 <a href="/guide/annual-leave-calculator/">연차 계산기</a>를 쓰세요.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>2027년 6월 10일부터는 연차를 시간 단위로 나눠 청구할 수 있고, 연차를 쓰거나 청구했다는 이유로 불리하게 대우하는 것이 금지됩니다(근로기준법 개정, 제60조 제5항·제9항). 시간 단위의 세부는 시행령으로 정합니다.</p>
+
+  <h2>연차 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+  <p>매주 받는 유급휴일 임금은 <a href="/guide/weekly-holiday-pay/">주휴수당</a>에 있습니다.</p>
+</GuideLayout>

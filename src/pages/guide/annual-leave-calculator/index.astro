@@ -1,0 +1,84 @@
+---
+/**
+ * "연차 계산기" — 연차 시리즈. (연차 계산·연차수당 계산기·입사일 기준 연차·연차 개수 계산도 이 글, 계산기 포함)
+ * 계산: src/lib/labor.ts leaveSchedule()·annualLeaveDays()·annualLeavePay()·hourlyFromMonthly40() —
+ * 근로기준법 제60조 제1항·제2항·제4항, 시행령 제6조, 2026 최저임금 고시(월 209시간).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/labor-2026.json";
+import { annualLeaveDays, annualLeavePay, hourlyFromMonthly40 } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+
+const A = r.annualLeave;
+const pay = 3_000_000;
+const daily = hourlyFromMonthly40(pay) * 8;
+const ex = annualLeavePay(daily, 5);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 annual-leave-series.test.ts 가 rates 와 대조한다.
+const title = "연차 계산기 — 입사일을 넣으면 지금까지 생긴 연차와 남은 연차의 수당이 나옵니다";
+const description =
+  "연차 계산기는 입사일과 기준일로 근속을 세어 입사 첫해 월 단위 연차(최대 11일)와 올해 연차(15~25일)를 계산하고, 월급과 남은 일수를 넣으면 연차수당을 냅니다. 월급 300만원·주 40시간에 5일이 남으면 574,160원입니다.";
+
+const ANSWER = `연차 계산기는 입사일부터 기준일까지의 근속으로 입사 첫해 월 단위 연차(최대 ${A.firstYearMax}일)와 근속연수별 연차(${A.full}~${A.cap}일)를 계산합니다(근로기준법 제60조). 월급과 쓰지 못한 일수를 넣으면 연차수당이 나오고, 월급 300만원·주 40시간에 5일이면 ${won(ex)}입니다.`;
+
+const QA = [
+  { q: "연차는 어떻게 계산하나요?", a: `① 입사 후 1년 미만이면 개근한 달마다 ${A.monthly}일(최대 ${A.firstYearMax}일) ② 1년을 채운 뒤부터는 1년간 80% 이상 출근 시 ${A.full}일 ③ 근속 3년부터 최초 1년을 넘는 근속 2년마다 1일 가산, 최대 ${A.cap}일입니다(제60조 제1항·제2항·제4항). 근속 5년이면 ${annualLeaveDays(5)}일, 10년이면 ${annualLeaveDays(10)}일입니다.` },
+  { q: "연차수당은 어떻게 계산하나요?", a: `1일 통상임금 × 쓰지 못한 일수입니다. 월급제 주 40시간이면 월급 ÷ ${r.minWage.monthlyHours}시간 = 시간급, 시간급 × 8 = 1일 통상임금입니다(시행령 제6조, 최저임금 고시의 월 환산 기준). 월급 300만원이면 하루 ${won(daily)}, 5일 ${won(ex)}입니다. 통상임금에 들어가는 수당이 있으면 더해 넣으세요.` },
+  { q: "입사 첫해 연차와 2년차 연차는 겹치나요?", a: `따로 생깁니다. 입사 첫해에는 개근한 달마다 ${A.monthly}일씩 최대 ${A.firstYearMax}일이 생기고(제60조 제2항), 1년을 채운 날 80% 이상 출근했다면 ${A.full}일이 새로 생깁니다(제1항). 첫해 월 단위 연차는 최초 1년의 근로가 끝날 때까지 써야 하고, 그때까지 못 쓰면 소멸하거나 수당 대상이 됩니다(제60조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">입사일 기준, 매월 개근·매년 80% 이상 출근했다고 보고 계산합니다. 회계연도 기준으로 일괄 부여하는 회사와는 다를 수 있습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="al-start">입사일</label>
+      <input type="date" id="al-start" value="2024-03-02" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="al-asof">기준일</label>
+      <input type="date" id="al-asof" value="2026-10-14" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="al-pay">월 통상임금(주 40시간)</label>
+      <input type="text" inputmode="numeric" id="al-pay" value="3,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="al-unused">쓰지 못한 연차</label>
+      <input type="number" min="0" max="40" step="0.5" id="al-unused" value="5" />
+      <span class="unit">일</span>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">올해 생긴 연차</p>
+      <p class="big" id="al-hero">{annualLeaveDays(2)}일</p>
+      <p class="meta" id="al-note"></p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">근속</span><span class="value" id="al-tenure">2년 7개월</span></div>
+      <div class="stat-chip"><span class="label">입사 첫해 월 단위 연차</span><span class="value" id="al-first">{A.firstYearMax}일</span></div>
+      <div class="stat-chip"><span class="label">1일 통상임금</span><span class="value" id="al-daily">{won(daily)}</span></div>
+      <div class="stat-chip"><span class="label">연차수당</span><span class="value" id="al-paid">{won(ex)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>근속연수별 표와 80% 출근을 세는 법은 <a href="/guide/annual-leave-days/">연차 발생기준</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>회사가 서면으로 사용을 촉진했는데도 쓰지 않아 소멸한 연차는 수당이 없습니다(제61조). 지급기준과 퇴사 때의 정산은 <a href="/guide/annual-leave-pay/">연차수당</a>에 있습니다.</p>
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <script src="../../../scripts/annual-leave.ts"></script>
+</GuideLayout>

@@ -57,6 +57,9 @@ export const clusterColor: Record<
   // 지방세는 다섯 번째 축이다. 국세 셋(초록·파랑·보라)과 섞이면 "세무서에
   // 내는 것" 으로 읽히므로, 흙빛 쪽으로 떼어 놓는다 — 집과 땅의 세금이다.
   localtax: { bg: "#f0f1e8", wm: "#d3d6bd", ink: "#5a5f2e", mark: "#6e7438" },
+  // 급여·근로는 여섯 번째 축이다. 세금이 아니라 월급봉투 쪽 — 주휴수당·연차처럼 근로기준법이 정하는 돈이라
+  // 세목 색(초록·파랑·보라·주황·흙빛)과 떼어 장밋빛으로 둔다.
+  labor: { bg: "#fbeaf0", wm: "#f2c4d4", ink: "#8a2148", mark: "#a8325c" },
 };
 
 export const clusters: Cluster[] = [
@@ -258,6 +261,18 @@ export const clusters: Cluster[] = [
    * 빈칸을 드러냈다. 집과 차는 국세청이 아니라 시·군·구가 매긴다.
    */
   {
+    id: "labor",
+    title: "급여·근로",
+    links: [
+      { href: "/guide/weekly-holiday-pay/", title: "주휴수당 — 주 15시간 이상 일하고 그 주를 개근하면 하루치 임금을 더 받습니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/weekly-holiday-pay-calculator/", title: "주휴수당 계산기", kind: "calc", icon: "calculator", blurb: "시급·1주 근무시간 → 주휴수당·주휴 포함 시급·월 평균" },
+      { href: "/guide/weekly-holiday-pay-criteria/", title: "주휴수당 조건 — 4주 평균 주 15시간 이상, 그 주 개근 두 가지면 됩니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/annual-leave-pay/", title: "연차수당 — 쓰지 못하고 넘어간 연차 하루마다 1일 통상임금을 받습니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/annual-leave-days/", title: "연차 발생기준 — 입사 첫해는 한 달 개근마다 1일, 1년 80% 출근하면 15일, 2년마다 1일씩 늘어 25일까지", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/annual-leave-calculator/", title: "연차 계산기", kind: "calc", icon: "calculator", blurb: "입사일·기준일 → 생긴 연차, 월급·남은 일수 → 연차수당" },
+    ],
+  },
+  {
     id: "localtax",
     title: "지방세 — 집·차",
     links: [
@@ -335,6 +350,12 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/annual-leave-calculator/",
+  "/guide/annual-leave-days/",
+  "/guide/annual-leave-pay/",
+  "/guide/weekly-holiday-pay-criteria/",
+  "/guide/weekly-holiday-pay-calculator/",
+  "/guide/weekly-holiday-pay/",
   "/guide/dividend-income-tax/",
   "/guide/interest-income-tax/",
   "/guide/financial-income-tax/",
