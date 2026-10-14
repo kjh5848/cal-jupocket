@@ -265,6 +265,11 @@ export const hubEntries: HubEntry[] = [
   { no: 238, href: "/guide/annual-leave-pay/", label: "연차수당 지급기준·계산법", kind: "guide" },
   { no: 239, href: "/guide/annual-leave-days/", label: "연차 발생기준·근속별 일수", kind: "guide" },
   { no: 240, href: "/guide/annual-leave-calculator/", label: "연차 계산기", kind: "calc" },
+  { no: 241, href: "/guide/unemployment-benefit/", label: "실업급여 — 조건·금액·기간", kind: "guide" },
+  { no: 242, href: "/guide/unemployment-benefit-criteria/", label: "실업급여 조건·자진퇴사 사유", kind: "guide" },
+  { no: 243, href: "/guide/unemployment-benefit-calculator/", label: "실업급여 계산기", kind: "calc" },
+  { no: 244, href: "/guide/unemployment-benefit-apply/", label: "실업급여 신청방법·실업인정", kind: "guide" },
+  { no: 245, href: "/guide/unemployment-benefit-period/", label: "실업급여 수급기간·일수", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -305,7 +310,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
-  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/payslip", "/guide/payslip-issue", "/guide/wage-ledger", "/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator"]) },
+  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/payslip", "/guide/payslip-issue", "/guide/wage-ledger", "/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator", "/guide/unemployment-benefit", "/guide/unemployment-benefit-criteria", "/guide/unemployment-benefit-calculator", "/guide/unemployment-benefit-apply", "/guide/unemployment-benefit-period"]) },
   { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax", "/guide/comprehensive-property-tax", "/guide/vehicle-tax-prepay", "/guide/vehicle-tax-prepay-period", "/guide/vehicle-tax-prepay-discount", "/guide/vehicle-tax-prepay-amount", "/guide/vehicle-tax-prepay-how", "/guide/vehicle-tax-prepay-refund", "/guide/jongbu-criteria", "/guide/jongbu-calculator", "/guide/jongbu-rate", "/guide/jongbu-payment", "/guide/jongbu-joint", "/guide/jongbu-multi-home", "/guide/jongbu-reform", "/guide/apartment-acquisition-tax", "/guide/real-estate-acquisition-tax", "/guide/officetel-acquisition-tax", "/guide/resident-tax", "/guide/property-tax-calc", "/guide/property-tax-payment", "/guide/property-tax-basis-date"]) },
   {
     label: "종합소득세·원천징수",

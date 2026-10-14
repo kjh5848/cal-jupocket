@@ -1,0 +1,54 @@
+---
+/**
+ * "실업급여 수급기간" — 실업급여 시리즈. (실업급여 기간·지급기간·소정급여일수·몇 개월·대기기간 7일·수급기간 연장·피보험기간 합산도 이 글)
+ * 근거: 고용보험법 제48조(12개월, 연장 최대 4년)·시행령 제70조(연기 사유), 제49조(대기 7일), 제50조·별표 1(120~270일, 피보험기간 합산). rates: unemployment-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/unemployment-2026.json";
+
+const D = r.days;
+const T = r.period;
+const months = (d: number) => Math.round((d / 30) * 10) / 10;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 unemployment-series.test.ts 가 rates 와 대조한다.
+const title = "실업급여 수급기간 — 이직 다음 날부터 12개월 안에, 나이와 가입기간에 따라 120~270일 받습니다";
+const description =
+  "실업급여 수급기간은 이직 다음 날부터 12개월이고, 그 안에서 받는 날수(소정급여일수)는 이직일 현재 나이와 고용보험 가입기간에 따라 120~270일입니다. 50세 미만 가입 1년 미만은 120일, 50세 이상 10년 이상은 270일이고, 실업 신고 후 7일은 대기기간입니다.";
+
+const ANSWER = `실업급여는 이직일 다음 날부터 ${T.months}개월 안에서(고용보험법 제48조) 소정급여일수만큼 받습니다. 소정급여일수는 이직일 현재 나이와 피보험기간에 따라 ${D.under50[0]}~${D.over50[4]}일이고(제50조, 별표 1), 실업 신고일부터 ${T.waitingDays}일은 대기기간이라 지급되지 않습니다(제49조).`;
+
+const QA = [
+  { q: "실업급여는 몇 개월 받나요?", a: `50세 미만은 피보험기간 1년 미만 ${D.under50[0]}일, 1~3년 ${D.under50[1]}일, 3~5년 ${D.under50[2]}일, 5~10년 ${D.under50[3]}일, 10년 이상 ${D.under50[4]}일입니다. 50세 이상과 장애인은 ${D.over50.join('·')}일입니다(별표 1). 대략 ${months(D.under50[0])}개월에서 ${months(D.over50[4])}개월입니다.` },
+  { q: "피보험기간은 어떻게 세나요?", a: `이직 당시 사업에서 고용된 기간이고, 예전 회사에서 피보험자격을 잃은 날부터 3년 안에 지금 회사에서 다시 취득했으면 두 기간을 합칩니다. 다만 예전 회사 이직으로 구직급여를 받았다면 그 기간은 빼고 셉니다(제50조 제3항·제4항). 조건의 '180일'(피보험 단위기간)과는 다른 개념입니다.` },
+  { q: "수급기간 12개월을 늘릴 수 있나요?", a: `12개월 중 임신·출산·육아, 본인·배우자·직계가족의 질병이나 부상, 배우자 국외발령에 따른 이사, 병역 의무복무 등으로 취업할 수 없으면 수급기간 안에 신고해 그 기간만큼 늘릴 수 있습니다. 늘어난 기간은 최대 4년입니다(제48조 제2항, 시행령 제70조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>이직일 현재 나이</th>{D.brackets.map((b) => <th>{b}</th>)}</tr></thead>
+      <tbody>
+        <tr><th scope="row">50세 미만</th>{D.under50.map((d) => <td>{d}일</td>)}</tr>
+        <tr><th scope="row">50세 이상·장애인</th>{D.over50.map((d) => <td>{d}일</td>)}</tr>
+      </tbody>
+    </table>
+  </div>
+  <p>소정급여일수는 대기기간이 끝난 다음 날부터 셉니다(제50조 제1항). 하루 금액은 <a href="/guide/unemployment-benefit-calculator/">실업급여 계산기</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>12개월은 신청한 날이 아니라 이직 다음 날부터 흐릅니다. 그래서 퇴사하고 몇 달 지나 신청하면 소정급여일수를 다 받기 전에 12개월이 끝날 수 있습니다 — 신청 순서는 <a href="/guide/unemployment-benefit-apply/">실업급여 신청방법</a>에 있습니다.</p>
+</GuideLayout>

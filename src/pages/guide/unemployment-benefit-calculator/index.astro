@@ -1,0 +1,101 @@
+---
+/**
+ * "실업급여 계산기" — 실업급여 시리즈. (실업급여 금액·계산·모의계산·상한액·하한액·월급별 실업급여·알바 실업급여 금액도 이 글, 계산기 포함)
+ * 계산: src/lib/unemployment.ts unemploymentBenefit() — 고용보험법 제45조·제46조·제50조·별표 1, 시행령 제68조,
+ * 시행규칙 제91조의2, 근로기준법 제2조 제1항 제6호(평균임금), 2026·2027 최저임금 고시.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/unemployment-2026.json";
+import { unemploymentBenefit } from "../../../lib/unemployment";
+import { won, eokwon } from "../../../lib/won";
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const ex = unemploymentBenefit({ wage3m: 9_000_000, days3m: 92, insuredYears: 4 });
+const hi = unemploymentBenefit({ wage3m: 12_000_000, days3m: 92, insuredYears: 4 });
+const pt = unemploymentBenefit({ wage3m: 3_300_000, days3m: 92, weeklyHours: 20, insuredYears: 2 });
+const pays = [2_156_880, 2_500_000, 3_000_000, 3_400_000, 3_500_000, 4_000_000, 5_000_000];
+const rows = pays.map((m) => ({ m, x: unemploymentBenefit({ wage3m: m * 3, days3m: 92, insuredYears: 4 }) }));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 unemployment-series.test.ts 가 rates 와 대조한다.
+const title = "실업급여 계산기 — 이직 전 3개월 월급과 근무시간, 나이, 가입기간을 넣으면 하루 금액과 총액이 나옵니다";
+const description =
+  "실업급여 계산기는 이직 전 3개월 평균임금의 60%를 하한(1일 소정근로시간 × 최저임금 × 80%)과 상한 68,100원 사이로 맞춘 뒤 소정급여일수를 곱합니다. 월급 300만원·주 40시간·50세 미만·가입 4년이면 하루 66,048원, 180일 11,888,640원입니다.";
+
+const ANSWER = `실업급여 금액 = 구직급여일액 × 소정급여일수입니다. 구직급여일액은 평균임금의 ${pct(r.amount.rate)}이되 하한(1일 소정근로시간 × 최저임금 × ${pct(r.amount.minRate)})과 상한 ${won(ex.maxDaily)} 사이로 맞춥니다(고용보험법 제45조·제46조, 시행령 제68조). 월급 300만원·주 40시간·가입 4년이면 하루 ${won(ex.daily)}, ${ex.days}일 ${won(ex.total)}입니다.`;
+
+const QA = [
+  { q: "실업급여 계산 방법은 무엇인가요?", a: `① 평균임금 = 이직 전 3개월 임금 총액 ÷ 그 기간 총일수(근로기준법 제2조) ② 기초일액은 ${won(r.amount.baseCap)}을 넘지 못함(시행령 제68조) ③ × ${pct(r.amount.rate)} ④ 하한(1일 소정근로시간 × 최저임금 × ${pct(r.amount.minRate)})보다 낮으면 하한 ⑤ × 소정급여일수(별표 1)입니다(고용보험법 제45조·제46조).` },
+  { q: "월급별 실업급여는 얼마인가요?", a: `2026년 주 40시간·50세 미만·가입 3~5년(${ex.days}일) 기준으로 월급 300만원이면 평균임금 60%가 하한보다 낮아 하루 ${won(ex.daily)}, 400만원이면 상한이 적용돼 ${won(hi.daily)}입니다. 주 40시간이면 하루 금액이 ${won(ex.minDaily)}~${won(ex.maxDaily)} 사이에 들어갑니다.` },
+  { q: "알바·단시간 근로자 실업급여는 얼마인가요?", a: `하한이 1일 소정근로시간에 비례해 낮아집니다. 주 단위 근로면 1일 소정근로시간 = (주 소정근로시간 + 유급휴일) ÷ 48 × 8이라(시행규칙 제91조의2) 주 20시간은 ${pt.hours}시간, 하한은 ${won(pt.minDaily)}입니다. 월 110만원·가입 2년(${pt.days}일)이면 하루 ${won(pt.daily)}, 총 ${won(pt.total)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">평균임금 기준 어림입니다. 통상임금이 평균임금보다 큰 경우, 일용근로자, 2026년 1월 1일 전 이직자의 종전 상한은 넣지 않았습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="ub-pay">이직 전 3개월 월평균 임금(세전)</label>
+      <input type="text" inputmode="numeric" id="ub-pay" value="3,000,000" />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ub-leave">이직일</label>
+      <input type="date" id="ub-leave" value="2026-10-14" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ub-hours">1주 소정근로시간</label>
+      <input type="number" min="0" max="40" step="0.5" id="ub-hours" value="40" />
+      <span class="unit">시간</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ub-years">고용보험 가입기간</label>
+      <select id="ub-years">
+        {r.days.brackets.map((b, i) => <option value={[0.5, 2, 4, 7, 12][i]} selected={i === 2}>{b}</option>)}
+      </select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ub-age">이직일 현재 나이</label>
+      <select id="ub-age">
+        <option value="0" selected>50세 미만</option>
+        <option value="1">50세 이상 또는 장애인</option>
+      </select>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">실업급여 총액</p>
+      <p class="big" id="ub-hero">{won(ex.total)}</p>
+      <p class="meta" id="ub-note"></p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">하루 구직급여</span><span class="value" id="ub-daily">{won(ex.daily)}</span></div>
+      <div class="stat-chip"><span class="label">받는 날수</span><span class="value" id="ub-days">{ex.days}일</span></div>
+      <div class="stat-chip"><span class="label">평균임금(하루)</span><span class="value" id="ub-avg">{won(ex.average)}</span></div>
+      <div class="stat-chip"><span class="label">적용</span><span class="value" id="ub-which">{ex.which}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>월급(3개월 평균)</th><th>평균임금(÷92일)</th><th>하루 구직급여</th><th>적용</th><th>{ex.days}일 총액</th></tr></thead>
+      <tbody>{rows.map(({ m, x }) => <tr><th scope="row">{won(m)}</th><td>{won(x.average)}</td><td>{won(x.daily)}</td><td>{x.which}</td><td>{won(x.total)}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <p>3개월 총일수를 92일로 둔 표입니다. 이직일에 따라 89~92일이라 평균임금이 조금 달라집니다. 받는 날수는 <a href="/guide/unemployment-benefit-period/">실업급여 수급기간</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>이직일이 2027년이면 계산기는 2027년 최저임금으로 하한을 냅니다. 받을 수 있는지부터 보려면 <a href="/guide/unemployment-benefit-criteria/">실업급여 조건</a>을 보세요.</p>
+
+  <script src="../../../scripts/unemployment.ts"></script>
+</GuideLayout>

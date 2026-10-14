@@ -1,0 +1,83 @@
+---
+/**
+ * "실업급여" — 실업급여 시리즈 허브. (고용보험 실업급여·구직급여·얼마·하루 금액·상한액·하한액·2027 최저임금 역전도 이 글)
+ * 근거: 고용보험법 제40조(180일·18개월), 제45조·제46조(기초일액 60%·최저 80%), 시행령 제68조(기초일액 상한 11만3,500원),
+ * 제48조~제50조·별표 1(12개월·대기 7일·120~270일), 제58조(수급 제한). 금액은 unemploymentBenefit() 가 낸다(unemployment-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/unemployment-2026.json";
+import lab from "../../../rates/labor-2026.json";
+import { unemploymentBenefit } from "../../../lib/unemployment";
+import { won, eokwon } from "../../../lib/won";
+import { unemploymentSeries as S } from "../../../data/series/unemployment";
+
+const E = r.eligibility;
+const D = r.days;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const base = unemploymentBenefit({ wage3m: 9_000_000, insuredYears: 4 });
+const y27 = unemploymentBenefit({ wage3m: 9_000_000, insuredYears: 4, year: 2027 });
+const th = Math.ceil(base.minDaily / r.amount.rate);
+const minTotal = base.minDaily * D.under50[0];
+const maxTotal = base.maxDaily * D.over50[4];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 unemployment-series.test.ts 가 rates 와 대조한다.
+const title = "실업급여 — 18개월 중 180일 이상 일하고 원치 않게 그만두면 하루 66,048~68,100원을 120~270일 받습니다";
+const description =
+  "실업급여(구직급여)는 이직 전 18개월 동안 고용보험 피보험 단위기간이 180일 이상이고 비자발적으로 이직한 사람이 받습니다. 하루 금액은 평균임금의 60%인데 2026년 주 40시간 기준 하한 66,048원, 상한 68,100원이고, 나이와 가입기간에 따라 120~270일 받습니다.";
+
+const ANSWER = `실업급여(구직급여)는 이직 전 ${E.basePeriodMonths}개월 동안 피보험 단위기간 ${E.insuredDays}일 이상, 이직사유가 수급 제한에 해당하지 않을 것 등을 갖추면 받습니다(고용보험법 제40조). 하루 금액은 평균임금의 ${pct(r.amount.rate)}이고 2026년 주 40시간 기준 하한 ${won(base.minDaily)}·상한 ${won(base.maxDaily)}이며, ${D.under50[0]}~${D.over50[4]}일 받습니다.`;
+
+const QA = [
+  { q: "실업급여 조건은 무엇인가요?", a: `① 이직일 이전 ${E.basePeriodMonths}개월 동안 피보험 단위기간 합산 ${E.insuredDays}일 이상 ② 일할 의사와 능력이 있는데 취업하지 못한 상태 ③ 이직사유가 수급 제한 사유가 아닐 것 ④ 재취업 노력을 적극적으로 할 것입니다(제40조 제1항). 자기 사정으로 그만둬도 임금체불·직장 내 괴롭힘 등 시행규칙 별표 2의 정당한 사유면 받습니다.` },
+  { q: "실업급여는 하루 얼마인가요?", a: `기초일액(평균임금)의 ${pct(r.amount.rate)}입니다(제46조). 기초일액은 ${won(r.amount.baseCap)}을 넘지 못해(시행령 제68조) 하루 상한이 ${won(base.maxDaily)}이고, 하한은 이직 전 1일 소정근로시간 × 최저임금의 ${pct(r.amount.minRate)}라 2026년 주 40시간이면 ${won(base.minDaily)}입니다. 그래서 월급 300만원이어도 하한이 적용됩니다.` },
+  { q: "실업급여는 며칠 동안 받나요?", a: `이직일 현재 나이와 피보험기간에 따라 ${D.under50[0]}일에서 ${D.over50[4]}일입니다(제50조, 별표 1). 50세 미만은 ${D.under50.join('·')}일, 50세 이상과 장애인은 ${D.over50.join('·')}일이고, 이직 다음 날부터 ${r.period.months}개월 안에 받아야 합니다(제48조). 실업 신고 후 ${r.period.waitingDays}일은 대기기간입니다.` },
+  { q: "실업급여 총액은 얼마인가요?", a: `하루 금액 × 소정급여일수입니다. 2026년 주 40시간 기준으로 가장 적게는 하한 ${won(base.minDaily)} × ${D.under50[0]}일 = ${won(minTotal)}, 가장 많게는 상한 ${won(base.maxDaily)} × ${D.over50[4]}일 = ${won(maxTotal)}입니다. 50세 미만·가입 3~5년이면 ${D.under50[2]}일이라 하한 기준 ${won(base.minDaily * D.under50[2])}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>180일은 달력 6개월이 아니라 피보험기간 중 보수 지급의 기초가 된 날을 더한 것입니다(제41조). 세부 조건과 자진 퇴사도 받는 14가지 사유는 <a href="/guide/unemployment-benefit-criteria/">실업급여 조건</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>평균임금(하루)</th><th>60%</th><th>실제 구직급여일액</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">{won(base.minBase)} 미만</th><td>—</td><td>하한 {won(base.minDaily)}</td></tr>
+      <tr><th scope="row">{won(base.minBase)} ~ {won(th)}</th><td>{won(base.minDaily)} 이하</td><td>하한 {won(base.minDaily)}</td></tr>
+      <tr><th scope="row">{won(th)} ~ {won(r.amount.baseCap)}</th><td>{won(base.minDaily)} ~ {won(base.maxDaily)}</td><td>평균임금 × 60%</td></tr>
+      <tr><th scope="row">{won(r.amount.baseCap)} 초과</th><td>—</td><td>상한 {won(base.maxDaily)}</td></tr>
+    </tbody>
+  </table>
+  <p>주 40시간 근로자 기준입니다. 평균임금이 하루 {won(th)}을 넘어야 60% 계산이 하한을 넘습니다. 직접 넣어 보려면 <a href="/guide/unemployment-benefit-calculator/">실업급여 계산기</a>를 쓰세요.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>이직일 현재 나이</th>{D.brackets.map((b) => <th>{b}</th>)}</tr></thead>
+      <tbody>
+        <tr><th scope="row">50세 미만</th>{D.under50.map((d) => <td>{d}일</td>)}</tr>
+        <tr><th scope="row">50세 이상·장애인</th>{D.over50.map((d) => <td>{d}일</td>)}</tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>2027년 최저임금 {won(lab.minWage["2027"].hourly)}으로 계산하면 주 40시간 하한이 {won(y27.minDaily)}이 되어 현행 상한 {won(base.maxDaily)}보다 커집니다. 이때는 60%로 계산한 금액이 하한보다 낮으면 하한을 주므로(제46조 제2항), 시행령의 상한이 그대로라면 2027년 이직한 주 40시간 근로자는 평균임금과 관계없이 하루 {won(y27.minDaily)}을 받게 됩니다.</p>
+
+  <h2>실업급여 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

@@ -28,5 +28,6 @@ import { diligentSeries } from "./diligent";
 import { financialIncomeSeries } from "./financial-income";
 import { weeklyHolidaySeries } from "./weekly-holiday";
 import { annualLeaveSeries } from "./annual-leave";
+import { unemploymentSeries } from "./unemployment";
 
-export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries, incomeTaxRateSeries, businessFilingSeries, withholdingTaxSeries, taxRefundSeries, acquisitionSeries, localTaxSeries, businessRegistrationSeries, corporateTaxSeries, propertyTaxSeries, lottoTaxSeries, payslipSeries, diligentSeries, financialIncomeSeries, weeklyHolidaySeries, annualLeaveSeries];
+export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries, incomeTaxRateSeries, businessFilingSeries, withholdingTaxSeries, taxRefundSeries, acquisitionSeries, localTaxSeries, businessRegistrationSeries, corporateTaxSeries, propertyTaxSeries, lottoTaxSeries, payslipSeries, diligentSeries, financialIncomeSeries, weeklyHolidaySeries, annualLeaveSeries, unemploymentSeries];
