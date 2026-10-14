@@ -27,6 +27,9 @@ export const giftSeries: Series = {
     { slug: "gift-tax-filing", keyword: "증여세 신고", label: "증여세 신고 방법" },
     { slug: "gift-tax-deadline", keyword: "증여세 신고기한", label: "증여세 신고기한" },
     { slug: "gift-tax-criteria", keyword: "증여세 기준", label: "증여세 기준" },
+    // 2026-10-14 v43 — 자동완성+광고 클릭(v39)에서 자녀 증여 한도 20,210(308)·자녀 결혼자금 증여 3,090(27)
+    { slug: "child-gift-limit", keyword: "자녀 증여 한도", label: "자녀 증여 한도" },
+    { slug: "child-wedding-gift", keyword: "자녀 결혼자금 증여", label: "자녀 결혼자금 증여" },
   ],
 };
 

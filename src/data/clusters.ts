@@ -351,6 +351,8 @@ export const clusters: Cluster[] = [
       { href: "/guide/stock-capital-gains/", title: "주식 양도소득세, 대주주 기준과 세율", kind: "guide", icon: "scale", year: 2026 },
       { href: "/guide/land-capital-gains-rate/", title: "토지 양도세율, 비사업용은 16~55%", kind: "guide", icon: "scale", year: 2026 },
       { href: "/guide/farmland-capital-gains/", title: "농지 양도세, 8년 자경 100% 감면", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/child-gift-limit/", title: "자녀 증여 한도 — 성인 자녀 10년간 5천만원, 미성년 자녀 2천만원까지 세금이 없습니다", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/child-wedding-gift/", title: "자녀 결혼자금 증여 — 혼인신고 전후 2년 안이면 1억원을 더해 1억5천만원까지 세금이 없습니다", kind: "guide", icon: "scale", year: 2026 },
     ],
   },
 ];
@@ -360,6 +362,8 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/child-wedding-gift/",
+  "/guide/child-gift-limit/",
   "/guide/basic-pension-apply/",
   "/guide/basic-pension-calculator/",
   "/guide/basic-pension-criteria/",

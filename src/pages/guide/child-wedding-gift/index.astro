@@ -1,0 +1,52 @@
+---
+/**
+ * "자녀 결혼자금 증여" — 증여세 시리즈. (결혼자금 증여·혼인 증여재산공제·1억 5천·신랑 신부 각각·출산 공제·기간 2년·신고·파혼도 이 글)
+ * 근거: 상속세 및 증여세법 제53조의2(혼인·출산 1억원, 전후 2년, 반환·수정신고), 제53조(직계존속 5천만원), 제68조(3개월 신고), 제69조. rates: gift-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/gift-2026.json";
+import { computeGift, relationCap, taxFreeCeiling } from "../../../lib/gift";
+import { won, eokwon } from "../../../lib/won";
+
+const M = r.marriageBirthDeduction;
+const adult = relationCap("ascendant");
+const ceiling = taxFreeCeiling("ascendant", { marriageBirth: true });
+const ex2 = computeGift({ amount: 200_000_000, relation: "ascendant", marriageBirth: M.combinedCap });
+const exNo = computeGift({ amount: 200_000_000, relation: "ascendant" });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 child-gift-series.test.ts 가 rates 와 대조한다.
+const title = "자녀 결혼자금 증여 — 혼인신고 전후 2년 안이면 1억원을 더해 1억5천만원까지 세금이 없습니다";
+const description =
+  "자녀 결혼자금 증여는 부모 등 직계존속에게 혼인신고일 전후 2년 안에 받으면 혼인공제 1억원이 기본 5천만원에 더해져 1억5천만원까지 증여세가 없습니다. 신랑·신부가 각자 부모에게 받으면 각각 적용되고, 출산공제와 합쳐 평생 1억원이 한도입니다.";
+
+const ANSWER = `자녀가 부모 등 직계존속에게 혼인신고일 전후 ${M.marriageWindowYears}년 안에 받으면 혼인공제 ${eokwon(M.amount)}이 직계존속 공제 ${eokwon(adult)}에 더해져 ${eokwon(ceiling)}까지 증여세가 없습니다(상속세 및 증여세법 제53조의2·제53조). 출산(출생일부터 ${M.birthWindowYears}년)도 같은 공제이고 둘을 합쳐 평생 ${eokwon(M.combinedCap)}이 한도입니다.`;
+
+const QA = [
+  { q: "결혼자금 증여는 얼마까지 세금이 없나요?", a: `직계존속에게 받는 기본 공제 ${eokwon(adult)}(10년 합산)에 혼인공제 ${eokwon(M.amount)}을 더해 ${eokwon(ceiling)}입니다. 10년 안에 이미 다른 증여로 기본 공제를 썼다면 그만큼 줄어듭니다. 2억원을 받으면 혼인공제로 과세표준이 ${eokwon(ex2.base)}이라 증여세 ${won(ex2.payable)}, 혼인공제가 없으면 ${won(exNo.payable)}입니다.` },
+  { q: "결혼자금 증여는 언제까지 받아야 하나요?", a: `혼인관계증명서상 혼인신고일 이전 ${M.marriageWindowYears}년부터 신고일 이후 ${M.marriageWindowYears}년까지 받은 증여에 적용됩니다(제53조의2). 결혼식 날이 아니라 혼인신고일이 기준입니다. 출산공제는 자녀의 출생일(입양은 입양신고일)부터 ${M.birthWindowYears}년 안에 받은 증여입니다.` },
+  { q: "신랑 신부가 각각 받을 수 있나요?", a: `공제는 받는 사람 기준이라 신랑과 신부가 각자 자기 직계존속에게 받으면 각각 ${eokwon(ceiling)}까지 세금 없이 받을 수 있습니다. 다만 혼인공제와 출산공제는 한 사람당 합쳐서 평생 ${eokwon(M.combinedCap)}이 한도이고, 직계존속이 아닌 사람(예: 배우자의 부모)에게 받으면 적용되지 않습니다.` },
+  { q: "혼인 전에 받았는데 결혼을 안 하면요?", a: `혼인 전에 공제받고 증여일부터 ${M.marriageWindowYears}년 안에 혼인하지 않으면, ${M.marriageWindowYears}년이 되는 날이 속하는 달의 말일부터 3개월 안에 수정신고나 기한 후 신고를 해야 합니다. 그러면 가산세의 전부 또는 일부는 면제되지만 이자상당액은 더해집니다. 혼인무효 판결이 확정된 경우도 같습니다(제53조의2).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>증여세 신고는 증여받은 달의 말일부터 3개월 안에 받은 사람이 합니다(제68조) — <a href="/guide/gift-tax-filing/">증여세 신고</a>. 혼인과 무관한 일반 증여 한도는 <a href="/guide/child-gift-limit/">자녀 증여 한도</a>에 있습니다.</p>
+</GuideLayout>

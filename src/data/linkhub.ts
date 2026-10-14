@@ -275,6 +275,8 @@ export const hubEntries: HubEntry[] = [
   { no: 248, href: "/guide/basic-pension-criteria/", label: "기초연금 기준·소득인정액", kind: "guide" },
   { no: 249, href: "/guide/basic-pension-calculator/", label: "기초연금 모의계산", kind: "calc" },
   { no: 250, href: "/guide/basic-pension-apply/", label: "기초연금 신청·서류", kind: "guide" },
+  { no: 251, href: "/guide/child-gift-limit/", label: "자녀 증여 한도", kind: "guide" },
+  { no: 252, href: "/guide/child-wedding-gift/", label: "자녀 결혼자금 증여", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -484,6 +486,8 @@ export const hubGroups: HubGroup[] = [
       "/guide/stock-capital-gains",
       "/guide/land-capital-gains-rate",
       "/guide/farmland-capital-gains",
+      "/guide/child-gift-limit",
+      "/guide/child-wedding-gift",
     ]),
   },
   {

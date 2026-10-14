@@ -8,6 +8,7 @@ import g from "../../rates/gift-2026.json";
 import ih from "../../rates/inheritance-2026.json";
 import { giftSeries, inheritanceSeries } from "../../data/series/gift-inheritance";
 import { eokwon } from "../won";
+import { computeGift, taxFreeCeiling } from "../gift";
 
 const item = (k: string) => g.relationDeduction.items.find((i) => i.key === k)!;
 const money = new Set([
@@ -16,10 +17,12 @@ const money = new Set([
   eokwon(g.installment.over), eokwon(g.yearlyInstallment.over), eokwon(g.priorGiftAggregation.threshold), eokwon(g.minimumBase.amount),
   eokwon(ih.lumpSum.amount), eokwon(ih.spouse.minimum), eokwon(ih.basicDeduction.amount), eokwon(ih.otherPersonal.child),
   eokwon(ih.otherPersonal.minorPerYear), eokwon(ih.lumpSum.amount + ih.spouse.minimum), eokwon(ih.deductionLimit.giftAddThreshold),
+  // 자녀 증여 두 편(v43) — 혼인공제 포함 한도와 1억원 증여의 납부세액
+  eokwon(taxFreeCeiling("ascendant", { marriageBirth: true })), eokwon(computeGift({ amount: 100_000_000, relation: "ascendant" }).payable),
 ]);
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 const percents = new Set([...g.brackets.map((b) => pct(b.rate)), pct(g.filingCredit.rate), pct(g.generationSkip.rate)]);
-const periods = new Set([`${g.deadline.months}개월`, `${ih.deadline.months}개월`, `${ih.deadline.monthsNonResident}개월`, `${g.priorGiftAggregation.windowYears}년`]);
+const periods = new Set([`${g.deadline.months}개월`, `${ih.deadline.months}개월`, `${ih.deadline.monthsNonResident}개월`, `${g.priorGiftAggregation.windowYears}년`, `${g.marriageBirthDeduction.marriageWindowYears}년`]);
 
 describe("증여세·상속세 시리즈 제목·설명", () => {
   for (const s of [giftSeries, inheritanceSeries].flatMap((x) => [x.hub, ...x.items])) {
