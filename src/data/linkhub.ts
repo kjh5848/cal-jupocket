@@ -301,6 +301,9 @@ export const hubEntries: HubEntry[] = [
   { no: 274, href: "/guide/salary-take-home/", label: "연봉 실수령액 2026 — 표", kind: "guide" },
   { no: 275, href: "/guide/monthly-take-home/", label: "월급 실수령액 — 공제 네 줄", kind: "guide" },
   { no: 276, href: "/guide/take-home-calculator/", label: "연봉·월급 실수령액 계산기", kind: "calc" },
+  { no: 277, href: "/guide/divorce-property-tax/", label: "이혼 재산분할 세금", kind: "guide" },
+  { no: 278, href: "/guide/divorce-acquisition-tax/", label: "재산분할 취득세 1.5% — 계산", kind: "guide" },
+  { no: 279, href: "/guide/divorce-alimony-tax/", label: "위자료 세금 — 양도세", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -519,6 +522,9 @@ export const hubGroups: HubGroup[] = [
       "/guide/farmland-capital-gains",
       "/guide/child-gift-limit",
       "/guide/child-wedding-gift",
+      "/guide/divorce-property-tax",
+      "/guide/divorce-acquisition-tax",
+      "/guide/divorce-alimony-tax",
     ]),
   },
   {

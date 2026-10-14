@@ -1,0 +1,79 @@
+---
+/**
+ * "재산분할 취득세" — 이혼 재산분할 세금 시리즈. (이혼 재산분할 취득세율·감면·과세표준·계산·신고, 협의이혼 취득세도 이 글, 계산기 포함)
+ * 근거: 지방세법 제6조 제19호·제10조의2·제11조 제1항 제2호·제13조의2 제2항·제15조 제1항 제6호·제20조·제151조,
+ * 시행령 제14조·제14조의2·제20조 제13항·제28조의6 제2항. 계산: divorce-tax.ts divisionAcqTax().
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/divorce-2026.json";
+import { divisionAcqTax, plainGiftAcqTax } from "../../../lib/divorce-tax";
+import { won, manwon, eokwon } from "../../../lib/won";
+
+const A = r.acquisition;
+const pct = (v: number) => `${Number((v * 100).toFixed(1))}%`;
+const B = 500_000_000;
+const ex = divisionAcqTax(B);
+const plain = plainGiftAcqTax(B);
+const BASES = [100_000_000, 300_000_000, 500_000_000, 700_000_000, 1_000_000_000, 1_500_000_000];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 divorce-series.test.ts 가 rates·계산 함수와 대조한다.
+const title = "재산분할 취득세 — 무상취득 3.5%에서 2%를 뺀 1.5%, 5억원 집이면 지방교육세 포함 900만원입니다";
+const description =
+  "이혼 재산분할로 부동산을 받으면 취득세는 무상취득 세율 3.5%에서 중과기준세율 2%를 뺀 1.5%이고 지방교육세가 0.3% 붙습니다. 시가 5억원 아파트면 900만원으로, 특례 없는 무상취득보다 1,000만원 적습니다. 등기 접수일까지 신고·납부합니다.";
+
+const ANSWER = `재산분할로 인한 취득은 제11조 세율에서 중과기준세율 ${pct(A.heavyRate)}를 뺀 세율을 씁니다(지방세법 제15조 제1항 제6호). 무상취득 ${pct(A.baseRate)} 기준이라 ${pct(A.rate)}이고, 시가 ${eokwon(B)} 아파트면 취득세 ${won(ex.acq)}과 지방교육세 ${won(ex.edu)}을 합쳐 ${won(ex.total)}입니다(농어촌특별세 제외).`;
+
+const QA = [
+  { q: "재산분할 취득세율은 왜 1.5%인가요?", a: `법은 재산분할에 '제11조 세율에서 1천분의 20을 뺀 세율'을 쓰라고만 정했습니다. 시행령 제28조의6 제2항 제2호가 무상취득 중과에서 재산분할 특례 대상을 빼 주는 것으로 보아 재산분할은 무상취득(${pct(A.baseRate)})으로 다뤄지고, 그래서 ${pct(A.baseRate)} − ${pct(A.heavyRate)} = ${pct(A.rate)}입니다. 지방교육세는 과세표준 × (${pct(A.baseRate)} − ${pct(A.heavyRate)}) × 20%입니다(제151조).` },
+  { q: "과세표준은 무엇으로 정하나요?", a: `무상취득이라 시가인정액이 원칙입니다. 취득일 전 6개월부터 취득일 후 3개월 사이의 매매·감정·경매·공매가액을 씁니다(지방세법 시행령 제14조). 시가표준액이 ${eokwon(A.standardValueChoiceUpTo)} 이하면 시가인정액과 시가표준액 중 고를 수 있고(시행령 제14조의2), 시가인정액을 산정하기 어려우면 시가표준액입니다(법 제10조의2).` },
+  { q: "언제까지 신고해야 하나요?", a: `재산분할로 인한 취득은 등기일이 취득일입니다(시행령 제20조 제13항). 무상취득 신고기한은 취득일이 속하는 달의 말일부터 3개월이지만, 기한 안에 등기하려면 등기 신청서를 접수하는 날까지 신고·납부해야 해서(지방세법 제20조 제4항) 실제로는 소유권 이전 등기를 접수할 때 함께 냅니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">과세표준(시가인정액, 시가표준액 {eokwon(A.standardValueChoiceUpTo)} 이하는 시가표준액도 가능)을 넣으세요. 농어촌특별세는 계산하지 않습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="dv-base">과세표준</label>
+      <input type="text" inputmode="numeric" id="dv-base" value="500,000,000" /><span class="unit">원</span>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">재산분할 취득세 + 지방교육세</p>
+      <p class="big" id="dv-hero">{won(ex.total)}</p>
+      <p class="meta" id="dv-note">특례 없는 무상취득({pct(A.baseRate)})이면 {won(plain.total)}, {won(plain.total - ex.total)} 차이입니다.</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">취득세 {pct(A.rate)}</span><span class="value" id="dv-acq">{won(ex.acq)}</span></div>
+      <div class="stat-chip"><span class="label">지방교육세</span><span class="value" id="dv-edu">{won(ex.edu)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>과세표준</th><th>취득세 {pct(A.rate)}</th><th>지방교육세</th><th>합계</th><th>특례 없는 무상취득</th></tr></thead>
+    <tbody>
+      {BASES.map((b) => {
+        const x = divisionAcqTax(b);
+        return <tr><th scope="row">{eokwon(b)}</th><td>{won(x.acq)}</td><td>{won(x.edu)}</td><td>{won(x.total)}</td><td>{won(plainGiftAcqTax(b).total)}</td></tr>;
+      })}
+    </tbody>
+  </table>
+  <p>조정대상지역의 시가표준액 {eokwon(A.heavyHouseFloor)} 이상 주택을 무상취득하면 원래 12% 중과세율이 붙지만, 재산분할 특례 대상은 이 중과에서 빠집니다(지방세법 시행령 제28조의6 제2항 제2호). 사실혼 해소에 따른 재산분할도 특례세율을 받습니다(대법원 2016두36864).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>특례는 '재산분할'을 원인으로 한 취득에만 적용됩니다. 위자료 명목으로 받은 부동산은 이 세율을 받는지 확인하지 못했습니다. 양도세·증여세는 <a href="/guide/divorce-property-tax/">이혼 재산분할 세금</a>, 일반 부동산 취득세는 <a href="/guide/acquisition-tax/">취득세</a>에 있습니다.</p>
+
+  <script src="../../../scripts/divorce-tax.ts"></script>
+</GuideLayout>
