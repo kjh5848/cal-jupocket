@@ -305,7 +305,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
-  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator"]) },
+  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/payslip", "/guide/payslip-issue", "/guide/wage-ledger", "/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator"]) },
   { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax", "/guide/comprehensive-property-tax", "/guide/vehicle-tax-prepay", "/guide/vehicle-tax-prepay-period", "/guide/vehicle-tax-prepay-discount", "/guide/vehicle-tax-prepay-amount", "/guide/vehicle-tax-prepay-how", "/guide/vehicle-tax-prepay-refund", "/guide/jongbu-criteria", "/guide/jongbu-calculator", "/guide/jongbu-rate", "/guide/jongbu-payment", "/guide/jongbu-joint", "/guide/jongbu-multi-home", "/guide/jongbu-reform", "/guide/apartment-acquisition-tax", "/guide/real-estate-acquisition-tax", "/guide/officetel-acquisition-tax", "/guide/resident-tax", "/guide/property-tax-calc", "/guide/property-tax-payment", "/guide/property-tax-basis-date"]) },
   {
     label: "종합소득세·원천징수",
@@ -391,9 +391,6 @@ export const hubGroups: HubGroup[] = [
       "/guide/lotto-tax",
       "/guide/lotto-net-amount",
       "/guide/lotto-tax-calculator",
-      "/guide/payslip",
-      "/guide/payslip-issue",
-      "/guide/wage-ledger",
       "/guide/diligent-filer",
       "/guide/diligent-business",
       "/guide/financial-income-tax",

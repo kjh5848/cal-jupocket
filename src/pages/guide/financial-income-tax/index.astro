@@ -9,6 +9,7 @@ import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/financial-income-2026.json";
 import { financialTax } from "../../../lib/financial-income";
+import { marginalRate } from "../../../lib/income-tax-rate";
 import { won, eokwon } from "../../../lib/won";
 import { financialIncomeSeries as S } from "../../../data/series/financial-income";
 
@@ -33,7 +34,7 @@ const ANSWER = `금융소득종합과세는 한 해 이자·배당소득이 ${eo
 const QA = [
   { q: "금융소득종합과세 기준은 얼마인가요?", a: `분리과세 대상이 아닌 이자소득과 배당소득을 합쳐 한 해 ${eokwon(T)}입니다. 이하면 은행·증권사가 떼는 ${pct(r.withholding.interest)}(지방소득세 포함 ${pct(r.withholding.interest * (1 + r.local.ratio))})로 끝나고, 1원이라도 넘으면 넘는 부분만이 아니라 금융소득 전액이 종합소득에 합산됩니다(제14조 제3항 제6호).` },
   { q: "금융소득종합과세는 어떻게 계산하나요?", a: `① (${eokwon(T)} 초과분 + 다른 종합소득)에 기본세율 + ${eokwon(T)} × ${pct(r.withholding.interest)} ② 금융소득 전액 × ${pct(r.withholding.interest)} + 다른 종합소득에 기본세율 — 둘 중 큰 금액이 산출세액입니다(제62조). 그래서 다른 소득이 없거나 적으면 이미 뗀 ${pct(r.withholding.interest)}에서 더 내지 않습니다.` },
-  { q: "금융소득종합과세가 되면 세금이 얼마나 늘어나나요?", a: `다른 소득이 없고 이자가 3천만원이면 늘지 않습니다 — ①은 ${won(solo.opt1)}, ②는 ${won(solo.opt2)}이라 ②를 냅니다. 다른 소득 과세표준이 5천만원이면 초과 1천만원이 ${pct(0.24)} 구간에 걸려 소득세가 ${won(worker.extra)} 늘고, 지방소득세 ${won(worker.extraLocal)}이 더해집니다. 소득공제 전 단순 계산입니다.` },
+  { q: "금융소득종합과세가 되면 세금이 얼마나 늘어나나요?", a: `다른 소득이 없고 이자가 3천만원이면 늘지 않습니다 — ①은 ${won(solo.opt1)}, ②는 ${won(solo.opt2)}이라 ②를 냅니다. 다른 소득 과세표준이 5천만원이면 초과 ${eokwon(worker.interest - T)}이 ${pct(marginalRate(worker.interest - T + 50_000_000))} 구간에 걸려 소득세가 ${won(worker.extra)} 늘고, 지방소득세 ${won(worker.extraLocal)}이 더해집니다. 소득공제 전 단순 계산입니다.` },
   { q: "금융소득종합과세는 언제 신고하나요?", a: `금융소득이 ${eokwon(T)}을 넘은 해의 다음 해 5월 1일부터 5월 31일까지 종합소득세 확정신고에 넣습니다. 이미 원천징수된 ${pct(r.withholding.interest)}는 기납부세액으로 빼고 차액만 냅니다. 근로소득만 있던 직장인도 이 해에는 연말정산으로 끝나지 않습니다.` },
 ];
 ---

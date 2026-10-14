@@ -52,7 +52,12 @@ describe("연차", () => {
 });
 
 const money = new Set([won(m26), won(82_560), won(41_280), won(12_384), won(574_160), eokwon(3_000_000)]);
-const counts = new Set(["15시간", "40시간", "20시간", "4시간", "3년", "5일", "1일", "15일", "25일", "11일", "2년", "5명", "80%", "15~25일", "2026년", "1년"]);
+const A = r.annualLeave;
+const W = r.weeklyHoliday;
+const counts = new Set([
+  `${W.minWeeklyHours}시간`, `${W.maxWeeklyHours}시간`, "20시간", `${weeklyHolidayHours(20)}시간`, `${r.wageClaimYears}년`, "5일",
+  `${A.monthly}일`, `${A.full}일`, `${A.cap}일`, `${A.firstYearMax}일`, `${A.addEvery}년`, "5명", "80%", `${A.full}~${A.cap}일`, `${r.year}년`, "1년",
+]);
 
 describe("주휴수당·연차 시리즈 제목·설명", () => {
   for (const s of [weeklyHolidaySeries.hub, ...weeklyHolidaySeries.items, annualLeaveSeries.hub, ...annualLeaveSeries.items]) {

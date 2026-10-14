@@ -7,7 +7,7 @@ import type { Series } from "./types";
 
 export const payslipSeries: Series = {
   id: "payslip",
-  cluster: "income",
+  cluster: "labor",
   hub: { slug: "payslip", keyword: "급여명세서", label: "급여명세서 — 6가지 기재사항" },
   items: [
     { slug: "payslip-issue", keyword: "급여명세서 발급", label: "급여명세서 발급·조회" },
