@@ -19,7 +19,7 @@ const p50 = evAcquisitionTax(50_000_000);
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 electric-car-series.test.ts 가 rates 와 대조한다.
 const title = "전기차 세금 계산기 — 차값을 넣으면 취득세 감면액과 1년 자동차세를 계산합니다";
 const description =
-  "전기차 세금 계산기는 부가가치세를 뺀 차값에 취득세율 7%를 곱하고 140만원 감면을 뺀 취득세와 1년 자동차세 13만원을 보여 줍니다. 4천만원이면 취득세 140만원이고, 구매보조금을 받아도 취득세 과세표준에서는 빠지지 않습니다.";
+  "전기차 세금 계산기는 부가가치세를 뺀 차값에 취득세율 7%를 곱하고 140만원 감면을 뺀 취득세와 1년 자동차세 13만원을 보여 줍니다. 부가세를 뺀 차값 4천만원이면 취득세 140만원이고, 구매보조금을 받아도 취득세 과세표준에서는 빠지지 않습니다.";
 
 const ANSWER = `전기차 취득세는 부가가치세를 뺀 차값 × ${pct(r.acquisitionTax.rate)}에서 ${manwon(r.exemption.acquisition.cap)}을 뺍니다(지방세법 제12조, 지방세특례제한법 제66조 제4항). 차값 ${eokwon(P)}이면 ${manwon(ex.gross)} − ${manwon(ex.exempt)} = ${manwon(ex.tax)}이고, 그 뒤 매년 자동차세는 지방교육세 포함 ${won(ev.total)}입니다.`;
 
@@ -35,7 +35,7 @@ const QA = [
   <AnswerBox text={ANSWER} />
 
   <div class="calc-card">
-    <p class="meta">부가가치세를 뺀 차값을 넣으세요. 보조금을 빼기 전 금액입니다. 비영업용 승용 전기차 기준이고, 경자동차(세율 4%)는 다른 감면과 겹칠 수 있어 계산하지 않습니다.</p>
+    <p class="meta">부가가치세를 뺀 차값을 넣으세요. 보조금을 빼기 전 금액입니다. 비영업용 승용 전기차 기준이고, 경자동차(세율 4%)는 다른 감면과 겹칠 수 있어 계산하지 않습니다. 취득 시기는 차를 인도받는 날과 계약서상 잔금지급일 중 빠른 날입니다(지방세법 시행령 제20조 제3항).</p>
     <div class="calc-input-wrap">
       <label for="ev-price">차값(부가가치세 제외)</label>
       <input type="text" inputmode="numeric" id="ev-price" value="40,000,000" /><span class="unit">원</span>
