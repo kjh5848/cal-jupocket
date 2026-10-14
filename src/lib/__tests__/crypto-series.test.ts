@@ -14,8 +14,11 @@ describe("코인 세금 계산", () => {
     expect(cryptoTax({ proceeds: 20_000_000, cost: 10_000_000 }).total).toBe(1_650_000);
   });
   it("2026년 말 시가가 크면 그걸로 — 1,045만원 → 385만원", () => {
-    expect(cryptoTax({ proceeds: 60_000_000, cost: 10_000_000 }).total).toBe(10_450_000);
-    expect(cryptoTax({ proceeds: 60_000_000, cost: 10_000_000, fairValue2026: 40_000_000 }).total).toBe(3_850_000);
+    expect(cryptoTax({ proceeds: 60_000_000, preCost: 10_000_000 }).total).toBe(10_450_000);
+    expect(cryptoTax({ proceeds: 60_000_000, preCost: 10_000_000, preFairValue: 40_000_000 }).total).toBe(3_850_000);
+  });
+  it("시가 비교는 2027년 전 보유분에만 — 이후 매수분은 그대로 더한다", () => {
+    expect(cryptoTax({ proceeds: 100_000_000, cost: 30_000_000, preCost: 10_000_000, preFairValue: 40_000_000 }).basis).toBe(70_000_000);
   });
   it("시행 2027-01-01, 개정 세 번", () => {
     expect(r.start).toBe("2027-01-01");

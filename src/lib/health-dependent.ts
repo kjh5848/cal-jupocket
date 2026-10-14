@@ -7,7 +7,7 @@ const I = r.income;
 const P = r.property;
 
 export interface DependentInput {
-  /** 이자·배당·사업·근로·연금·기타소득 합계(연, 비과세 제외, 공적연금 전액) */
+  /** 연 소득 합계 — 근로는 총급여, 연금은 총연금액(공적연금 전액), 사업·기타는 소득금액, 이자·배당은 합계 1천만원 이하면 빼고(시행규칙 제44조 제1항), 비과세 제외 */
   income: number;
   /** 사업소득(연) */
   business?: number;

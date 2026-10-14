@@ -11,8 +11,8 @@ import { cryptoTax } from "../../../lib/crypto-tax";
 import { won, eokwon } from "../../../lib/won";
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
-const ex = cryptoTax({ proceeds: 60_000_000, cost: 10_000_000 });
-const exFv = cryptoTax({ proceeds: 60_000_000, cost: 10_000_000, fairValue2026: 40_000_000 });
+const ex = cryptoTax({ proceeds: 60_000_000, preCost: 10_000_000 });
+const exFv = cryptoTax({ proceeds: 60_000_000, preCost: 10_000_000, preFairValue: 40_000_000 });
 const gains = [2_500_000, 5_000_000, 10_000_000, 30_000_000, 50_000_000, 100_000_000];
 const rows = gains.map((g) => ({ g, x: cryptoTax({ proceeds: g, cost: 0 }) }));
 
@@ -35,17 +35,21 @@ const QA = [
   <AnswerBox text={ANSWER} />
 
   <div class="calc-card">
-    <p class="meta">한 해(2027년 이후) 모든 코인 거래를 합친 금액을 넣으세요. 필요경비 계산 방식(선입선출 등)과 해외 거래소 환산의 시행령 세부는 넣지 않았습니다.</p>
+    <p class="meta">한 해(2027년 이후)의 거래를 넣으세요. 2026년 말 시가와 실제 취득가액은 코인마다 따로 비교하는 것이 법이라(제37조 제5항), 여러 코인을 합쳐 넣으면 세금이 실제보다 크게 나올 수 있습니다. 코인 하나씩 넣는 것이 정확합니다. 필요경비 계산 방식(선입선출 등)의 시행령 세부는 넣지 않았습니다.</p>
     <div class="calc-input-wrap">
       <label for="ct-proceeds">판 금액 합계(양도가액)</label>
       <input type="text" inputmode="numeric" id="ct-proceeds" value="60,000,000" /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
-      <label for="ct-cost">산 금액 합계(실제 취득가액)</label>
-      <input type="text" inputmode="numeric" id="ct-cost" value="10,000,000" /><span class="unit">원</span>
+      <label for="ct-cost">2027년 이후 산 금액(취득가액)</label>
+      <input type="text" inputmode="numeric" id="ct-cost" value="0" /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
-      <label for="ct-fv">2027년 전 보유분의 2026. 12. 31. 시가 합계(없으면 0)</label>
+      <label for="ct-pre">2027년 전부터 갖고 있던 코인의 실제 취득가액</label>
+      <input type="text" inputmode="numeric" id="ct-pre" value="10,000,000" /><span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ct-fv">그 코인의 2026. 12. 31. 시가(없으면 0)</label>
       <input type="text" inputmode="numeric" id="ct-fv" value="0" /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
