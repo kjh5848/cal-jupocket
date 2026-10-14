@@ -203,6 +203,10 @@ export const clusters: Cluster[] = [
       { href: "/guide/corporate-tax-deadline/", title: "법인세 신고기간, 결산 후 3개월", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/corporate-tax-prepayment/", title: "법인세 중간예납, 12월 결산 8월 31일", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/corporate-tax-base/", title: "법인세 과세표준, 이월결손금 80%", kind: "guide", icon: "percent", year: 2026 },
+      { href: "/guide/duty-free-limit/", title: "면세한도 — 해외에서 사 온 물건은 1명당 800달러까지, 술 2리터·담배 200개비·향수 100mL는 따로", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/liquor-duty-free-limit/", title: "주류 면세한도 — 술은 2리터 이하이면서 400달러 이하, 담배 200개비·향수 100mL도 800달러와 따로", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/japan-duty-free-limit/", title: "일본 면세한도 — 일본에서 돌아올 때도 한국 기준 1명당 800달러, 술은 2리터·400달러입니다", kind: "guide", icon: "receipt", year: 2026 },
+      { href: "/guide/direct-purchase-customs/", title: "해외직구 관세 기준 — 자가사용 물품은 물품가격 150달러 이하면 관세가 없습니다", kind: "guide", icon: "receipt", year: 2026 },
     ],
   },
   {
@@ -373,6 +377,10 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/direct-purchase-customs/",
+  "/guide/japan-duty-free-limit/",
+  "/guide/liquor-duty-free-limit/",
+  "/guide/duty-free-limit/",
   "/guide/crypto-tax-calculator/",
   "/guide/crypto-tax-delay/",
   "/guide/crypto-tax/",

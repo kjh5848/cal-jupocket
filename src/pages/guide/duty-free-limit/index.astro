@@ -1,0 +1,61 @@
+---
+/**
+ * "면세한도" — 면세한도 시리즈 허브. (해외 면세 한도·한국 면세한도·입국 면세한도·800달러·초과 시 세금·자진신고·가산세도 이 글)
+ * 근거: 관세법 제96조(여행자 휴대품 면제·자진신고 30% 경감), 제241조 제5항(가산세 40%·60%), 시행규칙 제48조(800달러·술·담배·향수),
+ * 시행령 제96조·별표 2(간이세율). rates: customs-2026.json — 한국 입국 기준.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/customs-2026.json";
+import { won, eokwon } from "../../../lib/won";
+import { customsSeries as S } from "../../../data/series/customs";
+
+const T = r.traveler;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 customs-series.test.ts 가 rates 와 대조한다.
+const title = "면세한도 — 해외에서 사 온 물건은 1명당 800달러까지, 술 2리터·담배 200개비·향수 100mL는 따로";
+const description =
+  "한국에 입국할 때 면세한도는 여행자 1명당 과세가격 합계 미화 800달러이고, 술(2리터·400달러 이하), 담배(궐련 200개비), 향수(100mL)는 이와 별도로 면세됩니다. 넘으면 자진신고 시 관세 30%(20만원 한도)를 깎아 주고, 미신고 시 40% 가산세가 붙습니다.";
+
+const ANSWER = `한국에 들어올 때 면세한도는 여행자 1명당 미화 ${T.basicUsd}달러입니다(관세법 시행규칙 제48조 제2항). 술 ${T.liquor.liters}리터·${T.liquor.usd}달러 이하, 담배 궐련 ${T.tobacco.cigarettes}개비, 향수 ${T.perfumeMl}mL는 따로 면세됩니다(제3항). 넘으면 자진신고 시 관세 ${pct(r.selfReport.rate)} 경감(${eokwon(r.selfReport.cap)} 한도), 미신고 시 가산세 ${pct(r.penalty.rate)}입니다.`;
+
+const QA = [
+  { q: "해외여행 면세한도는 얼마인가요?", a: `여행자 1명의 휴대품 또는 별송품 과세가격 합계 기준 미화 ${T.basicUsd}달러 이하입니다(시행규칙 제48조 제2항). 출국할 때 면세점에서 산 물건도 이 ${T.basicUsd}달러에서 빼고 계산합니다. 몸에 착용하거나 휴대할 필요가 있는 물품 중 국내에서 가지고 나간 것은 포함하지 않습니다.` },
+  { q: "면세한도를 넘으면 세금은 얼마인가요?", a: `넘는 물품에 관세가 부과되고, 여행자 휴대품은 간이세율을 쓸 수 있습니다. 일반 물품 ${pct(r.simpleRates.general)}, 의류·신발 ${pct(r.simpleRates.clothing)}, 고급시계·가방은 ${won(r.simpleRates.luxuryBagOver)}을 넘는 금액의 ${pct(r.simpleRates.luxuryRate)} 등입니다(관세법 시행령 별표 2). 공제·환산 세부는 관세청 고시라 이 글에서 계산하지 않았습니다.` },
+  { q: "자진신고하면 얼마나 깎아 주나요?", a: `여행자 휴대품 신고서를 써서 자진신고하면 그 물품 관세의 ${pct(r.selfReport.rate)}를 ${eokwon(r.selfReport.cap)}을 넘지 않는 범위에서 경감합니다(관세법 제96조 제2항). 신고하지 않다가 걸려 과세되면 납부할 세액의 ${pct(r.penalty.rate)}, 반복해서 신고하지 않은 경우 등은 ${pct(r.penalty.repeatRate)}를 가산세로 냅니다(제241조 제5항).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>구분</th><th>면세 범위(한국 입국)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">기본면세범위</th><td>1명당 미화 {T.basicUsd}달러(면세점 구매분 포함)</td></tr>
+      <tr><th scope="row">술</th><td>{T.liquor.liters}리터 이하이면서 미화 {T.liquor.usd}달러 이하</td></tr>
+      <tr><th scope="row">담배</th><td>궐련 {T.tobacco.cigarettes}개비 · 엽궐련 {T.tobacco.cigars}개비 · 궐련형 전자담배 {T.tobacco.eHeated}개비 · 니코틴용액 {T.tobacco.eLiquidMl}mL (한 종류만)</td></tr>
+      <tr><th scope="row">향수</th><td>{T.perfumeMl}mL</td></tr>
+    </tbody>
+  </table>
+  <p>19세 미만은 술·담배가 면세되지 않습니다. 술·담배·향수의 자세한 기준은 <a href="/guide/liquor-duty-free-limit/">주류 면세한도</a>, 별송품은 입국한 날부터 {T.shippedMonths}개월 안에 도착해야 면세됩니다(제48조 제6항).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>이 글은 한국에 입국할 때 한국 세관의 기준입니다. 일본 등 다른 나라에서 물건을 살 때의 면세 제도는 그 나라 법이라 다루지 않았습니다 — <a href="/guide/japan-duty-free-limit/">일본 면세한도</a>. 해외직구 택배는 기준이 다릅니다 — <a href="/guide/direct-purchase-customs/">해외직구 관세 기준</a>.</p>
+
+  <h2>면세한도 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

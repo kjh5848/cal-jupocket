@@ -1,0 +1,56 @@
+---
+/**
+ * "주류 면세한도" — 면세한도 시리즈. (술 면세한도·양주 면세·와인·몇 병·담배 면세한도·전자담배·향수 면세한도·19세 미만도 이 글)
+ * 근거: 관세법 시행규칙 제48조 제3항(별도면세범위 표 — img alt), 시행령 제96조 제2항(주류·담배는 간이세율 제외). rates: customs-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/customs-2026.json";
+
+const T = r.traveler;
+const B = T.tobacco;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 customs-series.test.ts 가 rates 와 대조한다.
+const title = "주류 면세한도 — 술은 2리터 이하이면서 400달러 이하, 담배 200개비·향수 100mL도 800달러와 따로";
+const description =
+  "주류 면세한도는 한국 입국 시 술 총량 2리터 이하이면서 가격 미화 400달러 이하이고, 800달러 기본 면세한도와 따로 적용됩니다. 담배는 궐련 200개비(한 종류만), 향수는 100mL입니다. 19세 미만은 술·담배 면세가 없고, 넘으면 그 물품 가격 전체에 세금이 붙습니다.";
+
+const ANSWER = `술은 ${T.liquor.liters}리터 이하이면서 미화 ${T.liquor.usd}달러 이하까지, 담배는 궐련 ${B.cigarettes}개비, 향수는 ${T.perfumeMl}mL까지 기본 면세한도(${T.basicUsd}달러)와 관계없이 따로 면세됩니다(관세법 시행규칙 제48조 제3항). 19세 미만이 들여오는 술·담배는 면세되지 않습니다.`;
+
+const QA = [
+  { q: "술은 몇 병까지 면세인가요?", a: `병 수가 아니라 용량과 가격으로 봅니다. 합계 ${T.liquor.liters}리터 이하이면서 미화 ${T.liquor.usd}달러 이하여야 합니다(시행규칙 제48조 제3항 표). 750mL 와인 두 병(1.5리터)은 용량 안이지만 합계 가격이 ${T.liquor.usd}달러를 넘으면 면세가 안 됩니다. 출국 때 면세점에서 산 술도 이 한도에서 뺍니다.` },
+  { q: "술 면세한도를 넘으면 어떻게 되나요?", a: `별도면세범위를 넘으면 그 물품의 가격 전체가 과세가격이 됩니다(제48조 제3항 후단). 넘은 부분만 과세하는 것이 아닙니다. 주류와 담배는 여행자 휴대품 간이세율 적용 대상에서 빠져(관세법 시행령 별표 2 제4호 단서) 일반 세율로 계산합니다.` },
+  { q: "담배와 전자담배 면세한도는요?", a: `궐련 ${B.cigarettes}개비, 엽궐련 ${B.cigars}개비, 궐련형 전자담배 ${B.eHeated}개비, 니코틴용액 ${B.eLiquidMl}mL, 그 밖의 전자담배 ${B.eOtherG}g, 그 밖의 담배 ${B.otherG}g이고, 두 종류 이상을 가져오면 한 종류만 면세입니다(제48조 제3항 표). 향수는 ${T.perfumeMl}mL입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <table>
+    <thead><tr><th>구분</th><th>면세한도</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">술</th><td>{T.liquor.liters}리터 이하, 미화 {T.liquor.usd}달러 이하</td></tr>
+      <tr><th scope="row">궐련</th><td>{B.cigarettes}개비</td></tr>
+      <tr><th scope="row">엽궐련</th><td>{B.cigars}개비</td></tr>
+      <tr><th scope="row">궐련형 전자담배</th><td>{B.eHeated}개비</td></tr>
+      <tr><th scope="row">니코틴용액</th><td>{B.eLiquidMl}mL</td></tr>
+      <tr><th scope="row">기타 유형 전자담배</th><td>{B.eOtherG}g</td></tr>
+      <tr><th scope="row">그 밖의 담배</th><td>{B.otherG}g</td></tr>
+      <tr><th scope="row">향수</th><td>{T.perfumeMl}mL</td></tr>
+    </tbody>
+  </table>
+  <p>19세가 되는 해의 1월 1일을 맞이했으면 19세 미만으로 보지 않습니다. 술·담배·향수 외의 물건은 <a href="/guide/duty-free-limit/">면세한도</a> {T.basicUsd}달러 안에서 봅니다.</p>
+</GuideLayout>

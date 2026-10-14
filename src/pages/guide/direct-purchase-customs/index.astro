@@ -1,0 +1,50 @@
+---
+/**
+ * "해외직구 관세 기준" — 면세한도 시리즈. (해외직구 관세·면세 150달러·미국 200달러·목록통관·간이신고·합산·납부도 이 글)
+ * 근거: 관세법 제94조 제4호·시행규칙 제45조 제2항 제1호(150달러 자가사용 면세), 특송물품 수입통관 사무처리에 관한 고시(관세청고시 제2026-56호) 제9조. rates: customs-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/customs-2026.json";
+
+const D = r.direct;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 customs-series.test.ts 가 rates 와 대조한다.
+const title = "해외직구 관세 기준 — 자가사용 물품은 물품가격 150달러 이하면 관세가 없습니다";
+const description =
+  "해외직구 관세 기준은 우리나라 거주자가 받는 자가사용 물품의 물품가격이 미화 150달러 이하면 관세를 면제하는 것입니다(관세법 시행규칙 제45조). 특송물품은 150달러(한미 FTA 특례 대상 200달러) 이하면 목록통관으로 수입신고를 생략하고, 2,000달러까지는 간이신고합니다.";
+
+const ANSWER = `해외직구로 받는 자가사용 물품은 물품가격이 미화 ${D.freeUsd}달러 이하면 관세가 면제됩니다(관세법 제94조, 시행규칙 제45조 제2항). 물품가격은 운임 등을 뺀 가격이고, 반복·분할 수입으로 관세청 기준에 해당하면 제외됩니다. 특송물품은 ${D.listUsd}달러(한미 FTA 특례 ${D.listUsdUs}달러) 이하면 목록통관입니다.`;
+
+const QA = [
+  { q: "해외직구 면세 기준은 얼마인가요?", a: `우리나라 거주자가 받는 소액물품으로 물품가격이 미화 ${D.freeUsd}달러 이하이고 자가사용으로 인정되면 관세를 면제합니다(시행규칙 제45조 제2항 제1호). 물품가격은 과세가격에서 운임 등을 뺀 가격이고, 구분할 수 없으면 포함한 가격으로 봅니다. 여러 번 나눠 들여오는 등 관세청장 기준에 해당하면 면세되지 않습니다.` },
+  { q: "미국 직구는 200달러인가요?", a: `특송물품 고시는 물품가격 ${D.listUsd}달러 이하(한미 FTA에 따른 특송물품 통관 특례 대상은 ${D.listUsdUs}달러 이하)의 자가사용물품을 '목록통관'으로 정해 수입신고를 생략하게 합니다(관세청고시 제2026-56호 제9조). 이 ${D.listUsdUs}달러는 신고 생략 기준이고, 면세 근거와 범위는 이 글에서 확인하지 않았습니다.` },
+  { q: "직구 금액이 크면 어떻게 신고하나요?", a: `특송물품은 물품가격이 목록통관 기준을 넘고 미화 ${D.simpleUsd.toLocaleString("ko-KR")}달러 이하면 간이한 방법으로 수입신고할 수 있고, ${D.simpleUsd.toLocaleString("ko-KR")}달러를 넘으면 일반 수입신고 대상입니다(고시 제9조). 면세 기준을 넘으면 관세와 부가가치세 등이 부과됩니다. 세액 계산 세부는 이 글에서 다루지 않았습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>특송물품 물품가격</th><th>통관 방법(관세청고시 제9조)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">{D.listUsd}달러 이하(한미 FTA 특례 {D.listUsdUs}달러 이하)</th><td>목록통관 — 수입신고 생략</td></tr>
+      <tr><th scope="row">초과 ~ {D.simpleUsd.toLocaleString("ko-KR")}달러 이하</th><td>간이신고</td></tr>
+      <tr><th scope="row">{D.simpleUsd.toLocaleString("ko-KR")}달러 초과</th><td>일반 수입신고</td></tr>
+    </tbody>
+  </table>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>여행하면서 직접 들고 오는 물건은 기준이 다릅니다 — <a href="/guide/duty-free-limit/">면세한도</a>({r.traveler.basicUsd}달러).</p>
+</GuideLayout>

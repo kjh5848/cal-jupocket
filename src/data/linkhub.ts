@@ -288,6 +288,10 @@ export const hubEntries: HubEntry[] = [
   { no: 261, href: "/guide/crypto-tax/", label: "코인 과세 — 2027년·250만원·22%", kind: "guide" },
   { no: 262, href: "/guide/crypto-tax-delay/", label: "가상자산 과세 유예", kind: "guide" },
   { no: 263, href: "/guide/crypto-tax-calculator/", label: "코인 세금 계산기", kind: "calc" },
+  { no: 264, href: "/guide/duty-free-limit/", label: "면세한도 — 1명당 800달러", kind: "guide" },
+  { no: 265, href: "/guide/liquor-duty-free-limit/", label: "주류·담배·향수 면세한도", kind: "guide" },
+  { no: 266, href: "/guide/japan-duty-free-limit/", label: "일본 면세한도(한국 입국 기준)", kind: "guide" },
+  { no: 267, href: "/guide/direct-purchase-customs/", label: "해외직구 관세 150달러", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -465,6 +469,10 @@ export const hubGroups: HubGroup[] = [
       "/guide/corporate-tax-deadline",
       "/guide/corporate-tax-prepayment",
       "/guide/corporate-tax-base",
+      "/guide/duty-free-limit",
+      "/guide/liquor-duty-free-limit",
+      "/guide/japan-duty-free-limit",
+      "/guide/direct-purchase-customs",
     ]),
   },
   {

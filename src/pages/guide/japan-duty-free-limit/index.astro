@@ -1,0 +1,46 @@
+---
+/**
+ * "일본 면세한도" — 면세한도 시리즈. (일본 여행 면세한도·일본 주류 면세 한도·베트남 등 다른 나라에서 돌아올 때도 이 글)
+ * 근거: 관세법 시행규칙 제48조(한국 입국 기준 — 어느 나라에서 오든 같다), 관세법 제96조 제2항·제241조 제5항. rates: customs-2026.json
+ * 일본 쪽 소비세 면세 등 일본 제도는 한국 법령이 아니라 다루지 않는다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/customs-2026.json";
+import { eokwon } from "../../../lib/won";
+
+const T = r.traveler;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 customs-series.test.ts 가 rates 와 대조한다.
+const title = "일본 면세한도 — 일본에서 돌아올 때도 한국 기준 1명당 800달러, 술은 2리터·400달러입니다";
+const description =
+  "일본 여행 후 한국에 들어올 때의 면세한도는 다른 나라와 같은 한국 세관 기준입니다. 여행자 1명당 미화 800달러이고, 술 2리터·400달러 이하, 담배 궐련 200개비, 향수 100mL는 따로 면세됩니다. 일본 현지의 소비세 면세는 일본 제도라 별개입니다.";
+
+const ANSWER = `일본에서 산 물건을 들고 한국에 들어올 때의 면세한도는 출발 나라와 관계없이 한국 관세법 기준입니다. 여행자 1명당 미화 ${T.basicUsd}달러이고, 술 ${T.liquor.liters}리터·${T.liquor.usd}달러 이하, 담배 궐련 ${T.tobacco.cigarettes}개비, 향수 ${T.perfumeMl}mL는 따로 면세됩니다(관세법 시행규칙 제48조).`;
+
+const QA = [
+  { q: "일본 여행 면세한도는 얼마인가요?", a: `한국에 입국할 때 기준으로 여행자 1명당 과세가격 합계 미화 ${T.basicUsd}달러입니다(시행규칙 제48조 제2항). 일본에서 산 물건, 일본 면세점에서 산 물건, 출국할 때 한국 면세점에서 산 물건이 모두 이 안에 들어갑니다. 출발한 나라에 따라 한도가 달라지지 않습니다.` },
+  { q: "일본 술은 몇 병까지 가져올 수 있나요?", a: `면세는 병 수가 아니라 합계 ${T.liquor.liters}리터 이하이면서 미화 ${T.liquor.usd}달러 이하입니다(제48조 제3항). 넘으면 술 가격 전체에 세금이 붙고, 자진신고하면 관세의 ${pct(r.selfReport.rate)}를 ${eokwon(r.selfReport.cap)} 한도로 깎아 줍니다(관세법 제96조 제2항). 19세 미만은 면세되지 않습니다.` },
+  { q: "일본 현지 면세(택스프리)와는 다른가요?", a: `다릅니다. 일본 가게에서 받는 소비세 면세는 일본 제도이고, 한국 면세한도는 그 물건을 한국으로 들여올 때 관세를 면제하는 한국 제도입니다. 일본에서 세금 없이 샀어도 한국에 들어올 때 ${T.basicUsd}달러를 넘으면 신고 대상입니다. 일본 제도의 기준은 이 글에서 다루지 않았습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>베트남·미국 등 다른 나라에서 돌아올 때도 같은 기준입니다. 신고하지 않고 들여오다 과세되면 세액의 {pct(r.penalty.rate)}가 가산세로 붙습니다(관세법 제241조 제5항).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>전체 기준은 <a href="/guide/duty-free-limit/">면세한도</a>, 술·담배·향수는 <a href="/guide/liquor-duty-free-limit/">주류 면세한도</a>에 있습니다.</p>
+</GuideLayout>
