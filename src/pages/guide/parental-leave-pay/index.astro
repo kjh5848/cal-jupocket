@@ -1,0 +1,64 @@
+---
+/**
+ * "육아휴직급여" — 육아휴직 시리즈 허브. (육아휴직 급여 금액·상한액·조건·얼마·남편 육아휴직·6+6·사후지급금도 이 글)
+ * 근거: 고용보험법 제70조(30일·180일·신청기간), 시행령 제95조(250·200·160만원, 하한 70만원), 제95조의3(6+6·한부모),
+ * 부칙(대통령령 제35100호, 2025. 1. 1.), 남녀고용평등법 제19조. 금액은 parental-leave.ts 가 낸다(parental-leave-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/parental-leave-2026.json";
+import { schedule } from "../../../lib/parental-leave";
+import { won, eokwon } from "../../../lib/won";
+import { parentalLeaveSeries as S } from "../../../data/series/parental-leave";
+
+const P = r.pay;
+const B = P.bands;
+const max12 = schedule(10_000_000, 12).total;
+const six = schedule(10_000_000, 6, "sixSix").total;
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 parental-leave-series.test.ts 가 rates 와 대조한다.
+const title = "육아휴직급여 — 첫 3개월 월 최대 250만원, 4~6개월 200만원, 7개월째부터 160만원을 받습니다";
+const description =
+  "육아휴직급여는 월 통상임금을 기준으로 첫 3개월은 100%(상한 250만원), 4~6개월은 100%(상한 200만원), 7개월째부터 80%(상한 160만원)이고 하한은 70만원입니다. 1년이면 최대 2,310만원이고, 6+6 특례는 상한이 450만원까지 오릅니다.";
+
+const ANSWER = `육아휴직급여는 휴직 시작일 기준 월 통상임금으로 1~3개월 ${pct(B[0].rate)}(상한 ${eokwon(B[0].cap)}), 4~6개월 ${pct(B[1].rate)}(상한 ${eokwon(B[1].cap)}), 7개월째부터 ${pct(B[2].rate)}(상한 ${eokwon(B[2].cap)})이고 하한은 ${eokwon(P.floor)}입니다(고용보험법 시행령 제95조). 12개월이면 최대 ${eokwon(max12)}입니다.`;
+
+const QA = [
+  { q: "육아휴직급여는 얼마인가요?", a: `월 통상임금이 높아도 첫 3개월 ${eokwon(B[0].cap)}, 4~6개월 ${eokwon(B[1].cap)}, 7개월째부터 ${eokwon(B[2].cap)}이 상한이라 1년을 다 쓰면 최대 ${eokwon(max12)}입니다. 통상임금이 낮아도 한 달 ${eokwon(P.floor)}은 받습니다. 1개월이 안 되는 달은 휴직 일수에 비례해 계산합니다(제95조 제3항).` },
+  { q: "육아휴직급여 조건은 무엇인가요?", a: `육아휴직을 30일 이상(새로 생긴 1~2주 단기 육아휴직은 7일 이상, 출산전후휴가와 겹치는 기간 제외) 받고, 휴직 시작 전 고용보험 피보험 단위기간이 합산 ${P.insuredDays}일 이상이어야 합니다(고용보험법 제70조 제1항). 대상 자녀는 만 8세 이하 또는 초등학교 2학년 이하입니다(남녀고용평등법 제19조).` },
+  { q: "부부가 같이 쓰면 더 받나요?", a: `같은 자녀에 대해 출생 후 18개월이 될 때까지 부모가 모두 육아휴직을 하면 첫 6개월은 월 통상임금 100%에 상한이 250·250·300·350·400·450만원으로 오릅니다(시행령 제95조의3, 6+6). 둘 다 6개월을 쓰면 한 사람당 최대 ${eokwon(six)}입니다. 기간이 겹치지 않아도 됩니다.` },
+  { q: "사후지급금은 없어졌나요?", a: `2025년 1월 1일부터 지금의 월별 지급액이 적용되고, 지급 시기 규정이 있던 시행령 제95조 제4항은 2024년 12월 24일 삭제됐습니다. 2025년 1월 1일 전 휴직 기간분은 종전의 지급 금액·지급 시기 규정을 따릅니다(대통령령 제35100호 부칙 제7조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>휴직 개월</th><th>지급률(월 통상임금)</th><th>상한</th><th>하한</th></tr></thead>
+    <tbody>{B.map((b) => <tr><th scope="row">{b.to ? `${b.from}~${b.to}개월` : `${b.from}개월째부터`}</th><td>{pct(b.rate)}</td><td>{eokwon(b.cap)}</td><td>{eokwon(P.floor)}</td></tr>)}</tbody>
+  </table>
+  <p>한부모는 1~3개월 상한이 {eokwon(P.single.bands[0].cap)}입니다(제95조의3 제3항). 내 통상임금으로 월별 금액을 보려면 <a href="/guide/parental-leave-pay-calculator/">육아휴직 급여 계산</a>을 쓰세요.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>남편이 쓰는 육아휴직도 조건과 금액이 같습니다. 임신 중 배우자를 돌보기 위한 남성의 육아휴직은 태아를 자녀로 보아 6+6 특례를 적용합니다(제95조의3 제2항). 부모가 각각 3개월 이상 쓰면 육아휴직 기간도 6개월 늘어납니다 — <a href="/guide/parental-leave-period/">육아휴직 기간</a>.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <h2>육아휴직 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

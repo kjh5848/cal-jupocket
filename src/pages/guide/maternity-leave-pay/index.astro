@@ -1,0 +1,55 @@
+---
+/**
+ * "출산휴가급여" — 육아휴직 시리즈. (출산전후휴가 급여·상한액·우선지원대상기업·회사 부담·90일·미숙아·다태아·배우자 출산휴가 급여·신청기간도 이 글)
+ * 근거: 근로기준법 제74조(90·100·120일, 최초 60일 유급), 고용보험법 제75조·제76조(통상임금, 대규모 기업은 60일 초과분), 시행령 제101조,
+ * 고용노동부고시 제2026-67호(90일 660만원). 금액은 maternityPay() 가 낸다(parental-leave-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/parental-leave-2026.json";
+import { maternityPay } from "../../../lib/parental-leave";
+import { won, eokwon } from "../../../lib/won";
+
+const M = r.maternity;
+const pays = [2_500_000, 3_000_000, 4_000_000];
+const rows = pays.map((p) => ({ p, a: maternityPay(p, true), b: maternityPay(p, false) }));
+const ex = maternityPay(3_000_000, true);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 parental-leave-series.test.ts 가 rates 와 대조한다.
+const title = "출산휴가급여 — 90일 통상임금을 받되 고용보험은 상한 660만원, 대기업은 마지막 30일분만 줍니다";
+const description =
+  "출산휴가급여는 출산전후휴가 90일(미숙아 100일, 다태아 120일) 동안의 통상임금입니다. 우선지원 대상기업이면 고용보험이 90일분을 상한 660만원까지 주고, 그 밖의 기업은 처음 60일을 회사가 주고 고용보험은 마지막 30일분(상한 220만원)을 줍니다.";
+
+const ANSWER = `출산전후휴가는 ${M.days}일(미숙아 ${M.premieDays}일, 다태아 ${M.multiDays}일)이고 최초 ${M.paidDays}일은 유급입니다(근로기준법 제74조). 고용보험 출산휴가급여는 휴가 시작일 기준 통상임금이고(고용보험법 제76조), 2026년 상한은 ${M.days}일 ${eokwon(M.cap90)}입니다(고용노동부고시 제2026-67호). 대규모 기업은 ${M.paidDays}일을 넘는 30일분만 고용보험이 줍니다.`;
+
+const QA = [
+  { q: "출산휴가급여는 얼마인가요?", a: `휴가 시작일 기준 통상임금 상당액이고, 2026년 고용보험 상한은 ${M.days}일 ${eokwon(M.cap90)}, 미숙아 ${M.premieDays}일 ${won(M.cap100)}, 다태아 ${M.multiDays}일 ${eokwon(M.cap120)}입니다(고시 제2026-67호). 시간급 통상임금이 최저임금보다 낮으면 최저임금으로 계산합니다(시행령 제101조). 이 고시는 2026년 12월 31일까지 유효합니다.` },
+  { q: "회사가 주는 부분과 고용보험이 주는 부분은요?", a: `근로기준법상 최초 ${M.paidDays}일은 회사가 유급으로 주되, 고용보험 급여가 나온 만큼은 책임을 면합니다(제74조 제4항). 우선지원 대상기업은 고용보험이 ${M.days}일분을 상한까지 주고, 그 밖의 기업은 ${M.paidDays}일을 넘는 일수(30일 한도)만 고용보험이 줍니다(고용보험법 제76조).` },
+  { q: "출산휴가급여 신청기간과 조건은요?", a: `휴가가 끝난 날 이전 피보험 단위기간이 합산 180일 이상이어야 하고, 휴가 시작 1개월 뒤부터 휴가가 끝난 날 이후 12개월 안에 신청합니다(고용보험법 제75조). 우선지원 대상기업이 아니면 휴가 시작 후 ${M.paidDays}일이 지난 날을 시작일로 봅니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>월 통상임금(주 40시간)</th><th>90일 통상임금</th><th>고용보험(우선지원 대상기업)</th><th>고용보험(그 밖의 기업, 30일분)</th></tr></thead>
+      <tbody>{rows.map(({ p, a, b }) => <tr><th scope="row">{eokwon(p)}</th><td>{won(a.full)}</td><td>{won(a.insurance)}</td><td>{won(b.insurance)}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <p>1일 통상임금은 월 통상임금 ÷ 209시간 × 8시간으로 어림했습니다. 월 통상임금 300만원이면 90일 통상임금 {won(ex.full)} 중 고용보험이 {won(ex.insurance)}을 줍니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>배우자 출산전후휴가 급여는 우선지원 대상기업 근로자만 받고, 20일 상한이 {won(M.spouseCap20)}입니다(고시 Ⅱ). 2026년 11월 27일부터 난임치료휴가 급여는 최초 2일에서 4일로 늘어납니다(고용보험법 제76조 개정). 우선지원 대상기업의 범위는 이 글에서 다루지 않았습니다. 휴가 뒤 육아휴직은 <a href="/guide/parental-leave-pay/">육아휴직급여</a>에 있습니다.</p>
+</GuideLayout>

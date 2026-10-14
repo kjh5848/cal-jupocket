@@ -277,6 +277,11 @@ export const hubEntries: HubEntry[] = [
   { no: 250, href: "/guide/basic-pension-apply/", label: "기초연금 신청·서류", kind: "guide" },
   { no: 251, href: "/guide/child-gift-limit/", label: "자녀 증여 한도", kind: "guide" },
   { no: 252, href: "/guide/child-wedding-gift/", label: "자녀 결혼자금 증여", kind: "guide" },
+  { no: 253, href: "/guide/parental-leave-pay/", label: "육아휴직급여 — 250·200·160만원", kind: "guide" },
+  { no: 254, href: "/guide/parental-leave-pay-calculator/", label: "육아휴직 급여 계산", kind: "calc" },
+  { no: 255, href: "/guide/parental-leave-pay-apply/", label: "육아휴직급여 신청기간", kind: "guide" },
+  { no: 256, href: "/guide/parental-leave-period/", label: "육아휴직 기간·단기 육아휴직", kind: "guide" },
+  { no: 257, href: "/guide/maternity-leave-pay/", label: "출산휴가급여·상한 660만원", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -317,7 +322,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
-  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/payslip", "/guide/payslip-issue", "/guide/wage-ledger", "/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator", "/guide/unemployment-benefit", "/guide/unemployment-benefit-criteria", "/guide/unemployment-benefit-calculator", "/guide/unemployment-benefit-apply", "/guide/unemployment-benefit-period"]) },
+  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/payslip", "/guide/payslip-issue", "/guide/wage-ledger", "/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator", "/guide/unemployment-benefit", "/guide/unemployment-benefit-criteria", "/guide/unemployment-benefit-calculator", "/guide/unemployment-benefit-apply", "/guide/unemployment-benefit-period", "/guide/parental-leave-pay", "/guide/parental-leave-pay-calculator", "/guide/parental-leave-pay-apply", "/guide/parental-leave-period", "/guide/maternity-leave-pay"]) },
   { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax", "/guide/comprehensive-property-tax", "/guide/vehicle-tax-prepay", "/guide/vehicle-tax-prepay-period", "/guide/vehicle-tax-prepay-discount", "/guide/vehicle-tax-prepay-amount", "/guide/vehicle-tax-prepay-how", "/guide/vehicle-tax-prepay-refund", "/guide/jongbu-criteria", "/guide/jongbu-calculator", "/guide/jongbu-rate", "/guide/jongbu-payment", "/guide/jongbu-joint", "/guide/jongbu-multi-home", "/guide/jongbu-reform", "/guide/apartment-acquisition-tax", "/guide/real-estate-acquisition-tax", "/guide/officetel-acquisition-tax", "/guide/resident-tax", "/guide/property-tax-calc", "/guide/property-tax-payment", "/guide/property-tax-basis-date"]) },
   {
     label: "종합소득세·원천징수",
