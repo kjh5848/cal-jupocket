@@ -1,0 +1,61 @@
+---
+/**
+ * "월급 실수령액" — 실수령액 시리즈. (2026 월급 실수령액·월급 300/400/500만원 실수령액·월급 실수령액표·최저임금 월급 실수령액도 이 글)
+ * 근거: 소득세법 시행령 별표 2·제194조, 소득세법 제12조 제3호 러목, 지방세법 제103조의13, 4대보험 요율. 계산: take-home.ts takeHome().
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import t from "../../../rates/withholding-table-2026.json";
+import labor from "../../../rates/labor-2026.json";
+import { takeHome, simplifiedTax, MEAL_ALLOWANCE } from "../../../lib/take-home";
+import { won, manwon } from "../../../lib/won";
+
+const opt = { nonTaxable: MEAL_ALLOWANCE };
+const m300 = takeHome(3_000_000, opt);
+const m300plain = takeHome(3_000_000);
+const minPay = labor.minWage["2026"].monthly;
+const mMin = takeHome(minPay);
+const first = t.rows.find((r) => r.slice(2).some((v) => v > 0))!;
+const MONTHLY = [2_000_000, 2_500_000, 3_000_000, 3_500_000, 4_000_000, 4_500_000, 5_000_000, 6_000_000, 7_000_000, 8_000_000, 10_000_000];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 take-home-series.test.ts 가 계산 함수와 대조한다.
+const title = "월급 실수령액 — 월급 300만원이면 약 267만원, 빠지는 것은 4대보험·소득세·지방소득세입니다";
+const description =
+  "월급 실수령액은 세전 월급에서 국민연금·건강보험·장기요양보험·고용보험 근로자 몫과 근로소득 간이세액표의 소득세, 그 10%인 지방소득세를 뺀 금액입니다. 식대 20만원 비과세·본인 1명이면 월급 300만원은 약 267만원을 받습니다.";
+
+const ANSWER = `월급 실수령액은 세전 월급 − 4대보험 근로자 몫 − 소득세(근로소득 간이세액표) − 지방소득세(소득세의 10%)입니다. 월급 ${manwon(3_000_000)}에 식대 ${manwon(MEAL_ALLOWANCE)}이 비과세로 들어 있고 공제대상가족이 본인 1명이면 ${won(m300.deductions)}이 빠져 ${won(m300.net)}을 받습니다.`;
+
+const QA = [
+  { q: "월급 300만원이면 실수령액은 얼마인가요?", a: `식대 ${manwon(MEAL_ALLOWANCE)} 비과세가 있으면 국민연금 ${won(m300.pension)}, 건강보험 ${won(m300.health)}, 장기요양 ${won(m300.care)}, 고용보험 ${won(m300.employment)}, 소득세 ${won(m300.incomeTax)}, 지방소득세 ${won(m300.localTax)}이 빠져 ${won(m300.net)}입니다. 비과세가 없으면 ${won(m300plain.net)}입니다.` },
+  { q: "식대 비과세가 있으면 왜 더 받나요?", a: `식사를 따로 제공받지 않는 근로자가 받는 월 ${manwon(MEAL_ALLOWANCE)} 이하 식대는 비과세라(소득세법 제12조 제3호 러목) 소득세를 매기는 월급여에서 빠지고, 4대보험도 그만큼 덜 냅니다. 같은 월급 ${manwon(3_000_000)}이어도 식대 비과세가 있으면 ${won(m300.net - m300plain.net)}을 더 받습니다.` },
+  { q: "최저임금 월급 실수령액은 얼마인가요?", a: `2026년 최저임금 월급 ${won(minPay)}에 비과세가 없으면 4대보험 ${won(mMin.deductions - mMin.incomeTax - mMin.localTax)}과 소득세 ${won(mMin.incomeTax)}, 지방소득세 ${won(mMin.localTax)}이 빠져 ${won(mMin.net)}입니다. 소득세는 월급여 ${manwon(first[0] * 1000)} 구간부터 생기고, 본인 1명 기준 그 아래는 0원입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={t.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>세전 월급</th><th>4대보험</th><th>소득세</th><th>지방소득세</th><th>실수령액</th></tr></thead>
+    <tbody>
+      {MONTHLY.map((m) => {
+        const x = takeHome(m, opt);
+        return <tr><th scope="row">{manwon(m)}</th><td>{won(x.deductions - x.incomeTax - x.localTax)}</td><td>{won(x.incomeTax)}</td><td>{won(x.localTax)}</td><td>{won(x.net)}</td></tr>;
+      })}
+    </tbody>
+  </table>
+  <p>식대 {manwon(MEAL_ALLOWANCE)} 비과세, 공제대상가족 본인 1명, 2026년 4대보험 요율 기준입니다. 같은 월급이어도 부양가족이 있으면 소득세가 줄어듭니다 — 예를 들어 과세 월급여 {manwon(2_800_000)}의 소득세는 본인 1명 {won(simplifiedTax(2_800_000, 1))}, 4명 {won(simplifiedTax(2_800_000, 4))}입니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>연봉 기준 표는 <a href="/guide/salary-take-home/">연봉 실수령액</a>, 내 월급과 가족 수로 계산하려면 <a href="/guide/take-home-calculator/">연봉 실수령액 계산기</a>를 쓰세요. 급여명세서에 적히는 항목은 <a href="/guide/payslip/">급여명세서</a>에 있습니다.</p>
+</GuideLayout>

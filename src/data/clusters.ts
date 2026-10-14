@@ -298,6 +298,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/minimum-wage/", title: "최저임금 — 2026년 시급 10,320원, 주 40시간 월급 2,156,880원이고 5명 미만 사업장도 같습니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/minimum-wage-2027/", title: "최저임금 2027 — 시급 10,700원으로 380원(3.7%) 오르고, 주 40시간 월급은 2,236,300원입니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/minimum-wage-calculator/", title: "최저임금 계산기", kind: "calc", icon: "calculator", blurb: "월급·주 근무시간 → 환산 시급과 최저임금 위반 여부" },
+      { href: "/guide/salary-take-home/", title: "연봉 실수령액 2026 — 연봉 4천만원이면 한 달 약 294만원, 5천만원이면 약 357만원입니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/monthly-take-home/", title: "월급 실수령액 — 월급 300만원이면 약 267만원, 빠지는 것은 4대보험·소득세·지방소득세입니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/take-home-calculator/", title: "연봉 실수령액 계산기", kind: "calc", icon: "calculator", blurb: "연봉·월급·가족 수 → 4대보험·소득세를 뺀 한 달 실수령액" },
     ],
   },
   {
@@ -383,6 +386,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/take-home-calculator/",
+  "/guide/monthly-take-home/",
+  "/guide/salary-take-home/",
   "/guide/electric-car-tax-calculator/",
   "/guide/electric-car-tax-exemption/",
   "/guide/electric-car-tax/",

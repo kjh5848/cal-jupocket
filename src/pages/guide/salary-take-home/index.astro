@@ -1,0 +1,75 @@
+---
+/**
+ * "연봉 실수령액" — 실수령액 시리즈 허브. (2026 연봉 실수령액·연봉 실수령액표·1억 연봉 실수령액·연봉 3600/4000/5000도 이 글)
+ * 근거: 소득세법 시행령 별표 2(근로소득 간이세액표)·제194조, 소득세법 제12조 제3호 러목, 지방세법 제103조의13, 4대보험 요율.
+ * 계산: src/lib/take-home.ts takeHomeFromAnnual(). 표의 행은 scripts/fetch_withholding_table.py 가 원문에서 만들었다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import t from "../../../rates/withholding-table-2026.json";
+import ins from "../../../rates/four-insurance-2026.json";
+import { pensionRate } from "../../../lib/four-insurance";
+import { takeHomeFromAnnual, MEAL_ALLOWANCE } from "../../../lib/take-home";
+import { won, manwon, eokwon } from "../../../lib/won";
+import { takeHomeSeries as S } from "../../../data/series/take-home";
+
+const opt = { nonTaxable: MEAL_ALLOWANCE };
+const pct = (v: number) => `${Number((v * 100).toFixed(3))}%`;
+const approx = (n: number) => `약 ${Math.round(n / 10_000).toLocaleString("ko-KR")}만원`;
+const a40 = takeHomeFromAnnual(40_000_000, opt);
+const a50 = takeHomeFromAnnual(50_000_000, opt);
+const a100 = takeHomeFromAnnual(100_000_000, opt);
+const a40kids = takeHomeFromAnnual(40_000_000, { ...opt, family: 4, kids: 2 });
+const ANNUALS = [24_000_000, 30_000_000, 36_000_000, 40_000_000, 45_000_000, 50_000_000, 60_000_000, 70_000_000, 80_000_000, 100_000_000, 150_000_000];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 take-home-series.test.ts 가 계산 함수와 대조한다.
+const title = "연봉 실수령액 2026 — 연봉 4천만원이면 한 달 약 294만원, 5천만원이면 약 357만원입니다";
+const description =
+  "2026년 연봉 실수령액은 연봉을 12로 나눈 월급에서 국민연금·건강보험·장기요양·고용보험과 근로소득 간이세액표의 소득세, 지방소득세를 뺀 금액입니다. 식대 20만원 비과세·본인 1명 기준으로 연봉 4천만원은 한 달 약 294만원, 1억원은 약 653만원입니다.";
+
+const ANSWER = `연봉 실수령액은 연봉 ÷ 12에서 4대보험 근로자 몫과 소득세(근로소득 간이세액표, 소득세법 시행령 별표 2)·지방소득세(소득세의 10%)를 뺀 금액입니다. 식대 월 ${manwon(MEAL_ALLOWANCE)} 비과세, 공제대상가족 본인 1명이면 연봉 ${eokwon(40_000_000)}은 한 달 ${won(a40.net)}, ${eokwon(50_000_000)}은 ${won(a50.net)}입니다.`;
+
+const QA = [
+  { q: "2026년 연봉별 실수령액은 얼마인가요?", a: `아래 표는 연봉을 12로 나눈 월급에 식대 ${manwon(MEAL_ALLOWANCE)}이 들어 있고 공제대상가족이 본인 1명인 경우입니다. 연봉 ${eokwon(40_000_000)}이면 한 달 공제액이 ${won(a40.deductions)}이라 ${won(a40.net)}을 받고, 1억원이면 ${won(a100.net)}을 받습니다. 1년치는 12배입니다.` },
+  { q: "실수령액에서 무엇이 빠지나요?", a: `네 가지입니다. ① 국민연금(2026년 ${pct(pensionRate(2026))}) ② 건강보험(${pct(ins.health.rate)}의 절반)과 장기요양보험 ③ 고용보험(${pct(ins.employment.unemployment * ins.employment.workerShare)}) ④ 근로소득 간이세액표의 소득세와 그 10%인 지방소득세. 4대보험과 소득세는 식대 같은 비과세를 뺀 금액에 매깁니다.` },
+  { q: "부양가족이 있으면 실수령액이 늘어나나요?", a: `늘어납니다. 간이세액표는 본인과 배우자를 포함한 공제대상가족 수마다 세액이 따로 있고, 8세 이상 20세 이하 자녀가 있으면 1명 ${won(t.kidsDeduction.one)}, 2명 ${won(t.kidsDeduction.two)}을 더 뺍니다(별표 2 비고 3). 연봉 ${eokwon(40_000_000)}에 가족 4명(자녀 2명)이면 한 달 ${won(a40kids.net)}입니다.` },
+  { q: "실수령액표와 실제 월급이 다른 이유는요?", a: `간이세액표는 매달 떼는 어림값이라 1년 세금은 연말정산에서 다시 맞춥니다. 근로자가 신청하면 표 세액의 80%나 120%로 뗄 수도 있습니다(소득세법 시행령 제194조). 상여·연장수당처럼 달마다 바뀌는 돈, 회사가 정한 비과세 항목, 건강보험료 상·하한은 이 표에 넣지 않았습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={t.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+      <thead><tr><th>연봉</th><th>월급(÷12)</th><th>4대보험</th><th>소득세+지방소득세</th><th>월 실수령액</th></tr></thead>
+      <tbody>
+        {ANNUALS.map((a) => {
+          const x = takeHomeFromAnnual(a, opt);
+          return <tr><th scope="row">{eokwon(a)}</th><td>{won(x.gross)}</td><td>{won(x.deductions - x.incomeTax - x.localTax)}</td><td>{won(x.incomeTax + x.localTax)}</td><td>{won(x.net)}</td></tr>;
+        })}
+      </tbody>
+    </table>
+  <p>소득세는 2026년 2월 27일 개정된 근로소득 간이세액표 원문의 금액이고, 월급여 1,000만원을 넘는 부분은 같은 별표의 산식으로 계산했습니다. 4대보험은 2026년 요율입니다. 대략 보면 연봉 {eokwon(40_000_000)}은 {approx(a40.net)}, {eokwon(50_000_000)}은 {approx(a50.net)}, 1억원은 {approx(a100.net)}입니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>내 연봉·가족 수로 바로 보려면 <a href="/guide/take-home-calculator/">연봉 실수령액 계산기</a>, 월급 기준 표는 <a href="/guide/monthly-take-home/">월급 실수령액</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>4대보험 요율과 상한은 <a href="/guide/four-insurance/">4대보험</a>, 연말정산은 <a href="/guide/year-end-tax/">연말정산</a>에 있습니다.</p>
+
+  <h2>실수령액 시리즈</h2>
+  <ul>
+    {[S.hub, ...S.items].map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

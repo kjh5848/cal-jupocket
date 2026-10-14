@@ -1,0 +1,84 @@
+---
+/**
+ * "연봉 실수령액 계산기" — 실수령액 시리즈. (월급 실수령액 계산기·실수령액 계산도 이 글, 계산기 포함)
+ * 계산: src/lib/take-home.ts takeHome() — 근로소득 간이세액표(소득세법 시행령 별표 2), 4대보험, 지방세법 제103조의13.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import t from "../../../rates/withholding-table-2026.json";
+import { takeHomeFromAnnual, MEAL_ALLOWANCE } from "../../../lib/take-home";
+import { won, manwon, eokwon } from "../../../lib/won";
+
+const A = 36_000_000;
+const ex = takeHomeFromAnnual(A, { nonTaxable: MEAL_ALLOWANCE });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 take-home-series.test.ts 가 계산 함수와 대조한다.
+const title = "연봉 실수령액 계산기 — 연봉이나 월급, 비과세, 부양가족 수를 넣으면 한 달 실수령액이 나옵니다";
+const description =
+  "연봉 실수령액 계산기는 연봉 또는 월급에서 비과세를 뺀 금액으로 4대보험 근로자 몫과 근로소득 간이세액표 소득세, 지방소득세를 계산해 한 달 실수령액을 보여 줍니다. 부양가족 수와 8~20세 자녀 수를 넣으면 간이세액표의 해당 칸을 씁니다.";
+
+const ANSWER = `계산 순서는 ① 연봉 ÷ 12 ② 비과세(식대 월 ${manwon(MEAL_ALLOWANCE)} 이하 등)를 뺀 과세 월급여 ③ 4대보험과 간이세액표 소득세·지방소득세 ④ 월급 − 공제 합계입니다. 연봉 ${eokwon(A)}, 식대 비과세, 본인 1명이면 한 달 ${won(ex.net)}입니다.`;
+
+const QA = [
+  { q: "공제대상가족 수는 어떻게 넣나요?", a: `본인과 배우자도 각각 1명으로 셉니다(소득세법 시행령 별표 2 비고 2). 혼자면 1명, 배우자와 자녀 2명이면 4명입니다. 그중 8세 이상 20세 이하 자녀 수를 따로 넣으면 1명 ${won(t.kidsDeduction.one)}, 2명 ${won(t.kidsDeduction.two)}, 3명부터는 1명마다 ${won(t.kidsDeduction.perExtra)}을 더 뺍니다(비고 3).` },
+  { q: "비과세는 얼마를 넣어야 하나요?", a: `급여명세서에서 비과세로 표시된 금액을 넣습니다. 식사를 따로 받지 않는 근로자의 식대는 월 ${manwon(MEAL_ALLOWANCE)}까지 비과세입니다(소득세법 제12조 제3호 러목). 비과세는 소득세뿐 아니라 4대보험 계산에서도 빠집니다.` },
+  { q: "계산기 결과와 월급이 다를 수 있나요?", a: `다를 수 있습니다. 근로자가 신청하면 간이세액표 세액의 80%나 120%로 원천징수할 수 있고(소득세법 시행령 제194조), 건강보험료 상·하한과 달마다 바뀌는 상여·수당은 넣지 않았습니다. 장기요양보험료율은 2026년 11월 27일부터 반올림 방식이 바뀌어 몇 원 달라질 수 있습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={t.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">2026년 근로소득 간이세액표와 4대보험 요율로 계산합니다. 연봉을 넣으면 12로 나눈 금액을 월급으로 봅니다.</p>
+    <div class="calc-input-wrap">
+      <label for="th-mode">입력 기준</label>
+      <select id="th-mode"><option value="annual" selected>연봉</option><option value="monthly">월급(세전)</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="th-amount">금액</label>
+      <input type="text" inputmode="numeric" id="th-amount" value="36,000,000" /><span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="th-nontax">월 비과세(식대 등)</label>
+      <input type="text" inputmode="numeric" id="th-nontax" value="200,000" /><span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="th-family">공제대상가족(본인 포함)</label>
+      <input type="number" min="1" max="20" step="1" id="th-family" value="1" /><span class="unit">명</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="th-kids">그중 8~20세 자녀</label>
+      <input type="number" min="0" max="19" step="1" id="th-kids" value="0" /><span class="unit">명</span>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">한 달 실수령액</p>
+      <p class="big" id="th-hero">{won(ex.net)}</p>
+      <p class="meta" id="th-note">세전 월급 {won(ex.gross)}에서 {won(ex.deductions)}이 빠집니다.</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">국민연금</span><span class="value" id="th-pension">{won(ex.pension)}</span></div>
+      <div class="stat-chip"><span class="label">건강보험</span><span class="value" id="th-health">{won(ex.health)}</span></div>
+      <div class="stat-chip"><span class="label">장기요양</span><span class="value" id="th-care">{won(ex.care)}</span></div>
+      <div class="stat-chip"><span class="label">고용보험</span><span class="value" id="th-emp">{won(ex.employment)}</span></div>
+      <div class="stat-chip"><span class="label">소득세</span><span class="value" id="th-tax">{won(ex.incomeTax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세</span><span class="value" id="th-local">{won(ex.localTax)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>연봉별 표는 <a href="/guide/salary-take-home/">연봉 실수령액</a>, 월급별 표는 <a href="/guide/monthly-take-home/">월급 실수령액</a>에 있습니다.</p>
+
+  <script src="../../../scripts/take-home.ts"></script>
+</GuideLayout>
