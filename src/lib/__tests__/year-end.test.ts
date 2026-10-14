@@ -68,8 +68,13 @@ describe("범위를 지킨다", () => {
 
   it("확인 못 한 것을 스스로 적어 뒀다", () => {
     const s = r.notVerified.join(" ");
-    expect(s).toMatch(/간이세액표/);
     expect(s).toMatch(/부칙/);
+  });
+
+  it("간이세액표는 2026-10-14 원문(시행령 별표 2)에서 옮겼다 — 미확인 목록에서 빠지고 출처가 남는다", () => {
+    // 앞 버전은 간이세액표를 '확인 못 함'에 두라고 지켰다. withholding-table-2026.json 으로 옮긴 뒤 바꿨다.
+    expect(r.notVerified.join(" ")).not.toMatch(/간이세액표/);
+    expect(r.sourceNote).toMatch(/withholding-table-2026\.json/);
   });
 
   it("빈칸이던 표준세액공제와 경정청구는 2026-10-13 원문으로 채웠다", () => {

@@ -16,6 +16,16 @@ describe("근로소득 간이세액표", () => {
     for (let i = 1; i < t.rows.length; i++) expect(t.rows[i][0]).toBe(t.rows[i - 1][1]);
     for (const r of t.rows) for (let c = 3; c < 13; c++) expect(r[c]).toBeLessThanOrEqual(r[c - 1]);
   });
+  it("월급이 오르면 세액은 줄지 않고, 구간 폭은 5·10·20천원", () => {
+    for (let i = 1; i < t.rows.length; i++) for (let c = 2; c < 13; c++) expect(t.rows[i][c]).toBeGreaterThanOrEqual(t.rows[i - 1][c]);
+    for (const r of t.rows) expect(r[1] - r[0]).toBe(r[0] < 1500 ? 5 : r[0] < 3000 ? 10 : 20);
+  });
+  it("원문 이미지와 맞춘 행(thumbnail/12.png)", () => {
+    const row = (k: number) => t.rows.find((r) => r[0] === k)!.slice(2, 10);
+    expect(row(2_810)).toEqual([57_660, 40_160, 25_510, 20_260, 16_350, 12_970, 9_600, 6_220]);
+    expect(row(2_940)).toEqual([68_780, 51_280, 29_800, 24_550, 19_300, 15_730, 12_350, 8_980]);
+    expect(row(2_990)).toEqual([73_060, 55_560, 31_450, 26_200, 20_950, 16_790, 13_410, 10_040]);
+  });
   it("원문 행 그대로 — 3,000천원 이상 3,020천원 미만", () => {
     expect(simplifiedTax(3_000_000)).toBe(74_350);
     expect(simplifiedTax(3_019_999, 3)).toBe(31_940);
