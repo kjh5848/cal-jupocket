@@ -1,0 +1,82 @@
+---
+/**
+ * "노령연금 나이" — 노령연금 시리즈. (노령연금 수령 나이·출생연도별·조기노령연금·연기연금 나이도 이 글, 계산기 포함)
+ * 근거: 국민연금법 제61조·제62조·제63조 제2항, 부칙(법률 제8541호) 제8조, (법률 제11143호) 제6조, (법률 제13100호) 제4조.
+ * 계산: old-age-pension.ts pensionAges()·rateAtStart() — 지급률은 pension-timing.ts.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/pension-2026.json";
+import { pensionAges, rateAtStart } from "../../../lib/old-age-pension";
+
+const pct = (v: number) => `${Number((v * 100).toFixed(1))}%`;
+const a = pensionAges(1969);
+const earlyMax = rateAtStart(1969, a.earliestAge)!;
+const deferMax = rateAtStart(1969, a.latestAge)!;
+const ROWS = [1953, 1957, 1961, 1965, 1969];
+const label = (y: number) => {
+  const row = r.startAgeByBirthYear.find((x) => x.birthFrom === y)!;
+  return row.birthTo ? `${y}~${row.birthTo}년생` : `${y}년생 이후`;
+};
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 old-age-pension-series.test.ts 가 rates 와 대조한다.
+const title = "노령연금 나이 — 1969년생부터 65세, 60세에 당겨 받으면 70%, 70세까지 미루면 136%";
+const description =
+  "노령연금 나이는 60세에 출생연도별로 1~5세를 더해 1969년생부터 65세입니다. 소득 있는 일을 하지 않으면 최대 5년 앞당겨 받을 수 있고 1년마다 6%씩 깎여 60세부터면 70%, 최대 5년 미루면 매월 0.6%씩 늘어 70세부터 136%입니다.";
+
+const ANSWER = `노령연금 수급 나이는 법의 60세에 출생연도별로 1~5세를 더해 1969년생부터 ${a.startAge}세입니다(국민연금법 제61조, 부칙(법률 제8541호) 제8조). 1969년생이면 ${a.earliestAge}세부터 ${pct(earlyMax)}로 당겨 받거나, ${a.latestAge}세까지 미뤄 ${pct(deferMax)}로 받을 수 있습니다.`;
+
+const QA = [
+  { q: "출생연도별 노령연금 나이는 몇 살인가요?", a: `1953~56년생 61세, 1957~60년생 62세, 1961~64년생 63세, 1965~68년생 64세, 1969년생 이후 ${a.startAge}세입니다. 법은 60세로 적고 부칙이 출생연도별로 1~5세를 더합니다. 1952년 이전 출생자는 60세입니다.` },
+  { q: "조기노령연금은 몇 살부터, 얼마나 깎이나요?", a: `가입기간 10년 이상이고 소득 있는 업무에 종사하지 않으면 수급 나이보다 최대 5년 앞당겨 청구할 수 있습니다(제61조 제2항). 5년 당기면 70%, 1년 당길 때마다 6%씩 올라 1년이면 94%이고, 그 비율로 평생 받습니다(제63조 제2항). 연령에 도달한 다음 달 이후에 청구하면 1개월마다 0.5%가 더해집니다.` },
+  { q: "노령연금을 늦게 받으면 얼마나 늘어나나요?", a: `수급 나이부터 5년 안에서 연금 전부나 일부(50~90%)의 지급을 미룰 수 있고, 미룬 1개월마다 0.6%를 더합니다(제62조). 1년이면 7.2%, 5년이면 36%입니다. 연기할 수 있는 나이도 출생연도별로 늦춰집니다(부칙(법률 제11143호) 제6조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">출생연도와 받기 시작할 나이를 고르면 정상 수급 나이 대비 지급률을 보여 줍니다. 금액은 사람마다 기본연금액이 달라 비율만 계산합니다.</p>
+    <div class="calc-input-wrap">
+      <label for="op-birth">출생연도</label>
+      <input type="number" min="1940" max="2010" step="1" id="op-birth" value="1969" /><span class="unit">년생</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="op-age">받기 시작할 나이</label>
+      <select id="op-age">{Array.from({ length: a.latestAge - a.earliestAge + 1 }, (_, i) => a.earliestAge + i).map((x) => <option value={x} selected={x === a.startAge}>{x}세</option>)}</select>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">지급률</p>
+      <p class="big" id="op-hero">100%</p>
+      <p class="meta" id="op-note">정상 수급 나이 {a.startAge}세입니다. 조기는 {a.earliestAge}세부터, 연기는 {a.latestAge}세까지입니다.</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">정상 수급</span><span class="value" id="op-start">{a.startAge}세</span></div>
+      <div class="stat-chip"><span class="label">조기 최저</span><span class="value" id="op-early">{a.earliestAge}세</span></div>
+      <div class="stat-chip"><span class="label">연기 최대</span><span class="value" id="op-late">{a.latestAge}세</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>출생연도</th><th>수급 나이</th><th>조기 최저(70%)</th><th>연기 최대(136%)</th></tr></thead>
+    <tbody>
+      {ROWS.map((y) => { const x = pensionAges(y); return <tr><th scope="row">{label(y)}</th><td>{x.startAge}세</td><td>{x.earliestAge}세</td><td>{x.latestAge}세</td></tr>; })}
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>당겨 받기와 미뤄 받기의 누적 수령액이 몇 살에 역전되는지는 <a href="/guide/national-pension-estimate/">국민연금 예상수령액</a>, 자격과 일하면 깎이는 기준은 <a href="/guide/old-age-pension/">노령연금</a>에 있습니다.</p>
+
+  <script src="../../../scripts/old-age-pension.ts"></script>
+</GuideLayout>

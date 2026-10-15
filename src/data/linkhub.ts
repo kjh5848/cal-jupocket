@@ -304,6 +304,9 @@ export const hubEntries: HubEntry[] = [
   { no: 277, href: "/guide/divorce-property-tax/", label: "이혼 재산분할 세금", kind: "guide" },
   { no: 278, href: "/guide/divorce-acquisition-tax/", label: "재산분할 취득세 1.5% — 계산", kind: "guide" },
   { no: 279, href: "/guide/divorce-alimony-tax/", label: "위자료 세금 — 양도세", kind: "guide" },
+  { no: 280, href: "/guide/old-age-pension/", label: "노령연금 — 자격·기준", kind: "guide" },
+  { no: 281, href: "/guide/old-age-pension-age/", label: "노령연금 나이 — 출생연도별", kind: "calc" },
+  { no: 282, href: "/guide/old-age-pension-vs-basic/", label: "노령연금 기초연금 차이", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -583,6 +586,9 @@ export const hubGroups: HubGroup[] = [
       "/guide/health-dependent",
       "/guide/health-dependent-criteria",
       "/guide/health-dependent-registration",
+      "/guide/old-age-pension",
+      "/guide/old-age-pension-age",
+      "/guide/old-age-pension-vs-basic",
     ]),
   },
 ];

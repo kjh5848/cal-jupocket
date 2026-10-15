@@ -63,10 +63,8 @@ describe("startAgeForBirthYear", () => {
       earliestAge: 59,
     });
   });
-  it("가장 오래된 구간(1956년 이전)도 찾는다", () => {
-    expect(startAgeForBirthYear(1950)).toEqual({
-      startAge: 61,
-      earliestAge: 56,
-    });
+  it("가장 오래된 구간도 찾는다 — 부칙(법률 제8541호) 제8조는 1953년생부터 나이를 더해 1952년 이전은 60세", () => {
+    expect(startAgeForBirthYear(1950)).toEqual({ startAge: 60, earliestAge: 55 });
+    expect(startAgeForBirthYear(1953)).toEqual({ startAge: 61, earliestAge: 56 });
   });
 });

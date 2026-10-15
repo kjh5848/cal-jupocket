@@ -1,0 +1,57 @@
+---
+/**
+ * "노령연금 기초연금 차이" — 노령연금 시리즈. (노령연금 국민연금 차이·노령연금 재산 기준·수급자격 재산·기초연금 중복도 이 글)
+ * 근거: 국민연금법 제49조·제61조, 기초연금법 제3조(basic-pension-2026.json). 국민연금을 받을 때 기초연금 감액 계산은 basic-pension-amount 로 넘긴다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/pension-2026.json";
+import bp from "../../../rates/basic-pension-2026.json";
+import { pensionAges } from "../../../lib/old-age-pension";
+import { won, manwon } from "../../../lib/won";
+
+const a = pensionAges(1969);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 old-age-pension-series.test.ts 가 rates 와 대조한다.
+const title = "노령연금 기초연금 차이 — 노령연금은 10년 이상 낸 국민연금, 재산 기준은 기초연금에만 있습니다";
+const description =
+  "노령연금은 국민연금에 10년 이상 가입한 사람이 받는 국민연금 급여이고, 기초연금은 65세 이상 소득인정액 하위 70%에게 세금으로 주는 별개 제도입니다. '노령연금 재산 기준'으로 찾는 기준은 기초연금의 기준이고, 둘은 함께 받을 수 있습니다.";
+
+const ANSWER = `노령연금은 국민연금 급여의 하나로 가입기간 ${r.minCoverageYears}년 이상이면 받고 재산을 보지 않습니다(국민연금법 제49조·제61조). 기초연금은 65세 이상 소득인정액이 혼자 사는 노인 월 ${manwon(bp.selection.single)} 이하일 때 받는 별개 제도입니다(기초연금법 제3조). 둘은 함께 받을 수 있습니다.`;
+
+const QA = [
+  { q: "노령연금과 국민연금은 같은 건가요?", a: `노령연금은 국민연금의 급여 중 하나입니다. 국민연금법이 정한 급여는 노령연금·장애연금·유족연금·반환일시금 네 가지이고(제49조), 나이가 들어 받는 국민연금이 노령연금입니다. 흔히 '국민연금 받는다'고 하는 것이 대부분 노령연금입니다.` },
+  { q: "노령연금 재산 기준은 얼마인가요?", a: `노령연금에는 재산·소득 기준이 없습니다. 재산과 소득을 소득인정액으로 바꿔 혼자 사는 노인 월 ${won(bp.selection.single)}, 부부 월 ${won(bp.selection.couple)} 이하인지 보는 것은 기초연금입니다(2026년). 노령연금은 가입기간과 나이만 봅니다.` },
+  { q: "노령연금과 기초연금을 같이 받을 수 있나요?", a: `받을 수 있습니다. 기초연금에서 빼는 사람은 공무원·사학·군인·별정우체국 연금 수급권자 등이고(기초연금법 제3조 제3항), 국민연금 노령연금 수급자는 빠지지 않습니다. 다만 국민연금을 받으면 기초연금액이 줄어들 수 있고, 줄어도 기준연금액의 절반은 남습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <table>
+    <thead><tr><th>구분</th><th>노령연금</th><th>기초연금</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">제도</th><td>국민연금 급여(국민연금법)</td><td>별개 제도(기초연금법)</td></tr>
+      <tr><th scope="row">받는 조건</th><td>가입기간 {r.minCoverageYears}년 이상</td><td>65세 이상, 소득인정액 선정기준액 이하</td></tr>
+      <tr><th scope="row">나이</th><td>출생연도별 61~{a.startAge}세</td><td>{bp.age}세 이상</td></tr>
+      <tr><th scope="row">재산 기준</th><td>없음</td><td>있음 — 혼자 월 {manwon(bp.selection.single)}, 부부 월 {manwon(bp.selection.couple)}(소득인정액)</td></tr>
+      <tr><th scope="row">금액</th><td>낸 보험료·가입기간에 따라 사람마다 다름</td><td>2026년 기준연금액 월 {won(bp.basePension)}에서 소득·국민연금에 따라 조정</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>소득인정액 계산과 재산 공제는 <a href="/guide/basic-pension-criteria/">기초연금 기준</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>국민연금을 받을 때 기초연금이 얼마로 줄어드는지는 <a href="/guide/basic-pension-amount/">기초연금 금액</a>, 노령연금 자격과 10년을 못 채웠을 때는 <a href="/guide/old-age-pension/">노령연금</a>에 있습니다.</p>
+</GuideLayout>

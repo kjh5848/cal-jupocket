@@ -1,0 +1,83 @@
+---
+/**
+ * "노령연금" — 노령연금 시리즈 허브. (노령연금 기준·자격·수급자격·신청·10년 미만·일하면 감액·분할연금도 이 글)
+ * 근거: 국민연금법 제13조·제50조·제61조·제63조·제63조의2·제64조·제77조·제115조, 부칙(법률 제8541호) 제8조,
+ * (법률 제21203호) 제1조·제2조, 시행령 제45조, 보건복지부고시 제2026-12호. rates: pension-2026.json
+ * 금액(기본연금액·A값)은 쓰지 않는다 — A값 고시를 국가법령정보센터에서 찾지 못했다(notVerified).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/pension-2026.json";
+import bp from "../../../rates/basic-pension-2026.json";
+import { coverageRate, pensionAges } from "../../../lib/old-age-pension";
+import { won, manwon } from "../../../lib/won";
+import { oldAgePensionSeries as S } from "../../../data/series/old-age-pension";
+
+const E = r.earningsReduction;
+const F = r.familyAllowance2026;
+const pct = (v: number) => `${Number((v * 100).toFixed(1))}%`;
+const a69 = pensionAges(1969);
+const y15 = coverageRate(15);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 old-age-pension-series.test.ts 가 rates 와 대조한다.
+const title = "노령연금 — 국민연금을 10년 이상 내면 받고, 1969년생부터는 65세이며 재산 기준은 없습니다";
+const description =
+  "노령연금은 국민연금 가입기간이 10년 이상인 사람이 수급 나이가 되면 평생 받는 국민연금입니다. 수급 나이는 출생연도에 따라 61~65세이고 1969년생부터 65세입니다. 재산·소득인정액 기준은 기초연금의 기준이라 노령연금에는 없습니다.";
+
+const ANSWER = `노령연금은 국민연금 가입기간이 ${r.minCoverageYears}년 이상이면 수급 나이부터 평생 받습니다(국민연금법 제61조). 수급 나이는 60세에 출생연도별로 1~5세를 더해 1969년생부터 ${a69.startAge}세입니다(부칙(법률 제8541호) 제8조). 재산 기준은 없고, 그건 기초연금의 기준입니다.`;
+
+const QA = [
+  { q: "노령연금 수급자격은 무엇인가요?", a: `두 가지입니다. ① 국민연금 가입기간 ${r.minCoverageYears}년 이상 ② 수급 나이 도달. 수급 나이는 1953~56년생 61세, 57~60년생 62세, 61~64년생 63세, 65~68년생 64세, 1969년생 이후 ${a69.startAge}세입니다. 받으려면 국민연금공단에 청구해야 하고(제50조), 받을 권리는 ${r.claim.limitationYears}년간 행사하지 않으면 소멸합니다(제115조).` },
+  { q: "가입기간이 짧으면 얼마나 받나요?", a: `20년 이상이면 기본연금액 전부, 10년 이상 20년 미만이면 기본연금액의 50%에 10년을 넘는 1년마다 5%를 더합니다(제63조 제1항). 15년이면 ${pct(y15)}입니다. 기본연금액은 가입 기간의 소득으로 정해져 사람마다 달라 국민연금공단 조회로 확인합니다.` },
+  { q: "재산이 많으면 노령연금을 못 받나요?", a: `받습니다. 노령연금에는 재산·소득인정액 기준이 없습니다. '노령연금 재산 기준'으로 찾는 기준은 기초연금의 것으로, 65세 이상 소득인정액이 혼자 사는 노인 월 ${manwon(bp.selection.single)} 이하일 때 받는 별개 제도입니다(기초연금법 제3조).` },
+  { q: "가입기간 10년을 못 채우면 어떻게 되나요?", a: `60세가 되면 낸 연금보험료에 이자를 더한 반환일시금을 청구할 수 있습니다(제77조). 연금으로 받고 싶으면 60세 이후 65세가 될 때까지 임의계속가입을 신청해 보험료를 더 내고 10년을 채울 수 있습니다(제13조).` },
+  { q: "노령연금을 받으면서 일하면 깎이나요?", a: `사업소득·근로소득금액의 월평균이 A값(최근 3년 평균소득월액)을 넘으면 그 초과분이 ${manwon(E.brackets[0].from)} 이상일 때부터 깎입니다. 2025년 12월 개정으로 초과분 ${manwon(E.brackets[0].from)} 미만 구간의 감액은 없어졌고 2026년 6월 17일 시행, 2025년 소득부터 적용됩니다(제63조의2).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>출생연도별 조기·연기 가능 나이와 지급률은 <a href="/guide/old-age-pension-age/">노령연금 나이</a>에서 계산할 수 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <table>
+    <thead><tr><th>가입기간</th><th>기본연금액 대비</th></tr></thead>
+    <tbody>{[10, 12, 15, 18, 20].map((y) => <tr><th scope="row">{y}년{y === 20 ? " 이상" : ""}</th><td>{pct(coverageRate(y))}</td></tr>)}</tbody>
+  </table>
+  <p>여기에 부양가족연금액이 붙습니다. 2026년에는 배우자 연 {won(F.spouseYearly)}, 자녀·부모 1명 연 {won(F.childParentYearly)}이고, 기본연금액과 함께 {pct(F.adjustment)} 올랐습니다(보건복지부고시 제2026-12호). 예상 수령액을 조회한 뒤 언제부터 받을지 정하는 방법은 <a href="/guide/national-pension-estimate/">국민연금 예상수령액</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>노령연금과 기초연금을 함께 받을 때 기초연금이 얼마나 줄어드는지는 <a href="/guide/old-age-pension-vs-basic/">노령연금 기초연금 차이</a>와 <a href="/guide/basic-pension-amount/">기초연금 금액</a>에 있습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <h2>{QA[4].q}</h2>
+  <p class="qa-lead">{QA[4].a}</p>
+  <table>
+    <thead><tr><th>초과소득월액</th><th>빼는 금액(월)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">{manwon(E.brackets[0].from)} 미만</th><td>없음(2025년 소득부터)</td></tr>
+      {E.brackets.map((b) => <tr><th scope="row">{manwon(b.from)}{b.to ? ` 이상 ${manwon(b.to)} 미만` : " 이상"}</th><td>{manwon(b.base)} + {manwon(b.from)} 초과분 × {pct(b.rate)}</td></tr>)}
+    </tbody>
+  </table>
+  <p>빼는 금액은 노령연금액(부양가족연금액 제외)의 절반을 넘지 못합니다. 여기서 소득은 월급(총급여)이 아니라 근로소득공제를 뺀 근로소득금액과 사업소득금액이고, 연금·이자·배당소득은 들어가지 않습니다(시행령 제45조). 법 문언상 감액 기간은 60세 이상 65세 미만인데, 출생연도별 수급 나이에 따라 늦춰지는지는 부칙에서 확인하지 못했습니다.</p>
+
+  <h2>이혼하면 노령연금을 나누나요?</h2>
+  <p>배우자의 가입기간 중 실제 혼인 기간이 {r.splitPension.marriedYears}년 이상이고, 이혼했고, 전 배우자가 노령연금 수급권자이며, 본인이 60세가 되면 전 배우자 노령연금 중 혼인 기간 몫의 절반을 분할연금으로 받습니다(제64조). 요건을 갖춘 때부터 {r.splitPension.claimYears}년 안에 청구하고, 60세 전에 이혼했다면 이혼 후 {r.splitPension.preClaimYears}년 안에 미리 청구할 수 있습니다(제64조의3). 이혼할 때 재산분할로 따로 정했다면 그에 따릅니다(제64조의2). 재산분할의 세금은 <a href="/guide/divorce-property-tax/">이혼 재산분할 세금</a>에 있습니다.</p>
+
+  <h2>쓰지 않은 것</h2>
+  <ul>{r.notVerified.map((n) => <li>{n}</li>)}</ul>
+
+  <h2>노령연금 시리즈</h2>
+  <ul>{[S.hub, ...S.items].map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}</ul>
+</GuideLayout>

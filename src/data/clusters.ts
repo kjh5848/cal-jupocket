@@ -266,6 +266,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/health-dependent/", title: "건강보험 피부양자 — 직장가입자의 가족은 소득 2천만원·재산 5억4천만원 이하여야 보험료 없이 됩니다", kind: "guide", icon: "umbrella", year: 2026 },
       { href: "/guide/health-dependent-criteria/", title: "건강보험 피부양자 조건 — 소득 연 2천만원 이하, 사업소득 없음, 재산 과세표준 5억4천만원 이하", kind: "guide", icon: "umbrella", year: 2026 },
       { href: "/guide/health-dependent-registration/", title: "건강보험 피부양자 등록 — 직장가입자가 신고서를 내고, 90일 안에 하면 입사일로 소급됩니다", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/old-age-pension/", title: "노령연금 — 국민연금을 10년 이상 내면 받고, 1969년생부터는 65세이며 재산 기준은 없습니다", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/old-age-pension-age/", title: "노령연금 나이 계산기", kind: "calc", icon: "calculator", blurb: "출생연도·시작 나이 → 수급 나이와 조기·연기 지급률" },
+      { href: "/guide/old-age-pension-vs-basic/", title: "노령연금 기초연금 차이 — 노령연금은 10년 이상 낸 국민연금, 재산 기준은 기초연금에만 있습니다", kind: "guide", icon: "umbrella", year: 2026 },
     ],
   },
   /*
@@ -389,6 +392,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/old-age-pension-vs-basic/",
+  "/guide/old-age-pension-age/",
+  "/guide/old-age-pension/",
   "/guide/divorce-alimony-tax/",
   "/guide/divorce-acquisition-tax/",
   "/guide/divorce-property-tax/",
