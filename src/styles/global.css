@@ -1519,6 +1519,18 @@ details[open] summary {
   font-size: 1.95rem;
   color: #fff;
 }
+/*
+ * h1 첫 줄의 사이트 이름 — 구글 사이트 이름 신호(WebSite 구조화 데이터·title·og:site_name)와
+ * 홈 h1 을 '주포켓'으로 맞춘다(2026-10-15). 문구는 그대로 두고 이름만 작은 윗줄로 얹는다.
+ */
+.home-hero .hero-brand {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.85);
+}
 .home-hero p {
   margin: 0 0 1.3rem;
   color: rgba(255, 255, 255, 0.9);
