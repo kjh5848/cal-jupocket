@@ -11,7 +11,7 @@
  * 계산기·읽을거리는 홈의 구획으로 보낸다. 목록 페이지를 따로 만들면
  * 홈과 같은 내용이 두 군데가 되어 서로 순위를 갉아먹는다.
  */
-import BrandCoin from "./BrandCoin.astro";
+import BrandPocket from "./BrandPocket.astro";
 import { clusters } from "../data/clusters";
 
 /** 계산기 주소는 clusters.ts 가 안다 — 여기 따로 적으면 새 계산기가 빠진다. */
@@ -23,7 +23,7 @@ const here = Astro.url.pathname;
 const links = [
   {
     href: "/#tools",
-    label: "계산기",
+    label: "도구",
     match: (p: string) => p === "/" || calcPaths.has(p),
   },
   { href: "/#reads", label: "읽을거리", match: (p: string) => p.startsWith("/guide/") },
@@ -32,8 +32,8 @@ const links = [
 ---
 
 <header class="site-header">
-  <a href="/" class="brand" aria-label="주포켓 계산기 홈">
-    <BrandCoin size={38} animate={false} shadow={false} layers={3} />
+  <a href="/" class="brand" aria-label="주포켓 홈">
+    <BrandPocket size={40} />
     <span class="brand-name">주포켓</span>
   </a>
   <nav class="site-nav" aria-label="주요 메뉴">

@@ -1,0 +1,37 @@
+---
+/**
+ * 주포켓 로고 — 3D 봉투형 주머니(리브랜딩 2026-10-16, 설계 11절 2).
+ * 파랑 판(위쪽 빛 + 아래 두께) 위에 흰 주머니, 위로 청록·하늘 도구가 삐져나온다.
+ * 한 페이지에 여러 번 써도 그라데이션 id 가 겹치지 않게 인스턴스마다 접두를 바꾼다.
+ * public/favicon.svg 는 같은 그림을 접두 'bp-' 로 고정한 것.
+ */
+import { nextId } from "../lib/svg-id";
+
+interface Props {
+  size?: number;
+  label?: string;
+}
+const INNER_SVG = `<defs>
+ <linearGradient id="__P__base" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f8ff0"/><stop offset=".55" stop-color="#1468c8"/><stop offset="1" stop-color="#0b4f9e"/></linearGradient>
+ <linearGradient id="__P__side" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a4689"/><stop offset="1" stop-color="#06305f"/></linearGradient>
+ <radialGradient id="__P__shine" cx=".28" cy=".18" r=".62"><stop offset="0" stop-color="#ffffff" stop-opacity=".55"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+ <linearGradient id="__P__pocket" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d8e5f7"/></linearGradient>
+ <linearGradient id="__P__teal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5fe0cf"/><stop offset="1" stop-color="#1f9c8e"/></linearGradient>
+ <linearGradient id="__P__sky" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d7e3ff"/><stop offset="1" stop-color="#8fa9e6"/></linearGradient>
+ <filter id="__P__drop" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.3" flood-color="#04264d" flood-opacity=".4"/></filter>
+</defs>
+<rect x="4" y="8" width="56" height="54" rx="15" fill="url(#__P__side)"/>
+<rect x="4" y="3" width="56" height="54" rx="15" fill="url(#__P__base)"/>
+<rect x="4" y="3" width="56" height="54" rx="15" fill="url(#__P__shine)"/>
+<rect x="21" y="13" width="9" height="15" rx="2.2" fill="url(#__P__teal)" transform="rotate(-12 25.5 20.5)" filter="url(#__P__drop)"/>
+<circle cx="39" cy="20" r="6" fill="url(#__P__sky)" filter="url(#__P__drop)"/>
+<path d="M14 26 L32 34 L50 26 L50 45 Q50 50 45 50 L19 50 Q14 50 14 45 Z" fill="url(#__P__pocket)" filter="url(#__P__drop)"/>
+<path d="M14 26 L32 34 L50 26" fill="none" stroke="#a9c3e8" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M17 29 L17 44" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+`;
+const { size = 40, label } = Astro.props;
+const p = `bp${nextId()}-`;
+const inner = INNER_SVG.replaceAll("__P__", p);
+---
+
+<svg viewBox="0 0 64 64" width={size} height={size} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : "true"} class="brand-pocket" set:html={inner} />
