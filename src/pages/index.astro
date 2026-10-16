@@ -16,7 +16,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ToolCard from "../components/ToolCard.astro";
 import { tools, toolCount } from "../data/tools";
-import { TOOL_TYPES } from "../data/tool-types";
+import { TOOL_TYPES, typeInfo } from "../data/tool-types";
 import { clusters, clusterColor, recent, linkByHref, displayTitle } from "../data/clusters";
 import { icons } from "../data/icons";
 import { liveSocials } from "../data/social";
@@ -27,6 +27,10 @@ const description =
   "세금·급여 계산기부터 날짜·사진·문서 도구까지 주포켓에 담았습니다. 3.3% 원천징수·실수령액·부가세·상속세를 법 원문 기준으로 바로 계산하고, 얼마 내는지·아끼는 법까지 정리했습니다.";
 
 const count = toolCount();
+/** 검색 스크립트가 읽는 도구 목록 — 필요한 칸만(번들에 클러스터 전체를 넣지 않는다) */
+const toolsData = JSON.stringify(
+  tools.map((t) => ({ no: t.no, href: t.href, name: t.name, blurb: t.blurb, type: t.type, keywords: t.keywords, status: t.status, label: typeInfo(t.type).label, color: typeInfo(t.type).color })),
+);
 /** 자주 찾는 말 — 검색량 순(docs/keyword-research.md v54·v39) */
 const QUICK = [
   { label: "실수령액", href: "/guide/take-home-calculator/" },
@@ -108,6 +112,8 @@ const jsonLd = [
             </form>
             <div id="tool-pop" class="search-pop" role="listbox" aria-label="찾은 도구" hidden></div>
           </div>
+          <script type="application/json" id="tools-data" set:html={toolsData} />
+          <script src="../scripts/tool-search.ts"></script>
           <nav class="hero-quick" aria-label="자주 찾는 도구">
             <span>자주 찾는</span>
             {QUICK.map((q) => <a class="quick" href={q.href}>{q.label}</a>)}
