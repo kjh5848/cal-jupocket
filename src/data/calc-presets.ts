@@ -17,4 +17,8 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
   "/freelancer-33/": {
     default: { amounts: [1_000_000, 2_000_000, 3_000_000], source: "keywords/ac-33-2026-10-17.csv", term: "3.3" },
   },
+  "/withholding/": {
+    // 사업소득은 3.3% 계산기와 같은 자동완성. 기타소득 8.8% 는 자동완성에 금액이 붙어 나오지 않아(2026-10-17 네이버 '8.8'·'100만원 8.8' 등) 버튼 없음
+    business: { amounts: [1_000_000, 2_000_000, 3_000_000], source: "keywords/ac-33-2026-10-17.csv", term: "3.3" },
+  },
 };

@@ -1,4 +1,4 @@
-import { fromGross, fromNet, otherIncome } from "../lib/withholding";
+import { fromGross, fromNet, otherIncome, otherIncomeFromNet } from "../lib/withholding";
 import {
   formatWon,
   parseAmount,
@@ -16,69 +16,62 @@ type Mode = "gross" | "net";
 
 let incomeType: IncomeType = "business";
 let mode: Mode = "gross";
-let lastResult: { gross: number; withholding: number; net: number } = {
-  gross: 0,
-  withholding: 0,
-  net: 0,
-};
+let lastResult = { gross: 0, withholding: 0, net: 0, incomeTax: 0, localTax: 0, exempt: false };
 
 const amountInput = document.getElementById("amount") as HTMLInputElement;
 const inputLabel = document.getElementById("input-label")!;
-const outWithholding = document.getElementById("out-withholding")!;
-const outRate = document.getElementById("out-rate")!;
 const outNet = document.getElementById("out-net")!;
+const outGross = document.getElementById("out-gross")!;
+const outNetV = document.getElementById("out-netv")!;
+const outIncome = document.getElementById("out-income")!;
+const outLocal = document.getElementById("out-local")!;
+const outExempt = document.getElementById("out-exempt")!;
+const incomeLabelEl = document.getElementById("income-label")!;
+const localLabelEl = document.getElementById("local-label")!;
 const netLabelEl = document.getElementById("net-label")!;
-const tabIncomeBusiness = document.getElementById(
-  "tab-income-business",
-) as HTMLButtonElement;
-const tabIncomeOther = document.getElementById(
-  "tab-income-other",
-) as HTMLButtonElement;
-const tabGross = document.getElementById("tab-gross") as HTMLButtonElement;
-const tabNet = document.getElementById("tab-net") as HTMLButtonElement;
+const typeSelect = document.getElementById("income-type") as HTMLSelectElement;
+const modeSelect = document.getElementById("mode") as HTMLSelectElement;
 const btnDownload = document.getElementById("btn-download") as HTMLButtonElement;
 const btnShare = document.getElementById("btn-share") as HTMLButtonElement;
-const btnCopy = document.getElementById("btn-copy") as HTMLButtonElement;
-const copyToast = document.getElementById("copy-toast")!;
-const presetButtons = document.querySelectorAll<HTMLButtonElement>(
-  ".preset-chip[data-add]",
-);
 
-function rateLabel(): string {
-  return incomeType === "business" ? "3.3%" : "8.8%";
-}
-
-function incomeLabel(): string {
-  return incomeType === "business" ? "사업소득" : "기타소득";
-}
-
-// 역산 모드(실수령액 -> 계약금액)일 때만 "계약금액 (역산)"을 쓰고, 그 외엔 fallback을 쓴다.
-function netLabel(fallback: string): string {
-  return mode === "net" && incomeType === "business" ? "계약금액 (역산)" : fallback;
-}
+const rateLabel = () => (incomeType === "business" ? "3.3%" : "8.8%");
+const incomeLabel = () => (incomeType === "business" ? "사업소득" : "기타소득");
+// 소득세 몫 · 지방소득세 몫(소득세의 10%)
+const parts = () => (incomeType === "business" ? ["3%", "0.3%"] : ["8%", "0.8%"]);
 
 function compute() {
   const value = parseAmount(amountInput.value);
+  const r =
+    incomeType === "business"
+      ? { ...(mode === "gross" ? fromGross(value) : fromNet(value)), exempt: false }
+      : mode === "gross" ? otherIncome(value) : otherIncomeFromNet(value);
+  lastResult = r;
+  // 큰 숫자는 구하려던 값 — 계약금액으로 계산하면 실수령액, 역산하면 계약금액
+  outNet.textContent = formatWon(mode === "gross" ? r.net : r.gross);
+  netLabelEl.textContent = mode === "gross" ? "실수령액" : "필요한 계약금액";
+  outGross.textContent = formatWon(r.gross);
+  outNetV.textContent = formatWon(r.net);
+  outIncome.textContent = formatWon(r.incomeTax);
+  outLocal.textContent = formatWon(r.localTax);
+  const [inc, loc] = parts();
+  incomeLabelEl.textContent = `소득세 (${inc})`;
+  localLabelEl.textContent = `지방소득세 (${loc})`;
+  outExempt.hidden = !(r.exempt && r.gross > 0);
+}
 
-  if (incomeType === "other") {
-    const r = otherIncome(value);
-    lastResult = r;
-    outWithholding.textContent = formatWon(r.withholding);
-    outNet.textContent = formatWon(r.net);
-  } else if (mode === "gross") {
-    const r = fromGross(value);
-    lastResult = r;
-    outWithholding.textContent = formatWon(r.withholding);
-    outNet.textContent = formatWon(r.net);
-  } else {
-    const r = fromNet(value);
-    lastResult = r;
-    outWithholding.textContent = formatWon(r.withholding);
-    outNet.textContent = formatWon(r.gross);
-  }
-
-  netLabelEl.textContent = netLabel("실수령액");
-  outRate.textContent = rateLabel();
+function buildCard() {
+  const [inc, loc] = parts();
+  return renderCard({
+    title: `원천징수 계산 결과 (${incomeLabel()} ${rateLabel()})`,
+    lines: [
+      [mode === "net" ? "계약금액 (역산)" : "계약금액", formatWon(lastResult.gross)],
+      [`소득세(${inc})`, formatWon(lastResult.incomeTax)],
+      [`지방소득세(${loc})`, formatWon(lastResult.localTax)],
+      [`원천징수액(${rateLabel()})`, formatWon(lastResult.withholding)],
+      ["실수령액", formatWon(lastResult.net)],
+    ],
+    footer: "jupocket.com",
+  });
 }
 
 function setMode(next: Mode) {
@@ -90,53 +83,14 @@ function setMode(next: Mode) {
     inputLabel.textContent = "실수령액";
     amountInput.value = currentValueOrDefault(amountInput.value, 967000);
   }
-  tabGross.setAttribute("aria-pressed", String(mode === "gross"));
-  tabNet.setAttribute("aria-pressed", String(mode === "net"));
   compute();
 }
 
-function setIncomeType(next: IncomeType) {
-  incomeType = next;
-  tabIncomeBusiness.setAttribute(
-    "aria-pressed",
-    String(incomeType === "business"),
-  );
-  tabIncomeOther.setAttribute("aria-pressed", String(incomeType === "other"));
-
-  if (incomeType === "other") {
-    // otherIncome()은 gross만 받는 단방향 함수라 역산 모드가 성립하지 않는다.
-    tabNet.disabled = true;
-    tabNet.setAttribute("aria-disabled", "true");
-    tabNet.title = "기타소득은 실수령액 역산을 지원하지 않습니다.";
-    setMode("gross");
-  } else {
-    tabNet.disabled = false;
-    tabNet.removeAttribute("aria-disabled");
-    tabNet.removeAttribute("title");
-    compute();
-  }
-}
-
-function buildCard() {
-  return renderCard({
-    title: `원천징수 계산 결과 (${incomeLabel()} ${rateLabel()})`,
-    lines: [
-      [netLabel("계약금액"), formatWon(lastResult.gross)],
-      [`원천징수액(${rateLabel()})`, formatWon(lastResult.withholding)],
-      ["실수령액", formatWon(lastResult.net)],
-    ],
-    footer: "jupocket.com",
-  });
-}
-
-tabIncomeBusiness.addEventListener("click", () => setIncomeType("business"));
-tabIncomeOther.addEventListener("click", () => setIncomeType("other"));
-
-tabGross.addEventListener("click", () => setMode("gross"));
-tabNet.addEventListener("click", () => {
-  if (incomeType === "other") return;
-  setMode("net");
+typeSelect.addEventListener("change", () => {
+  incomeType = typeSelect.value === "other" ? "other" : "business";
+  compute();
 });
+modeSelect.addEventListener("change", () => setMode(modeSelect.value === "net" ? "net" : "gross"));
 
 amountInput.addEventListener("input", () => {
   reportUse(parseAmount(amountInput.value));
@@ -147,16 +101,6 @@ amountInput.addEventListener("input", () => {
   compute();
 });
 
-presetButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    track("preset_click", { calculator: "withholding" });
-    const add = parseInt(btn.dataset.add ?? "0", 10);
-    const next = parseAmount(amountInput.value) + add;
-    amountInput.value = formatAmountInput(next);
-    compute();
-  });
-});
-
 btnDownload.addEventListener("click", () => {
   track("save_result", { calculator: "withholding" });
   downloadCard(buildCard(), "withholding-result.png");
@@ -164,25 +108,7 @@ btnDownload.addEventListener("click", () => {
 
 btnShare.addEventListener("click", async () => {
   track("share_result", { calculator: "withholding" });
-  await shareCard(
-    buildCard(),
-    `원천징수(${rateLabel()}) 계산 결과 - jupocket.com`,
-  );
-});
-
-btnCopy.addEventListener("click", async () => {
-  track("copy_result", { calculator: "withholding" });
-  const text = `소득유형 ${incomeLabel()}(${rateLabel()}) / ${netLabel("계약금액")} ${formatWon(
-    lastResult.gross,
-  )} / 원천징수액 ${formatWon(lastResult.withholding)} / 실수령액 ${formatWon(
-    lastResult.net,
-  )}`;
-  if (!navigator.clipboard) return;
-  await navigator.clipboard.writeText(text);
-  copyToast.style.display = "block";
-  setTimeout(() => {
-    copyToast.style.display = "none";
-  }, 1800);
+  await shareCard(buildCard(), `원천징수(${rateLabel()}) 계산 결과 - jupocket.com`);
 });
 
 compute();
