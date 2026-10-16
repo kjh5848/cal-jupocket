@@ -23,7 +23,40 @@ const h = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: s
   return el;
 };
 
+/** −/+ 를 붙일 단위 — 사람 수·기간·개수. 금액(원)·비율(%)·배기량(cc)은 키보드 입력이 낫다 */
+const STEP_UNITS = new Set(["명", "개월", "년", "일", "세", "시간", "년생", "개", "회"]);
+
+/**
+ * 표시가 없는 계산기에도 기본 틀을 입힌다 — 원 단위 금액 칸 · 사람 수·기간 칸 · 선택지 2~3개 ·
+ * 세부 결과 3개 이상 · 결과 카드. 두 칸 배치·비율 막대·소계·프리셋은 계산기마다 표시를 붙여야 한다.
+ * 끄고 싶은 칸은 data-ui="off".
+ */
+function autoTag(card: HTMLElement) {
+  for (const w of card.querySelectorAll<HTMLElement>(".calc-input-wrap")) {
+    const input = w.querySelector<HTMLInputElement>("input");
+    const unit = w.querySelector(".unit")?.textContent?.trim() ?? "";
+    if (!input || input.dataset.ui === "off") continue;
+    if (unit === "원" && input.type === "text") input.dataset.won ??= "";
+    if (input.type === "number" && STEP_UNITS.has(unit)) input.dataset.step ??= "";
+  }
+  for (const sel of card.querySelectorAll<HTMLSelectElement>(".calc-input-wrap select")) {
+    // 버튼 안에 한 줄로 들어갈 때만(긴 선택지는 드롭다운이 낫다)
+    const short = [...sel.options].every((o) => (o.textContent || "").trim().length <= 8);
+    if (sel.dataset.ui !== "off" && short && sel.options.length >= 2 && sel.options.length <= 3) sel.dataset.seg ??= "";
+  }
+  for (const row of card.querySelectorAll<HTMLElement>(".stat-row")) {
+    if (row.querySelectorAll(".stat-chip").length >= 3) row.dataset.receipt ??= "";
+  }
+  const hero = card.querySelector<HTMLElement>(".result-hero");
+  const big = hero?.querySelector<HTMLElement>(".big");
+  if (hero && big && hero.dataset.dock === undefined) {
+    big.id ||= `calc-big-${Math.random().toString(36).slice(2, 7)}`;
+    hero.dataset.dock = big.id;
+  }
+}
+
 function enhance(card: HTMLElement) {
+  autoTag(card);
   // 0) 입력칸과 단위를 한 상자로
   for (const w of card.querySelectorAll<HTMLElement>(".calc-input-wrap")) {
     const input = w.querySelector("input");

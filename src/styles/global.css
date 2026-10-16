@@ -2100,3 +2100,13 @@ details[open] summary {
 @media (prefers-reduced-motion: reduce) {
   .ux-dock, .ux-bar i, .ux-seg button { transition-duration: 0ms; }
 }
+
+/* 기존 계산기 부품을 새 틀과 같은 모양으로 — 세그먼트 선택(다크에서 고른 칸이 바탕보다 어두웠다)·금액 더하기 칩 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .segmented button[aria-pressed="true"] { background: #33405e; color: var(--text); box-shadow: 0 0 0 1px #46557a; }
+}
+:root[data-theme="dark"] .segmented button[aria-pressed="true"] { background: #33405e; color: var(--text); box-shadow: 0 0 0 1px #46557a; }
+.preset-chip { border: 0; background: var(--brand-wash); color: var(--link); font-weight: 700; font-size: 0.82rem; padding: 0.38rem 0.75rem; transition-property: scale; transition-duration: var(--dur); }
+.preset-chip:hover { background: var(--brand-wash); box-shadow: 0 0 0 1.5px var(--link); }
+.preset-chip:active { scale: 0.96; }
+.won-read:empty { min-height: 0; margin: 0; }
