@@ -1528,21 +1528,69 @@ details[open] summary {
   border-top: 0;
   margin: 0 0 1rem;
 }
-.home-hero {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--r-lg);
-  margin: 0.5rem 0 2rem;
-  padding: 3rem 1.75rem;
-  background:
-    linear-gradient(rgba(12, 17, 26, 0.62), rgba(12, 17, 26, 0.5)),
-    url("/photos/hero.webp") center / cover no-repeat;
-  outline: 1px solid var(--img-outline);
-  outline-offset: -1px;
+/*
+ * 홈 히어로 — 검색창이 주인공(2026-10-16 UX 시안, 설계 3-2).
+ * 사진·파란 상자를 없애고 바닥 위에 바로. 결과 창은 검색창 아래 겹쳐 떠서 아래 내용을 밀지 않는다.
+ */
+.home-hero { margin: 0 0 1.5rem; padding: 2.75rem 0 1.25rem; }
+.home-hero-inner { max-width: 620px; margin: 0 auto; text-align: center; }
+.home-hero h1 { margin: 0 0 0.5rem; font-size: clamp(1.9rem, 5vw, 2.6rem); letter-spacing: -0.025em; text-wrap: balance; color: var(--text); }
+/* h1 첫 줄의 사이트 이름 — 구글 사이트 이름 신호와 홈 h1 을 '주포켓'으로 맞춘다(2026-10-15) */
+.home-hero .hero-brand { display: block; margin-bottom: 0.35rem; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.12em; color: var(--brand); }
+.home-hero .hero-lede { margin: 0 0 1.4rem; color: var(--muted); }
+.hero-find { position: relative; text-align: left; }
+.hero-search { display: flex; align-items: center; gap: 10px; height: 60px; padding: 0 8px 0 18px; border-radius: 18px; background: var(--surface); box-shadow: 0 0 0 1px var(--rule), 0 1px 2px rgb(16 24 40 / 0.06), 0 16px 36px -14px rgb(16 40 90 / 0.28); }
+.hero-search:focus-within { box-shadow: 0 0 0 2px var(--link), 0 16px 36px -14px rgb(16 40 90 / 0.3); }
+.hero-search > svg { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--muted); stroke-width: 2.2; stroke-linecap: round; }
+.hero-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font: inherit; font-size: 1.1rem; font-weight: 600; }
+.hero-search input::placeholder { font-weight: 500; color: var(--muted); opacity: 1; }
+.hero-search kbd { font: 700 0.72rem/1 ui-monospace, monospace; color: var(--muted); padding: 0.35rem 0.5rem; border-radius: 7px; box-shadow: inset 0 0 0 1px var(--rule); }
+.search-pop { position: absolute; left: 0; right: 0; top: calc(100% + 8px); z-index: 20; padding: 6px; border-radius: 18px; background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--rule), 0 24px 48px -16px rgb(10 30 70 / 0.35); }
+.search-pop .lbl { padding: 8px 12px 4px; font-size: 0.74rem; font-weight: 700; color: var(--muted); }
+.search-pop a { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; color: var(--text); text-decoration: none; }
+.search-pop a[aria-selected="true"], .search-pop a:hover { background: var(--surface-2); }
+.search-pop .dot { width: 10px; height: 10px; border-radius: 3px; background: var(--cm); }
+.search-pop .nm { font-weight: 700; font-size: 0.98rem; }
+.search-pop .nm mark { color: inherit; background: var(--brand-wash); border-radius: 3px; box-shadow: 0 0 0 2px var(--brand-wash); }
+.search-pop .nm small { display: block; margin-top: 1px; font-weight: 500; font-size: 0.76rem; color: var(--muted); }
+.search-pop .no { font-size: 0.72rem; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+.search-pop .soon .nm, .search-pop .soon .no { color: var(--muted); }
+.search-pop .soon .dot { opacity: 0.4; }
+.search-pop .empty { padding: 12px; color: var(--muted); font-size: 0.9rem; }
+.search-pop .foot { display: flex; justify-content: space-between; margin-top: 4px; padding: 8px 12px 6px; border-top: 1px solid var(--rule); font-size: 0.74rem; color: var(--muted); }
+.hero-quick { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 1rem 0 0; }
+.hero-quick span { align-self: center; margin-right: 2px; font-size: 0.8rem; color: var(--muted); }
+.hero-quick a { padding: 0.35rem 0.8rem; border-radius: 999px; background: var(--surface); box-shadow: 0 0 0 1px var(--rule); color: var(--text); font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+.hero-quick a:hover { box-shadow: 0 0 0 1.5px var(--link); }
+.hero-count { margin: 1rem 0 0; font-size: 0.85rem; color: var(--muted); }
+.hero-count b { font-size: 1rem; color: var(--text); font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) {
+  .hero-search kbd { display: none; }
+  .home-hero { padding-top: 1.75rem; }
 }
-.home-hero-inner {
-  max-width: 42ch;
+
+/* 도구 도감 — 번호·분류 뱃지·점선 칸(설계 3-3) */
+.dex-types { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 1rem; }
+.dex-types button { font: inherit; font-size: 0.78rem; font-weight: 700; color: #fff; background: var(--cm); border: 0; border-radius: 999px; padding: 0.28rem 0.75rem; cursor: pointer; transition-property: opacity, box-shadow; transition-duration: var(--dur); }
+.dex-types.filtering button[aria-pressed="false"] { opacity: 0.32; }
+.dex-types button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--cm); }
+.dex-types button:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+@media (max-width: 600px) {
+  .dex-types { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .dex-types button { flex: none; }
 }
+.dex-no { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dex-type { display: inline-block; align-self: flex-start; width: fit-content; margin-top: 0.4rem; padding: 0.12rem 0.55rem; border-radius: 999px; background: var(--cm); color: #fff; font-size: 0.7rem; font-weight: 700; }
+.tool-card.dex-unseen { border: 1.5px dashed var(--rule); background: transparent; box-shadow: none; cursor: default; }
+.tool-card.dex-unseen:hover { transform: none; border-color: var(--rule); }
+.tool-card.dex-unseen .tool-title, .tool-card.dex-unseen .tool-blurb { color: var(--muted); }
+.tool-card.dex-unseen .dex-type, .tool-card.dex-unseen .tool-icon { opacity: 0.5; }
+.tool-card[hidden] { display: none; }
+.dex-progress { display: flex; align-items: center; gap: 12px; margin: 0 0 0.9rem; font-size: 0.88rem; color: var(--muted); }
+.dex-progress b { color: var(--text); font-variant-numeric: tabular-nums; }
+.dex-progress .bar { flex: 0 1 240px; height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.dex-progress .bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #3f8ff0, #1f9c8e); }
+
 /* 사진 프레임 — 아웃라인 + 어두운 UI에 녹이는 하단 스크림 + 크롭 위치 보정 */
 .photo-frame {
   position: relative;
@@ -1569,48 +1617,6 @@ details[open] summary {
   height: 120px;
   margin: 0 0 0.85rem;
 }
-.home-hero h1 {
-  margin: 0 0 0.7rem;
-  font-size: 1.95rem;
-  color: #fff;
-}
-/*
- * h1 첫 줄의 사이트 이름 — 구글 사이트 이름 신호(WebSite 구조화 데이터·title·og:site_name)와
- * 홈 h1 을 '주포켓'으로 맞춘다(2026-10-15). 문구는 그대로 두고 이름만 작은 윗줄로 얹는다.
- */
-.home-hero .hero-brand {
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.85);
-}
-.home-hero p {
-  margin: 0 0 1.3rem;
-  color: rgba(255, 255, 255, 0.9);
-}
-.home-hero .actions {
-  margin: 0;
-}
-/*
- * 히어로는 어두운 사진 위다. 링크 기본색(--link)은 진한 파랑이라
- * 스크림 위에서 읽히지 않았다. 버튼이 아닌 링크는 흰색 + 밑줄로 둔다.
- */
-.home-hero a:not(.btn) {
-  color: #fff;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-@media (min-width: 48rem) {
-  .home-hero {
-    padding: 4.5rem 2.5rem;
-  }
-  .home-hero h1 {
-    font-size: 2.5rem;
-  }
-}
-
 /* 계산기 카드 그리드 */
 .tool-grid {
   display: grid;
@@ -1661,7 +1667,8 @@ details[open] summary {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: var(--r-md);
-  background: var(--cb);
+  /* 도감 카드는 분류 색(--cm)만 넘긴다 — 바탕은 그 색을 옅게 */
+  background: var(--cb, color-mix(in srgb, var(--cm) 12%, var(--surface)));
   display: inline-flex;
   align-items: center;
   justify-content: center;

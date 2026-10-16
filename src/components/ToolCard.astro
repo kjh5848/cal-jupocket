@@ -1,0 +1,41 @@
+---
+/**
+ * 도구 도감 카드 — 도감 번호 · 이름 · 한 줄 설명 · 분류 뱃지(설계 3-3).
+ * 곧 담길 도구는 점선 칸(번호 ???, 링크 없음).
+ */
+import type { Tool } from "../data/tools";
+import { typeInfo } from "../data/tool-types";
+import { icons } from "../data/icons";
+
+interface Props {
+  tool: Tool;
+}
+const { tool } = Astro.props;
+const t = typeInfo(tool.type);
+const live = tool.status === "live";
+const no = live ? `No.${String(tool.no).padStart(3, "0")}` : "No.???";
+---
+
+{
+  live ? (
+    <a class="tool-card" href={tool.href} data-type={tool.type} data-no={tool.no} style={`--cm:${t.color}`}>
+      <span class="tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[tool.icon] ?? icons.calculator} /></span>
+      <span class="tool-body">
+        <span class="dex-no">{no}</span>
+        <span class="tool-title">{tool.name}</span>
+        <span class="tool-blurb">{tool.blurb}</span>
+        <span class="dex-type">{t.label}</span>
+      </span>
+    </a>
+  ) : (
+    <a class="tool-card dex-unseen" data-type={tool.type} aria-disabled="true" style={`--cm:${t.color}`}>
+      <span class="tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons.checklist} /></span>
+      <span class="tool-body">
+        <span class="dex-no">{no}</span>
+        <span class="tool-title">???</span>
+        <span class="tool-blurb">{tool.name} — 곧 담깁니다</span>
+        <span class="dex-type">{t.label}</span>
+      </span>
+    </a>
+  )
+}

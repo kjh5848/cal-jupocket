@@ -14,6 +14,9 @@ import TrackLinks from "../components/TrackLinks.astro";
 import AdSenseHead from "../components/AdSenseHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import ToolCard from "../components/ToolCard.astro";
+import { tools, toolCount } from "../data/tools";
+import { TOOL_TYPES } from "../data/tool-types";
 import { clusters, clusterColor, recent, linkByHref, displayTitle } from "../data/clusters";
 import { icons } from "../data/icons";
 import { liveSocials } from "../data/social";
@@ -21,13 +24,17 @@ import "../styles/global.css";
 
 const title = "주포켓 — 세금·급여부터 날짜·사진까지, 필요한 도구 모음";
 const description =
-  "직장인·사장님·자영업자·프리랜서 누구나 쓰는 무료 세금 계산기. 3.3% 원천징수·부가세·국민연금 보험료를 바로 계산하고, 얼마 내는지·아끼는 법까지 정리했습니다.";
+  "세금·급여 계산기부터 날짜·사진·문서 도구까지 주포켓에 담았습니다. 3.3% 원천징수·실수령액·부가세·상속세를 법 원문 기준으로 바로 계산하고, 얼마 내는지·아끼는 법까지 정리했습니다.";
 
-const calcCards = clusters.flatMap((c) =>
-  c.links
-    .filter((l) => l.kind === "calc")
-    .map((l) => ({ l, color: clusterColor[c.id] })),
-);
+const count = toolCount();
+/** 자주 찾는 말 — 검색량 순(docs/keyword-research.md v54·v39) */
+const QUICK = [
+  { label: "실수령액", href: "/guide/take-home-calculator/" },
+  { label: "3.3% 원천징수", href: "/freelancer-33/" },
+  { label: "부가세", href: "/vat/" },
+  { label: "상속세", href: "/inheritance/" },
+  { label: "노령연금", href: "/guide/old-age-pension-age/" },
+];
 
 const sections = clusters.map((c) => ({
   id: c.id,
@@ -92,18 +99,23 @@ const jsonLd = [
       <section class="home-hero">
         <div class="home-hero-inner">
           <h1><span class="hero-brand">주포켓</span> 뭐가 필요하세요?</h1>
-          <p>
-            3.3% 원천징수·부가세·국민연금 보험료를 30초에 계산하고, 얼마 내는지·
-            아끼는 법까지 정리했어요. 직장인·사장님·자영업자 누구나.
-          </p>
-          <p class="actions">
-            <a class="btn" href="#tools">계산기 바로가기</a>
-          </p>
+          <p class="hero-lede">세금·급여 계산부터 날짜·사진·문서까지, 담긴 도구에서 바로 찾아 쓰세요.</p>
+          <div class="hero-find">
+            <form class="hero-search" role="search" onsubmit="return false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+              <input id="tool-q" type="search" placeholder="실수령액, 퇴직금, 3.3%…" aria-label="도구 찾기" autocomplete="off" aria-controls="tool-pop" aria-expanded="false" />
+              <kbd aria-hidden="true">/</kbd>
+            </form>
+            <div id="tool-pop" class="search-pop" role="listbox" aria-label="찾은 도구" hidden></div>
+          </div>
+          <nav class="hero-quick" aria-label="자주 찾는 도구">
+            <span>자주 찾는</span>
+            {QUICK.map((q) => <a class="quick" href={q.href}>{q.label}</a>)}
+          </nav>
+          <p class="hero-count">도구 <b>{count.live}</b>개 담김 · <b>{count.total}</b>개 채우는 중</p>
           {/*
             인스타·스레드 프로필 링크로 들어온 사람은 "N번 글"을 찾으러
-            온다. 번호표는 /link/ 에만 있는데 프로필 링크가 홈을 가리키고
-            있어서, 여기서 한 번에 갈 수 있게 둔다. 히어로 바로 아래라
-            모바일에서 스크롤 없이 보인다.
+            온다. 번호표는 /link/ 에만 있어서 히어로에서 한 번에 갈 수 있게 둔다.
           */}
           <p class="hero-hub">
             <a href="/link/">인스타에서 본 번호 찾기 →</a>
@@ -112,25 +124,13 @@ const jsonLd = [
       </section>
 
       <section id="tools" aria-labelledby="tools-h">
-        <h2 id="tools-h" class="home-h">계산기</h2>
+        <h2 id="tools-h" class="home-h">도구 도감</h2>
+        <div class="dex-progress" data-dex-progress hidden></div>
+        <div class="dex-types" role="group" aria-label="분류로 걸러 보기">
+          {TOOL_TYPES.map((t) => <button type="button" data-type={t.key} style={`--cm:${t.color}`} aria-pressed="false">{t.label}</button>)}
+        </div>
         <div class="tool-grid">
-          {
-            calcCards.map(({ l, color }) => (
-              <a
-                class="tool-card"
-                href={l.href}
-                style={`--cm:${color.mark};--cb:${color.bg};--ci:${color.ink}`}
-              >
-                <span class="tool-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[l.icon]} />
-                </span>
-                <span class="tool-body">
-                  <span class="tool-title">{displayTitle(l)}</span>
-                  <span class="tool-blurb">{l.blurb}</span>
-                </span>
-              </a>
-            ))
-          }
+          {tools.map((tool) => <ToolCard tool={tool} />)}
         </div>
       </section>
 

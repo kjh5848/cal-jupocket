@@ -20,6 +20,8 @@ export interface Tool {
   /** 검색 동의어 — 이름 자체를 포함한다 */
   keywords: string[];
   status: "live" | "next";
+  /** 카드 아이콘 — data/icons.ts 키 */
+  icon: string;
   /** 법 원문으로 검증한 도구 */
   verified?: "law";
 }
@@ -91,13 +93,13 @@ const SYN: Record<string, string[]> = {
 };
 
 /** 곧 담길 도구(점선 칸) — 루틴 우선순위 순(docs/tool-backlog.md). 공개하면 여기서 뺀다 */
-const NEXT: { href: string; name: string; blurb: string; type: ToolType; keywords: string[] }[] = [
-  { href: "/guide/severance-pay-calculator/", name: "퇴직금 계산기", blurb: "입사일·퇴사일·3개월 임금 → 퇴직금", type: "labor", keywords: ["퇴직금", "퇴직금 계산"] },
-  { href: "/guide/loan-calculator/", name: "대출 이자 계산기", blurb: "원리금균등·원금균등·만기일시 상환표", type: "money", keywords: ["대출", "대출이자", "상환표"] },
-  { href: "/guide/deposit-interest-calculator/", name: "예금·적금 이자 계산기", blurb: "세후 이자(15.4%)까지", type: "money", keywords: ["예금이자", "적금이자", "이자 계산"] },
-  { href: "/guide/hourly-wage-calculator/", name: "시급 계산기", blurb: "월급 ↔ 시급, 주휴 포함", type: "labor", keywords: ["시급", "시급 계산", "월급 시급"] },
-  { href: "/tools/date-diff/", name: "날짜 계산기", blurb: "두 날짜 사이 · 며칠 뒤 · D-day", type: "date", keywords: ["날짜 계산", "디데이", "D-day", "며칠"] },
-  { href: "/tools/percent/", name: "퍼센트 계산기", blurb: "몇 %인지 · % 올리고 내리기", type: "unit", keywords: ["퍼센트", "%", "비율"] },
+const NEXT: { href: string; name: string; blurb: string; type: ToolType; icon: string; keywords: string[] }[] = [
+  { href: "/guide/severance-pay-calculator/", name: "퇴직금 계산기", blurb: "입사일·퇴사일·3개월 임금 → 퇴직금", type: "labor", icon: "briefcase", keywords: ["퇴직금", "퇴직금 계산"] },
+  { href: "/guide/loan-calculator/", name: "대출 이자 계산기", blurb: "원리금균등·원금균등·만기일시 상환표", type: "money", icon: "chart", keywords: ["대출", "대출이자", "상환표"] },
+  { href: "/guide/deposit-interest-calculator/", name: "예금·적금 이자 계산기", blurb: "세후 이자(15.4%)까지", type: "money", icon: "coins", keywords: ["예금이자", "적금이자", "이자 계산"] },
+  { href: "/guide/hourly-wage-calculator/", name: "시급 계산기", blurb: "월급 ↔ 시급, 주휴 포함", type: "labor", icon: "wallet", keywords: ["시급", "시급 계산", "월급 시급"] },
+  { href: "/tools/date-diff/", name: "날짜 계산기", blurb: "두 날짜 사이 · 며칠 뒤 · D-day", type: "date", icon: "calendar", keywords: ["날짜 계산", "디데이", "D-day", "며칠"] },
+  { href: "/tools/percent/", name: "퍼센트 계산기", blurb: "몇 %인지 · % 올리고 내리기", type: "unit", icon: "percent", keywords: ["퍼센트", "%", "비율"] },
 ];
 
 const hubNo = new Map(hubEntries.map((e) => [e.href, e.no]));
@@ -118,6 +120,7 @@ function liveTool(href: string): Tool {
     type: typeOfCluster(c.id),
     keywords: [name, ...(SYN[href] ?? [])],
     status: "live",
+    icon: link.icon,
     verified: "law",
   };
 }
