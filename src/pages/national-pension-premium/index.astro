@@ -79,21 +79,22 @@ const first = compute(INCOME);
         </div>
 
         <div class="stat-row" data-receipt>
-          <div class="stat-chip" data-group="월 보험료">
+          <div class="stat-chip">
             <span class="label">기준소득월액 (천원 미만 버림·상하한)</span>
             <span class="value" id="out-std">{won(first.standardIncome)}</span>
           </div>
           <div class="stat-chip">
-            <span class="label">보험료 ({ratePercent}%, 10원 미만 버림)</span>
+            <span class="label">연 보험료 (12개월)</span>
+            <span class="value" id="out-annual">{won(first.annual)}</span>
+          </div>
+          <!-- 소계 = 월 보험료 + 보험료 뺀 월소득 = 신고한 월소득 -->
+          <div class="stat-chip" data-group="월소득 (신고)">
+            <span class="label">월 보험료 ({ratePercent}%, 10원 미만 버림)</span>
             <span class="value" id="out-monthly">{won(first.monthly)}</span>
           </div>
           <div class="stat-chip">
             <span class="label">보험료 뺀 월소득</span>
             <span class="value" id="out-left">{won(first.income - first.monthly)}</span>
-          </div>
-          <div class="stat-chip" data-group="1년">
-            <span class="label">연 보험료 (12개월)</span>
-            <span class="value" id="out-annual">{won(first.annual)}</span>
           </div>
         </div>
 
