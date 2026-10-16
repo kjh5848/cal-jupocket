@@ -1,0 +1,13 @@
+{
+  "country": "US",
+  "year": 2026,
+  "verifiedOn": "2026-10-17",
+  "status": "초안 — 페이지에서 쓰지 않음(나라별 언어판 전)",
+  "sources": [
+    { "label": "IRS Topic no. 751, Social Security and Medicare withholding rates", "url": "https://www.irs.gov/taxtopics/tc751" }
+  ],
+  "socialSecurity": { "employee": 0.062, "employer": 0.062, "wageBase": 184500, "currency": "USD" },
+  "medicare": { "employee": 0.0145, "employer": 0.0145 },
+  "additionalMedicare": { "rate": 0.009, "withholdOver": 200000, "note": "employer withholds on wages over $200,000 in a calendar year regardless of filing status; employee only" },
+  "note": "한국 4대보험(국민연금·건강·장기요양·고용)과 대응이 1:1 이 아니다 — 연방 FICA 만 확인. 실업보험(FUTA·주 SUTA)·주별 장애보험은 미확인"
+}

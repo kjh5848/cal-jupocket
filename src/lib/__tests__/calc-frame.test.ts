@@ -13,6 +13,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
   { path: "/income-tax-refund/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/penalty/", attrs: ["data-two", "data-won", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/national-pension-premium/", attrs: ["data-two", "data-won", "data-receipt", "data-group", "data-bar", "data-dock"] },
+  { path: "/guide/four-insurance-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-receipt", "data-group", "data-bar", "data-dock"] },
 ];
 
 /**

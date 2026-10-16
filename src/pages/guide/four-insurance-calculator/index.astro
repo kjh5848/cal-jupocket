@@ -11,11 +11,13 @@ import r from "../../../rates/four-insurance-2026.json";
 import pp from "../../../rates/pension-premium-2026.json";
 import { payroll, pensionRate } from "../../../lib/four-insurance";
 import { won, eokwon } from "../../../lib/won";
+import { calcPresets } from "../../../data/calc-presets";
 
 const pct = (v: number) => `${+(v * 100).toFixed(4)}%`;
 const ex = payroll(3_000_000);
 const rows = [2_000_000, 2_500_000, 3_000_000, 4_000_000, 5_000_000, 7_000_000].map((p) => ({ p, x: payroll(p) }));
 const capped = payroll(10_000_000);
+const PRESETS = JSON.stringify({ default: calcPresets["/guide/four-insurance-calculator/"].default.amounts });
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 four-insurance-series.test.ts 가 rates 와 대조한다.
 const title = "4대보험 계산기 — 2026년 월급에서 떼는 국민연금·건강·장기요양·고용보험료";
@@ -35,11 +37,11 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
+  <div class="calc-card" data-two>
     <p class="meta">근로자 한 사람의 한 달 보험료 어림입니다. 원 미만만 버려 고지액과 몇십 원 다를 수 있고, 산재보험(사업주 전액)은 빠져 있습니다.</p>
     <div class="calc-input-wrap">
       <label for="fi-pay">월급(비과세 제외)</label>
-      <input type="text" inputmode="numeric" id="fi-pay" value="3,000,000" />
+      <input type="text" inputmode="numeric" id="fi-pay" value={ex.pay.toLocaleString("ko-KR")} data-won data-presets={PRESETS} />
       <span class="unit">원</span>
     </div>
     <details>
@@ -53,18 +55,27 @@ const QA = [
       <label><input type="checkbox" id="fi-65" /> 65세 이후 새로 고용됐다(실업급여 보험료 없음)</label>
       <label><input type="checkbox" id="fi-1127" /> 2026년 11월 27일 이후(장기요양 비율을 0.1314로 반올림)</label>
     </details>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="fi-net|fi-pension,fi-health,fi-care,fi-emp"
+      data-bar-labels="4대보험 뺀 월급|4대보험"
+      data-dock="fi-hero"
+    >
       <p class="label">근로자가 내는 4대보험(한 달)</p>
       <p class="big" id="fi-hero">{won(ex.total)}</p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">국민연금</span><span class="value" id="fi-pension">{won(ex.pension)}</span></div>
-      <div class="stat-chip"><span class="label">건강보험</span><span class="value" id="fi-health">{won(ex.health)}</span></div>
-      <div class="stat-chip"><span class="label">장기요양</span><span class="value" id="fi-care">{won(ex.care)}</span></div>
-      <div class="stat-chip"><span class="label">고용보험</span><span class="value" id="fi-emp">{won(ex.employment)}</span></div>
-      <div class="stat-chip"><span class="label">월급 − 4대보험</span><span class="value" id="fi-net">{won(ex.pay - ex.total)}</span></div>
-      <div class="stat-chip"><span class="label">사업주 부담(산재 제외)</span><span class="value" id="fi-employer">{won(ex.employer.total)}</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip" data-group="근로자 4대보험"><span class="label">국민연금 (기준소득월액 × {pct(pensionRate())}, 10원 미만 버림)</span><span class="value" id="fi-pension">{won(ex.pension)}</span></div>
+      <div class="stat-chip"><span class="label">건강보험 ({pct(r.health.rate * r.health.employeeShare)})</span><span class="value" id="fi-health">{won(ex.health)}</span></div>
+      <div class="stat-chip"><span class="label">장기요양 (건강보험료 × 비율)</span><span class="value" id="fi-care">{won(ex.care)}</span></div>
+      <div class="stat-chip"><span class="label">고용보험 ({pct(r.employment.unemployment * r.employment.workerShare)})</span><span class="value" id="fi-emp">{won(ex.employment)}</span></div>
+      <div class="stat-chip" data-group="남는 월급"><span class="label">월급 − 4대보험 (소득세 빼기 전)</span><span class="value" id="fi-net">{won(ex.pay - ex.total)}</span></div>
+      <div class="stat-chip" data-group="사업주 부담 (산재 제외)"><span class="label">국민연금·건강·장기요양 (근로자와 같은 금액)</span><span class="value" id="fi-employer-same">{won(ex.employer.pension + ex.employer.health + ex.employer.care)}</span></div>
+      <div class="stat-chip"><span class="label">고용보험 (실업급여 절반 + 고용안정·직업능력개발)</span><span class="value" id="fi-employer-emp">{won(ex.employer.employment)}</span></div>
     </div>
+    <p class="meta">국민연금 기준소득월액은 월급의 천원 미만을 버리고 상한 {eokwon(pp.standardIncomeCeiling)}·하한 {eokwon(pp.standardIncomeFloor)}으로 맞춥니다(국민연금법 시행령 제5조 제1항). 실제 실수령액은 근로소득세·지방소득세를 더 뺍니다 — <a href="/guide/take-home-calculator/">실수령액 계산기</a>.</p>
   </div>
 
   <h2>{QA[0].q}</h2>

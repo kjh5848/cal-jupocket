@@ -30,4 +30,8 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
     // 네이버 자동완성 '종합소득세 1000만원'·'2000만원'·'3000만원'·'5000만원'(2026-10-17)
     default: { amounts: [10_000_000, 20_000_000, 30_000_000, 50_000_000], source: "keywords/ac-income-tax-2026-10-17.csv", term: "종합소득세" },
   },
+  "/guide/four-insurance-calculator/": {
+    // 네이버 자동완성 '200만원 4대보험 계산'·'300만원 4대보험 세금'·'4대보험 300만원 세금'(2026-10-17). 250·350·400만은 결과 없음
+    default: { amounts: [2_000_000, 3_000_000], source: "keywords/ac-four-insurance-2026-10-17.csv", term: "4대보험" },
+  },
 };

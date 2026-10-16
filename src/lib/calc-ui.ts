@@ -16,9 +16,19 @@ export function readWon(n: number): string {
   return parts.join(" ") + "원";
 }
 
-/** 구성 비율(반올림 %). 음수·NaN 은 0, 합이 0 이면 전부 0 */
+/** 구성 비율(정수 %, 합은 늘 100). 내림한 뒤 모자란 만큼 나머지가 큰 쪽부터 1씩 — 각각 반올림하면 9.5/90.5 가 10+91=101 이 된다. 음수·NaN 은 0, 합이 0 이면 전부 0 */
 export function shares(parts: number[]): number[] {
   const p = parts.map((x) => (Number.isFinite(x) && x > 0 ? x : 0));
   const sum = p.reduce((a, b) => a + b, 0);
-  return sum ? p.map((x) => Math.round((x / sum) * 100)) : p.map(() => 0);
+  if (!sum) return p.map(() => 0);
+  const raw = p.map((x) => (x / sum) * 100);
+  const out = raw.map(Math.floor);
+  let left = 100 - out.reduce((a, b) => a + b, 0);
+  const order = raw.map((v, i) => [v - out[i], i] as const).sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+  for (const [, i] of order) {
+    if (left <= 0) break;
+    out[i] += 1;
+    left -= 1;
+  }
+  return out;
 }

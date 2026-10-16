@@ -15,6 +15,8 @@ describe("비율", () => {
   it("합 0 이면 전부 0", () => expect(shares([0, 0, 0])).toEqual([0, 0, 0]));
   it("반올림 백분율", () => expect(shares([2665433, 272087, 62480])).toEqual([89, 9, 2]));
   it("음수·NaN 은 0 으로", () => expect(shares([-1, NaN, 5])).toEqual([0, 0, 100]));
+  it("합은 늘 100 — 국민연금 309만: 보험료 9.5% · 남는 소득 90.5%", () => expect(shares([293_550, 2_796_450])).toEqual([10, 90]));
+  it("셋이 33.3% 씩이어도 100", () => expect(shares([1, 1, 1]).reduce((a, b) => a + b, 0)).toBe(100));
 });
 
 describe("프리셋 금액은 자동완성에서", () => {

@@ -25,7 +25,8 @@ function render() {
   $("fi-care").textContent = formatWon(x.care);
   $("fi-emp").textContent = formatWon(x.employment);
   $("fi-net").textContent = formatWon(x.pay - x.total);
-  $("fi-employer").textContent = formatWon(x.employer.total);
+  $("fi-employer-same").textContent = formatWon(x.employer.pension + x.employer.health + x.employer.care);
+  $("fi-employer-emp").textContent = formatWon(x.employer.employment);
 }
 
 /** 사용 집계는 사람이 값을 바꿨을 때만 */
