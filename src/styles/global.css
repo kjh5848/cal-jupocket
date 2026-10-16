@@ -75,27 +75,33 @@
   --ease: ease;
 }
 
+/*
+ * 다크 — 기기 설정이 다크이고 사용자가 라이트를 고르지 않았을 때, 또는 헤더 버튼으로 다크를 골랐을 때.
+ * 두 블록의 토큰 값은 같아야 한다(contrast.test.ts 가 대조).
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --text: #e8e8e8;
-    --muted: #a0a0a0;
-    --rule: #363c44;
-    --link: #6fb3ff;
-    --bg: #121419;
-    --accent-bg: #23282f;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --text: #e7ebf3;
+    --muted: #a9b3c7;
+    --rule: #2f3a52;
+    --link: #8fb8ff;
+    --bg: #0d1220;
+    --accent-bg: #222b40;
 
     --chart-loss: #e08a4c;
-    --chart-base: #6fb3ff;
+    --chart-base: #8fb8ff;
     --chart-gain: #4cc38a;
-    --img-outline: rgba(255, 255, 255, 0.12); /* 다크에선 흰색 저투명 */
+    --img-outline: rgba(255, 255, 255, 0.1); /* 다크에선 흰색 저투명 */
 
-    --surface: #1c2027;
-    --surface-2: #23282f;
-    --brand: #6fb3ff;
-    --brand-wash: #1b2735;
+    /* 남색 네 단계(바닥 → 카드 → 입력칸 → 선). 2026-10-16 UX 시안 — 회색 세 단계는 명도 차가 4~5% 라 경계가 안 보였다. */
+    --surface: #161d2e;
+    --surface-2: #222b40;
+    --brand: #8fb8ff;
+    --brand-wash: #1b2a47;
     /* 어두운 배경에서는 그림자가 안 보인다. 경계선이 그 역할을 한다.
-       다만 none 으로 두면 box-shadow: var(--shadow-1), inset ... 처럼
-       합성할 때 선언 전체가 무효가 된다. 투명한 무효 그림자를 쓴다. */
+    다만 none 으로 두면 box-shadow: var(--shadow-1), inset ... 처럼
+    합성할 때 선언 전체가 무효가 된다. 투명한 무효 그림자를 쓴다. */
     --shadow-1: 0 0 0 rgb(0 0 0 / 0);
     --shadow-2: 0 0 0 rgb(0 0 0 / 0);
 
@@ -104,6 +110,37 @@
     --glass-border: rgb(255 255 255 / 0.2);
     --glass-hi: rgb(255 255 255 / 0.18);
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --text: #e7ebf3;
+  --muted: #a9b3c7;
+  --rule: #2f3a52;
+  --link: #8fb8ff;
+  --bg: #0d1220;
+  --accent-bg: #222b40;
+
+  --chart-loss: #e08a4c;
+  --chart-base: #8fb8ff;
+  --chart-gain: #4cc38a;
+  --img-outline: rgba(255, 255, 255, 0.1); /* 다크에선 흰색 저투명 */
+
+  /* 남색 네 단계(바닥 → 카드 → 입력칸 → 선). 2026-10-16 UX 시안 — 회색 세 단계는 명도 차가 4~5% 라 경계가 안 보였다. */
+  --surface: #161d2e;
+  --surface-2: #222b40;
+  --brand: #8fb8ff;
+  --brand-wash: #1b2a47;
+  /* 어두운 배경에서는 그림자가 안 보인다. 경계선이 그 역할을 한다.
+  다만 none 으로 두면 box-shadow: var(--shadow-1), inset ... 처럼
+  합성할 때 선언 전체가 무효가 된다. 투명한 무효 그림자를 쓴다. */
+  --shadow-1: 0 0 0 rgb(0 0 0 / 0);
+  --shadow-2: 0 0 0 rgb(0 0 0 / 0);
+
+  /* 어두운 배경에서는 흰 유리를 아주 옅게 얹고 테두리로 형태를 잡는다. */
+  --glass-bg: rgb(255 255 255 / 0.095);
+  --glass-border: rgb(255 255 255 / 0.2);
+  --glass-hi: rgb(255 255 255 / 0.18);
 }
 
 *,
@@ -386,7 +423,9 @@ details[open] summary {
 
 /* 질문형 소제목 바로 아래 첫 답 */
 .qa-lead {
-  font-weight: 600;
+  /* 600 굵기 긴 문단이 다크에서 번져 보였다(2026-10-16 UX 시안) — 500 + 넓은 줄 간격 */
+  font-weight: 500;
+  line-height: 1.8;
 }
 
 /* 핵심 문장 강조 */
@@ -406,10 +445,13 @@ details[open] summary {
 }
 
 @media (prefers-color-scheme: dark) {
-  .callout.warn {
+  :root:not([data-theme="light"]) .callout.warn {
     border-left-color: #e08a4c;
   }
 }
+:root[data-theme="dark"] .callout.warn {
+    border-left-color: #e08a4c;
+  }
 
 /*
  * 브릿지 카드 — 계산기 결과와 정산 설명 글을 잇는 도선.
@@ -451,10 +493,13 @@ details[open] summary {
 }
 
 @media (prefers-color-scheme: dark) {
-  .calc-card {
+  :root:not([data-theme="light"]) .calc-card {
     box-shadow: none;
   }
 }
+:root[data-theme="dark"] .calc-card {
+    box-shadow: none;
+  }
 
 /* 모드 전환 세그먼트 컨트롤 (계약금액 ↔ 실수령액 등) */
 .segmented {
@@ -605,7 +650,8 @@ details[open] summary {
 
 /* 결과 강조 카드 — 이 계산기가 답해야 할 단 하나의 숫자 */
 .result-hero {
-  background: #14213d;
+  /* 로고와 같은 파랑. 짙은 남색(#14213d)은 다크 바닥과 구분이 안 됐다. */
+  background: linear-gradient(135deg, #1a73d6, #0b4f9e);
   color: #fff;
   border-radius: var(--r-lg);
   padding: 1.25rem 1.4rem;
@@ -1146,10 +1192,19 @@ details[open] summary {
   padding: 1.1rem 1.25rem;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem 1.25rem;
   border-bottom: 1px solid var(--rule);
+}
+/* 메뉴는 오른쪽으로 밀고 테마 버튼은 그 옆 — 폰에서도 한 줄 */
+.site-header .site-nav { margin-left: auto; }
+@media (max-width: 30rem) {
+  .site-header { flex-wrap: nowrap; gap: 0.6rem; padding-inline: 1rem; }
+  .site-header .brand-pocket { width: 34px; height: 34px; }
+  .site-header .brand-name { font-size: 1.1rem; }
+  .site-header .site-nav { flex-wrap: nowrap; gap: 0.75rem; font-size: 0.875rem; }
+  .site-header .theme-toggle { width: 36px; height: 36px; flex: none; }
 }
 
 .brand {
@@ -1588,13 +1643,19 @@ details[open] summary {
     0 18px 36px -16px rgba(0, 0, 0, 0.32);
 }
 @media (prefers-color-scheme: dark) {
-  .tool-card {
+  :root:not([data-theme="light"]) .tool-card {
     box-shadow: none;
   }
-  .tool-card:hover {
+  :root:not([data-theme="light"]) .tool-card:hover {
     box-shadow: none;
   }
 }
+:root[data-theme="dark"] .tool-card {
+    box-shadow: none;
+  }
+:root[data-theme="dark"] .tool-card:hover {
+    box-shadow: none;
+  }
 .tool-icon {
   flex: none;
   width: 2.5rem;
@@ -1929,3 +1990,28 @@ details[open] summary {
   font-size: 0.9rem;
   font-weight: 700;
 }
+
+/*
+ * 다크 전용 보정 (2026-10-16 UX 시안, 설계 6-5)
+ *  - 결과 카드: 다크에서는 한 단계 낮은 파랑
+ *  - 바닥: 알갱이 질감을 빼고 위쪽에만 남색 빛
+ *  - 도구 카드 아이콘 칸: 밝은 파스텔(--cb)이 하얗게 떠서 분류 색 22%만 섞는다
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .result-hero { background: linear-gradient(135deg, #2357a8, #173b78); }
+  :root:not([data-theme="light"]) .bg-texture { background-image: radial-gradient(120% 60% at 50% -10%, #17264a 0%, var(--bg) 70%); background-size: 100% 100%; background-repeat: no-repeat; background-attachment: fixed; }
+  :root:not([data-theme="light"]) .tool-icon { background: color-mix(in srgb, var(--cm) 22%, var(--surface)); }
+  :root:not([data-theme="light"]) .tool-icon svg { color: color-mix(in srgb, var(--cm) 45%, #fff); }
+}
+:root[data-theme="dark"] .result-hero { background: linear-gradient(135deg, #2357a8, #173b78); }
+:root[data-theme="dark"] .bg-texture { background-image: radial-gradient(120% 60% at 50% -10%, #17264a 0%, var(--bg) 70%); background-size: 100% 100%; background-repeat: no-repeat; background-attachment: fixed; }
+:root[data-theme="dark"] .tool-icon { background: color-mix(in srgb, var(--cm) 22%, var(--surface)); }
+:root[data-theme="dark"] .tool-icon svg { color: color-mix(in srgb, var(--cm) 45%, #fff); }
+
+/* 테마 전환 버튼 — 헤더 오른쪽. 아이콘은 지금 상태(해·달·화면) */
+.theme-toggle { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-md); border: 0; background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--rule); cursor: pointer; transition-property: scale; transition-duration: var(--dur); }
+.theme-toggle:active { scale: 0.96; }
+.theme-toggle:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+.theme-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.theme-toggle [data-icon] { display: none; }
+.theme-toggle[data-state="light"] [data-icon="light"], .theme-toggle[data-state="dark"] [data-icon="dark"], .theme-toggle[data-state="system"] [data-icon="system"] { display: block; }

@@ -22,6 +22,10 @@ const ogImage = new URL(ogPathFor(Astro.url.pathname), Astro.site);
 ---
 
 <meta charset="utf-8" />
+<!-- 첫 그림 전에 고른 테마를 적용한다(깜빡임 방지). 규칙은 src/lib/theme.ts 와 같다. -->
+<script is:inline>
+  try { var t = localStorage.getItem("jp-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
