@@ -6,7 +6,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/family-loan-2026.json";
 import { familyLoanSeries } from "../../data/series/family-loan";
-import { loanGain, loanGiftTax, noGiftPrincipal, interestWithholding } from "../family-loan";
+import { loanGain, loanGiftTax, noGiftPrincipal, interestWithholding, giftTaxStartYear } from "../family-loan";
 import { relationCap } from "../gift";
 import { manwon, eokwon } from "../won";
 
@@ -32,9 +32,16 @@ describe("금전 무상대출 증여이익", () => {
     }
     expect(noGiftPrincipal(0.046)).toBe(Infinity);
   });
-  it("성년 자녀 공제 5천만원 안이면 증여세 0", () => {
+  it("첫해는 공제 안이라 0원 — 이익이 10년 합산(제47조)돼 몇 년째부터 증여세", () => {
     expect(relationCap("ascendant")).toBe(50_000_000);
     expect(loanGiftTax(300_000_000).tax?.payable).toBe(0);
+    expect(giftTaxStartYear(300_000_000, 0)).toBe(4); // 1,380만 × 4 = 5,520만
+    expect(giftTaxStartYear(500_000_000, 0.02)).toBe(4); // 1,300만 × 4 = 5,200만
+    expect(giftTaxStartYear(500_000_000, 0)).toBe(3); // 2,300만 × 3 = 6,900만
+    expect(giftTaxStartYear(1_000_000_000, 0)).toBe(2); // 4,600만 × 2 = 9,200만
+    expect(giftTaxStartYear(200_000_000, 0)).toBe(Infinity); // 920만 — 해마다 제외
+    // 4년째 — 앞선 3년이 공제 4,140만원을 이미 썼으면 그해 세금은 0보다 크다
+    expect(loanGiftTax(300_000_000, 0, "ascendant", 13_800_000 * 3).tax?.payable).toBeGreaterThan(0);
   });
   it("이자 원천징수 — 비영업대금 25% + 지방소득세 10%", () => {
     expect(interestWithholding(10_000_000)).toEqual({ tax: 2_500_000, localTax: 250_000, net: 7_250_000 });

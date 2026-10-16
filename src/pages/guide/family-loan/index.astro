@@ -8,7 +8,7 @@ import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/family-loan-2026.json";
-import { loanGain, loanGiftTax, noGiftPrincipal } from "../../../lib/family-loan";
+import { loanGain, loanGiftTax, noGiftPrincipal, giftTaxStartYear } from "../../../lib/family-loan";
 import { relationCap } from "../../../lib/gift";
 import { won, manwon, eokwon } from "../../../lib/won";
 import { familyLoanSeries as S } from "../../../data/series/family-loan";
@@ -20,19 +20,21 @@ const approxEok = (n: number) => eokwon(Math.floor(n / 10_000) * 10_000);
 const max0 = noGiftPrincipal(0);
 const ex3 = loanGiftTax(300_000_000, 0);
 const ex5 = loanGain(500_000_000, 0);
+const start3 = giftTaxStartYear(300_000_000, 0);
+const startLabel = (n: number) => (Number.isFinite(n) ? `${n}년째` : "없음");
 const adultCap = relationCap("ascendant");
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 family-loan-series.test.ts 가 rates·계산 함수와 대조한다.
-const title = "가족간 차용증 — 적정이자율 4.6%, 무이자로 빌려도 약 2억1,739만원까지는 증여가 아닙니다";
+const title = "가족간 차용증 — 적정이자율 4.6%, 무이자로 빌려도 약 2억1,739만원까지는 이자 차이가 증여가 되지 않습니다";
 const description =
-  "가족에게 돈을 무이자나 낮은 이자로 빌리면 '대출금 × 4.6% − 실제 낸 이자'가 1년에 1천만원 이상일 때만 그 금액이 증여가 됩니다. 무이자면 약 2억1,739만원까지는 해당하지 않고, 넘어도 성년 자녀는 증여재산공제 5천만원을 먼저 뺍니다.";
+  "가족에게 돈을 무이자나 낮은 이자로 빌리면 '대출금 × 4.6% − 실제 낸 이자'가 1년에 1천만원 이상일 때만 그 금액이 증여가 됩니다. 무이자면 약 2억1,739만원까지는 해당하지 않고, 넘으면 해마다 생기는 이익이 10년 합산 공제 5천만원을 채워 갑니다.";
 
-const ANSWER = `가족에게 무이자나 저리로 돈을 빌리면 '대출금 × 적정 이자율 ${pct(L.rate)} − 실제 낸 이자'가 대출받은 사람의 증여재산가액이 됩니다(상증법 제41조의4). 이 금액이 1년에 ${manwon(L.threshold)} 미만이면 제외되므로, 무이자는 약 ${approxEok(max0)}까지 증여가 아닙니다.`;
+const ANSWER = `가족에게 무이자나 저리로 돈을 빌리면 '대출금 × 적정 이자율 ${pct(L.rate)} − 실제 낸 이자'가 대출받은 사람의 증여재산가액이 됩니다(상증법 제41조의4). 이 금액이 1년에 ${manwon(L.threshold)} 미만이면 제외되므로, 무이자는 약 ${approxEok(max0)}까지 이자 차이가 증여가 되지 않습니다. 원금이 빌린 돈으로 인정되는지는 별개입니다.`;
 
 const QA = [
   { q: "가족에게 무이자로 돈을 빌리면 증여세를 내나요?", a: `빌린 돈 자체가 아니라 이자를 안 낸 만큼이 증여입니다. 대출금 × ${pct(L.rate)}에서 실제 낸 이자를 뺀 금액이 1년에 ${manwon(L.threshold)} 이상이면 그 전액이 증여재산가액이 되고, 미만이면 제외됩니다(시행령 제31조의4). 무이자라면 약 ${approxEok(max0)}까지는 1년 이익이 ${manwon(L.threshold)}에 못 미칩니다.` },
   { q: "적정이자율 4.6%는 어디서 나온 숫자인가요?", a: `상증법 시행령이 '당좌대출이자율을 고려해 재정경제부령으로 정하는 이자율'을 쓰라고 하고(제31조의4 제1항), 시행규칙이 법인세법 시행규칙 제43조 제2항의 이자율을 가리킵니다(제10조의5). 그 조문이 '연간 1천분의 46'입니다. 법인에게 빌린 경우는 법인세법 시행령의 이자율을 따로 씁니다.` },
-  { q: "1천만원을 넘으면 바로 증여세가 나오나요?", a: `아닙니다. 그 이익이 증여재산가액이 될 뿐이고, 증여세는 관계별 증여재산공제를 먼저 뺍니다. 부모에게 3억원을 무이자로 빌린 성년 자녀는 1년 이익 ${won(ex3.gain)}이 증여재산가액이지만, 10년간 ${manwon(adultCap)} 공제를 쓰지 않았다면 낼 세금은 ${won(ex3.tax?.payable ?? 0)}입니다.` },
+  { q: "1천만원을 넘으면 바로 증여세가 나오나요?", a: `첫해는 공제부터 뺍니다. 다만 1년이 넘으면 이익이 해마다 다시 생기고 10년간 합산되며, 공제 ${manwon(adultCap)}도 10년 한도입니다. 부모에게 3억원을 무이자로 빌린 성년 자녀는 1년 이익 ${won(ex3.gain)}이라 첫해 세금은 ${won(ex3.tax?.payable ?? 0)}이지만, ${start3}년째에 합계가 공제를 넘어 증여세가 생깁니다.` },
   { q: "부모님이 대신 갚아 주면 어떻게 되나요?", a: `채무자의 직업·나이·소득·재산으로 보아 스스로 갚았다고 보기 어려우면, 갚은 때에 그 상환자금을 증여받은 것으로 추정합니다(상증법 제45조 제2항). 출처를 입증하지 못한 금액이 상환금액의 20%와 2억원 중 적은 금액에 못 미치면 추정하지 않습니다(시행령 제34조).` },
 ];
 ---
@@ -44,15 +46,15 @@ const QA = [
   <h2>{QA[0].q}</h2>
   <p class="qa-lead">{QA[0].a}</p>
   <table>
-    <thead><tr><th>빌린 돈(무이자)</th><th>1년 이익(× {pct(L.rate)})</th><th>증여재산가액</th></tr></thead>
+    <thead><tr><th>빌린 돈(무이자)</th><th>1년 이익(× {pct(L.rate)})</th><th>증여재산가액</th><th>증여세가 생기는 해(성년 자녀)</th></tr></thead>
     <tbody>
       {[100_000_000, 200_000_000, max0, 300_000_000, 500_000_000].map((p) => {
         const g = loanGain(p, 0);
-        return <tr><th scope="row">{p === max0 ? `약 ${approxEok(p)}` : eokwon(p)}</th><td>{won(g.gain)}</td><td>{g.taxable ? won(g.giftValue) : `없음(${manwon(L.threshold)} 미만)`}</td></tr>;
+        return <tr><th scope="row">{p === max0 ? `약 ${approxEok(p)}` : eokwon(p)}</th><td>{won(g.gain)}</td><td>{g.taxable ? won(g.giftValue) : `없음(${manwon(L.threshold)} 미만)`}</td><td>{startLabel(giftTaxStartYear(p, 0))}</td></tr>;
       })}
     </tbody>
   </table>
-  <p>대출기간을 정하지 않으면 1년으로 보고, 1년이 넘으면 해마다 새로 빌린 것으로 보아 매년 따로 계산합니다(제41조의4 제2항). 여러 번 나눠 빌리면 빌린 날마다 따로 셉니다(시행령 제31조의4 제3항). 5억원을 무이자로 빌리면 1년 이익이 {won(ex5.gain)}입니다.</p>
+  <p>대출기간을 정하지 않으면 1년으로 보고, 1년이 넘으면 해마다 새로 빌린 것으로 보아 매년 따로 계산합니다(제41조의4 제2항). 여러 번 나눠 빌리면 빌린 날마다 따로 셉니다(시행령 제31조의4 제3항). 5억원을 무이자로 빌리면 1년 이익이 {won(ex5.gain)}입니다. 무상대출 이익은 합산배제 대상이 아니라서 10년 안의 같은 사람(부모는 부부 합산)에게서 받은 증여와 합쳐 계산합니다(제47조). 표의 마지막 칸은 다른 증여가 없고 같은 조건이 이어질 때 합계가 공제를 넘어 과세표준이 생기는 해입니다. 그해 세액은 이 글에서 계산하지 않았습니다.</p>
 
   <h2>{QA[1].q}</h2>
   <p class="qa-lead">{QA[1].a}</p>
