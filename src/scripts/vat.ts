@@ -1,10 +1,6 @@
 import { fromSupply, fromTotal, simplifiedTax } from "../lib/vat";
 import vat from "../rates/vat-2026.json";
-import {
-  formatWon,
-  parseAmount,
-  formatAmountInput,
-} from "../lib/money";
+import { formatWon, parseAmount, formatAmountInput } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 
@@ -18,87 +14,73 @@ let mode: Mode = "supply";
 let lastLines: [string, string][] = [];
 let lastTitle = "";
 
+const RATE_LABEL = `부가세 (${Math.round(vat.standardRate * 100)}%)`;
+
+const modeSelect = document.getElementById("mode") as HTMLSelectElement;
 const amountInput = document.getElementById("amount") as HTMLInputElement;
 const inputLabel = document.getElementById("input-label")!;
 const rateRow = document.getElementById("rate-row")!;
 const rateSelect = document.getElementById("vat-rate") as HTMLSelectElement;
+const hero = document.querySelector<HTMLElement>(".result-hero")!;
 
 const heroLabel = document.getElementById("hero-label")!;
 const heroValue = document.getElementById("hero-value")!;
-const stat1Label = document.getElementById("stat1-label")!;
-const stat1Value = document.getElementById("stat1-value")!;
-const stat2 = document.getElementById("stat2")!;
-const stat2Label = document.getElementById("stat2-label")!;
-const stat2Value = document.getElementById("stat2-value")!;
-
-const tabSupply = document.getElementById("tab-supply") as HTMLButtonElement;
-const tabTotal = document.getElementById("tab-total") as HTMLButtonElement;
-const tabSimple = document.getElementById("tab-simple") as HTMLButtonElement;
+const supplyLabel = document.getElementById("supply-label")!;
+const outSupply = document.getElementById("out-supply")!;
+const taxLabel = document.getElementById("tax-label")!;
+const outTax = document.getElementById("out-tax")!;
+const totalLabel = document.getElementById("total-label")!;
+const outTotal = document.getElementById("out-total")!;
 
 const btnDownload = document.getElementById("btn-download") as HTMLButtonElement;
 const btnShare = document.getElementById("btn-share") as HTMLButtonElement;
-const btnCopy = document.getElementById("btn-copy") as HTMLButtonElement;
-const copyToast = document.getElementById("copy-toast")!;
-const presetButtons =
-  document.querySelectorAll<HTMLButtonElement>(".preset-chip[data-add]");
 
 function compute() {
   const value = parseAmount(amountInput.value);
+  // 공급가액·부가세 막대는 일반과세에서만 뜻이 있다(간이과세 공급대가는 부가세를 품은 금액)
+  hero.querySelectorAll<HTMLElement>(".ux-bar, .ux-legend").forEach((el) => (el.hidden = mode === "simple"));
 
-  if (mode === "supply") {
-    const r = fromSupply(value);
-    heroLabel.textContent = "합계금액 (공급대가)";
-    heroValue.textContent = formatWon(r.total);
-    stat1Label.textContent = "공급가액";
-    stat1Value.textContent = formatWon(r.supply);
-    stat2Label.textContent = "부가세 (10%)";
-    stat2Value.textContent = formatWon(r.tax);
-    stat2.hidden = false;
-    lastTitle = "부가세 계산 결과 (공급가액 기준)";
-    lastLines = [
-      ["공급가액", formatWon(r.supply)],
-      ["부가세(10%)", formatWon(r.tax)],
-      ["합계금액", formatWon(r.total)],
-    ];
-  } else if (mode === "total") {
-    const r = fromTotal(value);
-    heroLabel.textContent = "공급가액";
-    heroValue.textContent = formatWon(r.supply);
-    stat1Label.textContent = "부가세 (10%)";
-    stat1Value.textContent = formatWon(r.tax);
-    stat2Label.textContent = "합계금액 (공급대가)";
-    stat2Value.textContent = formatWon(r.total);
-    stat2.hidden = false;
-    lastTitle = "부가세 계산 결과 (합계금액 역산)";
-    lastLines = [
-      ["합계금액", formatWon(r.total)],
-      ["공급가액", formatWon(r.supply)],
-      ["부가세(10%)", formatWon(r.tax)],
-    ];
-  } else {
+  if (mode === "simple") {
     const rate = parseFloat(rateSelect.value);
     const r = simplifiedTax(value, rate);
-    const ratePercent = Math.round(rate * 100);
+    const ratePercent = `${Math.round(rate * 100)}%`;
     heroLabel.textContent = "간이과세 납부세액";
     heroValue.textContent = formatWon(r.tax);
-    stat1Label.textContent = "공급대가";
-    stat1Value.textContent = formatWon(r.supplyValue);
-    stat2.hidden = true;
+    supplyLabel.textContent = "공급대가 (매출)";
+    outSupply.textContent = formatWon(r.supplyValue);
+    taxLabel.textContent = "납부세액";
+    outTax.textContent = formatWon(r.tax);
+    totalLabel.textContent = "업종 부가가치율";
+    outTotal.textContent = ratePercent;
     lastTitle = "간이과세 부가세 계산 결과";
     lastLines = [
       ["공급대가", formatWon(r.supplyValue)],
-      [`업종 부가가치율`, `${ratePercent}%`],
+      ["업종 부가가치율", ratePercent],
       ["납부세액", formatWon(r.tax)],
     ];
+    return;
   }
+
+  const r = mode === "supply" ? fromSupply(value) : fromTotal(value);
+  // 큰 숫자는 구하려던 값 — 공급가액을 넣으면 합계, 합계를 넣으면 공급가액
+  heroLabel.textContent = mode === "supply" ? "합계금액 (공급대가)" : "공급가액";
+  heroValue.textContent = formatWon(mode === "supply" ? r.total : r.supply);
+  supplyLabel.textContent = "공급가액";
+  outSupply.textContent = formatWon(r.supply);
+  taxLabel.textContent = RATE_LABEL;
+  outTax.textContent = formatWon(r.tax);
+  totalLabel.textContent = "합계금액 (공급대가)";
+  outTotal.textContent = formatWon(r.total);
+  lastTitle = mode === "supply" ? "부가세 계산 결과 (공급가액 기준)" : "부가세 계산 결과 (합계금액 역산)";
+  lastLines = [
+    ["공급가액", formatWon(r.supply)],
+    [RATE_LABEL.replace(" ", ""), formatWon(r.tax)],
+    ["합계금액", formatWon(r.total)],
+  ];
 }
 
 function setMode(next: Mode) {
   mode = next;
-  tabSupply.setAttribute("aria-pressed", String(mode === "supply"));
-  tabTotal.setAttribute("aria-pressed", String(mode === "total"));
-  tabSimple.setAttribute("aria-pressed", String(mode === "simple"));
-
   if (mode === "supply") inputLabel.textContent = "공급가액";
   else if (mode === "total") inputLabel.textContent = "합계금액 (공급대가)";
   else inputLabel.textContent = "공급대가 (매출)";
@@ -116,9 +98,10 @@ function buildCard() {
   });
 }
 
-tabSupply.addEventListener("click", () => setMode("supply"));
-tabTotal.addEventListener("click", () => setMode("total"));
-tabSimple.addEventListener("click", () => setMode("simple"));
+modeSelect.addEventListener("change", () => {
+  const v = modeSelect.value;
+  setMode(v === "total" ? "total" : v === "simple" ? "simple" : "supply");
+});
 rateSelect.addEventListener("change", compute);
 
 amountInput.addEventListener("input", () => {
@@ -130,16 +113,6 @@ amountInput.addEventListener("input", () => {
   compute();
 });
 
-presetButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    track("preset_click", { calculator: "vat" });
-    const add = parseInt(btn.dataset.add ?? "0", 10);
-    const next = parseAmount(amountInput.value) + add;
-    amountInput.value = formatAmountInput(next);
-    compute();
-  });
-});
-
 btnDownload.addEventListener("click", () => {
   track("save_result", { calculator: "vat" });
   downloadCard(buildCard(), "vat-result.png");
@@ -149,19 +122,5 @@ btnShare.addEventListener("click", async () => {
   track("share_result", { calculator: "vat" });
   await shareCard(buildCard(), "부가세 계산 결과 - jupocket.com");
 });
-
-btnCopy.addEventListener("click", async () => {
-  track("copy_result", { calculator: "vat" });
-  const text = lastLines.map(([k, v]) => `${k} ${v}`).join(" / ");
-  if (!navigator.clipboard) return;
-  await navigator.clipboard.writeText(text);
-  copyToast.style.display = "block";
-  setTimeout(() => {
-    copyToast.style.display = "none";
-  }, 1800);
-});
-
-// 접근성: rates의 업종별 부가가치율을 select에 채운다(하드코딩 방지)
-void vat;
 
 compute();

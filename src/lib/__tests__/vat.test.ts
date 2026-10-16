@@ -46,3 +46,20 @@ describe("납부의무 면제 / 간이과세 대상", () => {
     expect(isSimplifiedEligible(104000000)).toBe(false);
   });
 });
+
+// 2026-10-17 roberin 대조 — 제29조 제7항(받은 금액 × 100/110)은 단수 처리를 정하지 않는다. 우리는 공급가액 반올림, 합은 늘 받은 금액
+describe("합계 역산 단수 · roberin 대조 입력", () => {
+  it.each([
+    [1_000_000, 909_091, 90_909],
+    [12_345, 11_223, 1_122],
+    [999, 908, 91],
+    [1_100_000, 1_000_000, 100_000],
+  ])("합계 %i → 공급가액 %i · 부가세 %i", (t, s, x) => {
+    const r = fromTotal(t);
+    expect(r).toEqual({ supply: s, tax: x, total: t });
+  });
+  it.each([
+    [12_345, 1_235, 13_580],
+    [999, 100, 1_099],
+  ])("공급가액 %i → 부가세 %i · 합계 %i", (s, x, t) => expect(fromSupply(s)).toEqual({ supply: s, tax: x, total: t }));
+});

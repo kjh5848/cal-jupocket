@@ -21,4 +21,9 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
     // 사업소득은 3.3% 계산기와 같은 자동완성. 기타소득 8.8% 는 자동완성에 금액이 붙어 나오지 않아(2026-10-17 네이버 '8.8'·'100만원 8.8' 등) 버튼 없음
     business: { amounts: [1_000_000, 2_000_000, 3_000_000], source: "keywords/ac-33-2026-10-17.csv", term: "3.3" },
   },
+  "/vat/": {
+    // 네이버 자동완성 '50만원 부가세 포함 계산'·'100만원 부가세포함 금액'·'200만원 부가세 포함'(2026-10-17). 간이과세(연 매출)는 금액이 안 붙어 버튼 없음
+    supply: { amounts: [500_000, 1_000_000, 2_000_000], source: "keywords/ac-vat-2026-10-17.csv", term: "부가세" },
+    total: { amounts: [500_000, 1_000_000, 2_000_000], source: "keywords/ac-vat-2026-10-17.csv", term: "부가세" },
+  },
 };

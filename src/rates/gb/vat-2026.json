@@ -1,0 +1,10 @@
+{
+  "country": "GB",
+  "draft": true,
+  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(영어판이 열린 뒤). 품목 분류(어느 품목이 5%·0%인지)는 확인하지 않았다.",
+  "verifiedOn": "2026-10-17",
+  "sources": [{ "label": "GOV.UK — VAT rates", "url": "https://www.gov.uk/vat-rates" }],
+  "standardRate": 0.2,
+  "reducedRate": 0.05,
+  "zeroRate": 0
+}

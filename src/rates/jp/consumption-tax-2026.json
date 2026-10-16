@@ -1,0 +1,12 @@
+{
+  "country": "JP",
+  "draft": true,
+  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(일본어판이 열린 뒤). 国税庁 원문에 令和9年4月1日~令和11年3月31日 음식료품 세율 인하 예정이 적혀 있어, 그 전에 다시 확인한다.",
+  "verifiedOn": "2026-10-17",
+  "sources": [{ "label": "国税庁 タックスアンサー No.6303 消費税及び地方消費税の税率", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shohi/6303.htm" }],
+  "standardRate": 0.1,
+  "standardSplit": { "national": 0.078, "local": 0.022 },
+  "reducedRate": 0.08,
+  "reducedSplit": { "national": 0.0624, "local": 0.0176 },
+  "reducedScope": "음식료품 양도(주류·외식 제외), 주 2회 이상 발행 정기구독 신문"
+}
