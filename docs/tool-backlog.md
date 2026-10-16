@@ -6,7 +6,7 @@
 
 현재: 보류 2 · 있음 18 · 할 일 412
 
-다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /income-tax-refund/(종합소득세 환급) — roberin comprehensive-income-tax-calculator 대조. 원천징수 단수(10원 미만 절사·소액부징수) 원문 확인은 3.3%·8.8% 공통 보류. 부가세 나라별은 영국·일본만 검증, 나머지 미확인.
+다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /penalty/(가산세) — roberin 같은 도구 대조. 카드 세트 multiple-payers 는 데이터만 고침 — 이미 만든 카드 이미지 재생성(`npm run cards -- --set`)은 사용자 확인 필요. 원천징수·지방소득세 단수 원문 확인은 공통 보류. 종소세 경비율 구간(초과율·직전 연도 수입 기준) 원문 확인 보류.
 
 | # | 우리 분류 | roberin 분류 | roberin 주소 | 도구 | 상태 | 우리 주소 | 메모 |
 |---|---|---|---|---|---|---|---|
@@ -18,7 +18,7 @@
 | 6 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/holding-tax-calculator/ | 보유세 계산기 | 할 일 |  |  |
 | 7 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/vat-calculator/ | 부가세계산기 | 있음 | /vat/ | 2026-10-17 대조: 정방향 같음 · 합계 역산 1원 차이는 단수(우리 반올림/roberin 내림, 제29조 제7항에 단수 규정 없음) · 새 틀 이전 · 영국·일본 rates 초안 |
 | 8 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/transfer-tax-calculator/ | 부동산 양도세 계산기 | 있음 | /guide/capital-gains-calculator/ |  |
-| 9 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/comprehensive-income-tax-calculator/ | 사업소득 종합소득세 계산기 | 있음 | /income-tax-refund/ |  |
+| 9 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/comprehensive-income-tax-calculator/ | 사업소득 종합소득세 계산기 | 있음 | /income-tax-refund/ | 2026-10-17 대조: 우리가 지방소득세만큼 환급을 부풀림(기납부 3.3% − 소득세만) → 소득세·지방소득세 따로 정산으로 고침(제76조 ③4호), 고친 뒤 같은 입력 4개 roberin 과 1원까지 같음 · 새 틀 이전. 940xxx 초과율·직전 연도 수입 판정·기준경비율은 보류(원문 미확인) |
 | 10 | 상속·증여 | 돈·세금·급여 / 급여·세금 | https://roberin.com/inheritance-tax-calculator/ | 상속세 계산기 | 있음 | /inheritance/ |  |
 | 11 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/hourly-wage-calculator/ | 시급계산기 | 할 일 |  |  |
 | 12 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/projects/live-salary-tracker/ | 실시간 급여 시각화 트래커 | 할 일 |  |  |

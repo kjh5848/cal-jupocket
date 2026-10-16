@@ -176,7 +176,7 @@
 - [x] /freelancer-33/ (2026-10-17 — 소득세·지방소득세 나눠 보기·소계·막대·두 칸·자동완성 프리셋, roberin 7개 일치)
 - [x] /withholding/ (2026-10-17 — 기타소득 과세최저한 fix·역산 추가, 소득세·지방소득세 나눠 보기·소계·막대·두 칸, roberin 대조)
 - [x] /vat/ (2026-10-17 — 계산 방식 선택 상자·영수증 3줄·막대·두 칸·자동완성 프리셋, roberin 대조: 역산 1원 단수 차이만)
-- [ ] /income-tax-refund/
+- [x] /income-tax-refund/ (2026-10-17 — 지방소득세 이중계산 fix(제76조 ③4호), 소득세·지방소득세 따로 정산 영수증·소계·막대·두 칸·자동완성 프리셋, roberin 4개 일치)
 - [ ] /penalty/
 - [ ] /national-pension-premium/
 - [ ] /guide/four-insurance-calculator/

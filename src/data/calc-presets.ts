@@ -26,4 +26,8 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
     supply: { amounts: [500_000, 1_000_000, 2_000_000], source: "keywords/ac-vat-2026-10-17.csv", term: "부가세" },
     total: { amounts: [500_000, 1_000_000, 2_000_000], source: "keywords/ac-vat-2026-10-17.csv", term: "부가세" },
   },
+  "/income-tax-refund/": {
+    // 네이버 자동완성 '종합소득세 1000만원'·'2000만원'·'3000만원'·'5000만원'(2026-10-17)
+    default: { amounts: [10_000_000, 20_000_000, 30_000_000, 50_000_000], source: "keywords/ac-income-tax-2026-10-17.csv", term: "종합소득세" },
+  },
 };
