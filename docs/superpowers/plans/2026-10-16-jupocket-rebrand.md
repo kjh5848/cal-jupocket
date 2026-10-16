@@ -37,7 +37,7 @@
 
 ---
 
-### Task 1: 3D 로고·메뉴·홈 제목
+### Task 1: ✅ 완료(2026-10-17) 3D 로고·메뉴·홈 제목
 
 **Files:**
 - Create: `src/components/BrandPocket.astro`, `public/favicon.svg`(교체), `public/favicon-32.png`, `public/apple-touch-icon.png`, `public/icon-512.png`
@@ -47,13 +47,13 @@
 **Interfaces:**
 - Produces: `<BrandPocket size={number} />` — 로고 SVG 원본은 scratchpad `logo-3d.svg`(설계 확정본)를 그대로 옮긴다. gradient id 는 `bp-` 접두로 바꿔 한 페이지에 여러 번 써도 충돌하지 않게.
 
-- [ ] **Step 1: 실패하는 테스트** — `brand.test.ts`: `SiteHeader.astro` 소스에 `label: "도구"` 가 있고 `label: "계산기"` 가 없다; `index.astro` 의 title 이 `"주포켓 — 세금·급여부터 날짜·사진까지, 필요한 도구 모음"`; `public/favicon.svg` 에 `bp-` 그라데이션 id 가 있다.
-- [ ] **Step 2:** `npx vitest run src/lib/__tests__/brand.test.ts` → FAIL
-- [ ] **Step 3:** BrandPocket 작성, 헤더의 BrandCoin 교체(aria-label `주포켓 홈`), 메뉴 라벨 '도구', 홈 title·h1(`<span class="hero-brand">주포켓</span> 뭐가 필요하세요?`). PNG 는 Playwright 로 SVG 를 16·32·180·512 로 렌더해 저장하는 일회성 스크립트(scratchpad, 커밋 안 함).
-- [ ] **Step 4:** `npm test` 전체 PASS, `npm run build`, `npm run og` 후 OG 한 장을 열어 로고 확인.
-- [ ] **Step 5:** 커밋 `brand: 3D 주머니 로고 · 메뉴 '도구' · 홈 제목`
+- [x] **Step 1: 실패하는 테스트** — `brand.test.ts`: `SiteHeader.astro` 소스에 `label: "도구"` 가 있고 `label: "계산기"` 가 없다; `index.astro` 의 title 이 `"주포켓 — 세금·급여부터 날짜·사진까지, 필요한 도구 모음"`; `public/favicon.svg` 에 `bp-` 그라데이션 id 가 있다.
+- [x] **Step 2:** `npx vitest run src/lib/__tests__/brand.test.ts` → FAIL
+- [x] **Step 3:** BrandPocket 작성, 헤더의 BrandCoin 교체(aria-label `주포켓 홈`), 메뉴 라벨 '도구', 홈 title·h1(`<span class="hero-brand">주포켓</span> 뭐가 필요하세요?`). PNG 는 Playwright 로 SVG 를 16·32·180·512 로 렌더해 저장하는 일회성 스크립트(scratchpad, 커밋 안 함).
+- [x] **Step 4:** `npm test` 전체 PASS, `npm run build`, `npm run og` 후 OG 한 장을 열어 로고 확인.
+- [x] **Step 5:** 커밋 `brand: 3D 주머니 로고 · 메뉴 '도구' · 홈 제목`
 
-### Task 2: 다크 토큰 + 테마 전환 버튼
+### Task 2: ✅ 완료(2026-10-17) 다크 토큰 + 테마 전환 버튼
 
 **Files:**
 - Create: `src/lib/theme.ts`, `src/components/ThemeToggle.astro`, `src/scripts/theme-toggle.ts`
@@ -63,15 +63,15 @@
 **Interfaces:**
 - Produces: `type ThemeChoice = "light" | "dark" | "system"`; `readTheme(store?: Storage | null): ThemeChoice`(예외·이상값이면 `"system"`); `writeTheme(c: ThemeChoice, store?: Storage | null): boolean`(실패 false); `applyTheme(c: ThemeChoice, root = document.documentElement)` — `system` 이면 `data-theme` 속성 제거. localStorage 키 `jp-theme`.
 
-- [ ] **Step 1: 실패하는 테스트**
+- [x] **Step 1: 실패하는 테스트**
   - `theme.test.ts`: getItem 이 throw 하는 가짜 Storage → `readTheme` 가 `"system"`; `"blue"` 저장값 → `"system"`; setItem throw → `writeTheme` false; `BaseHead.astro` 소스에 `jp-theme` 를 읽어 `data-theme` 를 세우는 인라인 `<script is:inline>` 이 `<link rel="stylesheet"` 보다 앞에 있다.
   - `contrast.test.ts`: global.css 에서 다크 토큰을 읽어 WCAG 대비 계산 — `--text`/`--surface` ≥ 7, `--muted`/`--surface` ≥ 4.5, `--link`/`--surface` ≥ 4.5; 라이트도 같은 기준. `[data-theme="dark"]` 블록과 `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])` 블록의 토큰 값이 같다.
-- [ ] **Step 2:** 두 테스트 FAIL 확인
-- [ ] **Step 3:** global.css 다크 블록을 `@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){…}}` + `:root[data-theme="dark"]{…}` 쌍으로 바꾸고 Global Constraints 의 다크 토큰 적용. 컴포넌트별 다크 규칙(`.calc-card`, `.tool-card`, `.callout.warn` 등)도 같은 쌍 선택자로. `.qa-lead{font-weight:500;line-height:1.8}`, `.result-hero` 그라데이션, 다크 `.bg-texture` 알갱이 제거(위쪽 `radial-gradient(120% 60% at 50% -10%, #17264a 0%, var(--bg) 70%)`, `background-size:100% 100%`, no-repeat), 다크 `.tool-icon{background:color-mix(in srgb,var(--cm) 22%,var(--surface))}`. 토글은 해·달·화면 아이콘 버튼 하나를 눌러 light → dark → system 순환, `aria-label` 에 현재 상태.
-- [ ] **Step 4:** `npm test` PASS. Playwright 로 홈·실수령액 계산기를 다크 저장 상태에서 새로고침 캡처 — 라이트가 먼저 보이지 않음(첫 프레임 배경 #0d1220).
-- [ ] **Step 5:** 커밋 `design: 다크 남색 토큰 + 라이트·다크·기기 설정 전환`
+- [x] **Step 2:** 두 테스트 FAIL 확인
+- [x] **Step 3:** global.css 다크 블록을 `@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){…}}` + `:root[data-theme="dark"]{…}` 쌍으로 바꾸고 Global Constraints 의 다크 토큰 적용. 컴포넌트별 다크 규칙(`.calc-card`, `.tool-card`, `.callout.warn` 등)도 같은 쌍 선택자로. `.qa-lead{font-weight:500;line-height:1.8}`, `.result-hero` 그라데이션, 다크 `.bg-texture` 알갱이 제거(위쪽 `radial-gradient(120% 60% at 50% -10%, #17264a 0%, var(--bg) 70%)`, `background-size:100% 100%`, no-repeat), 다크 `.tool-icon{background:color-mix(in srgb,var(--cm) 22%,var(--surface))}`. 토글은 해·달·화면 아이콘 버튼 하나를 눌러 light → dark → system 순환, `aria-label` 에 현재 상태.
+- [x] **Step 4:** `npm test` PASS. Playwright 로 홈·실수령액 계산기를 다크 저장 상태에서 새로고침 캡처 — 라이트가 먼저 보이지 않음(첫 프레임 배경 #0d1220).
+- [x] **Step 5:** 커밋 `design: 다크 남색 토큰 + 라이트·다크·기기 설정 전환`
 
-### Task 3: 도구 레지스트리
+### Task 3: ✅ 완료(2026-10-17) 도구 레지스트리
 
 **Files:**
 - Create: `src/data/tools.ts`, `src/data/tool-types.ts`, `src/data/tool-backlog-count.ts`
@@ -82,13 +82,13 @@
 - Produces:
   - `tool-types.ts`: `export const TOOL_TYPES = [{ key: "tax", label: "세금", color: "#0f6e56" }, …12개] as const`; `type ToolType = typeof TOOL_TYPES[number]["key"]`(키: tax·labor·pension·home·inherit·money·date·media·text·unit·health·life); `typeOfCluster(id: string): ToolType`.
   - `tools.ts`: `interface Tool { no: number | null; href: string; name: string; blurb: string; type: ToolType; keywords: string[]; status: "live" | "next"; verified?: "law" }`; `export const tools: Tool[]`(clusters 의 `kind: "calc"` 링크 22개를 linkhub 번호와 합쳐 생성 + 손으로 적는 `next` 목록 4~8개); `liveTools`, `nextTools`, `toolCount(): { live: number; total: number }` — total 은 backlog 표에서 중복·제외를 뺀 행 수(빌드 때 `docs/tool-backlog.md` 를 읽지 않고, `src/data/tool-backlog-count.ts` 에 숫자 하나로 두고 테스트가 문서 행 수와 대조).
-- [ ] **Step 1: 실패하는 테스트** — live 도구의 `no` 가 linkhub `entryByNo(no).href` 와 같다; `no` 중복 없음; `next` 는 `no: null`; 모든 `type` 이 TOOL_TYPES 안; clusters 의 calc 링크가 전부 tools 에 있다; `toolCount().total` = backlog 표 행 수; keywords 에 이름 자체 포함.
-- [ ] **Step 2:** FAIL 확인
-- [ ] **Step 3:** 구현. 동의어(keywords)는 도구마다 자동완성 기록(`keywords/*.csv`)에서 2~5개.
-- [ ] **Step 4:** PASS
-- [ ] **Step 5:** 커밋 `data: 도구 레지스트리 · 분류 12개 · 담길 목록`
+- [x] **Step 1: 실패하는 테스트** — live 도구의 `no` 가 linkhub `entryByNo(no).href` 와 같다; `no` 중복 없음; `next` 는 `no: null`; 모든 `type` 이 TOOL_TYPES 안; clusters 의 calc 링크가 전부 tools 에 있다; `toolCount().total` = backlog 표 행 수; keywords 에 이름 자체 포함.
+- [x] **Step 2:** FAIL 확인
+- [x] **Step 3:** 구현. 동의어(keywords)는 도구마다 자동완성 기록(`keywords/*.csv`)에서 2~5개.
+- [x] **Step 4:** PASS
+- [x] **Step 5:** 커밋 `data: 도구 레지스트리 · 분류 12개 · 담길 목록`
 
-### Task 4: 홈 — 검색 히어로 + 도구 도감
+### Task 4: ✅ 완료(2026-10-17) 홈 — 검색 히어로 + 도구 도감
 
 **Files:**
 - Modify: `src/pages/index.astro`(히어로·`#tools` 구획), `src/styles/global.css`(`.home-hero` 재작성, `.hero-find`·`.hero-search`·`.search-pop`·`.hero-quick`·`.dex-*` 추가)
@@ -99,13 +99,13 @@
 - Consumes: Task 3 `tools`, `TOOL_TYPES`, `toolCount()`
 - Produces: 마크업 계약(Task 5 스크립트가 씀) — `<input id="tool-q" type="search">`, `<div id="tool-pop" role="listbox" hidden>`, 분류 버튼 `button[data-type]`, 카드 `a.tool-card[data-type][data-no]`. `<ToolCard tool={Tool} />`.
 
-- [ ] **Step 1: 실패하는 테스트** — dist 홈에: `.home-hero` 에 `background-image`/사진 없음(`hero.webp` 문자열 없음); `#tool-q` 존재, placeholder `실수령액, 퇴직금, 3.3%…`; `.hero-quick a` 5개; `도구 {live}개 담김 · {total}개 채우는 중` 문자열이 `toolCount()` 와 일치; `#tools h2` = `도구 도감`; 카드 수 = live + next; 각 live 카드에 `No.` + 3자리 번호; next 카드는 `dex-unseen` 클래스.
-- [ ] **Step 2:** `npm run build && npx vitest run src/lib/__tests__/home.test.ts` → FAIL
-- [ ] **Step 3:** 시안 03(검색) CSS 를 global.css 로 옮긴다(사진 히어로·스크림 규칙 삭제, 가운데 620px, 검색창 60px, 결과 창 absolute). 자주 찾는 말 5개: 실수령액 · 3.3% 원천징수 · 부가세 · 상속세 · 노령연금. 모바일: 분류 뱃지 가로 스크롤 한 줄, `kbd` 숨김.
-- [ ] **Step 4:** PASS + Playwright 캡처(1100·390 폭, 라이트·다크)를 시안과 나란히 보고 어긋남 없음.
-- [ ] **Step 5:** 커밋 `home: 검색 히어로 + 도구 도감`
+- [x] **Step 1: 실패하는 테스트** — dist 홈에: `.home-hero` 에 `background-image`/사진 없음(`hero.webp` 문자열 없음); `#tool-q` 존재, placeholder `실수령액, 퇴직금, 3.3%…`; `.hero-quick a` 5개; `도구 {live}개 담김 · {total}개 채우는 중` 문자열이 `toolCount()` 와 일치; `#tools h2` = `도구 도감`; 카드 수 = live + next; 각 live 카드에 `No.` + 3자리 번호; next 카드는 `dex-unseen` 클래스.
+- [x] **Step 2:** `npm run build && npx vitest run src/lib/__tests__/home.test.ts` → FAIL
+- [x] **Step 3:** 시안 03(검색) CSS 를 global.css 로 옮긴다(사진 히어로·스크림 규칙 삭제, 가운데 620px, 검색창 60px, 결과 창 absolute). 자주 찾는 말 5개: 실수령액 · 3.3% 원천징수 · 부가세 · 상속세 · 노령연금. 모바일: 분류 뱃지 가로 스크롤 한 줄, `kbd` 숨김.
+- [x] **Step 4:** PASS + Playwright 캡처(1100·390 폭, 라이트·다크)를 시안과 나란히 보고 어긋남 없음.
+- [x] **Step 5:** 커밋 `home: 검색 히어로 + 도구 도감`
 
-### Task 5: 초성·동의어 검색
+### Task 5: ✅ 완료(2026-10-17) 초성·동의어 검색
 
 **Files:**
 - Create: `src/lib/search.ts`, `src/scripts/tool-search.ts`, `src/pages/tools.json.ts`(레지스트리를 빌드 때 JSON 으로)
@@ -114,13 +114,13 @@
 **Interfaces:**
 - Consumes: Task 3 `Tool`, Task 4 마크업 계약
 - Produces: `toChoseong(s: string): string`; `normalize(s: string): string`(공백 제거·소문자·전각→반각); `searchTools(list: Tool[], q: string, limit = 8): { tool: Tool; ranges: [number, number][] }[]` — 순위: 이름 앞부분 일치 > 이름 포함 > 초성 일치 > keywords 일치; live 먼저, next 는 뒤에 '곧 담길 도구'.
-- [ ] **Step 1: 실패하는 표 테스트** — `ㅅㅅㄹㅇ` → 첫 결과 href `/guide/take-home-calculator/`; `3.3` → `/freelancer-33/` 이 1위; ` 부가세 ` → `/vat/`; `월급 얼마` → 실수령액 계열(동의어); `ㅅㅅ 령` 같은 자모+완성형 섞인 입력도 결과 1개 이상; `PDF` → next 의 PDF 도구(있으면) 또는 빈 배열이지만 예외 없음; 빈 문자열 → 빈 배열; ranges 는 이름 안 일치 구간(칠하기용). 동의어 사례 30개를 표로 고정(설계 8절 기준).
-- [ ] **Step 2:** FAIL
-- [ ] **Step 3:** 구현. 스크립트: 입력마다 `searchTools` → `#tool-pop` 렌더(색 점·이름·`<small>분류 · 설명</small>`·`No.`), ↑↓·Enter·Esc, 데스크톱 `/` 로 포커스, 바깥 클릭 닫기, 결과 0개면 "아직 없는 도구예요" 한 줄.
-- [ ] **Step 4:** PASS + 홈에서 손으로 `ㅅㅅㄹㅇ` → Enter 로 계산기 이동 확인.
-- [ ] **Step 5:** 커밋 `search: 초성·동의어 도구 검색`
+- [x] **Step 1: 실패하는 표 테스트** — `ㅅㅅㄹㅇ` → 첫 결과 href `/guide/take-home-calculator/`; `3.3` → `/freelancer-33/` 이 1위; ` 부가세 ` → `/vat/`; `월급 얼마` → 실수령액 계열(동의어); `ㅅㅅ 령` 같은 자모+완성형 섞인 입력도 결과 1개 이상; `PDF` → next 의 PDF 도구(있으면) 또는 빈 배열이지만 예외 없음; 빈 문자열 → 빈 배열; ranges 는 이름 안 일치 구간(칠하기용). 동의어 사례 30개를 표로 고정(설계 8절 기준).
+- [x] **Step 2:** FAIL
+- [x] **Step 3:** 구현. 스크립트: 입력마다 `searchTools` → `#tool-pop` 렌더(색 점·이름·`<small>분류 · 설명</small>`·`No.`), ↑↓·Enter·Esc, 데스크톱 `/` 로 포커스, 바깥 클릭 닫기, 결과 0개면 "아직 없는 도구예요" 한 줄.
+- [x] **Step 4:** PASS + 홈에서 손으로 `ㅅㅅㄹㅇ` → Enter 로 계산기 이동 확인.
+- [x] **Step 5:** 커밋 `search: 초성·동의어 도구 검색`
 
-### Task 6: 수집(내가 써 본 도구) + 분류 3D 아이콘 + 모션
+### Task 6: ✅ 완료(2026-10-17) 수집(내가 써 본 도구) + 분류 3D 아이콘 + 모션
 
 **Files:**
 - Create: `src/lib/collect.ts`, `src/components/TypeIcon.astro`, `src/scripts/dex.ts`
@@ -129,13 +129,13 @@
 
 **Interfaces:**
 - Produces: `markUsed(href: string, store?: Storage | null): boolean`(처음이면 true); `usedSet(store?: Storage | null): Set<string>`(예외면 빈 Set); 키 `jp-used`(JSON 배열). `<TypeIcon type={ToolType} size={number} />` — 로고와 같은 질감 SVG.
-- [ ] **Step 1: 실패하는 테스트** — throw 하는 Storage 에서 markUsed false·usedSet 빈 Set; 같은 href 두 번 → 두 번째 false; 깨진 JSON 저장값 → 빈 Set.
-- [ ] **Step 2:** FAIL
-- [ ] **Step 3:** 구현. 홈 `dex.ts`: 진행 바 `내가 써 본 도구 n / live`(모바일 `써 본 도구 n/live`), 써 본 카드에 '써봄' 도장, 분류 버튼으로 걸러 보기 + 분류별 수집률. 계산기에서 첫 사용 때 알림 한 번(도장 0.5초, reduced-motion 이면 정지 표시). 결과 금액 카운트업 0.4초 이하.
-- [ ] **Step 4:** PASS + localStorage 막은 Playwright 컨텍스트에서 홈 렌더 정상.
-- [ ] **Step 5:** 커밋 `dex: 써 본 도구 수집 · 분류 3D 아이콘 · 작은 모션`
+- [x] **Step 1: 실패하는 테스트** — throw 하는 Storage 에서 markUsed false·usedSet 빈 Set; 같은 href 두 번 → 두 번째 false; 깨진 JSON 저장값 → 빈 Set.
+- [x] **Step 2:** FAIL
+- [x] **Step 3:** 구현. 홈 `dex.ts`: 진행 바 `내가 써 본 도구 n / live`(모바일 `써 본 도구 n/live`), 써 본 카드에 '써봄' 도장, 분류 버튼으로 걸러 보기 + 분류별 수집률. 계산기에서 첫 사용 때 알림 한 번(도장 0.5초, reduced-motion 이면 정지 표시). 결과 금액 카운트업 0.4초 이하.
+- [x] **Step 4:** PASS + localStorage 막은 Playwright 컨텍스트에서 홈 렌더 정상.
+- [x] **Step 5:** 커밋 `dex: 써 본 도구 수집 · 분류 3D 아이콘 · 작은 모션`
 
-### Task 7: 계산기 틀(공통 부품) — 실수령액 계산기로 먼저
+### Task 7: ✅ 완료(2026-10-17) 계산기 틀(공통 부품) — 실수령액 계산기로 먼저
 
 **Files:**
 - Create: `src/lib/calc-ui.ts`(순수 함수), `src/scripts/calc-ui.ts`(DOM 향상), `src/data/calc-presets.ts`
@@ -148,11 +148,11 @@
   - `shares(parts: number[]): number[]` — 합이 0 이면 전부 0, 아니면 반올림 백분율.
   - `calcPresets: Record<string, { amounts: number[]; source: string }>` — 키는 페이지 경로, `source` 는 그 금액이 나온 자동완성 CSV 경로(지어내지 않음).
   - 마크업 계약(모든 계산기 공통): 금액 칸 `input[data-won]` → 아래 `.won-read`; `select[data-seg]` → 세그먼트 버튼(원래 select 는 숨기고 값 동기화, change/input 이벤트 발생); `input[type=number][data-step]` → −/+; `[data-presets-for="<input id>"]` → 프리셋 버튼; `.stat-row[data-receipt]` 안 `[data-group="이름"]` 첫 칩 앞에 소계 줄; `.result-hero[data-bar="id1,id2|id3,id4|id5"]` → 비율 막대(무리는 `|`, 무리 안 합산); `.result-hero[data-dock="<값 요소 id>"]` → 폰 고정 띠; `.calc-card[data-two]` → 900px 이상 두 칸. 스크립트가 없으면 원래 입력이 그대로 동작해야 한다.
-- [ ] **Step 1: 실패하는 테스트** — `readWon`·`shares`(빈 값·0 포함) 표; `calcPresets` 의 모든 금액이 `source` CSV 의 키워드 문자열에 만원·억 표기로 등장; dist `take-home-calculator` HTML 에 원래 `<select id="th-mode">` 와 `<input type="number" id="th-family">` 가 그대로 있다(점진적 향상), `data-seg`·`data-step`·`data-receipt`·`data-bar`·`data-dock`·`data-two` 가 붙어 있다.
-- [ ] **Step 2:** FAIL
-- [ ] **Step 3:** 구현 — 시안 `ux-calc.css`·`ux-calc.js`(scratchpad)의 동작을 마크업 계약 기반 일반 스크립트로. 입력칸 높이 약 58px(글자 20px), 결과 복사(기존 복사 기능 재사용)·처음 값으로. 결과 값이 바뀌면 MutationObserver 로 소계·막대·고정 띠 갱신.
-- [ ] **Step 4:** PASS + Playwright: 390×844 에서 계산기 카드 맨 위로 스크롤했을 때 결과 카드가 화면 안; 페이지 맨 위에서 고정 띠 표시; 5,000만 프리셋 → 가족 + → 월급 전환 후 결과·소계·띠가 같은 값.
-- [ ] **Step 5:** 커밋 `calc: 공통 계산기 틀 — 실수령액 계산기부터`
+- [x] **Step 1: 실패하는 테스트** — `readWon`·`shares`(빈 값·0 포함) 표; `calcPresets` 의 모든 금액이 `source` CSV 의 키워드 문자열에 만원·억 표기로 등장; dist `take-home-calculator` HTML 에 원래 `<select id="th-mode">` 와 `<input type="number" id="th-family">` 가 그대로 있다(점진적 향상), `data-seg`·`data-step`·`data-receipt`·`data-bar`·`data-dock`·`data-two` 가 붙어 있다.
+- [x] **Step 2:** FAIL
+- [x] **Step 3:** 구현 — 시안 `ux-calc.css`·`ux-calc.js`(scratchpad)의 동작을 마크업 계약 기반 일반 스크립트로. 입력칸 높이 약 58px(글자 20px), 결과 복사(기존 복사 기능 재사용)·처음 값으로. 결과 값이 바뀌면 MutationObserver 로 소계·막대·고정 띠 갱신.
+- [x] **Step 4:** PASS + Playwright: 390×844 에서 계산기 카드 맨 위로 스크롤했을 때 결과 카드가 화면 안; 페이지 맨 위에서 고정 띠 표시; 5,000만 프리셋 → 가족 + → 월급 전환 후 결과·소계·띠가 같은 값.
+- [x] **Step 5:** 커밋 `calc: 공통 계산기 틀 — 실수령액 계산기부터`
 
 ### Task 8: 나머지 계산기 34개 이전 + roberin 대조표
 
@@ -168,6 +168,45 @@
 - [ ] **Step 3:** 페이지마다 roberin 의 같은 도구를 열어 대조표 행을 채우고(문구·디자인은 보지 않고 항목·순서만), 우리에게 없는 유용한 결과 항목은 **법 원문으로 확인되는 것만** 더한다(rates 에 없으면 대조표에 '보류 — 원문 미확인'). 프리셋은 `calcPresets` 에 출처와 함께.
 - [ ] **Step 4:** `npm test`·`npm run build` PASS, 계산기 5개(3.3%·부가세·국민연금 보험료·휴업급여·차용증 이자율)를 390 폭 라이트·다크로 캡처해 확인.
 - [ ] **Step 5:** 묶음별로 나눠 커밋(세금 · 급여·근로 · 연금·보험 · 집·차 · 상속·증여) `calc: <분류> 계산기 새 틀로 + roberin 대조`
+
+
+**2026-10-17 진행:** 기본 틀은 계산기 35개 전부에 자동 적용됨(`calc-ui.ts` autoTag — 원 단위 금액 읽어 주기·사람 수/기간 −/+·짧은 선택지 버튼·영수증 목록·폰 결과 고정 띠). 아래는 **계산기마다 하나씩**(루틴 한 회차 = 한 줄): roberin 같은 도구 대조 → `data-two` · `data-bar` · `data-group` 소계 · `calcPresets`(자동완성 출처) · 결과 복사/처음 값으로 → `docs/calc-benchmark.md` 한 행.
+
+- [x] /guide/take-home-calculator/ (Task 7)
+- [ ] /freelancer-33/
+- [ ] /withholding/
+- [ ] /vat/
+- [ ] /income-tax-refund/
+- [ ] /penalty/
+- [ ] /national-pension-premium/
+- [ ] /guide/four-insurance-calculator/
+- [ ] /guide/weekly-holiday-pay-calculator/
+- [ ] /guide/minimum-wage-calculator/
+- [ ] /guide/annual-leave-calculator/
+- [ ] /guide/unemployment-benefit-calculator/
+- [ ] /guide/parental-leave-pay-calculator/
+- [ ] /guide/severance-tax-calculator/
+- [ ] /guide/year-end-calculator/
+- [ ] /guide/irp-tax-credit-calculator/
+- [ ] /guide/medical-credit-limit/
+- [ ] /guide/earned-incentive-amount/
+- [ ] /guide/child-incentive-amount/
+- [ ] /guide/basic-pension-calculator/
+- [ ] /guide/old-age-pension-age/
+- [ ] /guide/industrial-accident-leave-pay/
+- [ ] /guide/industrial-accident-disability/
+- [ ] /inheritance/
+- [ ] /guide/gift-tax-calculator/
+- [ ] /guide/family-loan-interest/
+- [ ] /guide/capital-gains-calculator/
+- [ ] /acquisition-tax/
+- [ ] /guide/divorce-acquisition-tax/
+- [ ] /property-tax/
+- [ ] /guide/jongbu-calculator/
+- [ ] /vehicle-tax/
+- [ ] /guide/electric-car-tax-calculator/
+- [ ] /guide/crypto-tax-calculator/
+- [ ] /guide/lotto-tax-calculator/
 
 ### Task 9: 마무리 — 브랜드 자산·구조화 데이터·라이브 확인
 

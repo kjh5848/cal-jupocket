@@ -18,7 +18,7 @@ import BaseHead from "../../components/BaseHead.astro";
 import ClarityHead from "../../components/ClarityHead.astro";
 import GtagHead from "../../components/GtagHead.astro";
 import TrackLinks from "../../components/TrackLinks.astro";
-import BrandCoin from "../../components/BrandCoin.astro";
+import BrandPocket from "../../components/BrandPocket.astro";
 import { hubGroups } from "../../data/linkhub";
 import { clusterColor } from "../../data/clusters";
 import "../../styles/global.css";
@@ -42,7 +42,7 @@ const dot = (id: string | null) =>
   <body class="bg-texture">
     <main class="hub">
       <header class="hub-head">
-        <BrandCoin size={124} />
+        <BrandPocket size={124} label="주포켓" />
         <h1>주포켓</h1>
         <p class="hub-handle">@jupocket.money</p>
         <p class="hub-bio">
