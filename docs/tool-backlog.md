@@ -6,7 +6,7 @@
 
 현재: 보류 2 · 있음 18 · 할 일 412
 
-다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /vat/(부가세) — roberin vat-calculator 대조. 원천징수 단수(10원 미만 절사·소액부징수) 원문 확인은 3.3%·8.8% 공통 보류. 나라별 행은 미확인.
+다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /income-tax-refund/(종합소득세 환급) — roberin comprehensive-income-tax-calculator 대조. 원천징수 단수(10원 미만 절사·소액부징수) 원문 확인은 3.3%·8.8% 공통 보류. 부가세 나라별은 영국·일본만 검증, 나머지 미확인.
 
 | # | 우리 분류 | roberin 분류 | roberin 주소 | 도구 | 상태 | 우리 주소 | 메모 |
 |---|---|---|---|---|---|---|---|
@@ -16,7 +16,7 @@
 | 4 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/ordinary-wage-calculator/ | 대한민국 통상임금 계산기 | 할 일 |  |  |
 | 5 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/lotto-tax-calculator/ | 로또 당첨금 세금 계산기 | 있음 | /guide/lotto-tax-calculator/ |  |
 | 6 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/holding-tax-calculator/ | 보유세 계산기 | 할 일 |  |  |
-| 7 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/vat-calculator/ | 부가세계산기 | 있음 | /vat/ |  |
+| 7 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/vat-calculator/ | 부가세계산기 | 있음 | /vat/ | 2026-10-17 대조: 정방향 같음 · 합계 역산 1원 차이는 단수(우리 반올림/roberin 내림, 제29조 제7항에 단수 규정 없음) · 새 틀 이전 · 영국·일본 rates 초안 |
 | 8 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/transfer-tax-calculator/ | 부동산 양도세 계산기 | 있음 | /guide/capital-gains-calculator/ |  |
 | 9 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/comprehensive-income-tax-calculator/ | 사업소득 종합소득세 계산기 | 있음 | /income-tax-refund/ |  |
 | 10 | 상속·증여 | 돈·세금·급여 / 급여·세금 | https://roberin.com/inheritance-tax-calculator/ | 상속세 계산기 | 있음 | /inheritance/ |  |
