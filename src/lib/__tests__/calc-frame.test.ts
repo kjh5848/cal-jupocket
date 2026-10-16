@@ -11,14 +11,21 @@ const MOVED: { path: string; attrs: string[] }[] = [
   { path: "/withholding/", attrs: ["data-two", "data-seg", "data-won", "data-presets", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/vat/", attrs: ["data-two", "data-seg", "data-won", "data-presets", "data-receipt", "data-bar", "data-dock"] },
   { path: "/income-tax-refund/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
+  { path: "/penalty/", attrs: ["data-two", "data-won", "data-receipt", "data-group", "data-bar", "data-dock"] },
 ];
+
+/**
+ * 자동완성에 금액이 붙어 나오지 않아 '자주 넣는 금액' 버튼이 없는 계산기 — 금액은 지어내지 않는다.
+ * /penalty/: 네이버 '가산세 1'·'무신고가산세 1'·'기한후신고 가산세 1'·'종합소득세 가산세 1' 등 결과 없음(2026-10-17, keywords/ac-penalty-2026-10-17.csv)
+ */
+const NO_PRESETS = new Set(["/penalty/"]);
 
 const bench = readFileSync("docs/calc-benchmark.md", "utf-8");
 
 for (const { path, attrs } of MOVED) {
   describe(`${path} 새 틀`, () => {
     it("대조표에 한 행", () => expect(bench).toContain(`| ${path} | https://roberin.com/`));
-    it("자동완성 프리셋", () => expect(calcPresets[path]).toBeDefined());
+    it.skipIf(NO_PRESETS.has(path))("자동완성 프리셋", () => expect(calcPresets[path]).toBeDefined());
     const file = `dist${path}index.html`;
     it.skipIf(!existsSync(file))("마크업 계약", () => {
       const html = readFileSync(file, "utf-8");
