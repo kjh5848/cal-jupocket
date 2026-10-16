@@ -310,6 +310,9 @@ export const hubEntries: HubEntry[] = [
   { no: 283, href: "/guide/family-loan/", label: "가족간 차용증 — 증여세 기준", kind: "guide" },
   { no: 284, href: "/guide/family-loan-interest/", label: "가족간 차용증 이자율 4.6% — 계산", kind: "guide" },
   { no: 285, href: "/guide/family-loan-howto/", label: "차용증 쓰는법 — 세금 때문에 적을 칸", kind: "guide" },
+  { no: 286, href: "/guide/industrial-accident/", label: "산재 처리방법 — 신청·기준", kind: "guide" },
+  { no: 287, href: "/guide/industrial-accident-leave-pay/", label: "산재 휴업급여 — 계산", kind: "guide" },
+  { no: 288, href: "/guide/industrial-accident-disability/", label: "산재 장해등급 보상금", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -350,7 +353,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
-  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/payslip", "/guide/payslip-issue", "/guide/wage-ledger", "/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator", "/guide/unemployment-benefit", "/guide/unemployment-benefit-criteria", "/guide/unemployment-benefit-calculator", "/guide/unemployment-benefit-apply", "/guide/unemployment-benefit-period", "/guide/parental-leave-pay", "/guide/parental-leave-pay-calculator", "/guide/parental-leave-pay-apply", "/guide/parental-leave-period", "/guide/maternity-leave-pay", "/guide/minimum-wage", "/guide/minimum-wage-2027", "/guide/minimum-wage-calculator", "/guide/salary-take-home", "/guide/monthly-take-home", "/guide/take-home-calculator"]) },
+  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/payslip", "/guide/payslip-issue", "/guide/wage-ledger", "/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator", "/guide/unemployment-benefit", "/guide/unemployment-benefit-criteria", "/guide/unemployment-benefit-calculator", "/guide/unemployment-benefit-apply", "/guide/unemployment-benefit-period", "/guide/parental-leave-pay", "/guide/parental-leave-pay-calculator", "/guide/parental-leave-pay-apply", "/guide/parental-leave-period", "/guide/maternity-leave-pay", "/guide/minimum-wage", "/guide/minimum-wage-2027", "/guide/minimum-wage-calculator", "/guide/salary-take-home", "/guide/monthly-take-home", "/guide/take-home-calculator", "/guide/industrial-accident", "/guide/industrial-accident-leave-pay", "/guide/industrial-accident-disability"]) },
   { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax", "/guide/comprehensive-property-tax", "/guide/vehicle-tax-prepay", "/guide/vehicle-tax-prepay-period", "/guide/vehicle-tax-prepay-discount", "/guide/vehicle-tax-prepay-amount", "/guide/vehicle-tax-prepay-how", "/guide/vehicle-tax-prepay-refund", "/guide/jongbu-criteria", "/guide/jongbu-calculator", "/guide/jongbu-rate", "/guide/jongbu-payment", "/guide/jongbu-joint", "/guide/jongbu-multi-home", "/guide/jongbu-reform", "/guide/apartment-acquisition-tax", "/guide/real-estate-acquisition-tax", "/guide/officetel-acquisition-tax", "/guide/resident-tax", "/guide/property-tax-calc", "/guide/property-tax-payment", "/guide/property-tax-basis-date", "/guide/electric-car-tax", "/guide/electric-car-tax-exemption", "/guide/electric-car-tax-calculator"]) },
   {
     label: "종합소득세·원천징수",

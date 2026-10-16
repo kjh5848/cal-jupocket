@@ -1,0 +1,97 @@
+---
+/**
+ * "산재 휴업급여" — 산재 시리즈. (산재 휴업급여 계산·지급기준·최저·최고·61세 감액·세금도 이 글, 계산기 포함)
+ * 근거: 산재보험법 제36조 제7항, 제52조·제54조·제55조, 별표 1, 시행령 제51조, 고용노동부고시 제2025-84호,
+ * 소득세법 제12조 제3호 다목. 계산: industrial-accident.ts leavePayDaily()·bandRange()
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/industrial-accident-2026.json";
+import { leavePayDaily, bandRange, LOW_CAP } from "../../../lib/industrial-accident";
+import { won } from "../../../lib/won";
+
+const B = r.compensationBase;
+const L = r.leavePay;
+const E = L.elderly;
+const pct = (v: number) => `${Number((v * 100).toFixed(1))}%`;
+const [bandLo, bandHi] = bandRange();
+const top = leavePayDaily(B.max);
+const DEF_TOTAL = 12_000_000;
+const DEF_DAYS = 92;
+const ex = leavePayDaily(DEF_TOTAL / DEF_DAYS);
+const ROWS = [60_000, 100_000, 150_000, 200_000, 300_000];
+const AGES = ["61", "62", "63", "64", "65"] as const;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 industrial-accident-series.test.ts 가 rates·계산 함수와 대조한다.
+const title = "산재 휴업급여 — 평균임금의 70%, 3일 이내면 없고 평균임금이 낮으면 하루 82,560원을 보장합니다";
+const description =
+  "산재 휴업급여는 요양으로 일하지 못한 기간에 1일 평균임금의 70%를 줍니다. 3일 이내면 지급하지 않습니다. 2026년 평균임금 상한은 1일 268,299원이고, 평균임금이 낮으면 저소득 특례로 최저임금액 82,560원을 보장합니다. 61세부터는 별표에 따라 줄어듭니다.";
+
+const ANSWER = `휴업급여는 업무상 부상·질병의 요양으로 일하지 못한 기간에 1일 평균임금의 ${pct(L.rate)}를 지급하고, 그 기간이 ${L.noPayUpToDays}일 이내이면 지급하지 않습니다(산재보험법 제52조). 2026년 평균임금은 1일 ${won(B.max)}까지만 반영되고, 평균임금이 ${won(bandLo - 1)} 이하이면 1일 ${won(B.minWageDaily)}을 받습니다(제54조).`;
+
+const QA = [
+  { q: "산재 휴업급여는 얼마 받나요?", a: `1일 평균임금 × ${pct(L.rate)}를 일하지 못한 날수만큼 받습니다(제52조). 평균임금은 근로기준법의 평균임금으로, 재해 전 3개월 임금 총액을 그 기간 총일수로 나눈 금액입니다. 3개월 ${won(DEF_TOTAL)}, ${DEF_DAYS}일이면 하루 ${won(ex.daily ?? 0)}입니다.` },
+  { q: "산재 휴업급여 최저 금액은 얼마인가요?", a: `70% 금액이 최저 보상기준 금액의 80%(2026년 ${won(LOW_CAP)}) 이하이면 평균임금의 90%로 올리고, 그 금액이 최저임금액(시간급 최저임금 × 8, ${won(B.minWageDaily)})보다 적으면 최저임금액을 줍니다(제54조). 평균임금 ${won(bandLo - 1)} 이하가 여기에 해당합니다.` },
+  { q: "산재 휴업급여 최고 금액은 얼마인가요?", a: `평균임금이 최고 보상기준 금액을 넘으면 그 금액을 평균임금으로 봅니다(제36조 제7항). 2026년은 1일 ${won(B.max)}이라 휴업급여는 하루 ${won(top.daily ?? 0)}(원 미만 버림)가 최고입니다(고용노동부고시 제2025-84호).` },
+  { q: "61세가 넘으면 휴업급여가 줄어드나요?", a: `61세부터 별표 1에 따라 줄어 70% 수급자는 61세 ${E.standardFraction["61"]}, 65세 이후 ${E.standardFraction["65"]}를 곱합니다(제55조). 61세 이후 일하다 다쳐 요양하는 경우 등은 요양을 시작한 날부터 ${E.graceYears}년 동안 줄이지 않습니다(시행령 제51조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">재해 전 3개월 임금 총액과 그 기간 일수로 평균임금을 구해 2026년 첫 지급 기준 1일 휴업급여를 계산합니다. 1년이 지나면 평균임금이 증감됩니다(제36조 제3항).</p>
+    <div class="calc-input-wrap">
+      <label for="ia-total">3개월 임금 총액</label>
+      <input type="text" inputmode="numeric" id="ia-total" value="12,000,000" /><span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ia-days">그 기간 일수</label>
+      <input type="number" min="1" max="92" step="1" id="ia-days" value="92" /><span class="unit">일</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ia-age">휴업급여 받을 때 나이</label>
+      <select id="ia-age"><option value="0" selected>60세 이하</option>{AGES.map((a) => <option value={a}>{a === "65" ? "65세 이상" : `${a}세`}</option>)}</select>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label">1일 휴업급여</p>
+      <p class="big" id="ia-hero">{won(ex.daily ?? 0)}</p>
+      <p class="meta" id="ia-note">평균임금 {won(Math.floor(ex.avg))}의 {pct(L.rate)}입니다.</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">1일 평균임금</span><span class="value" id="ia-avg">{won(Math.floor(ex.avg))}</span></div>
+      <div class="stat-chip"><span class="label">30일이면</span><span class="value" id="ia-month">{won((ex.daily ?? 0) * 30)}</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>1일 평균임금</th><th>1일 휴업급여</th><th>30일이면</th></tr></thead>
+    <tbody>{ROWS.map((a) => { const p = leavePayDaily(a); return <tr><th scope="row">{won(a)}</th><td>{won(p.daily ?? 0)}</td><td>{won((p.daily ?? 0) * 30)}</td></tr>; })}</tbody>
+  </table>
+  <p>{won(B.max)}을 넘는 평균임금은 {won(B.max)}으로 봅니다. 휴업급여·장해급여 같은 산재보험 급여는 소득세가 붙지 않습니다(소득세법 제12조 제3호 다목).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>2026년은 최저 보상기준 금액이 최저임금액과 같은 {won(B.min)}입니다. 평균임금의 절반이 최저임금액보다 적으면 최저임금액을 최저 보상기준 금액으로 쓰기 때문입니다(제36조 제7항). 평균임금이 {won(bandLo)}~{won(bandHi)}이면 90%가 {won(LOW_CAP)}을 넘어 제54조 제1항 단서가 적용되는데, 이 금액에 최저임금액 보장(같은 조 제2항)이 미치는지는 조문만으로 확정하지 못해 계산기에서 금액을 내지 않습니다. 근로복지공단의 결정액을 확인하세요.</p>
+  <p>{won(bandHi)}을 넘으면 저소득 특례에 해당하지 않아 70%를 그대로 받습니다. 이 구간에서는 휴업급여가 {won(B.minWageDaily)}보다 적을 수 있는데, 제54조 제2항의 최저임금액 보장이 같은 조 제1항 본문으로 계산한 금액에만 붙기 때문입니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <table>
+    <thead><tr><th>나이</th><th>70% 수급자</th><th>저소득 특례·최저임금액 수급자</th></tr></thead>
+    <tbody>{AGES.map((a) => <tr><th scope="row">{a === "65" ? "65세 이후" : `${a}세`}</th><td>× {E.standardFraction[a]}</td><td>× {E.lowIncomeFraction[a]}</td></tr>)}</tbody>
+  </table>
+  <p>70% 수급자의 감액 금액이 '최저 보상기준 금액 × 80% × 나이별 비율(86/90~70/90)'보다 적으면 그 금액을 줍니다(별표 1 제1호 단서). 계산기는 이 비교까지 합니다. 처리 순서 전체는 <a href="/guide/industrial-accident/">산재 처리방법</a>, 장해가 남았을 때는 <a href="/guide/industrial-accident-disability/">산재 장해등급 보상금</a>에 있습니다.</p>
+
+  <script src="../../../scripts/industrial-accident.ts"></script>
+</GuideLayout>

@@ -1,0 +1,86 @@
+---
+/**
+ * "산재 장해등급 보상금" — 산재 시리즈. (산재 장해급여·장해등급 14급 보상금·장해보상연금·일시금도 이 글, 계산기 포함)
+ * 근거: 산재보험법 제36조 제7항, 제57조, 별표 2, 시행령 제53조 제5항, 제112조, 고용노동부고시 제2025-84호.
+ * 계산: industrial-accident.ts disabilityPay()
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/industrial-accident-2026.json";
+import { disabilityPay } from "../../../lib/industrial-accident";
+import { won } from "../../../lib/won";
+
+const B = r.compensationBase;
+const D = r.disability;
+const GRADES = Array.from({ length: 14 }, (_, i) => i + 1);
+const g14 = disabilityPay(0, 14);
+const g1 = disabilityPay(0, 1);
+const EX_AVG = 100_000;
+const ex = disabilityPay(EX_AVG, 12);
+const wayLabel = { annuity: "연금만", choice: "연금·일시금 선택", lump: "일시금만" } as const;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 industrial-accident-series.test.ts 가 rates·계산 함수와 대조한다.
+const title = "산재 장해등급 보상금 — 1급 1,474일분부터 14급 55일분까지, 평균임금에 등급별 일수를 곱합니다";
+const description =
+  "산재 장해등급 보상금은 평균임금에 별표 2의 등급별 일수를 곱합니다. 일시금은 1급 1,474일분부터 14급 55일분까지이고, 1~3급은 연금만, 4~7급은 선택, 8~14급은 일시금입니다. 2026년 평균임금 하한 82,560원을 적용하면 14급도 454만원을 넘습니다.";
+
+const ANSWER = `장해급여는 치유된 뒤 장해가 남은 근로자에게 장해등급에 따라 평균임금 × 별표 2 일수로 지급합니다(산재보험법 제57조). 장해보상일시금은 1급 ${D.lumpDays["1"].toLocaleString("ko-KR")}일분부터 14급 ${D.lumpDays["14"]}일분까지이고, 2026년 평균임금은 1일 ${won(B.min)}~${won(B.max)} 범위로 맞춰 계산합니다(제36조 제7항).`;
+
+const QA = [
+  { q: "산재 장해등급별 보상금은 어떻게 계산하나요?", a: `1일 평균임금 × 등급별 일수입니다(별표 2). 평균임금이 1일 ${won(EX_AVG)}이고 12급이면 ${D.lumpDays["12"]}일분 ${won(ex.lump)}을 일시금으로 받습니다. 장해급여는 휴업급여와 달리 최저 보상기준 금액 ${won(B.min)}보다 낮은 평균임금을 그 금액으로 올려 계산합니다.` },
+  { q: "장해등급 14급 보상금은 얼마인가요?", a: `14급은 장해보상일시금 ${D.lumpDays["14"]}일분입니다. 2026년 평균임금 하한 ${won(B.min)}을 적용하면 최소 ${won(g14.lump)}이고, 평균임금이 그보다 높으면 그 평균임금 × ${D.lumpDays["14"]}입니다. 8급부터 14급까지는 연금 없이 일시금으로만 받습니다.` },
+  { q: "장해보상연금과 일시금 중 무엇을 받나요?", a: `수급권자가 고를 수 있지만 노동력을 완전히 잃은 1~3급은 연금만 받습니다(제57조 제3항, 시행령 제53조 제5항). 별표 2에 연금이 있는 등급은 1~7급이라 4~7급이 선택, 8~14급은 일시금입니다. 연금은 신청하면 첫 1년분이나 2년분의 절반을 미리 받을 수 있습니다(제57조 제4항).` },
+  { q: "장해급여는 언제까지 청구해야 하나요?", a: `장해급여를 받을 권리는 5년간 행사하지 않으면 시효로 소멸합니다(제112조 제1항 단서). 휴업급여·요양급여의 3년보다 깁니다. 장해등급 판정 세부기준은 시행령 별표 6과 고용노동부령에 있고, 이 글에서는 다루지 않았습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">1일 평균임금과 장해등급을 넣으면 2026년 기준 장해급여를 계산합니다. 평균임금은 {won(B.min)}~{won(B.max)} 범위로 맞춥니다.</p>
+    <div class="calc-input-wrap">
+      <label for="dis-avg">1일 평균임금</label>
+      <input type="text" inputmode="numeric" id="dis-avg" value="100,000" /><span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dis-grade">장해등급</label>
+      <select id="dis-grade">{GRADES.map((g) => <option value={g} selected={g === 12}>제{g}급</option>)}</select>
+    </div>
+    <div class="result-hero" aria-live="polite" aria-atomic="true">
+      <p class="label" id="dis-label">장해보상일시금</p>
+      <p class="big" id="dis-hero">{won(ex.lump)}</p>
+      <p class="meta" id="dis-note">제12급 · 일시금만 · {D.lumpDays["12"]}일분</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat-chip"><span class="label">적용 평균임금</span><span class="value" id="dis-used">{won(ex.avg)}</span></div>
+      <div class="stat-chip"><span class="label">연금(1년)</span><span class="value" id="dis-annuity">없음</span></div>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>등급</th><th>지급 방식</th><th>연금(1년)</th><th>일시금</th><th>평균임금 {won(B.min)}이면</th></tr></thead>
+    <tbody>{GRADES.map((g) => { const p = disabilityPay(B.min, g); return <tr><th scope="row">제{g}급</th><td>{wayLabel[p.way]}</td><td>{p.annuityDays ? `${p.annuityDays}일분` : "—"}</td><td>{p.way === "annuity" ? "—" : `${p.lumpDays.toLocaleString("ko-KR")}일분`}</td><td>{p.way === "annuity" ? `연 ${won(p.annuityYear)}` : won(p.lump)}</td></tr>; })}</tbody>
+  </table>
+  </div>
+  <p>1~3급의 일시금 일수(1,474·1,309·1,155일분)는 연금 수급권이 사망 등으로 소멸했을 때 이미 받은 연금이 그 일수에 못 미치면 차액을 주는 기준으로 쓰입니다(제57조 제5항). 1급 연금은 평균임금 {won(B.min)}이면 1년 {won(g1.annuityYear)}입니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>장해급여도 소득세가 붙지 않습니다(소득세법 제12조 제3호 다목). 치료 중 일하지 못한 기간은 <a href="/guide/industrial-accident-leave-pay/">산재 휴업급여</a>, 신청 순서와 인정 기준은 <a href="/guide/industrial-accident/">산재 처리방법</a>에 있습니다.</p>
+
+  <script src="../../../scripts/industrial-accident-disability.ts"></script>
+</GuideLayout>
