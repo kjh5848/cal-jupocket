@@ -14,4 +14,7 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
     annual: { amounts: [36_000_000, 40_000_000, 50_000_000, 100_000_000], source: "keywords/ac-pool-2026-10-14-all.csv", term: "연봉 실수령액" },
     monthly: { amounts: [3_000_000, 4_000_000, 5_000_000], source: "keywords/ac-pool-2026-10-14-all.csv", term: "월급 실수령액" },
   },
+  "/freelancer-33/": {
+    default: { amounts: [1_000_000, 2_000_000, 3_000_000], source: "keywords/ac-33-2026-10-17.csv", term: "3.3" },
+  },
 };

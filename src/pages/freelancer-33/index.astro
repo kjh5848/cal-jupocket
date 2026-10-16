@@ -9,11 +9,13 @@ import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import NextReads from "../../components/NextReads.astro";
 import Disclaimer from "../../components/Disclaimer.astro";
+import { calcPresets } from "../../data/calc-presets";
 import "../../styles/global.css";
 
 const title = "프리랜서 3.3% 원천징수 계산기";
 const description =
   "계약금액을 입력하면 3.3% 원천징수액과 실수령액을 바로 계산합니다. 실수령액으로 계약금액을 역산할 수도 있습니다.";
+const PRESETS = JSON.stringify({ default: calcPresets["/freelancer-33/"].default.amounts });
 ---
 
 <html lang="ko">
@@ -32,14 +34,13 @@ const description =
         실수령액을, 실수령액을 넣으면 원래 계약금액을 역산합니다.
       </p>
 
-      <div class="calc-card">
-        <div class="segmented" role="group" aria-label="계산 방식">
-          <button id="tab-gross" type="button" aria-pressed="true">
-            계약금액으로 계산
-          </button>
-          <button id="tab-net" type="button" aria-pressed="false">
-            실수령액으로 역산
-          </button>
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">계산 방식</label>
+          <select id="mode" data-seg>
+            <option value="gross" selected>계약금액으로 계산</option>
+            <option value="net">실수령액으로 역산</option>
+          </select>
         </div>
 
         <div class="calc-input-wrap">
@@ -48,29 +49,41 @@ const description =
             type="text"
             inputmode="numeric"
             id="amount"
+            data-won
+            data-presets={PRESETS}
             value="1,000,000"
           />
           <span class="unit">원</span>
         </div>
 
-        <div class="amount-presets" role="group" aria-label="금액 빠르게 올리기">
-          <button type="button" class="preset-chip" data-add="100000">
-            +10만
-          </button>
-          <button type="button" class="preset-chip" data-add="1000000">
-            +100만
-          </button>
-        </div>
-
-        <div class="result-hero" aria-live="polite" aria-atomic="true">
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="out-netv|out-income,out-local"
+          data-bar-labels="실수령|원천징수"
+          data-dock="out-net"
+        >
           <p class="label" id="net-label">실수령액</p>
           <p class="big" id="out-net">967,000원</p>
         </div>
 
-        <div class="stat-row">
+        <div class="stat-row" data-receipt>
           <div class="stat-chip">
-            <span class="label">원천징수액 (3.3%)</span>
-            <span class="value" id="out-withholding">33,000원</span>
+            <span class="label">계약금액</span>
+            <span class="value" id="out-gross">1,000,000원</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">실수령액</span>
+            <span class="value" id="out-netv">967,000원</span>
+          </div>
+          <div class="stat-chip" data-group="원천징수액 (3.3%)">
+            <span class="label">소득세 (3%)</span>
+            <span class="value" id="out-income">30,000원</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">지방소득세 (0.3%)</span>
+            <span class="value" id="out-local">3,000원</span>
           </div>
         </div>
 
@@ -90,11 +103,7 @@ const description =
         <div class="actions">
           <button id="btn-download" type="button">PNG 저장</button>
           <button id="btn-share" type="button" class="secondary">공유</button>
-          <button id="btn-copy" type="button" class="secondary">결과 복사</button>
         </div>
-        <p id="copy-toast" class="meta" style="display:none;">
-          결과를 복사했어요.
-        </p>
       </div>
 
       <details>

@@ -13,26 +13,19 @@ const reportUse = trackCalculatorUse("freelancer_33");
 
 type Mode = "gross" | "net";
 let mode: Mode = "gross";
-let lastResult: { gross: number; withholding: number; net: number } = {
-  gross: 0,
-  withholding: 0,
-  net: 0,
-};
+let lastResult = { gross: 0, withholding: 0, net: 0, incomeTax: 0, localTax: 0 };
 
 const amountInput = document.getElementById("amount") as HTMLInputElement;
 const inputLabel = document.getElementById("input-label")!;
-const outWithholding = document.getElementById("out-withholding")!;
 const outNet = document.getElementById("out-net")!;
+const outGross = document.getElementById("out-gross")!;
+const outNetV = document.getElementById("out-netv")!;
+const outIncome = document.getElementById("out-income")!;
+const outLocal = document.getElementById("out-local")!;
 const netLabelEl = document.getElementById("net-label")!;
-const tabGross = document.getElementById("tab-gross") as HTMLButtonElement;
-const tabNet = document.getElementById("tab-net") as HTMLButtonElement;
+const modeSelect = document.getElementById("mode") as HTMLSelectElement;
 const btnDownload = document.getElementById("btn-download") as HTMLButtonElement;
 const btnShare = document.getElementById("btn-share") as HTMLButtonElement;
-const btnCopy = document.getElementById("btn-copy") as HTMLButtonElement;
-const copyToast = document.getElementById("copy-toast")!;
-const presetButtons = document.querySelectorAll<HTMLButtonElement>(
-  ".preset-chip[data-add]",
-);
 
 // 역산 모드(실수령액 -> 계약금액)일 때만 "계약금액 (역산)"을 쓰고, 그 외엔 fallback을 쓴다.
 function netLabel(fallback: string): string {
@@ -41,18 +34,15 @@ function netLabel(fallback: string): string {
 
 function compute() {
   const value = parseAmount(amountInput.value);
-  if (mode === "gross") {
-    const r = fromGross(value);
-    lastResult = r;
-    outWithholding.textContent = formatWon(r.withholding);
-    outNet.textContent = formatWon(r.net);
-  } else {
-    const r = fromNet(value);
-    lastResult = r;
-    outWithholding.textContent = formatWon(r.withholding);
-    outNet.textContent = formatWon(r.gross);
-  }
-  netLabelEl.textContent = netLabel("실수령액");
+  const r = mode === "gross" ? fromGross(value) : fromNet(value);
+  lastResult = r;
+  // 큰 숫자는 구하려던 값 — 계약금액으로 계산하면 실수령액, 역산하면 계약금액
+  outNet.textContent = formatWon(mode === "gross" ? r.net : r.gross);
+  outGross.textContent = formatWon(r.gross);
+  outNetV.textContent = formatWon(r.net);
+  outIncome.textContent = formatWon(r.incomeTax);
+  outLocal.textContent = formatWon(r.localTax);
+  netLabelEl.textContent = mode === "gross" ? "실수령액" : "필요한 계약금액";
 }
 
 function buildCard() {
@@ -60,6 +50,8 @@ function buildCard() {
     title: "3.3% 원천징수 계산 결과",
     lines: [
       [netLabel("계약금액"), formatWon(lastResult.gross)],
+      ["소득세(3%)", formatWon(lastResult.incomeTax)],
+      ["지방소득세(0.3%)", formatWon(lastResult.localTax)],
       ["원천징수액(3.3%)", formatWon(lastResult.withholding)],
       ["실수령액", formatWon(lastResult.net)],
     ],
@@ -76,13 +68,10 @@ function setMode(next: Mode) {
     inputLabel.textContent = "실수령액";
     amountInput.value = currentValueOrDefault(amountInput.value, 967000);
   }
-  tabGross.setAttribute("aria-pressed", String(mode === "gross"));
-  tabNet.setAttribute("aria-pressed", String(mode === "net"));
   compute();
 }
 
-tabGross.addEventListener("click", () => setMode("gross"));
-tabNet.addEventListener("click", () => setMode("net"));
+modeSelect.addEventListener("change", () => setMode(modeSelect.value === "net" ? "net" : "gross"));
 
 amountInput.addEventListener("input", () => {
   reportUse(parseAmount(amountInput.value));
@@ -93,16 +82,6 @@ amountInput.addEventListener("input", () => {
   compute();
 });
 
-presetButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    track("preset_click", { calculator: "freelancer_33" });
-    const add = parseInt(btn.dataset.add ?? "0", 10);
-    const next = parseAmount(amountInput.value) + add;
-    amountInput.value = formatAmountInput(next);
-    compute();
-  });
-});
-
 btnDownload.addEventListener("click", () => {
   track("save_result", { calculator: "freelancer_33" });
   downloadCard(buildCard(), "freelancer-33-result.png");
@@ -111,17 +90,6 @@ btnDownload.addEventListener("click", () => {
 btnShare.addEventListener("click", async () => {
   track("share_result", { calculator: "freelancer_33" });
   await shareCard(buildCard(), "3.3% 원천징수 계산 결과 - jupocket.com");
-});
-
-btnCopy.addEventListener("click", async () => {
-  track("copy_result", { calculator: "freelancer_33" });
-  const text = `${netLabel("계약금액")} ${formatWon(lastResult.gross)} / 원천징수액 ${formatWon(lastResult.withholding)} / 실수령액 ${formatWon(lastResult.net)}`;
-  if (!navigator.clipboard) return;
-  await navigator.clipboard.writeText(text);
-  copyToast.style.display = "block";
-  setTimeout(() => {
-    copyToast.style.display = "none";
-  }, 1800);
 });
 
 compute();
