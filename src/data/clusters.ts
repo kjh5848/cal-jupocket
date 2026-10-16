@@ -383,6 +383,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/divorce-property-tax/", title: "이혼 재산분할 세금 — 양도세·증여세는 원칙적으로 없고 취득세는 1.5%, 위자료로 넘기면 양도세 대상입니다", kind: "guide", icon: "scale", year: 2026 },
       { href: "/guide/divorce-acquisition-tax/", title: "재산분할 취득세 — 무상취득 3.5%에서 2%를 뺀 1.5%, 5억원 집이면 지방교육세 포함 900만원입니다", kind: "guide", icon: "scale", year: 2026 },
       { href: "/guide/divorce-alimony-tax/", title: "위자료 세금 — 위자료로 집을 넘기면 양도세 과세대상이 되고, 재산분할로 넘기면 양도가 아닙니다", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/family-loan/", title: "가족간 차용증 — 적정이자율 4.6%, 무이자로 빌려도 약 2억1,739만원까지는 증여가 아닙니다", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/family-loan-interest/", title: "가족간 차용증 이자율 — 4.6%보다 덜 낸 이자가 1년 1천만원을 넘으면 그 금액이 증여입니다", kind: "guide", icon: "scale", year: 2026 },
+      { href: "/guide/family-loan-howto/", title: "차용증 쓰는법 — 법이 정한 양식은 없고, 세금 때문에 적어 둘 칸은 금액·이자율·기간입니다", kind: "guide", icon: "scale", year: 2026 },
     ],
   },
 ];
@@ -392,6 +395,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/family-loan-howto/",
+  "/guide/family-loan-interest/",
+  "/guide/family-loan/",
   "/guide/old-age-pension-vs-basic/",
   "/guide/old-age-pension-age/",
   "/guide/old-age-pension/",

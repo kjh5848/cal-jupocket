@@ -1,0 +1,62 @@
+---
+/**
+ * "차용증 쓰는법" — 가족간 차용증 시리즈. (차용증 작성법·가족간 차용증 쓰는 법·차용증 법적효력·반환 시기도 이 글)
+ * 근거: 민법 제598조·제600조·제603조, 상증법 제41조의4 ②·제45조 ②, 시행령 제31조의4 ③·제34조.
+ * 양식 파일은 주지 않는다 — 세금 때문에 적어 둘 칸과 그 근거만.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/family-loan-2026.json";
+import { won, manwon, eokwon } from "../../../lib/won";
+
+const L = r.loanGift;
+const R = r.repayPresumption;
+const pct = (v: number) => `${Number((v * 100).toFixed(1))}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 family-loan-series.test.ts 가 rates 와 대조한다.
+const title = "차용증 쓰는법 — 법이 정한 양식은 없고, 세금 때문에 적어 둘 칸은 금액·이자율·기간입니다";
+const description =
+  "돈을 빌리는 약속은 민법상 양식 없이 합의만으로 성립합니다. 가족 사이라면 세법이 보는 빌린 날·금액·이자율·대출기간을 적어 두는 것이 중요합니다. 기간을 비우면 세법은 1년으로 보고, 적정 이자율 4.6%와 비교해 해마다 증여 여부를 계산합니다.";
+
+const ANSWER = `돈을 빌리고 같은 금액을 돌려주기로 약정하면 소비대차가 성립하고, 법이 정한 서면 양식은 없습니다(민법 제598조). 가족 간이라면 세법이 보는 칸인 빌린 날·금액·이자율·대출기간을 적어 두세요. 기간을 정하지 않으면 세법은 1년으로 보고 해마다 새로 계산합니다(상증법 제41조의4 제2항).`;
+
+const QA = [
+  { q: "차용증에는 무엇을 적어야 하나요?", a: `민법은 형식을 정하지 않았습니다. 세금 때문에 적어 둘 것은 ① 빌려준 사람·빌린 사람 ② 빌린 날과 금액 ③ 이자율(연) ④ 갚는 날(대출기간) ⑤ 갚는 방법입니다. 세법은 빌린 날을 기준으로 '금액 × ${pct(L.rate)} − 실제 이자'를 계산하므로 이 네 칸이 그 계산의 재료입니다.` },
+  { q: "여러 번 나눠서 빌리면 차용증도 따로 써야 하나요?", a: `세법은 여러 차례 나눠 빌리면 빌린 날마다 따로 계산합니다(상증법 시행령 제31조의4 제3항). 한 장에 쓰더라도 날짜별 금액을 나눠 적어 두는 것이 그 계산과 맞습니다. 이자는 빌린 돈을 실제로 받은 때부터 셉니다(민법 제600조).` },
+  { q: "갚는 날을 안 정하면 어떻게 되나요?", a: `민법상 반환시기를 정하지 않으면 빌려준 사람은 상당한 기간을 정해 갚으라고 요구해야 하고, 빌린 사람은 언제든 갚을 수 있습니다(제603조 제2항). 세법은 대출기간을 정하지 않으면 1년으로 보고, 1년이 넘으면 해마다 새로 빌린 것으로 봐서 매년 증여 여부를 다시 따집니다.` },
+  { q: "갚을 때 부모님이 대신 내주면 문제가 되나요?", a: `채무자가 스스로 갚았다고 보기 어려우면 그 상환자금을 증여받은 것으로 추정합니다(상증법 제45조 제2항). 출처를 입증하지 못한 금액이 상환금액의 ${pct(R.unprovenRatio)}와 ${eokwon(R.unprovenCap)} 중 적은 금액보다 적으면 추정하지 않습니다(시행령 제34조). 갚은 돈의 출처 기록이 중요한 이유입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>칸</th><th>왜 필요한가</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">빌린 날·금액</th><td>증여이익을 빌린 날 기준으로 계산</td><td>상증법 제41조의4 ①, 시행령 제31조의4 ③</td></tr>
+      <tr><th scope="row">이자율(연)</th><td>적정 이자율 {pct(L.rate)}와 차이를 계산</td><td>시행령 제31조의4 ①</td></tr>
+      <tr><th scope="row">대출기간·갚는 날</th><td>비우면 1년으로 보고 해마다 다시 계산</td><td>상증법 제41조의4 ②</td></tr>
+      <tr><th scope="row">갚는 방법·이자 지급일</th><td>실제로 갚고 이자를 낸 기록과 맞추기</td><td>민법 제598조·제600조</td></tr>
+    </tbody>
+  </table>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>1년 증여이익이 {manwon(L.threshold)} 미만이면 이자 차이는 증여에서 빠집니다. 금액별·이자율별 계산은 <a href="/guide/family-loan-interest/">가족간 차용증 이자율</a>, 전체 기준은 <a href="/guide/family-loan/">가족간 차용증</a>에 있습니다.</p>
+
+  <h2>쓰지 않은 것</h2>
+  <p>공증·확정일자가 세무상 대여 인정에 미치는 효과, 가족 간 돈이 대여인지 증여인지에 대한 판단 기준은 이 글에서 확인하지 않았습니다. 차용증 양식 파일은 제공하지 않습니다.</p>
+</GuideLayout>

@@ -1,0 +1,75 @@
+---
+/**
+ * "가족간 차용증" — 가족간 차용증 시리즈 허브. (가족간 차용증 무이자·증여세·부모 자식 돈 빌리기·적정이자율도 이 글)
+ * 근거: 상증법 제41조의4(금전 무상대출 등에 따른 이익의 증여)·제45조(재산 취득자금 등의 증여 추정), 시행령 제31조의4·제34조,
+ * 시행규칙 제10조의5 → 법인세법 시행규칙 제43조 ②(4.6%). 계산: family-loan.ts. rates: family-loan-2026.json
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/family-loan-2026.json";
+import { loanGain, loanGiftTax, noGiftPrincipal } from "../../../lib/family-loan";
+import { relationCap } from "../../../lib/gift";
+import { won, manwon, eokwon } from "../../../lib/won";
+import { familyLoanSeries as S } from "../../../data/series/family-loan";
+
+const L = r.loanGift;
+const pct = (v: number) => `${Number((v * 100).toFixed(1))}%`;
+/** 2억1,739만원 처럼 만원 아래를 버린 표기 */
+const approxEok = (n: number) => eokwon(Math.floor(n / 10_000) * 10_000);
+const max0 = noGiftPrincipal(0);
+const ex3 = loanGiftTax(300_000_000, 0);
+const ex5 = loanGain(500_000_000, 0);
+const adultCap = relationCap("ascendant");
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 family-loan-series.test.ts 가 rates·계산 함수와 대조한다.
+const title = "가족간 차용증 — 적정이자율 4.6%, 무이자로 빌려도 약 2억1,739만원까지는 증여가 아닙니다";
+const description =
+  "가족에게 돈을 무이자나 낮은 이자로 빌리면 '대출금 × 4.6% − 실제 낸 이자'가 1년에 1천만원 이상일 때만 그 금액이 증여가 됩니다. 무이자면 약 2억1,739만원까지는 해당하지 않고, 넘어도 성년 자녀는 증여재산공제 5천만원을 먼저 뺍니다.";
+
+const ANSWER = `가족에게 무이자나 저리로 돈을 빌리면 '대출금 × 적정 이자율 ${pct(L.rate)} − 실제 낸 이자'가 대출받은 사람의 증여재산가액이 됩니다(상증법 제41조의4). 이 금액이 1년에 ${manwon(L.threshold)} 미만이면 제외되므로, 무이자는 약 ${approxEok(max0)}까지 증여가 아닙니다.`;
+
+const QA = [
+  { q: "가족에게 무이자로 돈을 빌리면 증여세를 내나요?", a: `빌린 돈 자체가 아니라 이자를 안 낸 만큼이 증여입니다. 대출금 × ${pct(L.rate)}에서 실제 낸 이자를 뺀 금액이 1년에 ${manwon(L.threshold)} 이상이면 그 전액이 증여재산가액이 되고, 미만이면 제외됩니다(시행령 제31조의4). 무이자라면 약 ${approxEok(max0)}까지는 1년 이익이 ${manwon(L.threshold)}에 못 미칩니다.` },
+  { q: "적정이자율 4.6%는 어디서 나온 숫자인가요?", a: `상증법 시행령이 '당좌대출이자율을 고려해 재정경제부령으로 정하는 이자율'을 쓰라고 하고(제31조의4 제1항), 시행규칙이 법인세법 시행규칙 제43조 제2항의 이자율을 가리킵니다(제10조의5). 그 조문이 '연간 1천분의 46'입니다. 법인에게 빌린 경우는 법인세법 시행령의 이자율을 따로 씁니다.` },
+  { q: "1천만원을 넘으면 바로 증여세가 나오나요?", a: `아닙니다. 그 이익이 증여재산가액이 될 뿐이고, 증여세는 관계별 증여재산공제를 먼저 뺍니다. 부모에게 3억원을 무이자로 빌린 성년 자녀는 1년 이익 ${won(ex3.gain)}이 증여재산가액이지만, 10년간 ${manwon(adultCap)} 공제를 쓰지 않았다면 낼 세금은 ${won(ex3.tax?.payable ?? 0)}입니다.` },
+  { q: "부모님이 대신 갚아 주면 어떻게 되나요?", a: `채무자의 직업·나이·소득·재산으로 보아 스스로 갚았다고 보기 어려우면, 갚은 때에 그 상환자금을 증여받은 것으로 추정합니다(상증법 제45조 제2항). 출처를 입증하지 못한 금액이 상환금액의 20%와 2억원 중 적은 금액에 못 미치면 추정하지 않습니다(시행령 제34조).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <table>
+    <thead><tr><th>빌린 돈(무이자)</th><th>1년 이익(× {pct(L.rate)})</th><th>증여재산가액</th></tr></thead>
+    <tbody>
+      {[100_000_000, 200_000_000, max0, 300_000_000, 500_000_000].map((p) => {
+        const g = loanGain(p, 0);
+        return <tr><th scope="row">{p === max0 ? `약 ${approxEok(p)}` : eokwon(p)}</th><td>{won(g.gain)}</td><td>{g.taxable ? won(g.giftValue) : `없음(${manwon(L.threshold)} 미만)`}</td></tr>;
+      })}
+    </tbody>
+  </table>
+  <p>대출기간을 정하지 않으면 1년으로 보고, 1년이 넘으면 해마다 새로 빌린 것으로 보아 매년 따로 계산합니다(제41조의4 제2항). 여러 번 나눠 빌리면 빌린 날마다 따로 셉니다(시행령 제31조의4 제3항). 5억원을 무이자로 빌리면 1년 이익이 {won(ex5.gain)}입니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>이자를 조금이라도 내면 그만큼 이익이 줄어듭니다. 이자율별 한도와 증여세는 <a href="/guide/family-loan-interest/">가족간 차용증 이자율</a>에서 계산할 수 있고, 증여재산공제 10년 한도는 <a href="/guide/gift-tax/">증여세 면제한도</a>에 있습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>차용증에 무엇을 적어 둘지는 <a href="/guide/family-loan-howto/">차용증 쓰는법</a>에 있습니다.</p>
+
+  <h2>쓰지 않은 것</h2>
+  <ul>{r.notVerified.map((n) => <li>{n}</li>)}</ul>
+
+  <h2>가족간 차용증 시리즈</h2>
+  <ul>{[S.hub, ...S.items].map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}</ul>
+</GuideLayout>

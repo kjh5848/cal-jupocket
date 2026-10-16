@@ -307,6 +307,9 @@ export const hubEntries: HubEntry[] = [
   { no: 280, href: "/guide/old-age-pension/", label: "노령연금 — 자격·기준", kind: "guide" },
   { no: 281, href: "/guide/old-age-pension-age/", label: "노령연금 나이 — 출생연도별", kind: "calc" },
   { no: 282, href: "/guide/old-age-pension-vs-basic/", label: "노령연금 기초연금 차이", kind: "guide" },
+  { no: 283, href: "/guide/family-loan/", label: "가족간 차용증 — 증여세 기준", kind: "guide" },
+  { no: 284, href: "/guide/family-loan-interest/", label: "가족간 차용증 이자율 4.6% — 계산", kind: "guide" },
+  { no: 285, href: "/guide/family-loan-howto/", label: "차용증 쓰는법 — 세금 때문에 적을 칸", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -528,6 +531,9 @@ export const hubGroups: HubGroup[] = [
       "/guide/divorce-property-tax",
       "/guide/divorce-acquisition-tax",
       "/guide/divorce-alimony-tax",
+      "/guide/family-loan",
+      "/guide/family-loan-interest",
+      "/guide/family-loan-howto",
     ]),
   },
   {
