@@ -12,13 +12,14 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 const total = $<HTMLInputElement>("ia-total");
 const days = $<HTMLInputElement>("ia-days");
 const age = $<HTMLSelectElement>("ia-age");
+const grace = $<HTMLInputElement>("ia-grace");
 const [bandLo, bandHi] = bandRange();
 
 function render() {
   const t = parseAmount(total.value);
   const d = Math.max(0, Math.floor(Number(days.value) || 0));
   const avg = t && d ? t / d : 0;
-  const p = leavePayDaily(avg, Number(age.value) || 0);
+  const p = leavePayDaily(avg, Number(age.value) || 0, grace.checked);
   $("ia-avg").textContent = formatWon(Math.floor(p.avg));
   if (p.kind === "band") {
     $("ia-hero").textContent = "공단 결정액 확인";
@@ -29,7 +30,7 @@ function render() {
   const daily = p.daily ?? 0;
   $("ia-hero").textContent = formatWon(daily);
   $("ia-month").textContent = formatWon(daily * 30);
-  const aged = p.ratio < 1 ? " 61세 이후 별표 1 감액을 반영했습니다." : "";
+  const aged = p.ratio < 1 ? " 61세 이후 별표 1 감액을 반영했습니다." : Number(age.value) >= 61 && grace.checked ? " 2년 유예라 감액하지 않았습니다." : "";
   $("ia-note").textContent = !avg
     ? "임금 총액과 일수를 넣으세요."
     : p.kind === "floor"
@@ -45,5 +46,6 @@ total.addEventListener("input", () => {
   render();
   reportUse(n);
 });
+grace.addEventListener("change", () => { render(); reportUse(parseAmount(total.value)); });
 for (const el of [days, age]) el.addEventListener("input", () => { render(); reportUse(parseAmount(total.value)); });
 render();

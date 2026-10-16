@@ -42,6 +42,14 @@ describe("휴업급여", () => {
   });
 });
 
+describe("휴업급여 글", () => {
+  it("FAQ 가 단서 구간을 공단 확인으로 남긴다", () => {
+    const src = readFileSync("src/pages/guide/industrial-accident-leave-pay/index.astro", "utf-8");
+    expect(src).toContain("${won(bandLo)}~${won(bandHi)}은 상한과 겹쳐 공단 결정액을 확인하세요");
+    expect(src).toContain('id="ia-grace"');
+  });
+});
+
 describe("장해급여", () => {
   it("별표 2 일수", () => {
     expect(Object.values(r.disability.lumpDays)).toEqual([1474, 1309, 1155, 1012, 869, 737, 616, 495, 385, 297, 220, 154, 99, 55]);
