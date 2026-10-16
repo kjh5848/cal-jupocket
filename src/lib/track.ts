@@ -1,3 +1,4 @@
+import { markUsed, showCollected } from "./collect";
 /**
  * GA4 이벤트 전송.
  *
@@ -58,5 +59,7 @@ export function trackCalculatorUse(calculator: string) {
     if (reported || !Number.isFinite(amount) || amount <= 0) return;
     reported = true;
     track("calculate", { calculator });
+    // 도감 수집 — 처음 쓴 도구면 '담겼어요' 알림(설계 6-1)
+    if (typeof location !== "undefined" && markUsed(location.pathname)) showCollected();
   });
 }

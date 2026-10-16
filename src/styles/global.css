@@ -2022,3 +2022,19 @@ details[open] summary {
 .theme-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .theme-toggle [data-icon] { display: none; }
 .theme-toggle[data-state="light"] [data-icon="light"], .theme-toggle[data-state="dark"] [data-icon="dark"], .theme-toggle[data-state="system"] [data-icon="system"] { display: block; }
+
+/* 도감 — 분류 버튼의 3D 아이콘, 써 본 도장, 처음 쓴 순간 알림(설계 6-1·6-2·6-3) */
+.dex-types button { display: inline-flex; align-items: center; gap: 5px; padding-left: 0.35rem; }
+.dex-types .type-icon { flex: none; filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.25)); }
+.dex-progress .wide { display: inline; }
+@media (max-width: 600px) { .dex-progress .wide { display: none; } }
+.tool-card { position: relative; }
+.dex-stamp { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; border: 2px solid #1f9c8e; color: #1f9c8e; font-size: 0.62rem; font-weight: 800; display: grid; place-items: center; rotate: -12deg; background: var(--surface); }
+.collect-toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); translate: -50% 140%; z-index: 60; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); padding: 12px 16px; border-radius: var(--r-lg); background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--rule), 0 16px 40px -12px rgb(10 30 70 / 0.4); font-weight: 600; font-size: 0.92rem; transition-property: translate; transition-duration: 260ms; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+.collect-toast.on { translate: -50% 0; }
+.collect-toast .stamp { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 2px solid #1f9c8e; color: #1f9c8e; display: grid; place-items: center; font-size: 0.66rem; font-weight: 800; rotate: -12deg; }
+@media (prefers-reduced-motion: no-preference) {
+  .collect-toast.on .stamp { animation: stamp-in 0.5s ease-out both; }
+  @keyframes stamp-in { from { scale: 1.6; rotate: -30deg; opacity: 0; } to { scale: 1; rotate: -12deg; opacity: 1; } }
+}
+@media (prefers-reduced-motion: reduce) { .collect-toast { transition-duration: 0ms; } }

@@ -15,6 +15,7 @@ import AdSenseHead from "../components/AdSenseHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ToolCard from "../components/ToolCard.astro";
+import TypeIcon from "../components/TypeIcon.astro";
 import { tools, toolCount } from "../data/tools";
 import { TOOL_TYPES, typeInfo } from "../data/tool-types";
 import { clusters, clusterColor, recent, linkByHref, displayTitle } from "../data/clusters";
@@ -133,11 +134,12 @@ const jsonLd = [
         <h2 id="tools-h" class="home-h">도구 도감</h2>
         <div class="dex-progress" data-dex-progress hidden></div>
         <div class="dex-types" role="group" aria-label="분류로 걸러 보기">
-          {TOOL_TYPES.map((t) => <button type="button" data-type={t.key} style={`--cm:${t.color}`} aria-pressed="false">{t.label}</button>)}
+          {TOOL_TYPES.map((t) => <button type="button" data-type={t.key} data-label={t.label} style={`--cm:${t.color}`} aria-pressed="false"><TypeIcon type={t.key} size={20} />{t.label}</button>)}
         </div>
         <div class="tool-grid">
           {tools.map((tool) => <ToolCard tool={tool} />)}
         </div>
+        <script src="../scripts/dex.ts"></script>
       </section>
 
       <div class="home-main">

@@ -1,0 +1,33 @@
+---
+/**
+ * 분류 3D 아이콘 — 로고와 같은 질감(위쪽 빛 · 아래 두께). 설계 6-2. 분류 12개만 3D(도구마다 만들지 않음).
+ */
+import { typeInfo, type ToolType } from "../data/tool-types";
+import { nextId } from "../lib/svg-id";
+
+interface Props {
+  type: ToolType;
+  size?: number;
+}
+const { type, size = 40 } = Astro.props;
+const GLYPH: Record<ToolType, string> = {
+  tax: "₩", labor: "급", pension: "연", home: "⌂", inherit: "상", money: "%",
+  date: "31", media: "▣", text: "</>", unit: "⇄", health: "♥", life: "★",
+};
+const t = typeInfo(type);
+const g = GLYPH[type];
+const fs = g.length <= 2 ? 22 : 15;
+const id = `ti${nextId()}`;
+---
+
+<svg class="type-icon" viewBox="0 0 64 64" width={size} height={size} aria-hidden="true">
+  <defs>
+    <linearGradient id={`${id}-f`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color={t.color} stop-opacity=".72" /><stop offset="1" stop-color={t.color} /></linearGradient>
+    <radialGradient id={`${id}-h`} cx=".28" cy=".18" r=".62"><stop offset="0" stop-color="#fff" stop-opacity=".5" /><stop offset="1" stop-color="#fff" stop-opacity="0" /></radialGradient>
+  </defs>
+  <rect x="6" y="9" width="52" height="50" rx="14" fill={t.color} opacity=".55" />
+  <rect x="6" y="9" width="52" height="50" rx="14" fill="#000" opacity=".18" />
+  <rect x="6" y="5" width="52" height="50" rx="14" fill={`url(#${id}-f)`} />
+  <rect x="6" y="5" width="52" height="50" rx="14" fill={`url(#${id}-h)`} />
+  <text x="32" y={Math.round(30 + fs * 0.36)} text-anchor="middle" font-size={fs} font-weight="800" fill="#fff">{g}</text>
+</svg>
