@@ -173,7 +173,7 @@
 **2026-10-17 진행:** 기본 틀은 계산기 35개 전부에 자동 적용됨(`calc-ui.ts` autoTag — 원 단위 금액 읽어 주기·사람 수/기간 −/+·짧은 선택지 버튼·영수증 목록·폰 결과 고정 띠). 아래는 **계산기마다 하나씩**(루틴 한 회차 = 한 줄): roberin 같은 도구 대조 → `data-two` · `data-bar` · `data-group` 소계 · `calcPresets`(자동완성 출처) · 결과 복사/처음 값으로 → `docs/calc-benchmark.md` 한 행.
 
 - [x] /guide/take-home-calculator/ (Task 7)
-- [ ] /freelancer-33/
+- [x] /freelancer-33/ (2026-10-17 — 소득세·지방소득세 나눠 보기·소계·막대·두 칸·자동완성 프리셋, roberin 7개 일치)
 - [ ] /withholding/
 - [ ] /vat/
 - [ ] /income-tax-refund/

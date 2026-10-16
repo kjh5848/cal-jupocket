@@ -6,9 +6,11 @@
 
 현재: 보류 2 · 있음 18 · 할 일 412
 
+다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /withholding/(8.8%) — roberin freelancer-calculator 대조. 3.3% 나라별 행(country-matrix)은 미확인으로만 둠 — 원천징수 제도 원문 조사 필요.
+
 | # | 우리 분류 | roberin 분류 | roberin 주소 | 도구 | 상태 | 우리 주소 | 메모 |
 |---|---|---|---|---|---|---|---|
-| 1 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/contract-calculator/ | 3.3% 계산기 | 있음 | /freelancer-33/ |  |
+| 1 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/contract-calculator/ | 3.3% 계산기 | 있음 | /freelancer-33/ | 2026-10-17 대조: 같은 입력 7개 결과 일치 · 새 틀 이전(소득세·지방소득세 나눠 보기) |
 | 2 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/freelancer-calculator/ | 8.8% 원천징수 계산기 | 있음 | /withholding/ |  |
 | 3 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/projects/work-income-calculator/ | 근무시간 실수령·구매력 계산기 | 할 일 |  |  |
 | 4 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/ordinary-wage-calculator/ | 대한민국 통상임금 계산기 | 할 일 |  |  |
