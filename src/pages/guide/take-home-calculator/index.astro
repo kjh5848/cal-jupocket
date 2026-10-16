@@ -3,6 +3,7 @@
  * "연봉 실수령액 계산기" — 실수령액 시리즈. (월급 실수령액 계산기·실수령액 계산도 이 글, 계산기 포함)
  * 계산: src/lib/take-home.ts takeHome() — 근로소득 간이세액표(소득세법 시행령 별표 2), 4대보험, 지방세법 제103조의13.
  */
+import { calcPresets } from "../../../data/calc-presets";
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
@@ -25,45 +26,46 @@ const QA = [
   { q: "비과세는 얼마를 넣어야 하나요?", a: `급여명세서에서 비과세로 표시된 금액을 넣습니다. 식사를 따로 받지 않는 근로자의 식대는 월 ${manwon(MEAL_ALLOWANCE)}까지 비과세입니다(소득세법 제12조 제3호 러목). 비과세는 소득세뿐 아니라 4대보험 계산에서도 빠집니다.` },
   { q: "계산기 결과와 월급이 다를 수 있나요?", a: `다를 수 있습니다. 근로자가 신청하면 간이세액표 세액의 80%나 120%로 원천징수할 수 있고(소득세법 시행령 제194조), 건강보험료 상·하한과 달마다 바뀌는 상여·수당은 넣지 않았습니다. 장기요양보험료율은 2026년 11월 27일부터 반올림 방식이 바뀌어 몇 원 달라질 수 있습니다.` },
 ];
+const PRESETS = Object.fromEntries(Object.entries(calcPresets["/guide/take-home-calculator/"]).map(([k, v]) => [k, v.amounts]));
 ---
 
 <GuideLayout title={title} description={description} updated={t.verifiedOn} faq={QA}>
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
+  <div class="calc-card" data-two>
     <p class="meta">2026년 근로소득 간이세액표와 4대보험 요율로 계산합니다. 연봉을 넣으면 12로 나눈 금액을 월급으로 봅니다.</p>
     <div class="calc-input-wrap">
       <label for="th-mode">입력 기준</label>
-      <select id="th-mode"><option value="annual" selected>연봉</option><option value="monthly">월급(세전)</option></select>
+      <select id="th-mode" data-seg><option value="annual" selected>연봉</option><option value="monthly">월급(세전)</option></select>
     </div>
     <div class="calc-input-wrap">
       <label for="th-amount">금액</label>
-      <input type="text" inputmode="numeric" id="th-amount" value="36,000,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="th-amount" data-won data-presets={JSON.stringify(PRESETS)} data-presets-by="th-mode" value="36,000,000" /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="th-nontax">월 비과세(식대 등)</label>
-      <input type="text" inputmode="numeric" id="th-nontax" value="200,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="th-nontax" data-won value="200,000" /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="th-family">공제대상가족(본인 포함)</label>
-      <input type="number" min="1" max="20" step="1" id="th-family" value="1" /><span class="unit">명</span>
+      <input type="number" min="1" max="20" step="1" id="th-family" data-step value="1" /><span class="unit">명</span>
     </div>
     <div class="calc-input-wrap">
       <label for="th-kids">그중 8~20세 자녀</label>
-      <input type="number" min="0" max="19" step="1" id="th-kids" value="0" /><span class="unit">명</span>
+      <input type="number" min="0" max="19" step="1" id="th-kids" data-step value="0" /><span class="unit">명</span>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="th-hero|th-pension,th-health,th-care,th-emp|th-tax,th-local" data-bar-labels="실수령|4대보험|세금" data-dock="th-hero">
       <p class="label">한 달 실수령액</p>
       <p class="big" id="th-hero">{won(ex.net)}</p>
       <p class="meta" id="th-note">세전 월급 {won(ex.gross)}에서 {won(ex.deductions)}이 빠집니다.</p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">국민연금</span><span class="value" id="th-pension">{won(ex.pension)}</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip" data-group="4대보험"><span class="label">국민연금</span><span class="value" id="th-pension">{won(ex.pension)}</span></div>
       <div class="stat-chip"><span class="label">건강보험</span><span class="value" id="th-health">{won(ex.health)}</span></div>
       <div class="stat-chip"><span class="label">장기요양</span><span class="value" id="th-care">{won(ex.care)}</span></div>
       <div class="stat-chip"><span class="label">고용보험</span><span class="value" id="th-emp">{won(ex.employment)}</span></div>
-      <div class="stat-chip"><span class="label">소득세</span><span class="value" id="th-tax">{won(ex.incomeTax)}</span></div>
+      <div class="stat-chip" data-group="세금"><span class="label">소득세</span><span class="value" id="th-tax">{won(ex.incomeTax)}</span></div>
       <div class="stat-chip"><span class="label">지방소득세</span><span class="value" id="th-local">{won(ex.localTax)}</span></div>
     </div>
   </div>

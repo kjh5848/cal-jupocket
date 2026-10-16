@@ -558,25 +558,27 @@ details[open] summary {
 /* 큰 금액 입력 — 계산기에서 가장 먼저 만지는 요소라 눈에 띄게 키운다 */
 .calc-input-wrap {
   position: relative;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .calc-input-wrap label {
   display: block;
   font-weight: 600;
-  font-size: 0.9375rem;
-  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: 0.35rem;
+  color: var(--muted);
 }
 
+/* 입력칸 — 낮고 촘촘하게(약 82 → 58px). 폰 한 화면에 입력과 결과가 같이 들어오게(2026-10-16 UX 시안, 설계 3-6) */
 .calc-input-wrap input {
   width: 100%;
-  padding: 1rem 3.25rem 1rem 1rem;
+  padding: 0.7rem 3rem 0.7rem 0.9rem;
   border: 1px solid var(--rule);
-  border-radius: var(--r-lg);
-  background: var(--accent-bg);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
   color: var(--text);
   font: inherit;
-  font-size: 1.75rem;
+  font-size: 1.25rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -590,10 +592,10 @@ details[open] summary {
 /* 계산기 안의 드롭다운 — 숫자 입력창과 같은 상자, 글자만 본문 크기 */
 .calc-input-wrap select {
   width: 100%;
-  padding: 0.85rem 1rem;
+  padding: 0.75rem 0.9rem;
   border: 1px solid var(--rule);
-  border-radius: var(--r-lg);
-  background: var(--accent-bg);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
   color: var(--text);
   font: inherit;
   font-size: 1.0625rem;
@@ -603,8 +605,8 @@ details[open] summary {
 .calc-input-wrap .unit {
   position: absolute;
   right: 1.1rem;
-  bottom: 1.05rem;
-  font-size: 1.125rem;
+  bottom: 0.85rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--muted);
   pointer-events: none;
@@ -2038,3 +2040,63 @@ details[open] summary {
   @keyframes stamp-in { from { scale: 1.6; rotate: -30deg; opacity: 0; } to { scale: 1; rotate: -12deg; opacity: 1; } }
 }
 @media (prefers-reduced-motion: reduce) { .collect-toast { transition-duration: 0ms; } }
+
+/*
+ * 공통 계산기 틀 — src/scripts/calc-ui.ts 가 만드는 부분(설계 3-6)
+ */
+.ux-field { position: relative; }
+.ux-field .unit { top: 50%; bottom: auto; translate: 0 -50%; }
+.won-read { margin: 0.35rem 0 0; min-height: 1.2em; font-size: 0.85rem; font-weight: 600; color: var(--link); font-variant-numeric: tabular-nums; }
+.ux-seg { --n: 2; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: var(--r-md); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--rule); }
+.ux-seg button { font: inherit; font-weight: 700; font-size: 0.95rem; border: 0; border-radius: var(--r-sm); padding: 0.6rem 0.5rem; background: transparent; color: var(--muted); cursor: pointer; transition-property: background-color, color, scale; transition-duration: var(--dur); }
+.ux-seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgb(16 24 40 / 0.12), 0 0 0 1px var(--rule); }
+.ux-seg button:active, .ux-step button:active, .ux-presets button:active, .ux-actions button:active { scale: 0.96; }
+.ux-seg button:focus-visible, .ux-step button:focus-visible, .ux-presets button:focus-visible, .ux-actions button:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ux-seg button[aria-pressed="true"] { background: #33405e; box-shadow: 0 0 0 1px #46557a; }
+}
+:root[data-theme="dark"] .ux-seg button[aria-pressed="true"] { background: #33405e; box-shadow: 0 0 0 1px #46557a; }
+.ux-step { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 6px; align-items: center; }
+.ux-step button { height: 48px; padding: 0; border: 0; border-radius: var(--r-md); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--rule); color: var(--text); font-size: 1.4rem; font-weight: 700; cursor: pointer; transition-property: scale; transition-duration: var(--dur); }
+.calc-input-wrap .ux-step input { height: 48px; padding: 0; text-align: center; -moz-appearance: textfield; min-width: 0; }
+.ux-step input::-webkit-outer-spin-button, .ux-step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.ux-step .unit { display: none; }
+.ux-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.ux-presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 0.5rem 0 0; }
+.ux-presets button { font: inherit; font-size: 0.82rem; font-weight: 700; padding: 0.38rem 0.75rem; border: 0; border-radius: var(--r-pill); background: var(--brand-wash); color: var(--link); cursor: pointer; transition-property: scale; transition-duration: var(--dur); }
+.result-hero .meta { color: rgb(255 255 255 / 0.82); margin: 0.2rem 0 0; font-size: 0.875rem; }
+.ux-bar { display: flex; gap: 2px; height: 10px; margin: 0.9rem 0 0.45rem; border-radius: var(--r-pill); overflow: hidden; background: rgb(255 255 255 / 0.2); }
+.ux-bar i { display: block; height: 100%; background: var(--c); transition-property: flex-grow; transition-duration: 200ms; }
+.ux-bar .p0, .ux-legend .p0 { --c: #fff; }
+.ux-bar .p1, .ux-legend .p1 { --c: #9fd0ff; }
+.ux-bar .p2, .ux-legend .p2 { --c: #ffc58a; }
+.ux-bar .p3, .ux-legend .p3 { --c: #c7b8ff; }
+.ux-legend { display: flex; flex-wrap: wrap; gap: 0.25rem 0.9rem; font-size: 0.78rem; color: rgb(255 255 255 / 0.85); }
+.ux-legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: var(--r-xs); background: var(--c); vertical-align: 1px; }
+.stat-row[data-receipt] { display: block; margin: 0; padding: 0.35rem 0 0; }
+.stat-row[data-receipt] .stat-chip { display: flex; justify-content: space-between; align-items: baseline; padding: 0.5rem 0.15rem; border-radius: 0; background: none; border-bottom: 1px dashed var(--rule); }
+.stat-row[data-receipt] .stat-chip .label { margin: 0; font-size: 0.92rem; }
+.stat-row[data-receipt] .stat-chip .value { font-size: 0.98rem; }
+.ux-sub { display: flex; justify-content: space-between; padding: 0.65rem 0.15rem 0.4rem; font-size: 0.9rem; font-weight: 800; }
+.ux-sub b { font-variant-numeric: tabular-nums; }
+.ux-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 1rem; }
+.ux-actions button { font: inherit; font-size: 0.92rem; font-weight: 700; padding: 0.7rem; border: 0; border-radius: var(--r-md); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--rule); color: var(--text); cursor: pointer; transition-property: scale; transition-duration: var(--dur); }
+.ux-actions button:first-child { background: var(--text); color: var(--surface); box-shadow: none; }
+@media (min-width: 900px) {
+  .calc-card[data-two] { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 20px; align-items: start; }
+  .calc-card[data-two] > .meta { grid-column: 1 / -1; }
+  .calc-card[data-two] .ux-pair { grid-template-columns: 1fr; gap: 0; }
+  .calc-card[data-two] .ux-presets button { padding: 0.32rem 0.6rem; }
+  .ux-results { position: sticky; top: 16px; }
+}
+.ux-dock { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 50; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0.7rem 1rem; border-radius: var(--r-lg); background: linear-gradient(135deg, #1a73d6, #0b4f9e); color: #fff; box-shadow: 0 10px 30px -8px rgb(4 30 70 / 0.5); translate: 0 140%; transition-property: translate; transition-duration: 220ms; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+.ux-dock.on { translate: 0 0; }
+.ux-dock small { display: block; font-size: 0.75rem; opacity: 0.85; }
+.ux-dock b { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.ux-dock a { padding: 0.45rem 0.7rem; border-radius: var(--r-sm); background: rgb(255 255 255 / 0.16); color: #fff; font-size: 0.85rem; font-weight: 700; text-decoration: none; }
+@media (min-width: 900px) {
+  .ux-dock { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ux-dock, .ux-bar i, .ux-seg button { transition-duration: 0ms; }
+}
