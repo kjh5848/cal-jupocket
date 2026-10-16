@@ -8,7 +8,7 @@
 import { describe, it, expect } from "vitest";
 import { cardSets, cardSetBySlug } from "../../data/cards";
 import { compute } from "../pension-premium";
-import { computeLateFiling } from "../penalty";
+import { computeLateFiling, addDays } from "../penalty";
 import { estimateRefund } from "../income-tax";
 import { taxSaved, computeDeduction, type Person } from "../deduction";
 import deduction from "../../rates/deduction-2026.json";
@@ -312,7 +312,9 @@ describe("late-filing-penalty 세트", () => {
     if (t?.kind !== "table") throw new Error("금액 표 없음");
     for (const row of t.rows) {
       const days = Number(row.label.replace(/[^\d]/g, ""));
-      const expected = computeLateFiling({ tax: 1_000_000, daysLate: days }).total;
+      // 카드 각주의 기한(2025년 귀속 종합소득세 6월 1일)부터 센 날짜
+      const filedOn = addDays("2026-06-01", days);
+      const expected = computeLateFiling({ tax: 1_000_000, deadline: "2026-06-01", filedOn }).total;
       expect(parseWon(row.value), `${days}일`).toBe(expected);
     }
   });

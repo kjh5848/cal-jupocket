@@ -217,12 +217,12 @@ export const cardSets: CardSet[] = [
         title: "며칠 늦었나로 갈린다",
         sub: "세액 100만원 기준 가산세 합계",
         rows: [
-          { label: "10일", value: "102,200원" },
-          { label: "30일", value: "106,600원", tone: "mark" },
-          { label: "31일", value: "146,820원", tone: "warn" },
-          { label: "181일", value: "239,820원" },
+          { label: "10일", value: "101,980원" },
+          { label: "30일", value: "106,380원", tone: "mark" },
+          { label: "31일", value: "146,600원", tone: "warn" },
+          { label: "184일", value: "240,260원" },
         ],
-        footnote: "31일째 감면율이 50%에서 30%로 떨어진다 · 출처 국가법령정보센터",
+        footnote: "기한 6월 1일 기준 · 31일째 감면 50%→30%, 184일째 0% · 출처 국가법령정보센터",
       },
       {
         kind: "table",

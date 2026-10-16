@@ -10,7 +10,7 @@
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AdSlot from "../../../components/AdSlot.astro";
-import { computeLateFiling } from "../../../lib/penalty";
+import { computeLateFiling, addDays, periodEnd } from "../../../lib/penalty";
 import p from "../../../rates/penalty-2026.json";
 
 const title = "종합소득세·부가세 신고 기한을 놓쳤다면";
@@ -23,20 +23,34 @@ const pct = (n: number) => `${n * 100}%`;
 /** 예시 세액 — 한 곳에서 바꾸면 표 전체가 따라온다. */
 const TAX = 1_000_000;
 
+/**
+ * 예시 기한 — 2025년 귀속 종합소득세. 5월 31일이 일요일이라 6월 1일이 기한이다
+ * (국세기본법 제5조 제1항). 개월은 달력으로 세므로(제4조 → 민법 제160조)
+ * 경계가 30·90·180일이 아니라 날짜로 정해진다.
+ */
+const DEADLINE = "2026-06-01";
+const md = (d: string) => `${Number(d.slice(5, 7))}월 ${Number(d.slice(8, 10))}일`;
+const end1 = periodEnd(DEADLINE, 1);
+const end3 = periodEnd(DEADLINE, 3);
+const end6 = periodEnd(DEADLINE, 6);
+
 /** 감면 구간 경계에서의 금액. 전부 계산 함수가 낸다. */
 const steps = [
-  { label: "10일 늦음", days: 10 },
-  { label: "1개월(30일)", days: 30 },
-  { label: "31일", days: 31 },
-  { label: "3개월(90일)", days: 90 },
-  { label: "91일", days: 91 },
-  { label: "6개월(180일)", days: 180 },
-  { label: "181일", days: 181 },
-  { label: "1년(365일)", days: 365 },
-].map((s) => ({ ...s, r: computeLateFiling({ tax: TAX, daysLate: s.days }) }));
+  addDays(DEADLINE, 10),
+  end1,
+  addDays(end1, 1),
+  end3,
+  addDays(end3, 1),
+  end6,
+  addDays(end6, 1),
+  "2027-06-01",
+].map((filedOn) => {
+  const r = computeLateFiling({ tax: TAX, deadline: DEADLINE, filedOn });
+  return { filedOn, label: `${filedOn === "2027-06-01" ? "2027년 " : ""}${md(filedOn)} (${r.daysLate}일째)`, r };
+});
 
-const d30 = steps.find((s) => s.days === 30)!.r;
-const d31 = steps.find((s) => s.days === 31)!.r;
+const d30 = steps[1].r;
+const d31 = steps[2].r;
 const cliff = d31.total - d30.total;
 
 const srcNo = p.sources.find((s) => s.label.includes("제47조의2"))!;
@@ -56,7 +70,7 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
   <div class="callout">
     <p>
       내 세액으로 얼마인지 바로 보려면{" "}
-      <a href="/penalty/">가산세 계산기</a>에 금액과 지난 일수를 넣으면
+      <a href="/penalty/">가산세 계산기</a>에 세액·기한·신고할 날을 넣으면
       됩니다. 이 글은 그 숫자가 <em>어떻게</em> 나오는지와 언제까지
       신고해야 하는지를 다룹니다.
     </p>
@@ -81,7 +95,7 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
       </tr>
       <tr>
         <td>납부지연가산세</td>
-        <td>세액 × <strong>1일 {p.latePayment.dailyRate * 100}%</strong> × 지난 일수</td>
+        <td>세액 × <strong>1일 {p.latePayment.dailyRate * 100}%</strong> × 기한 다음 날부터 납부일 전날까지 일수</td>
         <td><strong>안 된다</strong></td>
       </tr>
     </tbody>
@@ -119,8 +133,17 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
   </table>
 
   <p>
+    개월은 30일이 아니라 <strong>달력으로</strong> 셉니다(국세기본법 제4조 →
+    민법 제157조·제160조). 기한 다음 날부터 세어 n개월 뒤 같은 날의 전날까지가
+    "n개월 이내"입니다. 그래서 기한이 6월 1일이면 1개월은 {md(end1)},
+    3개월은 {md(end3)}(92일째), 6개월은 {md(end6)}(183일째)까지입니다.
+  </p>
+
+  <p>
     계단식이라 <strong>하루 차이로 금액이 뜁니다.</strong> 세액
-    {won(TAX)}원을 기준으로 보면:
+    {won(TAX)}원, 기한 6월 1일(2025년 귀속 종합소득세 — 5월 31일이
+    일요일이라 다음 날로 밀림, 국세기본법 제5조)에 신고와 납부를 같은 날
+    한다고 보면:
   </p>
 
   <table>
@@ -148,7 +171,7 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
 
   <div class="callout warn">
     <p>
-      ⚠️ 30일에서 31일로 하루만 넘어가도 가산세가{" "}
+      ⚠️ {md(end1)}에서 하루만 넘어가도 가산세가{" "}
       <strong>{won(cliff)}원</strong> 늘어납니다
       ({won(d30.total)}원 → {won(d31.total)}원). 감면율이 {pct(0.5)}에서{" "}
       {pct(0.3)}으로 떨어지기 때문입니다.
@@ -159,13 +182,14 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
 
   <ol>
     <li>
-      <strong>오늘이 기한 후 며칠째인지 센다.</strong> 종합소득세는 5월 31일,
-      부가세 확정신고는 1월 25일과 7월 25일이 법정기한입니다.
+      <strong>내 법정기한 날짜를 확인한다.</strong> 종합소득세는 5월 31일,
+      부가세 확정신고는 1월 25일과 7월 25일이 법정기한이고, 토·일·공휴일이면
+      다음 날로 밀립니다(국세기본법 제5조).
     </li>
     <li>
       <strong>다음 감면 경계까지 며칠 남았는지 본다.</strong>{" "}
-      <a href="/penalty/">계산기</a>가 "며칠 뒤부터 감면율이 내려갑니다"를
-      알려줍니다.
+      <a href="/penalty/">계산기</a>에 기한과 신고할 날을 넣으면 지금 감면율이
+      며칠까지인지 알려줍니다.
     </li>
     <li>
       <strong>경계 전에 신고한다.</strong> 세금을 당장 다 못 내더라도
@@ -240,6 +264,11 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
       대상에서 빠집니다.
     </li>
     <li>영세율 과세표준이 있는 경우, 원천징수 납부지연가산세, 가산세 한도.</li>
+    <li>
+      감면 기간의 마지막 날이 토요일·공휴일인 경우 — 민법 제161조(익일
+      만료)가 이 감면 기간에도 적용되는지 확인하지 못해 위 날짜에 넣지
+      않았습니다.
+    </li>
   </ul>
 
   <p class="meta">

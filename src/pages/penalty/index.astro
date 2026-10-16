@@ -10,7 +10,8 @@
  * 제48조와 시행령 제27조의4 원문에서 확인한 값이다.
  *
  * 감면 구간(1·3·6개월)이 이 계산의 핵심이다. 하루 차이로 감면율이 20%p
- * 떨어지므로 "며칠 남았는지" 를 크게 보여준다.
+ * 떨어지므로 "며칠까지인지" 를 보여준다. 개월은 30일이 아니라 달력으로 센다
+ * (국세기본법 제4조 → 민법 제157조·제160조) — 그래서 입력이 일수가 아니라 날짜다.
  */
 import BaseHead from "../../components/BaseHead.astro";
 import AdSlot from "../../components/AdSlot.astro";
@@ -23,17 +24,27 @@ import SiteFooter from "../../components/SiteFooter.astro";
 import NextReads from "../../components/NextReads.astro";
 import Disclaimer from "../../components/Disclaimer.astro";
 import p from "../../rates/penalty-2026.json";
+import { computeLateFiling, addDays } from "../../lib/penalty";
 import "../../styles/global.css";
 
 const title = "가산세 계산기 — 기한 후 신고하면 얼마";
 const description =
-  "종합소득세·부가세 신고를 놓쳤을 때 지금 신고하면 가산세가 얼마인지 계산합니다. 무신고 20%, 기한후신고 감면 1개월 50%·3개월 30%·6개월 20%, 납부지연 1일 0.022%를 국세기본법 원문 기준으로 반영합니다.";
+  "종합소득세·부가세 신고를 놓쳤을 때 기한과 신고할 날을 넣으면 가산세가 얼마인지 계산합니다. 무신고 20%, 기한후신고 감면 1개월 50%·3개월 30%·6개월 20%(달력으로 센 개월), 납부지연 1일 0.022%를 국세기본법 원문 기준으로 반영합니다.";
 
 const noReportPct = p.noReport.general * 100; // 20
 const dailyPct = p.latePayment.dailyRate * 100; // 0.022
 const srcNo = p.sources.find((s) => s.label.includes("제47조의2"))!;
 const srcRelief = p.sources.find((s) => s.label.includes("제48조"))!;
 const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
+const srcPeriod = p.sources.find((s) => s.label.includes("민법 제160조"))!;
+
+/** 처음 값 — 2025년 귀속 종합소득세 기한(5/31 일요일 → 6/1, 국세기본법 제5조)에서 10일 뒤 */
+const DEFAULT_DEADLINE = "2026-06-01";
+const DEFAULT_FILED = addDays(DEFAULT_DEADLINE, 10);
+const TAX = 1_000_000;
+const first = computeLateFiling({ tax: TAX, deadline: DEFAULT_DEADLINE, filedOn: DEFAULT_FILED });
+const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
+const md = (d: string) => `${Number(d.slice(5, 7))}월 ${Number(d.slice(8, 10))}일`;
 ---
 
 <html lang="ko">
@@ -54,49 +65,63 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
         단계적으로 떨어집니다.
       </p>
 
-      <div class="calc-card">
+      <div class="calc-card" data-two>
         <div class="calc-input-wrap">
           <label id="input-label" for="tax">신고했어야 할 세액</label>
-          <input type="text" inputmode="numeric" id="tax" value="1,000,000" />
+          <input type="text" inputmode="numeric" id="tax" value="1,000,000" data-won />
           <span class="unit">원</span>
         </div>
 
-        <div class="amount-presets" role="group" aria-label="금액 빠르게 올리기">
-          <button type="button" class="preset-chip" data-add="100000">+10만</button>
-          <button type="button" class="preset-chip" data-add="1000000">+100만</button>
+        <div class="field">
+          <label for="deadline">법정신고·납부기한</label>
+          <span class="hint">
+            토·일·공휴일이면 다음 날이 기한입니다(국세기본법 제5조). 2025년 귀속
+            종합소득세는 5월 31일이 일요일이라 {md(DEFAULT_DEADLINE)}입니다.
+          </span>
+          <input type="date" id="deadline" value={DEFAULT_DEADLINE} />
         </div>
 
-        <div class="calc-input-wrap">
-          <label for="days">기한이 지난 일수</label>
-          <input type="text" inputmode="numeric" id="days" value="10" />
-          <span class="unit">일</span>
+        <div class="field">
+          <label for="filed-on">기한 후 신고·납부할 날</label>
+          <span class="hint">신고와 납부를 같은 날 한다고 보고 계산합니다.</span>
+          <input type="date" id="filed-on" value={DEFAULT_FILED} />
+          <div class="amount-presets" role="group" aria-label="감면 구간 마지막 날로 고르기">
+            {p.lateFilingRelief.map((s) => (
+              <button type="button" class="preset-chip" data-months={s.withinMonths}>
+                {s.withinMonths}개월 마지막 날
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div class="amount-presets" role="group" aria-label="기간 빠르게 고르기">
-          <button type="button" class="preset-chip" data-days="7">1주</button>
-          <button type="button" class="preset-chip" data-days="30">1개월</button>
-          <button type="button" class="preset-chip" data-days="90">3개월</button>
-          <button type="button" class="preset-chip" data-days="180">6개월</button>
-          <button type="button" class="preset-chip" data-days="365">1년</button>
-        </div>
-
-        <div class="result-hero" aria-live="polite" aria-atomic="true">
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="stat1-value|stat2-value"
+          data-bar-labels="무신고가산세|납부지연가산세"
+          data-dock="hero-value"
+        >
           <p class="label">가산세 합계</p>
-          <p class="big" id="hero-value">102,200원</p>
+          <p class="big" id="hero-value">{won(first.total)}</p>
         </div>
 
-        <div class="stat-row">
-          <div class="stat-chip">
-            <span class="label">무신고가산세</span>
-            <span class="value" id="stat1-value">100,000원</span>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip" data-group="가산세 합계">
+            <span class="label" id="stat1-label">무신고가산세 ({noReportPct}%, 감면 {Math.round(first.reliefRate * 100)}%)</span>
+            <span class="value" id="stat1-value">{won(first.noReport)}</span>
           </div>
           <div class="stat-chip">
-            <span class="label">납부지연가산세</span>
-            <span class="value" id="stat2-value">2,200원</span>
+            <span class="label" id="stat2-label">납부지연가산세 ({first.lateDays}일 × {dailyPct}%)</span>
+            <span class="value" id="stat2-value">{won(first.latePayment)}</span>
+          </div>
+          <div class="stat-chip" data-group="세금 + 가산세">
+            <span class="label">신고했어야 할 세액</span>
+            <span class="value" id="stat-tax">{won(TAX)}</span>
           </div>
           <div class="stat-chip">
-            <span class="label">세금 + 가산세</span>
-            <span class="value" id="stat3-value">1,102,200원</span>
+            <span class="label">가산세</span>
+            <span class="value" id="stat3-value">{won(first.total)}</span>
           </div>
         </div>
 
@@ -105,11 +130,7 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
         <div class="actions">
           <button id="btn-download" type="button">PNG 저장</button>
           <button id="btn-share" type="button" class="secondary">공유</button>
-          <button id="btn-copy" type="button" class="secondary">결과 복사</button>
         </div>
-        <p id="copy-toast" class="meta" style="display:none;">
-          결과를 복사했어요.
-        </p>
       </div>
 
       <div class="callout warn">
@@ -131,6 +152,15 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
           6개월을 넘기면 감면이 없습니다. 계단식이라 하루 차이로 감면율이
           20%p 떨어질 수 있습니다. 다만 과세관청이 결정할 것을 미리 알고
           신고한 경우는 감면에서 제외됩니다.
+        </p>
+        <p>
+          개월은 30일이 아니라 <strong>달력으로</strong> 셉니다(국세기본법
+          제4조 → 민법 제157조·제160조). 기한 다음 날부터 세어 n개월 뒤 같은
+          날의 전날까지가 "n개월 이내"이고, 그 달에 같은 날이 없으면 그 달
+          말일까지입니다. 기한이 6월 1일이면 1개월은 7월 1일, 3개월은 9월
+          1일(92일째), 6개월은 12월 1일(183일째)까지입니다. 마지막 날이
+          토요일·공휴일일 때 다음 날로 밀리는지(민법 제161조)는 확인하지 못해
+          계산에 넣지 않았습니다.
         </p>
       </details>
 
@@ -159,7 +189,11 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
         <a href={srcRelief.url} rel="nofollow noopener">제48조</a>,
         납부지연 이자율(1일 {dailyPct}%)은{" "}
         <a href={srcLate.url} rel="nofollow noopener">시행령 제27조의4</a>{" "}
-        원문에서 확인한 값입니다({p.verifiedOn} 확인 · {p.lawVersion}).
+        원문에서, 개월 세는 법은{" "}
+        <a href={srcPeriod.url} rel="nofollow noopener">민법 제160조</a>에서
+        확인했습니다({p.verifiedOn} 확인 · {p.lawVersion}). 납부지연 일수는
+        기한 다음 날부터 납부일 전날까지입니다(제47조의4 제1항 제1호, 2026년
+        7월 1일 시행 조문). 지방소득세에 따로 붙는 가산세는 넣지 않았습니다.
         부정행위·복식부기의무자·법인·영세율은 계산에 넣지 않았습니다.
         실제 부과액은 홈택스 또는 세무 전문가에게 확인하세요.
       </p>
