@@ -6,12 +6,12 @@
 
 현재: 보류 2 · 있음 18 · 할 일 412
 
-다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /withholding/(8.8%) — roberin freelancer-calculator 대조. 3.3% 나라별 행(country-matrix)은 미확인으로만 둠 — 원천징수 제도 원문 조사 필요.
+다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /vat/(부가세) — roberin vat-calculator 대조. 원천징수 단수(10원 미만 절사·소액부징수) 원문 확인은 3.3%·8.8% 공통 보류. 나라별 행은 미확인.
 
 | # | 우리 분류 | roberin 분류 | roberin 주소 | 도구 | 상태 | 우리 주소 | 메모 |
 |---|---|---|---|---|---|---|---|
 | 1 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/contract-calculator/ | 3.3% 계산기 | 있음 | /freelancer-33/ | 2026-10-17 대조: 같은 입력 7개 결과 일치 · 새 틀 이전(소득세·지방소득세 나눠 보기) |
-| 2 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/freelancer-calculator/ | 8.8% 원천징수 계산기 | 있음 | /withholding/ |  |
+| 2 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/freelancer-calculator/ | 8.8% 원천징수 계산기 | 있음 | /withholding/ | 2026-10-17 대조: 기타소득 125,000원 이하 과세최저한(제84조 3호) — 우리·roberin 둘 다 틀려 우리 것 고침 · 기타소득 역산 추가 · 새 틀 이전. 1원 단수 차이는 보류 |
 | 3 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/projects/work-income-calculator/ | 근무시간 실수령·구매력 계산기 | 할 일 |  |  |
 | 4 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/ordinary-wage-calculator/ | 대한민국 통상임금 계산기 | 할 일 |  |  |
 | 5 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/lotto-tax-calculator/ | 로또 당첨금 세금 계산기 | 있음 | /guide/lotto-tax-calculator/ |  |

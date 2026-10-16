@@ -174,7 +174,7 @@
 
 - [x] /guide/take-home-calculator/ (Task 7)
 - [x] /freelancer-33/ (2026-10-17 — 소득세·지방소득세 나눠 보기·소계·막대·두 칸·자동완성 프리셋, roberin 7개 일치)
-- [ ] /withholding/
+- [x] /withholding/ (2026-10-17 — 기타소득 과세최저한 fix·역산 추가, 소득세·지방소득세 나눠 보기·소계·막대·두 칸, roberin 대조)
 - [ ] /vat/
 - [ ] /income-tax-refund/
 - [ ] /penalty/
