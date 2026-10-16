@@ -18,6 +18,7 @@ import SiteFooter from "../../components/SiteFooter.astro";
 import NextReads from "../../components/NextReads.astro";
 import Disclaimer from "../../components/Disclaimer.astro";
 import pp from "../../rates/pension-premium-2026.json";
+import { compute } from "../../lib/pension-premium";
 import "../../styles/global.css";
 
 const title = "국민연금 보험료 계산기 (지역가입자)";
@@ -29,6 +30,10 @@ const ceil = pp.standardIncomeCeiling;
 const floor = pp.standardIncomeFloor;
 const srcRate = pp.sources.find((s) => s.url.includes("OHAF0104"))!;
 const srcStd = pp.sources.find((s) => s.url.includes("OHAE0001"))!;
+
+const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
+const INCOME = 3_090_000;
+const first = compute(INCOME);
 ---
 
 <html lang="ko">
@@ -48,40 +53,47 @@ const srcStd = pp.sources.find((s) => s.url.includes("OHAE0001"))!;
         보험료를 계산합니다.
       </p>
 
-      <div class="calc-card">
+      <div class="calc-card" data-two>
         <div class="calc-input-wrap">
           <label id="input-label" for="income">월소득 (신고 소득)</label>
           <input
             type="text"
             inputmode="numeric"
             id="income"
-            value="3,090,000"
+            value={INCOME.toLocaleString("ko-KR")}
+            data-won
           />
           <span class="unit">원</span>
         </div>
 
-        <div class="amount-presets" role="group" aria-label="금액 빠르게 올리기">
-          <button type="button" class="preset-chip" data-add="100000">
-            +10만
-          </button>
-          <button type="button" class="preset-chip" data-add="1000000">
-            +100만
-          </button>
-        </div>
-
-        <div class="result-hero" aria-live="polite" aria-atomic="true">
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="out-monthly|out-left"
+          data-bar-labels="보험료|보험료 뺀 소득"
+          data-dock="hero-value"
+        >
           <p class="label">월 보험료 (본인 부담)</p>
-          <p class="big" id="hero-value">293,550원</p>
+          <p class="big" id="hero-value">{won(first.monthly)}</p>
         </div>
 
-        <div class="stat-row">
-          <div class="stat-chip">
-            <span class="label">연 보험료</span>
-            <span class="value" id="stat1-value">3,522,600원</span>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip" data-group="월 보험료">
+            <span class="label">기준소득월액 (천원 미만 버림·상하한)</span>
+            <span class="value" id="out-std">{won(first.standardIncome)}</span>
           </div>
           <div class="stat-chip">
-            <span class="label">기준소득월액</span>
-            <span class="value" id="stat2-value">3,090,000원</span>
+            <span class="label">보험료 ({ratePercent}%, 10원 미만 버림)</span>
+            <span class="value" id="out-monthly">{won(first.monthly)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">보험료 뺀 월소득</span>
+            <span class="value" id="out-left">{won(first.income - first.monthly)}</span>
+          </div>
+          <div class="stat-chip" data-group="1년">
+            <span class="label">연 보험료 (12개월)</span>
+            <span class="value" id="out-annual">{won(first.annual)}</span>
           </div>
         </div>
 
@@ -90,11 +102,7 @@ const srcStd = pp.sources.find((s) => s.url.includes("OHAE0001"))!;
         <div class="actions">
           <button id="btn-download" type="button">PNG 저장</button>
           <button id="btn-share" type="button" class="secondary">공유</button>
-          <button id="btn-copy" type="button" class="secondary">결과 복사</button>
         </div>
-        <p id="copy-toast" class="meta" style="display:none;">
-          결과를 복사했어요.
-        </p>
       </div>
 
       <details>
@@ -131,7 +139,8 @@ const srcStd = pp.sources.find((s) => s.url.includes("OHAE0001"))!;
         <a href={srcRate.url} rel="nofollow noopener">연금개혁 안내</a>,
         기준소득월액 상·하한은{" "}
         <a href={srcStd.url} rel="nofollow noopener">기준소득월액 조정 안내</a>{" "}
-        원문에서 확인한 값입니다({pp.verifiedOn} 확인). 개별 부과액은
+        원문에서 확인한 값입니다({pp.verifiedOn} 확인). 신고 소득의 천원 미만을
+        버리는 것은 국민연금법 시행령 제5조 제1항입니다. 개별 부과액은
         국민연금공단(1355)에 확인하세요.
       </p>
 

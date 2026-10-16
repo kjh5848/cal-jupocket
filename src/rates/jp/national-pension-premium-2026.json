@@ -1,0 +1,11 @@
+{
+  "country": "JP",
+  "draft": true,
+  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(일본어판이 열린 뒤). 일본 国民年金 第1号被保険者(자영업·프리랜서 — 우리 지역가입자에 해당)는 소득과 상관없는 정액 보험료다. 소득에 요율을 곱하는 우리 식과 계산 방식이 다르다. 회사원(厚生年金)은 보수 비례라 별도 확인 필요(미확인).",
+  "verifiedOn": "2026-10-17",
+  "sources": [{ "label": "日本年金機構 — 国民年金保険料(更新日 2026年4月1日)", "url": "https://www.nenkin.go.jp/service/kokunen/hokenryo/hokenryo.html" }],
+  "fiscalYear": "令和8年度",
+  "monthlyFlatYen": 17920,
+  "optionalAddOnYen": 400,
+  "dueDate": "納付対象月の翌月末日"
+}

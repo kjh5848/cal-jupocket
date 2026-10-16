@@ -1,9 +1,6 @@
 import { compute } from "../lib/pension-premium";
-import {
-  formatWon,
-  parseAmount,
-  formatAmountInput,
-} from "../lib/money";
+import pp from "../rates/pension-premium-2026.json";
+import { formatWon, parseAmount, formatAmountInput } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 
@@ -12,32 +9,33 @@ const reportUse = trackCalculatorUse("national_pension");
 
 let lastLines: [string, string][] = [];
 
+const RATE_LABEL = `월 보험료(${pp.rate * 100}%)`;
+const man = (n: number) => `${(n / 10_000).toLocaleString("ko-KR")}만원`;
+
 const incomeInput = document.getElementById("income") as HTMLInputElement;
 const heroValue = document.getElementById("hero-value")!;
-const stat1Value = document.getElementById("stat1-value")!;
-const stat2Value = document.getElementById("stat2-value")!;
+const outStd = document.getElementById("out-std")!;
+const outMonthly = document.getElementById("out-monthly")!;
+const outLeft = document.getElementById("out-left")!;
+const outAnnual = document.getElementById("out-annual")!;
 const capNote = document.getElementById("cap-note")!;
 
 const btnDownload = document.getElementById("btn-download") as HTMLButtonElement;
 const btnShare = document.getElementById("btn-share") as HTMLButtonElement;
-const btnCopy = document.getElementById("btn-copy") as HTMLButtonElement;
-const copyToast = document.getElementById("copy-toast")!;
-const presetButtons =
-  document.querySelectorAll<HTMLButtonElement>(".preset-chip[data-add]");
 
 function recompute() {
   const r = compute(parseAmount(incomeInput.value));
   heroValue.textContent = formatWon(r.monthly);
-  stat1Value.textContent = formatWon(r.annual);
-  stat2Value.textContent = formatWon(r.standardIncome);
+  outStd.textContent = formatWon(r.standardIncome);
+  outMonthly.textContent = formatWon(r.monthly);
+  outLeft.textContent = formatWon(Math.max(0, r.income - r.monthly));
+  outAnnual.textContent = formatWon(r.annual);
 
   if (r.capped) {
-    capNote.textContent =
-      "소득이 상한(659만원)을 넘어 기준소득월액이 상한으로 조정됐습니다.";
+    capNote.textContent = `소득이 상한(${man(pp.standardIncomeCeiling)})을 넘어 기준소득월액이 상한으로 조정됐습니다.`;
     capNote.style.display = "block";
   } else if (r.floored && r.income > 0) {
-    capNote.textContent =
-      "소득이 하한(41만원)보다 낮아 기준소득월액이 하한으로 조정됐습니다.";
+    capNote.textContent = `소득이 하한(${man(pp.standardIncomeFloor)})보다 낮아 기준소득월액이 하한으로 조정됐습니다.`;
     capNote.style.display = "block";
   } else {
     capNote.style.display = "none";
@@ -46,7 +44,7 @@ function recompute() {
   lastLines = [
     ["월소득", formatWon(r.income)],
     ["기준소득월액", formatWon(r.standardIncome)],
-    ["월 보험료(9.5%)", formatWon(r.monthly)],
+    [RATE_LABEL, formatWon(r.monthly)],
     ["연 보험료", formatWon(r.annual)],
   ];
 }
@@ -60,22 +58,12 @@ function buildCard() {
 }
 
 incomeInput.addEventListener("input", () => {
-  reportUse(parseAmount(incomeInput.value));
   const value = parseAmount(incomeInput.value);
+  reportUse(value);
   incomeInput.value = value === 0 ? "" : formatAmountInput(value);
   const end = incomeInput.value.length;
   incomeInput.setSelectionRange(end, end);
   recompute();
-});
-
-presetButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    track("preset_click", { calculator: "national_pension" });
-    const add = parseInt(btn.dataset.add ?? "0", 10);
-    const next = parseAmount(incomeInput.value) + add;
-    incomeInput.value = formatAmountInput(next);
-    recompute();
-  });
 });
 
 btnDownload.addEventListener("click", () => {
@@ -86,17 +74,6 @@ btnDownload.addEventListener("click", () => {
 btnShare.addEventListener("click", async () => {
   track("share_result", { calculator: "national_pension" });
   await shareCard(buildCard(), "국민연금 보험료 계산 결과 - jupocket.com");
-});
-
-btnCopy.addEventListener("click", async () => {
-  track("copy_result", { calculator: "national_pension" });
-  const text = lastLines.map(([k, v]) => `${k} ${v}`).join(" / ");
-  if (!navigator.clipboard) return;
-  await navigator.clipboard.writeText(text);
-  copyToast.style.display = "block";
-  setTimeout(() => {
-    copyToast.style.display = "none";
-  }, 1800);
 });
 
 recompute();

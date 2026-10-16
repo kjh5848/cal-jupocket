@@ -178,7 +178,7 @@
 - [x] /vat/ (2026-10-17 — 계산 방식 선택 상자·영수증 3줄·막대·두 칸·자동완성 프리셋, roberin 대조: 역산 1원 단수 차이만)
 - [x] /income-tax-refund/ (2026-10-17 — 지방소득세 이중계산 fix(제76조 ③4호), 소득세·지방소득세 따로 정산 영수증·소계·막대·두 칸·자동완성 프리셋, roberin 4개 일치)
 - [x] /penalty/ (2026-10-17 — 감면 구간 달력 개월(민법 제160조)·납부지연 일수 납부일 전날까지(제47조의4 ①1) fix, 날짜 입력·감면 마지막 날 버튼·소계 2개·막대·두 칸, roberin 종소세 계산기 하위 기능과 국세분 대조. 프리셋 없음 — 자동완성에 금액 없음)
-- [ ] /national-pension-premium/
+- [x] /national-pension-premium/ (2026-10-17 — 보험료 뺀 월소득·소계·막대·두 칸, 상·하한 문구 rates 에서, roberin 4대보험 국민연금 줄과 대조: 천원 미만 절사(시행령 제5조①)로 우리 맞음. 프리셋 없음 — 자동완성에 금액 없음)
 - [ ] /guide/four-insurance-calculator/
 - [ ] /guide/weekly-holiday-pay-calculator/
 - [ ] /guide/minimum-wage-calculator/
