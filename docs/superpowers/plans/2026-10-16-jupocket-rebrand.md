@@ -181,7 +181,7 @@
 - [x] /national-pension-premium/ (2026-10-17 — 보험료 뺀 월소득·소계·막대·두 칸, 상·하한 문구 rates 에서, roberin 4대보험 국민연금 줄과 대조: 천원 미만 절사(시행령 제5조①)로 우리 맞음. 프리셋 없음 — 자동완성에 금액 없음)
 - [x] /guide/four-insurance-calculator/ (2026-10-17 — 근로자·사업주 소계·막대·두 칸·자동완성 프리셋 200만·300만, roberin 대조: 기준소득월액 천원 절사·장기요양 반올림 시점은 우리 맞음, 국민연금 몫 10원 절사·건강보험 원 단위는 보류. 틀 막대 범례 합 101% → 100% 고침)
 - [x] /guide/weekly-holiday-pay-calculator/ (2026-10-17 — 개근 체크·근무 임금·1주/한 달 소계·막대·−/+·두 칸, roberin 대조: 주휴수당 1원까지 같음, 45h 근로급여는 우리 40h 자름(제50조), 주 6일 사업장 ÷6 은 단수 원문 미확인 보류. 프리셋 없음 — 자동완성에 시급 금액 없음)
-- [ ] /guide/minimum-wage-calculator/
+- [x] /guide/minimum-wage-calculator/ (2026-10-17 — 최저 주급(시행령 제5조 ①2) 추가·최저 월급 소계(받는 임금 + 모자라는 금액)·막대·−/+·연도·수습 버튼·두 칸, roberin 시급계산기 대조: 주 40h 는 고시 209시간인 우리가 고시 금액과 같음(roberin 208.57h), 20h 같음. 프리셋 없음 — 자동완성에 금액 없음)
 - [ ] /guide/annual-leave-calculator/
 - [ ] /guide/unemployment-benefit-calculator/
 - [ ] /guide/parental-leave-pay-calculator/

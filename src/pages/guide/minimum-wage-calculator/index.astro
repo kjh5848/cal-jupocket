@@ -1,13 +1,13 @@
 ---
 /**
  * "최저임금 계산기" — 최저임금 시리즈. (최저임금 위반 확인·월급 시급 환산·최저임금 월급 계산·수습 최저임금도 이 글, 계산기 포함)
- * 계산: src/lib/labor.ts checkMinWage()·minimumMonthly() — 최저임금법 제5조·제6조, 시행령 제3조·제5조, 2026·2027 고시.
+ * 계산: src/lib/labor.ts checkMinWage()·minimumMonthly()·minimumWeekly() — 최저임금법 제5조·제6조, 시행령 제3조·제5조, 2026·2027 고시.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/labor-2026.json";
-import { checkMinWage, minimumMonthly, minWage, minWageMonthlyHours } from "../../../lib/labor";
+import { checkMinWage, minimumMonthly, minimumWeekly, minWage, minWageMonthlyHours } from "../../../lib/labor";
 import { won } from "../../../lib/won";
 
 const ex = checkMinWage(2_100_000);
@@ -31,34 +31,45 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
+  <div class="calc-card" data-two>
     <p class="meta">매월 받는 임금 중 최저임금에 들어가는 금액(연장·야간·휴일수당 제외)을 넣으세요. 주 40시간은 고시의 209시간, 그 밖은 시행령 제5조 산식으로 월 시간을 계산합니다(표시는 소수 둘째 자리, 계산은 반올림 없이).</p>
     <div class="calc-input-wrap">
       <label for="mw-pay">월 임금(최저임금 산입분)</label>
-      <input type="text" inputmode="numeric" id="mw-pay" value="2,100,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="mw-pay" value="2,100,000" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="mw-hours">1주 소정근로시간</label>
-      <input type="number" min="1" max="40" step="0.5" id="mw-hours" value="40" /><span class="unit">시간</span>
+      <input type="number" min="1" max="40" step="0.5" id="mw-hours" value="40" data-step /><span class="unit">시간</span>
     </div>
     <div class="calc-input-wrap">
       <label for="mw-year">기준 연도</label>
-      <select id="mw-year"><option value="2026" selected>2026년 ({won(minWage(2026))})</option><option value="2027">2027년 ({won(minWage(2027))})</option></select>
+      <select id="mw-year" data-seg><option value="2026" selected>2026년 ({won(minWage(2026))})</option><option value="2027">2027년 ({won(minWage(2027))})</option></select>
     </div>
     <div class="calc-input-wrap">
       <label for="mw-prob">수습 3개월(1년 이상 계약)</label>
-      <select id="mw-prob"><option value="0" selected>아니오</option><option value="1">예 — 90% 적용</option></select>
+      <select id="mw-prob" data-seg><option value="0" selected>아니오</option><option value="1">예 — 90% 적용</option></select>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="mw-paid|mw-short"
+      data-bar-labels="받는 월 임금|모자라는 금액"
+      data-dock="mw-hero"
+    >
       <p class="label">환산 시급</p>
       <p class="big" id="mw-hero">{won(ex.hourly)}</p>
       <p class="meta" id="mw-note">2026년 최저임금 {won(ex.min)}보다 낮습니다. 월 {won(ex.shortfall)}이 모자랍니다.</p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">월 기준시간</span><span class="value" id="mw-h">{ex.hours}시간</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">월 기준시간 ((주 시간 + 주휴) × 365 ÷ 7 ÷ 12)</span><span class="value" id="mw-h">{ex.hours}시간</span></div>
       <div class="stat-chip"><span class="label">기준 시급</span><span class="value" id="mw-min">{won(ex.min)}</span></div>
-      <div class="stat-chip"><span class="label">최저 월급</span><span class="value" id="mw-month">{won(minimumMonthly(2026, 40))}</span></div>
+      <div class="stat-chip"><span class="label">최저 주급 (주 시간 + 주휴 시간)</span><span class="value" id="mw-week">{won(minimumWeekly(2026, 40))}</span></div>
+      <div class="stat-chip"><span class="label">최저 월급보다 많은 금액</span><span class="value" id="mw-over">{won(0)}</span></div>
+      <div class="stat-chip" data-group="최저 월급 (기준 시급 × 월 기준시간)"><span class="label">받는 월 임금</span><span class="value" id="mw-paid">{won(Math.min(2_100_000, minimumMonthly(2026, 40)))}</span></div>
+      <div class="stat-chip"><span class="label">모자라는 금액</span><span class="value" id="mw-short">{won(ex.shortfall)}</span></div>
     </div>
+    <p class="meta">최저 월급·주급은 그해 최저임금을 맞추는 가장 적은 금액입니다(1원 미만 올림). 주급은 소정근로시간과 주휴시간을 더한 시간으로 나눠 봅니다(최저임금법 시행령 제5조 제1항 제2호).</p>
   </div>
 
   <h2>{QA[0].q}</h2>

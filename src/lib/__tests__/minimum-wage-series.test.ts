@@ -5,7 +5,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/labor-2026.json";
 import { minimumWageSeries } from "../../data/series/minimum-wage";
-import { checkMinWage, minimumMonthly, minWage, weeklyHolidayPay } from "../labor";
+import { checkMinWage, minimumMonthly, minimumWeekly, minWage, weeklyHolidayPay } from "../labor";
 import { won } from "../won";
 
 describe("최저임금 계산", () => {
@@ -38,6 +38,19 @@ const money = new Set([
   won(m27 - m26), won(weeklyHolidayPay(m27, 40).hourlyWithHoliday), won(checkMinWage(2_100_000).hourly), "210만원",
 ]);
 const pcts = new Set(["90%", `${(((m27 - m26) / m26) * 100).toFixed(1)}%`]);
+
+describe("최저 주급 — 시행령 제5조 제1항 제2호(주급 ÷ 소정근로시간 + 주휴시간)", () => {
+  it("주 40시간 = 시급 × 48시간, 주 20시간 = × 24시간, 15시간 미만은 주휴 없음", () => {
+    expect(minimumWeekly(2026, 40)).toBe(10_320 * 48);
+    expect(minimumWeekly(2026, 20)).toBe(10_320 * 24);
+    expect(minimumWeekly(2026, 14)).toBe(10_320 * 14);
+    expect(minimumWeekly(2027, 40)).toBe(10_700 * 48);
+    expect(minimumWeekly(2026, 40, true)).toBe(Math.floor(10_320 * 0.9) * 48);
+  });
+  it("주 18시간 = 시급 × 21.6시간(1원 미만 올림)", () => {
+    expect(minimumWeekly(2026, 18)).toBe(Math.ceil(10_320 * 21.6 - 1e-6));
+  });
+});
 
 describe("최저임금 시리즈 제목·설명", () => {
   for (const s of [minimumWageSeries.hub, ...minimumWageSeries.items]) {

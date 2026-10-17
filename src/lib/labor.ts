@@ -101,6 +101,12 @@ export function minimumMonthly(year: 2026 | 2027 = 2026, weeklyHours = 40, proba
   return Math.ceil(minHourly(year, probation) * minWageHoursExact(weeklyHours) - 1e-6);
 }
 
+/** 그해 최저임금을 맞추는 가장 적은 주급 — 시행령 제5조 제1항 제2호: 주급 ÷ (1주 소정근로시간 + 주휴 유급시간). 1원 미만 올림 */
+export function minimumWeekly(year: 2026 | 2027 = 2026, weeklyHours = 40, probation = false): number {
+  const h = Math.min(Math.max(0, weeklyHours), W.maxWeeklyHours);
+  return Math.ceil(minHourly(year, probation) * (h + weeklyHolidayHours(h)) - 1e-6);
+}
+
 /** 월급(산입되는 임금)을 시간급으로 환산해 최저임금과 비교. 판정은 월급 ≥ minimumMonthly 와 같다 */
 export function checkMinWage(monthlyPay: number, weeklyHours = 40, year: 2026 | 2027 = 2026, probation = false) {
   const exact = minWageHoursExact(weeklyHours);
