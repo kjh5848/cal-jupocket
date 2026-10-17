@@ -25,14 +25,18 @@ import SiteFooter from "../../components/SiteFooter.astro";
 import NextReads from "../../components/NextReads.astro";
 import Disclaimer from "../../components/Disclaimer.astro";
 import r from "../../rates/local-tax-2026.json";
-import { formatMan } from "../../lib/money";
+import { formatWon } from "../../lib/money";
+import { housePage } from "../../lib/property-tax";
+import { calcPresets } from "../../data/calc-presets";
 import "../../styles/global.css";
 
 const title = "재산세 계산기 — 고지서 금액 그대로";
 const description =
-  "시가표준액만 넣으면 재산세 본세·도시지역분·지방교육세를 갈라서 보여줍니다. 1세대 1주택이면 공정시장가액비율과 세율 양쪽이 깎여 금액이 크게 달라집니다. 3억·5억·9억 바로 계산. 지방세법 조문 원문 기준.";
+  "시가표준액만 넣으면 재산세 본세·도시지역분·지방교육세를 갈라서 보여줍니다. 1세대 1주택이면 공정시장가액비율과 세율 양쪽이 깎여 금액이 크게 달라집니다. 3억·5억·15억 바로 계산. 지방세법 조문 원문 기준.";
 
 const P = r.propertyTax;
+const PRESETS = JSON.stringify({ default: calcPresets["/property-tax/"].default.amounts });
+const ex = housePage({ standardValue: 500_000_000, oneHome: true, urban: true });
 const pct = (v: number) => `${(v * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
 ---
 
@@ -54,19 +58,12 @@ const pct = (v: number) => `${(v * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
         실제보다 적게 나옵니다.
       </p>
 
-      <div class="calc-card">
+      <div class="calc-card" data-two>
+        <p class="meta">아래 값은 예시입니다. 시세가 아니라 <strong>공시가격</strong>(부동산 공시가격 알리미의 공동주택·개별주택가격)을 넣으세요.</p>
         <div class="calc-input-wrap">
           <label id="input-label" for="standard-value">시가표준액 (주택은 공시가격)</label>
-          <input type="text" inputmode="numeric" id="standard-value" value="500,000,000" />
+          <input type="text" inputmode="numeric" id="standard-value" value="500,000,000" data-won data-presets={PRESETS} />
           <span class="unit">원</span>
-        </div>
-
-        <div class="amount-presets" role="group" aria-label="금액 빠르게 고르기">
-          <button type="button" class="preset-chip" data-value="200000000">2억</button>
-          <button type="button" class="preset-chip" data-value="300000000">3억</button>
-          <button type="button" class="preset-chip" data-value="500000000">5억</button>
-          <button type="button" class="preset-chip" data-value="900000000">9억</button>
-          <button type="button" class="preset-chip" data-value="1500000000">15억</button>
         </div>
 
         <div class="calc-input-wrap toggle-row">
@@ -83,29 +80,29 @@ const pct = (v: number) => `${(v * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
           “재산세 도시지역분” 줄이 있으면 켜 두세요.
         </p>
 
-        <div class="result-hero" aria-live="polite" aria-atomic="true">
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="stat3-value|pt-urban|pt-edu"
+          data-bar-labels="재산세 본세|도시지역분|지방교육세"
+          data-dock="hero-value"
+        >
           <p class="label">한 해 고지서 합계</p>
-          <p class="big" id="hero-value">0원</p>
+          <p class="big" id="hero-value">{formatWon(ex.total)}</p>
+          <p id="split-note" class="meta"></p>
         </div>
 
-        <div id="breakdown" class="breakdown"></div>
-
-        <div class="stat-row">
-          <div class="stat-chip">
-            <span class="label">과세표준</span>
-            <span class="value" id="stat1-value">0원</span>
-          </div>
-          <div class="stat-chip">
-            <span class="label">공정시장가액비율</span>
-            <span class="value" id="stat2-value">—</span>
-          </div>
-          <div class="stat-chip">
-            <span class="label">재산세 본세</span>
-            <span class="value" id="stat3-value">0원</span>
-          </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">공정시장가액비율 (시행령 제109조)</span><span class="value" id="stat2-value">—</span></div>
+          <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="stat1-value">{formatWon(ex.base)}</span></div>
+          <div class="stat-chip"><span class="label" id="pt-saving-label">1세대 1주택 특례로 줄어든 돈</span><span class="value" id="pt-saving">{formatWon(ex.oneHomeSaving)}</span></div>
+          <div class="stat-chip"><span class="label">7월분 · 9월분 (각각)</span><span class="value" id="pt-half">{formatWon(ex.half)}</span></div>
+          <div class="stat-chip"><span class="label">합계 ÷ 시가표준액</span><span class="value" id="pt-eff">—</span></div>
+          <div class="stat-chip" data-group="고지서 합계"><span class="label">재산세 본세 (제111조·제111조의2)</span><span class="value" id="stat3-value">{formatWon(ex.propertyTax)}</span></div>
+          <div class="stat-chip"><span class="label">도시지역분 (제112조)</span><span class="value" id="pt-urban">{formatWon(ex.urbanArea)}</span></div>
+          <div class="stat-chip"><span class="label">지방교육세 (제151조)</span><span class="value" id="pt-edu">{formatWon(ex.educationTax)}</span></div>
         </div>
-
-        <p id="split-note" class="meta"></p>
 
         <div class="actions">
           <button id="btn-download" type="button">PNG 저장</button>
@@ -192,27 +189,4 @@ const pct = (v: number) => `${(v * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
     margin: 0;
   }
 
-  /* 고지서 항목 — 합계만 보여주면 "왜 이 금액인지"를 못 본다. */
-  .breakdown {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    margin: 0.9rem 0 0.25rem;
-  }
-  .bd-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
-    padding: 0.4rem 0;
-    border-bottom: 1px solid var(--rule);
-    font-size: 0.9375rem;
-  }
-  .bd-label {
-    color: var(--muted);
-  }
-  .bd-value {
-    font-variant-numeric: tabular-nums;
-    font-weight: 700;
-  }
 </style>

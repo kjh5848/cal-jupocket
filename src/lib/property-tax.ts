@@ -134,6 +134,40 @@ export function bill(opts: {
   };
 }
 
+export interface HousePage extends Bill {
+  /** 같은 집을 1세대 1주택이 아닌 '그 밖의 주택'으로 볼 때의 합계 */
+  generalTotal: number;
+  /** 1세대 1주택 특례(비율 43~45% + 제111조의2 세율)로 줄어드는 돈 */
+  oneHomeSaving: number;
+  /** 합계 ÷ 시가표준액 */
+  effective: number;
+  /** 7월분(= 9월분) — 한 해 합계의 절반 */
+  half: number;
+  /** 재산세 본세가 20만원 이하라 조례로 7월에 한 번에 올 수 있다(제115조 ① 3호 단서) */
+  lumpSum: boolean;
+}
+
+/**
+ * 주택 재산세 계산기 한 화면.
+ *
+ * 1세대 1주택 특례로 줄어드는 돈은 체크 여부와 상관없이 '특례 없는 계산 −
+ * 특례 계산' 이다 — 체크를 끈 사람에게도 "1주택이면 이만큼 준다"를 보여준다.
+ */
+export function housePage(opts: { standardValue: number; urban?: boolean; oneHome?: boolean }): HousePage {
+  const { standardValue, urban = false, oneHome = false } = opts;
+  const b = bill({ standardValue, kind: "house", oneHome, urban });
+  const general = oneHome ? bill({ standardValue, kind: "house", oneHome: false, urban }).total : b.total;
+  const special = oneHome ? b.total : bill({ standardValue, kind: "house", oneHome: true, urban }).total;
+  return {
+    ...b,
+    generalTotal: general,
+    oneHomeSaving: general - special,
+    effective: standardValue > 0 ? b.total / standardValue : 0,
+    half: halfInstallment(b.total),
+    lumpSum: b.collected && b.propertyTax <= LUMP_SUM_UNDER,
+  };
+}
+
 /** 주택은 절반씩 두 번. 7월분(= 9월분)이 얼마인가. */
 export function halfInstallment(yearly: number): number {
   return Math.floor(yearly / 2);
