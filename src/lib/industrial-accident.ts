@@ -85,18 +85,40 @@ export type DisabilityPay = "annuity" | "choice" | "lump";
 /** 장해급여 — 등급 1~14. 평균임금은 최고·최저 보상기준으로 맞춘다 */
 export function disabilityPay(avg: number, grade: number) {
   const g = Math.min(14, Math.max(1, Math.round(grade)));
-  const a = Math.min(Math.max(Math.max(0, avg), B.min), B.max);
+  const input = Math.max(0, avg);
+  const a = Math.min(Math.max(input, B.min), B.max);
   const key = String(g) as keyof typeof D.lumpDays;
   const lumpDays = D.lumpDays[key];
   const annuityDays = g <= 7 ? D.annuityDays[String(g) as keyof typeof D.annuityDays] : 0;
   const way: DisabilityPay = g <= D.annuityOnlyUpToGrade ? "annuity" : g <= 7 ? "choice" : "lump";
+  const lump = way === "annuity" ? 0 : fl(a * lumpDays);
+  const annuityYear = annuityDays ? fl(a * annuityDays) : 0;
+  // 큰 숫자(연금만이면 연금 1년분, 아니면 일시금) = 상한까지의 내 평균임금 × 일수 + 하한으로 올린 몫
+  const heroDays = way === "annuity" ? annuityDays : lumpDays;
+  const hero = way === "annuity" ? annuityYear : lump;
+  const raised = input < B.min ? hero - fl(input * heroDays) : 0;
+  const capCut = input > B.max ? fl(input * heroDays) - hero : 0;
+  const advanceYears = !annuityDays ? 0 : way === "annuity" ? D.advanceMaxYears.annuityOnly : D.advanceMaxYears.choice;
   return {
     grade: g,
     avg: a,
     lumpDays,
     annuityDays,
     way,
-    lump: way === "annuity" ? 0 : fl(a * lumpDays),
-    annuityYear: annuityDays ? fl(a * annuityDays) : 0,
+    lump,
+    annuityYear,
+    /** 상한까지의 내 평균임금 × 일수(큰 숫자에서 하한으로 올린 몫을 뺀 것) */
+    base: hero - raised,
+    /** 하한(최저 보상기준)으로 올려 더해진 몫(제36조 제7항) */
+    raised,
+    /** 상한(최고 보상기준)을 넘어 계산에서 빠진 몫 */
+    capCut,
+    /** 연금 한 달 치 — 1년분 ÷ 12(제70조 ③), 원 미만 버림 표시 */
+    monthly: annuityYear ? fl(annuityYear / D.monthlyParts) : 0,
+    /** 미리 받을 수 있는 최대 연수와 그 금액(이자 공제 전, 제57조 ④) */
+    advanceYears,
+    advanceMax: fl(annuityYear * advanceYears * D.advanceShare),
+    /** 4~7급: 연금 누적이 일시금과 같아지는 햇수(명목, 평균임금 증감 미반영) */
+    breakevenYears: way === "choice" ? lumpDays / annuityDays : 0,
   };
 }

@@ -96,6 +96,46 @@ describe("장해급여", () => {
   });
 });
 
+describe("장해급여 나눠 보기 — 제36조 ⑦·제57조 ④·제70조 ③·별표 2 손계산", () => {
+  it("14급 50,000원 — 50,000 × 55 = 2,750,000 + 하한으로 올린 몫 1,790,800 = 4,540,800원", () => {
+    expect(disabilityPay(50_000, 14)).toMatchObject({ base: 2_750_000, raised: 1_790_800, capCut: 0, lump: 4_540_800, annuityYear: 0, monthly: 0, advanceYears: 0, breakevenYears: 0 });
+  });
+  it("1급 하한 — 연 82,560 × 329 = 27,162,240원, 한 달 2,263,520원, 4년분 ½ = 54,324,480원", () => {
+    expect(disabilityPay(0, 1)).toMatchObject({ annuityYear: 27_162_240, monthly: 2_263_520, advanceYears: 4, advanceMax: 54_324_480, base: 0, raised: 27_162_240 });
+  });
+  it("3급 100,000원 — 한 달 25,700,000 ÷ 12 = 2,141,666원(원 미만 버림)", () => {
+    expect(disabilityPay(100_000, 3)).toMatchObject({ monthly: 2_141_666, advanceMax: 51_400_000, raised: 0, capCut: 0 });
+  });
+  it("7급 100,000원 — 일시금 61,600,000원, 연금 연 13,800,000원, 2년분 ½ = 13,800,000원, 616 ÷ 138 ≈ 4.46년", () => {
+    const p = disabilityPay(100_000, 7);
+    expect(p).toMatchObject({ lump: 61_600_000, annuityYear: 13_800_000, monthly: 1_150_000, advanceYears: 2, advanceMax: 13_800_000 });
+    expect(p.breakevenYears).toBeCloseTo(4.4638, 3);
+    expect(disabilityPay(100_000, 4).breakevenYears).toBeCloseTo(4.5179, 3);
+  });
+  it("1급 1,000,000원 — 상한 268,299 × 329 = 88,270,371원, 빠진 몫 240,729,629원", () => {
+    expect(disabilityPay(1_000_000, 1)).toMatchObject({ annuityYear: 88_270_371, capCut: 240_729_629, raised: 0, base: 88_270_371 });
+  });
+  it("무작위 2만 건 — 상한까지의 평균임금 × 일수 + 하한으로 올린 몫 = 큰 숫자", () => {
+    let seed = 11;
+    const rnd = () => ((seed = (seed * 1_103_515_245 + 12_345) % 2 ** 31) / 2 ** 31);
+    for (let i = 0; i < 20_000; i++) {
+      const input = Math.floor(rnd() * 400_000);
+      const p = disabilityPay(input, 1 + Math.floor(rnd() * 14));
+      const days = p.way === "annuity" ? p.annuityDays : p.lumpDays;
+      const hero = p.way === "annuity" ? p.annuityYear : p.lump;
+      expect(p.base + p.raised).toBe(hero);
+      expect(p.base).toBe(Math.floor(Math.min(input, r.compensationBase.max) * days + 1e-6));
+      expect(Math.min(p.raised, p.capCut)).toBeGreaterThanOrEqual(0);
+      expect(p.raised > 0 && p.capCut > 0).toBe(false);
+    }
+  });
+  it("FAQ 가 1~3급 4년분 선급 단서를 적는다", () => {
+    const src = readFileSync("src/pages/guide/industrial-accident-disability/index.astro", "utf-8");
+    expect(src).toContain("1~3급은 1년분부터 4년분까지");
+    expect(r.disability.advanceMaxYears).toEqual({ annuityOnly: 4, choice: 2 });
+  });
+});
+
 const B = r.compensationBase;
 const money = new Set([won(B.max), won(B.min), manwon(Math.floor(disabilityPay(0, 14).lump / 10_000) * 10_000)]);
 const pcts = new Set(["70%"]);

@@ -30,7 +30,7 @@ const ANSWER = `장해급여는 치유된 뒤 장해가 남은 근로자에게 �
 const QA = [
   { q: "산재 장해등급별 보상금은 어떻게 계산하나요?", a: `1일 평균임금 × 등급별 일수입니다(별표 2). 평균임금이 1일 ${won(EX_AVG)}이고 12급이면 ${D.lumpDays["12"]}일분 ${won(ex.lump)}을 일시금으로 받습니다. 장해급여는 휴업급여와 달리 최저 보상기준 금액 ${won(B.min)}보다 낮은 평균임금을 그 금액으로 올려 계산합니다.` },
   { q: "장해등급 14급 보상금은 얼마인가요?", a: `14급은 장해보상일시금 ${D.lumpDays["14"]}일분입니다. 2026년 평균임금 하한 ${won(B.min)}을 적용하면 최소 ${won(g14.lump)}이고, 평균임금이 그보다 높으면 그 평균임금 × ${D.lumpDays["14"]}입니다. 8급부터 14급까지는 연금 없이 일시금으로만 받습니다.` },
-  { q: "장해보상연금과 일시금 중 무엇을 받나요?", a: `수급권자가 고를 수 있지만 노동력을 완전히 잃은 1~3급은 연금만 받습니다(제57조 제3항, 시행령 제53조 제5항). 별표 2에 연금이 있는 등급은 1~7급이라 4~7급이 선택, 8~14급은 일시금입니다. 연금은 신청하면 첫 1년분이나 2년분의 절반을 미리 받을 수 있습니다(제57조 제4항).` },
+  { q: "장해보상연금과 일시금 중 무엇을 받나요?", a: `수급권자가 고를 수 있지만 노동력을 완전히 잃은 1~3급은 연금만 받습니다(제57조 제3항, 시행령 제53조 제5항). 별표 2에 연금이 있는 등급은 1~7급이라 4~7급이 선택, 8~14급은 일시금입니다. 연금은 신청하면 첫 1년분이나 2년분(1~3급은 1년분부터 4년분까지)의 절반을 미리 받을 수 있습니다(제57조 제4항).` },
   { q: "장해급여는 언제까지 청구해야 하나요?", a: `장해급여를 받을 권리는 5년간 행사하지 않으면 시효로 소멸합니다(제112조 제1항 단서). 휴업급여·요양급여의 3년보다 깁니다. 장해등급 판정 세부기준은 시행령 별표 6과 고용노동부령에 있고, 이 글에서는 다루지 않았습니다.` },
 ];
 ---
@@ -39,25 +39,40 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">1일 평균임금과 장해등급을 넣으면 2026년 기준 장해급여를 계산합니다. 평균임금은 {won(B.min)}~{won(B.max)} 범위로 맞춥니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">아래 값은 예시입니다. 내 1일 평균임금(세전)과 장해등급으로 바꾸세요. 2026년 기준 장해급여를 계산하고, 평균임금은 {won(B.min)}~{won(B.max)} 범위로 맞춥니다.</p>
     <div class="calc-input-wrap">
-      <label for="dis-avg">1일 평균임금</label>
-      <input type="text" inputmode="numeric" id="dis-avg" value="100,000" /><span class="unit">원</span>
+      <label for="dis-avg">1일 평균임금(세전)</label>
+      <input type="text" inputmode="numeric" id="dis-avg" value="100,000" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="dis-grade">장해등급</label>
       <select id="dis-grade">{GRADES.map((g) => <option value={g} selected={g === 12}>제{g}급</option>)}</select>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="dis-base|dis-raised"
+      data-bar-labels="내 평균임금 × 일수|하한으로 올린 몫"
+      data-dock="dis-hero"
+    >
       <p class="label" id="dis-label">장해보상일시금</p>
       <p class="big" id="dis-hero">{won(ex.lump)}</p>
       <p class="meta" id="dis-note">제12급 · 일시금만 · {D.lumpDays["12"]}일분</p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">적용 평균임금</span><span class="value" id="dis-used">{won(ex.avg)}</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">지급 방식</span><span class="value" id="dis-way">{wayLabel[ex.way]}</span></div>
       <div class="stat-chip"><span class="label">연금(1년)</span><span class="value" id="dis-annuity">없음</span></div>
+      <div class="stat-chip"><span class="label">연금 한 달 치 (1년분 ÷ 12, 제70조 ③)</span><span class="value" id="dis-monthly">없음</span></div>
+      <div class="stat-chip"><span class="label" id="dis-adv-label">미리 받을 수 있는 최대 (이자 공제 전, 제57조 ④)</span><span class="value" id="dis-adv">없음</span></div>
+      <div class="stat-chip"><span class="label">연금이 일시금만큼 쌓이는 데 (명목)</span><span class="value" id="dis-even">—</span></div>
+      <div class="stat-chip"><span class="label">적용 평균임금 ({won(B.min)}~{won(B.max)})</span><span class="value" id="dis-used">{won(ex.avg)}</span></div>
+      <div class="stat-chip"><span class="label">상한을 넘어 빠진 몫</span><span class="value" id="dis-cap">{won(ex.capCut)}</span></div>
+      <div class="stat-chip" data-group="적용 평균임금 × 일수"><span class="label" id="dis-base-label">내 평균임금 × {D.lumpDays["12"]}일</span><span class="value" id="dis-base">{won(ex.base)}</span></div>
+      <div class="stat-chip"><span class="label">하한 {won(B.min)}으로 올린 몫</span><span class="value" id="dis-raised">{won(ex.raised)}</span></div>
     </div>
+    <p class="meta">큰 숫자 = 내 평균임금(상한까지) × 일수 + 하한으로 올린 몫입니다(1~3급은 연금 1년분). 원 미만은 버려 표시합니다. 미리 받는 금액은 100분의 5 범위의 이자를 공제하기 전 금액이고, 쌓이는 햇수는 평균임금 증감(제36조 제3항)을 넣지 않은 명목 값입니다.</p>
   </div>
 
   <h2>{QA[0].q}</h2>
@@ -77,6 +92,7 @@ const QA = [
 
   <h2>{QA[2].q}</h2>
   <p class="qa-lead">{QA[2].a}</p>
+  <p>미리 받는 금액에서는 100분의 5 범위에서 대통령령으로 정하는 이자를 뗄 수 있어, 위 계산기의 '미리 받을 수 있는 최대'는 이자를 떼기 전 금액입니다. 연금은 지급 사유가 생긴 달의 다음 달부터 1년분을 12등분해 매달 25일에 받습니다(제70조 제1항·제3항).</p>
 
   <h2>{QA[3].q}</h2>
   <p class="qa-lead">{QA[3].a}</p>
