@@ -43,12 +43,36 @@ export function earnedIncentive(i: EarnedIncentiveInput) {
   // 신청자격(제100조의3 ①): 가구별 총소득기준금액 미만, 재산 2억4천만원 미만.
   // 총소득과 총급여액 등은 시행령상 다른 개념이지만 여기서는 같은 입력으로 어림한다.
   const eligible = i.pay > 0 && i.pay < r.eligibility.totalIncomeUnder[i.household] && assets < r.eligibility.assetsUnder;
-  if (!eligible) return { eligible, band: "none" as const, base: 0, amount: 0 };
+  if (!eligible) return { eligible, band: "none" as const, base: 0, amount: 0, assetsCut: 0, lateCut: 0, reduced: 0, minAdj: 0, belowMax: 0 };
   const { amount: raw, band } = formulaAmount(i.household, i.pay);
   const base = Math.floor(raw);
-  let x = assets >= r.reductions.assets.from ? Math.floor(base * r.reductions.assets.rate) : base;
-  if (i.late) x = Math.floor(x * r.reductions.late.rate);
-  return { eligible, band, base, amount: applyMinimum(x, band) };
+  const afterAssets = assets >= r.reductions.assets.from ? Math.floor(base * r.reductions.assets.rate) : base;
+  const reduced = i.late ? Math.floor(afterAssets * r.reductions.late.rate) : afterAssets;
+  // 제100조의7 ③ — 최소 금액은 재산(제100조의5 ④)·기한 후 신청(제100조의7 ②)으로 줄인 뒤의 금액에 적용한다
+  const amount = applyMinimum(reduced, band);
+  return {
+    eligible,
+    band,
+    /** 법 식 금액(원 미만 버림) */
+    base,
+    amount,
+    /** 재산 1억7천만원 이상이라 줄어든 돈 */
+    assetsCut: base - afterAssets,
+    /** 기한 후 신청이라 줄어든 돈 */
+    lateCut: afterAssets - reduced,
+    /** 두 감액 뒤 금액 */
+    reduced,
+    /** 최소 금액 규정으로 달라진 돈 — 1만5천원 미만이면 음수(없음), 10만원·3만원으로 올리면 양수 */
+    minAdj: amount - reduced,
+    /** 가구 최대 금액보다 적은 돈(소득 구간 때문) */
+    belowMax: r.formula[i.household].max - base,
+  };
+}
+
+/** 최대 금액을 받는 총급여액 등 구간과, 줄어드는 구간에서 1만원 더 벌 때 줄어드는 돈(제100조의5 ① 다목 기울기) */
+export function bandInfo(h: EarnedHousehold) {
+  const f = r.formula[h];
+  return { flatFrom: f.riseUnder, flatUnder: f.flatUnder, max: f.max, taperPer10k: (10_000 * f.max) / f.taperSpan };
 }
 
 /**

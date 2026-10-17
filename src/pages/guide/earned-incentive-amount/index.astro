@@ -9,7 +9,7 @@ import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/earned-incentive-2026.json";
-import { earnedIncentive, formulaAmount, type EarnedHousehold } from "../../../lib/earned-incentive";
+import { earnedIncentive, formulaAmount, bandInfo, type EarnedHousehold } from "../../../lib/earned-incentive";
 import { won, eokwon } from "../../../lib/won";
 
 const F = r.formula;
@@ -22,6 +22,8 @@ const cell = (h: EarnedHousehold, p: number) => {
   return x.eligible ? won(x.amount) : "대상 아님";
 };
 const ex = earnedIncentive({ household: "oneEarner", pay: 20_000_000 });
+const exBand = bandInfo("oneEarner");
+const BAND = { rise: "벌수록 느는 구간", flat: "최대 금액 구간", taper: "벌수록 주는 구간", none: "대상 아님" } as const;
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 earned-incentive.test.ts 가 rates 와 대조한다.
 const title = "근로장려금 금액 — 단독 최대 165만원, 홑벌이 285만원, 맞벌이 330만원";
@@ -42,11 +44,11 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">법 조문 식으로 한 어림입니다. 실제 금액은 산정표(구간별)로 정해져 조금 다를 수 있습니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">아래 값은 예시입니다. 내 가구와 소득으로 바꾸세요. 법 조문 식으로 한 어림이고, 실제 금액은 산정표(구간별)로 정해져 조금 다를 수 있습니다.</p>
     <div class="calc-input-wrap">
       <label for="ei-household">가구</label>
-      <select id="ei-household">
+      <select id="ei-household" data-seg>
         <option value="single">단독</option>
         <option value="oneEarner" selected>홑벌이</option>
         <option value="dual">맞벌이</option>
@@ -55,24 +57,41 @@ const QA = [
     <p class="meta">배우자·부양자녀·{r.household.parentAge}세 이상 부모가 없으면 단독, 부부 각각 {eokwon(r.household.dualThreshold)} 이상 벌면 맞벌이, 그 밖은 홑벌이입니다.</p>
     <div class="calc-input-wrap">
       <label for="ei-pay">총급여액 등(부부 합산, 1년)</label>
-      <input type="text" inputmode="numeric" id="ei-pay" value="20,000,000" />
+      <input type="text" inputmode="numeric" id="ei-pay" value="20,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <details>
       <summary>재산·늦은 신청</summary>
       <div class="calc-input-wrap">
         <label for="ei-assets">가구원 재산 합계</label>
-        <input type="text" inputmode="numeric" id="ei-assets" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="ei-assets" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
       <label><input type="checkbox" id="ei-late" /> 5월 신청기간을 놓쳐 6개월 안에 신청(95%)</label>
     </details>
 
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="ei-hero|ei-assets-cut,ei-late-cut|ei-below"
+      data-bar-labels="받는 금액|재산·기한 후 신청으로 줄어든 돈|소득 구간 때문에 최대보다 적은 돈"
+      data-dock="ei-hero"
+    >
       <p class="label">근로장려금(어림)</p>
       <p class="big" id="ei-hero">{won(ex.amount)}</p>
     </div>
     <p class="meta" id="ei-note" hidden></p>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">소득 구간</span><span class="value" id="ei-band">{BAND[ex.band]}</span></div>
+      <div class="stat-chip"><span class="label">최대 금액 받는 총급여액 등</span><span class="value" id="ei-flat">{eokwon(exBand.flatFrom)} 이상 {eokwon(exBand.flatUnder)} 미만</span></div>
+      <div class="stat-chip"><span class="label">법 식 금액</span><span class="value" id="ei-base">{won(ex.base)}</span></div>
+      <div class="stat-chip"><span class="label">최대 금액보다 적은 돈</span><span class="value" id="ei-below">{won(ex.belowMax)}</span></div>
+      <div class="stat-chip"><span class="label">최소 금액 규정으로 달라진 돈</span><span class="value" id="ei-minadj">{won(ex.minAdj)}</span></div>
+      <div class="stat-chip" data-group="줄어든 돈"><span class="label">재산 1억7천만원 이상 · 50%</span><span class="value" id="ei-assets-cut">{won(ex.assetsCut)}</span></div>
+      <div class="stat-chip"><span class="label">기한 후 신청 · 5%</span><span class="value" id="ei-late-cut">{won(ex.lateCut)}</span></div>
+    </div>
+    <p class="meta" id="ei-formula">근로장려금 = 법 식 금액 − 줄어든 돈 ± 최소 금액 규정. 줄어드는 구간에서는 총급여액 등이 1만원 늘 때마다 약 {Math.floor(exBand.taperPer10k).toLocaleString("ko-KR")}원씩 줄어듭니다(제100조의5 제1항). 최소 금액은 재산·기한 후 신청으로 줄인 뒤의 금액에 적용합니다(제100조의7 제3항).</p>
   </div>
 
   <h2>{QA[0].q}</h2>

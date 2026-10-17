@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { formulaAmount, earnedIncentive, firstHalf, halfYearSchedule } from "../earned-incentive";
+import { formulaAmount, earnedIncentive, firstHalf, halfYearSchedule, bandInfo, type EarnedHousehold } from "../earned-incentive";
 import { iso } from "../tax-deadline";
 import { eokwon } from "../won";
 import r from "../../rates/earned-incentive-2026.json";
@@ -30,6 +30,51 @@ describe("결정 금액", () => {
     expect(Math.floor(formulaAmount("single", 21_800_000).amount)).toBe(25_384);
     expect(earnedIncentive({ household: "single", pay: 21_800_000 }).amount).toBe(30_000);
   });
+});
+
+
+/** 계산기 영수증 분해 — 조문 손계산(roberin 에 같은 도구 없음, 2026-10-17) */
+describe("분해: 법 식 금액 − 재산 − 기한 후 + 최소 금액 조정 = 결정 금액", () => {
+  it("홑벌이 700만원 정확히 → 최대 구간 285만원(가목은 700만원 미만까지)", () => {
+    const x = earnedIncentive({ household: "oneEarner", pay: 7_000_000 });
+    expect([x.band, x.amount, x.belowMax]).toEqual(["flat", 2_850_000, 0]);
+  });
+  it("홑벌이 1,400만원 정확히 → 줄어드는 구간 시작, 아직 285만원", () => {
+    const x = earnedIncentive({ household: "oneEarner", pay: 14_000_000 });
+    expect([x.band, x.amount]).toEqual(["taper", 2_850_000]);
+  });
+  it("홑벌이 2,000만원·재산 1억7천만원 정확히 → 190만원의 절반 95만원, 줄어든 돈 95만원", () => {
+    const x = earnedIncentive({ household: "oneEarner", pay: 20_000_000, assets: 170_000_000 });
+    expect([x.base, x.assetsCut, x.amount, x.belowMax]).toEqual([1_900_000, 950_000, 950_000, 950_000]);
+  });
+  it("재산 2억4천만원 정확히 → 대상 아님", () =>
+    expect(earnedIncentive({ household: "oneEarner", pay: 20_000_000, assets: 240_000_000 }).eligible).toBe(false));
+  it("단독 25만원·기한 후 → 103,125 × 95% = 97,968 → 10만원(③은 ②로 줄인 금액 포함)", () => {
+    const x = earnedIncentive({ household: "single", pay: 250_000, late: true });
+    expect([x.base, x.lateCut, x.reduced, x.minAdj, x.amount]).toEqual([103_125, 5_157, 97_968, 2_032, 100_000]);
+  });
+  it("단독 3만7천원·기한 후 → 15,262 × 95% = 14,498 → 1만5천원 미만이라 없음", () => {
+    const x = earnedIncentive({ household: "single", pay: 37_000, late: true });
+    expect([x.base, x.reduced, x.minAdj, x.amount]).toEqual([15_262, 14_498, -14_498, 0]);
+  });
+  it("맞벌이 4,300만원·재산 2억·기한 후 → 122,222 → 61,111 → 58,055", () => {
+    const x = earnedIncentive({ household: "dual", pay: 43_000_000, assets: 200_000_000, late: true });
+    expect([x.base, x.assetsCut, x.lateCut, x.amount]).toEqual([122_222, 61_111, 3_056, 58_055]);
+  });
+  it("단독 2,180만원·재산 2억 → 25,384 절반 12,692 → 없음", () =>
+    expect(earnedIncentive({ household: "single", pay: 21_800_000, assets: 200_000_000 }).amount).toBe(0));
+  it("무작위 2만 건: 항등식이 늘 맞고 줄어든 돈은 0 이상", () => {
+    const hs: EarnedHousehold[] = ["single", "oneEarner", "dual"];
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 1_103_515_245 + 12_345) % 2_147_483_648) / 2_147_483_648);
+    for (let k = 0; k < 20_000; k++) {
+      const x = earnedIncentive({ household: hs[k % 3], pay: Math.floor(rnd() * 45_000_000), assets: Math.floor(rnd() * 250_000_000), late: rnd() < 0.5 });
+      expect(x.base - x.assetsCut - x.lateCut + x.minAdj).toBe(x.amount);
+      expect(x.assetsCut >= 0 && x.lateCut >= 0 && x.belowMax >= 0).toBe(true);
+    }
+  });
+  it("홑벌이 줄어드는 구간: 1만원 더 벌면 285만/1,800만 × 1만 = 1,583원 남짓 줄어든다", () =>
+    expect(Math.floor(bandInfo("oneEarner").taperPer10k)).toBe(1_583));
 });
 
 describe("반기 신청 상반기분(제100조의5 ②)", () => {
