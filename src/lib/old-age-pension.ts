@@ -11,7 +11,7 @@
  * 수급 나이·조기·연기 지급률은 pension-timing.ts 를 그대로 쓴다.
  */
 import r from "../rates/pension-2026.json";
-import { earlyRate, deferredRate, startAgeForBirthYear } from "./pension-timing";
+import { earlyRate, deferredRate, startAgeForBirthYear, breakevenAge } from "./pension-timing";
 
 const P = r.partialCoverage;
 const fl = (v: number) => Math.floor(v + 1e-6);
@@ -39,7 +39,31 @@ export function rateAtStart(birthYear: number, age: number): number | null {
   return deferredRate(Math.min(age, latestAge) - startAge);
 }
 
-/** 소득 감액액 — 초과소득월액(소득월액 − A값) 구간별, 노령연금액(부양가족연금액 제외)의 2분의 1 한도 */
+/**
+ * 받기 시작할 나이 하나를 고른 결과 — 지급률·앞당기거나 미룬 햇수·정상 대비 증감·만 그 나이가 되는 해,
+ * 정상 수급과 명목 누적 수령액이 같아지는 나이(물가·연금액 인상 반영 안 함, pension-timing breakevenAge).
+ * 정상 수급 나이를 고르면 손익분기는 null, 조기 최저보다 이르면 rate·breakeven 모두 null.
+ * 연기는 latestAge 를 넘겨 골라도 latestAge 로 계산한다(rateAtStart 와 같음).
+ */
+export function startPlan(birthYear: number, age: number) {
+  const ages = pensionAges(birthYear);
+  const rate = rateAtStart(birthYear, age);
+  const eff = Math.min(age, ages.latestAge);
+  const shift = eff - ages.startAge;
+  let breakeven: number | null = null;
+  if (rate !== null && shift < 0) breakeven = breakevenAge({ age: eff, rate }, { age: ages.startAge, rate: 1 });
+  if (rate !== null && shift > 0) breakeven = breakevenAge({ age: ages.startAge, rate: 1 }, { age: eff, rate });
+  return {
+    ...ages,
+    rate,
+    shift: rate === null ? null : shift,
+    change: rate === null ? null : Math.round((rate - 1) * 10000) / 10000,
+    turnYear: birthYear + eff,
+    breakeven,
+  };
+}
+
+/** 소득 감액액 —초과소득월액(소득월액 − A값) 구간별, 노령연금액(부양가족연금액 제외)의 2분의 1 한도 */
 export function earningsReduction(excessMonthly: number, pension: number): number {
   const b = [...r.earningsReduction.brackets].reverse().find((x) => excessMonthly >= x.from);
   if (!b) return 0;

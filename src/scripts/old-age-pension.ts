@@ -2,7 +2,7 @@
  * 노령연금 나이 계산기 — /guide/old-age-pension-age/.
  * 계산은 src/lib/old-age-pension.ts 가 한다. 여기서는 입력을 읽고 결과를 그린다.
  */
-import { pensionAges, rateAtStart } from "../lib/old-age-pension";
+import { pensionAges, startPlan } from "../lib/old-age-pension";
 import { trackCalculatorUse } from "../lib/track";
 
 const reportUse = trackCalculatorUse("old-age-pension");
@@ -28,10 +28,16 @@ function render() {
   const a = pensionAges(y);
   syncOptions(a);
   const start = Number(age.value);
-  const rate = rateAtStart(y, start);
+  const p = startPlan(y, start);
+  const rate = p.rate;
   $("op-start").textContent = `${a.startAge}세`;
   $("op-early").textContent = `${a.earliestAge}세`;
   $("op-late").textContent = `${a.latestAge}세`;
+  $("op-year-label").textContent = `만 ${Math.min(start, a.latestAge)}세가 되는 해`;
+  $("op-year").textContent = `${p.turnYear}년`;
+  $("op-shift").textContent = p.shift === null ? "—" : p.shift === 0 ? "없음" : `${Math.abs(p.shift)}년 ${p.shift < 0 ? "앞당김" : "미룸"}`;
+  $("op-change").textContent = p.change === null ? "—" : p.change === 0 ? "±0%" : `${p.change > 0 ? "+" : "−"}${pct(Math.abs(p.change))}`;
+  $("op-break").textContent = p.breakeven === null ? "—" : `약 ${p.breakeven}세`;
   if (rate === null) {
     $("op-hero").textContent = "—";
     $("op-note").textContent = `${a.earliestAge}세보다 일찍은 받을 수 없습니다.`;

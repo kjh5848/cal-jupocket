@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import r from "../../rates/pension-2026.json";
 import bp from "../../rates/basic-pension-2026.json";
 import { oldAgePensionSeries } from "../../data/series/old-age-pension";
-import { coverageRate, pensionAges, rateAtStart, earningsReduction } from "../old-age-pension";
+import { coverageRate, pensionAges, rateAtStart, earningsReduction, startPlan } from "../old-age-pension";
 import { manwon } from "../won";
 
 describe("노령연금 계산", () => {
@@ -20,6 +20,37 @@ describe("노령연금 계산", () => {
   it("조기 70~94%(제63조 ②), 연기 월 0.6% 최대 5년(제62조)", () => {
     expect([60, 61, 64, 65, 66, 70, 72].map((x) => rateAtStart(1969, x))).toEqual([0.7, 0.76, 0.94, 1, 1.072, 1.36, 1.36]);
     expect(rateAtStart(1969, 59)).toBeNull();
+  });
+  it("출생연도 경계 쌍(부칙 제8조) — 1952/53 · 56/57 · 60/61 · 64/65 · 68/69", () => {
+    expect([1952, 1953, 1956, 1957, 1960, 1961, 1964, 1965, 1968, 1969].map((y) => pensionAges(y).startAge)).toEqual([60, 61, 61, 62, 62, 63, 63, 64, 64, 65]);
+    expect(rateAtStart(1968, 59)).toBe(0.7);
+    expect(rateAtStart(1968, 58)).toBeNull();
+  });
+  it("startPlan — 손계산: 앞당긴·미룬 햇수, 증감, 만 그 나이가 되는 해, 명목 손익분기", () => {
+    // 60세 70%: 0.7(x − 60) = (x − 65) → x = 23/0.3 = 76.67
+    expect(startPlan(1969, 60)).toMatchObject({ rate: 0.7, shift: -5, change: -0.3, turnYear: 2029, breakeven: 76.7 });
+    // 64세 94%: (65 − 60.16)/0.06 = 80.67
+    expect(startPlan(1969, 64)).toMatchObject({ rate: 0.94, shift: -1, change: -0.06, turnYear: 2033, breakeven: 80.7 });
+    // 66세 107.2%: (70.752 − 65)/0.072 = 79.89
+    expect(startPlan(1969, 66)).toMatchObject({ rate: 1.072, shift: 1, change: 0.072, turnYear: 2035, breakeven: 79.9 });
+    // 70세 136%: (95.2 − 65)/0.36 = 83.89
+    expect(startPlan(1969, 70)).toMatchObject({ rate: 1.36, shift: 5, change: 0.36, turnYear: 2039, breakeven: 83.9 });
+    // 정상 수급 나이 → 손익분기 없음(지급률이 같아 breakevenAge 가 throw 하던 경우)
+    expect(startPlan(1969, 65)).toMatchObject({ rate: 1, shift: 0, change: 0, turnYear: 2034, breakeven: null });
+    // 조기 최저보다 이름 → 전부 null
+    expect(startPlan(1969, 59)).toMatchObject({ rate: null, shift: null, change: null, breakeven: null });
+    // 연기 최대를 넘겨도 최대로(1957년생 62세 + 5 = 67세)
+    expect(startPlan(1957, 69)).toMatchObject({ rate: 1.36, shift: 5, turnYear: 2024, breakeven: 80.9 });
+  });
+  it("startPlan — 1940~2010년생 모든 나이에서 throw 없음, 정상 수급 나이 외에는 손익분기가 정상 수급 나이보다 뒤", () => {
+    for (let y = 1940; y <= 2010; y++) {
+      const a = pensionAges(y);
+      for (let x = a.earliestAge - 1; x <= a.latestAge + 1; x++) {
+        const p = startPlan(y, x);
+        if (p.breakeven !== null) expect(p.breakeven).toBeGreaterThan(a.startAge);
+        else expect(p.rate === null || p.shift === 0).toBe(true);
+      }
+    }
   });
   it("소득 감액(제63조의2) — 200만원 미만 없음, 200만원 15만원, 연금액 1/2 한도", () => {
     expect(earningsReduction(1_999_999, 1_000_000)).toBe(0);
