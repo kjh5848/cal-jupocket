@@ -190,7 +190,7 @@
 - [x] /guide/irp-tax-credit-calculator/ (2026-10-17 — lib roomToCap(한도 넘긴 돈·900만원까지 남은 금액·채우면 더 줄어드는 세금, 제61조 한도 반영)·산출세액 한도 때 소득세·지방소득세 칩 어긋남 고침·공제율 구간 버튼·줄어드는 세금 소계·막대·자동완성 프리셋 연금저축 300만·600만/IRP 300만·900만·두 칸·고정 띠, roberin 대조: 6개 1원까지 같음. 소득 입력 자동 판정은 보류 — 총급여 5,500만 rates 숫자 필드 없음)
 - [x] /guide/medical-credit-limit/ (2026-10-17 — lib base·absorbed·over·toThreshold(3%로 빠진 돈·700만원 한도로 빠진 돈·3%까지 남은 의료비)·미숙아·난임 칩·공제 대상 소계(정수 합)·공제 대상/3%/한도 막대·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 제59조의4 ② 손계산 4개로 대조(모두 같음). 프리셋 없음 — 자동완성에 금액 없음)
 - [x] /guide/earned-incentive-amount/ (2026-10-17 — lib assetsCut·lateCut·reduced·minAdj·belowMax·bandInfo, 소득 구간·최대 금액 구간·법 식 금액·최대보다 적은 돈·최소 금액 조정 칩·줄어든 돈 소계(재산 50%·기한 후 5%)·막대·1만원당 감소액 산식·가구 버튼·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 손계산 8개 같음·무작위 2만 건 항등식. 감액 → 최소 금액 순서는 제100조의7 ③ 원문으로 확인. 프리셋 없음 — 자동완성에 금액 없음)
-- [ ] /guide/child-incentive-amount/
+- [x] /guide/child-incentive-amount/ (2026-10-17 — lib band·assetsCut·lateCut·floorAdj·belowMax·bandInfo, 소득 구간·1명당 100만원 받는 총급여액 등·법 식 금액·최대보다 적은 돈·3만원 하한으로 더한 돈 칩·줄어든 돈 소계(재산 50%·기한 후 5%·자녀세액공제)·막대·자녀 1명당 1만원당 감소액 산식·가구 버튼·자녀 수 −/+·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 손계산 6개 같음·무작위 2만 건 항등식. 3만원 하한은 세 감액 뒤 적용(제100조의31 ② 원문), 감액 순서·1만5천원 단서는 보류. 프리셋 없음 — 자동완성에 금액 없음)
 - [ ] /guide/basic-pension-calculator/
 - [ ] /guide/old-age-pension-age/
 - [ ] /guide/industrial-accident-leave-pay/
