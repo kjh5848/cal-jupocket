@@ -6,7 +6,7 @@
 
 현재: 보류 2 · 있음 18 · 할 일 412
 
-다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /guide/parental-leave-pay-calculator/(육아휴직급여) — roberin 대응 도구 찾아 대조. /guide/unemployment-benefit-calculator/ 는 2026-10-17 완료(말일 이직 산정일수 fix, 하루 구직급여 소계·막대, 2027 하한 > 상한 안내). 보류 추가: 구직급여 원 미만 단수(평균임금·60% 버림 vs 반올림 1원), 평균임금 산정기간에 이직일 포함 여부(일수 같음). 글 후보: 실업급여 1차·2차 실업인정·지급일(자동완성 줄기, 고용노동부 기준 원문 필요). 지난 회차 보류 추가: 1일 통상임금 단수(시간급 버림 후 × 8 vs 월급 × 8 ÷ 209 반올림, 시행령 제6조에 단수 규정 없음), 1년 근무 다음 날 재직 요건 판례 원문, 일본 労働基準法 第39条 원문(e-Gov 본문 못 읽음). 후보: 회계연도 연차 계산기·퇴사 연차수당(자동완성 줄기). 시급계산기(#11)는 할 일 그대로 — 연장·야간·휴일 가산(제56조). 보류 남은 것: 주 6일 사업장 ÷6 단수, 국민연금 사업장가입자 10원 미만 버림 방식(313,020 vs 313,025), 건강보험료 원 단위 처리, 국민연금 10원 절사 근거 조문(국고금 관리법 제47조 ③ 준용). 카드 세트 late-filing-penalty·multiple-payers 카드 이미지 재생성은 사용자 확인 필요. 납부지연 일수 같은 식 쓰는 글 /guide/vat-final-return-payment/·/guide/withholding-tax/ 확인 필요. 민법 제161조·지방소득세 가산세·원천징수 단수·종소세 경비율 구간 원문 확인 보류. /penalty/ 날짜 칸 스타일(틀) 필요. 이미 발행된 스레드 social/queue/016-penalty-one-day.md 는 옛 숫자 — 그대로 둠.
+다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /guide/severance-tax-calculator/(퇴직소득세) — roberin 대응 도구 찾아 대조. /guide/parental-leave-pay-calculator/ 는 2026-10-17 완료(구간 소계·막대·프리셋 150만·250만). 보류 추가: 6+6 특례 부모 개월 수가 다를 때 상한(시행령 제95조의3 제1항 각 목은 '각각 N개월'만 — 고용노동부 해석 원문 필요), 1개월 미만 달 일수 비례 분모(제95조 제3항), 회사 지급 금품 감액 기준(제73조). 글 후보: 육아휴직 급여 30일 미만·2주(단기 육아휴직)·12개월 이후·18개월(자동완성 줄기). 지난 회차 보류: 구직급여 원 미만 단수, 평균임금 산정기간 이직일 포함 여부, 1일 통상임금 단수, 1년 근무 다음 날 재직 요건 판례, 일본 労働基準法 第39条, 주 6일 사업장 ÷6 단수, 국민연금 10원 미만 버림 방식·근거 조문, 건강보험료 원 단위, 민법 제161조·지방소득세 가산세·원천징수 단수·종소세 경비율 구간. 시급계산기(#11)는 할 일 그대로. 카드 세트 late-filing-penalty·multiple-payers 이미지 재생성은 사용자 확인 필요. /guide/vat-final-return-payment/·/guide/withholding-tax/ 납부지연 일수 식 확인 필요. /penalty/ 날짜 칸 스타일(틀) 필요.
 
 | # | 우리 분류 | roberin 분류 | roberin 주소 | 도구 | 상태 | 우리 주소 | 메모 |
 |---|---|---|---|---|---|---|---|
@@ -85,7 +85,7 @@
 | 339 | 급여·근로 | 문서·텍스트·개발 유틸 / 기타 문서·유틸 | https://roberin.com/indemnizacion-calculator/ | 스페인 해고수당(Indemnización) 계산기 | 보류 |  | 나라별 — 한국·일본 다음(설계 2절) |
 | 349 | 급여·근로 | 문서·텍스트·개발 유틸 / 기타 문서·유틸 | https://roberin.com/pesangon-calculator/ | 인도네시아 퇴직금(Pesangon) 계산기 | 보류 |  | 나라별 — 한국·일본 다음(설계 2절) |
 | 350 | 급여·근로 | 문서·텍스트·개발 유틸 / 기타 문서·유틸 | https://roberin.com/daily-worker-insurance-calculator/ | 일용직 4대보험 계산기 | 할 일 |  |  |
-| 359 | 급여·근로 | 문서·텍스트·개발 유틸 / 기타 문서·유틸 | https://roberin.com/maternity-parental-leave-calculator/ | 출산휴가·육아휴직 급여 계산기 | 있음 | /guide/parental-leave-pay-calculator/ |  |
+| 359 | 급여·근로 | 문서·텍스트·개발 유틸 / 기타 문서·유틸 | https://roberin.com/maternity-parental-leave-calculator/ | 출산휴가·육아휴직 급여 계산기 | 있음 | /guide/parental-leave-pay-calculator/ | 2026-10-17 대조(육아휴직 탭): 같은 개월 수 입력 6개 같음 · 6+6 부모 개월 수 다를 때(roberin 짧은 쪽만 특례)는 제95조의3 원문에 없어 보류 · 새 틀 이전. 출산전후휴가·배우자 휴가 탭은 우리 출산휴가 글 계산기 회차에 |
 | 70 | 단위·변환 | 부동산·주거·자동차 / 날씨·환경 | https://roberin.com/indoor-humidity-calculator/ | 실내 적정습도 계산기 | 할 일 |  |  |
 | 71 | 단위·변환 | 부동산·주거·자동차 / 날씨·환경 | https://roberin.com/aircon-temperature-calculator/ | 에어컨 적정온도·제습 계산기 | 할 일 |  |  |
 | 72 | 날짜·시간 | 날짜·시간·일정 / 날짜·D-Day | https://roberin.com/csat-dday-2027/ | 2027학년도 수능 디데이 계산기 | 할 일 |  |  |

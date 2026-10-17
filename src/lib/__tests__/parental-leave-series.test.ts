@@ -5,7 +5,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/parental-leave-2026.json";
 import { parentalLeaveSeries } from "../../data/series/parental-leave";
-import { schedule, monthlyPay, maternityPay } from "../parental-leave";
+import { schedule, monthlyPay, maternityPay, bandTotals } from "../parental-leave";
 import { eokwon, won } from "../won";
 
 const P = r.pay;
@@ -22,6 +22,14 @@ describe("육아휴직 급여 계산", () => {
   it("6+6 상한 250·250·300·350·400·450, 6개월 2,000만원", () => {
     expect(schedule(9e6, 6, "sixSix").rows.map((x) => x.pay)).toEqual([2.5e6, 2.5e6, 3e6, 3.5e6, 4e6, 4.5e6]);
     expect(schedule(9e6, 6, "sixSix").total).toBe(20_000_000);
+  });
+  it("구간 소계 1~3 · 4~6 · 7개월째부터, 합은 총액", () => {
+    const x = schedule(3e6, 12);
+    expect(bandTotals(x.rows)).toEqual({ first3: 7_500_000, next3: 6_000_000, after6: 9_600_000 });
+    expect(bandTotals(schedule(1_234_567, 12).rows).after6).toBe(987_653 * 6);
+    expect(bandTotals(schedule(5e6, 6, "sixSix").rows)).toEqual({ first3: 8_000_000, next3: 12_000_000, after6: 0 });
+    expect(bandTotals(schedule(2e6, 2).rows)).toEqual({ first3: 4_000_000, next3: 0, after6: 0 });
+    expect(bandTotals(schedule(8e5, 12).rows).after6).toBe(700_000 * 6);
   });
   it("출산휴가 고용보험 상한 90일 660만원, 대기업 30일 220만원", () => {
     expect([maternityPay(5e6, true).insurance, maternityPay(5e6, false).insurance]).toEqual([6_600_000, 2_200_000]);

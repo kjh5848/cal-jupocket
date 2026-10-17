@@ -7,11 +7,14 @@ import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/parental-leave-2026.json";
-import { schedule } from "../../../lib/parental-leave";
+import { schedule, bandTotals } from "../../../lib/parental-leave";
+import { calcPresets } from "../../../data/calc-presets";
 import { won, eokwon } from "../../../lib/won";
 
 const P = r.pay;
 const ex = schedule(3_000_000, 12);
+const exB = bandTotals(ex.rows);
+const PRESETS = JSON.stringify({ default: calcPresets["/guide/parental-leave-pay-calculator/"].default.amounts });
 const low = schedule(2_000_000, 12);
 const ss = schedule(5_000_000, 6, "sixSix");
 const pays = [1_500_000, 2_000_000, 2_500_000, 3_000_000, 4_000_000];
@@ -35,28 +38,42 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">한 달 단위로 계산합니다. 6+6 특례는 부모가 각각 같은 개월 수를 쓴다고 보고, 1개월이 안 되는 달·분할 사용·회사에서 받은 금품 감액은 넣지 않았습니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">한 달 단위로 계산합니다. 6+6 특례는 부모가 각각 같은 개월 수를 쓴다고 봅니다 — 시행령 제95조의3 제1항은 부모가 '각각 1~6개월'을 쓴 경우만 정해, 쓴 개월 수가 서로 다를 때는 넣지 않았습니다. 1개월이 안 되는 달·분할 사용·회사에서 받은 금품 감액도 넣지 않았습니다.</p>
     <div class="calc-input-wrap">
       <label for="pl-pay">휴직 시작일 기준 월 통상임금</label>
-      <input type="text" inputmode="numeric" id="pl-pay" value="3,000,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="pl-pay" value="3,000,000" data-won data-presets={PRESETS} /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="pl-months">휴직 개월</label>
-      <input type="number" min="1" max="18" step="1" id="pl-months" value="12" /><span class="unit">개월</span>
+      <input type="number" min="1" max="18" step="1" id="pl-months" value="12" data-step /><span class="unit">개월</span>
     </div>
     <div class="calc-input-wrap">
       <label for="pl-mode">유형</label>
-      <select id="pl-mode">
+      <select id="pl-mode" data-seg>
         <option value="normal" selected>일반</option>
         <option value="sixSix">6+6 특례(출생 후 18개월 안에 부모 모두)</option>
         <option value="single">한부모</option>
       </select>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
-      <p class="label">육아휴직 급여 총액</p>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="pl-b1|pl-b2|pl-b3"
+      data-bar-labels="1~3개월째|4~6개월째|7개월째부터"
+      data-dock="pl-hero"
+    >
+      <p class="label">육아휴직 급여 총액 (달마다 받는 금액의 합)</p>
       <p class="big" id="pl-hero">{won(ex.total)}</p>
     </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">한 달 평균 (총액 ÷ <span id="pl-n">{ex.rows.length}</span>개월)</span><span class="value" id="pl-avg">{won(Math.floor(ex.total / ex.rows.length))}</span></div>
+      <div class="stat-chip" data-group="육아휴직 급여 총액"><span class="label">1~3개월째 (100%, 상한 <span id="pl-c1">{eokwon(P.bands[0].cap)}</span>)</span><span class="value" id="pl-b1">{won(exB.first3)}</span></div>
+      <div class="stat-chip"><span class="label">4~6개월째 (100%, 상한 <span id="pl-c2">{eokwon(P.bands[1].cap)}</span>)</span><span class="value" id="pl-b2">{won(exB.next3)}</span></div>
+      <div class="stat-chip"><span class="label">7개월째부터 (80%, 상한 {eokwon(P.bands[2].cap)})</span><span class="value" id="pl-b3">{won(exB.after6)}</span></div>
+    </div>
+    <p class="meta">달마다 월 통상임금 × 지급률을 상한에서 자르고, {eokwon(P.floor)}보다 적으면 {eokwon(P.floor)}을 줍니다(시행령 제95조 제1항). 6+6 특례는 첫 6개월 상한이 달마다 250·250·300·350·400·450만원, 한부모는 1~3개월째 상한 300만원입니다(제95조의3).</p>
     <div class="table-scroll">
       <table>
         <thead><tr><th>개월</th><th>월 지급액</th></tr></thead>

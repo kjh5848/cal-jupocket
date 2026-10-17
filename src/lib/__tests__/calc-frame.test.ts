@@ -18,6 +18,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
   { path: "/guide/minimum-wage-calculator/", attrs: ["data-two", "data-won", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/annual-leave-calculator/", attrs: ["data-two", "data-won", "data-step", "data-seg", "data-receipt", "data-dock"] },
   { path: "/guide/unemployment-benefit-calculator/", attrs: ["data-two", "data-won", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
+  { path: "/guide/parental-leave-pay-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
 ];
 
 /**

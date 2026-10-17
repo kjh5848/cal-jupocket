@@ -29,6 +29,12 @@ export function schedule(ordinary: number, months: number, mode: Mode = "normal"
   return { rows, total: rows.reduce((a, b) => a + b.pay, 0) };
 }
 
+/** 지급표를 1~3개월째 · 4~6개월째 · 7개월째부터로 나눈 합(영수증 소계·막대용). 합은 schedule().total 과 같다 */
+export function bandTotals(rows: { month: number; pay: number }[]) {
+  const sum = (from: number, to: number) => rows.filter((x) => x.month >= from && x.month <= to).reduce((a, b) => a + b.pay, 0);
+  return { first3: sum(1, 3), next3: sum(4, 6), after6: sum(7, Infinity) };
+}
+
 /** 출산전후휴가 — 1일 통상임금(월급 ÷ 209 × 8)과 고용보험 지급액(90일 상한 660만원, 대규모 기업은 마지막 30일분만) */
 export function maternityPay(monthlyOrdinary: number, priority: boolean) {
   const M = r.maternity;

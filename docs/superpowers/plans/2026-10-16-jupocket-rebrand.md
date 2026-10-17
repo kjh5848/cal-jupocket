@@ -184,7 +184,7 @@
 - [x] /guide/minimum-wage-calculator/ (2026-10-17 — 최저 주급(시행령 제5조 ①2) 추가·최저 월급 소계(받는 임금 + 모자라는 금액)·막대·−/+·연도·수습 버튼·두 칸, roberin 시급계산기 대조: 주 40h 는 고시 209시간인 우리가 고시 금액과 같음(roberin 208.57h), 20h 같음. 프리셋 없음 — 자동완성에 금액 없음)
 - [x] /guide/annual-leave-calculator/ (2026-10-17 — 상시 근로자 수 버튼(4명 이하 제60조 미적용, 시행령 별표 1)·다음 연차 생기는 날·그날 생기는 일수·수당 산식 표기·−/+·두 칸·고정 띠, roberin 연차일수 계산기 대조: 일수 경계 8개 같음, 1일 통상임금 단수 차이(하루 최대 7원)는 원문에 단수 규정 없어 보류. 프리셋 없음 — 자동완성에 금액 없음)
 - [x] /guide/unemployment-benefit-calculator/ (2026-10-17 — 말일 이직 3개월 일수 fix(민법 제160조 ③, 2/31 → 3/3 넘침), 하루 구직급여 소계(60% + 하한까지 보탠 금액)·막대·산정일수·1일 소정근로시간 표시·나이 버튼·−/+·두 칸·고정 띠, roberin 대조: 7개 같음, 2027 이직 하한은 우리 맞음(roberin 2026 최저임금), 340만 1원 단수는 보류. 프리셋 없음 — 자동완성에 금액 없음)
-- [ ] /guide/parental-leave-pay-calculator/
+- [x] /guide/parental-leave-pay-calculator/ (2026-10-17 — 한 달 평균·1~3/4~6/7개월째부터 소계(bandTotals)·세 구간 막대·유형별 상한 표기·자동완성 프리셋 150만·250만·−/+·유형 버튼·두 칸·고정 띠, roberin 대조: 같은 개월 수 입력 6개 모두 같음, 6+6 부모 개월 수가 다를 때는 제95조의3 각 목이 '각각 N개월'만 정해 보류)
 - [ ] /guide/severance-tax-calculator/
 - [ ] /guide/year-end-calculator/
 - [ ] /guide/irp-tax-credit-calculator/
