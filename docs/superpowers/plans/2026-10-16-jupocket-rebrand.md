@@ -188,7 +188,7 @@
 - [x] /guide/severance-tax-calculator/ (2026-10-17 — 남은 개월 칸(lib yearsFrom)·근속연수공제·환산급여·환산급여공제 칩·세금 합계 소계·세후/세금 막대·산식 한 줄·−/+·두 칸·고정 띠, roberin 퇴직소득세 계산기 대조: 소득세 7개 같음(손계산 테스트 고정), 지방소득세 10원 단수 차이는 원문 미확인 보류. 프리셋 없음 — 자동완성 금액 줄기 1억 하나(기본값))
 - [x] /guide/year-end-calculator/ (2026-10-17 — lib credits(제61조 한도 뒤 실제 공제)·공제 단계 칩·이미 뗀 세금·산출세액 소계(결정세액 + 실제 공제)·막대·제61조 안내·−/+·자동완성 프리셋 3,000만·4,000만·두 칸·고정 띠 제목 갱신. roberin 에 같은 도구 없음 → 대조표 '없음', 조문 손계산 3개로 대조(모두 같음))
 - [x] /guide/irp-tax-credit-calculator/ (2026-10-17 — lib roomToCap(한도 넘긴 돈·900만원까지 남은 금액·채우면 더 줄어드는 세금, 제61조 한도 반영)·산출세액 한도 때 소득세·지방소득세 칩 어긋남 고침·공제율 구간 버튼·줄어드는 세금 소계·막대·자동완성 프리셋 연금저축 300만·600만/IRP 300만·900만·두 칸·고정 띠, roberin 대조: 6개 1원까지 같음. 소득 입력 자동 판정은 보류 — 총급여 5,500만 rates 숫자 필드 없음)
-- [ ] /guide/medical-credit-limit/
+- [x] /guide/medical-credit-limit/ (2026-10-17 — lib base·absorbed·over·toThreshold(3%로 빠진 돈·700만원 한도로 빠진 돈·3%까지 남은 의료비)·미숙아·난임 칩·공제 대상 소계(정수 합)·공제 대상/3%/한도 막대·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 제59조의4 ② 손계산 4개로 대조(모두 같음). 프리셋 없음 — 자동완성에 금액 없음)
 - [ ] /guide/earned-incentive-amount/
 - [ ] /guide/child-incentive-amount/
 - [ ] /guide/basic-pension-calculator/
