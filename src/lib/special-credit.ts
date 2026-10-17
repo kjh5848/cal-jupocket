@@ -38,7 +38,14 @@ export function medicalCredit(i: MedicalInput) {
   short = Math.max(0, short - p);
   const fBase = Math.max(0, f - short);
   const credit = Math.floor(gBase * M.rates.general + sBase * M.rates.special + pBase * M.rates.premature + fBase * M.rates.infertility);
-  return { threshold, gBase, sBase, pBase, fBase, credit };
+  const spent = g + s + p + f;
+  /** 낸 의료비 = 공제 대상(base) + 총급여 3%로 빠진 돈(absorbed) + 가족 의료비 700만원 한도로 빠진 돈(over) */
+  const base = gBase + sBase + pBase + fBase;
+  const absorbed = Math.min(threshold, spent);
+  const over = Math.max(0, g - threshold - M.generalCap);
+  /** 3%를 넘기려면 더 내야 하는 의료비 — 0 이 되어야 공제가 시작된다 */
+  const toThreshold = Math.max(0, threshold - spent);
+  return { threshold, gBase, sBase, pBase, fBase, credit, base, absorbed, over, toThreshold };
 }
 
 export interface EducationPerson {

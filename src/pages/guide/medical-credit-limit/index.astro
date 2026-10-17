@@ -34,45 +34,58 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">산출세액 한도(제61조) 전의 의료비 세액공제액입니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">아래 값은 예시입니다. 내 총급여와 의료비로 바꾸세요. 산출세액 한도(제61조) 전의 의료비 세액공제액입니다.</p>
     <div class="calc-input-wrap">
       <label for="mc-pay">총급여(1년)</label>
-      <input type="text" inputmode="numeric" id="mc-pay" value="50,000,000" />
+      <input type="text" inputmode="numeric" id="mc-pay" value="50,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="mc-general">가족(일반) 의료비</label>
-      <input type="text" inputmode="numeric" id="mc-general" value="1,000,000" />
+      <input type="text" inputmode="numeric" id="mc-general" value="1,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="mc-special">본인·6세 이하·65세 이상·장애인 의료비</label>
-      <input type="text" inputmode="numeric" id="mc-special" value="3,000,000" />
+      <input type="text" inputmode="numeric" id="mc-special" value="3,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <details>
       <summary>미숙아·난임시술</summary>
       <div class="calc-input-wrap">
         <label for="mc-premature">미숙아·선천성이상아 의료비</label>
-        <input type="text" inputmode="numeric" id="mc-premature" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="mc-premature" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
       <div class="calc-input-wrap">
         <label for="mc-infertility">난임시술비</label>
-        <input type="text" inputmode="numeric" id="mc-infertility" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="mc-infertility" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
     </details>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="mc-gbase,mc-sbase,mc-pbase,mc-fbase|mc-absorbed|mc-over"
+      data-bar-labels="공제 대상|총급여 3%로 빠진 돈|700만원 한도로 빠진 돈"
+      data-dock="mc-hero"
+    >
       <p class="label">의료비 세액공제(어림)</p>
       <p class="big" id="mc-hero">{won(ex.credit)}</p>
     </div>
-    <div class="stat-row">
+    <div class="stat-row" data-receipt>
       <div class="stat-chip"><span class="label">총급여 3%</span><span class="value" id="mc-threshold">{won(ex.threshold)}</span></div>
-      <div class="stat-chip"><span class="label">공제 대상 가족 의료비</span><span class="value" id="mc-gbase">{won(ex.gBase)}</span></div>
-      <div class="stat-chip"><span class="label">공제 대상 본인 등</span><span class="value" id="mc-sbase">{won(ex.sBase)}</span></div>
+      <div class="stat-chip"><span class="label">3%로 빠진 의료비</span><span class="value" id="mc-absorbed">{won(ex.absorbed)}</span></div>
+      <div class="stat-chip"><span class="label">700만원 한도로 빠진 돈</span><span class="value" id="mc-over">{won(ex.over)}</span></div>
+      <div class="stat-chip"><span class="label">3%까지 남은 의료비</span><span class="value" id="mc-to-threshold">{won(ex.toThreshold)}</span></div>
+      <div class="stat-chip" data-group="공제 대상 의료비"><span class="label">가족(일반) · {pct(M.rates.general)}</span><span class="value" id="mc-gbase">{won(ex.gBase)}</span></div>
+      <div class="stat-chip"><span class="label">본인 등 · {pct(M.rates.special)}</span><span class="value" id="mc-sbase">{won(ex.sBase)}</span></div>
+      <div class="stat-chip"><span class="label">미숙아 등 · {pct(M.rates.premature)}</span><span class="value" id="mc-pbase">{won(ex.pBase)}</span></div>
+      <div class="stat-chip"><span class="label">난임시술 · {pct(M.rates.infertility)}</span><span class="value" id="mc-fbase">{won(ex.fBase)}</span></div>
     </div>
+    <p class="meta">낸 의료비 = 공제 대상 + 총급여 3%로 빠진 돈 + 700만원 한도로 빠진 돈. 공제 대상 금액에 칸마다 공제율을 곱해 더한 것이 세액공제입니다. 3%는 가족 의료비에서 먼저 빼고, 모자라면 본인 등 → 미숙아 → 난임 순서로 뺍니다(소득세법 제59조의4 제2항).</p>
   </div>
 
   <h2>{QA[0].q}</h2>

@@ -16,8 +16,13 @@ function render() {
   const r = medicalCredit({ pay: v("mc-pay"), general: v("mc-general"), special: v("mc-special"), premature: v("mc-premature"), infertility: v("mc-infertility") });
   $("mc-hero").textContent = formatWon(r.credit);
   $("mc-threshold").textContent = formatWon(r.threshold);
+  $("mc-absorbed").textContent = formatWon(r.absorbed);
+  $("mc-over").textContent = formatWon(r.over);
+  $("mc-to-threshold").textContent = formatWon(r.toThreshold);
   $("mc-gbase").textContent = formatWon(r.gBase);
   $("mc-sbase").textContent = formatWon(r.sBase);
+  $("mc-pbase").textContent = formatWon(r.pBase);
+  $("mc-fbase").textContent = formatWon(r.fBase);
 }
 
 for (const id of ids) {
