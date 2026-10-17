@@ -6,8 +6,8 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/family-loan-2026.json";
 import { familyLoanSeries } from "../../data/series/family-loan";
-import { loanGain, loanGiftTax, noGiftPrincipal, interestWithholding, giftTaxStartYear } from "../family-loan";
-import { relationCap } from "../gift";
+import { loanGain, loanGiftTax, noGiftPrincipal, interestWithholding, giftTaxStartYear, minNoGiftRate } from "../family-loan";
+import { relationCap, computeGift } from "../gift";
 import { manwon, eokwon } from "../won";
 
 const approxEok = (n: number) => eokwon(Math.floor(n / 10_000) * 10_000);
@@ -42,6 +42,34 @@ describe("금전 무상대출 증여이익", () => {
     expect(giftTaxStartYear(200_000_000, 0)).toBe(Infinity); // 920만 — 해마다 제외
     // 4년째 — 앞선 3년이 공제 4,140만원을 이미 썼으면 그해 세금은 0보다 크다
     expect(loanGiftTax(300_000_000, 0, "ascendant", 13_800_000 * 3).tax?.payable).toBeGreaterThan(0);
+  });
+  it("역산 — 이 금액이면 연 몇 %를 넘겨야 증여가 아닌가(1천만원 '미만', 경계 금액은 증여)", () => {
+    // 5억: 2,300만 − 1,000만 = 1,300만 → 이자 1,300만원 1원 넘게. 2.6% 정확히는 이익 1,000만원이라 증여
+    expect(minNoGiftRate(500_000_000)).toEqual({ minInterest: 13_000_001, rate: 0.0261 });
+    expect(loanGain(500_000_000, 0.026).taxable).toBe(true);
+    // 3억: 1,380만 − 1,000만 → 380만원 1원 넘게 → 1.27%(1.26%는 1,002만원)
+    expect(minNoGiftRate(300_000_000)).toEqual({ minInterest: 3_800_001, rate: 0.0127 });
+    expect(loanGain(300_000_000, 0.0126).taxable).toBe(true);
+    expect(minNoGiftRate(1_000_000_000)).toEqual({ minInterest: 36_000_001, rate: 0.0361 });
+    expect(minNoGiftRate(200_000_000)).toEqual({ minInterest: 0, rate: 0 }); // 920만 — 무이자여도 제외
+    for (const p of [217_391_305, 250_000_000, 777_777_777, 3_000_000_000]) {
+      const m = minNoGiftRate(p);
+      expect(loanGain(p, m.rate).taxable, String(p)).toBe(false);
+      expect(loanGain(p, m.rate - 0.0001).taxable, String(p)).toBe(true);
+    }
+  });
+  it("증여세 시작 연차 = 10년 합산(gift.ts priorGifts)으로 그해 세금이 처음 생기는 해", () => {
+    for (const [p, x, rel] of [[300_000_000, 0, "ascendant"], [500_000_000, 0.02, "ascendant"], [300_000_000, 0, "relative"], [1_000_000_000, 0, "spouse"]] as const) {
+      const g = loanGain(p, x);
+      const first = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].find((k) => computeGift({ amount: g.giftValue, relation: rel, priorGifts: (k - 1) * g.giftValue }).payable > 0) ?? Infinity;
+      expect(giftTaxStartYear(p, x, rel), `${p} ${x} ${rel}`).toBe(first);
+    }
+  });
+  it("형제·친척(공제 1천만원)에게 무이자 3억 — 첫해부터 증여세", () => {
+    // 1,380만 − 1,000만 = 380만 × 10% = 38만, 신고세액공제 3% 11,400 → 368,600
+    expect(loanGiftTax(300_000_000, 0, "relative").tax?.payable).toBe(368_600);
+    expect(giftTaxStartYear(300_000_000, 0, "relative")).toBe(1);
+    expect(giftTaxStartYear(1_000_000_000, 0.01, "spouse")).toBe(Infinity); // 3,600만 × 10 < 6억
   });
   it("이자 원천징수 — 비영업대금 25% + 지방소득세 10%", () => {
     expect(interestWithholding(10_000_000)).toEqual({ tax: 2_500_000, localTax: 250_000, net: 7_250_000 });

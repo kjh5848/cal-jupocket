@@ -36,6 +36,21 @@ export function noGiftPrincipal(annualRate = 0): number {
   return p;
 }
 
+/**
+ * 이 대출금에서 증여이익이 1천만원 미만이 되는 가장 작은 이자 — 역산(시행령 제31조의4 ②, '미만'이라 경계 금액은 증여).
+ * minInterest 1년에 내야 하는 최소 이자(원), rate 그 이자를 넘기는 약정 이자율(연, 소수 넷째 자리 = 0.01% 단위 올림).
+ * 적정 이자가 이미 1천만원 미만이면 둘 다 0.
+ */
+export function minNoGiftRate(principal: number) {
+  const p = Math.max(0, fl(principal));
+  const { fair } = loanGain(p, 0);
+  if (fair < L.threshold) return { minInterest: 0, rate: 0 };
+  const minInterest = fair - L.threshold + 1;
+  let bp = Math.ceil((minInterest / p) * 10_000 - 1e-9);
+  while (loanGain(p, bp / 10_000).gain >= L.threshold) bp += 1;
+  return { minInterest, rate: bp / 10_000 };
+}
+
 /** 1년치 증여이익에 대한 증여세(관계별 공제 반영). 1천만원 미만이면 대상 아님 */
 export function loanGiftTax(principal: number, annualRate = 0, relation: Relation = "ascendant", usedWithin10y = 0) {
   const g = loanGain(principal, annualRate);

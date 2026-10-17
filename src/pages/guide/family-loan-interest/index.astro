@@ -2,14 +2,15 @@
 /**
  * "가족간 차용증 이자율" — 가족간 차용증 시리즈. (가족간 차용증 무이자·이자·이자율 계산·이자소득세도 이 글, 계산기 포함)
  * 근거: 상증법 제41조의4, 시행령 제31조의4, 시행규칙 제10조의5 → 법인세법 시행규칙 제43조 ②, 소득세법 제129조(비영업대금 25%).
- * 계산: family-loan.ts loanGiftTax()·noGiftPrincipal()·interestWithholding().
+ * 계산: family-loan.ts loanGiftTax()·noGiftPrincipal()·minNoGiftRate()·giftTaxStartYear()·interestWithholding().
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/family-loan-2026.json";
 import fin from "../../../rates/financial-income-2026.json";
-import { loanGiftTax, noGiftPrincipal, interestWithholding, giftTaxStartYear } from "../../../lib/family-loan";
+import { loanGiftTax, noGiftPrincipal, interestWithholding, giftTaxStartYear, minNoGiftRate } from "../../../lib/family-loan";
+import { calcPresets } from "../../../data/calc-presets";
 import { won, manwon, eokwon } from "../../../lib/won";
 
 const L = r.loanGift;
@@ -20,6 +21,9 @@ const ex = loanGiftTax(P, 0.02);
 const ib = interestWithholding(ex.interest);
 const exStart = giftTaxStartYear(P, 0.02);
 const RATES = [0, 0.01, 0.02, 0.03, 0.04];
+const exMin = minNoGiftRate(P);
+const pct2 = (v: number) => `${(v * 100).toFixed(2)}%`;
+const PRESETS = JSON.stringify({ default: calcPresets["/guide/family-loan-interest/"].default.amounts });
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 family-loan-series.test.ts 가 rates·계산 함수와 대조한다.
 const title = "가족간 차용증 이자율 — 4.6%보다 덜 낸 이자가 1년 1천만원을 넘으면 그 금액이 증여입니다";
@@ -39,27 +43,48 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">빌린 금액과 약정 이자율(연)을 넣으세요. 1년 단위로 계산하고, 증여세는 부모에게 빌린 성년 자녀가 10년간 다른 증여 없이 같은 조건으로 빌리는 경우입니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">빌린 금액과 약정 이자율(연)을 넣으세요. 1년 단위로 계산하고, 증여세는 성년인 빌린 사람이 10년간 같은 사람에게 다른 증여 없이 같은 조건으로 빌리는 경우입니다.</p>
     <div class="calc-input-wrap">
       <label for="fl-amount">빌린 금액</label>
-      <input type="text" inputmode="numeric" id="fl-amount" value="500,000,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="fl-amount" value="500,000,000" data-won data-presets={PRESETS} /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
-      <label for="fl-rate">약정 이자율(연)</label>
+      <label for="fl-rate">약정 이자율(연, 무이자면 0)</label>
       <input type="number" min="0" max="20" step="0.1" id="fl-rate" value="2" /><span class="unit">%</span>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div class="calc-input-wrap">
+      <label for="fl-rel">빌려준 사람</label>
+      <select id="fl-rel" data-seg>
+        <option value="ascendant" selected>부모·조부모</option>
+        <option value="spouse">배우자</option>
+        <option value="relative">형제·친척</option>
+      </select>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="fl-int|fl-gain"
+      data-bar-labels="실제 낸 이자|덜 낸 이자(증여이익)"
+      data-dock="fl-hero"
+    >
       <p class="label">1년 증여이익</p>
       <p class="big" id="fl-hero">{won(ex.gain)}</p>
       <p class="meta" id="fl-note">1천만원 이상이라 증여재산가액이 됩니다. 첫해 증여세 {won(ex.tax?.payable ?? 0)}, 이익이 10년 합산돼 {exStart}년째부터 증여세가 생깁니다.</p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">적정 이자(4.6%)</span><span class="value" id="fl-fair">{won(ex.fair)}</span></div>
-      <div class="stat-chip"><span class="label">실제 이자</span><span class="value" id="fl-int">{won(ex.interest)}</span></div>
-      <div class="stat-chip"><span class="label">증여 안 되는 한도</span><span class="value" id="fl-max">약 {approxEok(noGiftPrincipal(0.02))}</span></div>
-      <div class="stat-chip"><span class="label">증여세 시작</span><span class="value" id="fl-start">{exStart}년째</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">증여가 안 되는 이자율</span><span class="value" id="fl-minrate">연 {pct2(exMin.rate)} 이상</span></div>
+      <div class="stat-chip"><span class="label">이 이자율로 증여가 안 되는 한도</span><span class="value" id="fl-max">약 {approxEok(noGiftPrincipal(0.02))}</span></div>
+      <div class="stat-chip"><span class="label">첫해 증여세</span><span class="value" id="fl-tax">{won(ex.tax?.payable ?? 0)}</span></div>
+      <div class="stat-chip"><span class="label">증여세 시작 (10년 합산, 제47조)</span><span class="value" id="fl-start">{exStart}년째</span></div>
+      <div class="stat-chip" data-group={`적정 이자 (${pct(L.rate)})`}><span class="label">실제 낸 이자</span><span class="value" id="fl-int">{won(ex.interest)}</span></div>
+      <div class="stat-chip"><span class="label">덜 낸 이자 = 증여이익 (제41조의4)</span><span class="value" id="fl-gain">{won(ex.gain)}</span></div>
+      <div class="stat-chip" data-group="빌려준 사람이 받는 이자"><span class="label">이자소득세 {pct(fin.withholding.nonBusinessLoan)} (소득세법 제129조)</span><span class="value" id="fl-wtax">{won(ib.tax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세 (그 10%)</span><span class="value" id="fl-wlocal">{won(ib.localTax)}</span></div>
+      <div class="stat-chip"><span class="label">손에 남는 이자</span><span class="value" id="fl-wnet">{won(ib.net)}</span></div>
     </div>
+    <p class="meta" id="fl-formula"></p>
   </div>
 
   <h2>{QA[0].q}</h2>

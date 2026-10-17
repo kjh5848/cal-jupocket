@@ -47,6 +47,10 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
     // 네이버 자동완성 '연봉 3000 연말정산 환급'·'연봉 4000 연말정산 환급'(2026-10-17). '연봉 5000·6000 연말정산'·'총급여 5000 연말정산' 은 줄기 없음, '연말정산 1억 환급' 은 금액 뜻이 갈려 뺌
     default: { amounts: [30_000_000, 40_000_000], source: "keywords/ac-year-end-2026-10-17.csv", term: "연말정산 환급" },
   },
+  "/guide/family-loan-interest/": {
+    // 네이버 자동완성 '차용증 5억'·'가족간 차용증 1억 원금상환방법'(2026-10-18). '차용증 1억·2억·3억'·'가족간 차용증 2억·3억·5억'·'차용증 이자 1억·2억' 시드는 결과 없음
+    default: { amounts: [100_000_000, 500_000_000], source: "keywords/ac-family-loan-2026-10-18.csv", term: "차용증" },
+  },
   "/guide/gift-tax-calculator/": {
     // 네이버 자동완성 '증여세 계산기 1억·2억·3억·4억·10억'(2026-09-16)
     default: { amounts: [100_000_000, 200_000_000, 300_000_000, 400_000_000, 1_000_000_000], source: "keywords/gift-autocomplete-2026-09-16.csv", term: "증여세 계산기" },
