@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { calcPresets } from "../../data/calc-presets";
 
 const MOVED: { path: string; attrs: string[] }[] = [
+  { path: "/guide/capital-gains-calculator/", attrs: ["data-two", "data-won", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/family-loan-interest/", attrs: ["data-two", "data-won", "data-presets", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/gift-tax-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/inheritance/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
@@ -47,10 +48,11 @@ const MOVED: { path: string; attrs: string[] }[] = [
  * /guide/child-incentive-amount/: 네이버 '자녀장려금 3000만원'·'자녀장려금 연봉'·'연봉 4000 자녀장려금'·'자녀장려금 자녀 2명' 결과 없음, '자녀장려금 금액·지급액' 확장은 기준·산정표·지급일·조회뿐(2026-10-17, keywords/ac-child-incentive-2026-10-17.csv)
  * /guide/medical-credit-limit/: 네이버 '의료비 세액공제'·'의료비 세액공제 한도·계산·연봉'·'연봉 의료비 세액공제'·'총급여 3% 의료비'·'의료비 3%' 에 금액 줄기 없음, '연봉 3000·4000·5000 의료비'·'의료비 100만원·500만원·700만원' 결과 없음(2026-10-17, keywords/ac-medical-credit-2026-10-17.csv)
  * /guide/old-age-pension-age/: 금액 입력 칸 없음(출생연도·나이만)
+ * /guide/capital-gains-calculator/: 네이버 '양도세 1억·2억·3억·5억' 확장은 '1억5천'·'1억이상'·'2억할부로 내는법', '양도차익 1억 세금'·'양도차익 2억 양도세' — 금액이 양도차익(또는 뜻이 갈림)이라 판 값·산 값 칸에 넣을 금액이 아니다(2026-10-18, keywords/ac-capital-gains-2026-10-18.csv)
  * /guide/industrial-accident-disability/: 네이버 '산재 장해등급'·'장해등급 보상금'·'산재 장해급여'·'장해보상연금'·'장해등급 14급 보상금' 확장은 등급(7·10·12·14급)·금액·보상표·계산법·신청·세금뿐, 평균임금 금액 줄기 없음(2026-10-17, keywords/ac-industrial-disability-2026-10-17.csv)
  * /guide/industrial-accident-leave-pay/: 네이버 '월급 300 산재'·'산재 휴업급여 월급' 결과 없음, '산재 휴업급여·휴업급여 계산·산재 평균임금' 확장은 계산 방법·일수·기간·신청·지급일·상한선뿐(2026-10-17, keywords/ac-industrial-leave-2026-10-17.csv)
  */
-const NO_PRESETS = new Set(["/guide/industrial-accident-disability/", "/guide/industrial-accident-leave-pay/", "/guide/old-age-pension-age/", "/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/", "/guide/unemployment-benefit-calculator/", "/guide/severance-tax-calculator/", "/guide/medical-credit-limit/", "/guide/earned-incentive-amount/", "/guide/child-incentive-amount/"]);
+const NO_PRESETS = new Set(["/guide/capital-gains-calculator/", "/guide/industrial-accident-disability/", "/guide/industrial-accident-leave-pay/", "/guide/old-age-pension-age/", "/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/", "/guide/unemployment-benefit-calculator/", "/guide/severance-tax-calculator/", "/guide/medical-credit-limit/", "/guide/earned-incentive-amount/", "/guide/child-incentive-amount/"]);
 
 const bench = readFileSync("docs/calc-benchmark.md", "utf-8");
 

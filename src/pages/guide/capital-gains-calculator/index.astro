@@ -2,17 +2,21 @@
 /**
  * "양도세 계산기" — 양도소득세 시리즈. (양도소득세 계산기·계산·계산법도 이 글, 계산기 포함)
  * 계산: src/lib/capital-gains.ts capitalGains() — 제89조·시행령 제160조(12억 초과 비율), 제95조(장특공 표 1·2),
- * 제103조(250만원), 제104조(단기·비사업용·중과), 지방세법 제103조의3(1/10).
+ * 제103조(250만원), 제104조(단기·비사업용·중과), 지방세법 제103조의3(1/10), 제89조 ① 3호·시행령 제154조 ①(1주택 비과세 보유·거주 요건).
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/capital-gains-2026.json";
-import { capitalGains } from "../../../lib/capital-gains";
+import { capitalGains, rateLabel } from "../../../lib/capital-gains";
 import { won, eokwon } from "../../../lib/won";
 
 const ex = capitalGains({ kind: "house", sale: 800_000_000, acquisition: 500_000_000, expenses: 10_000_000, holdYears: 5 });
-const high = capitalGains({ kind: "house", sale: 1_500_000_000, acquisition: 700_000_000, holdYears: 10, residenceYears: 10, oneHouseExempt: true });
+const E = r.exemption;
+const R = r.rates;
+const pct = (v: number) => Math.round(v * 100);
+const pp = (v: number) => `${pct(v)}%p`;
+const high = capitalGains({ kind: "house", sale: 1_500_000_000, acquisition: 700_000_000, holdYears: 10, residenceYears: 10, oneHouse: true });
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
 const title = "양도세 계산기 — 양도차익에서 장기보유특별공제와 250만원을 빼고 세율을 곱합니다";
@@ -32,11 +36,11 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
+  <div class="calc-card" data-two>
     <p class="meta">부동산 한 건을 한 해에 한 번 파는 경우의 어림입니다. 여러 건 합산·감면·비사업용 판정은 넣지 않았습니다.</p>
     <div class="calc-input-wrap">
       <label for="cg-kind">무엇을 팔았나</label>
-      <select id="cg-kind">
+      <select id="cg-kind" data-seg>
         <option value="house">주택</option>
         <option value="land">토지</option>
         <option value="other">상가·그 밖의 건물</option>
@@ -44,52 +48,82 @@ const QA = [
     </div>
     <div class="calc-input-wrap">
       <label for="cg-sale">양도가액(판 값)</label>
-      <input type="text" inputmode="numeric" id="cg-sale" value="800,000,000" />
+      <input type="text" inputmode="numeric" id="cg-sale" value="800,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="cg-acq">취득가액(산 값)</label>
-      <input type="text" inputmode="numeric" id="cg-acq" value="500,000,000" />
+      <input type="text" inputmode="numeric" id="cg-acq" value="500,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="cg-exp">필요경비(취득세·중개수수료·자본적지출 등)</label>
-      <input type="text" inputmode="numeric" id="cg-exp" value="10,000,000" />
+      <input type="text" inputmode="numeric" id="cg-exp" value="10,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
-      <label for="cg-hold">보유기간</label>
-      <input type="number" min="0" max="80" step="0.5" id="cg-hold" value="5" />
+      <label for="cg-hold">보유기간(취득일부터 양도일까지)</label>
+      <input type="number" min="0" max="80" step="0.5" id="cg-hold" value="5" data-step />
+      <span class="unit">년</span>
+    </div>
+    <div class="calc-input-wrap toggle-row" id="cg-one-wrap">
+      <label for="cg-one">양도일 현재 1세대 1주택이다</label>
+      <input type="checkbox" id="cg-one" />
+    </div>
+    <div class="calc-input-wrap toggle-row" id="cg-adj-wrap">
+      <label for="cg-adj">취득 당시 조정대상지역이었다(거주 {E.residenceYearsIfAdjusted}년 필요)</label>
+      <input type="checkbox" id="cg-adj" />
+    </div>
+    <div class="calc-input-wrap" id="cg-reside-wrap">
+      <label for="cg-reside">거주기간(보유기간 중, 장기보유특별공제 표 2에도 씀)</label>
+      <input type="number" min="0" max="80" id="cg-reside" value="0" data-step />
       <span class="unit">년</span>
     </div>
     <details>
-      <summary>1주택 비과세·거주·중과·비사업용 토지</summary>
-      <label><input type="checkbox" id="cg-one" /> 1세대 1주택 비과세 요건을 갖췄다(2년 보유, 조정대상지역 취득이면 2년 거주)</label>
-      <div class="calc-input-wrap">
-        <label for="cg-reside">거주기간(1세대 1주택 장기보유특별공제용)</label>
-        <input type="number" min="0" max="80" id="cg-reside" value="0" />
-        <span class="unit">년</span>
-      </div>
+      <summary>다주택 중과·비사업용 토지·올해 먼저 판 자산</summary>
       <div class="calc-input-wrap">
         <label for="cg-sur">다주택 중과(조정대상지역 주택)</label>
-        <select id="cg-sur">
+        <select id="cg-sur" data-seg>
           <option value="0">해당 없음</option>
-          <option value="0.2">2주택 +20%p</option>
-          <option value="0.3">3주택 이상 +30%p</option>
+          <option value="0.2">2주택 +{pp(R.multiHome.twoHomesAdd)}</option>
+          <option value="0.3">3주택 이상 +{pp(R.multiHome.threeHomesAdd)}</option>
         </select>
       </div>
-      <label><input type="checkbox" id="cg-nbl" /> 비사업용 토지(+10%p)</label>
+      <div class="calc-input-wrap toggle-row">
+        <label for="cg-nbl">비사업용 토지(+{pp(R.nonBusinessLand.add)})</label>
+        <input type="checkbox" id="cg-nbl" />
+      </div>
+      <div class="calc-input-wrap">
+        <label for="cg-basic-left">올해 남은 기본공제(같은 해 먼저 판 부동산이 쓴 만큼 줄어듦, 제103조)</label>
+        <input type="text" inputmode="numeric" id="cg-basic-left" value="" placeholder={r.basicDeduction.amount.toLocaleString("ko-KR")} data-won />
+        <span class="unit">원</span>
+      </div>
     </details>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="cg-base|cg-lt,cg-basic,cg-exempt-part"
+      data-bar-labels="과세표준(세율이 붙는 몫)|공제·비과세로 빠진 몫"
+      data-dock="cg-hero"
+    >
       <p class="label">양도소득세 + 지방소득세(어림)</p>
       <p class="big" id="cg-hero">{won(ex.total)}</p>
+      <p class="meta" id="cg-note"></p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">양도차익(과세분)</span><span class="value" id="cg-gain">{won(ex.taxableGain)}</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">적용 세율 (제104조)</span><span class="value" id="cg-rate">{rateLabel(ex.base, { kind: "house", holdYears: 5 })}</span></div>
+      <div class="stat-chip"><span class="label">장기보유특별공제율 (제95조)</span><span class="value" id="cg-lt-rate">{pct(ex.ltRate)}%</span></div>
+      <div class="stat-chip"><span class="label">과세 비율 (시행령 제160조)</span><span class="value" id="cg-ratio">100%</span></div>
+      <div class="stat-chip" data-group="양도차익"><span class="label">1주택 비과세로 빠진 몫</span><span class="value" id="cg-exempt-part">{won(ex.exemptPart)}</span></div>
       <div class="stat-chip"><span class="label">장기보유특별공제</span><span class="value" id="cg-lt">{won(ex.ltDeduction)}</span></div>
+      <div class="stat-chip"><span class="label">기본공제 (제103조)</span><span class="value" id="cg-basic">{won(ex.basic)}</span></div>
       <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="cg-base">{won(ex.base)}</span></div>
-      <div class="stat-chip"><span class="label">양도소득세</span><span class="value" id="cg-tax">{won(ex.tax)}</span></div>
+      <div class="stat-chip" data-group="낼 세금"><span class="label">양도소득세</span><span class="value" id="cg-tax">{won(ex.tax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세 (10분의 1)</span><span class="value" id="cg-local">{won(ex.local)}</span></div>
     </div>
+    <p class="meta" id="cg-formula"></p>
+    <p class="meta">비과세 판정은 보유 {E.holdYears}년·(조정대상지역 취득이면) 거주 {E.residenceYearsIfAdjusted}년만 봅니다. 수용·해외이주·근무 등 부득이한 사유의 예외(시행령 제154조 ① 단서)는 따지지 않습니다.</p>
   </div>
 
   <h2>{QA[0].q}</h2>
@@ -109,3 +143,21 @@ const QA = [
 
   <script src="../../../scripts/capital-gains.ts"></script>
 </GuideLayout>
+
+<style>
+  /* 체크박스 한 줄 — 금액 입력과 같은 높이로 맞춘다. */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .toggle-row input[type="checkbox"] {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--brand);
+    flex: 0 0 auto;
+  }
+  .toggle-row label {
+    margin: 0;
+  }
+</style>
