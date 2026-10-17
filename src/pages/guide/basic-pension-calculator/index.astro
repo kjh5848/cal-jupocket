@@ -8,13 +8,17 @@ import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/basic-pension-2026.json";
-import { propertyIncome, basicPension, npsFullUpTo } from "../../../lib/basic-pension";
+import { propertyIncome, propertySteps, basicPension, npsFullUpTo } from "../../../lib/basic-pension";
+import { calcPresets } from "../../../data/calc-presets";
 import { won, eokwon } from "../../../lib/won";
 
 const P = r.property;
-const exProp = propertyIncome({ general: 300_000_000, financial: 50_000_000, region: "metro" });
+const exIn = { general: 300_000_000, financial: 50_000_000, region: "metro" } as const;
+const exProp = propertyIncome(exIn);
+const exSteps = propertySteps(exIn);
 const exRec = exProp + 600_000;
 const ex = basicPension({ recognized: exRec, couple: false });
+const PRESETS_FIN = JSON.stringify({ default: calcPresets["/guide/basic-pension-calculator/"].financial.amounts });
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 basic-pension-series.test.ts 가 rates 와 대조한다.
 const title = "기초연금 모의계산 — 소득과 재산을 넣으면 소득인정액과 받을 수 있는 금액이 나옵니다";
@@ -34,50 +38,63 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">2026년 기준 어림입니다. 국민연금 연계 감액, 고급 자동차·회원권, 자녀 집 무료임차소득은 넣지 않았습니다. 근로소득을 뺀 소득·재산은 부부면 두 사람 것을 합해 넣으세요.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">아래 값은 예시입니다. 내 소득과 재산으로 바꾸세요. 2026년 기준 어림이고, 국민연금 연계 감액, 고급 자동차·회원권, 자녀 집 무료임차소득은 넣지 않았습니다. 근로소득을 뺀 소득·재산은 부부면 두 사람 것을 합해 넣으세요.</p>
     <div class="calc-input-wrap">
       <label for="bp-hh">가구</label>
-      <select id="bp-hh"><option value="single" selected>혼자 사는 노인</option><option value="couple">부부(둘 다 65세 이상)</option></select>
+      <select id="bp-hh" data-seg><option value="single" selected>혼자 사는 노인</option><option value="couple">부부(둘 다 65세 이상)</option></select>
     </div>
     <div class="calc-input-wrap">
       <label for="bp-region">사는 곳</label>
-      <select id="bp-region"><option value="metro" selected>대도시(특별시·광역시 구, 특례시)</option><option value="city">중소도시(도의 시, 세종)</option><option value="rural">농어촌(도의 군)</option></select>
+      <select id="bp-region" data-seg><option value="metro" selected>대도시(특별시·광역시 구, 특례시)</option><option value="city">중소도시(도의 시, 세종)</option><option value="rural">농어촌(도의 군)</option></select>
     </div>
     <div class="calc-input-wrap">
       <label for="bp-work">본인 근로소득(월)</label>
-      <input type="text" inputmode="numeric" id="bp-work" value="0" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="bp-work" value="0" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="bp-work2">배우자 근로소득(월, 혼자면 0)</label>
-      <input type="text" inputmode="numeric" id="bp-work2" value="0" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="bp-work2" value="0" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="bp-other">연금 등 그 밖의 소득(월)</label>
-      <input type="text" inputmode="numeric" id="bp-other" value="600,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="bp-other" value="600,000" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="bp-general">집·땅 등 일반재산</label>
-      <input type="text" inputmode="numeric" id="bp-general" value="300,000,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="bp-general" value="300,000,000" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="bp-fin">예금 등 금융재산</label>
-      <input type="text" inputmode="numeric" id="bp-fin" value="50,000,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="bp-fin" value="50,000,000" data-won data-presets={PRESETS_FIN} /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="bp-debt">부채</label>
-      <input type="text" inputmode="numeric" id="bp-debt" value="0" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="bp-debt" value="0" data-won /><span class="unit">원</span>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="bp-hero|bp-couple-cut,bp-rev-cut"
+      data-bar-labels="받는 기초연금|부부 감액·선정기준액 감액으로 줄어든 돈"
+      data-dock="bp-hero"
+    >
       <p class="label">월 기초연금(어림)</p>
       <p class="big" id="bp-hero">{won(ex.total)}</p>
       <p class="meta" id="bp-note"></p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">소득인정액(월)</span><span class="value" id="bp-rec">{won(exRec)}</span></div>
-      <div class="stat-chip"><span class="label">재산 환산액(월)</span><span class="value" id="bp-prop">{won(exProp)}</span></div>
+    <div class="stat-row" data-receipt>
       <div class="stat-chip"><span class="label">선정기준액</span><span class="value" id="bp-limit">{won(r.selection.single)}</span></div>
+      <div class="stat-chip"><span class="label" id="bp-room-label">선정기준액까지 남은 금액</span><span class="value" id="bp-room">{won(ex.room)}</span></div>
+      <div class="stat-chip"><span class="label" id="bp-base-label">기준연금액(1명)</span><span class="value" id="bp-base">{won(ex.baseTotal)}</span></div>
+      <div class="stat-chip" data-group="소득인정액(월)"><span class="label">근로소득 평가액(116만원 공제 · 30% 공제 뒤)</span><span class="value" id="bp-work-eval">{won(0)}</span></div>
+      <div class="stat-chip"><span class="label">연금 등 그 밖의 소득</span><span class="value" id="bp-other-eval">{won(600_000)}</span></div>
+      <div class="stat-chip"><span class="label">재산 환산액(연 4% ÷ 12)</span><span class="value" id="bp-prop">{won(exProp)}</span></div>
+      <div class="stat-chip" data-group="기준연금액에서 줄어든 돈"><span class="label">부부 둘 다 받아 20% 감액</span><span class="value" id="bp-couple-cut">{won(ex.coupleCut)}</span></div>
+      <div class="stat-chip"><span class="label">선정기준액을 넘지 않게 감액</span><span class="value" id="bp-rev-cut">{won(ex.reversalCut)}</span></div>
     </div>
+    <p class="meta" id="bp-formula">재산 환산액 = (일반재산 − 기본재산액 {eokwon(exSteps.basic)}) {won(exSteps.general)} + (금융재산 − {eokwon(P.financialDeduction)}) {won(exSteps.financial)} − 부채 {won(exSteps.debtUsed)} = {won(exSteps.net)} × 4% ÷ 12. 소득인정액이 선정기준액 이하면 대상이고, 기초연금을 더해 선정기준액을 넘으면 넘는 만큼 줄입니다(기초연금법 제8조 제2항, 최소 기준연금액의 10%·부부 20%).</p>
   </div>
 
   <h2>{QA[0].q}</h2>

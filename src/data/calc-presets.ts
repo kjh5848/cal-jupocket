@@ -39,6 +39,10 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
     savings: { amounts: [3_000_000, 6_000_000], source: "keywords/ac-irp-credit-2026-10-17.csv", term: "연금저축" },
     irp: { amounts: [3_000_000, 9_000_000], source: "keywords/ac-irp-credit-2026-10-17.csv", term: "irp" },
   },
+  "/guide/basic-pension-calculator/": {
+    // 네이버 자동완성 '기초연금 예금 1억'·'기초연금 예금 2억'(2026-10-17). '기초연금 재산 3억'·'기초연금 집 3억'·'기초연금 월 100만원' 은 줄기 없음
+    financial: { amounts: [100_000_000, 200_000_000], source: "keywords/ac-basic-pension-2026-10-17.csv", term: "기초연금 예금" },
+  },
   "/guide/year-end-calculator/": {
     // 네이버 자동완성 '연봉 3000 연말정산 환급'·'연봉 4000 연말정산 환급'(2026-10-17). '연봉 5000·6000 연말정산'·'총급여 5000 연말정산' 은 줄기 없음, '연말정산 1억 환급' 은 금액 뜻이 갈려 뺌
     default: { amounts: [30_000_000, 40_000_000], source: "keywords/ac-year-end-2026-10-17.csv", term: "연말정산 환급" },
