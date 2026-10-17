@@ -29,6 +29,17 @@ describe("실업급여 계산", () => {
     expect([dailyHoursBeforeLeaving(40), dailyHoursBeforeLeaving(20)]).toEqual([8, 4]);
     expect(daysInLastThreeMonths(new Date(2026, 9, 14))).toBe(92);
   });
+  it.each([
+    // 3개월 전 같은 날이 없으면 그 달 말일(민법 제160조 제3항) — 날짜가 다음 달로 넘어가 89·91일이 나오던 것
+    [[2026, 4, 29], 90],
+    [[2026, 4, 30], 91],
+    [[2026, 4, 31], 92],
+    [[2026, 11, 31], 92],
+    [[2026, 2, 31], 90],
+    [[2026, 9, 14], 92],
+  ])("3개월 일수 %j → %i일", ([y, m, d], days) => {
+    expect(daysInLastThreeMonths(new Date(y, m, d))).toBe(days);
+  });
   it("별표 1 경계", () => {
     expect([benefitDays(0.9, false), benefitDays(1, false), benefitDays(10, true), benefitDays(3, true)]).toEqual([120, 150, 270, 210]);
   });

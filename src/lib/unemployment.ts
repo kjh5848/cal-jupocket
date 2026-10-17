@@ -19,9 +19,12 @@ export function dailyHoursBeforeLeaving(weeklyHours: number): number {
   return Math.round(((h + holiday) / 48) * 8 * 100) / 100;
 }
 
-/** 이직일 기준 3개월 전 날부터 이직일 전날까지의 일수 */
+/** 이직일 기준 3개월 전 날부터 이직일 전날까지의 일수. 3개월 전 달에 같은 날이 없으면 그 달 말일(민법 제160조 제3항) */
 export function daysInLastThreeMonths(leaveDate: Date): number {
-  const start = new Date(leaveDate.getFullYear(), leaveDate.getMonth() - 3, leaveDate.getDate());
+  const y = leaveDate.getFullYear();
+  const m = leaveDate.getMonth() - 3;
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  const start = new Date(y, m, Math.min(leaveDate.getDate(), lastDay));
   return Math.round((leaveDate.getTime() - start.getTime()) / 86_400_000);
 }
 
