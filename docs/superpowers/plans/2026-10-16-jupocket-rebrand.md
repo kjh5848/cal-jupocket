@@ -186,7 +186,7 @@
 - [x] /guide/unemployment-benefit-calculator/ (2026-10-17 — 말일 이직 3개월 일수 fix(민법 제160조 ③, 2/31 → 3/3 넘침), 하루 구직급여 소계(60% + 하한까지 보탠 금액)·막대·산정일수·1일 소정근로시간 표시·나이 버튼·−/+·두 칸·고정 띠, roberin 대조: 7개 같음, 2027 이직 하한은 우리 맞음(roberin 2026 최저임금), 340만 1원 단수는 보류. 프리셋 없음 — 자동완성에 금액 없음)
 - [x] /guide/parental-leave-pay-calculator/ (2026-10-17 — 한 달 평균·1~3/4~6/7개월째부터 소계(bandTotals)·세 구간 막대·유형별 상한 표기·자동완성 프리셋 150만·250만·−/+·유형 버튼·두 칸·고정 띠, roberin 대조: 같은 개월 수 입력 6개 모두 같음, 6+6 부모 개월 수가 다를 때는 제95조의3 각 목이 '각각 N개월'만 정해 보류)
 - [x] /guide/severance-tax-calculator/ (2026-10-17 — 남은 개월 칸(lib yearsFrom)·근속연수공제·환산급여·환산급여공제 칩·세금 합계 소계·세후/세금 막대·산식 한 줄·−/+·두 칸·고정 띠, roberin 퇴직소득세 계산기 대조: 소득세 7개 같음(손계산 테스트 고정), 지방소득세 10원 단수 차이는 원문 미확인 보류. 프리셋 없음 — 자동완성 금액 줄기 1억 하나(기본값))
-- [ ] /guide/year-end-calculator/
+- [x] /guide/year-end-calculator/ (2026-10-17 — lib credits(제61조 한도 뒤 실제 공제)·공제 단계 칩·이미 뗀 세금·산출세액 소계(결정세액 + 실제 공제)·막대·제61조 안내·−/+·자동완성 프리셋 3,000만·4,000만·두 칸·고정 띠 제목 갱신. roberin 에 같은 도구 없음 → 대조표 '없음', 조문 손계산 3개로 대조(모두 같음))
 - [ ] /guide/irp-tax-credit-calculator/
 - [ ] /guide/medical-credit-limit/
 - [ ] /guide/earned-incentive-amount/
