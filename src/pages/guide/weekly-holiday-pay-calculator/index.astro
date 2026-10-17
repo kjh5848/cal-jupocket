@@ -36,11 +36,11 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">주 5일 사업장에서 그 주를 개근했다고 보고 계산합니다. 1주 소정근로시간은 4주 평균으로 넣으세요.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">주 5일 사업장(통상근로자가 주 5일 근무)을 기준으로 계산합니다. 1주 소정근로시간은 4주 평균으로 넣으세요.</p>
     <div class="calc-input-wrap">
       <label for="wh-wage">시급</label>
-      <input type="text" inputmode="numeric" id="wh-wage" value={m26.toLocaleString("ko-KR")} />
+      <input type="text" inputmode="numeric" id="wh-wage" value={m26.toLocaleString("ko-KR")} data-won />
       <span class="unit">원</span>
     </div>
     <div class="amount-presets" role="group" aria-label="시급 고르기">
@@ -49,20 +49,31 @@ const QA = [
     </div>
     <div class="calc-input-wrap">
       <label for="wh-hours">1주 소정근로시간</label>
-      <input type="number" min="0" max="40" step="0.5" id="wh-hours" value="20" />
+      <input type="number" min="0" max="40" step="0.5" id="wh-hours" value="20" data-step />
       <span class="unit">시간</span>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <label><input type="checkbox" id="wh-attend" checked /> 그 주 소정근로일을 다 나왔다(개근)</label>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="wh-base|wh-holiday"
+      data-bar-labels="근무한 시간 임금|주휴수당"
+      data-dock="wh-hero"
+    >
       <p class="label">1주 주휴수당</p>
       <p class="big" id="wh-hero">{won(ex.weekly)}</p>
       <p class="meta" id="wh-note"></p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">주휴시간</span><span class="value" id="wh-h">{ex.hours}시간</span></div>
-      <div class="stat-chip"><span class="label">월 평균 주휴수당</span><span class="value" id="wh-month">{won(ex.monthly)}</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">주휴시간 (1주 소정근로시간 ÷ 5)</span><span class="value" id="wh-h">{ex.hours}시간</span></div>
       <div class="stat-chip"><span class="label">주휴 포함 시급</span><span class="value" id="wh-incl">{won(ex.hourlyWithHoliday)}</span></div>
-      <div class="stat-chip"><span class="label">1주 임금(근무+주휴)</span><span class="value" id="wh-week">{won(ex.weekTotal)}</span></div>
+      <div class="stat-chip" data-group="1주 임금"><span class="label">근무한 시간 × 시급</span><span class="value" id="wh-base">{won(ex.base)}</span></div>
+      <div class="stat-chip"><span class="label">주휴수당 (주휴시간 × 시급)</span><span class="value" id="wh-holiday">{won(ex.weekly)}</span></div>
+      <div class="stat-chip" data-group="한 달 평균 (1년 평균 주 수 365 ÷ 7 ÷ 12)"><span class="label">근무한 시간 임금</span><span class="value" id="wh-mbase">{won(ex.monthlyBase)}</span></div>
+      <div class="stat-chip"><span class="label">주휴수당</span><span class="value" id="wh-month">{won(ex.monthly)}</span></div>
     </div>
+    <p class="meta">40시간을 넘는 시간은 소정근로가 아니라 연장근로라 이 계산에 넣지 않습니다(근로기준법 제50조 제1항). 실제 한 달 지급액은 그달 개근한 주의 수에 따라 달라집니다.</p>
   </div>
 
   <h2>{QA[0].q}</h2>

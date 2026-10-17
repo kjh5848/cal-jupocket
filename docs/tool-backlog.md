@@ -6,7 +6,7 @@
 
 현재: 보류 2 · 있음 18 · 할 일 412
 
-다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /guide/weekly-holiday-pay-calculator/(주휴수당) — roberin 같은 도구 대조(주휴수당 단독 도구가 없으면 시급계산기 하위 기능). /guide/four-insurance-calculator/ 는 2026-10-17 이전 완료(막대 범례 합 101% 고침 — lib/calc-ui shares 최대 나머지 방식). 보류 남은 것: 국민연금 사업장가입자 기여금·부담금 각각 10원 미만 버림인지 합계에서 버림인지(공단 실무안내에 문장 없음 — 313,020 vs 313,025), 건강보험료 원 단위 처리, 국민연금 10원 절사 근거 조문(국고금 관리법 제47조 ③ 준용). 카드 세트 late-filing-penalty·multiple-payers 카드 이미지 재생성은 사용자 확인 필요. 납부지연 일수 같은 식 쓰는 글 /guide/vat-final-return-payment/·/guide/withholding-tax/ 확인 필요. 민법 제161조·지방소득세 가산세·원천징수 단수·종소세 경비율 구간 원문 확인 보류. /penalty/ 날짜 칸 스타일(틀) 필요. 이미 발행된 스레드 social/queue/016-penalty-one-day.md 는 옛 숫자 — 그대로 둠.
+다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /guide/minimum-wage-calculator/(최저임금) — roberin 같은 도구 대조(최저임금 단독 도구가 없으면 시급계산기 #11 하위 기능). /guide/weekly-holiday-pay-calculator/ 는 2026-10-17 이전 완료(주휴수당 1원까지 같음). 보류 추가: 통상근로자 주 6일 사업장의 1일 소정근로시간 ÷6 단수 처리(별표 2 제2호 나목에 단수 규정 없음). 보류 남은 것: 국민연금 사업장가입자 기여금·부담금 각각 10원 미만 버림인지 합계에서 버림인지(공단 실무안내에 문장 없음 — 313,020 vs 313,025), 건강보험료 원 단위 처리, 국민연금 10원 절사 근거 조문(국고금 관리법 제47조 ③ 준용). 카드 세트 late-filing-penalty·multiple-payers 카드 이미지 재생성은 사용자 확인 필요. 납부지연 일수 같은 식 쓰는 글 /guide/vat-final-return-payment/·/guide/withholding-tax/ 확인 필요. 민법 제161조·지방소득세 가산세·원천징수 단수·종소세 경비율 구간 원문 확인 보류. /penalty/ 날짜 칸 스타일(틀) 필요. 이미 발행된 스레드 social/queue/016-penalty-one-day.md 는 옛 숫자 — 그대로 둠.
 
 | # | 우리 분류 | roberin 분류 | roberin 주소 | 도구 | 상태 | 우리 주소 | 메모 |
 |---|---|---|---|---|---|---|---|
@@ -29,7 +29,7 @@
 | 17 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/stock-return-calculator/ | 주식 수익률 계산기 | 할 일 |  |  |
 | 18 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/property-tax-calculator/ | 주택 재산세 계산기 | 있음 | /property-tax/ |  |
 | 19 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/acquisition-tax-calculator/ | 주택 취득세 계산기 | 있음 | /acquisition-tax/ |  |
-| 20 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/weekly-rest-allowance-calculator/ | 주휴수당 계산기 | 있음 | /guide/weekly-holiday-pay-calculator/ |  |
+| 20 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/weekly-rest-allowance-calculator/ | 주휴수당 계산기 | 있음 | /guide/weekly-holiday-pay-calculator/ | 2026-10-17 대조: 같은 입력 6개 주휴수당 1원까지 같음 · 개근 체크·근무 임금·소계 더해 새 틀 이전. 45h 근로급여(우리 40h 자름, 제50조)·주 6일 사업장 ÷6 단수는 보류 |
 | 21 | 상속·증여 | 돈·세금·급여 / 급여·세금 | https://roberin.com/gift-tax-simulator/ | 증여세 절세 시뮬레이터 | 있음 | /guide/gift-tax-calculator/ |  |
 | 22 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/retirement-income-tax-calculator/ | 퇴직 일시금 세금 계산기 | 할 일 |  |  |
 | 23 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/retire-calculator/ | 퇴직금계산기 | 할 일 |  |  |

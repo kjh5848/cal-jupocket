@@ -34,6 +34,17 @@ describe("주휴수당", () => {
     expect(weeklyHolidayPay(m26, 20).weekly).toBe(41_280);
     expect(weeklyHolidayPay(m26, 20).hourlyWithHoliday).toBe(12_384);
   });
+  it("1주·월 평균 근무 임금 — 주 20시간 206,400원·월 896,857원, 1주 합계 247,680원", () => {
+    const x = weeklyHolidayPay(m26, 20);
+    expect([x.base, x.monthlyBase, x.weekTotal, x.monthly]).toEqual([206_400, 896_857, 247_680, 179_371]);
+  });
+  it("개근하지 않은 주는 주휴 0원(시행령 제30조 제1항), 근무 임금은 그대로", () => {
+    const x = weeklyHolidayPay(m26, 20, false);
+    expect([x.hours, x.weekly, x.base, x.hourlyWithHoliday]).toEqual([0, 0, 206_400, m26]);
+  });
+  it("40시간 넘게 넣어도 소정근로 임금은 40시간분(제50조 제1항)", () => {
+    expect(weeklyHolidayPay(m26, 45).base).toBe(412_800);
+  });
 });
 
 describe("연차", () => {

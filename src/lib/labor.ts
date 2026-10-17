@@ -24,10 +24,12 @@ export function weeklyHolidayHours(weeklyHours: number): number {
 /** 1년 평균 주의 수 ÷ 12 — 시행령 제6조 제2항 제4호의 월 환산 */
 export const WEEKS_PER_MONTH = 365 / 7 / 12;
 
-export function weeklyHolidayPay(hourly: number, weeklyHours: number) {
-  const hours = weeklyHolidayHours(weeklyHours);
+/** attended=false 면 그 주 소정근로일을 다 나오지 않은 것 — 유급휴일은 개근한 사람에게 준다(시행령 제30조 제1항) */
+export function weeklyHolidayPay(hourly: number, weeklyHours: number, attended = true) {
+  const hours = attended ? weeklyHolidayHours(weeklyHours) : 0;
   const weekly = fl(hourly * hours);
   const h = Math.min(Math.max(0, weeklyHours), W.maxWeeklyHours);
+  const base = fl(hourly * h);
   return {
     hours,
     weekly,
@@ -35,8 +37,12 @@ export function weeklyHolidayPay(hourly: number, weeklyHours: number) {
     monthly: fl(weekly * WEEKS_PER_MONTH),
     /** 주휴수당을 시간당으로 나눠 더한 시급 */
     hourlyWithHoliday: h > 0 ? fl((hourly * (h + hours)) / h) : hourly,
+    /** 1주 소정근로 임금(주휴 빼고) */
+    base,
+    /** 월 평균 소정근로 임금(1년 평균 주 수 기준) */
+    monthlyBase: fl(base * WEEKS_PER_MONTH),
     /** 1주 임금(소정근로 + 주휴) */
-    weekTotal: fl(hourly * h) + weekly,
+    weekTotal: base + weekly,
   };
 }
 
