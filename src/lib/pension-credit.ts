@@ -72,6 +72,31 @@ export function cappedByTax(credit: number, computedTax: number): { used: number
   return { used, unused: credit - used };
 }
 
+export interface Room {
+  /** 한도를 넘겨 공제 대상에서 빠진 납입액(연금저축 600만원 초과분 + 합계 900만원 초과분) */
+  over: number;
+  /** 900만원까지 남은 금액 — IRP·DC 에 더 넣으면 공제 대상이 되는 몫(ISA 추가분은 따로) */
+  room: number;
+  /** room 을 채우면 더 줄어드는 세금(지방소득세 포함). 산출세액 한도에 걸리면 그만큼만 */
+  extraWithLocal: number;
+}
+
+/**
+ * 한도까지 얼마 남았나 — 제59조의3 제1항 한도(600만·900만)만으로 닫히는 숫자.
+ * 남은 한도는 ISA 추가분을 뺀 기본 금액으로 센다(ISA 추가분은 900만원 위에 따로 얹힌다).
+ * computedTax(산출세액)를 주면 제61조 한도까지만 — 더 넣어도 줄일 세금이 없으면 0.
+ */
+export function roomToCap(c: Contribution, lowIncome: boolean, computedTax = 0): Room {
+  const base = Math.min(Math.min(c.savings, SAVINGS_CAP) + c.irp, COMBINED_CAP);
+  const over = c.savings + c.irp - base;
+  const room = COMBINED_CAP - base;
+  const now = pensionCredit(c, lowIncome).incomeTax;
+  const full = pensionCredit({ ...c, irp: c.irp + room }, lowIncome).incomeTax;
+  const cap = (x: number) => (computedTax > 0 ? Math.min(x, computedTax) : x);
+  const extraWithLocal = withLocalTax(cap(full)) - withLocalTax(cap(now));
+  return { over, room, extraWithLocal };
+}
+
 /**
  * 연금계좌에서 꺼낼 때의 세금 — 소득세법 제20조의3·제21조·제129조.
  * 과세 대상은 공제받은 원금과 운용수익뿐이다. 공제받지 않은 원금은 세금이 없다.

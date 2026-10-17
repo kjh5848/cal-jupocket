@@ -10,10 +10,15 @@ import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import pa from "../../../rates/pension-account-2026.json";
 import { won, manwon } from "../../../lib/won";
-import { pensionCredit, eligibleAmount } from "../../../lib/pension-credit";
+import { pensionCredit, eligibleAmount, roomToCap } from "../../../lib/pension-credit";
+import { calcPresets } from "../../../data/calc-presets";
 
 const ex = pensionCredit({ savings: 6_000_000, irp: 3_000_000 }, true);
 const over = eligibleAmount({ savings: 8_000_000, irp: 1_000_000 });
+const exRoom = roomToCap({ savings: 6_000_000, irp: 3_000_000 }, true);
+const P = calcPresets["/guide/irp-tax-credit-calculator/"];
+const PRESETS_SAVINGS = JSON.stringify({ default: P.savings.amounts });
+const PRESETS_IRP = JSON.stringify({ default: P.irp.amounts });
 
 const title = "IRP 세액공제 계산 — 넣은 돈 × 12% 또는 15%, 지방소득세까지 계산기";
 const description =
@@ -32,53 +37,60 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
+  <div class="calc-card" data-two>
+    <p class="meta">아래 값은 예시입니다. 내 납입액으로 바꾸세요. 산출세액을 모르면 비워 두면 한도 전 금액입니다.</p>
     <div class="calc-input-wrap">
       <label for="irp-savings">연금저축 납입액(올해)</label>
-      <input type="text" inputmode="numeric" id="irp-savings" value="6,000,000" />
+      <input type="text" inputmode="numeric" id="irp-savings" value="6,000,000" data-won data-presets={PRESETS_SAVINGS} />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
-      <label for="irp-irp">IRP 납입액(올해)</label>
-      <input type="text" inputmode="numeric" id="irp-irp" value="3,000,000" />
+      <label for="irp-irp">IRP·DC 본인 납입액(올해)</label>
+      <input type="text" inputmode="numeric" id="irp-irp" value="3,000,000" data-won data-presets={PRESETS_IRP} />
       <span class="unit">원</span>
     </div>
-    <div class="field">
-      <span class="hint">종합소득금액 {won(pa.incomeThreshold)} 이하(근로소득만 있으면 총급여 5,500만원 이하)인가요?</span>
-      <div class="segmented" role="radiogroup" aria-label="공제율 구간">
-        <label><input type="radio" name="irp-rate" id="irp-rate-low" checked /> 이하 — {pa.creditRatePercentBelowThreshold}%</label>
-        <label><input type="radio" name="irp-rate" id="irp-rate-high" /> 초과 — {pa.creditRatePercentAboveThreshold}%</label>
-      </div>
+    <div class="calc-input-wrap">
+      <label for="irp-rate">종합소득금액 {won(pa.incomeThreshold)} 이하(근로소득만 있으면 총급여 5,500만원 이하)인가요?</label>
+      <select id="irp-rate" data-seg>
+        <option value="low" selected>이하 — {pa.creditRatePercentBelowThreshold}%</option>
+        <option value="high">초과 — {pa.creditRatePercentAboveThreshold}%</option>
+      </select>
     </div>
     <details>
       <summary>더 정확하게 — ISA 전환금액, 산출세액</summary>
       <div class="calc-input-wrap">
         <label for="irp-isa">ISA 만기 전환금액(만기 {pa.isaTransfer.window.days}일 안)</label>
-        <input type="text" inputmode="numeric" id="irp-isa" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="irp-isa" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
       <div class="calc-input-wrap">
         <label for="irp-tax">올해 산출세액(아는 경우)</label>
-        <input type="text" inputmode="numeric" id="irp-tax" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="irp-tax" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
     </details>
 
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="irp-hero|irp-extra"
+      data-bar-labels="지금 줄어드는 세금|한도까지 더 줄일 수 있는 세금"
+      data-dock="irp-hero"
+    >
       <p class="label">줄어드는 세금(지방소득세 포함)</p>
       <p class="big" id="irp-hero">{won(ex.withLocal)}</p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip">
-        <span class="label">공제 대상 금액</span>
-        <span class="value" id="irp-eligible">{won(ex.eligible)}</span>
-      </div>
-      <div class="stat-chip">
-        <span class="label">소득세에서</span>
-        <span class="value" id="irp-income-tax">{won(ex.incomeTax)}</span>
-      </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">공제 대상 금액</span><span class="value" id="irp-eligible">{won(ex.eligible)}</span></div>
+      <div class="stat-chip"><span class="label">한도를 넘겨 빠진 돈</span><span class="value" id="irp-over">{won(exRoom.over)}</span></div>
+      <div class="stat-chip"><span class="label">900만원까지 남은 금액</span><span class="value" id="irp-room">{won(exRoom.room)}</span></div>
+      <div class="stat-chip"><span class="label">채우면 더 줄어드는 세금</span><span class="value" id="irp-extra">{won(exRoom.extraWithLocal)}</span></div>
+      <div class="stat-chip" data-group="줄어드는 세금"><span class="label">소득세에서</span><span class="value" id="irp-income-tax">{won(ex.incomeTax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세에서</span><span class="value" id="irp-local">{won(ex.withLocal - ex.incomeTax)}</span></div>
     </div>
     <p class="meta" id="irp-cap-note" hidden></p>
+    <p class="meta">공제 대상 금액 × 공제율 = 소득세에서 줄어드는 금액, 그 10%가 지방소득세에서 함께 줄어듭니다. 남은 금액은 IRP·DC 에 넣어야 공제 대상이 됩니다(연금저축은 600만원까지, 소득세법 제59조의3).</p>
   </div>
 
   <h2>{QA[0].q}</h2>

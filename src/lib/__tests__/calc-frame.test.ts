@@ -21,6 +21,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
   { path: "/guide/parental-leave-pay-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/severance-tax-calculator/", attrs: ["data-two", "data-won", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/year-end-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
+  { path: "/guide/irp-tax-credit-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
 ];
 
 /**
