@@ -194,7 +194,7 @@
 - [x] /guide/basic-pension-calculator/ (2026-10-17 — lib baseTotal·coupleCut·reversalCut·room·propertySteps, 선정기준액·남은/넘은 금액·기준연금액 칩·소득인정액 소계(근로 평가액·그 밖의 소득·재산 환산액)·줄어든 돈 소계(부부 20%·선정기준액 감액)·막대·재산 환산 산식·가구/사는 곳 버튼·자동완성 프리셋 예금 1억·2억·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 손계산 6개 같음·무작위 2만 건 항등식. 국민연금 연계 감액·이자소득 칸은 넣지 않음)
 - [x] /guide/old-age-pension-age/ (2026-10-17 — lib startPlan(앞당기거나 미룬 햇수·정상 대비 증감·만 그 나이가 되는 해·정상 수급과 명목 누적액이 같아지는 나이, 정상 수급 나이에서 breakevenAge throw 막음)·칩 4개·산식·출생연도 −/+·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 출생연도 경계 쌍·손익분기 손계산 같음. 막대 없음(비율), 프리셋 없음 — 금액 입력 칸 없음)
 - [x] /guide/industrial-accident-leave-pay/ (2026-10-17 — lib byRate·raise·ageCut·floorAdd(평균임금 × 70%/90%·최저임금액까지 보탠 돈·61세 이후 줄어든 돈·별표 1 제3호 하한까지 보탠 돈)·적용·안 나오는 몫 칩·소계 2개·막대·식·일수 −/+·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 제52조·제54조·별표 1 손계산 7개 같음·무작위 2만 건 항등식. 쉰 날수 총액은 3일 넘을 때 처음 3일분 해석 보류. 프리셋 없음 — 자동완성에 금액 없음)
-- [ ] /guide/industrial-accident-disability/
+- [x] /guide/industrial-accident-disability/ (2026-10-17 — 1~3급 선급 '최초 1년분부터 4년분까지' 단서 누락 fix(제57조 ④), lib base·raised·capCut·monthly·advanceYears·advanceMax·breakevenYears, 지급 방식·연금 한 달 치(제70조 ③)·미리 받을 수 있는 최대(이자 공제 전)·연금이 일시금만큼 쌓이는 햇수(4~7급 명목)·상한을 넘어 빠진 몫 칩·적용 평균임금 × 일수 소계·막대·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 손계산 5개 같음·무작위 2만 건 항등식. 프리셋 없음 — 자동완성은 등급 줄기뿐. 보류: 연금 한 달 치 원 미만 처리, 선급 이자 공제율)
 - [ ] /inheritance/
 - [ ] /guide/gift-tax-calculator/
 - [ ] /guide/family-loan-interest/
