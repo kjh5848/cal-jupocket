@@ -29,3 +29,15 @@ export function plainGiftAcqTax(base: number) {
   const edu = fl(b * (A.baseRate - A.heavyRate) * A.eduRate);
   return { acq, edu, total: acq + edu };
 }
+
+/**
+ * 계산기 화면용 — 재산분할 세금과 특례로 줄어든 돈.
+ * 농어촌특별세: 전용 85㎡ 이하(읍·면 100㎡) 주택이면 원인과 관계없이 비과세(농특세법 제4조 제11호·시행령 제4조 ⑤,
+ * acquisition-extra-2026.json rural) → 0원. 그 밖은 특례세율과의 관계를 확인하지 못해 null(0원이 아니다).
+ * saved 는 같은 과세표준을 특례 없이 무상취득(3.5%)했을 때와의 차이 — 농특세는 양쪽 다 빼고 비교한다.
+ */
+export function divisionAcqPage(base: number, smallHouse: boolean) {
+  const x = divisionAcqTax(base);
+  const p = plainGiftAcqTax(base);
+  return { ...x, rural: smallHouse ? 0 : null, plainTotal: p.total, saved: p.total - x.total };
+}

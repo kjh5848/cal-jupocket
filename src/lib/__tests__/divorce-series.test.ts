@@ -6,7 +6,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/divorce-2026.json";
 import { divorceSeries } from "../../data/series/divorce";
-import { divisionAcqTax, plainGiftAcqTax } from "../divorce-tax";
+import { divisionAcqTax, plainGiftAcqTax, divisionAcqPage } from "../divorce-tax";
 import { manwon, eokwon } from "../won";
 
 const A = r.acquisition;
@@ -19,6 +19,27 @@ describe("재산분할 취득세", () => {
   it("5억원 — 취득세 750만원 + 지방교육세 150만원(과세표준 × 1.5% × 20%)", () => {
     expect(divisionAcqTax(500_000_000)).toEqual({ acq: 7_500_000, edu: 1_500_000, total: 9_000_000 });
     expect(plainGiftAcqTax(500_000_000)).toEqual({ acq: 17_500_000, edu: 1_500_000, total: 19_000_000 });
+  });
+  it("손계산(제15조 ① 6호·제151조 ① 1호) — 1억 180만원 · 3억 540만원 · 5억 900만원", () => {
+    expect(divisionAcqTax(100_000_000).total).toBe(1_800_000);
+    expect(divisionAcqTax(300_000_000).total).toBe(5_400_000);
+    expect(divisionAcqTax(500_000_000).total).toBe(9_000_000);
+  });
+  it("원 미만 버림 — 1만원 단위 0~20억 전부 정수 연산과 같다(부동소수점 꼬리 없음)", () => {
+    for (let b = 0; b <= 2_000_000_000; b += 10_000) {
+      const x = divisionAcqTax(b);
+      const p = plainGiftAcqTax(b);
+      if (x.acq !== Math.floor((b * 15) / 1000) || x.edu !== Math.floor((b * 3) / 1000) || p.acq !== Math.floor((b * 35) / 1000)) throw new Error(`${b}`);
+    }
+    for (const b of [333_333_333, 123_456_789, 999_999_999, 1_234_567_891]) {
+      expect(divisionAcqTax(b).acq).toBe(Math.floor((b * 15) / 1000));
+      expect(divisionAcqTax(b).edu).toBe(Math.floor((b * 3) / 1000));
+    }
+  });
+  it("화면용 — 85㎡ 이하 주택 농특세 0원, 그 밖은 미확인(null), 줄어든 돈 = 2%", () => {
+    expect(divisionAcqPage(500_000_000, true)).toMatchObject({ rural: 0, total: 9_000_000, plainTotal: 19_000_000, saved: 10_000_000 });
+    expect(divisionAcqPage(500_000_000, false).rural).toBeNull();
+    expect(divisionAcqPage(333_333_333, true).saved).toBe(plainGiftAcqTax(333_333_333).total - divisionAcqTax(333_333_333).total);
   });
   it("판례 출처는 사건번호와 원문 주소를 남긴다", () => {
     const labels = r.sources.map((s) => s.label).join(" ");

@@ -2,7 +2,7 @@
 /**
  * "재산분할 취득세" — 이혼 재산분할 세금 시리즈. (이혼 재산분할 취득세율·감면·과세표준·계산·신고, 협의이혼 취득세도 이 글, 계산기 포함)
  * 근거: 지방세법 제6조 제19호·제10조의2·제11조 제1항 제2호·제13조의2 제2항·제15조 제1항 제6호·제20조·제151조,
- * 시행령 제14조·제14조의2·제20조 제13항·제28조의6 제2항. 계산: divorce-tax.ts divisionAcqTax().
+ * 시행령 제14조·제14조의2·제20조 제13항·제28조의6 제2항, 농어촌특별세법 제4조 제11호. 계산: divorce-tax.ts divisionAcqTax()·divisionAcqPage().
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
@@ -36,20 +36,35 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">과세표준(시가인정액, 시가표준액 {eokwon(A.standardValueChoiceUpTo)} 이하는 시가표준액도 가능)을 넣으세요. 농어촌특별세는 계산하지 않습니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">과세표준(시가인정액, 시가표준액 {eokwon(A.standardValueChoiceUpTo)} 이하는 시가표준액도 가능)을 넣으세요. 등기 접수 때 내는 세금입니다.</p>
     <div class="calc-input-wrap">
       <label for="dv-base">과세표준</label>
-      <input type="text" inputmode="numeric" id="dv-base" value="500,000,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="dv-base" value="500,000,000" data-won /><span class="unit">원</span>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div class="calc-input-wrap toggle-row">
+      <label for="dv-small">전용 85㎡ 이하 주택 (수도권 밖 읍·면은 100㎡ 이하)</label>
+      <input type="checkbox" id="dv-small" checked />
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="dv-acq|dv-edu|dv-saved"
+      data-bar-labels="취득세|지방교육세|특례로 줄어든 돈"
+      data-dock="dv-hero"
+    >
       <p class="label">재산분할 취득세 + 지방교육세</p>
       <p class="big" id="dv-hero">{won(ex.total)}</p>
-      <p class="meta" id="dv-note">특례 없는 무상취득({pct(A.baseRate)})이면 {won(plain.total)}, {won(plain.total - ex.total)} 차이입니다.</p>
+      <p class="meta" id="dv-note">특례 없는 무상취득({pct(A.baseRate)})이면 {won(plain.total)}, {won(plain.total - ex.total)} 차이입니다. 85㎡ 이하 주택이라 농어촌특별세는 없습니다.</p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">취득세 {pct(A.rate)}</span><span class="value" id="dv-acq">{won(ex.acq)}</span></div>
-      <div class="stat-chip"><span class="label">지방교육세</span><span class="value" id="dv-edu">{won(ex.edu)}</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">세율 (제15조 ① 6호)</span><span class="value">{pct(A.baseRate)} − {pct(A.heavyRate)} = {pct(A.rate)}</span></div>
+      <div class="stat-chip"><span class="label">특례 없는 무상취득 ({pct(A.baseRate)})</span><span class="value" id="dv-plain">{won(plain.total)}</span></div>
+      <div class="stat-chip"><span class="label">특례로 줄어든 돈</span><span class="value" id="dv-saved">{won(plain.total - ex.total)}</span></div>
+      <div class="stat-chip" data-group="낼 세금"><span class="label">취득세 {pct(A.rate)}</span><span class="value" id="dv-acq">{won(ex.acq)}</span></div>
+      <div class="stat-chip"><span class="label">지방교육세 (제151조)</span><span class="value" id="dv-edu">{won(ex.edu)}</span></div>
+      <div class="stat-chip"><span class="label">농어촌특별세 (85㎡ 이하 주택 비과세)</span><span class="value" id="dv-rural">0원</span></div>
     </div>
   </div>
 
@@ -65,6 +80,7 @@ const QA = [
     </tbody>
   </table>
   <p>조정대상지역의 시가표준액 {eokwon(A.heavyHouseFloor)} 이상 주택을 무상취득하면 원래 12% 중과세율이 붙지만, 재산분할 특례 대상은 이 중과에서 빠집니다(지방세법 시행령 제28조의6 제2항 제2호). 사실혼 해소에 따른 재산분할도 특례세율을 받습니다(대법원 2016두36864).</p>
+  <p>농어촌특별세는 전용 85㎡ 이하(수도권 밖 읍·면은 100㎡ 이하) 주택이면 취득 원인과 관계없이 붙지 않습니다(농어촌특별세법 제4조 제11호·시행령 제4조 제5항). 그보다 넓은 주택이나 주택이 아닌 부동산은 농어촌특별세가 재산분할 특례세율과 어떻게 맞물리는지 조문만으로 판단하지 못해 계산기에서 “—”로 둡니다.</p>
 
   <h2>{QA[1].q}</h2>
   <p class="qa-lead">{QA[1].a}</p>
