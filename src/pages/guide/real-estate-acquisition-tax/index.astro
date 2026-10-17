@@ -29,8 +29,8 @@ const ANSWER = `부동산 취득세는 주택이 아닌 토지·상가·건물�
 
 const QA = [
   { q: "토지·상가 취득세는 얼마인가요?", a: `주택이 아닌 부동산을 사는 '그 밖의 원인으로 인한 취득'은 농지 외 ${pct(S.paidOther)}, 농지 ${pct(S.paidFarm)}입니다(제11조 제1항 제7호). ${eokwon(base)} 상가나 토지면 취득세 ${won(land.acq)}, 지방교육세 ${won(land.edu)}, 농어촌특별세 ${won(land.rural ?? 0)}으로 합계 ${won(land.total)}입니다.` },
-  { q: "부동산을 증여받으면 취득세가 얼마인가요?", a: `상속 외의 무상취득은 ${pct(S.gift)}입니다(비영리사업자 ${pct(S.giftNonProfit)}). ${eokwon(base)}이면 취득세 ${won(gift.acq)}에 지방교육세 ${won(gift.edu)}, 농특세 ${won(gift.rural ?? 0)}이 붙어 합계 ${won(gift.total)}입니다. 조정대상지역의 일정가액 이상 주택을 증여받으면 12% 중과 대상이 될 수 있습니다(제13조의2 제2항).` },
-  { q: "상속받은 부동산 취득세는 얼마인가요?", a: `상속은 농지 ${pct(S.inheritanceFarm)}, 그 밖 ${pct(S.inheritanceOther)}입니다(제11조 제1항 제1호). ${eokwon(base)}이면 취득세 ${won(inh.acq)}, 지방교육세 ${won(inh.edu)}, 농특세 ${won(inh.rural ?? 0)}입니다. 신고는 상속개시일이 속하는 달의 말일부터 ${DEADLINE.inheritanceMonths}개월 안입니다.` },
+  { q: "부동산을 증여받으면 취득세가 얼마인가요?", a: `상속 외의 무상취득은 ${pct(S.gift)}입니다(비영리사업자 ${pct(S.giftNonProfit)}). ${eokwon(base)}이면 취득세 ${won(gift.acq)}에 지방교육세 ${won(gift.edu)}, 농특세 ${won(gift.rural ?? 0)}이 붙어 합계 ${won(gift.total)}입니다. 85㎡ 이하 주택이면 농특세는 비과세입니다. 조정대상지역의 일정가액 이상 주택을 증여받으면 12% 중과 대상이 될 수 있습니다(제13조의2 제2항).` },
+  { q: "상속받은 부동산 취득세는 얼마인가요?", a: `상속은 농지 ${pct(S.inheritanceFarm)}, 그 밖 ${pct(S.inheritanceOther)}입니다(제11조 제1항 제1호). ${eokwon(base)}이면 취득세 ${won(inh.acq)}, 지방교육세 ${won(inh.edu)}, 농특세 ${won(inh.rural ?? 0)}입니다. 85㎡ 이하 주택이면 농특세는 비과세입니다. 신고는 상속개시일이 속하는 달의 말일부터 ${DEADLINE.inheritanceMonths}개월 안입니다.` },
 ];
 ---
 

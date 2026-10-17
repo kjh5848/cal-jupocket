@@ -24,14 +24,19 @@ import NextReads from "../../components/NextReads.astro";
 import Disclaimer from "../../components/Disclaimer.astro";
 import r from "../../rates/local-tax-2026.json";
 import { bill, housePaidRate } from "../../lib/acquisition-tax";
+import { acquisitionPage } from "../../lib/acquisition-total";
+import x from "../../rates/acquisition-extra-2026.json";
+import { calcPresets } from "../../data/calc-presets";
 import { formatWon, formatMan } from "../../lib/money";
 import "../../styles/global.css";
 
-const title = "취득세 계산기 — 집·상가·증여까지";
+const title = "취득세 계산기 — 집·상가·증여, 다주택 중과·농특세까지";
 const description =
-  "취득가액과 취득 원인만 고르면 취득세와 지방교육세가 바로 나옵니다. 주택은 6억 이하 1%, 9억 초과 3%이고 그 사이는 계산식으로 이어집니다. 증여는 3.5%, 상속은 2.8%. 신고기한도 함께 보여줍니다.";
+  "취득가액과 취득 원인만 고르면 취득세와 지방교육세가 바로 나옵니다. 주택은 6억 이하 1%, 9억 초과 3%이고 그 사이는 계산식으로 이어집니다. 증여는 3.5%, 상속은 2.8%. 다주택·법인 중과(8%·12%)와 농어촌특별세, 신고기한도 함께 보여줍니다.";
 
 const A = r.acquisitionTax;
+const ex = acquisitionPage(500_000_000, { cause: "housePaid", smallArea: true });
+const PRESETS = JSON.stringify({ default: calcPresets["/acquisition-tax/"].default.amounts });
 const pct = (v: number) => `${(v * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
 ---
 
@@ -52,52 +57,72 @@ const pct = (v: number) => `${(v * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
         지방교육세까지 더한 금액이 나옵니다.
       </p>
 
-      <div class="calc-card">
+      <div class="calc-card" data-two>
+        <p class="meta">아래 값은 예시입니다. 취득가액(보통 실제 산 값)과 어떻게 얻었는지를 바꾸세요.</p>
         <div class="calc-input-wrap">
           <label id="input-label" for="price">취득가액</label>
-          <input type="text" inputmode="numeric" id="price" value="500,000,000" />
+          <input type="text" inputmode="numeric" id="price" value="500,000,000" data-won data-presets={PRESETS} />
           <span class="unit">원</span>
-        </div>
-
-        <div class="amount-presets" role="group" aria-label="금액 빠르게 고르기">
-          <button type="button" class="preset-chip" data-price="300000000">3억</button>
-          <button type="button" class="preset-chip" data-price="600000000">6억</button>
-          <button type="button" class="preset-chip" data-price="750000000">7.5억</button>
-          <button type="button" class="preset-chip" data-price="900000000">9억</button>
-          <button type="button" class="preset-chip" data-price="1200000000">12억</button>
         </div>
 
         <div class="calc-input-wrap">
           <label for="cause">어떻게 얻었나</label>
           <select id="cause">
             <option value="housePaid">주택을 샀다 (유상거래)</option>
-            <option value="paidOther">상가·토지를 샀다</option>
+            <option value="paidOther">상가·토지·오피스텔을 샀다</option>
             <option value="paidFarm">농지를 샀다</option>
-            <option value="original">집을 새로 지었다 (원시취득)</option>
+            <option value="original">새로 지었다 (원시취득)</option>
             <option value="inheritanceOther">상속받았다 (농지 외)</option>
             <option value="inheritanceFarm">상속받았다 (농지)</option>
             <option value="gift">증여받았다</option>
           </select>
         </div>
 
-        <div class="result-hero" aria-live="polite" aria-atomic="true">
-          <p class="label">취득세 + 지방교육세</p>
-          <p class="big" id="hero-value">0원</p>
+        <div class="calc-input-wrap toggle-row" id="house-wrap" hidden>
+          <label for="is-house">받은(지은) 것이 주택이다</label>
+          <input type="checkbox" id="is-house" checked />
         </div>
 
-        <div class="stat-row">
-          <div class="stat-chip">
-            <span class="label">취득세</span>
-            <span class="value" id="stat1-value">0원</span>
+        <div class="calc-input-wrap toggle-row" id="area-wrap">
+          <label for="small-area">전용 85㎡ 이하 (수도권 밖 읍·면은 100㎡ 이하)</label>
+          <input type="checkbox" id="small-area" checked />
+        </div>
+
+        <div id="sur-wrap">
+          <div class="calc-input-wrap">
+            <label for="houses">이 집을 사고 난 뒤 우리 집(1세대) 주택 수</label>
+            <input type="number" inputmode="numeric" id="houses" value="1" min="1" max="10" data-step />
+            <span class="unit">채</span>
           </div>
-          <div class="stat-chip">
-            <span class="label">지방교육세</span>
-            <span class="value" id="stat2-value">0원</span>
+          <div class="calc-input-wrap toggle-row">
+            <label for="regulated">이 집이 조정대상지역에 있다</label>
+            <input type="checkbox" id="regulated" />
           </div>
-          <div class="stat-chip">
-            <span class="label">세율</span>
-            <span class="value" id="stat3-value">—</span>
+          <div class="calc-input-wrap toggle-row">
+            <label for="corporate">법인이 산다</label>
+            <input type="checkbox" id="corporate" />
           </div>
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="stat1-value|stat2-value|acq-rural"
+          data-bar-labels="취득세|지방교육세|농어촌특별세"
+          data-dock="hero-value"
+        >
+          <p class="label">취득세 + 지방교육세 + 농어촌특별세</p>
+          <p class="big" id="hero-value">{formatWon(ex.total)}</p>
+          <p class="meta" id="acq-note"></p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">취득세율 (제11조·제13조의2)</span><span class="value" id="stat3-value">—</span></div>
+          <div class="stat-chip"><span class="label">합계 ÷ 취득가액</span><span class="value" id="acq-eff">—</span></div>
+          <div class="stat-chip" data-group="낼 세금"><span class="label">취득세</span><span class="value" id="stat1-value">{formatWon(ex.acq)}</span></div>
+          <div class="stat-chip"><span class="label">지방교육세 (제151조)</span><span class="value" id="stat2-value">{formatWon(ex.edu)}</span></div>
+          <div class="stat-chip"><span class="label">농어촌특별세 (농특세법 제5조)</span><span class="value" id="acq-rural">{formatWon(ex.rural ?? 0)}</span></div>
         </div>
 
         <p id="deadline-note" class="meta"></p>
@@ -112,11 +137,12 @@ const pct = (v: number) => `${(v * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
 
       <div class="callout warn">
         <p>
-          ⚠️ <strong>중과세율은 반영하지 않았습니다.</strong> 다주택자, 법인,
-          조정대상지역, 사치성 재산에는 훨씬 높은 세율이 붙습니다
-          (제13조·제13조의2). 해당하면 실제 금액이 크게 달라집니다.
-          <strong>농어촌특별세</strong>도 빠져 있습니다 — 국세라 근거 법이
-          다릅니다.
+          ⚠️ <strong>중과는 주택 수·조정대상지역·법인만 보고 판정합니다.</strong>
+          일시적 2주택처럼 중과에서 빠지는 주택(시행령)은 가리지 않습니다 —
+          해당하면 표준세율(1~3%)입니다. 중과일 때 농어촌특별세는 확인하지
+          않아 “—”로 둡니다. 상속으로 1가구가 이 집 1채만 갖게 되는 경우의
+          세율 특례(제15조 제1항 제2호 가목)와 생애최초 감면
+          (지방세특례제한법 제36조의3)도 아직 넣지 않았습니다.
         </p>
       </div>
 
@@ -151,11 +177,14 @@ const pct = (v: number) => `${(v * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
 
       <p class="meta">
         표준세율은 지방세법 제11조 제1항, 주택 유상거래 계산식은 같은 항
-        제8호, 신고기한은 제20조 제1항, 지방교육세는 제151조 제1항 제1호에서
-        확인한 값입니다({r.verifiedOn} 확인 · {r.lawVersion}).
-        중과세율·감면(지방세특례제한법)·농어촌특별세는 넣지 않았습니다.
-        취득당시가액은 입력한 금액을 그대로 씁니다 — 실제 과세표준은
-        제10조의2 이하가 따로 정합니다. 개별 사안은 위택스나 관할
+        제8호(세율을 소수점 다섯째자리에서 반올림), 신고기한은 제20조 제1항,
+        지방교육세는 제151조 제1항 제1호에서 확인한 값입니다({r.verifiedOn} 확인 · {r.lawVersion}).
+        중과는 제13조의2 제1항(지방교육세는 제151조 제1항 제1호 나목),
+        농어촌특별세는 농어촌특별세법 제5조 제1항·제4조 제11호와 같은 법
+        시행령 제4조 제5항입니다 — 85㎡ 이하 주택 비과세는 사든 증여·상속받든
+        같습니다({x.verifiedOn}·2026-10-18 확인). 감면(지방세특례제한법)은
+        넣지 않았습니다. 취득당시가액은 입력한 금액을 그대로 씁니다 — 실제
+        과세표준은 제10조의2 이하가 따로 정합니다. 개별 사안은 위택스나 관할
         시·군·구청에서 확인하세요.
       </p>
 
