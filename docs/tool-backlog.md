@@ -6,7 +6,7 @@
 
 현재: 보류 2 · 있음 18 · 할 일 412
 
-다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /guide/annual-leave-calculator/(연차) — roberin 같은 도구 대조(roberin 연차 계산기 주소를 backlog 에서 찾고 없으면 '없음'). /guide/minimum-wage-calculator/ 는 2026-10-17 이전 완료(최저 주급 추가, roberin 시급계산기와 20h 같음 · 40h 는 고시 209시간인 우리가 맞음). 시급계산기(#11)는 할 일 그대로 — 연장·야간·휴일 가산(제56조) 입력이 있어 따로 만든다. 보류 추가: 통상근로자 주 6일 사업장의 1일 소정근로시간 ÷6 단수 처리(별표 2 제2호 나목에 단수 규정 없음). 보류 남은 것: 국민연금 사업장가입자 기여금·부담금 각각 10원 미만 버림인지 합계에서 버림인지(공단 실무안내에 문장 없음 — 313,020 vs 313,025), 건강보험료 원 단위 처리, 국민연금 10원 절사 근거 조문(국고금 관리법 제47조 ③ 준용). 카드 세트 late-filing-penalty·multiple-payers 카드 이미지 재생성은 사용자 확인 필요. 납부지연 일수 같은 식 쓰는 글 /guide/vat-final-return-payment/·/guide/withholding-tax/ 확인 필요. 민법 제161조·지방소득세 가산세·원천징수 단수·종소세 경비율 구간 원문 확인 보류. /penalty/ 날짜 칸 스타일(틀) 필요. 이미 발행된 스레드 social/queue/016-penalty-one-day.md 는 옛 숫자 — 그대로 둠.
+다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /guide/unemployment-benefit-calculator/(실업급여) — roberin https://roberin.com/unemployment-calculator/ 대조. /guide/annual-leave-calculator/ 는 2026-10-17 완료(상시 4명 이하 미적용 버튼·다음 연차 날짜, 일수 roberin 과 같음). 보류 추가: 1일 통상임금 단수(시간급 버림 후 × 8 vs 월급 × 8 ÷ 209 반올림, 시행령 제6조에 단수 규정 없음), 1년 근무 다음 날 재직 요건 판례 원문, 일본 労働基準法 第39条 원문(e-Gov 본문 못 읽음). 후보: 회계연도 연차 계산기·퇴사 연차수당(자동완성 줄기). 시급계산기(#11)는 할 일 그대로 — 연장·야간·휴일 가산(제56조). 보류 남은 것: 주 6일 사업장 ÷6 단수, 국민연금 사업장가입자 10원 미만 버림 방식(313,020 vs 313,025), 건강보험료 원 단위 처리, 국민연금 10원 절사 근거 조문(국고금 관리법 제47조 ③ 준용). 카드 세트 late-filing-penalty·multiple-payers 카드 이미지 재생성은 사용자 확인 필요. 납부지연 일수 같은 식 쓰는 글 /guide/vat-final-return-payment/·/guide/withholding-tax/ 확인 필요. 민법 제161조·지방소득세 가산세·원천징수 단수·종소세 경비율 구간 원문 확인 보류. /penalty/ 날짜 칸 스타일(틀) 필요. 이미 발행된 스레드 social/queue/016-penalty-one-day.md 는 옛 숫자 — 그대로 둠.
 
 | # | 우리 분류 | roberin 분류 | roberin 주소 | 도구 | 상태 | 우리 주소 | 메모 |
 |---|---|---|---|---|---|---|---|
@@ -79,8 +79,8 @@
 | 67 | 집·차 | 부동산·주거·자동차 / 자동차·EV | https://roberin.com/projects/electric-vehicle-maintenance-cost-calculator/ | 전기차 유지비 계산기 | 할 일 |  |  |
 | 68 | 집·차 | 부동산·주거·자동차 / 자동차·EV | https://roberin.com/projects/ev-calculator/ | 전기차 충전 비용 계산기 | 할 일 |  |  |
 | 69 | 집·차 | 부동산·주거·자동차 / 자동차·EV | https://roberin.com/car-poor-calculator/ | 카푸어 계산기 | 할 일 |  |  |
-| 94 | 급여·근로 | 날짜·시간·일정 / 학교·근속 | https://roberin.com/projects/annual-leave-calculator2/ | 연차 생성 계산기 Pro | 있음 | /guide/annual-leave-calculator/ |  |
-| 95 | 급여·근로 | 날짜·시간·일정 / 학교·근속 | https://roberin.com/annual-leave-calculator/ | 연차일수 계산기 | 있음 | /guide/annual-leave-calculator/ |  |
+| 94 | 급여·근로 | 날짜·시간·일정 / 학교·근속 | https://roberin.com/projects/annual-leave-calculator2/ | 연차 생성 계산기 Pro | 있음 | /guide/annual-leave-calculator/ | 2026-10-17 입력만 관찰: 사업장 규모(5인 미만)를 보고 우리도 상시 근로자 수 버튼 더함(시행령 별표 1). 퇴사 정산(퇴사 예정일·사용 예정 연차)은 /guide/annual-leave-pay/ 글 몫 — 계산기에 안 더함 |
+| 95 | 급여·근로 | 날짜·시간·일정 / 학교·근속 | https://roberin.com/annual-leave-calculator/ | 연차일수 계산기 | 있음 | /guide/annual-leave-calculator/ | 2026-10-17 대조: 일수 경계 8개 같음 · 다음 연차 날짜·일수 더함 · 1일 통상임금 단수(하루 최대 7원)는 단수 규정 없어 보류 · roberin 출근율 70% 0일은 제60조 ② 미반영 · 새 틀 이전 |
 | 311 | 급여·근로 | 문서·텍스트·개발 유틸 / 기타 문서·유틸 | https://roberin.com/insurance-calculator/ | 4대보험계산기 | 있음 | /guide/four-insurance-calculator/ |  |
 | 339 | 급여·근로 | 문서·텍스트·개발 유틸 / 기타 문서·유틸 | https://roberin.com/indemnizacion-calculator/ | 스페인 해고수당(Indemnización) 계산기 | 보류 |  | 나라별 — 한국·일본 다음(설계 2절) |
 | 349 | 급여·근로 | 문서·텍스트·개발 유틸 / 기타 문서·유틸 | https://roberin.com/pesangon-calculator/ | 인도네시아 퇴직금(Pesangon) 계산기 | 보류 |  | 나라별 — 한국·일본 다음(설계 2절) |

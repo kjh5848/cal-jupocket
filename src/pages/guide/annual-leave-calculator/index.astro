@@ -1,20 +1,22 @@
 ---
 /**
  * "연차 계산기" — 연차 시리즈. (연차 계산·연차수당 계산기·입사일 기준 연차·연차 개수 계산도 이 글, 계산기 포함)
- * 계산: src/lib/labor.ts leaveSchedule()·annualLeaveDays()·annualLeavePay()·hourlyFromMonthly40() —
- * 근로기준법 제60조 제1항·제2항·제4항, 시행령 제6조, 2026 최저임금 고시(월 209시간).
+ * 계산: src/lib/labor.ts leaveSchedule()·nextLeave()·annualLeaveDays()·annualLeavePay()·hourlyFromMonthly40() —
+ * 근로기준법 제60조 제1항·제2항·제4항, 시행령 제6조·제7조 별표 1(상시 4명 이하 미적용), 2026 최저임금 고시(월 209시간).
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/labor-2026.json";
-import { annualLeaveDays, annualLeavePay, hourlyFromMonthly40 } from "../../../lib/labor";
+import { annualLeaveDays, annualLeavePay, hourlyFromMonthly40, nextLeave } from "../../../lib/labor";
 import { won } from "../../../lib/won";
 
 const A = r.annualLeave;
 const pay = 3_000_000;
 const daily = hourlyFromMonthly40(pay) * 8;
 const ex = annualLeavePay(daily, 5);
+const nx = nextLeave(new Date(2024, 2, 2), new Date(2026, 9, 14));
+const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 annual-leave-series.test.ts 가 rates 와 대조한다.
 const title = "연차 계산기 — 입사일을 넣으면 지금까지 생긴 연차와 남은 연차의 수당이 나옵니다";
@@ -34,7 +36,7 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
+  <div class="calc-card" data-two>
     <p class="meta">입사일 기준, 매월 개근·매년 80% 이상 출근했다고 보고 계산합니다. 회계연도 기준으로 일괄 부여하는 회사와는 다를 수 있습니다.</p>
     <div class="calc-input-wrap">
       <label for="al-start">입사일</label>
@@ -45,26 +47,33 @@ const QA = [
       <input type="date" id="al-asof" value="2026-10-14" />
     </div>
     <div class="calc-input-wrap">
+      <label for="al-size">상시 근로자 수</label>
+      <select id="al-size" data-seg><option value="5" selected>5명 이상</option><option value="4">4명 이하</option></select>
+    </div>
+    <div class="calc-input-wrap">
       <label for="al-pay">월 통상임금(주 40시간)</label>
-      <input type="text" inputmode="numeric" id="al-pay" value="3,000,000" />
+      <input type="text" inputmode="numeric" id="al-pay" value="3,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="al-unused">쓰지 못한 연차</label>
-      <input type="number" min="0" max="40" step="0.5" id="al-unused" value="5" />
+      <input type="number" min="0" max="40" step="0.5" id="al-unused" value="5" data-step />
       <span class="unit">일</span>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="al-hero">
       <p class="label">올해 생긴 연차</p>
       <p class="big" id="al-hero">{annualLeaveDays(2)}일</p>
       <p class="meta" id="al-note"></p>
     </div>
-    <div class="stat-row">
+    <div class="stat-row" data-receipt>
       <div class="stat-chip"><span class="label">근속</span><span class="value" id="al-tenure">2년 7개월</span></div>
       <div class="stat-chip"><span class="label">입사 첫해 월 단위 연차</span><span class="value" id="al-first">{A.firstYearMax}일</span></div>
-      <div class="stat-chip"><span class="label">1일 통상임금</span><span class="value" id="al-daily">{won(daily)}</span></div>
-      <div class="stat-chip"><span class="label">연차수당</span><span class="value" id="al-paid">{won(ex)}</span></div>
+      <div class="stat-chip"><span class="label">다음 연차 생기는 날</span><span class="value" id="al-next">{ymd(nx.date)} ({nx.daysLeft}일 뒤)</span></div>
+      <div class="stat-chip"><span class="label">그날 생기는 연차</span><span class="value" id="al-next-days">{nx.days}일</span></div>
+      <div class="stat-chip"><span class="label">1일 통상임금 (월급 ÷ {r.minWage.monthlyHours}시간 × 8)</span><span class="value" id="al-daily">{won(daily)}</span></div>
+      <div class="stat-chip"><span class="label">연차수당 (1일 통상임금 × 쓰지 못한 일수)</span><span class="value" id="al-paid">{won(ex)}</span></div>
     </div>
+    <p class="meta">연차는 생긴 날부터 1년(입사 첫해 월 단위 연차는 입사 1년이 될 때까지) 안에 쓰지 않으면 소멸하거나 수당이 됩니다(제60조). 지난해까지 생긴 연차를 모두 더하지 않는 이유입니다. 상시 4명 이하 사업장에는 제60조가 적용되지 않습니다(시행령 별표 1).</p>
   </div>
 
   <h2>{QA[0].q}</h2>

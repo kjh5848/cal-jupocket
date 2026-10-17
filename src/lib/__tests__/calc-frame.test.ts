@@ -16,6 +16,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
   { path: "/guide/four-insurance-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/weekly-holiday-pay-calculator/", attrs: ["data-two", "data-won", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/minimum-wage-calculator/", attrs: ["data-two", "data-won", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
+  { path: "/guide/annual-leave-calculator/", attrs: ["data-two", "data-won", "data-step", "data-seg", "data-receipt", "data-dock"] },
 ];
 
 /**
@@ -24,8 +25,9 @@ const MOVED: { path: string; attrs: string[] }[] = [
  * /national-pension-premium/: 네이버 '국민연금 보험료 1·2·3·5'·'지역가입자 국민연금 1·2·3'·'국민연금 100만원·200만원·300만원' 결과 없음(2026-10-17, keywords/ac-pension-premium-2026-10-17.csv)
  * /guide/weekly-holiday-pay-calculator/: 네이버 '주휴수당 1'·'주휴수당 시급 1'·'시급 1 주휴수당'·'주휴수당 계산 1' 에 시급 금액 줄기 없음 — 시간('15시간')만 나옴(2026-10-17, keywords/ac-weekly-holiday-2026-10-17.csv). 2026·2027 최저시급 버튼은 고시 금액이라 그대로 둔다
  * /guide/minimum-wage-calculator/: 네이버 '최저임금 월급 1·2'·'월급 200만원 최저임금'·'월급 시급 환산 1'·'최저임금 계산 1' 에 금액 줄기 없음 — 연도('2026'·'2027')만 나옴(2026-10-17, keywords/ac-minimum-wage-2026-10-17.csv)
+ * /guide/annual-leave-calculator/: 네이버 '연차수당 월급 1·2·3'·'월급 300 연차수당'·'연차 계산 1'·'연차수당 계산 1' 결과 없음(2026-10-17, keywords/ac-annual-leave-2026-10-17.csv)
  */
-const NO_PRESETS = new Set(["/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/"]);
+const NO_PRESETS = new Set(["/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/"]);
 
 const bench = readFileSync("docs/calc-benchmark.md", "utf-8");
 

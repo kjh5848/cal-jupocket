@@ -72,6 +72,20 @@ export function leaveSchedule(start: Date, asOf: Date) {
   return { months: Math.max(0, months), years: Math.max(0, years), firstYear, thisYear };
 }
 
+/**
+ * 다음 연차가 생기는 날·일수 — leaveSchedule 의 달 세기(1년 뒤에는 해 세기)가 늘어나는 첫날을 하루씩 찾는다(말일 입사도 같은 규칙).
+ * 1년 미만은 개근한 달마다 1일(제60조 제2항), 1년을 채우는 날부터는 그해 일수(제1항·제4항).
+ */
+export function nextLeave(start: Date, asOf: Date) {
+  const now = leaveSchedule(start, asOf).months;
+  for (let i = 1; i <= 400; i++) {
+    const date = new Date(asOf.getFullYear(), asOf.getMonth(), asOf.getDate() + i);
+    const m = leaveSchedule(start, date).months;
+    if (now < 11 ? m > now : Math.floor(m / 12) > Math.floor(now / 12)) return { date, days: m < 12 ? A.monthly : annualLeaveDays(Math.floor(m / 12)), daysLeft: i };
+  }
+  throw new Error("다음 연차 날짜를 찾지 못함");
+}
+
 /** 연차수당 = 1일 통상임금 × 쓰지 못한 일수 */
 export function annualLeavePay(dailyWage: number, unusedDays: number): number {
   return fl(Math.max(0, dailyWage) * Math.max(0, unusedDays));

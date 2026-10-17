@@ -9,7 +9,7 @@ import { weeklyHolidaySeries } from "../../data/series/weekly-holiday";
 import { annualLeaveSeries } from "../../data/series/annual-leave";
 import {
   weeklyHolidayPay, weeklyHolidayHours, annualLeaveDays, firstYearLeaveDays, leaveSchedule,
-  annualLeavePay, hourlyFromMonthly40, partTimeLeaveHours, minWage,
+  annualLeavePay, hourlyFromMonthly40, partTimeLeaveHours, minWage, nextLeave,
 } from "../labor";
 import { won, eokwon } from "../won";
 
@@ -59,6 +59,27 @@ describe("연차", () => {
   it("월급 300만원 5일 = 574,160원, 단시간 주 20시간 15일 = 60시간", () => {
     expect(annualLeavePay(daily300, 5)).toBe(574_160);
     expect(partTimeLeaveHours(15, 20)).toBe(60);
+  });
+  // 다음 연차가 생기는 날 — leaveSchedule 의 달 세기가 바뀌는 첫날(roberin 대조 2026-10-17 과 같은 경계)
+  const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const nx = (s: [number, number, number], a: [number, number, number]) => {
+    const x = nextLeave(new Date(s[0], s[1] - 1, s[2]), new Date(a[0], a[1] - 1, a[2]));
+    return [ymd(x.date), x.days, x.daysLeft];
+  };
+  it("다음 연차 — 입사 첫해는 다음 달 같은 날 1일, 11개월째는 1년 되는 날 15일", () => {
+    expect(nx([2024, 3, 2], [2024, 4, 1])).toEqual(["2024-04-02", 1, 1]);
+    expect(nx([2024, 3, 2], [2024, 4, 2])).toEqual(["2024-05-02", 1, 30]);
+    expect(nx([2024, 3, 2], [2025, 3, 1])).toEqual(["2025-03-02", 15, 1]);
+    expect(nx([2025, 6, 1], [2026, 1, 15])).toEqual(["2026-02-01", 1, 17]);
+  });
+  it("다음 연차 — 1년 뒤에는 다음 입사 기념일에 그해 일수", () => {
+    expect(nx([2024, 3, 2], [2025, 3, 2])).toEqual(["2026-03-02", 15, 365]);
+    expect(nx([2024, 3, 2], [2026, 10, 14])).toEqual(["2027-03-02", 16, 139]);
+    expect(nx([2015, 1, 1], [2026, 1, 1])).toEqual(["2027-01-01", 20, 365]);
+  });
+  it("다음 연차 — 말일 입사는 없는 날 대신 다음 달 1일", () => {
+    expect(nx([2024, 1, 31], [2024, 2, 10])).toEqual(["2024-03-01", 1, 20]);
+    expect(nx([2024, 2, 29], [2025, 2, 10])).toEqual(["2025-03-01", 15, 19]);
   });
 });
 
