@@ -42,6 +42,38 @@ describe("휴업급여", () => {
   });
 });
 
+describe("휴업급여 나눠 보기 — 제52조·제54조 ②·별표 1 제1~3호 손계산", () => {
+  it("70% — 130,434원 → 91,303원, 상한 300,000 → 268,299 × 70% = 187,809원", () => {
+    expect(leavePayDaily(130_434)).toMatchObject({ byRate: 91_303, raise: 0, ageCut: 0, floorAdd: 0, daily: 91_303 });
+    expect(leavePayDaily(300_000)).toMatchObject({ byRate: 187_809, daily: 187_809 });
+  });
+  it("저소득 — 50,000원 × 90% = 45,000원, 최저임금액까지 37,560원 보탬", () => {
+    expect(leavePayDaily(50_000)).toMatchObject({ byRate: 45_000, raise: 37_560, daily: 82_560 });
+  });
+  it("63세 70% 수급자 — 91,303.8 × 58/70 = 75,651원, 줄어든 돈 15,652원", () => {
+    expect(leavePayDaily(130_434, 63)).toMatchObject({ byRate: 91_303, ageCut: 15_652, floorAdd: 0, daily: 75_651 });
+  });
+  it("65세 95,000원 — 66,500 × 50/70 = 47,500 < 제3호 66,048 × 70/90 = 51,370 → 3,870원 보탬", () => {
+    expect(leavePayDaily(95_000, 65)).toMatchObject({ byRate: 66_500, ageCut: 19_000, floorAdd: 3_870, daily: 51_370 });
+  });
+  it("65세 최저임금액 수급자 — 82,560 × 70/90 = 64,213원, 줄어든 돈 18,347원", () => {
+    expect(leavePayDaily(60_000, 65)).toMatchObject({ byRate: 54_000, raise: 28_560, ageCut: 18_347, daily: 64_213 });
+  });
+  it("유예면 줄어든 돈 0", () => {
+    expect(leavePayDaily(130_434, 63, true)).toMatchObject({ ageCut: 0, floorAdd: 0, daily: 91_303 });
+  });
+  it("무작위 2만 건 — 평균임금 × 비율 + 보탠 돈 − 줄어든 돈 + 제3호로 보탠 돈 = 1일 휴업급여", () => {
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 1_103_515_245 + 12_345) % 2 ** 31) / 2 ** 31);
+    for (let i = 0; i < 20_000; i++) {
+      const p = leavePayDaily(Math.floor(rnd() * 320_000), 55 + Math.floor(rnd() * 15), rnd() < 0.2);
+      if (p.daily === null) continue;
+      expect(p.byRate + p.raise - p.ageCut + p.floorAdd).toBe(p.daily);
+      expect(Math.min(p.raise, p.ageCut, p.floorAdd)).toBeGreaterThanOrEqual(0);
+    }
+  });
+});
+
 describe("휴업급여 글", () => {
   it("FAQ 가 단서 구간을 공단 확인으로 남긴다", () => {
     const src = readFileSync("src/pages/guide/industrial-accident-leave-pay/index.astro", "utf-8");

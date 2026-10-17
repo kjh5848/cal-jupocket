@@ -42,30 +42,44 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">재해 전 3개월 임금 총액과 그 기간 일수로 평균임금을 구해 2026년 첫 지급 기준 1일 휴업급여를 계산합니다. 1년이 지나면 평균임금이 증감됩니다(제36조 제3항).</p>
+  <div class="calc-card" data-two>
+    <p class="meta">아래 값은 예시입니다. 내 3개월 세전 임금으로 바꾸세요. 재해 전 3개월 임금 총액과 그 기간 일수로 평균임금을 구해 2026년 첫 지급 기준 1일 휴업급여를 계산합니다. 1년이 지나면 평균임금이 증감됩니다(제36조 제3항).</p>
     <div class="calc-input-wrap">
-      <label for="ia-total">3개월 임금 총액</label>
-      <input type="text" inputmode="numeric" id="ia-total" value="12,000,000" /><span class="unit">원</span>
+      <label for="ia-total">3개월 임금 총액(세전)</label>
+      <input type="text" inputmode="numeric" id="ia-total" value="12,000,000" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="ia-days">그 기간 일수</label>
-      <input type="number" min="1" max="92" step="1" id="ia-days" value="92" /><span class="unit">일</span>
+      <input type="number" min="1" max="92" step="1" id="ia-days" value="92" data-step /><span class="unit">일</span>
     </div>
     <div class="calc-input-wrap">
       <label for="ia-age">휴업급여 받을 때 나이</label>
       <select id="ia-age"><option value="0" selected>60세 이하</option>{AGES.map((a) => <option value={a}>{a === "65" ? "65세 이상" : `${a}세`}</option>)}</select>
     </div>
     <label><input type="checkbox" id="ia-grace" /> 61세 이후 일하던 중 다쳤고 요양을 시작한 지 2년이 안 됨(감액 유예, 시행령 제51조)</label>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="ia-hero|ia-cut|ia-gap"
+      data-bar-labels="받는 1일 휴업급여|61세 이후 줄어든 돈|평균임금 중 안 나오는 몫"
+      data-dock="ia-hero"
+    >
       <p class="label">1일 휴업급여</p>
       <p class="big" id="ia-hero">{won(ex.daily ?? 0)}</p>
       <p class="meta" id="ia-note">평균임금 {won(Math.floor(ex.avg))}의 {pct(L.rate)}입니다.</p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">1일 평균임금</span><span class="value" id="ia-avg">{won(Math.floor(ex.avg))}</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">1일 평균임금 (임금 총액 ÷ 일수, 상한 {won(B.max)})</span><span class="value" id="ia-avg">{won(Math.floor(ex.avg))}</span></div>
+      <div class="stat-chip"><span class="label">적용</span><span class="value" id="ia-which">평균임금 {pct(L.rate)}</span></div>
       <div class="stat-chip"><span class="label">30일이면</span><span class="value" id="ia-month">{won((ex.daily ?? 0) * 30)}</span></div>
+      <div class="stat-chip"><span class="label">평균임금 중 안 나오는 몫</span><span class="value" id="ia-gap">{won(Math.max(0, Math.floor(ex.avg) - ex.byRate - ex.raise))}</span></div>
+      <div class="stat-chip" data-group="감액 전 금액과 보탠 돈"><span class="label" id="ia-rate-label">평균임금 × {pct(L.rate)} (제52조)</span><span class="value" id="ia-rate">{won(ex.byRate)}</span></div>
+      <div class="stat-chip"><span class="label">최저임금액까지 보탠 돈 (제54조 ②)</span><span class="value" id="ia-raise">{won(ex.raise)}</span></div>
+      <div class="stat-chip"><span class="label">별표 1 제3호 하한까지 보탠 돈</span><span class="value" id="ia-floor">{won(ex.floorAdd)}</span></div>
+      <div class="stat-chip" data-group="61세 이후 줄어든 돈"><span class="label" id="ia-cut-label">별표 1 감액</span><span class="value" id="ia-cut">{won(ex.ageCut)}</span></div>
     </div>
+    <p class="meta">1일 휴업급여 = 감액 전 금액과 보탠 돈 − 61세 이후 줄어든 돈입니다. 원 미만은 버려 표시합니다. 평균임금이 {won(bandLo)}~{won(bandHi)}이면 금액을 내지 않습니다(아래 최저 금액 문단).</p>
   </div>
 
   <h2>{QA[0].q}</h2>

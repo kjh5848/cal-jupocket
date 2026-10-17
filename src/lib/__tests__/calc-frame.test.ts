@@ -21,6 +21,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
   { path: "/guide/parental-leave-pay-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/severance-tax-calculator/", attrs: ["data-two", "data-won", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/year-end-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
+  { path: "/guide/industrial-accident-leave-pay/", attrs: ["data-two", "data-won", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/old-age-pension-age/", attrs: ["data-two", "data-step", "data-receipt", "data-dock"] },
   { path: "/guide/basic-pension-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/child-incentive-amount/", attrs: ["data-two", "data-won", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
@@ -42,8 +43,9 @@ const MOVED: { path: string; attrs: string[] }[] = [
  * /guide/child-incentive-amount/: 네이버 '자녀장려금 3000만원'·'자녀장려금 연봉'·'연봉 4000 자녀장려금'·'자녀장려금 자녀 2명' 결과 없음, '자녀장려금 금액·지급액' 확장은 기준·산정표·지급일·조회뿐(2026-10-17, keywords/ac-child-incentive-2026-10-17.csv)
  * /guide/medical-credit-limit/: 네이버 '의료비 세액공제'·'의료비 세액공제 한도·계산·연봉'·'연봉 의료비 세액공제'·'총급여 3% 의료비'·'의료비 3%' 에 금액 줄기 없음, '연봉 3000·4000·5000 의료비'·'의료비 100만원·500만원·700만원' 결과 없음(2026-10-17, keywords/ac-medical-credit-2026-10-17.csv)
  * /guide/old-age-pension-age/: 금액 입력 칸 없음(출생연도·나이만)
+ * /guide/industrial-accident-leave-pay/: 네이버 '월급 300 산재'·'산재 휴업급여 월급' 결과 없음, '산재 휴업급여·휴업급여 계산·산재 평균임금' 확장은 계산 방법·일수·기간·신청·지급일·상한선뿐(2026-10-17, keywords/ac-industrial-leave-2026-10-17.csv)
  */
-const NO_PRESETS = new Set(["/guide/old-age-pension-age/", "/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/", "/guide/unemployment-benefit-calculator/", "/guide/severance-tax-calculator/", "/guide/medical-credit-limit/", "/guide/earned-incentive-amount/", "/guide/child-incentive-amount/"]);
+const NO_PRESETS = new Set(["/guide/industrial-accident-leave-pay/", "/guide/old-age-pension-age/", "/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/", "/guide/unemployment-benefit-calculator/", "/guide/severance-tax-calculator/", "/guide/medical-credit-limit/", "/guide/earned-incentive-amount/", "/guide/child-incentive-amount/"]);
 
 const bench = readFileSync("docs/calc-benchmark.md", "utf-8");
 
