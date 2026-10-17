@@ -69,6 +69,8 @@ export function unemploymentBenefit(o: BenefitInput) {
     minBase,
     minDaily,
     maxDaily: fl(A.baseCap * A.rate),
+    /** 기초일액(상한까지) × 60% — 하루 금액 = byRate + 하한까지 보탠 금액 */
+    byRate,
     daily,
     /** 어느 쪽이 적용됐나 */
     which: daily === minDaily ? ("하한" as const) : capped < average ? ("상한" as const) : ("60%" as const),

@@ -183,7 +183,7 @@
 - [x] /guide/weekly-holiday-pay-calculator/ (2026-10-17 — 개근 체크·근무 임금·1주/한 달 소계·막대·−/+·두 칸, roberin 대조: 주휴수당 1원까지 같음, 45h 근로급여는 우리 40h 자름(제50조), 주 6일 사업장 ÷6 은 단수 원문 미확인 보류. 프리셋 없음 — 자동완성에 시급 금액 없음)
 - [x] /guide/minimum-wage-calculator/ (2026-10-17 — 최저 주급(시행령 제5조 ①2) 추가·최저 월급 소계(받는 임금 + 모자라는 금액)·막대·−/+·연도·수습 버튼·두 칸, roberin 시급계산기 대조: 주 40h 는 고시 209시간인 우리가 고시 금액과 같음(roberin 208.57h), 20h 같음. 프리셋 없음 — 자동완성에 금액 없음)
 - [x] /guide/annual-leave-calculator/ (2026-10-17 — 상시 근로자 수 버튼(4명 이하 제60조 미적용, 시행령 별표 1)·다음 연차 생기는 날·그날 생기는 일수·수당 산식 표기·−/+·두 칸·고정 띠, roberin 연차일수 계산기 대조: 일수 경계 8개 같음, 1일 통상임금 단수 차이(하루 최대 7원)는 원문에 단수 규정 없어 보류. 프리셋 없음 — 자동완성에 금액 없음)
-- [ ] /guide/unemployment-benefit-calculator/
+- [x] /guide/unemployment-benefit-calculator/ (2026-10-17 — 말일 이직 3개월 일수 fix(민법 제160조 ③, 2/31 → 3/3 넘침), 하루 구직급여 소계(60% + 하한까지 보탠 금액)·막대·산정일수·1일 소정근로시간 표시·나이 버튼·−/+·두 칸·고정 띠, roberin 대조: 7개 같음, 2027 이직 하한은 우리 맞음(roberin 2026 최저임금), 340만 1원 단수는 보류. 프리셋 없음 — 자동완성에 금액 없음)
 - [ ] /guide/parental-leave-pay-calculator/
 - [ ] /guide/severance-tax-calculator/
 - [ ] /guide/year-end-calculator/

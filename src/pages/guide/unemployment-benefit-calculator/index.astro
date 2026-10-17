@@ -36,11 +36,11 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
+  <div class="calc-card" data-two>
     <p class="meta">평균임금 기준 어림입니다. 통상임금이 평균임금보다 큰 경우, 일용근로자, 2026년 1월 1일 전 이직자의 종전 상한은 넣지 않았습니다.</p>
     <div class="calc-input-wrap">
       <label for="ub-pay">이직 전 3개월 월평균 임금(세전)</label>
-      <input type="text" inputmode="numeric" id="ub-pay" value="3,000,000" />
+      <input type="text" inputmode="numeric" id="ub-pay" value="3,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
@@ -49,7 +49,7 @@ const QA = [
     </div>
     <div class="calc-input-wrap">
       <label for="ub-hours">1주 소정근로시간</label>
-      <input type="number" min="0" max="40" step="0.5" id="ub-hours" value="40" />
+      <input type="number" min="0" max="40" step="0.5" id="ub-hours" value="40" data-step />
       <span class="unit">시간</span>
     </div>
     <div class="calc-input-wrap">
@@ -60,22 +60,32 @@ const QA = [
     </div>
     <div class="calc-input-wrap">
       <label for="ub-age">이직일 현재 나이</label>
-      <select id="ub-age">
+      <select id="ub-age" data-seg>
         <option value="0" selected>50세 미만</option>
         <option value="1">50세 이상 또는 장애인</option>
       </select>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
-      <p class="label">실업급여 총액</p>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="ub-p60|ub-top"
+      data-bar-labels="평균임금 60%|하한까지 보탠 금액"
+      data-dock="ub-hero"
+    >
+      <p class="label">실업급여 총액 (하루 구직급여 × 받는 날수)</p>
       <p class="big" id="ub-hero">{won(ex.total)}</p>
       <p class="meta" id="ub-note"></p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">하루 구직급여</span><span class="value" id="ub-daily">{won(ex.daily)}</span></div>
-      <div class="stat-chip"><span class="label">받는 날수</span><span class="value" id="ub-days">{ex.days}일</span></div>
-      <div class="stat-chip"><span class="label">평균임금(하루)</span><span class="value" id="ub-avg">{won(ex.average)}</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">평균임금(하루) (3개월 임금 ÷ <span id="ub-span">92</span>일)</span><span class="value" id="ub-avg">{won(ex.average)}</span></div>
+      <div class="stat-chip"><span class="label">하한 ~ 상한 (1일 소정근로시간 <span id="ub-hrs">{ex.hours}</span>시간)</span><span class="value" id="ub-range">{won(ex.minDaily)} ~ {won(ex.maxDaily)}</span></div>
       <div class="stat-chip"><span class="label">적용</span><span class="value" id="ub-which">{ex.which}</span></div>
+      <div class="stat-chip"><span class="label">받는 날수 (별표 1)</span><span class="value" id="ub-days">{ex.days}일</span></div>
+      <div class="stat-chip" data-group="하루 구직급여"><span class="label">평균임금 × 60% (상한까지)</span><span class="value" id="ub-p60">{won(ex.byRate)}</span></div>
+      <div class="stat-chip"><span class="label">하한까지 보탠 금액</span><span class="value" id="ub-top">{won(ex.daily - ex.byRate)}</span></div>
     </div>
+    <p class="meta">하루 금액은 평균임금의 60%이고, 하한보다 낮으면 하한까지 채워 줍니다(제46조 제2항). 평균임금이 기초일액 상한 {won(r.amount.baseCap)}을 넘으면 그 60%인 {won(ex.maxDaily)}에서 멈춥니다(시행령 제68조). 3개월 전 달에 같은 날이 없으면 그 달 말일부터 셉니다.</p>
   </div>
 
   <h2>{QA[0].q}</h2>

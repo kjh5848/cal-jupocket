@@ -21,6 +21,13 @@ describe("실업급여 계산", () => {
   it("2027 최저임금이면 하한 68,480원이 상한보다 커서 하한을 준다(제46조 제2항)", () => {
     const x = unemploymentBenefit({ wage3m: 15_000_000, days3m: 92, insuredYears: 4, year: 2027 });
     expect([x.minDaily, x.daily, x.which]).toEqual([68_480, 68_480, "하한"]);
+    // 60%(상한까지) 68,100원 + 하한까지 보탠 380원
+    expect([x.byRate, x.daily - x.byRate]).toEqual([68_100, 380]);
+  });
+  it("하루 금액 = 60%(상한까지) + 하한까지 보탠 금액 — 300만원 58,695 + 7,353, 340만원 66,521 + 0", () => {
+    expect([ex.byRate, ex.daily - ex.byRate]).toEqual([58_695, 7_353]);
+    const mid = unemploymentBenefit({ wage3m: 10_200_000, days3m: 92, insuredYears: 4 });
+    expect([mid.byRate, mid.daily, mid.which]).toEqual([66_521, 66_521, "60%"]);
   });
   it("월급 300만원·가입 4년·50세 미만 → 66,048원 × 180일 = 11,888,640원", () => {
     expect([ex.daily, ex.days, ex.total]).toEqual([66_048, 180, 11_888_640]);

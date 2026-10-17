@@ -6,7 +6,7 @@
 
 현재: 보류 2 · 있음 18 · 할 일 412
 
-다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /guide/unemployment-benefit-calculator/(실업급여) — roberin https://roberin.com/unemployment-calculator/ 대조. /guide/annual-leave-calculator/ 는 2026-10-17 완료(상시 4명 이하 미적용 버튼·다음 연차 날짜, 일수 roberin 과 같음). 보류 추가: 1일 통상임금 단수(시간급 버림 후 × 8 vs 월급 × 8 ÷ 209 반올림, 시행령 제6조에 단수 규정 없음), 1년 근무 다음 날 재직 요건 판례 원문, 일본 労働基準法 第39条 원문(e-Gov 본문 못 읽음). 후보: 회계연도 연차 계산기·퇴사 연차수당(자동완성 줄기). 시급계산기(#11)는 할 일 그대로 — 연장·야간·휴일 가산(제56조). 보류 남은 것: 주 6일 사업장 ÷6 단수, 국민연금 사업장가입자 10원 미만 버림 방식(313,020 vs 313,025), 건강보험료 원 단위 처리, 국민연금 10원 절사 근거 조문(국고금 관리법 제47조 ③ 준용). 카드 세트 late-filing-penalty·multiple-payers 카드 이미지 재생성은 사용자 확인 필요. 납부지연 일수 같은 식 쓰는 글 /guide/vat-final-return-payment/·/guide/withholding-tax/ 확인 필요. 민법 제161조·지방소득세 가산세·원천징수 단수·종소세 경비율 구간 원문 확인 보류. /penalty/ 날짜 칸 스타일(틀) 필요. 이미 발행된 스레드 social/queue/016-penalty-one-day.md 는 옛 숫자 — 그대로 둠.
+다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /guide/parental-leave-pay-calculator/(육아휴직급여) — roberin 대응 도구 찾아 대조. /guide/unemployment-benefit-calculator/ 는 2026-10-17 완료(말일 이직 산정일수 fix, 하루 구직급여 소계·막대, 2027 하한 > 상한 안내). 보류 추가: 구직급여 원 미만 단수(평균임금·60% 버림 vs 반올림 1원), 평균임금 산정기간에 이직일 포함 여부(일수 같음). 글 후보: 실업급여 1차·2차 실업인정·지급일(자동완성 줄기, 고용노동부 기준 원문 필요). 지난 회차 보류 추가: 1일 통상임금 단수(시간급 버림 후 × 8 vs 월급 × 8 ÷ 209 반올림, 시행령 제6조에 단수 규정 없음), 1년 근무 다음 날 재직 요건 판례 원문, 일본 労働基準法 第39条 원문(e-Gov 본문 못 읽음). 후보: 회계연도 연차 계산기·퇴사 연차수당(자동완성 줄기). 시급계산기(#11)는 할 일 그대로 — 연장·야간·휴일 가산(제56조). 보류 남은 것: 주 6일 사업장 ÷6 단수, 국민연금 사업장가입자 10원 미만 버림 방식(313,020 vs 313,025), 건강보험료 원 단위 처리, 국민연금 10원 절사 근거 조문(국고금 관리법 제47조 ③ 준용). 카드 세트 late-filing-penalty·multiple-payers 카드 이미지 재생성은 사용자 확인 필요. 납부지연 일수 같은 식 쓰는 글 /guide/vat-final-return-payment/·/guide/withholding-tax/ 확인 필요. 민법 제161조·지방소득세 가산세·원천징수 단수·종소세 경비율 구간 원문 확인 보류. /penalty/ 날짜 칸 스타일(틀) 필요. 이미 발행된 스레드 social/queue/016-penalty-one-day.md 는 옛 숫자 — 그대로 둠.
 
 | # | 우리 분류 | roberin 분류 | roberin 주소 | 도구 | 상태 | 우리 주소 | 메모 |
 |---|---|---|---|---|---|---|---|
@@ -22,7 +22,7 @@
 | 10 | 상속·증여 | 돈·세금·급여 / 급여·세금 | https://roberin.com/inheritance-tax-calculator/ | 상속세 계산기 | 있음 | /inheritance/ |  |
 | 11 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/hourly-wage-calculator/ | 시급계산기 | 할 일 |  |  |
 | 12 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/projects/live-salary-tracker/ | 실시간 급여 시각화 트래커 | 할 일 |  |  |
-| 13 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/unemployment-calculator/ | 실업급여 계산기 | 있음 | /guide/unemployment-benefit-calculator/ |  |
+| 13 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/unemployment-calculator/ | 실업급여 계산기 | 있음 | /guide/unemployment-benefit-calculator/ | 2026-10-17 대조: 말일 이직 3개월 산정일수 우리가 틀려 고침(민법 제160조 ③) · 7개 입력 같음 · 2027 이직 하한(68,480 > 상한 68,100)은 우리 맞음, roberin 2026 최저임금 사용 · 340만 1원 단수 보류 · 새 틀 이전 |
 | 14 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/overtime-pay-calculator/ | 야근수당 계산기 | 할 일 |  |  |
 | 15 | 연금·보험 | 돈·세금·급여 / 급여·세금 | https://roberin.com/pension-tax-credit-calculator/ | 연금저축·IRP 세액공제 계산기 | 있음 | /guide/irp-tax-credit-calculator/ |  |
 | 16 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/my-salary-calculator/ | 연봉계산기 | 할 일 |  |  |
