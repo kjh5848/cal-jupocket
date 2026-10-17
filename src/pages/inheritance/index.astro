@@ -25,6 +25,7 @@ import NextReads from "../../components/NextReads.astro";
 import Disclaimer from "../../components/Disclaimer.astro";
 import r from "../../rates/inheritance-2026.json";
 import { formatMan } from "../../lib/money";
+import { calcPresets } from "../../data/calc-presets";
 import "../../styles/global.css";
 
 const title = "상속세 계산기 — 면제한도와 세금 한 번에";
@@ -37,6 +38,7 @@ const srcCredit = r.sources.find((s) => s.label.includes("세액공제"))!;
 const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한"))!;
 
 const pct = (v: number) => Math.round(v * 100);
+const PRESETS = JSON.stringify({ default: calcPresets["/inheritance/"].default.amounts });
 ---
 
 <html lang="ko">
@@ -58,32 +60,30 @@ const pct = (v: number) => Math.round(v * 100);
         “공제 합계”입니다.
       </p>
 
-      <div class="calc-card">
+      <div class="calc-card" data-two>
+        <p class="meta">아래 값은 예시입니다. 고인이 남긴 재산 합계(채무를 빼기 전, 비과세 재산 제외)와 가족 구성으로 바꾸세요.</p>
         <div class="calc-input-wrap">
-          <label id="input-label" for="estate">상속받은 재산</label>
-          <input type="text" inputmode="numeric" id="estate" value="1,000,000,000" />
+          <label id="input-label" for="estate">상속재산 합계(채무 빼기 전)</label>
+          <input type="text" inputmode="numeric" id="estate" value="1,000,000,000" data-won data-presets={PRESETS} />
           <span class="unit">원</span>
         </div>
 
-        <div class="amount-presets" role="group" aria-label="재산 빠르게 고르기">
-          <button type="button" class="preset-chip" data-estate="100000000">1억</button>
-          <button type="button" class="preset-chip" data-estate="200000000">2억</button>
-          <button type="button" class="preset-chip" data-estate="500000000">5억</button>
-          <button type="button" class="preset-chip" data-estate="1000000000">10억</button>
-          <button type="button" class="preset-chip" data-estate="2000000000">20억</button>
+        <div class="calc-input-wrap">
+          <label for="debts">채무·공과금(고인이 갚을 빚)</label>
+          <input type="text" inputmode="numeric" id="debts" value="0" data-won />
+          <span class="unit">원</span>
         </div>
 
         <div class="calc-input-wrap">
-          <label for="children">자녀 수</label>
-          <input type="text" inputmode="numeric" id="children" value="2" />
-          <span class="unit">명</span>
+          <label for="funeral">장례비(비우면 최저 {formatMan(r.funeral.directMin)})</label>
+          <input type="text" inputmode="numeric" id="funeral" value="" data-won />
+          <span class="unit">원</span>
         </div>
 
-        <div class="amount-presets" role="group" aria-label="자녀 수 빠르게 고르기">
-          <button type="button" class="preset-chip" data-children="0">없음</button>
-          <button type="button" class="preset-chip" data-children="1">1명</button>
-          <button type="button" class="preset-chip" data-children="2">2명</button>
-          <button type="button" class="preset-chip" data-children="3">3명</button>
+        <div class="calc-input-wrap">
+          <label for="children">자녀 수(상속을 포기한 자녀 포함)</label>
+          <input type="number" inputmode="numeric" id="children" value="2" min="0" max="20" data-step />
+          <span class="unit">명</span>
         </div>
 
         <div class="calc-input-wrap toggle-row">
@@ -91,46 +91,58 @@ const pct = (v: number) => Math.round(v * 100);
           <input type="checkbox" id="has-spouse" checked />
         </div>
 
+        <div class="calc-input-wrap" id="parents-wrap" hidden>
+          <label for="parents">자녀가 없을 때 함께 상속하는 사람</label>
+          <select id="parents" data-seg>
+            <option value="0">배우자 혼자</option>
+            <option value="1">부모 1명</option>
+            <option value="2" selected>부모 2명</option>
+          </select>
+        </div>
+
         <div class="calc-input-wrap" id="spouse-share-wrap">
-          <label for="spouse-share">배우자가 실제로 받는 금액</label>
-          <input type="text" inputmode="numeric" id="spouse-share" value="" />
+          <label for="spouse-share">배우자가 실제로 받는 금액(빚 뺀 몫)</label>
+          <input type="text" inputmode="numeric" id="spouse-share" value="" data-won />
           <span class="unit">원</span>
         </div>
-        <p class="meta">
-          비워 두면 <strong>최소 {formatMan(r.spouse.minimum)}</strong>이
-          적용됩니다. 배우자가 한 푼도 받지 않아도 이 금액은 공제됩니다.
+        <p class="meta" id="spouse-meta">
+          비우거나 {formatMan(r.spouse.minimum)} 미만이면 <strong>{formatMan(r.spouse.minimum)}</strong>이
+          공제됩니다. 그 이상이면 받은 금액을 공제하되 법정상속분 한도와 {formatMan(r.spouse.cap)} 중 작은 쪽을 넘지 못합니다.
         </p>
 
-        <div class="result-hero" aria-live="polite" aria-atomic="true">
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="stat2-value|inh-applied"
+          data-bar-labels="과세표준(세금이 붙는 몫)|공제로 빠진 몫"
+          data-dock="hero-value"
+        >
           <p class="label">낼 세금</p>
           <p class="big" id="hero-value">0원</p>
+          <p class="meta" id="ceiling-note"></p>
         </div>
 
-        <div class="stat-row">
-          <div class="stat-chip">
-            <span class="label">공제 합계</span>
-            <span class="value" id="stat1-value">1,000,000,000원</span>
-          </div>
-          <div class="stat-chip">
-            <span class="label">과세표준</span>
-            <span class="value" id="stat2-value">0원</span>
-          </div>
-          <div class="stat-chip">
-            <span class="label">세율 구간</span>
-            <span class="value" id="stat3-value">—</span>
-          </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="stat2-value">0원</span></div>
+          <div class="stat-chip"><span class="label">세율 구간</span><span class="value" id="stat3-value">—</span></div>
+          <div class="stat-chip"><span class="label">산출세액</span><span class="value" id="inh-computed">0원</span></div>
+          <div class="stat-chip"><span class="label">신고세액공제 {pct(r.filingCredit.rate)}% (제69조)</span><span class="value" id="inh-credit">0원</span></div>
+          <div class="stat-chip"><span class="label">공제로 실제 뺀 금액 (과세가액까지, 제24조)</span><span class="value" id="inh-applied">0원</span></div>
+          <div class="stat-chip"><span class="label">배우자 법정상속분</span><span class="value" id="inh-share">—</span></div>
+          <div class="stat-chip"><span class="label">배우자공제 한도 (제19조 ①)</span><span class="value" id="inh-limit">—</span></div>
+          <div class="stat-chip" data-group="상속세 과세가액"><span class="label">상속재산 합계</span><span class="value" id="inh-estate">0원</span></div>
+          <div class="stat-chip"><span class="label">채무·공과금</span><span class="value" id="inh-debts">0원</span></div>
+          <div class="stat-chip"><span class="label">장례비 반영 (시행령 제9조 ②)</span><span class="value" id="inh-funeral">0원</span></div>
+          <div class="stat-chip" data-group="상속공제 합계"><span class="label" id="inh-chosen-label">일괄공제</span><span class="value" id="inh-chosen">0원</span></div>
+          <div class="stat-chip"><span class="label">배우자공제</span><span class="value" id="stat1-value">0원</span></div>
         </div>
-
-        <p id="ceiling-note" class="meta"></p>
+        <p class="meta" id="inh-formula"></p>
 
         <div class="actions">
           <button id="btn-download" type="button">PNG 저장</button>
           <button id="btn-share" type="button" class="secondary">공유</button>
-          <button id="btn-copy" type="button" class="secondary">결과 복사</button>
         </div>
-        <p id="copy-toast" class="meta" style="display:none;">
-          결과를 복사했어요.
-        </p>
       </div>
 
       <div class="callout warn">

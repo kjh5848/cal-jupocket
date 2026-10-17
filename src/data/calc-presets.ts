@@ -47,6 +47,10 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
     // 네이버 자동완성 '연봉 3000 연말정산 환급'·'연봉 4000 연말정산 환급'(2026-10-17). '연봉 5000·6000 연말정산'·'총급여 5000 연말정산' 은 줄기 없음, '연말정산 1억 환급' 은 금액 뜻이 갈려 뺌
     default: { amounts: [30_000_000, 40_000_000], source: "keywords/ac-year-end-2026-10-17.csv", term: "연말정산 환급" },
   },
+  "/inheritance/": {
+    // 네이버 자동완성 '상속세 계산기 1억·2억·5억·10억·20억'(2026-09-16)
+    default: { amounts: [100_000_000, 200_000_000, 500_000_000, 1_000_000_000, 2_000_000_000], source: "keywords/inheritance-autocomplete-2026-09-16.csv", term: "상속세 계산기" },
+  },
   "/guide/parental-leave-pay-calculator/": {
     // 네이버 자동완성 '육아휴직 급여 150만원'·'육아휴직 급여 250만원'(2026-10-17). '육아휴직 200·300'·'월급 300 육아휴직' 은 줄기 없음
     default: { amounts: [1_500_000, 2_500_000], source: "keywords/ac-parental-leave-2026-10-17.csv", term: "육아휴직 급여" },
