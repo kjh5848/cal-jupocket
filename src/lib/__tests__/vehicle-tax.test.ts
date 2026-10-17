@@ -18,6 +18,8 @@ import {
   EDU_RATE,
   LUMP_SUM_UNDER,
   PERIODS,
+  carAge,
+  TAX_YEAR,
 } from "../vehicle-tax";
 import r from "../../rates/local-tax-2026.json";
 
@@ -128,5 +130,65 @@ describe("납기와 근거", () => {
     // 조문이 "100분의 10의 범위에서" 라고만 하고 시행령에 넘긴다.
     // 흔히 쓰이는 숫자가 있지만 원문에서 못 봤으면 쓰지 않는다.
     expect(r.vehicleTax.notVerified.join(" ")).toMatch(/연납/);
+  });
+});
+
+describe("기분별 차령 — 지방세법 시행령 제122조 제2항", () => {
+  it("상반기 기산은 두 기분 같고, 과세연도 − 기산 연도 + 1", () => {
+    expect(carAge(2026, "first", 2026)).toEqual({ first: 1, second: 1 });
+    expect(carAge(2024, "first", 2026)).toEqual({ first: 3, second: 3 });
+  });
+
+  it("하반기 기산은 제1기분이 한 해 적다", () => {
+    expect(carAge(2023, "second", 2026)).toEqual({ first: 3, second: 4 });
+    expect(carAge(2026, "second", 2026)).toEqual({ first: 0, second: 1 });
+  });
+
+  it("과세연도보다 뒤는 0, 기본 과세연도는 rates 연도", () => {
+    expect(carAge(2030, "first", 2026)).toEqual({ first: 0, second: 0 });
+    expect(TAX_YEAR).toBe(r.vehicleTax.ageDiscount.ageCount.taxYear);
+    expect(carAge(2024, "first")).toEqual(carAge(2024, "first", TAX_YEAR));
+  });
+
+  it("하반기 기산 2,000cc 2023 — 6월분 5%·12월분 10% 감면, 본세 370,000원", () => {
+    const b = bill({ cc: 2000, ages: carAge(2023, "second", 2026) });
+    expect(b.halfRates[0]).toBeCloseTo(0.05, 10);
+    expect(b.halfRates[1]).toBeCloseTo(0.1, 10);
+    expect(b.vehicleTax).toBe(190_000 + 180_000);
+    expect(b.halves[0] + b.halves[1]).toBe(b.total);
+    expect(b.halves).toEqual([247_000, 234_000]);
+  });
+
+  // 2026-10-18 roberin #65 같은 입력(비영업용 2,000cc) — 연세액(교육세 포함)이 1원까지 같다.
+  it.each([
+    [2026, "first", 520_000],
+    [2024, "first", 494_000],
+    [2023, "second", 481_000],
+    [2014, "first", 260_000],
+  ] as const)("roberin 대조 %i %s → %i원", (y, h, total) => {
+    expect(bill({ cc: 2000, ages: carAge(y, h, 2026) }).total).toBe(total);
+  });
+
+  it("ages 를 같게 주면 ageYears 와 같은 결과", () => {
+    for (const cc of [999, 1598, 1601, 2000, 3342])
+      for (let n = 0; n <= 14; n++)
+        expect(bill({ cc, ages: { first: n, second: n } })).toEqual(bill({ cc, ageYears: n }));
+  });
+});
+
+describe("차령 감면 버림 — 부동소수점 1원 모자람(2026-10-18 fix)", () => {
+  it("2,000cc 차령 9년은 260,000원 (1 − 0.35 = 0.6499… 로 259,999원이 나오던 자리)", () => {
+    expect(bill({ cc: 2000, ageYears: 9 }).vehicleTax).toBe(260_000);
+  });
+
+  it("배기량 1~6,000cc × 차령 0~12년 전부 정수 계산과 같다", () => {
+    let bad = 0;
+    for (let cc = 1; cc <= 6000; cc++)
+      for (let n = 0; n <= 12; n++) {
+        const A = BigInt(yearlyBase(cc));
+        const p = BigInt(Math.round(ageDiscountRate(n) * 100));
+        if (BigInt(bill({ cc, ageYears: n }).vehicleTax) !== (A * (100n - p)) / 100n) bad++;
+      }
+    expect(bad).toBe(0);
   });
 });

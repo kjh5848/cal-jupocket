@@ -53,6 +53,26 @@ export function ageDiscountRate(ageYears: number): number {
   return (n - 2) * V.ageDiscount.ratePerYear;
 }
 
+/** 차령을 세는 과세연도 — rates 연도에 묶는다(오늘 날짜로 잡으면 해가 바뀔 때 rates 와 어긋난다). */
+export const TAX_YEAR = V.ageDiscount.ageCount.taxYear;
+
+export type StartHalf = "first" | "second";
+
+/**
+ * 제1기분·제2기분 차령 — 지방세법 시행령 제122조 제2항.
+ *
+ * 기산일(자동차관리법 시행령 제3조: 제작연도에 등록했으면 최초 신규등록일,
+ * 아니면 제작연도 말일)이 상반기면 두 기분 차령이 같고, 하반기면 제1기분이
+ * 한 해 적다. 그래서 하반기에 등록한 차는 6월분과 12월분 감면율이 다르다.
+ * 과세연도보다 뒤의 기산 연도는 0 으로 묶는다.
+ */
+export function carAge(startYear: number, half: StartHalf, taxYear: number = TAX_YEAR): { first: number; second: number } {
+  const d = taxYear - Math.floor(startYear);
+  const second = Math.max(d + 1, 0);
+  const first = Math.max(half === "first" ? d + 1 : d, 0);
+  return { first, second };
+}
+
 export interface VehicleBill {
   /** 감면 전 연세액 */
   baseYearly: number;
@@ -68,28 +88,44 @@ export interface VehicleBill {
   perHalf: number;
   /** 연세액이 10만원 이하라 1기분에 전액 부과될 수 있는가 */
   lumpSum: boolean;
+  /** 제1기분·제2기분 차령 감면율 — 하반기 기산 차는 다르다 */
+  halfRates: [number, number];
+  /** 제1기분(6월)·제2기분(12월) 자동차세 + 지방교육세. 합은 total */
+  halves: [number, number];
 }
+
+/** 감면율을 정수 백분율로 — 5% 단위라 부동소수점 버림 오차를 피한다 */
+const pct = (rate: number) => Math.round(rate * 100);
 
 export function bill(opts: {
   cc: number;
   ageYears?: number;
+  /** 기분별 차령(시행령 제122조 ②). 주면 ageYears 보다 우선 */
+  ages?: { first: number; second: number };
   use?: Use;
 }): VehicleBill {
   const { cc, ageYears = 0, use = "nonBusiness" } = opts;
+  const ages = opts.ages ?? { first: ageYears, second: ageYears };
   const baseYearly = yearlyBase(cc, use);
   // 차령 감면은 비영업용 승용자동차에만 있다(제127조 ① 2호).
-  const discountRate = use === "nonBusiness" ? ageDiscountRate(ageYears) : 0;
-  const vehicleTax = Math.floor(baseYearly * (1 - discountRate));
+  const r1 = use === "nonBusiness" ? ageDiscountRate(ages.first) : 0;
+  const r2 = use === "nonBusiness" ? ageDiscountRate(ages.second) : 0;
+  // 각 기분세액 = A/2 × (1 − 감면율). 합을 한 번에 버린다(두 기분 감면율이 같으면 A × (1 − 감면율) 과 같다).
+  const vehicleTax = Math.floor((baseYearly * (100 - pct(r1)) + baseYearly * (100 - pct(r2))) / 200);
   const educationTax = Math.floor(vehicleTax * V.localEducationTax.rate);
   const total = vehicleTax + educationTax;
+  const firstTax = Math.floor((baseYearly * (100 - pct(r1))) / 200);
+  const firstTotal = firstTax + Math.floor(firstTax * V.localEducationTax.rate);
   return {
     baseYearly,
-    discountRate,
+    discountRate: (r1 + r2) / 2,
     vehicleTax,
     educationTax,
     total,
     perHalf: Math.floor(total / 2),
     lumpSum: vehicleTax <= V.lumpSumUnder.amount,
+    halfRates: [r1, r2],
+    halves: [firstTotal, total - firstTotal],
   };
 }
 
