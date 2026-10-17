@@ -60,6 +60,30 @@ describe("주택 유상거래 세율 — 제11조 제1항 제8호", () => {
   });
 });
 
+describe("원 미만 버림에 부동소수점 꼬리가 끼지 않는다", () => {
+  it("623,250,000원 — 세율 1.16% 면 취득세 7,229,700원(7,229,699 아님)", () => {
+    // 0.0116 × 623,250,000 이 7,229,699.999… 로 계산돼 1원 모자랐다
+    const b = bill({ price: 623_250_000, cause: "housePaid" });
+    expect(b.rate).toBe(0.0116);
+    expect(b.acquisitionTax).toBe(7_229_700);
+    expect(b.educationTax).toBe(722_970);
+  });
+  it("6억~9억 1만원 단위 3만 개가 모두 정수 계산과 같다", () => {
+    for (let p = 600_010_000; p <= 900_000_000; p += 10_000) {
+      const b = bill({ price: p, cause: "housePaid" });
+      const k = Math.round(b.rate * 10_000);
+      expect(b.acquisitionTax).toBe(Math.floor((p * k) / 10_000));
+      expect(b.educationTax).toBe(Math.floor((p * k) / 100_000));
+    }
+  });
+  it("6.5억은 세율 0.0133 — 넷째자리 반올림한 세율로 8,645,000원(제11조 ①8 나목)", () => {
+    const b = bill({ price: 650_000_000, cause: "housePaid" });
+    expect(b.acquisitionTax).toBe(8_645_000);
+    expect(b.educationTax).toBe(864_500);
+    expect(bill({ price: 612_345_678, cause: "housePaid" }).acquisitionTax).toBe(6_613_333);
+  });
+});
+
 describe("원인별 표준세율 — 제11조 제1항", () => {
   it("상속은 농지 2.3% · 그 밖 2.8%", () => {
     expect(rateFor("inheritanceFarm", 1 * 억)).toBe(0.023);

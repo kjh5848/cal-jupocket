@@ -83,10 +83,21 @@ export interface AcquisitionBill {
 export function educationTaxOn(price: number, cause: Cause): number {
   const e = A.localEducationTax;
   if (cause === "housePaid") {
-    return Math.floor(price * housePaidRate(price) * e.houseFactor * e.rate);
+    return byRate(price, housePaidRate(price) * e.houseFactor * e.rate);
   }
   const effective = Math.max(0, rateFor(cause, price) - e.deductRate);
-  return Math.floor(price * effective * e.rate);
+  return byRate(price, effective * e.rate);
+}
+
+/**
+ * 금액 × 세율의 원 미만 버림 — 세율을 백만분의 1 단위 정수로 바꿔 곱한다.
+ *
+ * `Math.floor(price * 0.0116)` 은 623,250,000원에서 7,229,699.999… 가 되어
+ * 1원이 모자란다(0.0116 이 이진수로 조금 작게 저장된다). 정수끼리 곱하면
+ * 그런 꼬리가 없다. 세율은 많아야 소수 여섯째자리(1.16% × 50% × 20%)다.
+ */
+export function byRate(price: number, rate: number): number {
+  return Math.floor((price * Math.round(rate * 1_000_000)) / 1_000_000);
 }
 
 function deadlineText(cause: Cause): string {
@@ -102,7 +113,7 @@ export function bill(opts: { price: number; cause: Cause }): AcquisitionBill {
   if (price <= 0)
     return { rate: 0, acquisitionTax: 0, educationTax: 0, total: 0, deadline: deadlineText(cause) };
   const rate = rateFor(cause, price);
-  const acquisitionTax = Math.floor(price * rate);
+  const acquisitionTax = byRate(price, rate);
   const educationTax = educationTaxOn(price, cause);
   return {
     rate,
