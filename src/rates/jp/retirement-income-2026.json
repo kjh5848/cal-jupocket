@@ -1,0 +1,15 @@
+{
+  "country": "JP",
+  "draft": true,
+  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(일본어판이 열린 뒤). 일본 退職所得은 (수입금액 − 退職所得控除額) × 1/2 를 다른 소득과 나눠 과세한다. 우리처럼 근속연수 1년 미만 끝수는 1년으로 올리지만, 환산급여(÷ 근속연수 × 12) 단계가 없고 1/2 을 곱하는 방식이라 계산 구조가 다르다. 세율표(速算表)·특정임원·단기퇴직 300만엔 초과분·障害者 100만엔 가산은 미확인(원문 주석만 읽음).",
+  "verifiedOn": "2026-10-17",
+  "sources": [{ "label": "国税庁 タックスアンサー No.1420 退職金を受け取ったとき(退職所得) [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1420.htm" }],
+  "incomeFormula": "(収入金額 − 退職所得控除額) × 1/2",
+  "yearsRoundUp": "勤続年数の1年未満の端数は1年に切り上げ(例: 10年2か月 → 11年)",
+  "deduction": [
+    { "upToYears": 20, "perYearYen": 400000, "minYen": 800000 },
+    { "upToYears": null, "baseYen": 8000000, "perYearYen": 700000, "fromYears": 20 }
+  ],
+  "noDeclarationWithholding": 0.2042,
+  "notVerified": ["退職所得の源泉徴収税額の速算表", "特定役員退職手当等·短期退職手当等の細部", "同一年·前年以前の退職金がある場合の控除額"]
+}

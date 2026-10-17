@@ -25,7 +25,7 @@ const ANSWER = `퇴직금 세금 계산기는 퇴직금과 근속연수로 근�
 
 const QA = [
   { q: "퇴직소득세 계산 예시를 보여 주세요.", a: `퇴직금 1억원, 근속 10년이면 근속연수공제 ${won(ex.serviceDeduction)}을 빼고 ÷ 10 × 12로 환산급여 ${won(ex.converted)}, 환산급여공제 ${won(ex.convertedDeduction)}을 빼 과세표준 ${won(ex.base)}입니다. 기본세율로 계산한 세액을 12로 나누고 10을 곱하면 ${won(ex.tax)}입니다.` },
-  { q: "근속연수는 어떻게 넣나요?", a: `입사일부터 퇴사일까지의 기간을 연 단위로 넣고, 1년 미만 끝수는 1년으로 올립니다(제48조 제1항). 9년 2개월이면 10년입니다. 중간정산을 받았다면 그 뒤 기간만 새 퇴직금의 계속근로기간이 되지만, 세법상 근속연수 계산 세부는 시행령을 확인하세요.` },
+  { q: "근속연수는 어떻게 넣나요?", a: `꽉 찬 해와 남은 개월을 넣으면 1년 미만 끝수는 1년으로 올립니다(제48조 제1항). 9년 2개월이면 10년입니다. 중간정산을 받았다면 그 뒤 기간만 새 퇴직금의 계속근로기간이 되지만, 세법상 근속연수 계산 세부는 시행령을 확인하세요.` },
   { q: "퇴직금을 연금으로 받으면 세금이 얼마나 줄어드나요?", a: `IRP 등 연금계좌에 넣었다가 연금으로 받으면 원래 퇴직소득세의 ${pct(P.upTo10)}(실제 수령 10년차까지), ${pct(P.upTo20)}(11~20년차), ${pct(P.over20)}(21년차부터)만 원천징수합니다(제129조 제1항 제5호의3). 1억원·10년 예시면 일시금 ${won(ex.total)}이 연금수령 초기 기준 ${won(Math.floor(ex.total * pensionReceiptRatio(1)))}입니다.` },
 ];
 ---
@@ -34,30 +34,46 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">일반 근로자의 퇴직금 어림입니다. 임원 퇴직소득 한도, 근속연수의 개월 단위 세부, 중간정산 합산은 넣지 않았습니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">일반 근로자의 퇴직금 어림입니다. 임원 퇴직소득 한도, 근속연수를 일 단위로 따지는 세부(시행령), 중간정산 합산은 넣지 않았습니다. 세액은 원 미만만 버립니다 — 10원 미만 끝수 처리는 원문을 확인하지 못해 넣지 않아, 실제 원천징수액과 몇 원 다를 수 있습니다.</p>
     <div class="calc-input-wrap">
       <label for="sv-amount">퇴직금(비과세 제외)</label>
-      <input type="text" inputmode="numeric" id="sv-amount" value="100,000,000" />
+      <input type="text" inputmode="numeric" id="sv-amount" value="100,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
-      <label for="sv-years">근속연수(1년 미만 끝수는 올림)</label>
-      <input type="number" min="0" max="60" step="0.1" id="sv-years" value="10" />
+      <label for="sv-years">근속연수(꽉 찬 해)</label>
+      <input type="number" min="0" max="60" step="1" id="sv-years" value="10" data-step />
       <span class="unit">년</span>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div class="calc-input-wrap">
+      <label for="sv-months">남은 개월(있으면 1년으로 올림)</label>
+      <input type="number" min="0" max="11" step="1" id="sv-months" value="0" data-step />
+      <span class="unit">개월</span>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="sv-net|sv-tax,sv-local"
+      data-bar-labels="세후 퇴직금|세금"
+      data-dock="sv-hero"
+    >
       <p class="label">퇴직소득세 + 지방소득세</p>
       <p class="big" id="sv-hero">{won(ex.total)}</p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">퇴직소득세</span><span class="value" id="sv-tax">{won(ex.tax)}</span></div>
-      <div class="stat-chip"><span class="label">지방소득세</span><span class="value" id="sv-local">{won(ex.local)}</span></div>
-      <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="sv-base">{won(ex.base)}</span></div>
+    <div class="stat-row" data-receipt>
       <div class="stat-chip"><span class="label">세후 퇴직금</span><span class="value" id="sv-net">{won(ex.net)}</span></div>
       <div class="stat-chip"><span class="label">실효세율</span><span class="value" id="sv-eff">{(ex.effective * 100).toFixed(2)}%</span></div>
       <div class="stat-chip"><span class="label">연금수령 시(10년차까지 70%)</span><span class="value" id="sv-pension">{won(Math.floor(ex.total * pensionReceiptRatio(1)))}</span></div>
+      <div class="stat-chip"><span class="label">근속연수공제 (<span id="sv-y">{ex.years}</span>년)</span><span class="value" id="sv-sded">{won(ex.serviceDeduction)}</span></div>
+      <div class="stat-chip"><span class="label">환산급여 (÷ 근속연수 × 12)</span><span class="value" id="sv-conv">{won(ex.converted)}</span></div>
+      <div class="stat-chip"><span class="label">환산급여공제</span><span class="value" id="sv-cded">{won(ex.convertedDeduction)}</span></div>
+      <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="sv-base">{won(ex.base)}</span></div>
+      <div class="stat-chip" data-group="세금 합계"><span class="label">퇴직소득세</span><span class="value" id="sv-tax">{won(ex.tax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세</span><span class="value" id="sv-local">{won(ex.local)}</span></div>
     </div>
+    <p class="meta">퇴직금 − 근속연수공제를 근속연수로 나누고 12를 곱한 환산급여에서 환산급여공제를 빼면 과세표준입니다. 기본세율로 낸 세액을 12로 나누고 근속연수를 곱합니다(소득세법 제48조·제55조 제2항). 지방소득세는 같은 과세표준에 세율 10분의 1(지방세법 제92조 제4항).</p>
   </div>
 
   <h2>{QA[0].q}</h2>

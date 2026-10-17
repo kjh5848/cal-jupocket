@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { serviceYears, serviceDeduction, convertedDeduction, severanceTax, pensionReceiptRatio, severancePay, averageDailyWage } from "../severance";
+import { serviceYears, yearsFrom, serviceDeduction, convertedDeduction, severanceTax, pensionReceiptRatio, severancePay, averageDailyWage } from "../severance";
 
 describe("근속연수공제", () => {
   it("5년 이하 100만원씩", () => expect(serviceDeduction(3)).toBe(3_000_000));
@@ -10,6 +10,13 @@ describe("근속연수공제", () => {
     expect(serviceYears(9.1)).toBe(10);
     expect(serviceYears(0.5)).toBe(1);
     expect(serviceYears(10)).toBe(10);
+  });
+  it("꽉 찬 해 + 개월 → 개월이 있으면 1년 올림", () => {
+    expect(yearsFrom(9, 2)).toBe(10);
+    expect(yearsFrom(10, 0)).toBe(10);
+    expect(yearsFrom(0, 6)).toBe(1);
+    expect(yearsFrom(0, 0)).toBe(1);
+    expect(yearsFrom(3, 11)).toBe(4);
   });
 });
 
@@ -32,6 +39,14 @@ describe("severanceTax", () => {
     expect(x.base).toBe(39_400_000);
     expect(x.tax).toBe(3_875_000);
     expect(x.local).toBe(387_500);
+  });
+  // 2026-10-17 roberin 퇴직소득세 계산기와 같은 입력 — 세액은 모두 같았다. 기대값은 제48조·제55조로 손계산한 값
+  it("손계산 대조 — 3천만원·3년, 5억원·25년, 3억원·30년, 500만원·1년, 300만원·6개월", () => {
+    expect(severanceTax(30_000_000, 3).tax).toBe(1_286_250);
+    expect(severanceTax(500_000_000, 25).tax).toBe(41_318_750);
+    expect(severanceTax(300_000_000, 30).tax).toBe(9_862_500);
+    expect(severanceTax(5_000_000, 1).tax).toBe(95_000);
+    expect(severanceTax(3_000_000, yearsFrom(0, 6)).tax).toBe(32_000);
   });
   it("근속연수공제가 퇴직금보다 크면 세금 0", () => expect(severanceTax(3_000_000, 5).tax).toBe(0));
   it("오래 일할수록 같은 금액의 세금이 줄어든다", () => expect(severanceTax(100_000_000, 20).tax).toBeLessThan(severanceTax(100_000_000, 10).tax));

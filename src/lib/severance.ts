@@ -16,6 +16,13 @@ export function serviceYears(years: number): number {
   return Math.max(1, Math.ceil(years - 1e-9));
 }
 
+/** 꽉 찬 해 + 남은 개월 → 세법상 근속연수(개월이 하나라도 있으면 1년 올림, 제48조 제1항) */
+export function yearsFrom(fullYears: number, months: number): number {
+  const y = Math.max(0, Math.floor(fullYears || 0));
+  const m = Math.max(0, Math.floor(months || 0));
+  return serviceYears(y + Math.ceil(m / 12));
+}
+
 /** 근속연수공제(제48조 제1항 제1호 표) */
 export function serviceDeduction(years: number): number {
   const y = serviceYears(years);
