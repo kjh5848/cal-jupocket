@@ -9,13 +9,15 @@ import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/child-incentive-2026.json";
-import { childIncentive, perChild } from "../../../lib/child-incentive";
+import { childIncentive, perChild, bandInfo } from "../../../lib/child-incentive";
 import { won, eokwon } from "../../../lib/won";
 
 const F = r.formula;
 const R = r.reductions;
 const pays = [20_000_000, 30_000_000, 40_000_000, 50_000_000, 60_000_000];
 const ex = childIncentive({ household: "single", pay: 30_000_000, children: 2 });
+const exBand = bandInfo("single");
+const BAND = { flat: "1명당 100만원 구간", taper: "벌수록 주는 구간", none: "대상 아님" } as const;
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 child-incentive.test.ts 가 rates 와 대조한다.
 const title = "자녀장려금 금액 — 1명당 최대 100만원, 소득이 많을수록 50만원까지 줄어듭니다";
@@ -36,11 +38,11 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">법 조문 식으로 한 어림입니다. 실제 금액은 산정표(구간별)로 정해져 조금 다를 수 있습니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">아래 값은 예시입니다. 내 가구와 소득으로 바꾸세요. 법 조문 식으로 한 어림이고, 실제 금액은 산정표(구간별)로 정해져 조금 다를 수 있습니다.</p>
     <div class="calc-input-wrap">
       <label for="ci-household">가구</label>
-      <select id="ci-household">
+      <select id="ci-household" data-seg>
         <option value="single">홑벌이</option>
         <option value="dual">맞벌이</option>
       </select>
@@ -48,34 +50,52 @@ const QA = [
     <p class="meta">맞벌이는 부부 각각의 총급여액 등이 {eokwon(r.household.dualThreshold)} 이상인 가구, 그 밖에 배우자가 없거나 배우자 소득이 그보다 적으면 홑벌이입니다.</p>
     <div class="calc-input-wrap">
       <label for="ci-pay">총급여액 등(부부 합산, 1년)</label>
-      <input type="text" inputmode="numeric" id="ci-pay" value="30,000,000" />
+      <input type="text" inputmode="numeric" id="ci-pay" value="30,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="ci-children">18세 미만 부양자녀</label>
-      <input type="number" min="0" max="20" id="ci-children" value="2" />
+      <input type="number" min="0" max="20" id="ci-children" value="2" data-step />
       <span class="unit">명</span>
     </div>
     <details>
       <summary>재산·자녀세액공제·늦은 신청</summary>
       <div class="calc-input-wrap">
         <label for="ci-assets">가구원 재산 합계</label>
-        <input type="text" inputmode="numeric" id="ci-assets" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="ci-assets" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
       <div class="calc-input-wrap">
         <label for="ci-credit">연말정산·종합소득세에서 받은 자녀세액공제(부부 합산)</label>
-        <input type="text" inputmode="numeric" id="ci-credit" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="ci-credit" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
       <label><input type="checkbox" id="ci-late" /> 5월 신청기간을 놓쳐 6개월 안에 신청(95%)</label>
     </details>
 
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="ci-hero|ci-assets-cut,ci-late-cut,ci-credit-cut|ci-below"
+      data-bar-labels="받는 금액|재산·기한 후 신청·자녀세액공제로 줄어든 돈|소득 구간 때문에 최대보다 적은 돈"
+      data-dock="ci-hero"
+    >
       <p class="label" id="ci-hero-label">자녀장려금(어림)</p>
       <p class="big" id="ci-hero">{won(ex.amount)}</p>
     </div>
     <p class="meta" id="ci-note" hidden></p>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">소득 구간</span><span class="value" id="ci-band">{BAND[ex.band]}</span></div>
+      <div class="stat-chip"><span class="label">1명당 100만원 받는 총급여액 등</span><span class="value" id="ci-flat">{eokwon(exBand.flatUnder)} 미만</span></div>
+      <div class="stat-chip"><span class="label">법 식 금액(자녀 수 × 1명당)</span><span class="value" id="ci-base">{won(ex.base)}</span></div>
+      <div class="stat-chip"><span class="label">최대 금액보다 적은 돈</span><span class="value" id="ci-below">{won(ex.belowMax)}</span></div>
+      <div class="stat-chip"><span class="label">3만원 하한으로 더한 돈</span><span class="value" id="ci-floor">{won(ex.floorAdj)}</span></div>
+      <div class="stat-chip" data-group="줄어든 돈"><span class="label">재산 1억7천만원 이상 · 50%</span><span class="value" id="ci-assets-cut">{won(ex.assetsCut)}</span></div>
+      <div class="stat-chip"><span class="label">기한 후 신청 · 5%</span><span class="value" id="ci-late-cut">{won(ex.lateCut)}</span></div>
+      <div class="stat-chip"><span class="label">받은 자녀세액공제</span><span class="value" id="ci-credit-cut">{won(ex.minusCredit)}</span></div>
+    </div>
+    <p class="meta" id="ci-formula">자녀장려금 = 법 식 금액 − 줄어든 돈(3만원 미만이면 3만원). 줄어드는 구간에서는 총급여액 등이 1만원 늘 때마다 자녀 1명당 약 {Math.floor(exBand.perChildTaperPer10k).toLocaleString("ko-KR")}원씩 줄어듭니다(제100조의29 제1항). 3만원 하한은 재산·기한 후 신청·자녀세액공제로 줄인 뒤의 금액에 적용합니다(제100조의31 제2항).</p>
   </div>
 
   <h2>{QA[0].q}</h2>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { perChild, childIncentive, schedule } from "../child-incentive";
+import { perChild, childIncentive, schedule, bandInfo } from "../child-incentive";
 import { iso } from "../tax-deadline";
 import r from "../../rates/child-incentive-2026.json";
 
@@ -34,6 +34,58 @@ describe("자녀장려금 어림", () => {
     expect(childIncentive({ household: "single", pay: 20_000_000, children: 1, childTaxCredit: 1_000_000 }).amount).toBe(0));
   it("부양자녀가 없으면 대상이 아니다", () =>
     expect(childIncentive({ household: "single", pay: 20_000_000, children: 0 }).eligible).toBe(false));
+});
+
+/** 계산기 영수증 분해 — 조문 손계산(roberin 에 같은 도구 없음, 2026-10-17) */
+describe("분해: 법 식 금액 − 재산 − 기한 후 − 자녀세액공제 + 3만원 하한 = 결정 금액", () => {
+  it("홑벌이 3,000만원·2명 → 2 × (100만 − 900만 × 50/4,900) = 1,816,326, 최대보다 183,674 적다", () => {
+    const x = childIncentive({ household: "single", pay: 30_000_000, children: 2 });
+    expect([x.band, x.base, x.amount, x.belowMax]).toEqual(["taper", 1_816_326, 1_816_326, 183_674]);
+  });
+  it("맞벌이 2,500만원 정확히·1명 → 줄어드는 구간 시작, 아직 100만원", () => {
+    const x = childIncentive({ household: "dual", pay: 25_000_000, children: 1 });
+    expect([x.band, x.amount]).toEqual(["taper", 1_000_000]);
+  });
+  it("맞벌이 2,499만9,999원 → 100만원 구간", () =>
+    expect(childIncentive({ household: "dual", pay: 24_999_999, children: 1 }).band).toBe("flat"));
+  it("홑벌이 2,000만원·2명·재산 2억·기한 후·공제 55만 → 200만 → 100만 → 95만 → 40만", () => {
+    const x = childIncentive({ household: "single", pay: 20_000_000, children: 2, assets: 200_000_000, late: true, childTaxCredit: 550_000 });
+    expect([x.assetsCut, x.lateCut, x.minusCredit, x.floorAdj, x.amount]).toEqual([1_000_000, 50_000, 550_000, 0, 400_000]);
+  });
+  it("홑벌이 6,900만원·1명·재산 2억·기한 후 → 510,204 → 255,102 → 242,346", () => {
+    const x = childIncentive({ household: "single", pay: 69_000_000, children: 1, assets: 200_000_000, late: true });
+    expect([x.base, x.afterAssets, x.amount]).toEqual([510_204, 255_102, 242_346]);
+  });
+  it("공제가 남은 금액보다 크면 남은 금액에서 멈추고 0원 — 3만원으로 올리지 않는다", () => {
+    const x = childIncentive({ household: "single", pay: 20_000_000, children: 1, childTaxCredit: 1_500_000 });
+    expect([x.minusCredit, x.floorAdj, x.amount]).toEqual([1_000_000, 0, 0]);
+  });
+  it("감액 뒤 1만원 → 3만원 하한으로 2만원 더한다", () =>
+    expect(childIncentive({ household: "single", pay: 20_000_000, children: 1, childTaxCredit: 990_000 }).floorAdj).toBe(20_000));
+  it("자격 밖이면 분해 필드도 0", () => {
+    const x = childIncentive({ household: "single", pay: 70_000_000, children: 2 });
+    expect([x.band, x.assetsCut, x.lateCut, x.floorAdj, x.belowMax]).toEqual(["none", 0, 0, 0, 0]);
+  });
+  it("무작위 2만 건: 항등식이 늘 맞고 줄어든 돈은 0 이상", () => {
+    let seed = 11;
+    const rnd = () => ((seed = (seed * 1_103_515_245 + 12_345) % 2_147_483_648) / 2_147_483_648);
+    for (let k = 0; k < 20_000; k++) {
+      const x = childIncentive({
+        household: k % 2 ? "single" : "dual",
+        pay: Math.floor(rnd() * 72_000_000),
+        children: 1 + Math.floor(rnd() * 4),
+        assets: Math.floor(rnd() * 250_000_000),
+        late: rnd() < 0.5,
+        childTaxCredit: rnd() < 0.5 ? Math.floor(rnd() * 2_000_000) : 0,
+      });
+      expect(x.base - x.assetsCut - x.lateCut - x.minusCredit + x.floorAdj).toBe(x.amount);
+      expect(x.assetsCut >= 0 && x.lateCut >= 0 && x.minusCredit >= 0 && x.floorAdj >= 0 && x.belowMax >= 0).toBe(true);
+    }
+  });
+  it("줄어드는 구간: 1만원 더 벌면 자녀 1명당 홑벌이 약 102원·맞벌이 약 111원 줄어든다", () => {
+    expect(Math.floor(bandInfo("single").perChildTaperPer10k)).toBe(102);
+    expect(Math.floor(bandInfo("dual").perChildTaperPer10k)).toBe(111);
+  });
 });
 
 describe("일정", () => {
