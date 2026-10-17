@@ -69,8 +69,10 @@ function recompute() {
   $("inh-chosen").textContent = formatWon(d.chosen);
   $("stat1-value").textContent = unclear ? "—" : formatWon(d.spouse);
 
-  // 세금이 0이 되는 상속재산 합계 — 공제 합계 + 채무 + 장례비
+  // 세금이 0이 되는 상속재산 합계 — 공제 합계 + 채무 + 장례비.
+  // 배우자가 5억 이상 받으면 공제가 재산 크기(법정상속분 한도)에 따라 움직여 경계를 한 숫자로 말할 수 없다.
   const ceiling = d.total + r.debts + r.funeral;
+  const ceilingFixed = !h.hasSpouse || (h.spouseShare ?? 0) < rates.spouse.minimum;
   const note = $("ceiling-note");
   if (unclear) {
     note.textContent =
@@ -80,13 +82,16 @@ function recompute() {
     note.textContent = "";
   } else if (r.payable === 0) {
     const room = ceiling - h.estate;
-    note.textContent =
-      room > 0
+    note.textContent = !ceilingFixed
+      ? "세금이 없습니다."
+      : room > 0
         ? `상속재산이 ${formatMan(ceiling)}까지는 세금이 없습니다. ${formatMan(room)} 더 있어도 0원입니다.`
         : `과세표준이 ${formatMan(rates.minimumBase.amount)} 미만이라 세금이 없습니다(제25조 ②).`;
   } else {
     const pct = Math.round(r.effectiveRate * 1000) / 10;
-    note.textContent = `상속재산 대비 실효세율 ${pct}% · ${formatMan(ceiling)}까지는 0원입니다.`;
+    note.textContent = ceilingFixed
+      ? `상속재산 대비 실효세율 ${pct}% · ${formatMan(ceiling)}까지는 0원입니다.`
+      : `상속재산 대비 실효세율 ${pct}%입니다.`;
   }
 
   $("inh-formula").textContent =
