@@ -42,6 +42,19 @@ export interface Household {
    * 1년 미만은 1년으로 센다(제3항) — 호출하는 쪽이 올림해서 넘긴다.
    */
   minorYears?: number;
+  /**
+   * 자녀가 없을 때 배우자와 함께 상속하는 부모 수(민법 제1000조·제1003조).
+   * 0 이면 배우자 혼자 상속 — 일괄공제를 못 쓰고(제21조 ②) 법정상속분이 1이다.
+   * 넘기지 않으면 예전처럼 배우자 단독상속을 따지지 않는다.
+   */
+  parents?: 0 | 1 | 2;
+  /** 공과금·채무(제14조 ①). estate 에서 빼 과세가액을 만들고, 배우자 한도의 A 에서도 뺀다. */
+  debts?: number;
+  /**
+   * 장례비(시행령 제9조 ②). 넘기면 estate 를 장례비 빼기 전 금액으로 보고 최저 500만원을 적용해 뺀다.
+   * 넘기지 않으면 예전처럼 estate 를 장례비를 이미 뺀 금액으로 본다.
+   */
+  funeral?: { direct: number; memorial?: number };
 }
 
 export interface Deductions {
@@ -52,15 +65,40 @@ export interface Deductions {
   /** 둘 중 실제로 쓰는 쪽 */
   chosen: number;
   chosenLabel: "일괄공제" | "기초공제 + 인적공제";
+  /** 배우자 혼자 상속해 일괄공제를 못 쓰는가(제21조 ②) */
+  spouseSole: boolean;
   spouse: number;
+  /** 배우자 법정상속분(민법 제1009조 ②) — 계산할 수 없으면 null */
+  legalShare: number | null;
+  /** 배우자공제 한도 — 법정상속분 한도(제19조 ①1호, 원 미만 버림)와 30억 중 작은 쪽. 법정상속분을 모르면 30억 */
+  spouseLimit: number;
+  /**
+   * 실제 받은 금액이 5억 이상인데 한도가 5억 미만 — 5억 바닥이 적용되는지 원문으로 닫히지 않는다(rates spouse.floorNote).
+   * 이때 spouse 는 국세청 안내 문구대로 한도 금액이지만 화면은 금액을 내지 않는다.
+   */
+  spouseUnclear: boolean;
   total: number;
+}
+
+/** 배우자 법정상속분 — 같은 순위 상속인 n명과 함께면 1.5/(n + 1.5), 혼자면 1 (민법 제1009조 ②) */
+export function spouseLegalShare(coHeirs: number): number {
+  const w = rates.spouse.legalShare.spouseWeight;
+  return coHeirs <= 0 ? 1 : w / (coHeirs + w);
+}
+
+/** 장례비 반영액 — 직접 장례비 500만~1천만원 + 봉안·자연장 500만원 한도(시행령 제9조 ②) */
+export function funeralAllowed(f: { direct: number; memorial?: number }): number {
+  const r = rates.funeral;
+  const direct = Math.min(Math.max(f.direct, r.directMin), r.directMax);
+  const memorial = Math.min(Math.max(f.memorial ?? 0, 0), r.memorialMax);
+  return direct + memorial;
 }
 
 /**
  * 공제를 고른다.
  *
  * 국세청 표현 그대로 — "기초공제 2억원과 그 밖의 인적공제액의 합계액과
- * 5억원 중 **큰 금액**을 공제받을 수 있습니다."
+ * 5억원 중 **큰 금액**을 공제받을 수 있습니다." 배우자 혼자 상속하면 5억은 고를 수 없다(제21조 ②).
  */
 export function deductionsFor(h: Household): Deductions {
   const p = rates.otherPersonal;
@@ -69,16 +107,28 @@ export function deductionsFor(h: Household): Deductions {
   const itemized = rates.basicDeduction.amount + personal;
   const lumpSum = rates.lumpSum.amount;
 
-  const useLump = lumpSum >= itemized;
+  const children = h.children ?? 0;
+  const spouseSole = h.hasSpouse && children === 0 && h.parents === 0;
+  const useLump = !spouseSole && lumpSum >= itemized;
   const chosen = useLump ? lumpSum : itemized;
 
+  // 법정상속분 — 자녀가 있으면 자녀 수, 없으면 넘겨받은 부모 수. 자녀 0명에 부모를 모르면 계산하지 않는다
+  const coHeirs = children > 0 ? children : h.parents;
+  const legalShare = h.hasSpouse && coHeirs !== undefined ? spouseLegalShare(coHeirs) : null;
+  const a = Math.max(0, h.estate - (h.debts ?? 0));
+  const spouseLimit =
+    legalShare === null ? rates.spouse.cap : Math.min(Math.floor(a * legalShare), rates.spouse.cap);
+
   let spouse = 0;
+  let spouseUnclear = false;
   if (h.hasSpouse) {
     const actual = h.spouseShare ?? 0;
-    spouse =
-      actual < rates.spouse.minimum
-        ? rates.spouse.minimum
-        : Math.min(actual, rates.spouse.cap);
+    if (actual < rates.spouse.minimum) {
+      spouse = rates.spouse.minimum; // 제19조 ④
+    } else {
+      spouse = Math.min(actual, spouseLimit);
+      spouseUnclear = spouse < rates.spouse.minimum;
+    }
   }
 
   return {
@@ -86,7 +136,11 @@ export function deductionsFor(h: Household): Deductions {
     lumpSum,
     chosen,
     chosenLabel: useLump ? "일괄공제" : "기초공제 + 인적공제",
+    spouseSole,
     spouse,
+    legalShare,
+    spouseLimit,
+    spouseUnclear,
     total: chosen + spouse,
   };
 }
@@ -107,7 +161,15 @@ export function bracketPercent(base: number): number {
 
 export interface InheritanceResult {
   estate: number;
+  /** 공과금·채무 */
+  debts: number;
+  /** 장례비 반영액(시행령 제9조 ②) — funeral 을 넘기지 않으면 0 */
+  funeral: number;
+  /** 상속세 과세가액 = 상속재산 − 공과금·채무 − 장례비, 음수면 0 */
+  taxable: number;
   deductions: Deductions;
+  /** 공제 합계 중 실제로 뺀 금액 — 과세가액을 넘지 못한다(제24조) */
+  appliedDeduction: number;
   /** 과세표준 — 음수가 되면 0 */
   base: number;
   ratePercent: number;
@@ -123,14 +185,22 @@ export interface InheritanceResult {
 
 export function computeInheritance(h: Household): InheritanceResult {
   const deductions = deductionsFor(h);
-  const base = Math.max(0, h.estate - deductions.total);
+  const debts = Math.max(0, h.debts ?? 0);
+  const funeral = h.funeral ? funeralAllowed(h.funeral) : 0;
+  const taxable = Math.max(0, h.estate - debts - funeral);
+  const appliedDeduction = Math.min(deductions.total, taxable);
+  const base = taxable - appliedDeduction;
   // 과세표준 50만원 미만이면 상속세를 부과하지 않는다(제25조 제2항) — 과세표준은 그대로, 세액만 0
   const computed = base < rates.minimumBase.amount ? 0 : taxOn(base);
   const filingCredit = won(computed * rates.filingCredit.rate);
   const payable = computed - filingCredit;
   return {
     estate: h.estate,
+    debts,
+    funeral,
+    taxable,
     deductions,
+    appliedDeduction,
     base,
     ratePercent: bracketPercent(base),
     computed,
