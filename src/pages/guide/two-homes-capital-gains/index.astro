@@ -15,7 +15,7 @@ const T = r.temporaryTwoHomes;
 const base = { kind: "house" as const, sale: 900_000_000, acquisition: 600_000_000, holdYears: 6 };
 const plain = capitalGains(base);
 const surcharged = capitalGains({ ...base, surcharge: 0.2 });
-const exempt = capitalGains({ ...base, residenceYears: 6, oneHouseExempt: true });
+const exempt = capitalGains({ ...base, residenceYears: 6, oneHouse: true });
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
 const title = "1가구2주택 양도소득세 — 일시적 2주택이면 비과세, 조정대상지역끼리는 2년 안에 팔아야";

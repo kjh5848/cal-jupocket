@@ -13,7 +13,7 @@ import { capitalGains } from "../../../lib/capital-gains";
 import { won, eokwon } from "../../../lib/won";
 
 const ex = capitalGains({ kind: "house", sale: 800_000_000, acquisition: 500_000_000, holdYears: 5 });
-const exOne = capitalGains({ kind: "house", sale: 800_000_000, acquisition: 500_000_000, holdYears: 5, residenceYears: 5, oneHouseExempt: true });
+const exOne = capitalGains({ kind: "house", sale: 800_000_000, acquisition: 500_000_000, holdYears: 5, residenceYears: 5, oneHouse: true });
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
 const title = "양도소득세 — 판 값에서 산 값과 경비를 빼고, 오래 가질수록 공제가 커집니다";

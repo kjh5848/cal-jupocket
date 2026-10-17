@@ -14,7 +14,7 @@ import { won, eokwon } from "../../../lib/won";
 const E = r.exemption;
 const rows = [1_000_000_000, 1_300_000_000, 1_500_000_000, 2_000_000_000].map((sale) => ({
   sale,
-  x: capitalGains({ kind: "house", sale, acquisition: 600_000_000, holdYears: 10, residenceYears: 10, oneHouseExempt: true }),
+  x: capitalGains({ kind: "house", sale, acquisition: 600_000_000, holdYears: 10, residenceYears: 10, oneHouse: true }),
 }));
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 capital-gains-series.test.ts 가 rates 와 대조한다.
