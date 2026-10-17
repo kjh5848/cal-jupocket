@@ -142,3 +142,38 @@ describe("1세대 1주택 세액공제·농특세(2026-10-13 추가)", async () 
     expect(j.asOne).toBeLessThan(j.separate);
   });
 });
+
+describe("계산기 페이지 jongbuPage — 손계산(제8조 ①·제9조 ①·제20조·농특세법 제5조)", async () => {
+  const { jongbuPage } = await import("../comprehensive-property-tax");
+  it("20억 1세대 1주택 50세·3년: 합계 3,312,000 · 9억 공제였다면 5,040,000 → 1,728,000 줄어듦 · 분납 260,000", () => {
+    const p = jongbuPage({ totalPrice: 20 * 억, kind: "one", age: 50, years: 3 });
+    expect(p.total).toBe(3_312_000);
+    expect(p.oneHomeSaving).toBe(1_728_000);
+    expect(p.installment).toBe(260_000);
+    expect(p.room).toBe(0);
+  });
+  it("10억 1세대 1주택: 0원 · 12억까지 2억 남음 · 9억 공제였다면 360,000", () => {
+    const p = jongbuPage({ totalPrice: 10 * 억, kind: "one" });
+    expect(p.total).toBe(0);
+    expect(p.room).toBe(2 * 억);
+    expect(p.oneHomeSaving).toBe(360_000);
+  });
+  it("13억 2주택 이하: 과표 2.4억 → 1,200,000 + 농특세 240,000 · 1주택이었다면 1,080,000 덜", () => {
+    const p = jongbuPage({ totalPrice: 13 * 억, kind: "two" });
+    expect(p.total).toBe(1_440_000);
+    expect(p.oneHomeSaving).toBe(1_080_000);
+    expect(p.multiExtra).toBe(0);
+  });
+  it("30억 3주택 이상: 과표 12.6억 → 10,800,000 · 2주택 이하보다 504,000 더 · 분납 절반", () => {
+    const p = jongbuPage({ totalPrice: 30 * 억, kind: "three" });
+    expect(p.tax).toBe(10_800_000);
+    expect(p.total).toBe(12_960_000);
+    expect(p.multiExtra).toBe(504_000);
+    expect(p.installment).toBe(5_400_000);
+  });
+  it("70세·15년이면 공제율 40% + 50% → 80%로 묶임", () => {
+    const p = jongbuPage({ totalPrice: 20 * 억, kind: "one", age: 70, years: 15 });
+    expect([p.ageRate, p.holdRate, p.creditRate]).toEqual([0.4, 0.5, 0.8]);
+    expect(p.total).toBe(662_400);
+  });
+});

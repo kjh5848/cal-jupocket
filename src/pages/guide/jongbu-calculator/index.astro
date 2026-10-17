@@ -1,7 +1,7 @@
 ---
 /**
  * "종부세 계산기" — 종부세 시리즈. (계산·과세표준도 이 글, 계산기 포함)
- * 계산: src/lib/comprehensive-property-tax.ts estimate() — 제8조(과세표준)·제9조(세율·1세대 1주택 공제)·농어촌특별세법 제5조.
+ * 계산: src/lib/comprehensive-property-tax.ts estimate()·jongbuPage() — 제8조(과세표준)·제9조(세율·1세대 1주택 공제)·농어촌특별세법 제5조.
  * 재산세액 공제(제9조 ③)와 세부담 상한(제10조)은 넣지 않았다 → 값은 "이보다 크지 않다".
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
@@ -34,16 +34,16 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">재산세액 공제·세부담 상한 전의 값이라 실제 고지서는 이보다 작거나 같습니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">재산세액 공제·세부담 상한 전의 값이라 실제 고지서는 이보다 작거나 같습니다. 시세가 아니라 <strong>공시가격</strong>을 넣으세요.</p>
     <div class="calc-input-wrap">
       <label for="jb-price">주택 공시가격 합계(6월 1일 현재, 본인 명의)</label>
-      <input type="text" inputmode="numeric" id="jb-price" value="2,000,000,000" />
+      <input type="text" inputmode="numeric" id="jb-price" value="2,000,000,000" data-won />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="jb-kind">구분</label>
-      <select id="jb-kind">
+      <select id="jb-kind" data-seg>
         <option value="one">1세대 1주택자</option>
         <option value="two">2주택 이하</option>
         <option value="three">3주택 이상</option>
@@ -52,26 +52,46 @@ const QA = [
     <div id="jb-one-fields">
       <div class="calc-input-wrap">
         <label for="jb-age">6월 1일 현재 만 나이</label>
-        <input type="number" min="0" max="120" id="jb-age" value="50" />
+        <input type="number" min="0" max="120" id="jb-age" value="50" data-step />
         <span class="unit">세</span>
       </div>
       <div class="calc-input-wrap">
         <label for="jb-years">보유기간</label>
-        <input type="number" min="0" max="80" id="jb-years" value="3" />
+        <input type="number" min="0" max="80" id="jb-years" value="3" data-step />
         <span class="unit">년</span>
       </div>
     </div>
 
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="jb-after|jb-rural|jb-credit"
+      data-bar-labels="종부세|농어촌특별세|1주택 나이·보유 공제로 빠진 몫"
+      data-dock="jb-hero"
+    >
       <p class="label">종부세 + 농어촌특별세 (이보다 크지 않다)</p>
       <p class="big" id="jb-hero">{won(ex.total)}</p>
+      <p class="meta" id="jb-note"></p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="jb-base">{won(ex.base)}</span></div>
-      <div class="stat-chip"><span class="label">세율 적용 세액</span><span class="value" id="jb-tax">{won(ex.tax)}</span></div>
-      <div class="stat-chip"><span class="label">1주택 공제</span><span class="value" id="jb-credit">{won(ex.credit)}</span></div>
-      <div class="stat-chip"><span class="label">농어촌특별세</span><span class="value" id="jb-rural">{won(ex.rural)}</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">공제 (제8조 ①)</span><span class="value" id="jb-deduction">{won(ex.deduction)}</span></div>
+      <div class="stat-chip"><span class="label">과세표준 (× {pct(RATIO)})</span><span class="value" id="jb-base">{won(ex.base)}</span></div>
+      <div class="stat-chip"><span class="label">세율 적용 세액 (제9조 ①)</span><span class="value" id="jb-tax">{won(ex.tax)}</span></div>
+      <div class="stat-chip"><span class="label">1주택 공제율 (나이 + 보유, 80%까지)</span><span class="value" id="jb-rate">—</span></div>
+      <div class="stat-chip"><span class="label" id="jb-saving-label">1세대 1주택 특례로 줄어든 돈</span><span class="value" id="jb-saving">—</span></div>
+      <div class="stat-chip"><span class="label">3주택 이상 세율로 늘어난 돈</span><span class="value" id="jb-multi">—</span></div>
+      <div class="stat-chip"><span class="label">나눠 낼 수 있는 금액 (제20조, 최대)</span><span class="value" id="jb-inst">—</span></div>
+      <div class="stat-chip"><span class="label">합계 ÷ 공시가격</span><span class="value" id="jb-eff">—</span></div>
+      <div class="stat-chip"><span class="label">1주택 나이·보유 공제 (제9조 ⑤)</span><span class="value" id="jb-credit">{won(ex.credit)}</span></div>
+      <div class="stat-chip" data-group="낼 세금(상한)"><span class="label">종부세</span><span class="value" id="jb-after">{won(ex.afterCredit)}</span></div>
+      <div class="stat-chip"><span class="label">농어촌특별세 {pct(r.ruralTax.rate)}</span><span class="value" id="jb-rural">{won(ex.rural)}</span></div>
     </div>
+    <p class="meta" id="jb-formula"></p>
+    <div class="actions">
+      <button id="jb-copy" type="button" class="secondary">결과 복사</button>
+    </div>
+    <p id="jb-toast" class="meta" style="display:none;">결과를 복사했어요.</p>
   </div>
 
   <h2>{QA[0].q}</h2>

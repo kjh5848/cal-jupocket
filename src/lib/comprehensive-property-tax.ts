@@ -110,6 +110,47 @@ export function estimate(opts: { totalPrice: number; oneHome?: boolean; homes?: 
   return { ...r0, credit, creditRate: rate, afterCredit, rural, total: afterCredit + rural };
 }
 
+export interface JongbuPage extends Estimate {
+  /** 나이·보유기간 공제율 각각(1세대 1주택이 아니면 0) */
+  ageRate: number;
+  holdRate: number;
+  /** 공시가격이 공제 이하일 때 종부세가 시작되는 금액까지 남은 돈 */
+  room: number;
+  /** 1세대 1주택(체크했으면 그 특례로 줄어든 돈, 아니면 1주택이었다면 줄어드는 돈 — 나이·보유 공제 없이) */
+  oneHomeSaving: number;
+  /** 3주택 이상 세율로 2주택 이하보다 늘어난 돈 */
+  multiExtra: number;
+  /** 종부세(농특세 제외) 중 나눠 낼 수 있는 금액 — 공제 전 세액 기준이라 최대값 */
+  installment: number;
+  /** 합계 ÷ 공시가격 */
+  effective: number;
+}
+
+/**
+ * 계산기 페이지용 — {@link estimate} 에 비교·안내 숫자를 붙인다.
+ * 재산세액 공제(제9조 ③)는 여전히 넣지 않는다: 시행령 제4조의3 ① 계산식의 '표준세율'을
+ * 한 값(0.4%)으로 곱하는지 누진으로 계산하는지 원문만으로 닫히지 않는다(2026-10-18).
+ */
+export function jongbuPage(opts: { totalPrice: number; kind: "one" | "two" | "three"; age?: number; years?: number }): JongbuPage {
+  const { totalPrice, kind, age = 0, years = 0 } = opts;
+  const oneHome = kind === "one";
+  const homes: HomeCount = kind === "three" ? "from3Homes" : "upTo2Homes";
+  const e = estimate({ totalPrice, oneHome, homes, age, years });
+  const rates = oneHome ? oneHomeCreditRate(age, years) : { age: 0, hold: 0 };
+  const asOne = estimate({ totalPrice, oneHome: true });
+  const asTwo = estimate({ totalPrice, oneHome: false, homes: "upTo2Homes" });
+  return {
+    ...e,
+    ageRate: rates.age,
+    holdRate: rates.hold,
+    room: Math.max(0, e.deduction - totalPrice),
+    oneHomeSaving: oneHome ? asTwo.total - e.total : Math.max(0, e.total - asOne.total),
+    multiExtra: kind === "three" ? e.total - asTwo.total : 0,
+    installment: installmentAmount(e.afterCredit),
+    effective: totalPrice > 0 ? e.total / totalPrice : 0,
+  };
+}
+
 /**
  * 부부 공동명의 1주택 — 각자 9억 공제(기본) vs 1명을 1세대 1주택자로 신청(12억 공제 + 세액공제).
  * 지분은 반반으로 본다. 둘 다 재산세액 공제 전 상한값.
