@@ -46,9 +46,45 @@ describe("연말정산 어림", () => {
     const b = yearEnd({ pay: 50_000_000, persons: 1, pensionInsurance: 0, socialInsurance: 0, irp: 3_000_000, prepaid: 0 });
     expect(a.decided - b.decided).toBe(450_000);
   });
-  it("세액공제는 산출세액을 넘지 않는다(제61조)", () => {
+  it("세액공제는 산출세액을 넘지 않는다(제61조) — 결정세액 + 적용 공제 = 산출세액", () => {
     const r = yearEnd({ pay: 15_000_000, persons: 3, pensionInsurance: 0, socialInsurance: 0, irp: 9_000_000, prepaid: 0 });
-    expect(r.decided).toBeGreaterThanOrEqual(0);
+    expect(r.decided).toBe(0);
+    expect(r.credits).toBe(r.computedTax);
+    expect(r.earnedCredit + r.pension + r.standard + r.child).toBeGreaterThan(r.credits);
+  });
+});
+
+/**
+ * 2026-10-17 손계산(roberin 에 연말정산 계산기 없음 — 대조 대신 조문 손계산으로 고정).
+ * 제47조 근로소득공제 → 제50조 인적공제 150만/명 → 제55조 세율 → 제59조 근로소득세액공제·총급여별 한도
+ * → 제59조의2 자녀 → 제59조의3 연금계좌(총급여 5,500만 초과 12%) → 제59조의4 ⑨ 표준 13만 → 제61조.
+ */
+describe("연말정산 손계산 3개", () => {
+  it("3,000만·1인 — 한도 74만(3,300만 이하)", () => {
+    const r = yearEnd({ pay: 30_000_000, persons: 1, pensionInsurance: 0, socialInsurance: 0, prepaid: 0 });
+    expect(r.earnedDeduction).toBe(9_750_000); // 750만 + 1,500만 × 15%
+    expect(r.base).toBe(18_750_000);
+    expect(r.computedTax).toBe(1_552_500); // 84만 + 475만 × 15%
+    expect(r.earnedCredit).toBe(740_000); // 71.5만 + 25.25만 × 30% = 790,750 → 한도 74만
+    expect(r.decided).toBe(682_500);
+  });
+  it("4,000만·3인(자녀 2)·보험료 340만 — 한도 74만 − 700만 × 0.8%", () => {
+    const r = yearEnd({ pay: 40_000_000, persons: 3, pensionInsurance: 1_800_000, socialInsurance: 1_600_000, children: 2, prepaid: 0 });
+    expect(r.earnedDeduction).toBe(11_250_000);
+    expect(r.base).toBe(20_850_000); // 2,875만 − 450만 − 180만 − 160만
+    expect(r.computedTax).toBe(1_867_500);
+    expect(r.earnedCredit).toBe(684_000);
+    expect(r.child).toBe(550_000);
+    expect(r.decided).toBe(503_500); // 1,867,500 − 684,000 − 550,000 − 130,000
+  });
+  it("1억·1인·IRP 300만 — 연금계좌 12%, 근로소득세액공제 바닥 50만", () => {
+    const r = yearEnd({ pay: 100_000_000, persons: 1, pensionInsurance: 0, socialInsurance: 0, irp: 3_000_000, prepaid: 0 });
+    expect(r.earnedDeduction).toBe(14_750_000);
+    expect(r.base).toBe(83_750_000);
+    expect(r.computedTax).toBe(14_340_000); // 624만 + 3,375만 × 24%
+    expect(r.earnedCredit).toBe(500_000);
+    expect(r.pension).toBe(360_000);
+    expect(r.decided).toBe(13_350_000);
   });
 });
 

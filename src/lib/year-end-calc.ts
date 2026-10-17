@@ -130,6 +130,8 @@ export function yearEnd(i: YearEndInput) {
     childClamped: children < (i.children ?? 0) || births.length < (i.births ?? []).length,
     pension,
     standard,
+    /** 실제로 뺀 세액공제 — 산출세액까지만(제61조). 결정세액 + 이것 = 산출세액 */
+    credits,
     decided,
     prepaid: i.prepaid,
     /** 양수면 더 낼 세금, 음수면 돌려받을 세금(소득세 기준) */

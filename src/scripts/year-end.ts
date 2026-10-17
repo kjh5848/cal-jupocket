@@ -29,12 +29,23 @@ function render() {
     births: birth.value === "0" ? [] : [Number(birth.value) as BirthOrder],
     prepaid: v("ye-prepaid"),
   });
-  $("ye-hero-label").textContent = r.diff <= 0 ? "돌려받는 소득세(어림)" : "더 내는 소득세(어림)";
+  const label = r.diff <= 0 ? "돌려받는 소득세(어림)" : "더 내는 소득세(어림)";
+  $("ye-hero-label").textContent = label;
+  // 고정 띠(calc-ui)는 만들 때 제목을 한 번만 읽는다 — 돌려받음/더 냄이 바뀌면 여기서 같이 바꾼다
+  const dockLabel = document.querySelector(".ux-dock small");
+  if (dockLabel) dockLabel.textContent = label;
   $("ye-hero").textContent = formatWon(Math.abs(r.diff));
+  $("ye-ded").textContent = formatWon(r.earnedDeduction);
+  $("ye-personal").textContent = formatWon(r.personal);
   $("ye-base").textContent = formatWon(r.base);
-  $("ye-computed").textContent = formatWon(r.computedTax);
-  $("ye-decided").textContent = formatWon(r.decided);
+  $("ye-ec").textContent = formatWon(r.earnedCredit);
   $("ye-child").textContent = formatWon(r.child);
+  $("ye-pc").textContent = formatWon(r.pension);
+  $("ye-std").textContent = formatWon(r.standard);
+  $("ye-paid").textContent = formatWon(r.prepaid);
+  $("ye-decided").textContent = formatWon(r.decided);
+  $("ye-credits").textContent = formatWon(r.credits);
+  $("ye-cap").hidden = r.credits === r.earnedCredit + r.child + r.pension + r.standard;
   $("ye-child-warn").hidden = !r.childClamped;
 }
 

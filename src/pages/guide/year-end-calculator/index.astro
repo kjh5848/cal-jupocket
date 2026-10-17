@@ -11,6 +11,7 @@ import AdSlot from "../../../components/AdSlot.astro";
 import y from "../../../rates/year-end-2026.json";
 import { yearEnd, latestEligibleBirthYear } from "../../../lib/year-end-calc";
 import { won } from "../../../lib/won";
+import { calcPresets } from "../../../data/calc-presets";
 
 const ex = yearEnd({ pay: 50_000_000, persons: 1, pensionInsurance: 0, socialInsurance: 0, prepaid: 3_500_000 });
 const K = y.calc.childTaxCredit;
@@ -19,6 +20,7 @@ const cutoff = latestEligibleBirthYear(y.year);
 const age = B.ageByYear[String(y.year) as keyof typeof B.ageByYear];
 // 자녀 예시: 같은 급여에 자녀 2명(둘 다 기준 연도 이전 출생)
 const exKids = yearEnd({ pay: 50_000_000, persons: 3, pensionInsurance: 0, socialInsurance: 0, children: 2, prepaid: 3_500_000 });
+const PRESETS = JSON.stringify({ default: calcPresets["/guide/year-end-calculator/"].default.amounts });
 const exKidsOnlyPersonal = yearEnd({ pay: 50_000_000, persons: 3, pensionInsurance: 0, socialInsurance: 0, prepaid: 3_500_000 });
 
 const title = "연말정산 계산기 — 총급여와 이미 낸 세금으로 환급금을 어림합니다";
@@ -39,43 +41,43 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">아래 값은 예시입니다. 내 숫자로 바꾸세요.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">아래 값은 예시입니다. 내 숫자로 바꾸세요. 신용카드·의료비·교육비·기부금·월세 공제와 지방소득세는 넣지 않은 어림입니다.</p>
     <div class="calc-input-wrap">
       <label for="ye-pay">총급여(비과세 제외, 1년)</label>
-      <input type="text" inputmode="numeric" id="ye-pay" value="50,000,000" />
+      <input type="text" inputmode="numeric" id="ye-pay" value="50,000,000" data-won data-presets={PRESETS} />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="ye-persons">기본공제 인원(본인 포함)</label>
-      <input type="number" min="1" max="20" id="ye-persons" value="1" />
+      <input type="number" min="1" max="20" id="ye-persons" value="1" data-step />
       <span class="unit">명</span>
     </div>
     <div class="calc-input-wrap">
       <label for="ye-prepaid">1년 동안 이미 뗀 소득세</label>
-      <input type="text" inputmode="numeric" id="ye-prepaid" value="3,500,000" />
+      <input type="text" inputmode="numeric" id="ye-prepaid" value="3,500,000" data-won />
       <span class="unit">원</span>
     </div>
     <details>
       <summary>보험료·연금저축·IRP</summary>
       <div class="calc-input-wrap">
         <label for="ye-pension">국민연금 본인 부담분</label>
-        <input type="text" inputmode="numeric" id="ye-pension" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="ye-pension" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
       <div class="calc-input-wrap">
         <label for="ye-social">건강·고용·장기요양보험 본인 부담분</label>
-        <input type="text" inputmode="numeric" id="ye-social" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="ye-social" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
       <div class="calc-input-wrap">
         <label for="ye-savings">연금저축 납입액</label>
-        <input type="text" inputmode="numeric" id="ye-savings" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="ye-savings" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
       <div class="calc-input-wrap">
         <label for="ye-irp">IRP 납입액</label>
-        <input type="text" inputmode="numeric" id="ye-irp" value="" placeholder="0" />
+        <input type="text" inputmode="numeric" id="ye-irp" value="" placeholder="0" data-won />
         <span class="unit">원</span>
       </div>
       <label><input type="checkbox" id="ye-standard" checked /> 의료비·교육비·기부금 공제를 신청하지 않는다(표준세액공제 {won(y.calc.standardTaxCredit.amount)})</label>
@@ -84,7 +86,7 @@ const QA = [
       <summary>자녀세액공제</summary>
       <div class="calc-input-wrap">
         <label for="ye-children">{cutoff}년 이전에 태어난 자녀·손자녀(기본공제대상)</label>
-        <input type="number" min="0" max="19" id="ye-children" value="0" />
+        <input type="number" min="0" max="19" id="ye-children" value="0" data-step />
         <span class="unit">명</span>
       </div>
       <div class="calc-input-wrap">
@@ -100,16 +102,31 @@ const QA = [
       <p class="meta" id="ye-child-warn" hidden>기본공제 인원보다 자녀가 많아 일부를 빼고 계산했습니다. 기본공제 인원을 늘려 주세요.</p>
     </details>
 
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="ye-decided|ye-credits"
+      data-bar-labels="결정세액|세액공제"
+      data-dock="ye-hero"
+    >
       <p class="label" id="ye-hero-label">돌려받는 소득세(어림)</p>
       <p class="big" id="ye-hero">{won(Math.abs(ex.diff))}</p>
     </div>
-    <div class="stat-row">
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">근로소득공제</span><span class="value" id="ye-ded">{won(ex.earnedDeduction)}</span></div>
+      <div class="stat-chip"><span class="label">인적공제 (1명 150만원)</span><span class="value" id="ye-personal">{won(ex.personal)}</span></div>
       <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="ye-base">{won(ex.base)}</span></div>
-      <div class="stat-chip"><span class="label">산출세액</span><span class="value" id="ye-computed">{won(ex.computedTax)}</span></div>
-      <div class="stat-chip"><span class="label">결정세액</span><span class="value" id="ye-decided">{won(ex.decided)}</span></div>
+      <div class="stat-chip"><span class="label">근로소득세액공제</span><span class="value" id="ye-ec">{won(ex.earnedCredit)}</span></div>
       <div class="stat-chip"><span class="label">자녀세액공제</span><span class="value" id="ye-child">{won(ex.child)}</span></div>
+      <div class="stat-chip"><span class="label">연금계좌 세액공제</span><span class="value" id="ye-pc">{won(ex.pension)}</span></div>
+      <div class="stat-chip"><span class="label">표준세액공제</span><span class="value" id="ye-std">{won(ex.standard)}</span></div>
+      <div class="stat-chip"><span class="label">이미 뗀 소득세</span><span class="value" id="ye-paid">{won(ex.prepaid)}</span></div>
+      <div class="stat-chip" data-group="산출세액"><span class="label">결정세액</span><span class="value" id="ye-decided">{won(ex.decided)}</span></div>
+      <div class="stat-chip"><span class="label">실제로 뺀 세액공제</span><span class="value" id="ye-credits">{won(ex.credits)}</span></div>
     </div>
+    <p class="meta" id="ye-cap" hidden>세액공제를 다 더하면 산출세액보다 많아, 산출세액까지만 뺐습니다(소득세법 제61조). 결정세액은 0원입니다.</p>
+    <p class="meta">총급여 − 근로소득공제 − 인적공제 − 보험료 = 과세표준. 세율을 곱한 산출세액에서 세액공제를 빼면 결정세액이고, 이미 뗀 소득세와의 차이가 돌려받거나 더 내는 돈입니다(소득세법 제47조·제50조·제55조·제59조~제59조의4·제61조).</p>
   </div>
 
   <h2>{QA[0].q}</h2>

@@ -20,6 +20,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
   { path: "/guide/unemployment-benefit-calculator/", attrs: ["data-two", "data-won", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/parental-leave-pay-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/severance-tax-calculator/", attrs: ["data-two", "data-won", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
+  { path: "/guide/year-end-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
 ];
 
 /**
@@ -38,7 +39,8 @@ const bench = readFileSync("docs/calc-benchmark.md", "utf-8");
 
 for (const { path, attrs } of MOVED) {
   describe(`${path} 새 틀`, () => {
-    it("대조표에 한 행", () => expect(bench).toContain(`| ${path} | https://roberin.com/`));
+    // roberin 에 같은 도구가 없으면 '없음'(Task 8 Step 1)
+    it("대조표에 한 행", () => expect(bench.includes(`| ${path} | https://roberin.com/`) || bench.includes(`| ${path} | 없음`)).toBe(true));
     it.skipIf(NO_PRESETS.has(path))("자동완성 프리셋", () => expect(calcPresets[path]).toBeDefined());
     const file = `dist${path}index.html`;
     it.skipIf(!existsSync(file))("마크업 계약", () => {

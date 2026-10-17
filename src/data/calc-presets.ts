@@ -34,6 +34,10 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
     // 네이버 자동완성 '200만원 4대보험 계산'·'300만원 4대보험 세금'·'4대보험 300만원 세금'(2026-10-17). 250·350·400만은 결과 없음
     default: { amounts: [2_000_000, 3_000_000], source: "keywords/ac-four-insurance-2026-10-17.csv", term: "4대보험" },
   },
+  "/guide/year-end-calculator/": {
+    // 네이버 자동완성 '연봉 3000 연말정산 환급'·'연봉 4000 연말정산 환급'(2026-10-17). '연봉 5000·6000 연말정산'·'총급여 5000 연말정산' 은 줄기 없음, '연말정산 1억 환급' 은 금액 뜻이 갈려 뺌
+    default: { amounts: [30_000_000, 40_000_000], source: "keywords/ac-year-end-2026-10-17.csv", term: "연말정산 환급" },
+  },
   "/guide/parental-leave-pay-calculator/": {
     // 네이버 자동완성 '육아휴직 급여 150만원'·'육아휴직 급여 250만원'(2026-10-17). '육아휴직 200·300'·'월급 300 육아휴직' 은 줄기 없음
     default: { amounts: [1_500_000, 2_500_000], source: "keywords/ac-parental-leave-2026-10-17.csv", term: "육아휴직 급여" },
