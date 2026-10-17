@@ -6,7 +6,7 @@
 
 현재: 보류 2 · 있음 19 · 할 일 411
 
-다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /guide/irp-tax-credit-calculator/(연금저축·IRP 세액공제) — roberin #15 pension-tax-credit-calculator 와 대조. /guide/year-end-calculator/ 는 2026-10-17 완료(roberin 대응 없음 → 대조표 '없음', 조문 손계산 3개 테스트 고정, 일본 年末調整 매트릭스 '제도'). 퇴직금계산기(#23 retire-calculator)는 할 일 그대로 — 우선순위 1순위라 Task 8 끝나면 바로. 지난 회차 보류: 퇴직소득 지방소득세 10원 미만 끝수 처리, 6+6 특례 부모 개월 수가 다를 때 상한(시행령 제95조의3), 1개월 미만 달 일수 비례 분모(제95조 제3항), 회사 지급 금품 감액 기준(제73조), 구직급여 원 미만 단수, 평균임금 산정기간 이직일 포함 여부, 1일 통상임금 단수, 1년 근무 다음 날 재직 요건 판례, 일본 労働基準法 第39条, 주 6일 사업장 ÷6 단수, 국민연금 10원 미만 버림 방식·근거 조문, 건강보험료 원 단위, 민법 제161조·지방소득세 가산세·원천징수 단수·종소세 경비율 구간. 시급계산기(#11)는 할 일 그대로. 카드 세트 late-filing-penalty·multiple-payers 이미지 재생성은 사용자 확인 필요. /guide/vat-final-return-payment/·/guide/withholding-tax/ 납부지연 일수 식 확인 필요. /penalty/ 날짜 칸 스타일(틀) 필요. dev 미리보기 시작이 이번에도 거절돼 폰 폭 확인은 라이브에서 대신함.
+다음: 리브랜딩 Task 8 계산기 목록 다음 줄 /guide/medical-credit-limit/(의료비 세액공제 한도) — roberin 대응 도구 찾아 대조(없으면 '없음' + 조문 손계산). /guide/irp-tax-credit-calculator/ 는 2026-10-17 완료(roberin #15 와 6개 1원까지 같음, roomToCap 추가, 일본 iDeCo 소득공제 매트릭스 '제도'). IRP 소득 입력 자동 판정은 총급여 5,500만원을 rates 에 출처와 함께 올린 뒤. 퇴직금계산기(#23 retire-calculator)는 할 일 그대로 — 우선순위 1순위라 Task 8 끝나면 바로. 지난 회차 보류: 퇴직소득 지방소득세 10원 미만 끝수 처리, 6+6 특례 부모 개월 수가 다를 때 상한(시행령 제95조의3), 1개월 미만 달 일수 비례 분모(제95조 제3항), 회사 지급 금품 감액 기준(제73조), 구직급여 원 미만 단수, 평균임금 산정기간 이직일 포함 여부, 1일 통상임금 단수, 1년 근무 다음 날 재직 요건 판례, 일본 労働基準法 第39条, 주 6일 사업장 ÷6 단수, 국민연금 10원 미만 버림 방식·근거 조문, 건강보험료 원 단위, 민법 제161조·지방소득세 가산세·원천징수 단수·종소세 경비율 구간. 시급계산기(#11)는 할 일 그대로. 카드 세트 late-filing-penalty·multiple-payers 이미지 재생성은 사용자 확인 필요. /guide/vat-final-return-payment/·/guide/withholding-tax/ 납부지연 일수 식 확인 필요. /penalty/ 날짜 칸 스타일(틀) 필요. dev 미리보기 시작이 이번에도 거절돼 폰 폭(390·다크, 가로 넘침 없음)과 산출세액 한도 소계는 라이브에서 확인함.
 
 | # | 우리 분류 | roberin 분류 | roberin 주소 | 도구 | 상태 | 우리 주소 | 메모 |
 |---|---|---|---|---|---|---|---|
@@ -24,7 +24,7 @@
 | 12 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/projects/live-salary-tracker/ | 실시간 급여 시각화 트래커 | 할 일 |  |  |
 | 13 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/unemployment-calculator/ | 실업급여 계산기 | 있음 | /guide/unemployment-benefit-calculator/ | 2026-10-17 대조: 말일 이직 3개월 산정일수 우리가 틀려 고침(민법 제160조 ③) · 7개 입력 같음 · 2027 이직 하한(68,480 > 상한 68,100)은 우리 맞음, roberin 2026 최저임금 사용 · 340만 1원 단수 보류 · 새 틀 이전 |
 | 14 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/overtime-pay-calculator/ | 야근수당 계산기 | 할 일 |  |  |
-| 15 | 연금·보험 | 돈·세금·급여 / 급여·세금 | https://roberin.com/pension-tax-credit-calculator/ | 연금저축·IRP 세액공제 계산기 | 있음 | /guide/irp-tax-credit-calculator/ |  |
+| 15 | 연금·보험 | 돈·세금·급여 / 급여·세금 | https://roberin.com/pension-tax-credit-calculator/ | 연금저축·IRP 세액공제 계산기 | 있음 | /guide/irp-tax-credit-calculator/ | 2026-10-17 대조: 같은 입력 6개 1원까지 같음(테스트 고정) · 한도 넘긴 돈·남은 금액·더 줄어드는 세금 추가(lib roomToCap) · 산출세액 한도 때 칩 어긋남 고침 · 새 틀 이전. 소득 입력 자동 판정은 보류(총급여 5,500만 rates 숫자 필드 없음) |
 | 16 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/my-salary-calculator/ | 연봉계산기 | 할 일 |  |  |
 | 17 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/stock-return-calculator/ | 주식 수익률 계산기 | 할 일 |  |  |
 | 18 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/property-tax-calculator/ | 주택 재산세 계산기 | 있음 | /property-tax/ |  |
