@@ -191,7 +191,7 @@
 - [x] /guide/medical-credit-limit/ (2026-10-17 — lib base·absorbed·over·toThreshold(3%로 빠진 돈·700만원 한도로 빠진 돈·3%까지 남은 의료비)·미숙아·난임 칩·공제 대상 소계(정수 합)·공제 대상/3%/한도 막대·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 제59조의4 ② 손계산 4개로 대조(모두 같음). 프리셋 없음 — 자동완성에 금액 없음)
 - [x] /guide/earned-incentive-amount/ (2026-10-17 — lib assetsCut·lateCut·reduced·minAdj·belowMax·bandInfo, 소득 구간·최대 금액 구간·법 식 금액·최대보다 적은 돈·최소 금액 조정 칩·줄어든 돈 소계(재산 50%·기한 후 5%)·막대·1만원당 감소액 산식·가구 버튼·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 손계산 8개 같음·무작위 2만 건 항등식. 감액 → 최소 금액 순서는 제100조의7 ③ 원문으로 확인. 프리셋 없음 — 자동완성에 금액 없음)
 - [x] /guide/child-incentive-amount/ (2026-10-17 — lib band·assetsCut·lateCut·floorAdj·belowMax·bandInfo, 소득 구간·1명당 100만원 받는 총급여액 등·법 식 금액·최대보다 적은 돈·3만원 하한으로 더한 돈 칩·줄어든 돈 소계(재산 50%·기한 후 5%·자녀세액공제)·막대·자녀 1명당 1만원당 감소액 산식·가구 버튼·자녀 수 −/+·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 손계산 6개 같음·무작위 2만 건 항등식. 3만원 하한은 세 감액 뒤 적용(제100조의31 ② 원문), 감액 순서·1만5천원 단서는 보류. 프리셋 없음 — 자동완성에 금액 없음)
-- [ ] /guide/basic-pension-calculator/
+- [x] /guide/basic-pension-calculator/ (2026-10-17 — lib baseTotal·coupleCut·reversalCut·room·propertySteps, 선정기준액·남은/넘은 금액·기준연금액 칩·소득인정액 소계(근로 평가액·그 밖의 소득·재산 환산액)·줄어든 돈 소계(부부 20%·선정기준액 감액)·막대·재산 환산 산식·가구/사는 곳 버튼·자동완성 프리셋 예금 1억·2억·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 손계산 6개 같음·무작위 2만 건 항등식. 국민연금 연계 감액·이자소득 칸은 넣지 않음)
 - [ ] /guide/old-age-pension-age/
 - [ ] /guide/industrial-accident-leave-pay/
 - [ ] /guide/industrial-accident-disability/
