@@ -2,7 +2,8 @@
 /**
  * "증여세 계산기" — 증여세 시리즈. (증여세 계산도 이 글, 계산기 포함)
  * 계산: src/lib/gift.ts computeGift() — 제47조(10년 합산은 '이미 쓴 공제' 입력으로), 제53조·제53조의2(공제), 제55조(50만원 미만),
- * 제56조(세율), 제69조 제2항(신고세액공제 3%). 세대생략 할증·재산 평가·부담부증여는 계산하지 않는다.
+ * 제56조(세율), 제69조 제2항(신고세액공제 3%), 제47조 ②·제58조(10년 안 같은 사람 합산·납부세액공제), 제57조·시행령 제46조의3(세대생략 할증).
+ * 재산 평가·부담부증여는 계산하지 않는다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
@@ -10,8 +11,11 @@ import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/gift-2026.json";
 import { computeGift } from "../../../lib/gift";
 import { won, eokwon } from "../../../lib/won";
+import { calcPresets } from "../../../data/calc-presets";
 
 const ex = computeGift({ amount: 100_000_000, relation: "ascendant" });
+const PRESETS = JSON.stringify({ default: calcPresets["/guide/gift-tax-calculator/"].default.amounts });
+const pct = (v: number) => Math.round(v * 100);
 const exMB = computeGift({ amount: 200_000_000, relation: "ascendant", marriageBirth: r.marriageBirthDeduction.amount });
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 gift-inheritance-series.test.ts 가 rates 와 대조한다.
@@ -32,11 +36,11 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">세대생략 할증, 재산 평가, 부담부증여는 넣지 않은 어림입니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">현금 증여 어림입니다. 부동산·주식은 시가로 평가한 금액을 넣으세요. 부담부증여·창업자금 등 특례는 넣지 않았습니다.</p>
     <div class="calc-input-wrap">
-      <label for="gt-amount">받은 금액</label>
-      <input type="text" inputmode="numeric" id="gt-amount" value="100,000,000" />
+      <label for="gt-amount">이번에 받는 금액</label>
+      <input type="text" inputmode="numeric" id="gt-amount" value="100,000,000" data-won data-presets={PRESETS} />
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
@@ -49,22 +53,56 @@ const QA = [
         <option value="other">그 밖의 사람</option>
       </select>
     </div>
-    <label><input type="checkbox" id="gt-minor" /> 받는 사람이 미성년자(직계존속에게 받을 때 공제 2천만원)</label>
-    <label><input type="checkbox" id="gt-mb" /> 결혼(혼인신고 전후 2년)·출산(2년 이내) 공제를 받는다</label>
+    <div class="calc-input-wrap toggle-row">
+      <label for="gt-minor">받는 사람이 미성년자(만 19세 미만)</label>
+      <input type="checkbox" id="gt-minor" />
+    </div>
+    <div class="calc-input-wrap toggle-row" id="gt-mb-wrap">
+      <label for="gt-mb">결혼(혼인신고 전후 2년)·출산(2년 이내) 공제 {eokwon(r.marriageBirthDeduction.combinedCap)}</label>
+      <input type="checkbox" id="gt-mb" />
+    </div>
+    <div class="calc-input-wrap toggle-row" id="gt-skip-wrap">
+      <label for="gt-skip">조부모가 손자녀에게 준다(세대생략 할증 {pct(r.generationSkip.rate)}%)</label>
+      <input type="checkbox" id="gt-skip" />
+    </div>
     <div class="calc-input-wrap">
-      <label for="gt-used">10년 안에 같은 관계에서 이미 공제받은 금액</label>
-      <input type="text" inputmode="numeric" id="gt-used" value="" placeholder="0" />
+      <label for="gt-prior">10년 안에 같은 사람에게 받은 금액(아버지·어머니는 합쳐서)</label>
+      <input type="text" inputmode="numeric" id="gt-prior" value="" placeholder="0" data-won />
       <span class="unit">원</span>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div class="calc-input-wrap">
+      <label for="gt-used">같은 관계의 다른 사람에게 받으며 이미 쓴 공제(예: 조부모에게)</label>
+      <input type="text" inputmode="numeric" id="gt-used" value="" placeholder="0" data-won />
+      <span class="unit">원</span>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="gt-base|gt-ded-rel,gt-ded-prior,gt-ded-mb"
+      data-bar-labels="과세표준(세금이 붙는 몫)|공제로 빠진 몫"
+      data-dock="gt-hero"
+    >
       <p class="label">낼 증여세(신고 3% 공제 후)</p>
       <p class="big" id="gt-hero">{won(ex.payable)}</p>
+      <p class="meta" id="gt-note"></p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">공제 합계</span><span class="value" id="gt-ded">{won(ex.deductions.total)}</span></div>
+    <div class="stat-row" data-receipt>
       <div class="stat-chip"><span class="label">과세표준</span><span class="value" id="gt-base">{won(ex.base)}</span></div>
+      <div class="stat-chip"><span class="label">세율 구간</span><span class="value" id="gt-rate">{ex.ratePercent}%</span></div>
       <div class="stat-chip"><span class="label">산출세액</span><span class="value" id="gt-computed">{won(ex.computed)}</span></div>
+      <div class="stat-chip"><span class="label">세대생략 할증 (제57조)</span><span class="value" id="gt-surcharge">0원</span></div>
+      <div class="stat-chip"><span class="label">이전 증여분 세액 공제 (제58조)</span><span class="value" id="gt-pcredit">0원</span></div>
+      <div class="stat-chip"><span class="label">신고세액공제 {pct(r.filingCredit.rate)}% (제69조)</span><span class="value" id="gt-fcredit">{won(ex.filingCredit)}</span></div>
+      <div class="stat-chip"><span class="label">이전 증여분 산출세액(추정)</span><span class="value" id="gt-pcomputed">—</span></div>
+      <div class="stat-chip"><span class="label">공제 한도 (제58조 ②)</span><span class="value" id="gt-plimit">—</span></div>
+      <div class="stat-chip" data-group="과세가액"><span class="label">이번에 받는 금액</span><span class="value" id="gt-amt">{won(ex.amount)}</span></div>
+      <div class="stat-chip"><span class="label">10년 안 같은 사람 합산 (제47조 ②)</span><span class="value" id="gt-pamt">0원</span></div>
+      <div class="stat-chip" data-group="공제 합계"><span class="label">관계별 공제 (제53조)</span><span class="value" id="gt-ded-rel">{won(ex.deductions.relation)}</span></div>
+      <div class="stat-chip"><span class="label">이전 증여가 먼저 쓴 공제</span><span class="value" id="gt-ded-prior">0원</span></div>
+      <div class="stat-chip"><span class="label">결혼·출산공제 (제53조의2)</span><span class="value" id="gt-ded-mb">0원</span></div>
     </div>
+    <p class="meta" id="gt-formula"></p>
   </div>
 
   <h2>{QA[0].q}</h2>
