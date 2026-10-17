@@ -196,7 +196,7 @@
 - [x] /guide/industrial-accident-leave-pay/ (2026-10-17 — lib byRate·raise·ageCut·floorAdd(평균임금 × 70%/90%·최저임금액까지 보탠 돈·61세 이후 줄어든 돈·별표 1 제3호 하한까지 보탠 돈)·적용·안 나오는 몫 칩·소계 2개·막대·식·일수 −/+·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 제52조·제54조·별표 1 손계산 7개 같음·무작위 2만 건 항등식. 쉰 날수 총액은 3일 넘을 때 처음 3일분 해석 보류. 프리셋 없음 — 자동완성에 금액 없음)
 - [x] /guide/industrial-accident-disability/ (2026-10-17 — 1~3급 선급 '최초 1년분부터 4년분까지' 단서 누락 fix(제57조 ④), lib base·raised·capCut·monthly·advanceYears·advanceMax·breakevenYears, 지급 방식·연금 한 달 치(제70조 ③)·미리 받을 수 있는 최대(이자 공제 전)·연금이 일시금만큼 쌓이는 햇수(4~7급 명목)·상한을 넘어 빠진 몫 칩·적용 평균임금 × 일수 소계·막대·두 칸·고정 띠. roberin 에 같은 도구 없음 → 대조표 '없음', 손계산 5개 같음·무작위 2만 건 항등식. 프리셋 없음 — 자동완성은 등급 줄기뿐. 보류: 연금 한 달 치 원 미만 처리, 선급 이자 공제율)
 - [x] /inheritance/ (2026-10-18 — 배우자공제 법정상속분 한도(제19조 ①1호·시행령 제17조 ①·민법 제1009조 ②)·배우자 혼자 상속 일괄공제 배제(제21조 ②)·장례비 최저 500만(시행령 제9조 ②) fix, lib debts·funeral·parents·appliedDeduction(제24조)·spouseLimit·spouseUnclear, 채무·장례비 칸·자녀 −/+·자녀 0명일 때 배우자 혼자/부모 버튼·과세가액/상속공제 소계·과세표준/공제 막대·자동완성 프리셋 1억~20억·두 칸·고정 띠, roberin 대조: 8개 중 7개 같음, 7원 단수 차이·5억 바닥 경계는 보류)
-- [ ] /guide/gift-tax-calculator/
+- [x] /guide/gift-tax-calculator/ (2026-10-18 — 10년 안 같은 사람 합산(제47조 ②)·납부세액공제(제58조 ② 한도)·공제 순차(시행령 제46조 ①)·신고세액공제 순서(제69조 ② 2호) fix, 세대생략 할증 단건(제57조·시행령 제46조의3), lib priorGifts·generationSkip·unclear, 10년 안 같은 사람 금액 칸·결혼출산/세대생략은 직계존속만·할증·이전분 세액 공제·한도 칩·과세가액/공제 합계 소계·막대·자동완성 프리셋 1억~10억·두 칸·고정 띠, roberin 대조: 15개 중 13개 같음, 1개 우리 틀림(고침), 1개 원문 미확인 '—')
 - [ ] /guide/family-loan-interest/
 - [ ] /guide/capital-gains-calculator/
 - [ ] /acquisition-tax/
