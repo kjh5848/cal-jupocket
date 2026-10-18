@@ -39,7 +39,9 @@ function render() {
   const m = method.value as LoanMethod;
   const x = loanSchedule({ principal: P, months: n, ratePct: pct, method: m, graceMonths: g });
 
-  $("ln-hero-label").textContent = m === "bullet" ? "매달 내는 이자" : m === "principal" ? "첫 달 내는 돈(거치 뒤)" : "매달 내는 돈";
+  const after = m !== "bullet" && x.gracePayment > 0;
+  $("ln-hero-label").textContent = m === "bullet" ? "매달 내는 이자" : m === "principal" ? (after ? "거치 뒤 첫 달 내는 돈" : "첫 달 내는 돈") : after ? "거치 뒤 매달 내는 돈" : "매달 내는 돈";
+  $("ln-first-head").textContent = g > 0 ? "거치 뒤 첫 달" : "첫 달";
   $("ln-hero").textContent = formatWon(x.firstPayment);
   const gNote = m !== "bullet" && x.gracePayment > 0 ? ` · 처음 ${n - x.repayMonths}회는 이자 ${formatWon(x.gracePayment)}만` : "";
   $("ln-note").textContent =

@@ -92,7 +92,7 @@ const QA = [
     <p class="meta"><strong>같은 조건 세 방식 비교</strong></p>
     <div class="table-scroll">
       <table>
-        <thead><tr><th>방식</th><th>첫 달</th><th>마지막 달</th><th>총 이자</th></tr></thead>
+        <thead><tr><th>방식</th><th id="ln-first-head">첫 달</th><th>마지막 달</th><th>총 이자</th></tr></thead>
         <tbody id="ln-compare">
           {[lv, pr, bu].map((x) => <tr><th scope="row">{NAME[x.method]}</th><td>{won(x.firstPayment)}</td><td>{won(x.lastPayment)}</td><td>{won(x.totalInterest)}</td></tr>)}
         </tbody>
