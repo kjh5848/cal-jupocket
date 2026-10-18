@@ -2,7 +2,7 @@
  * 예금 이자 계산기 — /guide/deposit-interest-calculator/.
  * 계산은 src/lib/deposit.ts depositInterest() 가 한다. 여기서는 입력을 읽고 결과를 그린다.
  */
-import { depositInterest, type DepositMethod, type DepositTax } from "../lib/deposit";
+import { depositInterest, type DepositMethod, type DepositTaxMode } from "../lib/deposit";
 import { formatWon, parseAmount, formatAmountInput } from "../lib/money";
 import { trackCalculatorUse } from "../lib/track";
 
@@ -13,18 +13,25 @@ const rate = $<HTMLInputElement>("dp-rate");
 const months = $<HTMLInputElement>("dp-months");
 const method = $<HTMLSelectElement>("dp-method");
 const tax = $<HTMLSelectElement>("dp-tax");
+const rural = $<HTMLSelectElement>("dp-rural");
 
 function render() {
   const P = parseAmount(principal.value);
   const pct = Math.min(30, Math.max(0, Number(rate.value) || 0));
   const n = Math.min(600, Math.max(1, Math.floor(Number(months.value) || 1)));
-  const x = depositInterest({ principal: P, ratePct: pct, months: n, method: method.value as DepositMethod, tax: tax.value as DepositTax });
+  const x = depositInterest({ principal: P, ratePct: pct, months: n, method: method.value as DepositMethod, tax: tax.value as DepositTaxMode, ruralExempt: rural.value === "exempt" });
+  const coop = tax.value === "coop2026" || tax.value === "coop2025";
 
   $("dp-hero").textContent = formatWon(x.maturity);
   $("dp-note").textContent = `세후 이자 ${formatWon(x.netInterest)} · 세후 연 ${(x.netAnnualRate * 100).toFixed(2)}%`;
   $("dp-gross").textContent = formatWon(x.grossInterest);
   $("dp-itax").textContent = `−${formatWon(x.incomeTax)}`;
   $("dp-ltax").textContent = `−${formatWon(x.localTax)}`;
+  $("dp-rtax").textContent = `−${formatWon(x.ruralTax)}`;
+  $("dp-rtax-chip").hidden = !coop;
+  $("dp-rural-wrap").hidden = !coop;
+  $("dp-coop-note").hidden = !coop;
+  $("dp-coop-limit").hidden = !x.overCoopLimit;
   $("dp-net").textContent = formatWon(x.netInterest);
   $("dp-p").textContent = formatWon(x.principal);
   $("dp-net2").textContent = formatWon(x.netInterest);
@@ -60,5 +67,5 @@ principal.addEventListener("input", () => {
   onUserInput();
 });
 for (const el of [rate, months]) el.addEventListener("input", onUserInput);
-for (const el of [method, tax]) el.addEventListener("change", onUserInput);
+for (const el of [method, tax, rural]) el.addEventListener("change", onUserInput);
 render();

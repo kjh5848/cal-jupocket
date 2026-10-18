@@ -3,7 +3,7 @@
  * 세금 끝수(소득세·지방소득세 각각 10원 미만 버림)는 100만원 2% 1개월(이자 1,666원 → 세금 250원)에서 갈린다.
  */
 import { describe, it, expect } from "vitest";
-import { depositInterest, simpleInterest, monthlyCompoundInterest, depositTax, INTEREST_RATE, LOCAL_RATIO, THRESHOLD } from "../deposit";
+import { depositInterest, simpleInterest, monthlyCompoundInterest, depositTax, coopTax, COOP, INTEREST_RATE, LOCAL_RATIO, THRESHOLD } from "../deposit";
 import r from "../../rates/deposit-2026.json";
 
 const base = { principal: 10_000_000, ratePct: 3.5, months: 12, method: "simple", tax: "normal" } as const;
@@ -76,5 +76,41 @@ describe("정기예금 이자", () => {
   it("세전 이자 2천만원 초과면 금융소득종합과세 안내", () => {
     expect(depositInterest({ ...base, principal: 500_000_000, ratePct: 4.5 }).overThreshold).toBe(true);
     expect(depositInterest({ ...base, principal: 100_000_000 }).overThreshold).toBe(false);
+  });
+  describe("조합예탁금(조세특례제한법 제89조의3 · 농어촌특별세법 제5조)", () => {
+    it("rates 원문 숫자: 1명당 3천만원, 2026년 가입 5%, 농특세 감면세액의 10%(기준 14%)", () => {
+      expect(COOP.limit).toBe(30_000_000);
+      expect(COOP.rate2026).toBe(0.05);
+      expect(COOP.ruralRate).toBe(0.1);
+      expect(COOP.ruralBase).toBe(0.14);
+    });
+
+    it("3천만원 4% 12개월 단리, 2026년 가입 — 소득세 60,000 · 지방소득세 0 · 농특세 10,800", () => {
+      const x = depositInterest({ principal: 30_000_000, ratePct: 4, months: 12, method: "simple", tax: "coop2026" });
+      expect(x.grossInterest).toBe(1_200_000);
+      expect(x.incomeTax).toBe(60_000);
+      expect(x.localTax).toBe(0);
+      expect(x.ruralTax).toBe(10_800);
+      expect(x.netInterest).toBe(1_129_200);
+      expect(x.overCoopLimit).toBe(false);
+    });
+
+    it("2025년까지 가입분은 소득세 비과세, 농특세만 이자의 1.4%", () => {
+      expect(coopTax(1_200_000, "coop2025")).toEqual({ incomeTax: 0, localTax: 0, ruralTax: 16_800 });
+    });
+
+    it("농특세 면제 대상(농어민 등)은 농특세 0", () => {
+      expect(coopTax(1_200_000, "coop2026", true)).toEqual({ incomeTax: 60_000, localTax: 0, ruralTax: 0 });
+    });
+
+    it("끝수: 이자 123,457원 — 소득세 6,170(10원 미만 버림), 감면세액 17,283 − 6,170 = 11,113 → 농특세 1,110", () => {
+      expect(coopTax(123_457, "coop2026")).toEqual({ incomeTax: 6_170, localTax: 0, ruralTax: 1_110 });
+    });
+
+    it("원금이 3천만원을 넘으면 한도 안내, 2천만원 종합과세 안내는 끄고(분리과세)", () => {
+      const x = depositInterest({ principal: 30_000_001, ratePct: 4, months: 12, method: "simple", tax: "coop2026" });
+      expect(x.overCoopLimit).toBe(true);
+      expect(depositInterest({ principal: 30_000_000, ratePct: 4, months: 12, method: "simple", tax: "normal" }).overCoopLimit).toBe(false);
+    });
   });
 });
