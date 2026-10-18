@@ -68,8 +68,8 @@ describe("이상한 입력", () => {
     expect(searchTools(tools, "ㅎㅎㅎㅎㅎㅎ")).toEqual([]);
   });
   it("곧 담길 도구는 공개 도구 뒤", () => {
-    // 일용직 4대보험 계산기가 공개돼(2026-10-19) "4대보험" 으로는 곧 담길 도구가 안 걸린다 — 실수령액 계산기(공개)와 하루 실수령액 계산기(곧)가 같이 걸리는 "실수령"
-    const r = searchTools(tools, "실수령");
+    // 하루 실수령액이 실수령액 계산기에 합쳐져(2026-10-19) "실수령" 으로는 곧 담길 도구가 안 걸린다 — 노령연금 나이(공개)와 만 나이 계산기(곧)가 같이 걸리는 "나이"
+    const r = searchTools(tools, "나이");
     const firstNext = r.findIndex((x) => x.tool.status === "next");
     expect(firstNext).toBeGreaterThan(-1);
     expect(r.slice(firstNext).every((x) => x.tool.status === "next")).toBe(true);
