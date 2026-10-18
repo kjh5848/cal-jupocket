@@ -154,7 +154,7 @@
 - [x] **Step 4:** PASS + Playwright: 390×844 에서 계산기 카드 맨 위로 스크롤했을 때 결과 카드가 화면 안; 페이지 맨 위에서 고정 띠 표시; 5,000만 프리셋 → 가족 + → 월급 전환 후 결과·소계·띠가 같은 값.
 - [x] **Step 5:** 커밋 `calc: 공통 계산기 틀 — 실수령액 계산기부터`
 
-### Task 8: 나머지 계산기 34개 이전 + roberin 대조표
+### Task 8: ✅ 완료(2026-10-18) 나머지 계산기 34개 이전 + roberin 대조표
 
 **Files:**
 - Modify: `calc-card` 를 쓰는 나머지 페이지(`grep -rln "calc-card" src/pages` — 지금 35개 중 Task 7 제외 34개)와 각 계산기 스크립트(결과 요소 id 만 맞춤)
@@ -163,11 +163,11 @@
 
 **Interfaces:**
 - Consumes: Task 7 마크업 계약·`calcPresets`
-- [ ] **Step 1: 실패하는 테스트** — `calc-card` 가 있는 모든 dist 페이지에: 금액 입력마다 `data-won`, 선택지 2~3개 select 는 `data-seg`, 사람 수·개수 number 칸은 `data-step`, 세부 결과가 3개 이상이면 `data-receipt`, `data-dock` 하나; `docs/calc-benchmark.md` 에 페이지마다 한 행(우리 주소 · roberin 대응 도구 주소 또는 '없음' · 입력 순서 비교 · 결과 항목 비교 · 더한 것).
-- [ ] **Step 2:** FAIL
-- [ ] **Step 3:** 페이지마다 roberin 의 같은 도구를 열어 대조표 행을 채우고(문구·디자인은 보지 않고 항목·순서만), 우리에게 없는 유용한 결과 항목은 **법 원문으로 확인되는 것만** 더한다(rates 에 없으면 대조표에 '보류 — 원문 미확인'). 프리셋은 `calcPresets` 에 출처와 함께.
-- [ ] **Step 4:** `npm test`·`npm run build` PASS, 계산기 5개(3.3%·부가세·국민연금 보험료·휴업급여·차용증 이자율)를 390 폭 라이트·다크로 캡처해 확인.
-- [ ] **Step 5:** 묶음별로 나눠 커밋(세금 · 급여·근로 · 연금·보험 · 집·차 · 상속·증여) `calc: <분류> 계산기 새 틀로 + roberin 대조`
+- [x] **Step 1: 실패하는 테스트** — (2026-10-18 정리: `src/lib/__tests__/calc-frame.test.ts` MOVED 34개 — 페이지마다 계약 속성·대조표 행·프리셋 또는 NO_PRESETS 사유. 실수령액은 Task 7 테스트) `calc-card` 가 있는 모든 dist 페이지에: 금액 입력마다 `data-won`, 선택지 2~3개 select 는 `data-seg`, 사람 수·개수 number 칸은 `data-step`, 세부 결과가 3개 이상이면 `data-receipt`, `data-dock` 하나; `docs/calc-benchmark.md` 에 페이지마다 한 행(우리 주소 · roberin 대응 도구 주소 또는 '없음' · 입력 순서 비교 · 결과 항목 비교 · 더한 것).
+- [x] **Step 2:** FAIL (회차마다 그 줄을 MOVED 에 먼저 넣고 실패 확인 뒤 구현)
+- [x] **Step 3:** 페이지마다 roberin 의 같은 도구를 열어 대조표 행을 채우고(문구·디자인은 보지 않고 항목·순서만), 우리에게 없는 유용한 결과 항목은 **법 원문으로 확인되는 것만** 더한다(rates 에 없으면 대조표에 '보류 — 원문 미확인'). 프리셋은 `calcPresets` 에 출처와 함께.
+- [x] **Step 4:** (2026-10-18 — dev 미리보기 거절돼 라이브 jupocket.com 으로: 빌드 389쪽·vitest 5,040 통과, 5개 모두 390×844 라이트·다크에서 가로 넘침 0·입력/카드 배경 테마 맞음·won-read·고정 띠 있음, 프리셋·세그먼트·−/+ 눌러 결과·띠 같은 값. 우리 스크립트 콘솔 오류 0 — 오류는 adsbygoogle 'No slot size for availableWidth=0' 하나. 다크에서 AdSense 자동 삽입 키워드 칩(흰 바탕)이 국민연금 영수증 줄 라벨 사이에 끼어 들어감 — 광고 iframe 이라 우리 코드 밖, 기록만) `npm test`·`npm run build` PASS, 계산기 5개(3.3%·부가세·국민연금 보험료·휴업급여·차용증 이자율)를 390 폭 라이트·다크로 캡처해 확인.
+- [x] **Step 5:** (2026-10-18 정리: 묶음별이 아니라 루틴 한 회차 = 계산기 하나씩 커밋 34개 `calc: <계산기> 새 틀로 + roberin 대조` — 되돌리기 단위가 더 작아 그대로 둠) 묶음별로 나눠 커밋(세금 · 급여·근로 · 연금·보험 · 집·차 · 상속·증여) `calc: <분류> 계산기 새 틀로 + roberin 대조`
 
 
 **2026-10-17 진행:** 기본 틀은 계산기 35개 전부에 자동 적용됨(`calc-ui.ts` autoTag — 원 단위 금액 읽어 주기·사람 수/기간 −/+·짧은 선택지 버튼·영수증 목록·폰 결과 고정 띠). 아래는 **계산기마다 하나씩**(루틴 한 회차 = 한 줄): roberin 같은 도구 대조 → `data-two` · `data-bar` · `data-group` 소계 · `calcPresets`(자동완성 출처) · 결과 복사/처음 값으로 → `docs/calc-benchmark.md` 한 행.
