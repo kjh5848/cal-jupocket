@@ -1,0 +1,51 @@
+---
+/**
+ * "퇴직금 조건" — 퇴직금 계산 시리즈. (퇴직금 지급 조건·받는 조건·1년·주 15시간·5인 미만·알바·계약직도 이 글)
+ * 근거: 근로자퇴직급여 보장법 제3조(모든 사업장, 동거 친족만·가구 내 고용 제외), 제4조 제1항 단서(1년 미만·주 15시간 미만), 제9조(14일).
+ * 1년 판정은 lib/severance-pay.ts oneYearServed(). rates: severance-2026.json pay
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/severance-2026.json";
+import { oneYearServed, serviceDays, parseDate } from "../../../lib/severance-pay";
+
+const d = (s: string) => parseDate(s)!;
+const okDays = serviceDays(d("2025-01-01"), d("2025-12-31"));
+const ok = oneYearServed(d("2025-01-01"), d("2025-12-31"));
+const short = oneYearServed(d("2025-01-01"), d("2025-12-30"));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 severance-pay-series.test.ts 가 rates 와 대조한다.
+const title = "퇴직금 조건 — 계속근로 1년 이상, 4주 평균 주 15시간 이상이면 5명 미만 사업장도 받습니다";
+const description =
+  "퇴직금 조건은 계속근로기간 1년 이상, 4주 평균 1주 소정근로시간 15시간 이상 두 가지입니다. 근로자를 쓰는 모든 사업장에 적용돼 5명 미만 사업장·아르바이트·계약직도 같은 기준이고, 동거하는 친족만 쓰는 사업과 가구 내 고용만 빠집니다.";
+
+const ANSWER = `퇴직금 조건은 계속근로기간 1년 이상과 4주 평균 주 소정근로시간 15시간 이상 두 가지입니다(근로자퇴직급여 보장법 제4조 제1항). 근로자를 쓰는 모든 사업장에 적용되므로 5명 미만 사업장도 같습니다(제3조).`;
+
+const QA = [
+  { q: "퇴직금 1년은 정확히 언제 채워지나요?", a: `퇴직일(마지막 근무일 다음 날)이 입사일의 1년 뒤 같은 날 이후면 1년입니다. 2025년 1월 1일 입사라면 2025년 12월 31일까지 일해야 재직일수 ${okDays}일로 1년이 ${ok ? "됩니다" : "안 됩니다"}. 12월 30일이 마지막 근무일이면 ${short ? "1년입니다" : "하루 모자라 1년 미만"}입니다.` },
+  { q: "5명 미만 사업장도 퇴직금을 줘야 하나요?", a: `줘야 합니다. 근로자퇴직급여 보장법은 근로자를 사용하는 모든 사업 또는 사업장에 적용되고, 동거하는 친족만 사용하는 사업과 가구 내 고용활동만 빠집니다(제3조). 사업장 규모에 따른 예외는 없습니다.` },
+  { q: "아르바이트·계약직도 퇴직금을 받나요?", a: `받습니다. 법은 고용 형태를 나누지 않고 근로자라면 두 조건(1년 이상·4주 평균 주 15시간 이상)만 봅니다(제4조 제1항). 주 15시간이 안 되는 짧은 근무만 했거나 1년을 못 채우면 회사가 퇴직급여제도를 둘 의무가 없습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.pay.byDays.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>계산기는 날짜만 넣으면 1년이 됐는지 함께 알려 줍니다 — <a href="/guide/severance-pay-calculator/">퇴직금 계산기</a>.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>
+    조건을 채웠다면 퇴직한 날부터 {r.deadline.days}일 안에 받아야 합니다(제9조) — <a href="/guide/severance-pay-deadline/">퇴직금 지급기한</a>. 금액을 정하는 순서는{" "}
+    <a href="/guide/severance-pay/">퇴직금</a>에 있습니다.
+  </p>
+</GuideLayout>

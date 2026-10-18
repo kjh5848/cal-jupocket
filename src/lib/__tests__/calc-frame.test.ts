@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { calcPresets } from "../../data/calc-presets";
 
 const MOVED: { path: string; attrs: string[] }[] = [
+  { path: "/guide/severance-pay-calculator/", attrs: ["data-two", "data-won", "data-seg", "data-receipt", "data-group", "data-dock"] },
   { path: "/guide/lotto-tax-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/crypto-tax-calculator/", attrs: ["data-two", "data-won", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/electric-car-tax-calculator/", attrs: ["data-two", "data-won", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
@@ -49,6 +50,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
  * /national-pension-premium/: 네이버 '국민연금 보험료 1·2·3·5'·'지역가입자 국민연금 1·2·3'·'국민연금 100만원·200만원·300만원' 결과 없음(2026-10-17, keywords/ac-pension-premium-2026-10-17.csv)
  * /guide/weekly-holiday-pay-calculator/: 네이버 '주휴수당 1'·'주휴수당 시급 1'·'시급 1 주휴수당'·'주휴수당 계산 1' 에 시급 금액 줄기 없음 — 시간('15시간')만 나옴(2026-10-17, keywords/ac-weekly-holiday-2026-10-17.csv). 2026·2027 최저시급 버튼은 고시 금액이라 그대로 둔다
  * /guide/minimum-wage-calculator/: 네이버 '최저임금 월급 1·2'·'월급 200만원 최저임금'·'월급 시급 환산 1'·'최저임금 계산 1' 에 금액 줄기 없음 — 연도('2026'·'2027')만 나옴(2026-10-17, keywords/ac-minimum-wage-2026-10-17.csv)
+ * /guide/severance-pay-calculator/: 네이버 '퇴직금 월급 1·2·3'·'월급 250·300 퇴직금'·'연봉 3000·4000 퇴직금'·'퇴직금 계산 1' 결과 없음(2026-10-18, keywords/ac-severance-pay-2026-10-18.csv)
  * /guide/annual-leave-calculator/: 네이버 '연차수당 월급 1·2·3'·'월급 300 연차수당'·'연차 계산 1'·'연차수당 계산 1' 결과 없음(2026-10-17, keywords/ac-annual-leave-2026-10-17.csv)
  * /guide/unemployment-benefit-calculator/: 네이버 '실업급여 1·2·3' 은 일수('180일'·'210일')·회차('1차')만, '실업급여 200·300'·'200만원 실업급여'·'월급 300 실업급여'·'실업급여 월급'·'실업급여 계산기 월급' 결과 없음(2026-10-17, keywords/ac-unemployment-2026-10-17.csv)
  * /guide/severance-tax-calculator/: 네이버 '퇴직금 세금'·'퇴직소득세'·'퇴직금 1억·2억·3천만원·5천만원 세금' 에서 금액 줄기는 '퇴직금 1억 세금 계산기 방법' 하나 — 기본값 1억과 같아 버튼 없음(2026-10-17, keywords/ac-severance-tax-2026-10-17.csv)
@@ -65,7 +67,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
  * /guide/industrial-accident-disability/: 네이버 '산재 장해등급'·'장해등급 보상금'·'산재 장해급여'·'장해보상연금'·'장해등급 14급 보상금' 확장은 등급(7·10·12·14급)·금액·보상표·계산법·신청·세금뿐, 평균임금 금액 줄기 없음(2026-10-17, keywords/ac-industrial-disability-2026-10-17.csv)
  * /guide/industrial-accident-leave-pay/: 네이버 '월급 300 산재'·'산재 휴업급여 월급' 결과 없음, '산재 휴업급여·휴업급여 계산·산재 평균임금' 확장은 계산 방법·일수·기간·신청·지급일·상한선뿐(2026-10-17, keywords/ac-industrial-leave-2026-10-17.csv)
  */
-const NO_PRESETS = new Set(["/guide/crypto-tax-calculator/", "/guide/electric-car-tax-calculator/", "/vehicle-tax/", "/guide/jongbu-calculator/", "/guide/capital-gains-calculator/", "/guide/divorce-acquisition-tax/", "/guide/industrial-accident-disability/", "/guide/industrial-accident-leave-pay/", "/guide/old-age-pension-age/", "/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/", "/guide/unemployment-benefit-calculator/", "/guide/severance-tax-calculator/", "/guide/medical-credit-limit/", "/guide/earned-incentive-amount/", "/guide/child-incentive-amount/"]);
+const NO_PRESETS = new Set(["/guide/severance-pay-calculator/", "/guide/crypto-tax-calculator/", "/guide/electric-car-tax-calculator/", "/vehicle-tax/", "/guide/jongbu-calculator/", "/guide/capital-gains-calculator/", "/guide/divorce-acquisition-tax/", "/guide/industrial-accident-disability/", "/guide/industrial-accident-leave-pay/", "/guide/old-age-pension-age/", "/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/", "/guide/unemployment-benefit-calculator/", "/guide/severance-tax-calculator/", "/guide/medical-credit-limit/", "/guide/earned-incentive-amount/", "/guide/child-incentive-amount/"]);
 
 const bench = readFileSync("docs/calc-benchmark.md", "utf-8");
 

@@ -1,0 +1,58 @@
+---
+/**
+ * "퇴직금" — 퇴직금 계산 시리즈 허브. (퇴직금 계산 방법·계산법·공식·평균임금·얼마·지급일도 이 글)
+ * 근거: 근로자퇴직급여 보장법 제4조 제1항·제8조 제1항·제9조, 근로기준법 제2조 제1항 제6호·제2항, 고용노동부 퇴직금 계산 안내.
+ * 금액은 severancePayByDays()·severanceTax() 가 낸다(severance-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/severance-2026.json";
+import { severancePayByDays, parseDate } from "../../../lib/severance-pay";
+import { severanceTax } from "../../../lib/severance";
+import { won } from "../../../lib/won";
+import { severancePaySeries as S } from "../../../data/series/severance-pay";
+
+const B = r.pay.byDays;
+const D = r.deadline;
+const d = (s: string) => parseDate(s)!;
+const ex = severancePayByDays({ start: d("2023-10-01"), lastWorkDay: d("2026-09-30"), wages3m: 9_000_000, annualBonus: 0, leavePay: 0, dailyOrdinary: 0, over15h: true });
+const tax = severanceTax(ex.amount, 3);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 severance-pay-series.test.ts 가 rates 와 대조한다.
+const title = "퇴직금 — 1일 평균임금 × 30일 × 재직일수 ÷ 365, 계속근로 1년·주 15시간 이상이면 받습니다";
+const description =
+  "퇴직금은 계속근로 1년에 30일분 이상의 평균임금입니다. 1일 평균임금은 퇴직 전 3개월 임금 총액을 그 기간 날수로 나누고, 통상임금보다 적으면 통상임금으로 합니다. 1년 미만 끝수는 재직일수 ÷ 365로 비례해 계산하고, 퇴직 후 14일 안에 받아야 합니다.";
+
+const ANSWER = `퇴직금은 계속근로 1년에 ${r.pay.daysPerYear}일분 이상의 평균임금이고(근로자퇴직급여 보장법 제8조), 1일 평균임금 × ${r.pay.daysPerYear}일 × 재직일수 ÷ ${B.daysInYear}로 계산합니다. 월 300만원을 받고 3년 일했다면 약 ${won(ex.amount)}입니다.`;
+
+const QA = [
+  { q: "퇴직금 계산 방법을 순서대로 알려 주세요.", a: `① 재직일수 = 입사일부터 마지막 근무일까지 날수 ② 퇴직일(마지막 근무일 다음 날) 전 3개월 임금 총액 ÷ 그 기간 날수 = 1일 평균임금 ③ 1일 평균임금 × ${r.pay.daysPerYear} × 재직일수 ÷ ${B.daysInYear}입니다. 2023년 10월 1일 입사·2026년 9월 30일 퇴사, 3개월 임금 900만원이면 ${ex.serviceDays.toLocaleString()}일, ${ex.period.days}일로 나눠 ${won(ex.amount)}입니다.` },
+  { q: "평균임금에는 무엇이 들어가나요?", a: `퇴직 전 3개월 동안 받은 세전 임금 전부입니다. 기본급·각종 수당에 더해 1년 동안 받은 상여금의 3/12, 퇴직 전에 이미 생긴 연차 중 못 쓴 날의 수당의 3/12을 더합니다(고용노동부). 이렇게 낸 금액이 1일 통상임금보다 적으면 통상임금을 평균임금으로 봅니다(근로기준법 제2조 제2항).` },
+  { q: "퇴직금은 언제까지 받아야 하나요?", a: `퇴직한 날부터 ${D.days}일 안에 지급해야 합니다. 특별한 사정이 있으면 당사자 합의로 기일을 늦출 수 있습니다(근로자퇴직급여 보장법 제9조). 늦게 주면 그다음 날부터 연 ${Math.round(D.lateInterest * 100)}% 지연이자가 붙고, 퇴직금을 청구할 권리는 ${r.pay.limitationYears}년 동안 행사하지 않으면 사라집니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.pay.byDays.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>날짜를 넣어 바로 계산하려면 <a href="/guide/severance-pay-calculator/">퇴직금 계산기</a>를 쓰세요. 평균임금 기간과 날수를 같이 보여 줍니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>실수령액이 아니라 세금·4대보험을 떼기 전 금액을 넣습니다. 퇴직하면서 새로 생긴 연차수당은 평균임금에 넣지 않습니다. 수습·휴업·육아휴직 같은 기간이 3개월 안에 끼어 있으면 그 기간과 임금을 빼고 계산하는 규정(근로기준법 시행령 제2조)이 있어 회사 정산표와 차이가 날 수 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>받은 퇴직금에는 퇴직소득세가 붙습니다. 위 예시 {won(ex.amount)}·근속 3년이면 지방소득세까지 {won(tax.total)}입니다 — <a href="/guide/severance-tax-calculator/">퇴직금 세금 계산기</a>.</p>
+
+  <h2>퇴직금 계산 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

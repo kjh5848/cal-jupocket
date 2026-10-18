@@ -68,7 +68,7 @@ describe("이상한 입력", () => {
     expect(searchTools(tools, "ㅎㅎㅎㅎㅎㅎ")).toEqual([]);
   });
   it("곧 담길 도구는 공개 도구 뒤", () => {
-    const r = searchTools(tools, "퇴직금");
+    const r = searchTools(tools, "이자");
     const firstNext = r.findIndex((x) => x.tool.status === "next");
     expect(firstNext).toBeGreaterThan(-1);
     expect(r.slice(firstNext).every((x) => x.tool.status === "next")).toBe(true);

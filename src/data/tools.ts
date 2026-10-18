@@ -67,6 +67,7 @@ const SYN: Record<string, string[]> = {
   "/guide/weekly-holiday-pay-calculator/": ["주휴수당", "주휴 시급", "알바 주휴"],
   "/guide/annual-leave-calculator/": ["연차", "연차수당", "연차 개수"],
   "/guide/unemployment-benefit-calculator/": ["실업급여", "구직급여", "실업급여 금액"],
+  "/guide/severance-pay-calculator/": ["퇴직금", "퇴직금 계산", "평균임금", "퇴직금 얼마"],
   "/guide/parental-leave-pay-calculator/": ["육아휴직 급여", "육아휴직 월급", "출산휴가 급여"],
   "/guide/minimum-wage-calculator/": ["최저임금", "최저시급", "2026 최저임금"],
   "/guide/take-home-calculator/": ["실수령액", "월급 얼마", "연봉 실수령", "세후 월급", "월급 실수령액"],
@@ -94,7 +95,6 @@ const SYN: Record<string, string[]> = {
 
 /** 곧 담길 도구(점선 칸) — 루틴 우선순위 순(docs/tool-backlog.md). 공개하면 여기서 뺀다 */
 const NEXT: { href: string; name: string; blurb: string; type: ToolType; icon: string; keywords: string[] }[] = [
-  { href: "/guide/severance-pay-calculator/", name: "퇴직금 계산기", blurb: "입사일·퇴사일·3개월 임금 → 퇴직금", type: "labor", icon: "briefcase", keywords: ["퇴직금", "퇴직금 계산"] },
   { href: "/guide/loan-calculator/", name: "대출 이자 계산기", blurb: "원리금균등·원금균등·만기일시 상환표", type: "money", icon: "chart", keywords: ["대출", "대출이자", "상환표"] },
   { href: "/guide/deposit-interest-calculator/", name: "예금·적금 이자 계산기", blurb: "세후 이자(15.4%)까지", type: "money", icon: "coins", keywords: ["예금이자", "적금이자", "이자 계산"] },
   { href: "/guide/hourly-wage-calculator/", name: "시급 계산기", blurb: "월급 ↔ 시급, 주휴 포함", type: "labor", icon: "wallet", keywords: ["시급", "시급 계산", "월급 시급"] },

@@ -307,6 +307,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/industrial-accident/", title: "산재 처리방법 — 근로자가 근로복지공단에 직접 신청하고, 일 못 한 날은 평균임금 70%를 받습니다", kind: "guide", icon: "briefcase", year: 2026 },
       { href: "/guide/industrial-accident-leave-pay/", title: "산재 휴업급여 — 평균임금의 70%, 3일 이내면 없고 평균임금이 낮으면 하루 82,560원을 보장합니다", kind: "guide", icon: "briefcase", year: 2026 },
       { href: "/guide/industrial-accident-disability/", title: "산재 장해등급 보상금 — 1급 1,474일분부터 14급 55일분까지, 평균임금에 등급별 일수를 곱합니다", kind: "guide", icon: "briefcase", year: 2026 },
+      { href: "/guide/severance-pay/", title: "퇴직금 — 1일 평균임금 × 30일 × 재직일수 ÷ 365, 계속근로 1년·주 15시간 이상이면 받습니다", kind: "guide", icon: "briefcase" },
+      { href: "/guide/severance-pay-criteria/", title: "퇴직금 조건 — 계속근로 1년 이상, 4주 평균 주 15시간 이상이면 5명 미만 사업장도 받습니다", kind: "guide", icon: "briefcase" },
+      { href: "/guide/severance-pay-calculator/", title: "퇴직금 계산기", kind: "calc", icon: "calculator", blurb: "입사일·마지막 근무일·3개월 임금 → 퇴직금" },
     ],
   },
   {
@@ -398,6 +401,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/severance-pay-calculator/",
+  "/guide/severance-pay-criteria/",
+  "/guide/severance-pay/",
   "/guide/industrial-accident-disability/",
   "/guide/industrial-accident-leave-pay/",
   "/guide/industrial-accident/",
