@@ -2846,3 +2846,12 @@ v52 3순위. 산재보험 23,560 · 산재처리방법 10,040 · 휴업급여 7,
 **건진 것** — 콘솔 오류는 adsbygoogle 'No slot size for availableWidth=0' 하나(폭 0 광고 자리 — 우리 계산 스크립트 오류 아님). 다크 모드에서 AdSense 자동 삽입 키워드 칩(흰 바탕 '보험료 견적 비교' 등)이 국민연금 영수증 줄의 라벨 사이에 끼어 줄이 깨져 보임 — 광고 iframe 이라 이번엔 고치지 않음. 자동 광고 설정에서 계산기 카드 안 삽입을 막을지는 사람 판단.
 
 **쓰지 않은 것** — 데스크톱 900px 두 칸 배치 재확인(Task 7·8 회차 테스트로 갈음), 키워드 조회(이번 회차는 화면 확인뿐).
+
+## v92 — 리브랜딩 Task 9 마무리 (2026-10-18, 루틴)
+새 글·새 도구·숫자 변경 없음. 구조화 데이터는 Task 1(749405f)에서 이미 Organization logo = `/icon-512.png`(512×512 3D 주머니), description = 도구 모음 문구로 바뀌어 있어 `brand.test.ts` 로 고정만 함. 카드뉴스 아트보드: 표지 왼쪽 위에 어두운 알약 위 로고(주머니 56px + '주포켓'), CTA 의 흰 상자 '₩' 글자를 3D 주머니 132px 로(로고가 자체 파란 판이라 흰 상자 뺌). dev 미리보기가 거절돼 빌드 HTML 을 Playwright 로 1080×1350 렌더해 표지·CTA 겹침 없음 확인.
+
+**라이브 확인(push a23c42b 뒤)** — 홈·/guide/monthly-take-home/·/freelancer-33/·favicon.svg·favicon-32.png·apple-touch-icon.png·icon-512.png·/og/home.png·/cards/family-deduction/1/ 모두 200. 홈 HTML 에서 테마 인라인 스크립트(localStorage 읽기)가 첫 stylesheet 보다 앞 → 다크 저장 뒤 새로고침 깜빡임 없음(Task 2 테스트와 같은 조건).
+
+**사람 몫(루틴이 하지 않음)** — `npm run cards -- --set` 발행 카드 재생성(지금 public/cards 이미지는 옛 ₩ — 라이브 /cards/ HTML 과 다름), GSC 홈 재색인 요청, 인스타·스레드 프로필 이미지 `public/icon-512.png`.
+
+**쓰지 않은 것** — 키워드 조회(이번 회차는 브랜드 자산뿐).
