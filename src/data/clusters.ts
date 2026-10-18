@@ -60,6 +60,8 @@ export const clusterColor: Record<
   // 급여·근로는 여섯 번째 축이다. 세금이 아니라 월급봉투 쪽 — 주휴수당·연차처럼 근로기준법이 정하는 돈이라
   // 세목 색(초록·파랑·보라·주황·흙빛)과 떼어 장밋빛으로 둔다.
   labor: { bg: "#fbeaf0", wm: "#f2c4d4", ink: "#8a2148", mark: "#a8325c" },
+  // 돈·금융은 일곱 번째 축이다(설계 3-4 신설). 세금이 아니라 빌리고 모으는 돈 — 대출·예적금. 분류 색 #0b5cad 를 표시 색으로 쓴다.
+  money: { bg: "#e4eefa", wm: "#b6d0f0", ink: "#0a4682", mark: "#0b5cad" },
 };
 
 export const clusters: Cluster[] = [
@@ -394,6 +396,15 @@ export const clusters: Cluster[] = [
       { href: "/guide/family-loan-howto/", title: "차용증 쓰는법 — 법이 정한 양식은 없고, 세금 때문에 적어 둘 칸은 금액·이자율·기간입니다", kind: "guide", icon: "scale", year: 2026 },
     ],
   },
+  {
+    id: "money",
+    title: "돈·금융",
+    links: [
+      { href: "/guide/loan-interest/", title: "대출이자 계산 — 남은 원금에 연 이자율의 12분의 1을 곱하고, 상환 방식에 따라 총 이자가 달라집니다", kind: "guide", icon: "chart" },
+      { href: "/guide/loan-repayment-methods/", title: "원리금균등 원금균등 차이 — 매달 같은 돈과 매달 같은 원금, 총 이자는 원금균등이 적습니다", kind: "guide", icon: "chart" },
+      { href: "/guide/loan-calculator/", title: "대출 이자 계산기", kind: "calc", icon: "calculator", blurb: "원금·기간·금리 → 원리금균등·원금균등·만기일시 상환표" },
+    ],
+  },
 ];
 
 /**
@@ -401,6 +412,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/loan-calculator/",
+  "/guide/loan-repayment-methods/",
+  "/guide/loan-interest/",
   "/guide/severance-pay-calculator/",
   "/guide/severance-pay-criteria/",
   "/guide/severance-pay/",

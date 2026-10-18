@@ -1,0 +1,54 @@
+---
+/**
+ * "원리금균등 원금균등" — 대출이자 계산 시리즈. (원리금균등 원금균등 차이·장단점·만기일시상환·뭐가 유리도 이 글)
+ * 법령 숫자 없음 — 세 방식 정의는 rates loan-2026.json methods, 금액은 compareMethods().
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/loan-2026.json";
+import { compareMethods } from "../../../lib/loan";
+import { won } from "../../../lib/won";
+
+const [lv, pr, bu] = compareMethods({ principal: 300_000_000, months: 360, ratePct: 4.5 });
+const NAME = { level: "원리금균등", principal: "원금균등", bullet: "만기일시" } as const;
+const cross = pr.rows.findIndex((v) => v.payment <= lv.firstPayment) + 1;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 loan-series.test.ts 가 대조한다.
+const title = "원리금균등 원금균등 차이 — 매달 같은 돈과 매달 같은 원금, 총 이자는 원금균등이 적습니다";
+const description =
+  "원리금균등은 원금과 이자를 합한 매달 내는 돈이 같고, 원금균등은 매달 갚는 원금이 같아 처음 부담이 크지만 갈수록 줄어듭니다. 원금이 빨리 줄어드는 원금균등이 총 이자가 적고, 이자만 내다 마지막에 원금을 갚는 만기일시가 가장 많습니다.";
+
+const ANSWER = `원리금균등은 매달 내는 돈이 같고, 원금균등은 매달 갚는 원금이 같습니다. 3억원 연 4.5% 30년이면 원리금균등은 매달 ${won(lv.firstPayment)}·총 이자 ${won(lv.totalInterest)}, 원금균등은 첫 달 ${won(pr.firstPayment)}·총 이자 ${won(pr.totalInterest)}입니다.`;
+
+const QA = [
+  { q: "원리금균등과 원금균등 중 뭐가 유리한가요?", a: `총 이자만 보면 원금균등이 적습니다. 위 3억원 예시에서 ${won(lv.totalInterest - pr.totalInterest)} 덜 냅니다. 대신 첫 달 부담이 ${won(pr.firstPayment - lv.firstPayment)} 더 크고, ${cross}회차쯤부터 원리금균등보다 적게 냅니다. 처음 몇 년 매달 낼 수 있는 돈이 기준입니다.` },
+  { q: "만기일시상환은 어떤 방식인가요?", a: `기간 내내 이자만 내고 마지막 회차에 원금 전부를 갚습니다. 3억원 4.5%면 매달 이자 ${won(bu.firstPayment)}으로 부담은 가장 작지만, 원금이 줄지 않아 30년 총 이자가 ${won(bu.totalInterest)}으로 세 방식 중 가장 많습니다. 만기에 원금을 마련할 계획이 필요합니다.` },
+  { q: "원리금균등은 왜 처음에 원금이 조금만 줄어드나요?", a: `매달 내는 돈은 같지만 그 안에서 이자가 먼저 나갑니다. 처음엔 남은 원금이 커서 이자가 크니 원금으로 가는 몫이 작고, 원금이 줄수록 이자가 줄어 원금 몫이 커집니다. 3억원 예시의 첫 달은 ${won(lv.rows[0].payment)} 중 이자가 ${won(lv.rows[0].interest)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>3억원 · 연 4.5% · 360개월</th><th>첫 달</th><th>마지막 달</th><th>총 이자</th></tr></thead>
+      <tbody>{[lv, pr, bu].map((x) => <tr><th scope="row">{NAME[x.method]}</th><td>{won(x.firstPayment)}</td><td>{won(x.lastPayment)}</td><td>{won(x.totalInterest)}</td></tr>)}</tbody>
+    </table>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>{r.methods.level}. {r.methods.principal}. 내 금액으로 비교하려면 <a href="/guide/loan-calculator/">대출 이자 계산기</a>에 원금·기간·금리를 넣으세요.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>매달 이자가 어떻게 계산되는지는 <a href="/guide/loan-interest/">대출이자 계산</a>에 있습니다. 체증식(처음엔 적게, 갈수록 많이 갚는 방식)은 상품마다 늘어나는 방식이 달라 여기서 다루지 않았습니다.</p>
+</GuideLayout>

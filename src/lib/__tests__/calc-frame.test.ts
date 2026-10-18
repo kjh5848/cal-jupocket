@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { calcPresets } from "../../data/calc-presets";
 
 const MOVED: { path: string; attrs: string[] }[] = [
+  { path: "/guide/loan-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-seg", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/severance-pay-calculator/", attrs: ["data-two", "data-won", "data-seg", "data-receipt", "data-group", "data-dock"] },
   { path: "/guide/lotto-tax-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/crypto-tax-calculator/", attrs: ["data-two", "data-won", "data-receipt", "data-group", "data-bar", "data-dock"] },

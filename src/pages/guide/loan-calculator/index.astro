@@ -1,0 +1,127 @@
+---
+/**
+ * "대출 이자 계산기" — 대출이자 계산 시리즈. (대출이자 계산기·은행 대출이자 계산기·주택담보대출·전세대출·신용대출 이자계산기도 이 글, 계산기 포함)
+ * 계산: src/lib/loan.ts loanSchedule()·compareMethods() — 원리금균등·원금균등·만기일시, 거치기간은 대출기간 안에 포함.
+ * 법령 숫자 없음, 단수는 회차마다 원 미만 버림 + 마지막 회차 정산(rates: loan-2026.json rounding).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/loan-2026.json";
+import { loanSchedule, compareMethods } from "../../../lib/loan";
+import { calcPresets } from "../../../data/calc-presets";
+import { won } from "../../../lib/won";
+
+const PRESETS = JSON.stringify({ default: calcPresets["/guide/loan-calculator/"].default.amounts });
+const base = { principal: 100_000_000, months: 360, ratePct: 4 };
+const ex = loanSchedule({ ...base, method: "level" });
+const [lv, pr, bu] = compareMethods(base);
+const NAME = { level: "원리금균등", principal: "원금균등", bullet: "만기일시" } as const;
+const grace = loanSchedule({ principal: 100_000_000, months: 120, ratePct: 4, method: "principal", graceMonths: 12 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 loan-series.test.ts 가 대조한다.
+const title = "대출 이자 계산기 — 원금·기간·금리를 넣으면 원리금균등·원금균등·만기일시 상환표가 나옵니다";
+const description =
+  "대출 이자 계산기는 대출원금·기간·연 이자율로 매달 내는 돈과 총 이자, 회차별 상환표를 계산합니다. 원리금균등·원금균등·만기일시 세 방식을 같은 조건으로 나란히 비교하고, 거치기간을 넣으면 그동안은 이자만 내는 것으로 계산합니다.";
+
+const ANSWER = `대출 이자 계산기는 남은 원금 × 연 이자율 ÷ 12로 매달 이자를 계산합니다. 1억원을 연 4%로 30년 빌리면 원리금균등은 매달 ${won(ex.firstPayment)}, 총 이자 ${won(ex.totalInterest)}이고, 원금균등이면 총 이자가 ${won(pr.totalInterest)}으로 줄어듭니다.`;
+
+const QA = [
+  { q: "1억 대출 이자는 한 달에 얼마인가요?", a: `연 4%면 첫 달 이자는 1억원 × 4% ÷ 12 = ${won(bu.firstPayment)}입니다. 만기일시는 매달 이 금액만 내고, 30년 원리금균등은 원금을 함께 갚아 매달 ${won(lv.firstPayment)}, 원금균등은 첫 달 ${won(pr.firstPayment)}에서 시작해 줄어듭니다.` },
+  { q: "거치기간은 어떻게 계산되나요?", a: `거치기간은 대출기간 안에 들어갑니다. 1억원 4% 10년 중 거치 1년이면 처음 12번은 이자 ${won(grace.gracePayment)}만 내고, 남은 ${grace.repayMonths}번에 원금을 나눠 갚아 거치 뒤 첫 달은 ${won(grace.firstPayment)}입니다. 원금을 늦게 갚는 만큼 총 이자는 늘어납니다.` },
+  { q: "은행 상환표와 몇 원씩 다른 이유는 뭔가요?", a: `이 계산기는 매달 이자를 월 단위(연 이자율 ÷ 12)로 계산하고 원 미만은 버린 뒤 남은 원금을 마지막 회차에서 정산합니다. 은행은 실제 날수로 이자를 계산하거나 원 단위를 다르게 처리할 수 있어 몇 원~몇백 원 차이가 납니다. 변동금리·수수료도 넣지 않았습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">월 단위 약정 이자로 계산한 상환표입니다. 회차 이자·매달 원금은 원 미만을 버리고, 남은 원금은 마지막 회차에서 갚습니다(법령에 대출 이자 끝수 규정이 없어 약정을 따릅니다). 일수 계산·변동금리·중도상환·수수료는 넣지 않았습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="ln-principal">대출원금</label>
+      <input type="text" inputmode="numeric" id="ln-principal" value="100,000,000" data-won data-presets={PRESETS} />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ln-months">대출기간(거치기간 포함)</label>
+      <input type="number" id="ln-months" value="360" min="1" max="600" step="1" data-step />
+      <span class="unit">개월</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ln-rate">연 이자율</label>
+      <input type="number" id="ln-rate" value="4" min="0" max="30" step="0.01" inputmode="decimal" />
+      <span class="unit">%</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ln-method">상환 방식</label>
+      <select id="ln-method" data-seg>
+        <option value="level" selected>원리금균등</option>
+        <option value="principal">원금균등</option>
+        <option value="bullet">만기일시</option>
+      </select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ln-grace">거치기간(이자만 내는 기간, 만기일시는 무시)</label>
+      <input type="number" id="ln-grace" value="0" min="0" max="599" step="1" data-step />
+      <span class="unit">개월</span>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="ln-p|ln-int"
+      data-bar-labels="원금|이자"
+      data-dock="ln-hero"
+    >
+      <p class="label" id="ln-hero-label">매달 내는 돈</p>
+      <p class="big" id="ln-hero">{won(ex.firstPayment)}</p>
+      <p class="meta" id="ln-note">{NAME.level} — 360번 같은 금액, 마지막 회차 {won(ex.lastPayment)}(남은 끝수 정산)</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">총 이자</span><span class="value" id="ln-int">{won(ex.totalInterest)}</span></div>
+      <div class="stat-chip"><span class="label">원금 대비 이자</span><span class="value" id="ln-ratio">{(ex.totalInterest / base.principal * 100).toFixed(2)}%</span></div>
+      <div class="stat-chip"><span class="label">거치기간 중 매달 이자</span><span class="value" id="ln-grace-pay">—</span></div>
+      <div class="stat-chip"><span class="label">원금 갚는 회차</span><span class="value" id="ln-repay">{ex.repayMonths}회</span></div>
+      <div class="stat-chip"><span class="label">마지막 회차</span><span class="value" id="ln-last">{won(ex.lastPayment)}</span></div>
+      <div class="stat-chip" data-group="총 납부액"><span class="label">원금</span><span class="value" id="ln-p">{won(base.principal)}</span></div>
+      <div class="stat-chip"><span class="label">이자 합계</span><span class="value" id="ln-int2">{won(ex.totalInterest)}</span></div>
+    </div>
+
+    <p class="meta"><strong>같은 조건 세 방식 비교</strong></p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>방식</th><th>첫 달</th><th>마지막 달</th><th>총 이자</th></tr></thead>
+        <tbody id="ln-compare">
+          {[lv, pr, bu].map((x) => <tr><th scope="row">{NAME[x.method]}</th><td>{won(x.firstPayment)}</td><td>{won(x.lastPayment)}</td><td>{won(x.totalInterest)}</td></tr>)}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="meta"><strong>회차별 상환표</strong> <span id="ln-table-note">(처음 12회 · 그 뒤 1년마다 · 마지막 회차)</span></p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>회차</th><th>낸 돈</th><th>원금</th><th>이자</th><th>남은 원금</th></tr></thead>
+        <tbody id="ln-rows">
+          {ex.rows.filter((v) => v.no <= 12 || v.no % 12 === 0 || v.no === ex.rows.length).map((v) => <tr><th scope="row">{v.no}</th><td>{won(v.payment)}</td><td>{won(v.principal)}</td><td>{won(v.interest)}</td><td>{won(v.balance)}</td></tr>)}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>금액을 바꾸면 세 방식의 첫 달·마지막 달·총 이자가 함께 바뀝니다. 이자가 어떻게 붙는지는 <a href="/guide/loan-interest/">대출이자 계산</a>, 어떤 방식을 고를지는 <a href="/guide/loan-repayment-methods/">원리금균등 원금균등 차이</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>가족에게 돈을 빌릴 때 이자율이 세금에 걸리는지는 <a href="/guide/family-loan-interest/">가족간 차용증 이자율</a>에서 계산할 수 있습니다.</p>
+
+  <script src="../../../scripts/loan.ts"></script>
+</GuideLayout>
