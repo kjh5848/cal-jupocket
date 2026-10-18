@@ -1,0 +1,33 @@
+{
+  "country": "JP",
+  "draft": true,
+  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(일본어판이 열린 뒤). 宅地建物取引業法 第46条에 따른 국토교통성 보수 고시(昭和45年 建設省告示第1552号, 최종 개정 令和6年6月21日 国土交通省告示第949号). 한국과 달리 요율이 소비세 포함(課税事業者 기준)이고, 구간 요율을 '나눠 곱해 더하는' 누진 방식이며, 임대차는 월세 1개월분 기준이다. 면세사업자는 제11 ②(110분의 100 + 매입 소비세 상당). 장기 빈집(제9·10)·권리금(제6) 특례는 숫자만 적고 계산은 안 함.",
+  "verifiedOn": "2026-10-18",
+  "sources": [
+    { "label": "国土交通省 宅地建物取引業者が宅地又は建物の売買等に関して受けることができる報酬の額(最終改正 令和6年 告示第949号) PDF", "url": "https://www.mlit.go.jp/totikensangyo/const/content/001750229.pdf" },
+    { "label": "国土交通省 宅地建物取引業法関係(고시 링크 페이지)", "url": "https://www.mlit.go.jp/totikensangyo/const/1_6_bt_000266.html" }
+  ],
+  "includesConsumptionTax": true,
+  "saleBrokeragePerSide": {
+    "method": "구간별로 나눠 곱해 합산(代金은 소비세 제외 금액)",
+    "bands": [
+      { "upTo": 2000000, "rate": 0.055 },
+      { "upTo": 4000000, "rate": 0.044 },
+      { "upTo": null, "rate": 0.033 }
+    ]
+  },
+  "saleAgencyMultiplier": 2,
+  "leaseBrokerage": {
+    "bothSidesMaxMonthsOfRent": 1.1,
+    "residentialOneSideWithoutConsentMonthsOfRent": 0.55
+  },
+  "lowPriceVacantHouse": {
+    "priceUpTo": 8000000,
+    "brokerageCapPerSide": 330000,
+    "note": "제7 — 30만엔의 1.1배. 매개 비용을 감안해 제2 계산액을 넘겨 받을 수 있되 이 금액까지"
+  },
+  "longVacantLease": {
+    "maxMonthsOfRent": 2.2,
+    "note": "제9·10 — 장기 빈집 임대차 특례"
+  }
+}
