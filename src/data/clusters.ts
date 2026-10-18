@@ -403,6 +403,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/loan-interest/", title: "대출이자 계산 — 남은 원금에 연 이자율의 12분의 1을 곱하고, 상환 방식에 따라 총 이자가 달라집니다", kind: "guide", icon: "chart" },
       { href: "/guide/loan-repayment-methods/", title: "원리금균등 원금균등 차이 — 매달 같은 돈과 매달 같은 원금, 총 이자는 원금균등이 적습니다", kind: "guide", icon: "chart" },
       { href: "/guide/loan-calculator/", title: "대출 이자 계산기", kind: "calc", icon: "calculator", blurb: "원금·기간·금리 → 원리금균등·원금균등·만기일시 상환표" },
+      { href: "/guide/minus-account-interest/", title: "마이너스통장 이자 계산 — 쓴 금액에만, 하루 단위로 붙고 결제일에 모아서 나갑니다", kind: "guide", icon: "chart" },
+      { href: "/guide/minus-account-interest-payment/", title: "마이너스통장 이자 납부일 — 지난 결제일부터 이번 결제일 전날까지의 이자가 결제일에 나갑니다", kind: "guide", icon: "chart" },
+      { href: "/guide/minus-account-calculator/", title: "마이너스통장 이자 계산기", kind: "calc", icon: "calculator", blurb: "쓴 금액·금리·날수 → 결제일별 일할 이자" },
     ],
   },
 ];
@@ -412,6 +415,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/minus-account-calculator/",
+  "/guide/minus-account-interest-payment/",
+  "/guide/minus-account-interest/",
   "/guide/loan-calculator/",
   "/guide/loan-repayment-methods/",
   "/guide/loan-interest/",

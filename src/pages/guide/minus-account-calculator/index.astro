@@ -1,0 +1,116 @@
+---
+/**
+ * "마이너스통장 이자 계산기" — 마이너스통장 이자 시리즈. (마이너스통장 이자계산기·마이너스통장 1000만원 이자도 이 글, 계산기 포함)
+ * 계산: src/lib/overdraft.ts overdraftInterest() — 하루 이자 = 사용 금액 × 연 이자율 ÷ 그해 날수, 결제일마다 회차 이자 원 미만 버림.
+ * 법령 숫자 없음(rates: overdraft-2026.json — 은행 여신거래약정서 이자 계산방법).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/overdraft-2026.json";
+import { overdraftInterest } from "../../../lib/overdraft";
+import { calcPresets } from "../../../data/calc-presets";
+import { won } from "../../../lib/won";
+
+const PRESETS = JSON.stringify({ default: calcPresets["/guide/minus-account-calculator/"].default.amounts });
+const START = "2026-11-01";
+const base = { amount: 10_000_000, ratePct: 6, days: 30, start: START, payDay: 25 } as const;
+const ex = overdraftInterest(base);
+const r5 = overdraftInterest({ ...base, ratePct: 5 });
+const r8 = overdraftInterest({ ...base, ratePct: 8 });
+const long = overdraftInterest({ ...base, days: 90 });
+const PAYDAYS = [...Array.from({ length: 28 }, (_, i) => String(i + 1)), "last"];
+const dot = (s: string) => s.replace(/-/g, ".");
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 minus-account-series.test.ts 가 대조한다.
+const title = "마이너스통장 이자 계산기 — 쓴 금액·금리·날수를 넣으면 결제일마다 나갈 이자가 나옵니다";
+const description =
+  "마이너스통장 이자 계산기는 쓴 금액·연 이자율·사용일수·시작일·결제일로 하루 이자와 총 이자, 결제일마다 나눠 나갈 회차별 이자를 계산합니다. 한 해를 평년 그대로, 윤년은 하루 더 길게 보고 하루 단위로 계산합니다.";
+
+const ANSWER = `마이너스통장 이자 계산기는 쓴 금액 × 연 이자율 ÷ 365(윤년 366)를 하루 이자로 보고 쓴 날수만큼 더합니다. 1,000만원을 연 6%로 30일 쓰면 총 이자는 ${won(ex.totalInterest)}이고, 결제일이 25일이면 ${ex.rows.length}번에 나눠 나갑니다.`;
+
+const QA = [
+  { q: "마이너스통장 1000만원 이자는 한 달에 얼마인가요?", a: `30일 기준으로 연 5%면 ${won(r5.totalInterest)}, 6%면 ${won(ex.totalInterest)}, 8%면 ${won(r8.totalInterest)}입니다. 하루 이자로는 6%에서 약 ${won(ex.dailyInterest)}이라, 날수가 하루 늘 때마다 그만큼 더 붙습니다.` },
+  { q: "회차별 이자는 어떻게 나뉘나요?", a: `쓰기 시작한 날부터 첫 결제일 전날까지가 1회차이고, 그 뒤로는 결제일부터 다음 결제일 전날까지가 한 회차입니다. 1,000만원 6%를 11월 1일부터 90일 쓰고 결제일이 25일이면 ${long.rows.length}번에 나눠 모두 ${won(long.totalInterest)}이 나갑니다.` },
+  { q: "은행에서 청구한 이자와 왜 다른가요?", a: `이 계산기는 넣은 금액을 기간 내내 그대로 쓴다고 봅니다. 실제로는 날마다 쓰는 금액이 바뀌어 그날 잔액으로 계산되고, 금리 변동·우대금리·연체도 있을 수 있습니다. 회차 이자의 원 미만은 버렸습니다(법령에 끝수 규정이 없어 약정을 따릅니다).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">넣은 금액을 기간 내내 쓴다고 보고, 1년을 365일(윤년 366일)로 하루 단위로 계산합니다. 시작일부터 사용일수만큼 이자가 붙고, 결제일 전날까지의 이자가 그 결제일에 나갑니다. 일별 잔액 변동·연체·미사용수수료는 넣지 않았습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="od-amount">쓴 금액</label>
+      <input type="text" inputmode="numeric" id="od-amount" value="10,000,000" data-won data-presets={PRESETS} />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="od-rate">연 이자율</label>
+      <input type="number" id="od-rate" value="6" min="0" max="30" step="0.01" inputmode="decimal" />
+      <span class="unit">%</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="od-days">사용일수</label>
+      <input type="number" id="od-days" value="30" min="1" max="3660" step="1" data-step />
+      <span class="unit">일</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="od-start">쓰기 시작한 날</label>
+      <input type="date" id="od-start" value={START} min="2000-01-01" max="2099-12-31" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="od-payday">이자 결제일</label>
+      <select id="od-payday">
+        {PAYDAYS.map((d) => <option value={d} selected={d === "25"}>{d === "last" ? "매월 말일" : `매월 ${d}일`}</option>)}
+      </select>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="od-p|od-int2"
+      data-bar-labels="쓴 금액|이자"
+      data-dock="od-hero"
+    >
+      <p class="label">예상 총 이자</p>
+      <p class="big" id="od-hero">{won(ex.totalInterest)}</p>
+      <p class="meta" id="od-note">{dot(START)}부터 {base.days}일 · 결제 {ex.rows.length}회 · 마지막 날 {dot(ex.lastDay)}</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">하루 이자(평년)</span><span class="value" id="od-daily">{won(ex.dailyInterest)}</span></div>
+      <div class="stat-chip"><span class="label">하루 평균 이자</span><span class="value" id="od-avg">{won(ex.dailyAverage)}</span></div>
+      <div class="stat-chip"><span class="label">결제 횟수</span><span class="value" id="od-count">{ex.rows.length}회</span></div>
+      <div class="stat-chip" data-group="원금 + 이자"><span class="label">쓴 금액</span><span class="value" id="od-p">{won(base.amount)}</span></div>
+      <div class="stat-chip"><span class="label">이자 합계</span><span class="value" id="od-int2">{won(ex.totalInterest)}</span></div>
+    </div>
+
+    <p class="meta"><strong>결제일별 이자</strong> <span id="od-table-note">(전체 {ex.rows.length}회)</span></p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>회차</th><th>결제일</th><th>날수</th><th>이자</th><th>누적</th></tr></thead>
+        <tbody id="od-rows">
+          {ex.rows.map((v) => <tr><th scope="row">{v.no}</th><td>{dot(v.billDate)}</td><td>{v.days}일{v.leapDays ? ` (윤년 ${v.leapDays}일)` : ""}</td><td>{won(v.interest)}</td><td>{won(v.cumulative)}</td></tr>)}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>금리를 바꾸면 하루 이자와 회차별 이자가 함께 바뀝니다. 하루 이자가 어떻게 나오는지는 <a href="/guide/minus-account-interest/">마이너스통장 이자 계산</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>마지막 회차는 사용이 끝나는 날에 정산하는 것으로 표에 적었습니다. 결제일과 날수 세는 법은 <a href="/guide/minus-account-interest-payment/">마이너스통장 이자 납부일</a>에 정리했습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>기간을 정해 원금을 나눠 갚는 대출은 <a href="/guide/loan-calculator/">대출 이자 계산기</a>로 상환표를 볼 수 있습니다.</p>
+
+  <script src="../../../scripts/overdraft.ts"></script>
+</GuideLayout>

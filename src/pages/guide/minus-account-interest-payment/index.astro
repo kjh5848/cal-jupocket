@@ -1,0 +1,57 @@
+---
+/**
+ * "마이너스통장 이자 납부일" — 마이너스통장 이자 시리즈. (이자 납입 방법·내는법·이자 발생 시점도 이 글)
+ * 법령 숫자 없음 — 결제일 전날까지의 일할 이자가 결제일에 청구된다. 금액은 overdraftInterest() 가 낸다(rates: overdraft-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/overdraft-2026.json";
+import { overdraftInterest } from "../../../lib/overdraft";
+import { won } from "../../../lib/won";
+import { minusAccountSeries as S } from "../../../data/series/minus-account";
+
+const base = { amount: 10_000_000, ratePct: 6 } as const;
+const p25 = overdraftInterest({ ...base, days: 61, start: "2026-11-10", payDay: 25 });
+const pLast = overdraftInterest({ ...base, days: 90, start: "2027-01-01", payDay: "last" });
+const [r1, r2] = p25.rows;
+const [feb, mar] = [pLast.rows[1], pLast.rows[2]];
+const md = (s: string) => `${Number(s.slice(5, 7))}월 ${Number(s.slice(8, 10))}일`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 minus-account-series.test.ts 가 대조한다.
+const title = "마이너스통장 이자 납부일 — 지난 결제일부터 이번 결제일 전날까지의 이자가 결제일에 나갑니다";
+const description =
+  "마이너스통장 이자는 매달 정한 결제일에, 지난 결제일부터 이번 결제일 전날까지 하루씩 쌓인 이자를 한 번에 냅니다. 처음 쓴 달은 쓰기 시작한 날부터 첫 결제일 전날까지만 계산해 금액이 작고, 달마다 날수가 달라 회차 이자도 조금씩 다릅니다.";
+
+const ANSWER = `마이너스통장 이자는 매달 정한 결제일에, 그 전날까지 하루씩 쌓인 이자를 냅니다. 1,000만원을 연 6%로 ${md(r1.from)}부터 쓰고 결제일이 25일이면 첫 결제일 ${md(r1.billDate)}에 ${r1.days}일치 ${won(r1.interest)}, 다음 달엔 ${r2.days}일치 ${won(r2.interest)}이 나갑니다.`;
+
+const QA = [
+  { q: "마이너스통장 이자는 언제부터 붙고 언제 내나요?", a: `돈을 꺼내 쓴 날부터 그날 쓰고 있는 금액에 하루 단위로 붙고, 갚으면 쓰는 금액이 줄어 이자도 줄어듭니다. 쌓인 이자는 약정서에 정한 결제일에 나갑니다. ${md(r1.from)}에 쓰기 시작해 결제일이 25일이면 ${md(r1.billDate)}에 ${r1.days}일치 ${won(r1.interest)}을 먼저 내고, 그 뒤로는 매달 25일에 한 달치를 냅니다.` },
+  { q: "결제일이 같아도 달마다 이자가 다른 이유는 뭔가요?", a: `한 회차의 날수가 달마다 다르기 때문입니다. 결제일이 말일이고 1,000만원 연 6%를 쓰고 있으면 28일인 회차는 ${won(feb.interest)}, 31일인 회차는 ${won(mar.interest)}입니다. 날수가 많은 회차일수록 이자도 많습니다.` },
+  { q: "마이너스통장 이자를 안 내면 어떻게 되나요?", a: `약정한 날에 이자를 내지 못하면 연체가 되고, 약정 이자율에 연체가산율을 더한 지연배상금률이 붙습니다. 이자를 어떤 방법으로 빼 가는지, 연체가산율이 몇 %인지는 상품마다 다르니 본인 약정서의 결제 방법·지연배상금 조항을 확인하세요.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>날수는 쓰기 시작한 날을 넣고 결제일 당일은 빼고 셉니다. 결제일 당일부터는 다음 회차에 들어갑니다. 회차별 금액을 내 조건으로 보려면 <a href="/guide/minus-account-calculator/">마이너스통장 이자 계산기</a>에 시작일과 결제일을 넣으세요.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>하루 이자가 어떻게 나오는지, 윤년에는 무엇이 달라지는지는 <a href="/guide/minus-account-interest/">마이너스통장 이자 계산</a>에 정리했습니다.</p>
+
+  <h2>마이너스통장 이자 시리즈</h2>
+  <ul>
+    <li><a href={`/guide/${S.hub.slug}/`}>{S.hub.label}</a></li>
+    {S.items.filter((i) => i.slug !== "minus-account-interest-payment").map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

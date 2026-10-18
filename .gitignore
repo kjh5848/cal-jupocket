@@ -30,3 +30,6 @@ scripts/weekly-report.log
 # 브레인스토밍 비주얼 컴패니언 임시 파일
 .superpowers/
 .routine-lock
+
+# 루틴 테스트 출력(npx vitest run > out.txt)
+out.txt
