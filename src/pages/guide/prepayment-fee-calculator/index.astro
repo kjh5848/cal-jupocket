@@ -1,0 +1,105 @@
+---
+/**
+ * "중도상환수수료 계산기" — 중도상환수수료 시리즈. (대출 중도상환 계산기·주택담보대출·신용대출·전세대출 중도상환수수료 계산도 이 글, 계산기 포함)
+ * 계산: src/lib/prepayment-fee.ts prepaymentFee() — 원금 × 요율 × 남은 날 ÷ 부과기간 날수, 원 미만 버림.
+ * 근거: 금융소비자보호법 제20조 ① 4호 나목 1)(3년), 산식은 은행 상품 안내 문구의 해석 (rates: prepayment-fee-2026.json)
+ * 프리셋 없음 — 자동완성(keywords/ac-prepayment-fee-2026-10-19.csv)에 금액 줄기가 없다. 요율 기본값은 예시일 뿐 법정 요율이 아니다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/prepayment-fee-2026.json";
+import { prepaymentFee, LEGAL_YEARS } from "../../../lib/prepayment-fee";
+import { toDay, fromDay } from "../../../lib/date-calc";
+import { won } from "../../../lib/won";
+
+const d = (s: string) => toDay(s)!;
+const pct3 = (v: number) => `${(v * 100).toFixed(3)}%`;
+const base = { amount: 300_000_000, ratePct: 1.2, start: d("2025-06-02"), maturity: d("2055-06-02"), payDate: d("2026-12-01") };
+const ex = prepaymentFee(base);
+const day0 = prepaymentFee({ ...base, payDate: base.start });
+const short = prepaymentFee({ amount: 30_000_000, ratePct: 0.8, start: d("2026-02-02"), maturity: d("2027-02-02"), payDate: d("2026-08-03") });
+const part = prepaymentFee({ ...base, amount: 50_000_000 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 prepayment-fee-series.test.ts 가 rates 와 대조한다.
+const title = "중도상환수수료 계산기 — 갚을 원금·약정 요율·실행일·만기·상환일을 넣으면 수수료와 0원이 되는 날이 나옵니다";
+const description =
+  "중도상환수수료 계산기는 이번에 갚을 원금과 약정서의 중도상환수수료율, 대출 실행일·만기일·상환일로 수수료를 계산합니다. 계약 3년이 지나면 0원이고, 그 전에는 남은 날만큼만 비례해 붙습니다. 수수료가 사라지는 날과 한 달 더 기다리면 줄어드는 금액도 함께 보여 줍니다.";
+
+const ANSWER = `3억원을 약정 요율 1.2%로 빌린 지 1년 6개월 뒤에 모두 갚으면, 부과기간 ${ex.windowDays.toLocaleString()}일 중 ${ex.daysLeft.toLocaleString()}일이 남아 수수료는 ${won(ex.fee)}입니다. 실행일부터 ${LEGAL_YEARS}년이 되는 ${fromDay(ex.windowEnd)}부터는 0원입니다.`;
+
+const QA = [
+  { q: "중도상환수수료 계산기는 어떤 식으로 계산하나요?", a: `갚는 원금 × 약정 요율 × 남은 날 ÷ 부과기간 날수입니다. 부과기간은 실행일부터 ${LEGAL_YEARS}년(만기가 더 이르면 만기)까지이고, 원 미만은 버립니다. 같은 3억원 1.2%라도 실행 당일 갚으면 ${won(day0.fee)}, 1년 6개월 뒤면 ${won(ex.fee)}으로 줄어듭니다.` },
+  { q: "일부만 갚아도 수수료가 붙나요?", a: `갚는 원금에만 붙습니다. 위 대출에서 같은 날 5천만원만 갚으면 ${won(part.fee)}입니다. 해마다 처음 빌린 돈의 일정 비율까지는 수수료 없이 갚게 해 주는 상품이 많지만 비율·조건이 약정마다 달라 계산기에 넣지 않았습니다. 약정서의 면제 조항을 먼저 확인하세요.` },
+  { q: "1년 만기 신용대출이면 어떻게 되나요?", a: `만기가 ${LEGAL_YEARS}년보다 짧으면 만기까지가 부과기간입니다. 3천만원 0.8% 1년 만기 대출을 6개월쯤 뒤에 갚으면 ${short.windowDays}일 중 ${short.daysLeft}일이 남아 ${won(short.fee)}입니다. 만기에 갚는 것은 중도상환이 아니라 수수료가 없습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">법이 정한 것은 '계약이 성립한 날부터 {LEGAL_YEARS}년'뿐이고, 요율과 계산 방식은 대출 약정이 정합니다. 은행 상품 안내의 '원금 × 요율 × 잔존일수 ÷ 대출기간(최장 {LEGAL_YEARS}년)' 꼴로 계산하며, 날짜를 세는 방식은 그 문구를 우리가 해석한 것입니다. 실제 청구액은 약정서와 금융회사 안내를 따릅니다.</p>
+    <div class="calc-input-wrap">
+      <label for="pf-amount">갚을 원금</label>
+      <input type="text" inputmode="numeric" id="pf-amount" value="300,000,000" data-won />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="pf-rate">중도상환수수료율(약정서)</label>
+      <input type="number" id="pf-rate" value="1.2" min="0" max="5" step="0.01" inputmode="decimal" />
+      <span class="unit">%</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="pf-start">대출 실행일</label>
+      <input type="date" id="pf-start" value={fromDay(base.start)} min="2000-01-01" max="2099-12-31" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="pf-maturity">대출 만기일</label>
+      <input type="date" id="pf-maturity" value={fromDay(base.maturity!)} min="2000-01-01" max="2099-12-31" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="pf-pay">갚는 날</label>
+      <input type="date" id="pf-pay" value={fromDay(base.payDate)} min="2000-01-01" max="2099-12-31" />
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="pf-used|pf-left"
+      data-bar-labels="지난 날|남은 날"
+      data-dock="pf-hero"
+    >
+      <p class="label">중도상환수수료</p>
+      <p class="big" id="pf-hero">{won(ex.fee)}</p>
+      <p class="meta" id="pf-note">갚는 원금의 {pct3(ex.ratio)} · 30일 더 있다 갚으면 {won(ex.saving30)} 줄어듭니다</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">0원이 되는 날</span><span class="value" id="pf-end">{fromDay(ex.windowEnd)}</span></div>
+      <div class="stat-chip"><span class="label">부과기간</span><span class="value" id="pf-window">{ex.windowDays.toLocaleString()}일</span></div>
+      <div class="stat-chip"><span class="label">지난 날</span><span class="value" id="pf-used">{(ex.windowDays - ex.daysLeft).toLocaleString()}일</span></div>
+      <div class="stat-chip"><span class="label">남은 날</span><span class="value" id="pf-left">{ex.daysLeft.toLocaleString()}일</span></div>
+      <div class="stat-chip" data-group="갚을 돈 합계"><span class="label">원금</span><span class="value" id="pf-p">{won(base.amount)}</span></div>
+      <div class="stat-chip"><span class="label">수수료</span><span class="value" id="pf-fee">{won(ex.fee)}</span></div>
+    </div>
+    <p class="meta" id="pf-formula">{won(base.amount)} × {base.ratePct}% × {ex.daysLeft.toLocaleString()}일 ÷ {ex.windowDays.toLocaleString()}일 = {won(ex.fee)}</p>
+    <p class="meta" id="pf-warn" hidden></p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>왜 {LEGAL_YEARS}년인지, 그 뒤에는 왜 0원인지는 <a href="/guide/prepayment-fee-3-years/">중도상환수수료 3년</a>에, 요율별 예시표는 <a href="/guide/prepayment-fee/">중도상환수수료 계산</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>통장대출(마이너스통장)이나 만기를 몇 달 남기고 갚는 경우에 수수료를 받지 않는 상품도 있습니다. 이런 면제 조건은 상품마다 달라 계산에 넣지 않았습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>남은 대출의 이자와 상환표는 <a href="/guide/loan-calculator/">대출 이자 계산기</a>, 갚은 뒤 DSR 이 얼마나 내려가는지는 <a href="/guide/dsr-calculator/">DSR 계산기</a>로 볼 수 있습니다.</p>
+
+  <script src="../../../scripts/prepayment-fee.ts"></script>
+</GuideLayout>

@@ -1,0 +1,66 @@
+---
+/**
+ * "중도상환수수료 계산" — 중도상환수수료 시리즈 허브. (중도상환수수료 계산 방법·대출 중도상환수수료 계산방법도 이 글)
+ * 근거: 금융소비자보호법 제20조 ① 4호 나목 1)(계약 성립일부터 3년), 산식은 은행 상품 안내 문구(KB국민은행 전세자금대출 등)의 해석.
+ * 금액은 prepaymentFee() 가 낸다(rates: prepayment-fee-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/prepayment-fee-2026.json";
+import { prepaymentFee, LEGAL_YEARS } from "../../../lib/prepayment-fee";
+import { toDay, fromDay, addMonths } from "../../../lib/date-calc";
+import { won } from "../../../lib/won";
+import { prepaymentFeeSeries as S } from "../../../data/series/prepayment-fee";
+
+const d = (s: string) => toDay(s)!;
+const start = d("2025-06-02");
+const base = { amount: 100_000_000, ratePct: 1.2, start, maturity: d("2055-06-02"), payDate: start };
+const ex = prepaymentFee({ ...base, payDate: d("2026-12-01") });
+const AFTER = [0, 6, 12, 18, 24, 30, 36];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 prepayment-fee-series.test.ts 가 rates 와 대조한다.
+const title = "중도상환수수료 계산 — 갚는 원금 × 약정 요율 × 남은 날 ÷ 부과기간, 계약 3년이 지나면 0원입니다";
+const description =
+  "대출을 만기 전에 갚을 때 내는 중도상환수수료는 갚는 원금에 약정서의 요율을 곱하고, 계약 3년(만기가 더 이르면 만기) 가운데 남은 날의 비율만큼만 붙습니다. 계산 순서와 날짜 세는 법, 갚는 시점별 예시표를 정리했습니다.";
+
+const ANSWER = `중도상환수수료 = 갚는 원금 × 약정 요율 × 남은 날 ÷ 부과기간 날수입니다. 1억원을 요율 1.2%로 빌려 1년 6개월 뒤 갚으면 ${ex.windowDays.toLocaleString()}일 중 ${ex.daysLeft.toLocaleString()}일이 남아 ${won(ex.fee)}이고, 실행 ${LEGAL_YEARS}년 뒤부터는 법상 받을 수 없어 0원입니다.`;
+
+const QA = [
+  { q: "중도상환수수료 계산 방법을 순서대로 알려 주세요.", a: `① 약정서에서 중도상환수수료율을 찾습니다 ② 부과기간 끝날을 정합니다 — 실행일부터 ${LEGAL_YEARS}년, 만기가 그보다 이르면 만기 ③ 끝날까지 남은 날을 부과기간 전체 날수로 나눕니다 ④ 갚는 원금 × 요율 × ③을 하고 원 미만은 버립니다.` },
+  { q: "갚는 시점에 따라 수수료가 얼마나 달라지나요?", a: `남은 날에 비례해 거의 직선으로 줄어듭니다. 1억원 1.2%면 실행 당일 ${won(prepaymentFee(base).fee)}에서 시작해 1년 반 뒤 절반쯤, ${LEGAL_YEARS}년이 되는 날 0원입니다. 아래 표는 같은 대출을 6개월마다 갚았을 때입니다.` },
+  { q: "수수료율은 어디서 정하나요?", a: `법은 '언제까지 받을 수 있는지'만 정하고 요율은 정하지 않습니다. 요율은 상품·고정금리 여부·신청 경로마다 다르고, 대출 약정서와 상품설명서에 적혀 있습니다. 같은 은행 같은 상품에서도 금리 방식에 따라 요율이 다른 경우가 있습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>은행 상품 안내에는 보통 '중도상환원금 × 수수료율 × 잔존일수 ÷ 대출기간(최장 {LEGAL_YEARS}년)'처럼 적혀 있습니다. 날짜는 날짜 차로 셉니다 — 부과기간 날수는 끝날 − 실행일, 남은 날은 끝날 − 갚는 날입니다. 이 세는 법은 문구를 해석한 것이고 약정서에 따로 정한 방식이 있으면 그것을 따릅니다. 날짜를 넣어 바로 보려면 <a href="/guide/prepayment-fee-calculator/">중도상환수수료 계산기</a>를 쓰세요.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>1억원 · 요율 1.2%</th><th>갚는 날</th><th>남은 날</th><th>수수료</th></tr></thead>
+      <tbody>
+        {AFTER.map((m) => { const p = addMonths(start, m); const x = prepaymentFee({ ...base, payDate: p }); return <tr><th scope="row">{m === 0 ? "실행 당일" : `${m}개월 뒤`}</th><td>{fromDay(p)}</td><td>{x.daysLeft.toLocaleString()}일</td><td>{won(x.fee)}</td></tr>; })}
+      </tbody>
+    </table>
+  </div>
+  <p class="meta">실행일 {fromDay(start)}, 만기 30년 기준. 부과기간 {ex.windowDays.toLocaleString()}일(윤년 하루 포함).</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>{LEGAL_YEARS}년이 법으로 정해진 이유와 3년을 어디서부터 세는지는 <a href="/guide/prepayment-fee-3-years/">중도상환수수료 3년</a>에 있습니다. 남은 대출 이자는 <a href="/guide/loan-interest/">대출 이자 계산</a>에서 볼 수 있습니다.</p>
+
+  <h2>중도상환수수료 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>
