@@ -350,6 +350,7 @@ export const hubEntries: HubEntry[] = [
   { no: 323, href: "/guide/prepayment-fee/", label: "중도상환수수료 계산 — 방법·예시", kind: "guide" },
   { no: 324, href: "/guide/prepayment-fee-3-years/", label: "중도상환수수료 3년 — 언제부터 0원", kind: "guide" },
   { no: 325, href: "/guide/prepayment-fee-calculator/", label: "중도상환수수료 계산기", kind: "calc" },
+  { no: 326, href: "/tools/compound/", label: "적립식 복리 계산기", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */

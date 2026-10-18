@@ -433,6 +433,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/installment-savings-interest/", title: "적금 이자 계산 — 매달 넣은 돈마다 남은 개월만큼만 이자가 붙고, 받을 때 15.4%를 뗍니다", kind: "guide", icon: "chart" },
       { href: "/guide/installment-savings-simple-compound/", title: "적금 단리 복리 — 단리는 회차마다 남은 개월만큼, 월복리는 붙은 이자에도 이자가 붙습니다", kind: "guide", icon: "chart" },
       { href: "/guide/installment-savings-calculator/", title: "적금 이자 계산기", kind: "calc", icon: "calculator", blurb: "월 납입액·이율·개월 → 세후 이자·만기 수령액" },
+      { href: "/tools/compound/", title: "적립식 복리 계산기", kind: "calc", icon: "chart", blurb: "원금·매달 적립·수익률 → 몇 년 뒤 금액·세후·오늘 가치" },
       { href: "/guide/prepayment-fee/", title: "중도상환수수료 계산 — 갚는 원금 × 약정 요율 × 남은 날 ÷ 부과기간, 계약 3년이 지나면 0원입니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/prepayment-fee-3-years/", title: "중도상환수수료 3년 — 대출계약이 성립한 날부터 3년이 지나면 법으로 받을 수 없습니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/prepayment-fee-calculator/", title: "중도상환수수료 계산기", kind: "calc", icon: "calculator", blurb: "갚을 원금·요율·실행일·상환일 → 수수료·0원이 되는 날" },
