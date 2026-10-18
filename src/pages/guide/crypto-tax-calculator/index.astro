@@ -1,17 +1,18 @@
 ---
 /**
  * "코인 세금 계산기" — 코인 세금 시리즈. (가상자산 세금 계산·코인 세금 계산·250만원 공제·의제취득가액도 이 글, 계산기 포함)
- * 계산: src/lib/crypto-tax.ts cryptoTax() — 소득세법 제37조 제1항 제3호·제5항, 제64조의3 제2항, 제84조 제3호, 지방세법 제93조 제18항.
+ * 계산: src/lib/crypto-tax.ts cryptoPage()·cryptoTax() — 소득세법 제37조 제1항 제3호·제5항, 제64조의3 제2항, 제84조 제3호, 지방세법 제93조 제18항.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/crypto-2026.json";
-import { cryptoTax } from "../../../lib/crypto-tax";
+import { cryptoTax, cryptoPage } from "../../../lib/crypto-tax";
 import { won, eokwon } from "../../../lib/won";
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 const ex = cryptoTax({ proceeds: 60_000_000, preCost: 10_000_000 });
+const pg = cryptoPage({ proceeds: 60_000_000, preCost: 10_000_000 });
 const exFv = cryptoTax({ proceeds: 60_000_000, preCost: 10_000_000, preFairValue: 40_000_000 });
 const gains = [2_500_000, 5_000_000, 10_000_000, 30_000_000, 50_000_000, 100_000_000];
 const rows = gains.map((g) => ({ g, x: cryptoTax({ proceeds: g, cost: 0 }) }));
@@ -34,37 +35,55 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
+  <div class="calc-card" data-two>
     <p class="meta">한 해(2027년 이후)의 거래를 넣으세요. 2026년 말 시가와 실제 취득가액은 코인마다 따로 비교하는 것이 법이라(제37조 제5항), 여러 코인을 합쳐 넣으면 세금이 실제보다 크게 나올 수 있습니다. 코인 하나씩 넣는 것이 정확합니다. 필요경비 계산 방식(선입선출 등)의 시행령 세부는 넣지 않았습니다.</p>
     <div class="calc-input-wrap">
       <label for="ct-proceeds">판 금액 합계(양도가액)</label>
-      <input type="text" inputmode="numeric" id="ct-proceeds" value="60,000,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="ct-proceeds" value="60,000,000" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="ct-cost">2027년 이후 산 금액(취득가액)</label>
-      <input type="text" inputmode="numeric" id="ct-cost" value="0" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="ct-cost" value="0" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="ct-pre">2027년 전부터 갖고 있던 코인의 실제 취득가액</label>
-      <input type="text" inputmode="numeric" id="ct-pre" value="10,000,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="ct-pre" value="10,000,000" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="ct-fv">그 코인의 2026. 12. 31. 시가(없으면 0)</label>
-      <input type="text" inputmode="numeric" id="ct-fv" value="0" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="ct-fv" value="0" data-won /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="ct-fees">거래 수수료 등</label>
-      <input type="text" inputmode="numeric" id="ct-fees" value="0" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="ct-fees" value="0" data-won /><span class="unit">원</span>
     </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="ct-tax,ct-local|ct-kept"
+      data-bar-labels="세금|손에 남는 이익"
+      data-dock="ct-hero"
+    >
       <p class="label">코인 세금(소득세 + 지방소득세)</p>
       <p class="big" id="ct-hero">{won(ex.total)}</p>
+      <p class="meta" id="ct-note">1년 이익 {won(ex.income)}에서 {eokwon(r.deduction)}을 빼고 {pct(r.rate + r.localRate)}를 곱했습니다.</p>
     </div>
-    <div class="stat-row">
-      <div class="stat-chip"><span class="label">가상자산소득금액</span><span class="value" id="ct-income">{won(ex.income)}</span></div>
-      <div class="stat-chip"><span class="label">소득세 20%</span><span class="value" id="ct-tax">{won(ex.tax)}</span></div>
-      <div class="stat-chip"><span class="label">지방소득세 2%</span><span class="value" id="ct-local">{won(ex.local)}</span></div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">가상자산소득금액 (판 금액 − 필요경비)</span><span class="value" id="ct-income">{won(ex.income)}</span></div>
+      <div class="stat-chip"><span class="label">실제 세율 (세금 ÷ 소득금액)</span><span class="value" id="ct-rate">{pg.effectiveRate}%</span></div>
+      <div class="stat-chip"><span class="label">손에 남는 이익 (소득금액 − 세금)</span><span class="value" id="ct-kept">{won(pg.kept)}</span></div>
+      <div class="stat-chip"><span class="label">{eokwon(r.deduction)} 공제로 줄어든 세금 (제64조의3 ②)</span><span class="value" id="ct-dsave">{won(pg.deductionSaving)}</span></div>
+      <div class="stat-chip"><span class="label">올해 세금 없이 더 낼 수 있는 이익</span><span class="value" id="ct-room">{won(pg.room)}</span></div>
+      <div class="stat-chip"><span class="label">2026년 말 시가로 늘어난 취득가액 (제37조 ⑤)</span><span class="value" id="ct-stepup">{won(pg.stepUp)}</span></div>
+      <div class="stat-chip"><span class="label">그 덕에 줄어든 세금</span><span class="value" id="ct-fvsave">{won(pg.stepUpSaving)}</span></div>
+      <div class="stat-chip" data-group="필요경비 (제37조 ① 3호)"><span class="label">2027년 이후 산 금액</span><span class="value" id="ct-c-cost">{won(pg.cost)}</span></div>
+      <div class="stat-chip"><span class="label">2027년 전 보유분 취득가액 (실제와 시가 중 큰 쪽)</span><span class="value" id="ct-c-pre">{won(pg.preBasis)}</span></div>
+      <div class="stat-chip"><span class="label">거래 수수료 등</span><span class="value" id="ct-c-fees">{won(pg.fees)}</span></div>
+      <div class="stat-chip" data-group="낼 세금"><span class="label">소득세 {pct(r.rate)}</span><span class="value" id="ct-tax">{won(ex.tax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세 {pct(r.localRate)}</span><span class="value" id="ct-local">{won(ex.local)}</span></div>
     </div>
+    <p class="meta">한 해 손익이 손실이면 세금이 없습니다. 그 손실을 다음 해 이익에서 빼 주는 규정은 조문에서 찾지 못해 계산하지 않았습니다.</p>
   </div>
 
   <h2>{QA[0].q}</h2>
