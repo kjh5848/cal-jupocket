@@ -20,7 +20,7 @@ export const TOOL_TYPES = [
 export type ToolType = (typeof TOOL_TYPES)[number]["key"];
 
 const CLUSTER_TYPE: Record<string, ToolType> = {
-  income: "tax", vat: "tax", labor: "labor", retirement: "pension", localtax: "home", inheritance: "inherit", money: "money", unit: "unit",
+  income: "tax", vat: "tax", labor: "labor", retirement: "pension", localtax: "home", inheritance: "inherit", money: "money", unit: "unit", date: "date",
 };
 
 export function typeOfCluster(id: string): ToolType {

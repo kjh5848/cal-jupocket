@@ -64,6 +64,8 @@ export const clusterColor: Record<
   money: { bg: "#e4eefa", wm: "#b6d0f0", ink: "#0a4682", mark: "#0b5cad" },
   // 단위·변환은 첫 범용 묶음 — 분류 색 #1f9c8e(청록)를 표시 색으로, 세목 초록(#0f6e56)보다 밝게 떼어 둔다.
   unit: { bg: "#e2f5f2", wm: "#aee0d9", ink: "#146b61", mark: "#1f9c8e" },
+  // 날짜·시간은 두 번째 범용 묶음 — 분류 색 #2e7d9a(푸른 청회색)를 표시 색으로. 돈·금융 파랑(#0b5cad)보다 흐리게 떼어 둔다.
+  date: { bg: "#e3f0f5", wm: "#b3d4e1", ink: "#1f5a70", mark: "#2e7d9a" },
 };
 
 export const clusters: Cluster[] = [
@@ -439,6 +441,17 @@ export const clusters: Cluster[] = [
     title: "단위·변환",
     links: [
       { href: "/tools/percent/", title: "퍼센트 계산기", kind: "calc", icon: "percent", blurb: "몇 %인지 · % 올리고 내리기 · 변화율" },
+    ],
+  },
+  /*
+   * 날짜·시간 — 두 번째 범용 묶음. 업무일은 관공서 공휴일 목록(rates/kr-holidays-2026.json)을 쓰지만
+   * 계산 자체는 달력 산술이라 /tools/ 에 둔다. 글이 없으니 홈 글 묶음에서는 건너뛴다.
+   */
+  {
+    id: "date",
+    title: "날짜·시간",
+    links: [
+      { href: "/tools/date-diff/", title: "날짜 계산기", kind: "calc", icon: "calendar", blurb: "두 날짜 사이 며칠 · 며칠 뒤 · 업무일" },
     ],
   },
 ];
