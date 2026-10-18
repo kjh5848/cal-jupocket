@@ -353,6 +353,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/electric-car-tax/", title: "전기차 세금 — 자동차세는 1년 13만원이고, 취득세 140만원·개소세 300만원 감면은 2026년 말까지입니다", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/electric-car-tax-exemption/", title: "전기차 세금 감면 — 취득세 140만원·개별소비세 300만원, 법에 적힌 기한은 2026년 12월 31일입니다", kind: "guide", icon: "percent", year: 2026 },
       { href: "/guide/electric-car-tax-calculator/", title: "전기차 세금 계산기", kind: "calc", icon: "calculator", blurb: "차값 → 전기차 취득세 감면액과 1년 자동차세" },
+      { href: "/guide/brokerage-fee/", title: "중개보수 요율표 — 주택 매매 0.4~0.7%, 전세·월세 0.3~0.6%, 2억원 미만 매매는 한도액", kind: "guide", icon: "home", year: 2026 },
+      { href: "/guide/monthly-rent-brokerage-fee/", title: "월세 복비 — 보증금 + 월세 × 100, 5천만원 미만이면 70배", kind: "guide", icon: "home", year: 2026 },
+      { href: "/guide/brokerage-fee-calculator/", title: "중개보수 계산기", kind: "calc", icon: "calculator", blurb: "거래금액·매매·전세·월세 → 법정 상한 복비와 부가세" },
     ],
   },
   {
@@ -424,6 +427,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/brokerage-fee-calculator/",
+  "/guide/monthly-rent-brokerage-fee/",
+  "/guide/brokerage-fee/",
   "/guide/dsr-calculator/",
   "/guide/dsr-limit/",
   "/guide/dsr/",

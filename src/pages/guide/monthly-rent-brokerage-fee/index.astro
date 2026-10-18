@@ -1,0 +1,74 @@
+---
+/**
+ * "월세 복비" — 중개보수 시리즈. (월세 복비 계산기·중개보수 계산기 월세·전세 복비·전세 복비 계산기·원룸 복비도 이 글)
+ * 근거: 공인중개사법 시행규칙 제20조 ⑤ 1호(월세 거래금액), [별표 1] 임대차 등(rates: brokerage-fee-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/brokerage-fee-2026.json";
+import { brokerageFee } from "../../../lib/brokerage-fee";
+import { won, manwon } from "../../../lib/won";
+
+const M = r.monthlyRent;
+const mo = (deposit: number, monthlyRent: number) => brokerageFee({ property: "housing", deal: "monthly", deposit, monthlyRent });
+const je = (amount: number) => brokerageFee({ property: "housing", deal: "jeonse", amount });
+const ex = mo(10_000_000, 500_000);
+const exSmall = mo(5_000_000, 400_000);
+const rows = [
+  [5_000_000, 400_000],
+  [10_000_000, 500_000],
+  [10_000_000, 700_000],
+  [30_000_000, 1_000_000],
+  [100_000_000, 1_500_000],
+].map(([d, m]) => ({ d, m, x: mo(d, m) }));
+const jeRows = [80_000_000, 200_000_000, 300_000_000, 500_000_000].map((a) => ({ a, x: je(a) }));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 brokerage-fee-series.test.ts 가 rates 와 대조한다.
+const title = "월세 복비 — 보증금에 월세 100배를 더한 금액이 거래금액이고, 5천만원 미만이면 70배로 셉니다";
+const description =
+  "월세 중개보수는 보증금 + 월세 × 100을 거래금액으로 보고 임대차 요율을 곱합니다. 그 합이 5천만원 미만이면 월세 × 70으로 다시 계산합니다. 원룸 월세·전세 복비를 보증금별 표로 정리했습니다.";
+
+const ANSWER = `월세는 보증금 + 월세 × ${M.multiplier}을 거래금액으로 봅니다(공인중개사법 시행규칙 제20조 ⑤ 1호). 보증금 1천만원·월세 50만원이면 6천만원이라 0.4%로 한쪽 최대 ${won(ex.maxFee)}입니다. 그 합이 5천만원 미만이면 월세 × ${M.smallMultiplier}로 다시 셉니다 — 보증금 500만원·월세 40만원은 ${manwon(exSmall.base)}이 거래금액이라 ${won(exSmall.maxFee)}입니다.`;
+
+const QA = [
+  { q: "월세 복비는 어떻게 계산하나요?", a: `월 차임에 ${M.multiplier}을 곱해 보증금에 더한 금액이 거래금액입니다. 이 금액으로 주택 임대차 요율표의 구간을 찾아 상한요율을 곱하고, 한도액이 있는 구간이면 한도액까지만 받습니다. 관리비는 월세에 넣지 않습니다.` },
+  { q: "왜 5천만원 미만이면 70배인가요?", a: `소액 월세의 복비 부담을 줄이려는 규정입니다. 보증금 + 월세 × ${M.multiplier}이 5천만원 미만일 때만 월세에 ${M.smallMultiplier}을 곱해 다시 더합니다. 100배로 정확히 5천만원이면 그대로 100배를 씁니다.` },
+  { q: "전세 복비는 얼마인가요?", a: `전세는 보증금 자체가 거래금액입니다. 1억원 이상 6억원 미만은 0.3%라 전세 3억원이면 한쪽 최대 ${won(je(300_000_000).maxFee)}입니다. 5천만원 이상 1억원 미만은 0.4%에 한도액 30만원이 있습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>보증금 / 월세</th><th>거래금액</th><th>상한요율</th><th>한쪽 최대 복비</th></tr></thead>
+      <tbody>
+        {rows.map(({ d, m, x }) => <tr><th scope="row">{manwon(d)} / {manwon(m)}</th><td>{won(x.base)} (× {x.multiplier})</td><td>{x.capPermille / 10}%</td><td>{won(x.maxFee)}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+  <p>복비는 임대인과 임차인이 각각 냅니다. 일반과세자 중개사무소라면 여기에 부가세 10%가 붙어 청구될 수 있습니다. 내 보증금과 월세로 바로 계산하려면 <a href="/guide/brokerage-fee-calculator/">중개보수 계산기</a>에서 거래 종류를 월세로 고르면 됩니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>그래서 보증금 1천만원에 월세 40만원(100배로 정확히 5천만원)은 거래금액 5천만원·0.4%로 {won(mo(10_000_000, 400_000).maxFee)}이고, 월세가 1원만 적어도 70배로 바뀌어 거래금액이 약 3,800만원·0.5%로 계산됩니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>전세 보증금</th><th>상한요율</th><th>한쪽 최대 복비</th></tr></thead>
+      <tbody>
+        {jeRows.map(({ a, x }) => <tr><th scope="row">{manwon(a)}</th><td>{x.capPermille / 10}%</td><td>{won(x.maxFee)}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+  <p>전세 재계약이라도 중개사가 중개하면 같은 요율표가 상한입니다. 매매·전세 구간 전체는 <a href="/guide/brokerage-fee/">중개보수 요율표</a>에 있습니다.</p>
+</GuideLayout>
