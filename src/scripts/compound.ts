@@ -53,7 +53,7 @@ function render() {
   $("cp-note").textContent = `${months}개월 · 월 이율 ${(ratePct / 12).toFixed(4)}% · ${t === "start" ? "매달 초" : "매달 말"} 적립`;
   $("cp-paid").textContent = w(x.paid);
   $("cp-gain2").textContent = signed(x.gain);
-  $("cp-tax-v").textContent = `−${w(x.tax)}`;
+  $("cp-tax-v").textContent = won(x.tax) ? `−${w(x.tax)}` : "0원";
   $("cp-after").textContent = w(x.afterTax);
   $("cp-real").textContent = w(x.real);
   $("cp-goal-v").textContent = !G ? "목표 없음" : x.goalMonth === null ? "기간 안에 못 닿음" : x.goalMonth === 0 ? "처음부터 넘음" : `${spell(x.goalMonth)}째`;
