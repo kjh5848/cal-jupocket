@@ -129,3 +129,47 @@ export function checkMinWage(monthlyPay: number, weeklyHours = 40, year: 2026 | 
   const need = minimumMonthly(year, weeklyHours, probation);
   return { hours: minWageMonthlyHours(weeklyHours), hourly, min, ok: exact > 0 && monthlyPay >= need, shortfall: Math.max(0, need - monthlyPay) };
 }
+
+/** 1일 소정근로시간 상한 — 근로기준법 제50조 제2항(1일 8시간) */
+const MAX_DAILY_HOURS = 8;
+
+/**
+ * 시급 → 일급·주급·월급·연봉(세전). 소정근로는 1일 8시간·1주 40시간까지(제50조), 넘는 시간은 연장근로라 넣지 않고 overHours 로 알린다(가산은 제56조 — 야근수당 도구).
+ * 주휴는 주 15시간 이상·개근 전제(제18조 제3항·제55조), 주 5일 사업장 ÷ 5(별표 2). 월 시간은 최저임금 계산과 같은 규칙 — 주 40시간 + 주휴면 고시의 209시간,
+ * 그 밖은 (주 시간 + 주휴) × 365/7 ÷ 12. 월급은 시급 × 월 시간을 한 번만 원 미만 버림(주급을 버린 뒤 곱하지 않는다). 연봉 = 월급 × 12.
+ */
+export function hourlyWagePay(hourly: number, dailyHours: number, daysPerWeek: number, includeHoliday = true, year: 2026 | 2027 = 2026) {
+  const wage = Math.max(0, hourly);
+  const rawDaily = Math.max(0, dailyHours);
+  const days = Math.min(Math.max(0, Math.floor(daysPerWeek)), 7);
+  const daily = Math.min(rawDaily, MAX_DAILY_HOURS);
+  const week = Math.round(Math.min(daily * days, W.maxWeeklyHours) * 100) / 100;
+  const overHours = Math.round((rawDaily * days - week) * 100) / 100;
+  const holidayHours = includeHoliday ? weeklyHolidayHours(week) : 0;
+  const monthHoursExact = includeHoliday ? minWageHoursExact(week) : week * WEEKS_PER_MONTH;
+  const weekBase = fl(wage * week);
+  const weekHoliday = fl(wage * holidayHours);
+  const monthly = fl(wage * monthHoursExact);
+  return {
+    dailyHours: daily,
+    weekHours: week,
+    overHours,
+    holidayHours,
+    monthHours: Math.round(monthHoursExact * 100) / 100,
+    daily: fl(wage * daily),
+    weekBase,
+    weekHoliday,
+    weekTotal: weekBase + weekHoliday,
+    monthly,
+    annual: monthly * 12,
+    minWage: minWage(year),
+    meetsMin: wage >= minWage(year),
+  };
+}
+
+/** 월급 → 시급(세전). 월 시간 규칙은 hourlyWagePay 와 같다. 원 미만 버림 */
+export function hourlyFromMonthly(monthly: number, weeklyHours: number, includeHoliday = true): number {
+  const week = Math.min(Math.max(0, weeklyHours), W.maxWeeklyHours);
+  const hours = includeHoliday ? minWageHoursExact(week) : week * WEEKS_PER_MONTH;
+  return hours > 0 ? fl(Math.max(0, monthly) / hours) : 0;
+}

@@ -312,6 +312,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/severance-pay/", title: "퇴직금 — 1일 평균임금 × 30일 × 재직일수 ÷ 365, 계속근로 1년·주 15시간 이상이면 받습니다", kind: "guide", icon: "briefcase" },
       { href: "/guide/severance-pay-criteria/", title: "퇴직금 조건 — 계속근로 1년 이상, 4주 평균 주 15시간 이상이면 5명 미만 사업장도 받습니다", kind: "guide", icon: "briefcase" },
       { href: "/guide/severance-pay-calculator/", title: "퇴직금 계산기", kind: "calc", icon: "calculator", blurb: "입사일·마지막 근무일·3개월 임금 → 퇴직금" },
+      { href: "/guide/hourly-wage/", title: "시급 계산 — 일급은 시급 × 하루 시간, 주급은 주휴수당까지, 월급은 주 40시간이면 209시간을 곱합니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/hourly-wage-monthly/", title: "시급 월급 환산 — 주 40시간이면 시급 × 209시간, 그보다 적게 일하면 주휴를 넣은 주 시간 × 365 ÷ 7 ÷ 12", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/hourly-wage-calculator/", title: "시급 계산기", kind: "calc", icon: "calculator", blurb: "시급·하루 시간·주 일수 → 일급·주급·월급·연봉, 주휴 포함" },
     ],
   },
   {
@@ -418,6 +421,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/hourly-wage-calculator/",
+  "/guide/hourly-wage-monthly/",
+  "/guide/hourly-wage/",
   "/guide/deposit-interest-calculator/",
   "/guide/deposit-simple-compound/",
   "/guide/deposit-interest/",

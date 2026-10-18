@@ -8,6 +8,7 @@ import { calcPresets } from "../../data/calc-presets";
 
 const MOVED: { path: string; attrs: string[] }[] = [
   { path: "/guide/minus-account-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
+  { path: "/guide/hourly-wage-calculator/", attrs: ["data-two", "data-won", "data-seg", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/deposit-interest-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-seg", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/loan-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-seg", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/severance-pay-calculator/", attrs: ["data-two", "data-won", "data-seg", "data-receipt", "data-group", "data-dock"] },
@@ -70,7 +71,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
  * /guide/industrial-accident-disability/: 네이버 '산재 장해등급'·'장해등급 보상금'·'산재 장해급여'·'장해보상연금'·'장해등급 14급 보상금' 확장은 등급(7·10·12·14급)·금액·보상표·계산법·신청·세금뿐, 평균임금 금액 줄기 없음(2026-10-17, keywords/ac-industrial-disability-2026-10-17.csv)
  * /guide/industrial-accident-leave-pay/: 네이버 '월급 300 산재'·'산재 휴업급여 월급' 결과 없음, '산재 휴업급여·휴업급여 계산·산재 평균임금' 확장은 계산 방법·일수·기간·신청·지급일·상한선뿐(2026-10-17, keywords/ac-industrial-leave-2026-10-17.csv)
  */
-const NO_PRESETS = new Set(["/guide/severance-pay-calculator/", "/guide/crypto-tax-calculator/", "/guide/electric-car-tax-calculator/", "/vehicle-tax/", "/guide/jongbu-calculator/", "/guide/capital-gains-calculator/", "/guide/divorce-acquisition-tax/", "/guide/industrial-accident-disability/", "/guide/industrial-accident-leave-pay/", "/guide/old-age-pension-age/", "/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/", "/guide/unemployment-benefit-calculator/", "/guide/severance-tax-calculator/", "/guide/medical-credit-limit/", "/guide/earned-incentive-amount/", "/guide/child-incentive-amount/"]);
+const NO_PRESETS = new Set(["/guide/severance-pay-calculator/", "/guide/crypto-tax-calculator/", "/guide/electric-car-tax-calculator/", "/vehicle-tax/", "/guide/jongbu-calculator/", "/guide/capital-gains-calculator/", "/guide/divorce-acquisition-tax/", "/guide/industrial-accident-disability/", "/guide/industrial-accident-leave-pay/", "/guide/old-age-pension-age/", "/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/", "/guide/unemployment-benefit-calculator/", "/guide/severance-tax-calculator/", "/guide/medical-credit-limit/", "/guide/earned-incentive-amount/", "/guide/child-incentive-amount/", "/guide/hourly-wage-calculator/"]);
 
 const bench = readFileSync("docs/calc-benchmark.md", "utf-8");
 

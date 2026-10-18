@@ -1,0 +1,64 @@
+---
+/**
+ * "시급 계산" — 시급 계산 시리즈 허브. (시급으로 일급·주급·월급 계산·알바 시급 계산·주휴수당 포함 주급도 이 글)
+ * 계산: src/lib/labor.ts hourlyWagePay() — 근로기준법 제18조 제3항·제50조·제55조, 시행령 별표 2, 최저임금법 시행령 제5조, 2026·2027 고시(rates: labor-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/labor-2026.json";
+import { hourlyWagePay, minWage } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+import { hourlyWageSeries as S } from "../../../data/series/hourly-wage";
+
+const W = r.weeklyHoliday;
+const m26 = minWage(2026);
+const full = hourlyWagePay(m26, 8, 5);
+const part = hourlyWagePay(m26, 5, 4);
+const short = hourlyWagePay(m26, 4, 3);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 hourly-wage-series.test.ts 가 rates 와 대조한다.
+const title = "시급 계산 — 일급은 시급 × 하루 시간, 주급은 주휴수당까지, 월급은 주 40시간이면 209시간을 곱합니다";
+const description =
+  "시급으로 일급·주급·월급을 계산하는 순서를 정리했습니다. 주 15시간 이상 일하고 개근하면 주급에 주휴수당이 붙고, 월급은 주휴시간을 넣은 월 시간으로 곱합니다. 2026년 최저시급 10,320원이면 주 40시간 월급이 2,156,880원입니다.";
+
+const ANSWER = `시급 계산은 ① 일급 = 시급 × 하루 근무시간 ② 주급 = 시급 × 주 근무시간 + 주휴수당(주 ${W.minWeeklyHours}시간 이상·개근) ③ 월급 = 시급 × 월 시간입니다. 2026년 최저시급 ${won(m26)}에 하루 8시간 주 5일이면 일급 ${won(full.daily)}, 주급 ${won(full.weekTotal)}, 월급 ${won(full.monthly)}(${full.monthHours}시간)입니다.`;
+
+const QA = [
+  { q: "시급으로 일급과 주급은 어떻게 계산하나요?", a: `일급은 시급에 하루 근무시간을 곱합니다. 주급은 시급 × 1주 근무시간에 주휴수당을 더합니다. 주휴수당은 주 5일 사업장이면 1주 근무시간 ÷ 5만큼의 시간에 시급을 곱한 금액이고, 주 ${W.minWeeklyHours}시간 미만이면 붙지 않습니다(근로기준법 제18조 제3항, 시행령 별표 2). 최저시급 주 40시간이면 근무 ${won(full.weekBase)} + 주휴 ${won(full.weekHoliday)} = ${won(full.weekTotal)}입니다.` },
+  { q: "알바 시급은 주휴수당까지 얼마인가요?", a: `하루 5시간 주 4일(주 20시간)이면 2026년 최저시급으로 근무 ${won(part.weekBase)}에 주휴 ${part.holidayHours}시간 ${won(part.weekHoliday)}을 더해 주급 ${won(part.weekTotal)}, 월 약 ${won(part.monthly)}입니다. 하루 4시간 주 3일(주 12시간)은 주휴수당이 없어 주급 ${won(short.weekTotal)}, 월 약 ${won(short.monthly)}입니다.` },
+  { q: "하루 8시간이나 주 40시간을 넘게 일하면요?", a: `넘는 시간은 소정근로가 아니라 연장근로입니다(근로기준법 제50조). 상시 5명 이상 사업장은 연장·야간·휴일근로에 가산임금을 더 줘야 해서(제56조) 시급 × 시간으로 끝나지 않습니다. 이 시리즈 계산은 소정근로와 주휴수당까지만 다룹니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>주휴수당은 그 주에 정해진 날을 다 나와야 생깁니다(근로기준법 시행령 제30조). 결근한 주는 근무한 시간 임금만 받습니다. 주휴수당 조건은 <a href="/guide/weekly-holiday-pay-criteria/">주휴수당 조건</a>에 따로 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>2026 최저시급 {won(m26)}</th><th>주휴</th><th>주급</th><th>월급(월 시간)</th></tr></thead>
+      <tbody>
+        {[[3, 4], [4, 4], [5, 4], [6, 5], [8, 5]].map(([h, d]) => { const x = hourlyWagePay(m26, h, d); return <tr><th scope="row">하루 {h}시간 · 주 {d}일</th><td>{x.holidayHours}시간</td><td>{won(x.weekTotal)}</td><td>{won(x.monthly)} ({x.monthHours}시간)</td></tr>; })}
+      </tbody>
+    </table>
+  </div>
+  <p>월급은 주휴시간을 넣은 1주 시간에 1년 평균 주 수(365 ÷ 7)를 곱하고 12로 나눈 시간으로 곱했습니다. 주 40시간만 최저임금 고시대로 209시간을 씁니다. 왜 209시간인지는 <a href="/guide/hourly-wage-monthly/">시급 월급 환산</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>여기 나온 금액은 모두 세전입니다. 근로자로 일하면 <a href="/guide/four-insurance-calculator/">4대보험 계산기</a>로, 사업소득 3.3%를 떼는 알바면 <a href="/freelancer-33/">3.3% 계산기</a>로 실제 받는 돈을 볼 수 있습니다. 내 시급이 최저임금을 넘는지는 <a href="/guide/minimum-wage-calculator/">최저임금 계산기</a>로 확인하세요.</p>
+
+  <h2>시급 계산 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>
