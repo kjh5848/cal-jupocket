@@ -7,14 +7,16 @@ import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/lottery-2026.json";
-import { lotteryTax } from "../../../lib/lottery-tax";
+import { lotteryTax, lottoPage } from "../../../lib/lottery-tax";
+import { calcPresets } from "../../../data/calc-presets";
 import { won, eokwon } from "../../../lib/won";
 
 const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
 const low = pct(r.rate.base * (1 + r.local.ratio));
 const high = pct(r.rate.overRate * (1 + r.local.ratio));
 const ex = lotteryTax(1_000_000_000);
-const presets = [2_000_000, 50_000_000, 100_000_000, 1_000_000_000, 2_000_000_000];
+const pg = lottoPage(1_000_000_000);
+const PRESETS = JSON.stringify({ default: calcPresets["/guide/lotto-tax-calculator/"].default.amounts });
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 lotto-tax-series.test.ts 가 rates 와 대조한다.
 const title = "로또 세금 계산기 — 당첨금을 넣으면 소득세·지방소득세와 실수령액이 나옵니다";
@@ -34,26 +36,33 @@ const QA = [
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
 
-  <div class="calc-card">
-    <p class="meta">한 번에 받는 복권 당첨금 기준입니다. 당첨금 전액을 소득금액으로 보고, 원 미만은 버렸습니다.</p>
+  <div class="calc-card" data-two>
+    <p class="meta">한 번에 받는 복권 당첨금 기준입니다. 당첨금 전액을 소득금액으로 보고, 소득세·지방소득세 모두 10원 미만은 버렸습니다(국고금 관리법 제47조 ①, 지방세기본법 제59조).</p>
     <div class="calc-input-wrap">
       <label for="lt-amount">당첨금</label>
-      <input type="text" inputmode="numeric" id="lt-amount" value="1,000,000,000" />
+      <input type="text" inputmode="numeric" id="lt-amount" value="1,000,000,000" data-won data-presets={PRESETS} />
       <span class="unit">원</span>
     </div>
-    <div class="amount-presets" role="group" aria-label="당첨금 빠르게 고르기">
-      {presets.map((p) => <button type="button" class="preset-chip" data-lt={p}>{eokwon(p)}</button>)}
-    </div>
-    <div class="result-hero" aria-live="polite" aria-atomic="true">
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="lt-base,lt-over,lt-local|lt-hero"
+      data-bar-labels="세금|실수령액"
+      data-dock="lt-hero"
+    >
       <p class="label">실수령액</p>
       <p class="big" id="lt-hero">{won(ex.net)}</p>
-      <p class="meta" id="lt-note"></p>
+      <p class="meta" id="lt-note">{eokwon(r.rate.over)}까지 {low}, 넘는 {won(pg.overAmount)}에 {high}를 뗐습니다.</p>
     </div>
-    <div class="stat-row">
+    <div class="stat-row" data-receipt>
       <div class="stat-chip"><span class="label">세금 합계</span><span class="value" id="lt-total">{won(ex.total)}</span></div>
-      <div class="stat-chip"><span class="label">소득세</span><span class="value" id="lt-tax">{won(ex.tax)}</span></div>
-      <div class="stat-chip"><span class="label">지방소득세</span><span class="value" id="lt-local">{won(ex.local)}</span></div>
-      <div class="stat-chip"><span class="label">실제로 뗀 비율</span><span class="value" id="lt-eff">{(ex.effective * 100).toFixed(2)}%</span></div>
+      <div class="stat-chip"><span class="label">실제로 뗀 비율 (세금 ÷ 당첨금)</span><span class="value" id="lt-eff">{pg.effectiveRate}%</span></div>
+      <div class="stat-chip"><span class="label">{eokwon(r.rate.over)} 넘는 당첨금</span><span class="value" id="lt-overamt">{won(pg.overAmount)}</span></div>
+      <div class="stat-chip"><span class="label">{pct(r.rate.overRate)} 구간 때문에 더 뗀 세금 (전부 {low}였다면보다)</span><span class="value" id="lt-extra">{won(pg.overExtra)}</span></div>
+      <div class="stat-chip" data-group="낼 세금"><span class="label">소득세 — {eokwon(r.rate.over)}까지 {pct(r.rate.base)} (제129조 ① 6호)</span><span class="value" id="lt-base">{won(ex.baseTax)}</span></div>
+      <div class="stat-chip"><span class="label">소득세 — 넘는 부분 {pct(r.rate.overRate)}</span><span class="value" id="lt-over">{won(ex.overTax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세 (소득세의 {pct(r.local.ratio)})</span><span class="value" id="lt-local">{won(ex.local)}</span></div>
     </div>
   </div>
 

@@ -21,6 +21,10 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
     // 네이버 자동완성 '3억 아파트 취득세'·'4억 아파트 취득세'·'6억 아파트 취득세'·'취득세 7억 세율 구하는 법'(2026-10-18). '취득세 9억미만'은 기준선을 묻는 말이라 뺌
     default: { amounts: [300_000_000, 400_000_000, 600_000_000, 700_000_000], source: "keywords/ac-acquisition-2026-10-18.csv", term: "취득세" },
   },
+  "/guide/lotto-tax-calculator/": {
+    // 네이버 자동완성 '로또 실수령액 20억'·'30억 로또 실수령액'(2026-10-18). '로또 1억 세금' 은 시드 줄뿐(확장 아님)이라 뺌
+    default: { amounts: [2_000_000_000, 3_000_000_000], source: "keywords/ac-lotto-2026-10-18.csv", term: "로또 실수령액" },
+  },
   "/property-tax/": {
     // 네이버 자동완성 '3억 아파트 재산세'·'5억 아파트 재산세'·'15억 아파트 재산세'·'20억 아파트 재산세'·'30억 아파트 재산세'(2026-10-18)
     default: { amounts: [300_000_000, 500_000_000, 1_500_000_000, 2_000_000_000, 3_000_000_000], source: "keywords/ac-property-tax-2026-10-18.csv", term: "재산세" },
