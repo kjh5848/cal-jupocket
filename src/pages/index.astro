@@ -41,12 +41,15 @@ const QUICK = [
   { label: "노령연금", href: "/guide/old-age-pension-age/" },
 ];
 
-const sections = clusters.map((c) => ({
-  id: c.id,
-  title: c.title,
-  color: clusterColor[c.id],
-  guides: c.links.filter((l) => l.kind === "guide"),
-}));
+// 범용 묶음(unit 등)은 글이 없을 수 있다 — 빈 제목만 남지 않게 글 0개 묶음은 건너뛴다
+const sections = clusters
+  .map((c) => ({
+    id: c.id,
+    title: c.title,
+    color: clusterColor[c.id],
+    guides: c.links.filter((l) => l.kind === "guide"),
+  }))
+  .filter((s) => s.guides.length > 0);
 
 const recentCards = recent
   .map((h) => linkByHref(h))

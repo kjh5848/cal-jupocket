@@ -1,0 +1,142 @@
+---
+/**
+ * 퍼센트 계산기 — 첫 범용 도구(/tools/, 설계 2절·197행). 법 숫자가 없는 산술이라 rates 를 쓰지 않는다.
+ *
+ * 질문 다섯 가지: 몇 %인지 · A 의 B% · 변화율 · % 올리기/내리기(할인) · 올리고 내린 값에서 원래 값.
+ * roberin #211 은 입력·결과 항목만 대조했다(docs/calc-benchmark.md) — 팁은 한국 관습이 아니라 빼고,
+ * 부가세 더하기·빼기는 /vat/ 가 이미 한다(링크만). 계산은 lib/percent.ts.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+
+const title = "퍼센트 계산기 — 몇 %인지·할인율·증감률";
+const description =
+  "B가 A의 몇 %인지, A의 B%가 얼마인지, 몇 % 올랐는지·내렸는지를 바로 계산합니다. 할인한 가격과 할인 전 원래 가격 역산도 됩니다.";
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>퍼센트 계산기</h1>
+      <p>
+        무엇을 알고 싶은지 먼저 고르고 숫자 두 개를 넣으세요. 소수점 둘째 자리에서
+        반올림해 보여 줍니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">알고 싶은 것</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>B는 A의 몇 %?</option>
+            <option value="of">A의 B%는 얼마?</option>
+            <option value="change">A에서 B로 몇 % 변했나?</option>
+            <option value="adjust">A를 B% 올리거나 내리면?</option>
+            <option value="original">B% 바뀐 값 A의 원래 값은?</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">올리기 · 내리기</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>내리기 (할인)</option>
+            <option value="up">올리기 (인상)</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">기준값 A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">비교값 B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B는 A의</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">기준값 A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">비교값 B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>어떤 질문에 어떤 계산을 쓰나</h2>
+      <ul>
+        <li><strong>몇 %인지</strong> — 시험 80문제 중 60문제를 맞혔다면 60 ÷ 80 × 100 = 75%.</li>
+        <li><strong>A의 B%</strong> — 월급 300만원의 15%는 300만 × 15 ÷ 100 = 45만원.</li>
+        <li><strong>변화율(증감률)</strong> — 주가가 2만원에서 2만 5천원이 되면 (25,000 − 20,000) ÷ 20,000 × 100 = +25%. 주식 수익률도 같은 식입니다.</li>
+        <li><strong>올리기·내리기</strong> — 5만원짜리를 20% 할인하면 50,000 × (1 − 0.2) = 40,000원.</li>
+        <li><strong>원래 값</strong> — 20% 할인해서 4만원이면 원래 값은 40,000 ÷ 0.8 = 50,000원. 40,000 × 1.2 = 48,000원이 아닙니다.</li>
+      </ul>
+
+      <details>
+        <summary>20% 올렸다가 20% 내리면 왜 원래 값이 아닌가요?</summary>
+        <p>
+          두 번째 계산의 기준이 바뀌기 때문입니다. 100을 20% 올리면 120이고, 120에서 20%를
+          내리면 120 × 0.8 = 96입니다. 원래대로 돌아가려면 120에서 16.67%만 내려야 합니다.
+          '바뀐 값의 원래 값' 계산을 쓰면 이 차이를 바로 볼 수 있습니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>퍼센트와 퍼센트포인트(%p)는 어떻게 다른가요?</summary>
+        <p>
+          금리가 3%에서 4%가 되면 <strong>1%포인트</strong> 오른 것이고, 비율로는
+          (4 − 3) ÷ 3 × 100 = <strong>33.33%</strong> 오른 것입니다. 이미 %인 숫자끼리의
+          차이는 %p, 그 차이가 처음 값의 몇 %인지는 변화율로 셉니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>기준값이 0이거나 음수면 어떻게 되나요?</summary>
+        <p>
+          0으로는 나눌 수 없어서 '몇 %인지'와 '변화율'은 계산하지 않고 안내만 띄웁니다.
+          기준값이 음수면 늘어난 쪽을 +로 읽도록 기준값의 절댓값으로 나눕니다 — 손실이
+          −100만원에서 −50만원으로 줄면 +50%입니다.
+        </p>
+      </details>
+
+      <p>
+        부가세 10%를 더하거나 합계에서 빼는 계산은 <a href="/vat/">부가세 계산기</a>가 따로
+        합니다(공급가액 ↔ 합계금액, 간이과세 포함).
+      </p>
+
+      <AdSlot label="percent-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

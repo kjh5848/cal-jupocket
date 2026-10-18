@@ -65,7 +65,7 @@ describe("계산기에서 이어서 볼 글", () => {
   it("계산기도 결과를 받는다", () => {
     // 계산기를 하나 늘릴 때마다 여기가 깨진다. 그게 목적이다 — 새
     // 계산기가 nextReads 배선 없이 조용히 들어오는 것을 막는다.
-    expect(calcPaths.length).toBe(30);
+    expect(calcPaths.length).toBe(31);
     for (const p of calcPaths) {
       expect(nextReads(p).length, p).toBeGreaterThan(0);
     }
@@ -75,7 +75,8 @@ describe("계산기에서 이어서 볼 글", () => {
     // 계산기는 guide 만 걸러낸 배열에 없어서 findIndex 가 -1 이 됐고,
     // 그 결과 어느 계산기든 클러스터의 첫 글을 권했다 — 가산세 계산기가
     // 3.3% 글을 권하고 있었다. 가장 가까운 글이 나와야 한다.
-    for (const p of calcPaths) {
+    // 범용 도구(/tools/)는 3편 글 시리즈가 없어 같은 주제의 글이 없다(설계 197행 — 세금 사이트 신호와 분리).
+    for (const p of calcPaths.filter((p) => !p.startsWith("/tools/"))) {
       const first = nextReads(p)[0];
       expect(first.link.kind, p).toBe("guide");
       expect(first.crossCluster, p).toBe(false);

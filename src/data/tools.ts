@@ -78,6 +78,7 @@ const SYN: Record<string, string[]> = {
   "/guide/ordinary-wage-calculator/": ["통상임금", "통상임금 계산", "통상임금계산기", "통상임금 계산 방법", "통상시급", "통상시급 계산", "통상시급 계산기", "1일 통상임금", "1일 통상임금 계산기", "기본시급"],
   "/guide/overtime-pay-calculator/": ["야근수당", "야근수당계산기", "야근수당 계산", "연장근로수당", "연장근로수당 계산", "야간수당", "야간수당 계산기", "휴일근로수당", "휴일수당", "가산수당", "통상시급"],
   "/guide/brokerage-fee-calculator/": ["중개보수", "중개보수계산기", "복비", "복비 계산기", "복비계산기", "부동산 수수료", "부동산 중개수수료", "중개수수료", "월세 복비", "전세 복비"],
+  "/tools/percent/": ["퍼센트", "퍼센트계산기", "퍼센트 계산", "퍼센트 계산법", "퍼센트 계산방법", "퍼센트 계산 공식", "주식 퍼센트 계산기", "%", "할인율 계산", "할인율 계산기", "할인율 계산법", "증감률 계산", "증감률 계산기"],
   "/guide/minimum-wage-calculator/": ["최저임금", "최저시급", "2026 최저임금"],
   "/guide/take-home-calculator/": ["실수령액", "월급 얼마", "연봉 실수령", "세후 월급", "월급 실수령액", "하루 실수령액", "월급 하루", "일급 환산"],
   "/property-tax/": ["재산세", "주택 재산세", "재산세 고지서"],
@@ -106,7 +107,7 @@ const SYN: Record<string, string[]> = {
 const NEXT: { href: string; name: string; blurb: string; type: ToolType; icon: string; keywords: string[] }[] = [
   { href: "/tools/date-diff/", name: "날짜 계산기", blurb: "두 날짜 사이 · 며칠 뒤 · D-day", type: "date", icon: "calendar", keywords: ["날짜 계산", "디데이", "D-day", "며칠"] },
   { href: "/tools/age/", name: "만 나이 계산기", blurb: "생년월일 → 만 나이 · 연 나이", type: "date", icon: "calendar", keywords: ["만 나이", "나이 계산", "만나이 계산기"] },
-  { href: "/tools/percent/", name: "퍼센트 계산기", blurb: "몇 %인지 · % 올리고 내리기", type: "unit", icon: "percent", keywords: ["퍼센트", "%", "비율"] },
+  { href: "/tools/date-day/", name: "날짜 요일 계산기", blurb: "날짜 → 무슨 요일 · 몇째 주", type: "date", icon: "calendar", keywords: ["요일 계산", "무슨 요일", "날짜 요일"] },
   { href: "/tools/pyeong/", name: "평수 계산기", blurb: "평 ↔ ㎡ · 공급·전용면적", type: "unit", icon: "calculator", keywords: ["평수", "평 계산", "제곱미터 평", "㎡"] },
 ];
 
@@ -129,7 +130,8 @@ function liveTool(href: string): Tool {
     keywords: [name, ...(SYN[href] ?? [])],
     status: "live",
     icon: link.icon,
-    verified: "law",
+    // 범용(/tools/) 도구는 법 숫자가 없다 — '원문 검증' 표시를 붙이지 않는다
+    ...(href.startsWith("/tools/") ? {} : { verified: "law" as const }),
   };
 }
 

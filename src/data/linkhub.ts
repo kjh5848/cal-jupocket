@@ -342,6 +342,7 @@ export const hubEntries: HubEntry[] = [
   { no: 315, href: "/guide/ordinary-wage-calculator/", label: "통상임금 계산기", kind: "calc" },
   { no: 316, href: "/guide/daily-worker-insurance-calculator/", label: "일용직 4대보험 계산기", kind: "calc" },
   { no: 317, href: "/guide/daily-worker-insurance-deduction/", label: "일용직 4대보험 공제 — 일당별 표", kind: "guide" },
+  { no: 318, href: "/tools/percent/", label: "퍼센트 계산기", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */

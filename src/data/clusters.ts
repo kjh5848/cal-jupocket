@@ -62,6 +62,8 @@ export const clusterColor: Record<
   labor: { bg: "#fbeaf0", wm: "#f2c4d4", ink: "#8a2148", mark: "#a8325c" },
   // 돈·금융은 일곱 번째 축이다(설계 3-4 신설). 세금이 아니라 빌리고 모으는 돈 — 대출·예적금. 분류 색 #0b5cad 를 표시 색으로 쓴다.
   money: { bg: "#e4eefa", wm: "#b6d0f0", ink: "#0a4682", mark: "#0b5cad" },
+  // 단위·변환은 첫 범용 묶음 — 분류 색 #1f9c8e(청록)를 표시 색으로, 세목 초록(#0f6e56)보다 밝게 떼어 둔다.
+  unit: { bg: "#e2f5f2", wm: "#aee0d9", ink: "#146b61", mark: "#1f9c8e" },
 };
 
 export const clusters: Cluster[] = [
@@ -426,6 +428,17 @@ export const clusters: Cluster[] = [
       { href: "/guide/dsr/", title: "DSR 계산 — 모든 대출의 한 해 원리금을 연소득으로 나눈 비율, 마이너스통장은 한도 ÷ 5년으로 셉니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/dsr-limit/", title: "DSR 한도 — 총대출이 1억원을 넘으면 은행은 DSR 40% 안에서만 빌려줍니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/dsr-calculator/", title: "DSR 계산기", kind: "calc", icon: "calculator", blurb: "연소득·새 대출·기존 대출 → DSR·40% 안 최대 금액" },
+    ],
+  },
+  /*
+   * 단위·변환 — 첫 범용 도구 묶음(설계 2절·197행). 세금·급여처럼 3편 글 시리즈가 없고
+   * /tools/<slug>/ 한 페이지씩이라 글(guide)이 없을 수 있다 — 홈 글 묶음은 글 0개면 건너뛴다.
+   */
+  {
+    id: "unit",
+    title: "단위·변환",
+    links: [
+      { href: "/tools/percent/", title: "퍼센트 계산기", kind: "calc", icon: "percent", blurb: "몇 %인지 · % 올리고 내리기 · 변화율" },
     ],
   },
 ];
