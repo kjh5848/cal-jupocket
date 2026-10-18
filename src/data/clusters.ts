@@ -412,6 +412,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/deposit-interest/", title: "예금 이자 계산 — 원금 × 연 이자율 × 맡긴 개월 ÷ 12, 받을 때 15.4%를 뗍니다", kind: "guide", icon: "chart" },
       { href: "/guide/deposit-simple-compound/", title: "예금 단리 복리 차이 — 단리는 원금에만, 월복리는 매달 붙은 이자에도 이자가 붙습니다", kind: "guide", icon: "chart" },
       { href: "/guide/deposit-interest-calculator/", title: "예금 이자 계산기", kind: "calc", icon: "calculator", blurb: "원금·이율·개월 → 세후 이자·만기 금액" },
+      { href: "/guide/dsr/", title: "DSR 계산 — 모든 대출의 한 해 원리금을 연소득으로 나눈 비율, 마이너스통장은 한도 ÷ 5년으로 셉니다", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/dsr-limit/", title: "DSR 한도 — 총대출이 1억원을 넘으면 은행은 DSR 40% 안에서만 빌려줍니다", kind: "guide", icon: "coins", year: 2026 },
+      { href: "/guide/dsr-calculator/", title: "DSR 계산기", kind: "calc", icon: "calculator", blurb: "연소득·새 대출·기존 대출 → DSR·40% 안 최대 금액" },
     ],
   },
 ];
@@ -421,6 +424,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/dsr-calculator/",
+  "/guide/dsr-limit/",
+  "/guide/dsr/",
   "/guide/hourly-wage-calculator/",
   "/guide/hourly-wage-monthly/",
   "/guide/hourly-wage/",

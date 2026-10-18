@@ -1,0 +1,136 @@
+---
+/**
+ * "DSR 계산기" — DSR 시리즈. (DSR계산기·주담대 DSR 계산기·신용대출 DSR 계산기·dsr 계산기 마통·전세대출 DSR·스트레스 DSR 계산기도 이 글, 계산기 포함)
+ * 계산: src/lib/dsr.ts dsr() — 은행업감독규정 별표 6 제4장 4. 가목, 세칙 별표 18 제12호·제12-2호 사목·표 3(rates: dsr-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/dsr-2026.json";
+import { dsr, dsrLoanAnnual } from "../../../lib/dsr";
+import { won } from "../../../lib/won";
+
+const B = r.bankLimit;
+const ex = dsr({ income: 50_000_000, newLoan: { kind: "mortgage", amount: 300_000_000, ratePct: 4, years: 30, method: "level" }, others: [] });
+const minus = dsrLoanAnnual({ kind: "credit", amount: 50_000_000, ratePct: 6, years: 1, method: "bullet" });
+const withMinus = dsr({ income: 50_000_000, newLoan: { kind: "mortgage", amount: 300_000_000, ratePct: 4, years: 30, method: "level" }, others: [{ kind: "credit", amount: 50_000_000, ratePct: 6, years: 1, method: "bullet" }] });
+const stress = dsr({ income: 50_000_000, newLoan: { kind: "mortgage", amount: 300_000_000, ratePct: 4, years: 30, method: "level" }, stressPct: 1.5, others: [] });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 dsr-series.test.ts 가 rates 와 대조한다.
+const title = "DSR 계산기 — 연소득과 새 대출·기존 대출을 넣으면 DSR과 은행 40% 안에서 더 빌릴 수 있는 금액이 나옵니다";
+const description =
+  "DSR 계산기는 연소득과 주택담보대출·신용대출·마이너스통장의 금액·금리·기간으로 한 해 원리금과 DSR을 계산합니다. 대출 종류별 원리금은 은행업감독업무시행세칙 별표 18의 부채산정방식을 따르고, 총대출 1억원을 넘으면 은행 DSR 40% 규제 대상인지도 표시합니다.";
+
+const ANSWER = `연소득 5천만원에 주택담보대출 3억원(연 4%, 30년, 원리금균등)이면 한 해 원리금 ${won(ex.totalAnnual)}으로 DSR ${ex.dsr}%입니다. 은행 ${B.ratioPct}% 안에서는 같은 조건으로 ${won(ex.maxNewLoan)}까지 계산됩니다. 마이너스통장 한도 5천만원(연 6%)이 있으면 한도 ÷ 5년 + 이자 ${won(minus.total)}이 더해져 DSR ${withMinus.dsr}%가 됩니다.`;
+
+const QA = [
+  { q: "DSR 계산기에 마이너스통장은 어떻게 넣나요?", a: `쓴 금액이 아니라 한도 전체를 넣고 상환 방식은 '일시상환·마이너스통장'을 고르세요. 세칙 별표 18 표 3은 분할상환이 아닌 신용대출을 대출총액(한도대출은 한도) ÷ 5년에 이자를 더해 셉니다. 한도 5천만원·연 6%면 1년 ${won(minus.principal)} + ${won(minus.interest)} = ${won(minus.total)}입니다.` },
+  { q: "전세대출은 DSR에 들어가나요?", a: `전세자금대출은 원금도 이자도 DSR에 넣지 않습니다(표 3, 제12호 나목). 다만 전세보증금을 담보로 받는 전세보증금담보대출은 따로 셉니다. 계산기에서 기존 대출을 '전세자금대출'로 고르면 0원으로 계산됩니다.` },
+  { q: "스트레스 DSR은 어떻게 계산하나요?", a: `스트레스 금리를 새 대출 금리에 더해 DSR만 다시 계산합니다. 실제 내는 이자는 그대로입니다. 연 4%에 1.5%p를 더하면 위 예시의 한 해 원리금이 ${won(stress.newAnnual.total)}, DSR ${stress.dsr}%가 됩니다. 지금 적용되는 스트레스 금리는 지역·대출 종류마다 달라 기본값을 0으로 뒀습니다. 은행에서 안내받은 값을 넣으세요.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">은행 기준(DSR {B.ratioPct}%, 총대출 1억원 초과 차주)입니다. 대출 종류별 한 해 원리금은 은행업감독업무시행세칙 별표 18 표 3을 따르고, 이자는 첫 12개월 약정 이자로 봅니다. 실제 한도는 은행 심사·스트레스 금리·소득 인정 방식에 따라 다릅니다.</p>
+    <div class="calc-input-wrap">
+      <label for="dsr-income">연소득</label>
+      <input type="text" inputmode="numeric" id="dsr-income" value="50,000,000" data-won />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dsr-kind">새 대출 종류</label>
+      <select id="dsr-kind" data-seg><option value="mortgage" selected>주택담보대출</option><option value="credit">신용대출</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dsr-method">상환 방식</label>
+      <select id="dsr-method" data-seg><option value="level" selected>원리금균등</option><option value="principal">원금균등</option><option value="bullet">일시상환·마통</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dsr-amount">대출금액</label>
+      <input type="text" inputmode="numeric" id="dsr-amount" value="300,000,000" data-won />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dsr-rate">연 이자율</label>
+      <input type="number" min="0" max="30" step="0.1" id="dsr-rate" value="4" data-step />
+      <span class="unit">%</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dsr-years">대출기간</label>
+      <input type="number" min="1" max="50" step="1" id="dsr-years" value="30" data-step />
+      <span class="unit">년</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dsr-stress">스트레스 금리</label>
+      <input type="number" min="0" max="5" step="0.05" id="dsr-stress" value="0" data-step />
+      <span class="unit">%p</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dsr-o-kind">기존 대출</label>
+      <select id="dsr-o-kind">
+        <option value="none" selected>없음</option>
+        <option value="mortgage-level">주택담보대출(분할상환)</option>
+        <option value="credit-level">신용대출(분할상환)</option>
+        <option value="credit-bullet">신용대출(일시)·마이너스통장</option>
+        <option value="jeonse-bullet">전세자금대출</option>
+      </select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dsr-o-amount">기존 대출 금액(마통은 한도)</label>
+      <input type="text" inputmode="numeric" id="dsr-o-amount" value="0" data-won />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dsr-o-rate">기존 대출 이자율</label>
+      <input type="number" min="0" max="30" step="0.1" id="dsr-o-rate" value="5" data-step />
+      <span class="unit">%</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dsr-o-years">기존 대출 기간</label>
+      <input type="number" min="1" max="50" step="1" id="dsr-o-years" value="5" data-step />
+      <span class="unit">년</span>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="dsr-new|dsr-other"
+      data-bar-labels="새 대출 한 해 원리금|기존 대출 한 해 원리금"
+      data-dock="dsr-hero"
+    >
+      <p class="label">DSR</p>
+      <p class="big" id="dsr-hero">{ex.dsr}%</p>
+      <p class="meta" id="dsr-note">은행 {B.ratioPct}% 이내 · 총대출 {won(ex.totalLoan)}으로 1억원 초과라 규제 대상</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip" data-group="새 대출"><span class="label">한 해 원금</span><span class="value" id="dsr-np">{won(ex.newAnnual.principal)}</span></div>
+      <div class="stat-chip"><span class="label">한 해 이자</span><span class="value" id="dsr-ni">{won(ex.newAnnual.interest)}</span></div>
+      <div class="stat-chip"><span class="label">새 대출 한 해 원리금</span><span class="value" id="dsr-new">{won(ex.newAnnual.total)}</span></div>
+      <div class="stat-chip"><span class="label">DSR에 쓴 기간</span><span class="value" id="dsr-term">{ex.newAnnual.termYears}년</span></div>
+      <div class="stat-chip" data-group="합계"><span class="label">기존 대출 한 해 원리금</span><span class="value" id="dsr-other">{won(ex.otherAnnual)}</span></div>
+      <div class="stat-chip"><span class="label">한 해 원리금 합계</span><span class="value" id="dsr-total">{won(ex.totalAnnual)}</span></div>
+      <div class="stat-chip"><span class="label">{B.ratioPct}% 안 새 대출 최대</span><span class="value" id="dsr-max">{won(ex.maxNewLoan)}</span></div>
+    </div>
+    <p class="meta" id="dsr-cap" hidden></p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>신용대출을 거치 없이 매달 나눠 갚으면 '분할상환'을 고르세요. 이때 원금은 대출총액 ÷ 약정만기로 보되 만기가 5년보다 짧으면 5년, 10년보다 길면 10년으로 맞춥니다(표 3). 대출 종류별로 어떻게 세는지는 <a href="/guide/dsr/">DSR 계산</a>에 표로 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>대출기간은 40년을 넘겨 넣어도 40년으로 계산합니다. 세칙 별표 18 제12-2호 사목이 DSR 계산에 쓰는 만기를 원칙적으로 40년까지로 정해 두었기 때문입니다. 주택담보대출을 원금 일시상환으로 받으면 기간이 10년을 넘어도 원금을 10년으로 나눕니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>40% 규제가 누구에게 걸리는지, 부부 소득을 합칠 때 무엇이 같이 합쳐지는지는 <a href="/guide/dsr-limit/">DSR 한도</a>에 있습니다. 매달 내는 돈과 상환표는 <a href="/guide/loan-calculator/">대출 이자 계산기</a>, 마이너스통장의 실제 이자는 <a href="/guide/minus-account-calculator/">마이너스통장 이자 계산기</a>로 볼 수 있습니다.</p>
+
+  <script src="../../../scripts/dsr.ts"></script>
+</GuideLayout>

@@ -68,8 +68,8 @@ describe("이상한 입력", () => {
     expect(searchTools(tools, "ㅎㅎㅎㅎㅎㅎ")).toEqual([]);
   });
   it("곧 담길 도구는 공개 도구 뒤", () => {
-    // 예금 이자 계산기가 공개돼(2026-10-18) "이자" 로는 곧 담길 도구가 안 걸린다 — 대출 계산기(공개)와 DSR(곧)이 같이 걸리는 "대출"
-    const r = searchTools(tools, "대출");
+    // DSR 계산기가 공개돼(2026-10-18) "대출" 로는 곧 담길 도구가 안 걸린다 — 주휴수당 계산기(공개)와 야근수당 계산기(곧)가 같이 걸리는 "수당"
+    const r = searchTools(tools, "수당");
     const firstNext = r.findIndex((x) => x.tool.status === "next");
     expect(firstNext).toBeGreaterThan(-1);
     expect(r.slice(firstNext).every((x) => x.tool.status === "next")).toBe(true);

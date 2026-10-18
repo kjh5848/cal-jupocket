@@ -1,0 +1,58 @@
+---
+/**
+ * "DSR 한도" — DSR 시리즈. (DSR 40%·DSR 규제·연봉 DSR 한도·스트레스 DSR·dsr 계산기 부부합산도 이 글)
+ * 근거: 은행업감독규정 별표 6 제4장 4. 가목, 세칙 별표 18 제12-1호·제12-2호, 금융위원회 보도자료(2025.5.20.)(rates: dsr-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/dsr-2026.json";
+import { dsr } from "../../../lib/dsr";
+import { won } from "../../../lib/won";
+
+const B = r.bankLimit;
+const loan = (ratePct: number) => ({ kind: "mortgage" as const, amount: 100_000_000, ratePct, years: 30, method: "level" as const });
+const incomes = [30_000_000, 40_000_000, 50_000_000, 70_000_000, 100_000_000];
+const ex = dsr({ income: 50_000_000, newLoan: loan(4), others: [] });
+const exS = dsr({ income: 50_000_000, newLoan: loan(4), stressPct: 1.5, others: [] });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 dsr-series.test.ts 가 rates 와 대조한다.
+const title = "DSR 한도 — 총대출이 1억원을 넘으면 은행은 DSR 40% 안에서만 빌려줍니다";
+const description =
+  "은행업감독규정 별표 6은 총대출이 1억원을 넘는 사람에게 은행이 DSR 40% 이내로만 가계대출을 하도록 정합니다. 연봉별로 40%를 채우는 주택담보대출 금액, 부부 소득 합산, 만기 40년 상한, 스트레스 DSR이 한도를 줄이는 방식을 정리했습니다.";
+
+const ANSWER = `은행은 총대출(새로 신청하는 대출 포함, 마이너스통장은 한도)이 1억원을 넘는 사람에게 DSR ${B.ratioPct}%를 넘지 않게 가계대출을 해야 합니다(은행업감독규정 별표 6 제4장 4. 가목). 연소득 5천만원이면 한 해 원리금 2천만원까지라, 연 4%·30년 원리금균등 주택담보대출로는 ${won(ex.maxNewLoan)}까지 계산됩니다.`;
+
+const QA = [
+  { q: "연봉별 DSR 40% 한도는 얼마인가요?", a: `한 해 원리금이 연소득의 ${B.ratioPct}%까지입니다. 다른 대출이 없고 주택담보대출을 연 4%·30년 원리금균등으로 받는다면 아래 표 금액이 ${B.ratioPct}%를 채웁니다. 금리가 오르거나 기간이 짧아지면 같은 소득으로 빌릴 수 있는 금액이 줄어듭니다.` },
+  { q: "부부합산으로 DSR을 계산할 수 있나요?", a: `됩니다. 연소득은 차주 본인 기준이지만 배우자 소득을 합칠 수 있고, 그때는 배우자 명의 대출도 총부채에 함께 넣어야 합니다(세칙 별표 18 제12-1호 라목). 배우자 대출이 크면 합쳐도 DSR이 거의 내려가지 않을 수 있습니다.` },
+  { q: "스트레스 DSR은 한도를 얼마나 줄이나요?", a: `DSR을 계산할 때만 금리에 스트레스 금리를 더합니다. 같은 3억원 대출이라도 계산상 원리금이 커져 DSR이 오르고, 그만큼 ${B.ratioPct}% 안에 들어가는 금액이 줄어듭니다. 연소득 5천만원·연 4%·30년이면 ${B.ratioPct}%를 채우는 금액이 ${won(ex.maxNewLoan)}에서 1.5%p를 더할 때 ${won(exS.maxNewLoan)}으로 줄어듭니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>연소득</th><th>한 해 원리금 {B.ratioPct}%</th><th>연 4% · 30년 대출 금액</th></tr></thead>
+      <tbody>
+        {incomes.map((inc) => { const x = dsr({ income: inc, newLoan: loan(4), others: [] }); return <tr><th scope="row">{won(inc)}</th><td>{won(inc * B.ratioPct / 100)}</td><td>{won(x.maxNewLoan)}</td></tr>; })}
+      </tbody>
+    </table>
+  </div>
+  <p>총대출이 1억원 이하라면 이 {B.ratioPct}% 규제는 걸리지 않습니다. 다만 은행은 그 경우에도 소득을 확인하고 자체 기준으로 심사합니다. 대출기간은 길게 잡을수록 한 해 원리금이 줄지만, DSR 계산에 쓰는 만기는 원칙적으로 40년까지입니다(세칙 별표 18 제12-2호 사목).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>인정소득이나 신고소득을 두 가지 이상 써서 소득을 잡으면 연 7천만원까지만 인정됩니다(세칙 별표 18 제12-2호 다목). 소득 종류별 인정 방식은 <a href="/guide/dsr/">DSR 계산</a>에 이어집니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>금융위원회는 2025년 5월 20일 3단계 스트레스 DSR을 2025년 7월 1일부터 시행한다고 발표했습니다. 그 뒤 지역·대출 종류별 스트레스 금리는 바뀔 수 있어 여기 계산에는 넣지 않았습니다. 은행에서 안내받은 스트레스 금리를 <a href="/guide/dsr-calculator/">DSR 계산기</a>에 넣으면 내 한도가 얼마나 줄어드는지 볼 수 있습니다.</p>
+</GuideLayout>

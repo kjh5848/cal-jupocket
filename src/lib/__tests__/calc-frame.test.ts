@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { calcPresets } from "../../data/calc-presets";
 
 const MOVED: { path: string; attrs: string[] }[] = [
+  { path: "/guide/dsr-calculator/", attrs: ["data-two", "data-won", "data-seg", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/minus-account-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/hourly-wage-calculator/", attrs: ["data-two", "data-won", "data-seg", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/deposit-interest-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-seg", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
@@ -62,6 +63,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
  * /guide/child-incentive-amount/: 네이버 '자녀장려금 3000만원'·'자녀장려금 연봉'·'연봉 4000 자녀장려금'·'자녀장려금 자녀 2명' 결과 없음, '자녀장려금 금액·지급액' 확장은 기준·산정표·지급일·조회뿐(2026-10-17, keywords/ac-child-incentive-2026-10-17.csv)
  * /guide/medical-credit-limit/: 네이버 '의료비 세액공제'·'의료비 세액공제 한도·계산·연봉'·'연봉 의료비 세액공제'·'총급여 3% 의료비'·'의료비 3%' 에 금액 줄기 없음, '연봉 3000·4000·5000 의료비'·'의료비 100만원·500만원·700만원' 결과 없음(2026-10-17, keywords/ac-medical-credit-2026-10-17.csv)
  * /guide/old-age-pension-age/: 금액 입력 칸 없음(출생연도·나이만)
+ * /guide/dsr-calculator/: 네이버 'DSR 계산기'·'DSR 계산'·'DSR'·'스트레스 DSR'·'연봉 DSR' 확장은 40%·규제·한도·뜻·마통·부부합산·주담대·신용·전세·1~3단계뿐, 연봉·대출 금액 줄기 없음(2026-10-18, keywords/ac-dsr-2026-10-18.csv)
  * /guide/crypto-tax-calculator/: 네이버 '코인 세금'·'가상자산 세금'·'코인 과세'·'비트코인 세금'·'코인 세금 계산' 확장은 유예·폐지·법안·신고·기준·계산기뿐, 금액 시드 '코인 1억 세금' 은 확장 0건(시드 줄로만 남음)(2026-10-18, keywords/ac-crypto-2026-10-18.csv)
  * /guide/electric-car-tax-calculator/: 네이버 '전기차 취득세'·'전기차 세금'·'전기차 자동차세'·'전기차 취득세 계산' 확장은 감면·2027·계산기·연납·기준뿐, 금액 시드 '전기차 4000만원 취득세'·'5000만원 취득세' 는 확장 0건(시드 줄로만 남음)(2026-10-18, keywords/ac-electric-car-2026-10-18.csv)
  * /vehicle-tax/: 금액 입력 칸 없음(배기량 cc·기산 연도) — cc 버튼 1,598·1,601 은 1,600cc 경계를 보여 주는 예시라 돈 프리셋이 아님
@@ -71,7 +73,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
  * /guide/industrial-accident-disability/: 네이버 '산재 장해등급'·'장해등급 보상금'·'산재 장해급여'·'장해보상연금'·'장해등급 14급 보상금' 확장은 등급(7·10·12·14급)·금액·보상표·계산법·신청·세금뿐, 평균임금 금액 줄기 없음(2026-10-17, keywords/ac-industrial-disability-2026-10-17.csv)
  * /guide/industrial-accident-leave-pay/: 네이버 '월급 300 산재'·'산재 휴업급여 월급' 결과 없음, '산재 휴업급여·휴업급여 계산·산재 평균임금' 확장은 계산 방법·일수·기간·신청·지급일·상한선뿐(2026-10-17, keywords/ac-industrial-leave-2026-10-17.csv)
  */
-const NO_PRESETS = new Set(["/guide/severance-pay-calculator/", "/guide/crypto-tax-calculator/", "/guide/electric-car-tax-calculator/", "/vehicle-tax/", "/guide/jongbu-calculator/", "/guide/capital-gains-calculator/", "/guide/divorce-acquisition-tax/", "/guide/industrial-accident-disability/", "/guide/industrial-accident-leave-pay/", "/guide/old-age-pension-age/", "/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/", "/guide/unemployment-benefit-calculator/", "/guide/severance-tax-calculator/", "/guide/medical-credit-limit/", "/guide/earned-incentive-amount/", "/guide/child-incentive-amount/", "/guide/hourly-wage-calculator/"]);
+const NO_PRESETS = new Set(["/guide/severance-pay-calculator/", "/guide/crypto-tax-calculator/", "/guide/electric-car-tax-calculator/", "/vehicle-tax/", "/guide/jongbu-calculator/", "/guide/capital-gains-calculator/", "/guide/divorce-acquisition-tax/", "/guide/industrial-accident-disability/", "/guide/industrial-accident-leave-pay/", "/guide/old-age-pension-age/", "/penalty/", "/national-pension-premium/", "/guide/weekly-holiday-pay-calculator/", "/guide/minimum-wage-calculator/", "/guide/annual-leave-calculator/", "/guide/unemployment-benefit-calculator/", "/guide/severance-tax-calculator/", "/guide/medical-credit-limit/", "/guide/earned-incentive-amount/", "/guide/child-incentive-amount/", "/guide/hourly-wage-calculator/", "/guide/dsr-calculator/"]);
 
 const bench = readFileSync("docs/calc-benchmark.md", "utf-8");
 

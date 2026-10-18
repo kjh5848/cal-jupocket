@@ -1,0 +1,69 @@
+---
+/**
+ * "DSR 계산" — DSR 시리즈 허브. (DSR 뜻·DSR 계산 방법·dsr 계산 마통·신용대출·전세대출 DSR도 이 글)
+ * 계산: src/lib/dsr.ts — 은행업감독업무시행세칙 별표 18 제12호 가목(산식)·표 3(부채산정방식)·제12-2호 사목(rates: dsr-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/dsr-2026.json";
+import { dsr, dsrLoanAnnual } from "../../../lib/dsr";
+import { won } from "../../../lib/won";
+import { dsrSeries as S } from "../../../data/series/dsr";
+
+const B = r.bankLimit;
+const home = { kind: "mortgage" as const, amount: 300_000_000, ratePct: 4, years: 30, method: "level" as const };
+const ex = dsr({ income: 50_000_000, newLoan: home, others: [] });
+const rows = [
+  { name: "주택담보대출 3억 · 연 4% · 30년 원리금균등", rule: "분할상환 첫 1년 실제 원금 + 이자", a: dsrLoanAnnual(home) },
+  { name: "주택담보대출 3억 · 연 4% · 30년 원금 일시상환", rule: "3억 ÷ 10년(최대) + 1년 이자", a: dsrLoanAnnual({ ...home, method: "bullet" }) },
+  { name: "신용대출 3천만 · 연 6% · 3년 분할상환", rule: "3천만 ÷ 5년(5~10년으로 맞춤) + 첫 1년 이자", a: dsrLoanAnnual({ kind: "credit", amount: 30_000_000, ratePct: 6, years: 3, method: "level" }) },
+  { name: "마이너스통장 한도 5천만 · 연 6%", rule: "한도 ÷ 5년 + 한도 × 금리", a: dsrLoanAnnual({ kind: "credit", amount: 50_000_000, ratePct: 6, years: 1, method: "bullet" }) },
+  { name: "전세자금대출 2억 · 연 4%", rule: "넣지 않음", a: dsrLoanAnnual({ kind: "jeonse", amount: 200_000_000, ratePct: 4, years: 2, method: "bullet" }) },
+];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 dsr-series.test.ts 가 rates 와 대조한다.
+const title = "DSR 계산 — 모든 대출의 한 해 원리금을 연소득으로 나눈 비율, 마이너스통장은 한도 ÷ 5년으로 셉니다";
+const description =
+  "DSR(총부채원리금상환비율)은 가진 모든 대출의 한 해 원리금 상환액을 연소득으로 나눈 비율입니다. 주택담보대출·신용대출·마이너스통장·전세대출을 각각 어떻게 세는지 은행업감독업무시행세칙 별표 18의 부채산정방식대로 정리했습니다.";
+
+const ANSWER = `DSR = 모든 금융회사 대출의 한 해 원리금 상환액 ÷ 연소득 × 100입니다(은행업감독업무시행세칙 별표 18 제12호). 연소득 5천만원에 주택담보대출 3억원(연 4%, 30년, 원리금균등)이면 한 해 원리금 ${won(ex.totalAnnual)}으로 DSR ${ex.dsr}%입니다. 마이너스통장은 쓴 돈이 아니라 한도를 5년에 나눠 갚는다고 보고, 전세자금대출은 넣지 않습니다.`;
+
+const QA = [
+  { q: "DSR은 무슨 뜻인가요?", a: `총부채원리금상환비율(Debt Service Ratio)입니다. 이번에 받을 대출만이 아니라 이미 가진 주택담보대출·신용대출·카드론까지 모든 대출의 한 해 원금과 이자를 더해 연소득으로 나눕니다. 은행은 총대출이 1억원을 넘는 사람에게 이 비율이 ${B.ratioPct}%를 넘지 않게 빌려줘야 합니다(은행업감독규정 별표 6 제4장 4. 가목).` },
+  { q: "대출 종류별로 한 해 원리금은 어떻게 세나요?", a: `실제로 매달 나눠 갚는 주택담보대출은 실제 상환액을 쓰지만, 원금을 나중에 한꺼번에 갚는 대출은 기간을 정해 놓고 나눠 갚는다고 가정합니다. 원금 일시상환 주택담보대출은 최대 10년, 분할상환이 아닌 신용대출·마이너스통장은 5년입니다(세칙 별표 18 표 3).` },
+  { q: "DSR 계산할 때 연소득은 무엇을 넣나요?", a: `근로소득원천징수영수증·소득금액증명원 같은 증빙소득이 원칙이고, 어려우면 국민연금·건강보험료 납부내역 같은 인정소득이나 신고소득으로 대신할 수 있습니다(세칙 별표 18 제12-1호 나목). 배우자 소득을 합치면 배우자 명의 대출도 함께 합쳐야 합니다(같은 호 라목).` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>DSR은 대출을 받을 때마다 새로 계산합니다. 새 대출을 받기 전 내 DSR이 몇 %인지, {B.ratioPct}% 안에서 얼마까지 계산되는지는 <a href="/guide/dsr-calculator/">DSR 계산기</a>에 넣어 보면 바로 나옵니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>대출</th><th>세는 방법</th><th>한 해 원리금</th></tr></thead>
+      <tbody>
+        {rows.map((x) => <tr><th scope="row">{x.name}</th><td>{x.rule}</td><td>{won(x.a.total)}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+  <p>이자는 첫 12개월 약정 이자로 계산했습니다. 예금·적금을 담보로 받은 대출과 보험계약대출도 전세자금대출처럼 DSR에 넣지 않습니다. 300만원 이하 소액대출, 새희망홀씨 같은 서민금융상품, 주택연금은 DSR 적용에서 빠집니다(세칙 별표 18 제12호 나목).</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>{B.ratioPct}% 규제가 누구에게 적용되는지, 스트레스 DSR은 무엇이 달라지는지는 <a href="/guide/dsr-limit/">DSR 한도</a>에 정리했습니다. 대출마다 매달 내는 돈은 <a href="/guide/loan-calculator/">대출 이자 계산기</a>로 볼 수 있습니다.</p>
+
+  <h2>DSR 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>
