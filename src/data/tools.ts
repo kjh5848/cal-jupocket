@@ -69,6 +69,7 @@ const SYN: Record<string, string[]> = {
   "/guide/unemployment-benefit-calculator/": ["실업급여", "구직급여", "실업급여 금액"],
   "/guide/severance-pay-calculator/": ["퇴직금", "퇴직금 계산", "평균임금", "퇴직금 얼마"],
   "/guide/minus-account-calculator/": ["마이너스통장", "마이너스통장 이자", "마이너스통장 이자계산기", "마통 이자", "통장대출 이자", "한도대출 이자", "일할 이자"],
+  "/guide/installment-savings-calculator/": ["적금", "적금이자", "적금 이자", "적금계산기", "적금 이자 계산기", "정기적금 이자계산기", "적금 만기", "적금 만기 수령액", "단리 복리"],
   "/guide/deposit-interest-calculator/": ["예금이자", "예금 이자", "예금이자계산기", "정기예금 이자", "정기예금 이자계산기", "예금 세후 이자", "이자소득세 15.4%", "단리 복리"],
   "/guide/loan-calculator/": ["대출", "대출이자", "대출이자 계산기", "상환표", "원리금균등", "원금균등", "만기일시", "주택담보대출 이자", "전세대출 이자", "신용대출 이자"],
   "/guide/parental-leave-pay-calculator/": ["육아휴직 급여", "육아휴직 월급", "출산휴가 급여"],

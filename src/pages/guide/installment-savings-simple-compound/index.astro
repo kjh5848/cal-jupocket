@@ -1,0 +1,69 @@
+---
+/**
+ * "적금 단리 복리" — 적금 이자 시리즈. (적금 단리 복리 구분법·적금계산기 연복리·연 이율보다 이자가 적은 이유도 이 글)
+ * 단리·월복리 식은 은행 약관·상품 약정(법령 아님). 세금은 소득세법 제129조 ① 1호·지방세법 제103조의13.
+ * 금액은 installmentSavings() 가 낸다(rates: installment-savings-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/installment-savings-2026.json";
+import { installmentSavings } from "../../../lib/installment-savings";
+import { won } from "../../../lib/won";
+import { installmentSavingsSeries as S } from "../../../data/series/installment-savings";
+
+const base = { monthly: 500_000, ratePct: 4, months: 12, method: "simple", tax: "normal" } as const;
+const terms = [12, 24, 36, 60].map((months) => {
+  const s = installmentSavings({ ...base, months });
+  const m = installmentSavings({ ...base, months, method: "monthly" });
+  return { months, s, m };
+});
+const [y1, , y3, y5] = terms;
+const g1 = installmentSavings({ ...base, tax: "free" });
+const p2 = (v: number) => `${(v * 100).toFixed(2)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 installment-savings-series.test.ts 가 대조한다.
+const title = "적금 단리 복리 — 단리는 회차마다 남은 개월만큼, 월복리는 붙은 이자에도 이자가 붙습니다";
+const description =
+  "적금 단리는 매달 넣은 돈에 만기까지 남은 개월만큼만 이자를 붙이고, 월복리는 달마다 생긴 이자를 원금에 더해 다음 달 이자를 계산합니다. 같은 연 이율 예금보다 적금 이자가 적은 이유와, 내 적금이 어느 쪽인지 확인하는 방법을 정리했습니다.";
+
+const ANSWER = `월 50만원·연 4% 적금은 1년이면 단리 ${won(y1.s.grossInterest)}, 월복리 ${won(y1.m.grossInterest)}으로 ${won(y1.m.grossInterest - y1.s.grossInterest)} 차이이고, 5년이면 단리 ${won(y5.s.grossInterest)}, 월복리 ${won(y5.m.grossInterest)}으로 ${won(y5.m.grossInterest - y5.s.grossInterest)}까지 벌어집니다(세전).`;
+
+const QA = [
+  { q: "적금 단리와 월복리는 계산이 어떻게 다른가요?", a: `단리는 회차마다 월 납입액 × 연 이자율 ÷ 12 × 남은 개월을 더합니다. 월복리는 회차마다 넣은 돈이 매달 (1 + 연 이자율 ÷ 12)배로 불어나, 붙은 이자에도 다음 달 이자가 붙습니다. 1년 적금은 차이가 작고 기간이 길수록 커집니다.` },
+  { q: "연 4% 적금인데 이자가 왜 4%보다 훨씬 적나요?", a: `마지막 달에 넣은 돈은 한 달치 이자만 받기 때문입니다. 월 50만원 12개월이면 넣은 돈 ${won(g1.principal)}에 세전 이자 ${won(g1.grossInterest)}으로 ${p2(g1.netReturn)}이고, 같은 돈을 첫 달부터 1년 예금에 넣었다고 치면 연 ${p2(g1.depositEquivRate)}와 같습니다.` },
+  { q: "내 적금이 단리인지 복리인지 어떻게 구분하나요?", a: `상품설명서의 '이자 계산 방법'이나 '이자 지급 방식'을 보세요. 은행 정기적금은 단리가 많고, '월복리'라고 따로 적힌 상품만 매달 이자를 원금에 더합니다. 세금은 어느 쪽이든 받는 이자에 같은 비율로 붙습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>월 50만원 · 연 4%</th><th>단리(세전)</th><th>월복리(세전)</th><th>차이</th></tr></thead>
+      <tbody>
+        {terms.map((t) => <tr><th scope="row">{t.months}개월</th><td>{won(t.s.grossInterest)}</td><td>{won(t.m.grossInterest)}</td><td>{won(t.m.grossInterest - t.s.grossInterest)}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>표시 이율은 1년 내내 맡긴 돈에 대한 이율입니다. 적금은 돈이 매달 조금씩 들어가니 평균으로 보면 기간의 절반 남짓만 맡긴 셈이고, 그래서 받는 이자도 원금 대비 절반 남짓입니다. 3년이면 세후로 단리 {won(y3.s.netInterest)}, 월복리 {won(y3.m.netInterest)}입니다. 목돈이 이미 있다면 <a href="/guide/deposit-interest/">예금 이자</a>와 비교해 보세요.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>월 납입액·이율·기간을 넣고 단리·월복리를 바꿔 보면 차이가 바로 나옵니다 — <a href="/guide/installment-savings-calculator/">적금 이자 계산기</a>. 회차별로 만기까지 몇 개월치 이자를 받는지도 표로 볼 수 있습니다.</p>
+
+  <h2>적금 이자 시리즈</h2>
+  <ul>
+    <li><a href={`/guide/${S.hub.slug}/`}>{S.hub.label}</a></li>
+    {S.items.filter((i) => i.slug !== "installment-savings-simple-compound").map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

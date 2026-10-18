@@ -430,6 +430,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/dsr/", title: "DSR 계산 — 모든 대출의 한 해 원리금을 연소득으로 나눈 비율, 마이너스통장은 한도 ÷ 5년으로 셉니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/dsr-limit/", title: "DSR 한도 — 총대출이 1억원을 넘으면 은행은 DSR 40% 안에서만 빌려줍니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/dsr-calculator/", title: "DSR 계산기", kind: "calc", icon: "calculator", blurb: "연소득·새 대출·기존 대출 → DSR·40% 안 최대 금액" },
+      { href: "/guide/installment-savings-interest/", title: "적금 이자 계산 — 매달 넣은 돈마다 남은 개월만큼만 이자가 붙고, 받을 때 15.4%를 뗍니다", kind: "guide", icon: "chart" },
+      { href: "/guide/installment-savings-simple-compound/", title: "적금 단리 복리 — 단리는 회차마다 남은 개월만큼, 월복리는 붙은 이자에도 이자가 붙습니다", kind: "guide", icon: "chart" },
+      { href: "/guide/installment-savings-calculator/", title: "적금 이자 계산기", kind: "calc", icon: "calculator", blurb: "월 납입액·이율·개월 → 세후 이자·만기 수령액" },
     ],
   },
   /*
@@ -461,6 +464,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/installment-savings-calculator/",
+  "/guide/installment-savings-simple-compound/",
+  "/guide/installment-savings-interest/",
   "/guide/daily-worker-insurance-deduction/",
   "/guide/daily-worker-insurance-calculator/",
   "/guide/ordinary-wage-calculator/",
