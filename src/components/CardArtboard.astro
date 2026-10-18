@@ -9,6 +9,7 @@
 import type { Card } from "../data/cards";
 import { clusterColor } from "../data/clusters";
 import { parseMarkup } from "../lib/card-markup";
+import BrandPocket from "./BrandPocket.astro";
 
 interface Props {
   card: Card;
@@ -25,6 +26,10 @@ const accent = clusterColor[cluster].mark;
       <>
         <img class="cover-photo" src={card.photo} alt="" />
         <div class="cover-scrim" />
+        <p class="cover-brand">
+          <BrandPocket size={56} />
+          주포켓
+        </p>
         <div class="cover-text">
           <span class="badge">{card.badge}</span>
           <h2 class="h-cover">{card.title}</h2>
@@ -104,7 +109,9 @@ const accent = clusterColor[cluster].mark;
   {
     card.kind === "cta" && (
       <div class="cta">
-        <div class="mark">₩</div>
+        <div class="cta-mark">
+          <BrandPocket size={132} />
+        </div>
         <h2 class="h-cta">{card.title}</h2>
         <p class="cta-sub">{card.sub}</p>
         {card.refNo && (
@@ -153,6 +160,22 @@ const accent = clusterColor[cluster].mark;
     height: 100%;
     object-fit: cover;
     filter: grayscale(1) contrast(1.08);
+  }
+  /* 표지 왼쪽 위 로고 — 사진이 밝아도 읽히게 어두운 알약 위에 앉힌다. */
+  .cover-brand {
+    position: absolute;
+    top: 64px;
+    left: 76px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 24px 10px 12px;
+    border-radius: 999px;
+    background: rgba(18, 22, 28, 0.62);
+    color: #fff;
+    font-size: 34px;
+    font-weight: 800;
   }
   .cover-scrim {
     position: absolute;
@@ -362,18 +385,11 @@ const accent = clusterColor[cluster].mark;
     flex-direction: column;
     align-items: center;
   }
-  .cta .mark {
+  /* 3D 주머니 로고(리브랜딩 Task 9). 로고가 자체 파란 판이라 흰 상자를 두르지 않는다. */
+  .cta-mark {
     width: 132px;
     height: 132px;
-    border-radius: 32px;
-    background: #fff;
-    color: var(--accent);
-    font-size: 68px;
-    font-weight: 700;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
   }
   .h-cta {
     font-size: 88px;

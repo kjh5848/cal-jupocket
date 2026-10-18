@@ -22,4 +22,20 @@ describe("브랜드", () => {
   it("파비콘은 3D 주머니(bp- 그라데이션)", () => {
     expect(read("public/favicon.svg")).toMatch(/id="bp-base"/);
   });
+  it("홈 구조화 데이터 — 발행 주체 로고는 3D 주머니 PNG 512, 설명은 도구 모음 문구(Task 9)", () => {
+    const s = read("src/pages/index.astro");
+    expect(s).toContain('"@id": `${siteUrl}/#org`');
+    expect(s).toContain("logo: `${siteUrl}/icon-512.png`");
+    const desc = s.match(/const description =\s*"([^"]+)";/)?.[1] ?? "";
+    expect(desc).toContain("도구");
+    const png = readFileSync("public/icon-512.png");
+    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([512, 512]);
+  });
+  it("카드뉴스 표지·CTA 로고는 3D 주머니(₩ 글자 아님)", () => {
+    const s = read("src/components/CardArtboard.astro");
+    expect(s).toContain('import BrandPocket from "./BrandPocket.astro"');
+    expect(s).toMatch(/class="cover-brand">\s*<BrandPocket/);
+    expect(s).toMatch(/class="cta-mark">\s*<BrandPocket/);
+    expect(s).not.toContain('<div class="mark">₩</div>');
+  });
 });
