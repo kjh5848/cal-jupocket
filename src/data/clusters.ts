@@ -437,6 +437,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/prepayment-fee/", title: "중도상환수수료 계산 — 갚는 원금 × 약정 요율 × 남은 날 ÷ 부과기간, 계약 3년이 지나면 0원입니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/prepayment-fee-3-years/", title: "중도상환수수료 3년 — 대출계약이 성립한 날부터 3년이 지나면 법으로 받을 수 없습니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/prepayment-fee-calculator/", title: "중도상환수수료 계산기", kind: "calc", icon: "calculator", blurb: "갚을 원금·요율·실행일·상환일 → 수수료·0원이 되는 날" },
+      { href: "/guide/parking-account-interest/", title: "파킹통장 이자 계산 — 매일 마감 잔액에 금리를 붙여 더하고, 받을 때 15.4%를 뗍니다", kind: "guide", icon: "chart" },
+      { href: "/guide/parking-account-tax/", title: "파킹통장 세금 — 이자를 받을 때마다 15.4%를 떼고, 따로 신고할 일은 대부분 없습니다", kind: "guide", icon: "chart" },
+      { href: "/guide/parking-account-interest-calculator/", title: "파킹통장 이자 계산기", kind: "calc", icon: "calculator", blurb: "날짜별 잔액·구간 금리 → 세전·세후 이자" },
     ],
   },
   /*
@@ -468,6 +471,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/parking-account-interest-calculator/",
+  "/guide/parking-account-tax/",
+  "/guide/parking-account-interest/",
   "/guide/prepayment-fee-calculator/",
   "/guide/prepayment-fee-3-years/",
   "/guide/prepayment-fee/",

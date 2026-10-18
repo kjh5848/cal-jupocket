@@ -1,0 +1,69 @@
+---
+/**
+ * "파킹통장 이자 계산" — 파킹통장 이자 시리즈 허브. (파킹통장 이자·이자 계산 방법·이자 지급일도 이 글)
+ * 근거: 신한 입출금이 자유로운 예금약관 제2조 ①②(결산일·매일 최종잔액), 광주은행 매일이자Wa파킹통장 금리안내(구간별 잔액 × 금리 ÷ 365,
+ * 변경일부터 적용, 분기 지급), 소득세법 제129조 ① 1호(14%), 지방세법 제103조의13(10%). 금액은 parkingInterest() 가 낸다(rates: parking-account-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/parking-account-2026.json";
+import { parkingInterest } from "../../../lib/parking-account";
+import { INTEREST_RATE, LOCAL_RATIO } from "../../../lib/deposit";
+import { won } from "../../../lib/won";
+import { parkingAccountSeries as S } from "../../../data/series/parking-account";
+
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const w = (x: number) => won(Math.round(x));
+const base = { start: "2026-09-01", payDay: "2026-09-11", opening: 1_000_000, caps: [] as number[], rates: [2], tax: "normal" } as const;
+const ten = parkingInterest(base);
+const salary = parkingInterest({ ...base, caps: [1_000_000], rates: [2, 1], balances: [{ date: "2026-09-06", balance: 2_000_000 }] });
+const change = parkingInterest({ ...base, rateChanges: [{ date: "2026-09-08", rates: [3] }] });
+const month = parkingInterest({ ...base, opening: 10_000_000, payDay: "2026-10-01" });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 parking-account-series.test.ts 가 rates 와 대조한다.
+const title = "파킹통장 이자 계산 — 매일 마감 잔액에 금리를 붙여 더하고, 받을 때 15.4%를 뗍니다";
+const description =
+  "파킹통장 이자는 하루하루의 마감 잔액에 연 이율을 곱해 365로 나눈 값을 이자 받는 날 전날까지 더한 것입니다. 금액 구간마다 금리가 다르면 구간별로 나눠 붙이고, 잔액이나 금리가 바뀐 날부터 새 값으로 셉니다. 이자 지급일과 세금까지 예로 정리했습니다.";
+
+const ANSWER = `하루 이자 = 그날 마감 잔액 × 연 이율 ÷ 365입니다. 100만원을 연 2%로 10일 두면 하루 약 ${w(1_000_000 * 0.02 / 365)}, 10일 세전 이자 ${won(ten.grossInterest)}이고, 받을 때 ${pct(INTEREST_RATE * (1 + LOCAL_RATIO))}(10원 미만 버림)를 떼고 ${won(ten.netInterest)}을 받습니다.`;
+
+const QA = [
+  { q: "파킹통장 이자 계산 방법을 순서대로 알려 주세요.", a: `① 날마다 그날 거래가 끝난 뒤 잔액(마감 잔액)을 적습니다 ② 상품에 금액 구간이 있으면 잔액을 구간별로 나눕니다 ③ 구간마다 잔액 × 연 이율 ÷ 365 를 구해 더하면 그날 이자 ④ 이자 받는 날 전날까지 하루 이자를 모두 더하고 원 미만을 버립니다 ⑤ 소득세 ${pct(INTEREST_RATE)}와 그 10%인 지방소득세를 각각 10원 미만 버려 뗍니다.` },
+  { q: "월급이 들어와 잔액이 늘면 이자는 어떻게 바뀌나요?", a: `바뀐 날부터 새 잔액으로 셉니다. 100만원까지 연 2%, 넘는 부분 연 1%인 통장에 9월 1일 100만원, 6일 월급으로 200만원이 되면 1~5일은 하루 약 ${w(1_000_000 * 0.02 / 365)}, 6~10일은 하루 약 ${w((1_000_000 * 0.02 + 1_000_000 * 0.01) / 365)}이라 10일 세전 ${won(salary.grossInterest)}입니다.` },
+  { q: "파킹통장 이자 지급일은 언제인가요?", a: "상품마다 다릅니다. 한 시중은행 약관은 저축예금 이자를 3·6·9·12월 셋째 주 마지막 영업일에 셈해 다음 날 원금에 더하고, 한 지방은행 파킹통장은 3·6·9·12월 넷째 토요일에 주되 고객이 원하는 날 그때까지 이자를 바로 받게 합니다. 이자 계산 기간은 두 곳 모두 지난 지급일부터 다음 지급일 전날까지입니다." },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>은행 '입출금이 자유로운 예금' 약관은 이자를 "매일 최종잔액에 대하여" 게시한 이율로 셈한다고 적고, 한 은행의 파킹통장 금리 안내는 하루 이자를 "구간별 매일의 최종 해당구간 잔액 × 구간별 적용금리 ÷ 365"로 적습니다. 정기예금처럼 개월로 세지 않고 실제 날수로 셉니다. 2월처럼 짧은 달은 날수만큼 이자도 적습니다.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>1천만원 · 30일</th><th>세전 이자</th><th>세금</th><th>받는 이자</th></tr></thead>
+      <tbody>
+        {[1.5, 2, 2.5, 3].map((p) => { const x = parkingInterest({ ...base, opening: 10_000_000, payDay: "2026-10-01", rates: [p] }); return <tr><th scope="row">연 {p}%</th><td>{won(x.grossInterest)}</td><td>{won(x.tax)}</td><td>{won(x.netInterest)}</td></tr>; })}
+      </tbody>
+    </table>
+  </div>
+  <p class="meta">9월 1일~30일(이자 받는 날 10월 1일), 잔액 그대로, 금액 구간 없음. 연 2%면 세전 {won(month.grossInterest)}.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>금리가 바뀌어도 같습니다. 9월 1~10일 중 8일부터 연 2%가 3%로 오르면 2%는 7일, 3%는 3일에 붙어 세전 {won(change.grossInterest)}입니다. 날짜별 잔액과 금리를 넣으면 <a href="/guide/parking-account-interest-calculator/">파킹통장 이자 계산기</a>가 나눠 셉니다. 입금액이 아니라 그날의 최종 잔액을 넣는다는 점만 기억하세요.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>받은 이자는 원금에 더해져 다음 기간에는 그 이자에도 이자가 붙습니다. 그래서 자주 받을수록 아주 조금 늘어납니다. 이자를 받을 때 떼는 세금은 <a href="/guide/parking-account-tax/">파킹통장 세금</a>에 있습니다.</p>
+
+  <h2>파킹통장 이자 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

@@ -1,0 +1,159 @@
+---
+/**
+ * "파킹통장 이자 계산기" — 파킹통장 이자 시리즈. (파킹통장 이자계산기·이자 계산기 방법도 이 글, 계산기 포함)
+ * 계산: src/lib/parking-account.ts parkingInterest() — 매일 최종잔액 × 구간 금리 ÷ 365 를 더하고 원 미만 버림, 세금은 deposit.ts depositTax().
+ * 근거: 신한 입출금이 자유로운 예금약관 제2조 ②, 광주은행 매일이자Wa파킹통장 금리안내, 소득세법 제129조 ① 1호, 지방세법 제103조의13,
+ * 국고금 관리법 제47조 ① (rates: parking-account-2026.json). roberin #46 은 입력·결과 항목만 대조했다(docs/calc-benchmark.md).
+ * 프리셋 없음 — 자동완성(keywords/ac-parking-account-2026-10-19.csv)에 금액 줄기가 없다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/parking-account-2026.json";
+import { parkingInterest } from "../../../lib/parking-account";
+import { INTEREST_RATE, LOCAL_RATIO } from "../../../lib/deposit";
+import { won } from "../../../lib/won";
+
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const w = (x: number) => won(Math.round(x));
+const one = parkingInterest({ start: "2026-10-01", payDay: "2026-10-31", opening: 10_000_000, caps: [], rates: [2], tax: "normal" });
+const ex = parkingInterest({ start: "2026-10-01", payDay: "2026-11-01", opening: 10_000_000, caps: [5_000_000], rates: [2, 1], tax: "normal" });
+const moved = parkingInterest({
+  start: "2026-10-01",
+  payDay: "2026-11-01",
+  opening: 10_000_000,
+  caps: [5_000_000],
+  rates: [2, 1],
+  balances: [{ date: "2026-10-11", balance: 13_000_000 }, { date: "2026-10-25", balance: 6_000_000 }],
+  tax: "normal",
+});
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 parking-account-series.test.ts 가 rates 와 대조한다.
+const title = "파킹통장 이자 계산기 — 날짜별 잔액과 금액 구간 금리를 넣으면 15.4%를 뗀 세후 이자가 나옵니다";
+const description =
+  "파킹통장 이자 계산기는 날마다 바뀌는 통장 잔액과 상품의 금액 구간별 금리로 하루 이자를 셈해 더하고, 소득세·지방소득세를 뗀 세후 이자를 보여 줍니다. 월급이 들어오고 카드값이 빠져도, 중간에 금리가 바뀌어도 바뀐 날부터 나눠 계산합니다.";
+
+const ANSWER = `1천만원을 파킹통장에 연 2%로 30일 두면 하루 이자 약 ${w(10_000_000 * 0.02 / 365)}, 30일 세전 이자 ${won(one.grossInterest)}입니다. ${pct(INTEREST_RATE * (1 + LOCAL_RATIO))}를 떼면 받는 이자는 ${won(one.netInterest)}입니다. 잔액이 날마다 바뀌면 아래 계산기에 바뀐 날과 그날 잔액을 넣으세요.`;
+
+const QA = [
+  { q: "파킹통장 이자 계산기는 어떻게 계산하나요?", a: `날마다 그날 마감 잔액을 상품의 금액 구간으로 나누고, 구간마다 연 이율을 곱해 365로 나눈 값이 그날 이자입니다. 이자 받는 날 전날까지 하루 이자를 모두 더해 원 미만을 버리면 세전 이자, 여기서 소득세 ${pct(INTEREST_RATE)}와 그 10%인 지방소득세를 각각 10원 미만 버려 뗍니다.` },
+  { q: "금액 구간이 있는 파킹통장은 어떻게 넣나요?", a: `상품 안내의 '○○만원 이하 연 ○%, 초과분 연 ○%'를 구간으로 넣습니다. 1천만원 중 500만원까지 연 2%, 넘는 부분 연 1%라면 앞 500만원과 뒤 500만원에 금리를 따로 붙여 31일 세전 ${won(ex.grossInterest)}입니다. 전체 잔액에 한 금리를 붙이는 상품이면 결과가 다릅니다.` },
+  { q: "중간에 월급이 들어오고 카드값이 나가면요?", a: `바뀐 날과 그날 거래가 끝난 뒤 잔액을 넣습니다. 위 예에서 11일에 1,300만원, 25일에 600만원이 되면 평균 잔액 ${w(moved.avgBalance)}, 세전 이자 ${won(moved.grossInterest)}, 세후 ${won(moved.netInterest)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">은행 약관대로 매일 마감 잔액에 금리를 붙여 첫날부터 이자 받는 날 전날까지 더합니다(365일 나눗셈). 기간 중 이자를 한 번 받는다고 보고 계산하며, 우대금리 조건·잔액 전체 적용 방식은 넣지 않았습니다. 금리는 상품 안내에서 확인해 넣으세요.</p>
+    <div class="calc-input-wrap">
+      <label for="pk-start">첫날</label>
+      <input type="date" id="pk-start" value="2026-10-01" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="pk-pay">이자 받는 날 (이날은 빼고 셈)</label>
+      <input type="date" id="pk-pay" value="2026-11-01" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="pk-open">첫날 마감 잔액</label>
+      <input type="text" inputmode="numeric" id="pk-open" value="10,000,000" data-won autocomplete="off" />
+      <span class="unit">원</span>
+    </div>
+
+    <fieldset class="calc-row-group">
+      <legend>금액 구간별 연 이율</legend>
+      <div id="pk-tiers">
+        <div class="pk-row"><label>1구간 상한(원)<input type="text" inputmode="numeric" value="5,000,000" /></label><label>연 이율(%)<input type="number" value="2" step="0.01" inputmode="decimal" /></label></div>
+        <div class="pk-row"><label>마지막 구간<input type="text" value="한도 없음" disabled /></label><label>연 이율(%)<input type="number" value="1" step="0.01" inputmode="decimal" /></label></div>
+      </div>
+      <button type="button" class="secondary" id="pk-add-tier">구간 추가</button>
+      <p class="meta">한 금리만 있는 상품이면 구간을 지워 하나만 남기세요. 상한 금액과 같은 잔액은 그 구간에 들어갑니다.</p>
+    </fieldset>
+
+    <fieldset class="calc-row-group">
+      <legend>잔액이 바뀐 날 (없으면 건너뛰기)</legend>
+      <div id="pk-bals"></div>
+      <button type="button" class="secondary" id="pk-add-bal">바뀐 날 추가</button>
+      <p class="meta">입금·출금액이 아니라 그날 거래가 끝난 뒤 남은 잔액을 넣습니다. 다음 바뀐 날 전까지 그 잔액이 이어집니다.</p>
+    </fieldset>
+
+    <fieldset class="calc-row-group">
+      <legend>금리가 바뀐 날 (없으면 건너뛰기)</legend>
+      <div id="pk-rates"></div>
+      <button type="button" class="secondary" id="pk-add-rate">금리 변경 추가</button>
+    </fieldset>
+
+    <div class="calc-input-wrap">
+      <label for="pk-tax">과세</label>
+      <select id="pk-tax" data-seg>
+        <option value="normal" selected>일반과세 {pct(INTEREST_RATE * (1 + LOCAL_RATIO))}</option>
+        <option value="free">비과세</option>
+      </select>
+    </div>
+
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="pk-net2|pk-tax-sum"
+      data-bar-labels="받는 이자|세금"
+      data-dock="pk-hero"
+    >
+      <p class="label">받는 이자(세후)</p>
+      <p class="big" id="pk-hero">{won(ex.netInterest)}</p>
+      <p class="meta" id="pk-note">{ex.days}일 · {ex.lastDay}까지 · 평균 잔액 {w(ex.avgBalance)} · 평균 잔액 기준 연 {ex.effectiveRate.toFixed(2)}%</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">세전 이자</span><span class="value" id="pk-gross">{won(ex.grossInterest)}</span></div>
+      <div class="stat-chip" data-group="떼는 세금"><span class="label">소득세</span><span class="value" id="pk-itax">−{won(ex.incomeTax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세</span><span class="value" id="pk-ltax">−{won(ex.localTax)}</span></div>
+      <div class="stat-chip" data-group="나눠 보기"><span class="label">받는 이자</span><span class="value" id="pk-net2">{won(ex.netInterest)}</span></div>
+      <div class="stat-chip"><span class="label">세금 합계</span><span class="value" id="pk-tax-sum">{won(ex.tax)}</span></div>
+    </div>
+    <p class="meta" id="pk-warn" hidden></p>
+
+    <details>
+      <summary>달별·구간별 세전 이자</summary>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>달</th><th>날수</th><th>평균 잔액</th><th>세전 이자</th></tr></thead>
+          <tbody id="pk-months">
+            {ex.months.map((m) => <tr><th scope="row">{m.month}</th><td>{m.days}일</td><td>{w(m.avgBalance)}</td><td>{w(m.interest)}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>금액 구간</th><th>세전 이자</th></tr></thead>
+          <tbody id="pk-tier-rows">
+            {ex.tiers.map((t) => <tr><th scope="row">{t.to === null ? `${won(t.from)} 넘는 부분` : `${won(t.to)}까지`}</th><td>{w(t.interest)}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">달별·구간별 값은 원 단위로 반올림해 보여 주므로 합이 세전 이자와 1원 안팎 다를 수 있습니다. 세전 이자는 기간 전체를 더한 뒤 원 미만을 버린 값입니다.</p>
+    </details>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>은행 약관은 '매일 최종잔액에 대하여 게시한 이율로 셈한다'고 적고, 한 은행의 파킹통장 금리 안내는 하루 이자를 '구간별 매일의 최종 해당구간 잔액 × 구간별 적용금리 ÷ 365'로 적습니다. 계산 순서와 이자 받는 날은 <a href="/guide/parking-account-interest/">파킹통장 이자 계산</a>에 정리했습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>세금을 이자 받을 때마다 떼는 이유와 이자가 작을 때 세금이 0원이 되는 경우는 <a href="/guide/parking-account-tax/">파킹통장 세금</a>에 있습니다. 목돈을 기간을 정해 맡기는 경우는 <a href="/guide/deposit-interest-calculator/">예금 이자 계산기</a>, 매달 넣는 적금은 <a href="/guide/installment-savings-calculator/">적금 이자 계산기</a>가 맞습니다.</p>
+
+  <style>
+    .pk-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 8px; }
+    .pk-row > label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9em; flex: 1 1 130px; min-width: 0; }
+    .pk-row input { width: 100%; min-width: 0; box-sizing: border-box; }
+    .pk-row button { flex: 0 0 auto; }
+  </style>
+  <script src="../../../scripts/parking-account.ts"></script>
+</GuideLayout>

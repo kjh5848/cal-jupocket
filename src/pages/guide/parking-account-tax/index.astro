@@ -1,0 +1,68 @@
+---
+/**
+ * "파킹통장 세금" — 파킹통장 이자 시리즈. (파킹통장 이자소득세도 이 글)
+ * 근거: 소득세법 제129조 ① 1호(이자소득 원천징수 14%), 지방세법 제103조의13(소득세의 10%), 국고금 관리법 제47조 ①·지방세기본법 제59조(10원 미만 버림),
+ * 소득세법 제14조 ③ 6호(이자·배당 2천만원 — deposit.ts THRESHOLD), 광주은행 매일이자Wa파킹통장 금리안내('세금 공제 후 지급'·비과세종합저축 가입 불가).
+ * 금액은 parkingInterest()·depositTax() 가 낸다(rates: parking-account-2026.json, financial-income-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/parking-account-2026.json";
+import { parkingInterest } from "../../../lib/parking-account";
+import { depositTax, INTEREST_RATE, LOCAL_RATIO, THRESHOLD } from "../../../lib/deposit";
+import { won, eokwon } from "../../../lib/won";
+import { parkingAccountSeries as S } from "../../../data/series/parking-account";
+
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const q = parkingInterest({ start: "2026-07-01", payDay: "2026-10-01", opening: 30_000_000, caps: [], rates: [2], tax: "normal" });
+const qFree = parkingInterest({ start: "2026-07-01", payDay: "2026-10-01", opening: 30_000_000, caps: [], rates: [2], tax: "free" });
+const small = depositTax(71, "normal");
+const raw = (v: number) => (v * INTEREST_RATE).toFixed(2);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 parking-account-series.test.ts 가 rates 와 대조한다.
+const title = "파킹통장 세금 — 이자를 받을 때마다 15.4%를 떼고, 따로 신고할 일은 대부분 없습니다";
+const description =
+  "파킹통장 이자에도 정기예금과 같은 이자소득세가 붙습니다. 은행이 이자를 줄 때 소득세와 지방소득세를 떼서 대신 내고, 각각 10원 미만은 버립니다. 이자가 아주 작으면 세금이 붙지 않는 이유와 금융소득종합과세 기준까지 예로 정리했습니다.";
+
+const ANSWER = `파킹통장 이자소득세는 이자의 ${pct(INTEREST_RATE)}(소득세)와 그 10%(지방소득세), 합쳐 ${pct(INTEREST_RATE * (1 + LOCAL_RATIO))}입니다. 3천만원을 연 2%로 석 달(92일) 두면 세전 이자 ${won(q.grossInterest)}에서 ${won(q.tax)}을 떼고 ${won(q.netInterest)}을 받습니다.`;
+
+const QA = [
+  { q: "파킹통장 이자에 붙는 세금은 얼마인가요?", a: `소득세는 이자 × ${pct(INTEREST_RATE)}에서 10원 미만을 버린 금액, 지방소득세는 그 소득세 × 10%에서 10원 미만을 버린 금액입니다. 위 예에서 소득세 ${won(q.incomeTax)}, 지방소득세 ${won(q.localTax)}입니다. 은행이 이자를 줄 때 떼서 대신 내므로(원천징수) 따로 낼 일은 없습니다.` },
+  { q: "이자가 몇십 원이면 세금도 떼나요?", a: `계산상 0원이 될 수 있습니다. 이자 71원이면 소득세는 71 × ${pct(INTEREST_RATE)} = ${raw(71)}원인데 10원 미만을 버려 ${won(small.incomeTax)}, 지방소득세도 ${won(small.localTax)}입니다. 소득세가 10원이 되려면 이자가 72원 이상이어야 합니다. 실제 떼는 금액은 은행 거래내역의 '세금' 칸에서 확인하세요.` },
+  { q: "파킹통장 이자도 금융소득종합과세에 들어가나요?", a: `들어갑니다. 한 해 이자와 배당을 모두 더해 ${eokwon(THRESHOLD)}을 넘으면 다른 소득과 합쳐 다시 세금을 계산합니다. 파킹통장 이자만으로 넘기는 드물지만 예금·적금·배당과 합쳐 봐야 합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>세율은 정기예금 이자와 같습니다(소득세법 제129조 제1항 제1호, 지방세법 제103조의13). 10원 미만 버림은 국고금 관리법 제47조 제1항과 이를 따르는 지방세기본법 제59조입니다. 비과세로 가입한 계좌면 세전 이자를 그대로 받아 위 예에서 {won(qFree.netInterest)}입니다. 다만 비과세종합저축으로 가입할 수 없다고 적어 둔 파킹통장도 있으니 상품 안내를 먼저 보세요.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>세전 이자</th><th>소득세</th><th>지방소득세</th><th>받는 이자</th></tr></thead>
+      <tbody>
+        {[71, 72, 547, 1_808, 16_438, q.grossInterest].map((v) => { const t = depositTax(v, "normal"); return <tr><th scope="row">{won(v)}</th><td>{won(t.incomeTax)}</td><td>{won(t.localTax)}</td><td>{won(v - t.incomeTax - t.localTax)}</td></tr>; })}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>세금은 이자를 받을 때마다 그 이자에 대해 뗍니다. 한 지방은행 파킹통장 안내도 이자를 "세금 공제 후 지급"한다고 적습니다. 그래서 같은 이자라도 나눠 받으면 10원 미만 버림이 여러 번 일어나 세금 합계가 몇십 원 달라질 수 있습니다. 이자 계산 자체는 <a href="/guide/parking-account-interest/">파킹통장 이자 계산</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>기준 금액과 계산 순서는 <a href="/guide/financial-income-tax/">금융소득종합과세</a>에, 이자소득 세율 근거는 <a href="/guide/interest-income-tax/">이자소득세</a>에 있습니다. 내 잔액과 금리로 세후 이자를 바로 보려면 <a href="/guide/parking-account-interest-calculator/">파킹통장 이자 계산기</a>를 쓰세요.</p>
+
+  <h2>파킹통장 이자 시리즈</h2>
+  <ul>
+    <li><a href={`/guide/${S.hub.slug}/`}>{S.hub.label}</a></li>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>
