@@ -10,6 +10,8 @@
  * 지역건강보험료·지역가입자 계산 → 지역 / 장기요양보험료 → 장기요양 / 고용보험료 → 고용
  * 4대보험 가입조건(주15시간·5인미만·알바·시간) → 가입조건 / 일용직 4대보험(8일·가입기준·공제) → 일용직
  * 건강보험 환급금(조회·신청·기간·지급일·이자) → 환급금
+ * 2026-10-19 도구 담기 루틴(roberin #350): 일용직 4대보험 계산기·일용직 건강보험 계산기·일용직 국민연금 계산·일용직 고용보험 계산 → 계산기 /
+ * 일용직 4대보험 공제·요율·일용직 고용보험 공제·건강보험 공제·국민연금 금액 → 공제(keywords/ac-daily-worker-insurance-2026-10-19.csv)
  * 쓰지 않은 축: 가입증명서·자격득실확인서 발급(서식·화면), 4대보험 연계센터(사이트 안내), 산재보험료율(업종별 고시),
  * 건강보험료 상한액 금액(고시 — 이 파일에서 확인 못 함)
  */
@@ -29,5 +31,7 @@ export const fourInsuranceSeries: Series = {
     { slug: "four-insurance-eligibility", keyword: "4대보험 가입조건", label: "4대보험 가입조건" },
     { slug: "daily-worker-insurance", keyword: "일용직 4대보험", label: "일용직 4대보험" },
     { slug: "health-insurance-refund", keyword: "건강보험 환급금", label: "건강보험 환급금" },
+    { slug: "daily-worker-insurance-calculator", keyword: "일용직 4대보험 계산기", label: "일용직 4대보험 계산기" },
+    { slug: "daily-worker-insurance-deduction", keyword: "일용직 4대보험 공제", label: "일용직 4대보험 공제 — 일당별 표" },
   ],
 };

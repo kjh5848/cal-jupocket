@@ -271,6 +271,8 @@ export const clusters: Cluster[] = [
       { href: "/guide/old-age-pension/", title: "노령연금 — 국민연금을 10년 이상 내면 받고, 1969년생부터는 65세이며 재산 기준은 없습니다", kind: "guide", icon: "umbrella", year: 2026 },
       { href: "/guide/old-age-pension-age/", title: "노령연금 나이 계산기", kind: "calc", icon: "calculator", blurb: "출생연도·시작 나이 → 수급 나이와 조기·연기 지급률" },
       { href: "/guide/old-age-pension-vs-basic/", title: "노령연금 기초연금 차이 — 노령연금은 10년 이상 낸 국민연금, 재산 기준은 기초연금에만 있습니다", kind: "guide", icon: "umbrella", year: 2026 },
+      { href: "/guide/daily-worker-insurance-calculator/", title: "일용직 4대보험 계산기", kind: "calc", icon: "calculator", blurb: "일당·근로일수 → 국민연금·건강·고용보험 가입 여부와 공제액" },
+      { href: "/guide/daily-worker-insurance-deduction/", title: "일용직 4대보험 공제, 고용보험 0.9%부터", kind: "guide", icon: "percent", year: 2026 },
     ],
   },
   /*
@@ -433,6 +435,8 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/daily-worker-insurance-deduction/",
+  "/guide/daily-worker-insurance-calculator/",
   "/guide/ordinary-wage-calculator/",
   "/guide/ordinary-hourly-wage/",
   "/guide/ordinary-wage/",

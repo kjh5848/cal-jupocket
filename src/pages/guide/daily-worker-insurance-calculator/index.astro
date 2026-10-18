@@ -1,0 +1,117 @@
+---
+/**
+ * "일용직 4대보험 계산기" — 4대보험 시리즈. (일용직 국민연금 계산·일용직 건강보험료 계산·일용직 고용보험 계산도 이 글, 계산기 포함)
+ * 계산: src/lib/daily-worker-insurance.ts dailyWorkerInsurance() — 국민연금법 시행령 제2조 제1호, 국민건강보험법 제6조 ②·시행령 제9조,
+ * 고용보험법 시행령 제3조 ②, 보험료징수법 제13조, 소득세법 제47조 ②·제134조 ③·제86조(rates: four-insurance-2026.json·withholding-tax-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/four-insurance-2026.json";
+import { dailyWorkerInsurance } from "../../../lib/daily-worker-insurance";
+import { won } from "../../../lib/won";
+
+const D = r.daily;
+const ex = dailyWorkerInsurance({ dayWage: 150_000, days: 12, hours: 8, monthOrMore: true });
+const short = dailyWorkerInsurance({ dayWage: 150_000, days: 7, hours: 8, monthOrMore: true });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 daily-worker-insurance-series.test.ts 가 rates 와 대조한다.
+const title = "일용직 4대보험 계산기 — 일당과 이번 달 근로일수를 넣으면 가입 여부와 떼는 금액이 나옵니다";
+const description =
+  "일용직 4대보험 계산기는 일당·근로일수·하루 근로시간과 1개월 이상 계속 일하는지, 일반 사업장인지 건설 현장인지를 받아 국민연금·건강보험·고용보험 가입 여부를 가리고, 근로자 몫 보험료와 일용직 소득세, 사업주 몫까지 계산합니다.";
+
+const ANSWER = `일당 15만원으로 1개월 넘게 이어 일하며 이번 달 12일(하루 8시간)이면 국민연금 ${won(ex.pension)}, 건강보험 ${won(ex.health)}, 장기요양 ${won(ex.care)}, 고용보험 ${won(ex.employment)}을 떼고 ${won(ex.takeHome)}을 받습니다. 7일이면 일수·시간 기준으로는 고용보험만 떼어 ${won(short.takeHome)}입니다.`;
+
+const QA = [
+  { q: "국민연금이 '조건부'로 나오는 건 무슨 뜻인가요?", a: `1개월 이상 이어 일해도 한 달 ${D.pensionMinDays}일 미만이고, 일반 사업장이면 ${D.pensionMinHours}시간에도 못 미칠 때는 일수·시간 기준으로 빠집니다. 다만 한 달 소득이 보건복지부 고시 금액 이상이면 포함되는데(시행령 제2조 제1호), 그 금액은 원문을 확인하지 못해 대상일 때의 보험료만 따로 보여 줍니다.` },
+  { q: "건강보험은 왜 근로시간으로 판단하나요?", a: `법령은 고용 기간 1개월 미만 일용근로자와 1개월 소정근로시간 ${D.healthMinHours}시간 미만 단시간근로자를 직장가입자에서 뺍니다(국민건강보험법 제6조 제2항, 시행령 제9조). 계산기는 근로일수 × 하루 시간을 한 달 근로시간으로 봅니다. 공단이 따로 쓰는 근로일수 기준이 있으면 결과가 다를 수 있습니다.` },
+  { q: "일당을 며칠 치 모아 받으면 세금이 달라지나요?", a: `달라질 수 있습니다. 일용직 소득세는 (일당 − 15만원) × 2.7%이고, 지급할 때 떼는 세액이 1천원 미만이면 떼지 않습니다(소득세법 제86조). 하루치씩 받으면 0원인 일당도 여러 날 치를 한 번에 받으면 합계가 1천원을 넘어 떼일 수 있어 '모아 받음'을 고르면 합계로 계산합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.daily.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">세전 일당(비과세 수당 뺀 금액) 기준 어림입니다. 국민연금은 기준소득월액 상·하한과 10원 미만 절사를, 건강·장기요양·고용보험은 원 미만 버림을 넣었고, 산재보험은 사업주가 전액 내 빠져 있습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="dw-wage">일당(세전)</label>
+      <input type="text" inputmode="numeric" id="dw-wage" value="150,000" data-won />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dw-days">이번 달 근로일수</label>
+      <input type="number" min="1" max="31" step="1" id="dw-days" value="12" data-step />
+      <span class="unit">일</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dw-hours">하루 근로시간</label>
+      <input type="number" min="1" max="24" step="0.5" id="dw-hours" value="8" data-step />
+      <span class="unit">시간</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dw-tenure">같은 곳에서</label>
+      <select id="dw-tenure" data-seg><option value="long" selected>1개월 이상 계속</option><option value="short">1개월 미만</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dw-site">사업장</label>
+      <select id="dw-site" data-seg><option value="general" selected>일반 사업장</option><option value="construction">건설 현장</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dw-age">나이</label>
+      <select id="dw-age" data-seg><option value="under60" selected>18세 이상 60세 미만</option><option value="60plus">60세 이상</option><option value="65new">65세 이후 새로 고용</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dw-pay">일당 받는 방식</label>
+      <select id="dw-pay" data-seg><option value="daily" selected>그날그날 받음</option><option value="lump">며칠 치 모아 받음</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dw-size">사업장 규모(사업주 몫)</label>
+      <select id="dw-size" data-seg>
+        {r.employment.stability.map((s, i) => <option value={i} selected={i === 0}>{s.label}</option>)}
+      </select>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="dw-take|dw-ded"
+      data-bar-labels="받는 돈|떼는 돈"
+      data-dock="dw-hero"
+    >
+      <p class="label">이번 달 받는 돈(어림)</p>
+      <p class="big" id="dw-hero">{won(ex.takeHome)}</p>
+      <p class="meta" id="dw-note">세전 {won(ex.pay)} − 공제 {won(ex.deduction)}</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">국민연금</span><span class="value" id="dw-st-pension">대상</span></div>
+      <div class="stat-chip"><span class="label">건강보험</span><span class="value" id="dw-st-health">직장가입</span></div>
+      <div class="stat-chip"><span class="label">고용보험</span><span class="value" id="dw-st-emp">적용</span></div>
+      <div class="stat-chip" data-group="근로자 몫"><span class="label">국민연금 4.75%</span><span class="value" id="dw-pension">{won(ex.pension)}</span></div>
+      <div class="stat-chip"><span class="label">건강보험 3.595%</span><span class="value" id="dw-health">{won(ex.health)}</span></div>
+      <div class="stat-chip"><span class="label">장기요양보험</span><span class="value" id="dw-care">{won(ex.care)}</span></div>
+      <div class="stat-chip"><span class="label">고용보험 0.9%</span><span class="value" id="dw-emp">{won(ex.employment)}</span></div>
+      <div class="stat-chip"><span class="label">소득세 + 지방소득세</span><span class="value" id="dw-tax">{won(ex.tax.total)}</span></div>
+      <div class="stat-chip"><span class="label">떼는 돈 합계</span><span class="value" id="dw-ded">{won(ex.deduction)}</span></div>
+      <div class="stat-chip" hidden><span class="label">받는 돈</span><span class="value" id="dw-take">{won(ex.takeHome)}</span></div>
+      <div class="stat-chip" data-group="사업주 몫(산재 제외)"><span class="label">사업주 부담 합계</span><span class="value" id="dw-employer">{won(ex.employer.total)}</span></div>
+    </div>
+    <p class="meta" id="dw-warn" hidden></p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>가입 기준 전체 표는 <a href="/guide/daily-worker-insurance/">일용직 4대보험</a>에, 일당별 공제액 표는 <a href="/guide/daily-worker-insurance-deduction/">일용직 4대보험 공제</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>일용직 소득세 계산 순서는 <a href="/guide/daily-worker-tax/">일용직 세금</a>에, 월급제 근로자의 보험료는 <a href="/guide/four-insurance-calculator/">4대보험 계산기</a>로 볼 수 있습니다.</p>
+
+  <script src="../../../scripts/daily-worker-insurance.ts"></script>
+</GuideLayout>

@@ -74,6 +74,7 @@ const SYN: Record<string, string[]> = {
   "/guide/parental-leave-pay-calculator/": ["육아휴직 급여", "육아휴직 월급", "출산휴가 급여"],
   "/guide/hourly-wage-calculator/": ["시급", "시급계산기", "시급 계산", "알바 시급", "시급 월급", "일급", "주급", "최저시급 월급"],
   "/guide/dsr-calculator/": ["DSR", "DSR계산기", "DSR 계산", "DSR 한도", "DSR 40%", "스트레스 DSR", "대출 한도", "주택담보대출 한도", "마이너스통장 DSR"],
+  "/guide/daily-worker-insurance-calculator/": ["일용직 4대보험", "일용직 4대보험 계산", "일용직 국민연금", "일용직 국민연금 계산", "일용직 건강보험", "일용직 건강보험료 계산", "일용직 고용보험", "일용직 고용보험 계산", "건설일용직 4대보험", "일용직 4대보험 공제"],
   "/guide/ordinary-wage-calculator/": ["통상임금", "통상임금 계산", "통상임금계산기", "통상임금 계산 방법", "통상시급", "통상시급 계산", "통상시급 계산기", "1일 통상임금", "1일 통상임금 계산기", "기본시급"],
   "/guide/overtime-pay-calculator/": ["야근수당", "야근수당계산기", "야근수당 계산", "연장근로수당", "연장근로수당 계산", "야간수당", "야간수당 계산기", "휴일근로수당", "휴일수당", "가산수당", "통상시급"],
   "/guide/brokerage-fee-calculator/": ["중개보수", "중개보수계산기", "복비", "복비 계산기", "복비계산기", "부동산 수수료", "부동산 중개수수료", "중개수수료", "월세 복비", "전세 복비"],
@@ -103,9 +104,9 @@ const SYN: Record<string, string[]> = {
 
 /** 곧 담길 도구(점선 칸) — 루틴 우선순위 순(docs/tool-backlog.md). 공개하면 여기서 뺀다 */
 const NEXT: { href: string; name: string; blurb: string; type: ToolType; icon: string; keywords: string[] }[] = [
-  { href: "/guide/daily-worker-insurance-calculator/", name: "일용직 4대보험 계산기", blurb: "일당·근무일수 → 고용보험·국민연금·건강보험", type: "labor", icon: "wallet", keywords: ["일용직 4대보험", "일용직 고용보험", "일용직 국민연금"] },
   { href: "/guide/daily-take-home-calculator/", name: "하루 실수령액 계산기", blurb: "일당 → 세금·보험료 뺀 하루 받는 돈", type: "labor", icon: "wallet", keywords: ["하루 실수령액", "일당 실수령액", "일당 세금"] },
   { href: "/tools/date-diff/", name: "날짜 계산기", blurb: "두 날짜 사이 · 며칠 뒤 · D-day", type: "date", icon: "calendar", keywords: ["날짜 계산", "디데이", "D-day", "며칠"] },
+  { href: "/tools/age/", name: "만 나이 계산기", blurb: "생년월일 → 만 나이 · 연 나이", type: "date", icon: "calendar", keywords: ["만 나이", "나이 계산", "만나이 계산기"] },
   { href: "/tools/percent/", name: "퍼센트 계산기", blurb: "몇 %인지 · % 올리고 내리기", type: "unit", icon: "percent", keywords: ["퍼센트", "%", "비율"] },
 ];
 

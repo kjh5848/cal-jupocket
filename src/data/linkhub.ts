@@ -340,6 +340,8 @@ export const hubEntries: HubEntry[] = [
   { no: 313, href: "/guide/ordinary-wage/", label: "통상임금 — 뜻과 시간급 계산", kind: "guide" },
   { no: 314, href: "/guide/ordinary-hourly-wage/", label: "통상시급 — 월급 ÷ 209시간", kind: "guide" },
   { no: 315, href: "/guide/ordinary-wage-calculator/", label: "통상임금 계산기", kind: "calc" },
+  { no: 316, href: "/guide/daily-worker-insurance-calculator/", label: "일용직 4대보험 계산기", kind: "calc" },
+  { no: 317, href: "/guide/daily-worker-insurance-deduction/", label: "일용직 4대보험 공제 — 일당별 표", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -626,6 +628,8 @@ export const hubGroups: HubGroup[] = [
       "/guide/old-age-pension",
       "/guide/old-age-pension-age",
       "/guide/old-age-pension-vs-basic",
+      "/guide/daily-worker-insurance-calculator",
+      "/guide/daily-worker-insurance-deduction",
     ]),
   },
 ];
