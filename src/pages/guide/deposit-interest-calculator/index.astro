@@ -1,0 +1,123 @@
+---
+/**
+ * "예금 이자 계산기" — 예금 이자 시리즈. (예금이자계산기·정기예금 이자계산기·예금 이자 계산기 세후·예금 이자 세금 계산기도 이 글, 계산기 포함)
+ * 계산: src/lib/deposit.ts depositInterest() — 단리·월복리, 소득세 14%·지방소득세 10% 각각 10원 미만 버림.
+ * 근거: 소득세법 제129조 ① 1호, 지방세법 제103조의13, 국고금 관리법 제47조 ① (rates: deposit-2026.json)
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/deposit-2026.json";
+import { depositInterest, INTEREST_RATE, LOCAL_RATIO, THRESHOLD } from "../../../lib/deposit";
+import { calcPresets } from "../../../data/calc-presets";
+import { won, eokwon } from "../../../lib/won";
+
+const PRESETS = JSON.stringify({ default: calcPresets["/guide/deposit-interest-calculator/"].default.amounts });
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const base = { principal: 100_000_000, ratePct: 3, months: 12, method: "simple", tax: "normal" } as const;
+const ex = depositInterest(base);
+const r5 = depositInterest({ ...base, ratePct: 5 });
+const mc = depositInterest({ ...base, method: "monthly" });
+const free = depositInterest({ ...base, tax: "free" });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 deposit-interest-series.test.ts 가 rates 와 대조한다.
+const title = "예금 이자 계산기 — 원금·이율·기간을 넣으면 15.4%를 뗀 세후 이자와 만기 금액이 나옵니다";
+const description =
+  "예금 이자 계산기는 원금·연 이자율·맡길 개월 수로 정기예금의 세전 이자, 소득세·지방소득세, 세후 이자와 만기에 받을 돈을 계산합니다. 단리와 월복리를 바꿔 비교하고, 비과세 상품이면 세금 없이 볼 수 있습니다.";
+
+const ANSWER = `1억원을 연 3%로 12개월 맡기면 단리 세전 이자는 ${won(ex.grossInterest)}, ${pct(INTEREST_RATE * (1 + LOCAL_RATIO))}를 뗀 세후 이자는 ${won(ex.netInterest)}, 만기에 받는 돈은 ${won(ex.maturity)}입니다. 월복리 상품이면 세후 ${won(mc.netInterest)}입니다.`;
+
+const QA = [
+  { q: "예금 이자 계산기 세후 금액은 어떻게 나오나요?", a: `세전 이자의 ${pct(INTEREST_RATE)}를 소득세로, 그 소득세의 10%를 지방소득세로 떼고 각각 10원 미만은 버립니다(국고금 관리법 제47조). 1억원 3% 1년이면 소득세 ${won(ex.incomeTax)}, 지방소득세 ${won(ex.localTax)}, 합계 ${won(ex.tax)}을 떼고 ${won(ex.netInterest)}을 받습니다.` },
+  { q: "1억을 5%로 1년 맡기면 이자가 얼마인가요?", a: `단리로 세전 ${won(r5.grossInterest)}, 세금 ${won(r5.tax)}을 떼고 세후 ${won(r5.netInterest)}입니다. 세후 수익률로 보면 연 약 ${(r5.netAnnualRate * 100).toFixed(2)}%입니다.` },
+  { q: "비과세 예금이면 얼마나 더 받나요?", a: `세금이 없으니 세전 이자를 그대로 받습니다. 1억원 3% 1년이면 ${won(free.netInterest)}으로 일반 예금보다 ${won(free.netInterest - ex.netInterest)} 많습니다. 비과세종합저축 등은 가입 요건이 따로 있어 이 계산기는 요건을 따지지 않습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">원금을 한 번 넣고 만기에 원금과 이자를 한 번에 받는 정기예금 기준입니다. 이자는 개월 단위로 계산해 원 미만을 버리고, 세금은 만기에 한 번 뗍니다. 우대금리·중도해지·조합 예탁금 저율과세는 넣지 않았습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="dp-principal">원금</label>
+      <input type="text" inputmode="numeric" id="dp-principal" value="100,000,000" data-won data-presets={PRESETS} />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dp-rate">연 이자율</label>
+      <input type="number" id="dp-rate" value="3" min="0" max="30" step="0.01" inputmode="decimal" />
+      <span class="unit">%</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dp-months">맡길 기간</label>
+      <input type="number" id="dp-months" value="12" min="1" max="600" step="1" data-step />
+      <span class="unit">개월</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dp-method">이자 방식</label>
+      <select id="dp-method" data-seg>
+        <option value="simple" selected>단리</option>
+        <option value="monthly">월복리</option>
+      </select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dp-tax">과세</label>
+      <select id="dp-tax" data-seg>
+        <option value="normal" selected>일반과세 {pct(INTEREST_RATE * (1 + LOCAL_RATIO))}</option>
+        <option value="free">비과세</option>
+      </select>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="dp-p|dp-net2"
+      data-bar-labels="원금|세후 이자"
+      data-dock="dp-hero"
+    >
+      <p class="label">만기에 받는 돈(세후)</p>
+      <p class="big" id="dp-hero">{won(ex.maturity)}</p>
+      <p class="meta" id="dp-note">세후 이자 {won(ex.netInterest)} · 세후 연 {(ex.netAnnualRate * 100).toFixed(2)}%</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">세전 이자</span><span class="value" id="dp-gross">{won(ex.grossInterest)}</span></div>
+      <div class="stat-chip" data-group="떼는 세금"><span class="label">소득세</span><span class="value" id="dp-itax">−{won(ex.incomeTax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세</span><span class="value" id="dp-ltax">−{won(ex.localTax)}</span></div>
+      <div class="stat-chip"><span class="label">세후 이자</span><span class="value" id="dp-net">{won(ex.netInterest)}</span></div>
+      <div class="stat-chip" data-group="만기 금액"><span class="label">원금</span><span class="value" id="dp-p">{won(ex.principal)}</span></div>
+      <div class="stat-chip"><span class="label">세후 이자</span><span class="value" id="dp-net2">{won(ex.netInterest)}</span></div>
+    </div>
+    <p class="meta" id="dp-compare">같은 조건 월복리면 세전 이자 {won(ex.monthlyInterest)}(단리보다 {won(ex.monthlyInterest - ex.simpleInterest)} 많음)</p>
+    <p class="meta" id="dp-threshold" hidden>세전 이자가 {eokwon(THRESHOLD)}을 넘습니다. 한 해 이자·배당이 이 금액을 넘으면 <a href="/guide/financial-income-tax/">금융소득종합과세</a>로 다시 계산합니다.</p>
+
+    <details>
+      <summary>달마다 쌓이는 세전 이자</summary>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>개월</th><th>쌓인 이자(세전)</th></tr></thead>
+          <tbody id="dp-rows">
+            {ex.rows.map((v) => <tr><th scope="row">{v.month}</th><td>{won(v.interest)}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>계산 순서와 1억원 예시표는 <a href="/guide/deposit-interest/">예금 이자 계산</a>에, 세율 근거는 <a href="/guide/interest-income-tax/">이자소득세</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>월복리 상품이면 이자 방식을 바꿔 보세요. 기간이 길수록 차이가 커집니다 — <a href="/guide/deposit-simple-compound/">예금 단리 복리 차이</a>.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>돈을 빌리는 쪽 이자는 <a href="/guide/loan-calculator/">대출 이자 계산기</a>, 마이너스통장은 <a href="/guide/minus-account-calculator/">마이너스통장 이자 계산기</a>로 볼 수 있습니다.</p>
+
+  <script src="../../../scripts/deposit.ts"></script>
+</GuideLayout>

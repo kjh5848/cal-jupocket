@@ -16,6 +16,7 @@ import { severanceSeries } from "./severance";
 import { severancePaySeries } from "./severance-pay";
 import { loanSeries } from "./loan";
 import { minusAccountSeries } from "./minus-account";
+import { depositSeries } from "./deposit";
 import { incomeTaxRateSeries } from "./income-tax-rate";
 import { businessFilingSeries } from "./business-filing";
 import { withholdingTaxSeries } from "./withholding-tax";
@@ -45,4 +46,4 @@ import { oldAgePensionSeries } from "./old-age-pension";
 import { familyLoanSeries } from "./family-loan";
 import { industrialAccidentSeries } from "./industrial-accident";
 
-export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries, incomeTaxRateSeries, businessFilingSeries, withholdingTaxSeries, taxRefundSeries, acquisitionSeries, localTaxSeries, businessRegistrationSeries, corporateTaxSeries, propertyTaxSeries, lottoTaxSeries, payslipSeries, diligentSeries, financialIncomeSeries, weeklyHolidaySeries, annualLeaveSeries, unemploymentSeries, basicPensionSeries, parentalLeaveSeries, healthDependentSeries, cryptoSeries, customsSeries, minimumWageSeries, electricCarSeries, takeHomeSeries, divorceSeries, oldAgePensionSeries, familyLoanSeries, industrialAccidentSeries, severancePaySeries, loanSeries, minusAccountSeries];
+export const allSeries: Series[] = [irpSeriesDef, vatFinalSeries, vehiclePrepaySeries, withholdingReceiptSeries, yearEndSeries, childIncentiveSeries, earnedIncentiveSeries, jongbuSeries, medicalCreditSeries, educationCreditSeries, donationCreditSeries, giftSeries, inheritanceSeries, capitalGainsSeries, fourInsuranceSeries, severanceSeries, incomeTaxRateSeries, businessFilingSeries, withholdingTaxSeries, taxRefundSeries, acquisitionSeries, localTaxSeries, businessRegistrationSeries, corporateTaxSeries, propertyTaxSeries, lottoTaxSeries, payslipSeries, diligentSeries, financialIncomeSeries, weeklyHolidaySeries, annualLeaveSeries, unemploymentSeries, basicPensionSeries, parentalLeaveSeries, healthDependentSeries, cryptoSeries, customsSeries, minimumWageSeries, electricCarSeries, takeHomeSeries, divorceSeries, oldAgePensionSeries, familyLoanSeries, industrialAccidentSeries, severancePaySeries, loanSeries, minusAccountSeries, depositSeries];

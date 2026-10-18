@@ -406,6 +406,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/minus-account-interest/", title: "마이너스통장 이자 계산 — 쓴 금액에만, 하루 단위로 붙고 결제일에 모아서 나갑니다", kind: "guide", icon: "chart" },
       { href: "/guide/minus-account-interest-payment/", title: "마이너스통장 이자 납부일 — 지난 결제일부터 이번 결제일 전날까지의 이자가 결제일에 나갑니다", kind: "guide", icon: "chart" },
       { href: "/guide/minus-account-calculator/", title: "마이너스통장 이자 계산기", kind: "calc", icon: "calculator", blurb: "쓴 금액·금리·날수 → 결제일별 일할 이자" },
+      { href: "/guide/deposit-interest/", title: "예금 이자 계산 — 원금 × 연 이자율 × 맡긴 개월 ÷ 12, 받을 때 15.4%를 뗍니다", kind: "guide", icon: "chart" },
+      { href: "/guide/deposit-simple-compound/", title: "예금 단리 복리 차이 — 단리는 원금에만, 월복리는 매달 붙은 이자에도 이자가 붙습니다", kind: "guide", icon: "chart" },
+      { href: "/guide/deposit-interest-calculator/", title: "예금 이자 계산기", kind: "calc", icon: "calculator", blurb: "원금·이율·개월 → 세후 이자·만기 금액" },
     ],
   },
 ];
@@ -415,6 +418,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/deposit-interest-calculator/",
+  "/guide/deposit-simple-compound/",
+  "/guide/deposit-interest/",
   "/guide/minus-account-calculator/",
   "/guide/minus-account-interest-payment/",
   "/guide/minus-account-interest/",

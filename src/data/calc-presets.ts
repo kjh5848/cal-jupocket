@@ -29,6 +29,10 @@ export const calcPresets: Record<string, Record<string, PresetSet>> = {
     // 네이버 자동완성 '마이너스통장 1000만원 이자'(2026-10-18). '마이너스통장 5000 이자' 는 시드 줄뿐(확장 아님)이라 뺌
     default: { amounts: [10_000_000], source: "keywords/ac-minus-account-2026-10-18.csv", term: "마이너스통장" },
   },
+  "/guide/deposit-interest-calculator/": {
+    // 네이버 자동완성 '1억 예금 이자 3%'·'1억 예금 이자 5%'·'1억 예금이자 1년'·'1억 정기예금 이자'(2026-10-18)
+    default: { amounts: [100_000_000], source: "keywords/ac-deposit-interest-2026-10-18.csv", term: "예금" },
+  },
   "/guide/lotto-tax-calculator/": {
     // 네이버 자동완성 '로또 실수령액 20억'·'30억 로또 실수령액'(2026-10-18). '로또 1억 세금' 은 시드 줄뿐(확장 아님)이라 뺌
     default: { amounts: [2_000_000_000, 3_000_000_000], source: "keywords/ac-lotto-2026-10-18.csv", term: "로또 실수령액" },
