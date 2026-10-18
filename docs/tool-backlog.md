@@ -13,7 +13,7 @@
 | 1 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/contract-calculator/ | 3.3% 계산기 | 있음 | /freelancer-33/ | 2026-10-17 대조: 같은 입력 7개 결과 일치 · 새 틀 이전(소득세·지방소득세 나눠 보기) |
 | 2 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/freelancer-calculator/ | 8.8% 원천징수 계산기 | 있음 | /withholding/ | 2026-10-17 대조: 기타소득 125,000원 이하 과세최저한(제84조 3호) — 우리·roberin 둘 다 틀려 우리 것 고침 · 기타소득 역산 추가 · 새 틀 이전. 1원 단수 차이는 보류 |
 | 3 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/projects/work-income-calculator/ | 근무시간 실수령·구매력 계산기 | 할 일 |  |  |
-| 4 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/ordinary-wage-calculator/ | 대한민국 통상임금 계산기 | 할 일 |  |  |
+| 4 | 급여·근로 | 돈·세금·급여 / 급여·세금 | https://roberin.com/ordinary-wage-calculator/ | 대한민국 통상임금 계산기 | 진행 중 |  |  |
 | 5 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/lotto-tax-calculator/ | 로또 당첨금 세금 계산기 | 있음 | /guide/lotto-tax-calculator/ | 2026-10-18 대조: 같은 입력 11개 중 7개 같음 · 4개는 우리가 원 미만만 버려 틀림 → 소득세·지방소득세 10원 미만 버림 fix(국고금 관리법 제47조 ①·지방세기본법 제59조) 뒤 11개 같음 · 새 틀 이전(30% 구간으로 더 뗀 세금·자동완성 프리셋 20억·30억) |
 | 6 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/holding-tax-calculator/ | 보유세 계산기 | 할 일 |  | 2026-10-18 종부세 계산기(/guide/jongbu-calculator/) 대조에 씀: 종부세 부분은 우리와 구조 같고 재산세액 공제(시행령 제4조의3 ①)만 roberin 이 넣음 — 0.4% 한 값 적용 여부 원문 미확인. 재산세 + 종부세 합산 도구는 아직 없음 |
 | 7 | 세금 | 돈·세금·급여 / 급여·세금 | https://roberin.com/vat-calculator/ | 부가세계산기 | 있음 | /vat/ | 2026-10-17 대조: 정방향 같음 · 합계 역산 1원 차이는 단수(우리 반올림/roberin 내림, 제29조 제7항에 단수 규정 없음) · 새 틀 이전 · 영국·일본 rates 초안 |
