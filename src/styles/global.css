@@ -555,6 +555,10 @@ details[open] summary {
   outline-offset: 2px;
 }
 
+/* 항목 여러 개를 같은 칸 묶음(금액·주기·넣기)으로 받는 계산기 — 통상임금 */
+.calc-row-group { margin: 0 0 1rem; padding: 0.75rem 0.9rem 0; border: 1px solid var(--rule); border-radius: var(--r-md); min-width: 0; }
+.calc-row-group > legend { padding: 0 0.35rem; font-weight: 600; }
+
 /* 큰 금액 입력 — 계산기에서 가장 먼저 만지는 요소라 눈에 띄게 키운다 */
 .calc-input-wrap {
   position: relative;

@@ -318,6 +318,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/overtime-pay/", title: "야근수당 — 연장근로는 통상시급의 1.5배, 밤 10시~오전 6시는 50%를 더, 휴일 8시간을 넘기면 2배입니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/night-shift-pay/", title: "야간수당 — 밤 10시부터 오전 6시 사이에 일한 시간에 통상시급의 50%를 더 받습니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/overtime-pay-calculator/", title: "야근수당 계산기", kind: "calc", icon: "calculator", blurb: "시급·월급과 연장·야간·휴일 시간 → 가산수당과 받을 돈" },
+      { href: "/guide/ordinary-wage/", title: "통상임금 — 정기적·일률적으로 주기로 정한 임금을 시간급으로 바꾼 금액이고, 주 40시간 월급은 209시간으로 나눕니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/ordinary-hourly-wage/", title: "통상시급 — 월 통상임금 ÷ 월 기준시간이고, 주 40시간이면 주휴를 넣은 209시간으로 나눕니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/ordinary-wage-calculator/", title: "통상임금 계산기", kind: "calc", icon: "calculator", blurb: "기본급·수당·상여금과 지급 주기 → 통상시급·1일 통상임금" },
     ],
   },
   {
@@ -430,6 +433,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/ordinary-wage-calculator/",
+  "/guide/ordinary-hourly-wage/",
+  "/guide/ordinary-wage/",
   "/guide/overtime-pay-calculator/",
   "/guide/night-shift-pay/",
   "/guide/overtime-pay/",

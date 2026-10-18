@@ -1,0 +1,121 @@
+---
+/**
+ * "통상임금 계산기" — 통상임금 시리즈. (1일 통상임금 계산기·통상임금 계산 방법·통상시급 계산기도 이 글, 계산기 포함)
+ * 계산: src/lib/ordinary-wage.ts ordinaryWage() — 근로기준법 시행령 제6조 ②③(rates: ordinary-wage-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/ordinary-wage-2026.json";
+import { ordinaryWage, basisHours, PERIOD_LABEL, type WagePeriod } from "../../../lib/ordinary-wage";
+import { won } from "../../../lib/won";
+
+const std = { weeklyHours: 40, dailyHours: 8 };
+const ROWS: { id: string; label: string; amount: number; period: WagePeriod; include: boolean }[] = [
+  { id: "base", label: "기본급", amount: 2_500_000, period: "month", include: true },
+  { id: "a1", label: "수당 ①", amount: 150_000, period: "month", include: true },
+  { id: "a2", label: "수당 ②", amount: 0, period: "month", include: true },
+  { id: "bonus", label: "상여금", amount: 600_000, period: "quarter", include: true },
+  { id: "etc", label: "그 밖의 임금", amount: 0, period: "month", include: true },
+];
+const ex = ordinaryWage(ROWS, std);
+const baseMonthly = ex.rows[0].monthly;
+const h20 = basisHours({ weeklyHours: 20, dailyHours: 4 });
+const yr = ordinaryWage([{ amount: 2_000_000, period: "month", include: true }, { amount: 3_600_000, period: "year", include: true }], std);
+const periods = Object.entries(PERIOD_LABEL) as [WagePeriod, string][];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 ordinary-wage-series.test.ts 가 rates 와 대조한다.
+const title = "통상임금 계산기 — 기본급과 수당·상여금을 지급 주기대로 넣으면 통상시급과 1일 통상임금이 나옵니다";
+const description =
+  "통상임금 계산기는 기본급·수당·상여금을 시간·하루·주·월·분기·반기·1년 지급 단위대로 넣으면 근로기준법 시행령 제6조대로 항목마다 시간급으로 바꿔 더해 통상시급, 1일 통상임금, 월 통상임금을 계산합니다. 주 40시간이면 월 209시간으로 나눕니다.";
+
+const ANSWER = `기본급 월 ${won(2_500_000)}, 수당 월 ${won(150_000)}, 분기마다 상여금 ${won(600_000)}을 모두 통상임금에 넣으면 월 ${won(ex.monthly)} ÷ 209시간 = 통상시급 ${won(ex.hourly)}, 1일 통상임금은 × 8시간 = ${won(ex.daily)}입니다(원 미만 버림).`;
+
+const QA = [
+  { q: "분기·연간 상여금은 어떻게 넣나요?", a: `한 번 받는 금액을 넣고 지급 주기를 고르면 개월 수로 나눠 월 금액으로 바꾼 뒤 월 기준시간으로 나눕니다. 연 ${won(3_600_000)}이면 월 ${won(300_000)}이고, 기본급 ${won(2_000_000)}과 합치면 통상시급 ${won(yr.hourly)}입니다. 시행령 제6조 제2항 제5호가 '일·주·월 외의 기간으로 정한 임금은 제2호~제4호에 준하여' 산정하라고 합니다.` },
+  { q: "주 40시간이 아니면 몇 시간으로 나누나요?", a: `1주 소정근로시간에 주휴시간을 더하고 365 ÷ 7 ÷ 12를 곱합니다(제2항 제4호). 주 20시간이면 주휴 ${h20.holiday}시간을 더한 ${h20.weekly}시간 × 4.345 = 약 ${h20.monthly.toFixed(2)}시간입니다. 토요일 일부를 유급으로 처리하는 회사라면 '그 밖에 유급인 시간'에 1주 시간을 넣으세요.` },
+  { q: "어떤 수당을 넣어야 하나요?", a: `통상임금은 정기적·일률적으로 소정근로에 대해 주기로 정한 임금입니다(제6조 제1항). 이 계산기는 항목마다 넣기·빼기를 직접 고르게 하고, 어떤 수당이 들어가는지는 판단하지 않습니다. 근로계약서·취업규칙에서 지급 조건을 확인하세요.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">세전 금액입니다. 한 번 받는 금액과 지급 주기를 넣고, 통상임금에 들어가는 항목만 '넣기'로 두세요. 항목마다 시간급으로 바꿔 더합니다(근로기준법 시행령 제6조 제2항 제7호).</p>
+    {ROWS.map((row) => (
+      <fieldset class="calc-row-group">
+        <legend>{row.label}</legend>
+        <div class="calc-input-wrap">
+          <label for={`ow-${row.id}`}>금액</label>
+          <input type="text" inputmode="numeric" id={`ow-${row.id}`} value={row.amount ? row.amount.toLocaleString("ko-KR") : ""} data-won data-ow-amount={row.id} />
+          <span class="unit">원</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for={`ow-${row.id}-p`}>지급 주기</label>
+          <select id={`ow-${row.id}-p`} data-ow-period={row.id}>
+            {periods.map(([v, l]) => <option value={v} selected={v === row.period}>{l}</option>)}
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for={`ow-${row.id}-i`}>통상임금에</label>
+          <select id={`ow-${row.id}-i`} data-seg data-ow-include={row.id}><option value="1" selected={row.include}>넣기</option><option value="0" selected={!row.include}>빼기</option></select>
+        </div>
+      </fieldset>
+    ))}
+    <div class="calc-input-wrap">
+      <label for="ow-week">1주 소정근로시간</label>
+      <input type="number" min="1" max="40" step="1" id="ow-week" value="40" data-step />
+      <span class="unit">시간</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ow-day">1일 소정근로시간</label>
+      <input type="number" min="1" max="8" step="0.5" id="ow-day" value="8" data-step />
+      <span class="unit">시간</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ow-extra">주휴 말고 1주에 유급인 시간</label>
+      <input type="number" min="0" max="40" step="1" id="ow-extra" value="0" data-step />
+      <span class="unit">시간</span>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="ow-m-base|ow-m-extra"
+      data-bar-labels="기본급|수당·상여금(넣은 것)"
+      data-dock="ow-hero"
+    >
+      <p class="label">통상시급(세전, 원 미만 버림)</p>
+      <p class="big" id="ow-hero">{won(ex.hourly)}</p>
+      <p class="meta" id="ow-note">1일 통상임금 {won(ex.daily)} · 월 {won(ex.monthly)} ÷ 209시간</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">1일 통상임금 (시급 × 1일 시간)</span><span class="value" id="ow-daily">{won(ex.daily)}</span></div>
+      <div class="stat-chip"><span class="label">월 통상임금 (넣은 항목 월 환산)</span><span class="value" id="ow-monthly">{won(ex.monthly)}</span></div>
+      <div class="stat-chip" data-group="월 환산"><span class="label">기본급</span><span class="value" id="ow-m-base">{won(baseMonthly)}</span></div>
+      <div class="stat-chip"><span class="label">수당·상여금(넣은 것)</span><span class="value" id="ow-m-extra">{won(ex.monthly - baseMonthly)}</span></div>
+      <div class="stat-chip"><span class="label">뺀 항목</span><span class="value" id="ow-m-out">{won(ex.excludedMonthly)}</span></div>
+      <div class="stat-chip" data-group="기준시간"><span class="label">1주 기준시간 (소정 + 주휴 + 유급)</span><span class="value" id="ow-h-week">{ex.basis.weekly}시간</span></div>
+      <div class="stat-chip"><span class="label">월 기준시간</span><span class="value" id="ow-h-month">{ex.basis.monthly}시간</span></div>
+    </div>
+    <p class="meta" id="ow-warn" hidden></p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>일당으로 받는 수당은 '하루마다'를 고르면 1일 소정근로시간으로, 주급은 1주 기준시간(소정근로 + 주휴 등 유급시간)으로 나눕니다(제2호·제3호). 시급으로 받는 사람은 기본급 칸에 시급을 넣고 '시간마다'를 고르세요. 항목마다 시간급을 버리지 않고 더한 뒤 마지막에 한 번만 원 미만을 버립니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>주 40시간에 다른 유급시간이 없으면 산식 값은 208.57시간이지만, 최저임금 고시와 같게 209시간으로 나눕니다. 시간 계산을 더 자세히 보려면 <a href="/guide/ordinary-hourly-wage/">통상시급</a>을 보세요.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>통상시급은 <a href="/guide/overtime-pay-calculator/">야근수당 계산기</a>의 연장·야간·휴일 가산, 1일 통상임금은 <a href="/guide/annual-leave-pay/">연차수당</a>, 월 통상임금은 <a href="/guide/parental-leave-pay-calculator/">육아휴직 급여 계산기</a>의 바탕이 됩니다. 통상임금이 무엇인지는 <a href="/guide/ordinary-wage/">통상임금</a>에 정리했습니다.</p>
+
+  <script src="../../../scripts/ordinary-wage.ts"></script>
+</GuideLayout>

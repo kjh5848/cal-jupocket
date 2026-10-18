@@ -1,0 +1,77 @@
+---
+/**
+ * "통상임금" — 통상임금 시리즈 허브. (통상임금 뜻·통상임금이란·통상임금 기준·통상임금 계산 방법·통상임금 계산법도 이 글)
+ * 계산: src/lib/ordinary-wage.ts ordinaryWage() — 근로기준법 시행령 제6조 ①②③(rates: ordinary-wage-2026.json).
+ * 쓰지 않은 것: 어떤 수당·상여금이 통상임금에 들어가는지(판례·고용노동부 지침 — 원문을 열지 않았다).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/ordinary-wage-2026.json";
+import { ordinaryWage, type WageItem } from "../../../lib/ordinary-wage";
+import { won } from "../../../lib/won";
+import { ordinaryWageSeries as S } from "../../../data/series/ordinary-wage";
+
+const std = { weeklyHours: 40, dailyHours: 8 };
+const one = (amount: number, period: WageItem["period"]) => ordinaryWage([{ amount, period, include: true }], std);
+const ex = ordinaryWage(
+  [
+    { amount: 2_500_000, period: "month", include: true },
+    { amount: 150_000, period: "month", include: true },
+    { amount: 600_000, period: "quarter", include: true },
+  ],
+  std,
+);
+const rows = [
+  { k: "시간급", law: "제1호", how: "그 금액", x: one(10_320, "hour"), amt: 10_320 },
+  { k: "일급", law: "제2호", how: "÷ 1일 소정근로시간(8시간)", x: one(82_560, "day"), amt: 82_560 },
+  { k: "주급", law: "제3호", how: "÷ 1주 기준시간(40 + 주휴 8 = 48시간)", x: one(495_360, "week"), amt: 495_360 },
+  { k: "월급", law: "제4호", how: "÷ 월 기준시간(209시간)", x: one(2_156_880, "month"), amt: 2_156_880 },
+  { k: "분기·반기·1년", law: "제5호", how: "개월 수로 나눠 월 금액 → ÷ 209시간", x: one(6_470_640, "quarter"), amt: 6_470_640 },
+];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 ordinary-wage-series.test.ts 가 rates 와 대조한다.
+const title = "통상임금 — 정기적·일률적으로 주기로 정한 임금을 시간급으로 바꾼 금액이고, 주 40시간 월급은 209시간으로 나눕니다";
+const description =
+  "통상임금은 근로자에게 정기적이고 일률적으로 소정근로에 대해 주기로 정한 시간급·일급·주급·월급 금액입니다. 근로기준법 시행령 제6조대로 일급은 1일 소정근로시간, 월급은 월 기준시간(주 40시간이면 209시간)으로 나눠 통상시급을 구하고, 여러 항목이면 각각 바꿔 더합니다.";
+
+const ANSWER = `통상임금은 정기적이고 일률적으로 소정근로에 대해 주기로 정한 임금입니다(근로기준법 시행령 제6조 제1항). 계산은 항목마다 시간급으로 바꿔 더합니다 — 월급은 209시간(주 40시간), 일급은 1일 소정근로시간으로 나눕니다. 기본급 월 ${won(2_500_000)}, 수당 월 ${won(150_000)}, 분기 상여금 ${won(600_000)}이면 통상시급 ${won(ex.hourly)}입니다.`;
+
+const QA = [
+  { q: "통상임금은 어떻게 계산하나요?", a: `받는 임금을 지급 단위별로 시간급으로 바꾸고 모두 더합니다(제6조 제2항 제7호). 월급은 월 기준시간, 주급은 1주 기준시간(소정근로 + 유급시간), 일급은 1일 소정근로시간으로 나눕니다. 1일 통상임금은 그 시간급에 1일 소정근로시간을 곱합니다(제3항).` },
+  { q: "통상임금은 어디에 쓰이나요?", a: `연장·야간·휴일근로 가산수당은 통상임금의 50%·100%를 더하는 것이고(근로기준법 제56조), 쓰지 못한 연차를 돈으로 받을 때나 육아휴직 급여·출산휴가급여도 통상임금을 바탕으로 셉니다. 그래서 통상시급이 오르면 이 금액들이 같이 오릅니다.` },
+  { q: "통상임금에 상여금·수당도 들어가나요?", a: `정의는 '정기적이고 일률적으로 소정근로에 대해 지급하기로 정한' 임금입니다. 이름이 아니라 지급 조건으로 정해지므로, 이 사이트는 어떤 항목이 들어간다고 단정하지 않습니다. 근로계약서·취업규칙의 지급 조건을 보고, 넣을 항목만 통상임금 계산기에 '넣기'로 두세요.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>지급 단위 (시행령 제6조 제2항)</th><th>나누는 방법</th><th>예 → 시간급</th></tr></thead>
+      <tbody>
+        {rows.map(({ k, law, how, x, amt }) => <tr><th scope="row">{k} ({law})</th><td>{how}</td><td>{won(amt)} → {won(x.hourly)}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+  <p>표의 금액은 모두 2026년 최저시급 {won(10_320)}에 맞춘 예입니다. 분기 상여금은 3개월로 나눠 월 금액으로 바꾼 뒤 209시간으로 나눴습니다 — 제5호가 '일·주·월 외의 기간으로 정한 임금은 제2호~제4호에 준하여' 산정하라고 해서 이렇게 셉니다. 도급제 임금(제6호)은 그 기간 도급 임금 총액을 총 근로시간으로 나눕니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>시간 단위로 쓰이는 값은 통상시급, 하루 단위는 1일 통상임금입니다. 통상시급을 구하는 시간 계산은 <a href="/guide/ordinary-hourly-wage/">통상시급</a>에, 가산수당은 <a href="/guide/overtime-pay/">야근수당</a>에, 연차를 돈으로 받는 경우는 <a href="/guide/annual-leave-pay/">연차수당</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>내 급여명세서로 바로 계산하려면 <a href="/guide/ordinary-wage-calculator/">통상임금 계산기</a>에 기본급과 수당·상여금을 지급 주기대로 넣으세요. 항목마다 넣기·빼기를 바꿔 가며 통상시급이 얼마나 달라지는지 볼 수 있습니다.</p>
+
+  <h2>통상임금 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>
