@@ -19,6 +19,7 @@ const V = r.vehicleTax;
 const A = r.acquisitionTax;
 const E = r.exemption;
 const fl = (v: number) => Math.floor(v + 1e-6);
+const PER_MILLE = Math.round(A.rate * 1000);
 
 /** 전기차 1대 1년 자동차세 — 본세·지방교육세·합계 */
 export function evVehicleTax(business = false) {
@@ -37,7 +38,8 @@ export function acquisitionExemptOn(date: string): boolean {
  * date 가 감면 기한(2026-12-31) 이내면 140만원 한도로 깎는다.
  */
 export function evAcquisitionTax(price: number, date = "2026-12-31") {
-  const gross = fl(Math.max(0, price) * A.rate);
+  // 1천분의 70 을 정수로 곱하고 나눠 부동소수점 버림 오차를 막는다(자동차세·취득세 계산기에서 1원 모자람이 났던 자리)
+  const gross = Math.floor((Math.max(0, Math.floor(price)) * PER_MILLE) / 1000);
   const exempt = acquisitionExemptOn(date) ? Math.min(gross, E.acquisition.cap) : 0;
   return { gross, exempt, tax: gross - exempt };
 }
@@ -45,4 +47,26 @@ export function evAcquisitionTax(price: number, date = "2026-12-31") {
 /** 취득세가 전부 면제되는 차값 상한 — 140만원 ÷ 7% */
 export function evFullExemptPrice(): number {
   return Math.round(E.acquisition.cap / A.rate);
+}
+
+/**
+ * 계산기 화면용 — 취득세와 1년 자동차세를 한 번에.
+ *   effectiveRate  낼 취득세 ÷ 차값(%, 소수 둘째 자리 반올림 — 표시용)
+ *   fullExemptPrice 이 차값 이하면 취득세 0원(140만원 ÷ 7%)
+ *   overFull        차값이 그 상한을 넘은 금액 — 넘은 금액 × 7% 가 낼 취득세
+ *   exemptOn        감면 기한 안 취득인가
+ */
+export function evPage(price: number, date = "2026-12-31") {
+  const acq = evAcquisitionTax(price, date);
+  const p = Math.max(0, Math.floor(price));
+  const full = evFullExemptPrice();
+  const exemptOn = acquisitionExemptOn(date);
+  return {
+    ...acq,
+    exemptOn,
+    effectiveRate: p ? Math.round((acq.tax / p) * 10000) / 100 : 0,
+    fullExemptPrice: full,
+    overFull: exemptOn ? Math.max(0, p - full) : p,
+    car: evVehicleTax(),
+  };
 }
