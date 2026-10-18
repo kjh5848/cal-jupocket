@@ -1,0 +1,77 @@
+---
+/**
+ * "야근수당" — 야근수당 시리즈 허브. (연장근로수당·야근수당 1.5배·휴일근로수당·연장근로수당 5인미만·야근수당 기준도 이 글)
+ * 계산: src/lib/overtime.ts overtimePay() — 근로기준법 제53조 ①·제56조, 시행령 제6조 ②·별표 1(rates: overtime-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/overtime-2026.json";
+import { overtimePay, ordinaryHourly } from "../../../lib/overtime";
+import { minWage } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+import { overtimeSeries as S } from "../../../data/series/overtime";
+
+const P = r.premium;
+const m26 = minWage(2026);
+const one = (o: Partial<Parameters<typeof overtimePay>[0]>) => overtimePay({ hourly: m26, overtime: 0, night: 0, holidayWithin: 0, holidayOver: 0, ...o });
+const ot1 = one({ overtime: 1 });
+const otNight1 = one({ overtime: 1, night: 1 });
+const hol8 = one({ holidayWithin: 8 });
+const holOver1 = one({ holidayOver: 1 });
+const monthly = ordinaryHourly({ mode: "monthly", wage: 3_000_000 });
+const ex = overtimePay({ hourly: monthly, overtime: 10, night: 0, holidayWithin: 0, holidayOver: 0 });
+const rows = [
+  { k: "연장근로", rate: "1.5배", x: ot1 },
+  { k: "야간근로(소정근로 중)", rate: "+0.5배", x: one({ night: 1 }) },
+  { k: "연장 + 야간", rate: "2배", x: otNight1 },
+  { k: "휴일근로 8시간 이내", rate: "1.5배", x: one({ holidayWithin: 1 }) },
+  { k: "휴일근로 8시간 초과", rate: "2배", x: holOver1 },
+  { k: "휴일 8시간 이내 + 야간", rate: "2배", x: one({ holidayWithin: 1, night: 1 }) },
+];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 overtime-series.test.ts 가 rates 와 대조한다.
+const title = "야근수당 — 연장근로는 통상시급의 1.5배, 밤 10시~오전 6시는 50%를 더, 휴일 8시간을 넘기면 2배입니다";
+const description =
+  "야근수당은 통상시급 × 연장·야간·휴일근로 시간에 50%를 더 얹는 돈입니다. 연장근로 1.5배, 야간근로 50% 가산, 휴일근로는 8시간까지 1.5배·넘는 시간 2배이고, 상시 4명 이하 사업장은 가산이 없습니다. 2026년 최저시급 10,320원 기준 시간당 금액도 표로 봅니다.";
+
+const ANSWER = `야근수당은 통상시급 × 시간에 50%를 더 얹은 돈입니다(근로기준법 제56조). 연장근로는 1.5배, 밤 10시~오전 6시 야간근로는 50%를 더, 휴일근로는 8시간까지 1.5배·넘는 시간 2배입니다. 2026년 최저시급 ${won(m26)}이면 연장 1시간에 ${won(ot1.total)}입니다. 상시 4명 이하 사업장은 가산이 없습니다.`;
+
+const QA = [
+  { q: "야근수당은 어떻게 계산하나요?", a: `통상시급 × 연장근로 시간 × 1.5입니다. 1일 8시간·1주 40시간을 넘겨 일한 시간이 연장근로이고, 그 시간 임금에 통상임금의 50% 이상을 더 줘야 합니다(제56조 제1항). 월급제면 월급을 주 40시간 기준 209시간으로 나눈 금액이 통상시급입니다.` },
+  { q: "휴일근로수당은 1.5배인가요, 2배인가요?", a: `휴일에 일한 시간 중 8시간까지는 50%를 더해 1.5배, 8시간을 넘긴 시간은 100%를 더해 2배입니다(제56조 제2항). 이 비율은 법이 "제1항에도 불구하고"라며 휴일근로에 따로 정한 것입니다. 밤 10시 이후에 걸치면 야간 50%가 더 붙습니다.` },
+  { q: "5인 미만 사업장도 야근수당을 받나요?", a: `상시 4명 이하 사업장에는 제56조가 적용되지 않아 50%·100% 가산분은 없습니다(근로기준법 시행령 별표 1). 일한 시간만큼의 임금은 그대로 받아야 하고, 최저임금도 사업장 규모와 상관없이 적용됩니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>예를 들어 월급 300만원(주 40시간)이면 통상시급은 300만원 ÷ 209시간 = {won(monthly)}(원 미만 버림)이고, 한 달에 연장근로 10시간을 했다면 시간 임금 {won(ex.basePay)}에 가산 {won(ex.premium.overtime)}을 더해 {won(ex.total)}입니다. 통상시급의 바탕은 근로기준법 시행령 제6조 제2항 — 월급을 '월의 통상임금 산정 기준시간 수'로 나눈 금액입니다. 연장근로는 당사자가 합의해도 1주 {r.overtimeLimit.weeklyHours}시간까지입니다(제53조 제1항).</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>1시간 일했을 때 (2026 최저시급 {won(m26)})</th><th>배수</th><th>받는 돈</th></tr></thead>
+      <tbody>
+        {rows.map(({ k, rate, x }) => <tr><th scope="row">{k}</th><td>{rate}</td><td>{won(x.total || x.premiumTotal)}{x.basePay === 0 ? " (가산만)" : ""}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+  <p>야간근로는 소정근로 시간 안에 있으면 그 시간 임금은 이미 월급·시급에 들어 있어 가산 {won(P.night * m26)}만 더 붙습니다. 휴일에 8시간 일하면 {won(hol8.total)}, 9시간째부터는 1시간에 {won(holOver1.total)}입니다. 밤에 일한 시간만 따로 보려면 <a href="/guide/night-shift-pay/">야간수당</a>에 근무 시간대별 표가 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>4명 이하 사업장에서 하루 10시간 일하면 10시간 × 시급을 받고, 5명 이상이면 넘긴 2시간에 50%가 더 붙습니다. 단시간근로자(알바)가 계약한 시간을 넘겨 일하면 하루 8시간 안이어도 5명 이상 사업장에서는 50%를 더 받습니다(기간제 및 단시간근로자 보호 등에 관한 법률 제6조 제3항). 내 시간으로 바로 계산하려면 <a href="/guide/overtime-pay-calculator/">야근수당 계산기</a>를 쓰세요.</p>
+
+  <h2>야근수당 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

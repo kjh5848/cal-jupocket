@@ -1,0 +1,122 @@
+---
+/**
+ * "야근수당 계산기" — 야근수당 시리즈. (연장근로수당 계산·야간수당 계산기·휴일근로수당 계산 방법도 이 글, 계산기 포함)
+ * 계산: src/lib/overtime.ts overtimePay()·ordinaryHourly()·splitHoliday() — 근로기준법 제53조 ①·제56조, 시행령 제6조 ②·별표 1(rates: overtime-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/overtime-2026.json";
+import { overtimePay, ordinaryHourly, splitHoliday } from "../../../lib/overtime";
+import { minWage } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+
+const m26 = minWage(2026);
+const m27 = minWage(2027);
+const ex = overtimePay({ hourly: m26, overtime: 10, night: 4, holidayWithin: 0, holidayOver: 0 });
+const mo = ordinaryHourly({ mode: "monthly", wage: 3_000_000 });
+const h10 = splitHoliday(10);
+const hol = overtimePay({ hourly: mo, overtime: 0, night: 0, holidayWithin: h10.within, holidayOver: h10.over });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 overtime-series.test.ts 가 rates 와 대조한다.
+const title = "야근수당 계산기 — 시급이나 월급과 연장·야간·휴일 시간을 넣으면 가산수당과 받을 돈이 나옵니다";
+const description =
+  "야근수당 계산기는 시급이나 월급(1주 소정근로시간)으로 통상시급을 구하고 연장근로 50%, 야간근로 50%, 휴일근로 8시간 이내 50%·초과 100% 가산을 계산합니다. 휴일 하루 시간은 8시간 넘는 부분을 알아서 나누고, 상시 4명 이하 사업장은 가산을 뺍니다.";
+
+const ANSWER = `2026년 최저시급 ${won(m26)}으로 한 달에 연장근로 10시간, 그중 밤 10시 이후 4시간이면 연장 가산 ${won(ex.premium.overtime)}과 야간 가산 ${won(ex.premium.night)}을 더해 가산수당 ${won(ex.premiumTotal)}, 연장 시간 임금까지 ${won(ex.total)}입니다.`;
+
+const QA = [
+  { q: "월급제는 통상시급을 어떻게 넣나요?", a: `급여 기준을 월급으로 고르고 월급과 1주 소정근로시간을 넣으면 통상시급을 계산합니다. 주 40시간이면 209시간으로 나눠 월급 300만원은 ${won(mo)}입니다(근로기준법 시행령 제6조 제2항, 원 미만 버림). 통상임금에 들어가지 않는 수당은 빼고 넣으세요.` },
+  { q: "휴일에 10시간 일하면 어떻게 계산되나요?", a: `휴일 하루 시간에 10을 넣으면 8시간은 50% 가산, 넘는 2시간은 100% 가산으로 나눠 계산합니다(제56조 제2항). 월급 300만원이면 휴일 10시간에 ${won(hol.total)}입니다. 휴일이 여러 날이면 그런 날 수를 함께 넣으세요.` },
+  { q: "야간 시간은 연장 시간과 따로 넣어야 하나요?", a: `야간 칸에는 이미 다른 칸(또는 소정근로)에 들어간 시간 중 밤 10시~오전 6시에 걸친 시간만 넣습니다. 야간은 시간 임금을 다시 더하지 않고 50% 가산만 붙입니다. 그래서 연장이면서 야간인 시간은 연장 칸과 야간 칸에 모두 넣습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">세전 금액입니다. 근로기준법 제56조의 최저 가산(50%·100%) 기준이고, 회사 규정이 더 많이 주기로 했으면 그 규정이 앞섭니다. 시간은 계산하려는 기간(한 주·한 달)의 합계를 넣으세요.</p>
+    <div class="calc-input-wrap">
+      <label for="ot-mode">급여 기준</label>
+      <select id="ot-mode" data-seg><option value="hourly" selected>시급</option><option value="monthly">월급</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ot-wage" id="ot-wage-label">시급</label>
+      <input type="text" inputmode="numeric" id="ot-wage" value={m26.toLocaleString("ko-KR")} data-won />
+      <span class="unit">원</span>
+    </div>
+    <div class="amount-presets" role="group" aria-label="시급 고르기">
+      <button type="button" class="preset-chip" data-ot-wage={m26}>2026 최저 {won(m26)}</button>
+      <button type="button" class="preset-chip" data-ot-wage={m27}>2027 최저 {won(m27)}</button>
+    </div>
+    <div class="calc-input-wrap" id="ot-week-wrap" hidden>
+      <label for="ot-week">1주 소정근로시간</label>
+      <input type="number" min="1" max="40" step="1" id="ot-week" value="40" data-step />
+      <span class="unit">시간</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ot-scale">사업장 규모</label>
+      <select id="ot-scale" data-seg><option value="covered" selected>상시 5명 이상</option><option value="small">상시 4명 이하</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ot-ot">연장근로</label>
+      <input type="number" min="0" max="300" step="0.5" id="ot-ot" value="10" data-step />
+      <span class="unit">시간</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ot-night">야간근로(22시~6시)</label>
+      <input type="number" min="0" max="300" step="0.5" id="ot-night" value="4" data-step />
+      <span class="unit">시간</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ot-hol">휴일에 하루 일한 시간</label>
+      <input type="number" min="0" max="24" step="0.5" id="ot-hol" value="0" data-step />
+      <span class="unit">시간</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="ot-hold">그런 휴일 날 수</label>
+      <input type="number" min="0" max="31" step="1" id="ot-hold" value="1" data-step />
+      <span class="unit">일</span>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="ot-base|ot-prem"
+      data-bar-labels="일한 시간 임금|가산수당"
+      data-dock="ot-hero"
+    >
+      <p class="label">연장·휴일 시간 임금 + 가산수당(세전)</p>
+      <p class="big" id="ot-hero">{won(ex.total)}</p>
+      <p class="meta" id="ot-note">가산수당 {won(ex.premiumTotal)} · 통상시급 {won(ex.hourly)}</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">통상시급</span><span class="value" id="ot-hourly">{won(ex.hourly)}</span></div>
+      <div class="stat-chip"><span class="label">연장·휴일 시간 임금 (시급 × 시간)</span><span class="value" id="ot-base">{won(ex.basePay)}</span></div>
+      <div class="stat-chip" data-group="가산"><span class="label">연장 50%</span><span class="value" id="ot-p-ot">{won(ex.premium.overtime)}</span></div>
+      <div class="stat-chip"><span class="label">야간 50%</span><span class="value" id="ot-p-night">{won(ex.premium.night)}</span></div>
+      <div class="stat-chip"><span class="label" id="ot-hw-label">휴일 8시간 이내 50% (0시간)</span><span class="value" id="ot-p-hw">0원</span></div>
+      <div class="stat-chip"><span class="label" id="ot-ho-label">휴일 8시간 초과 100% (0시간)</span><span class="value" id="ot-p-ho">0원</span></div>
+      <div class="stat-chip"><span class="label">가산수당 합계</span><span class="value" id="ot-prem">{won(ex.premiumTotal)}</span></div>
+    </div>
+    <p class="meta" id="ot-warn" hidden></p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>주 40시간이 아닌 월급제는 1주 소정근로시간에 주휴시간(주 15시간 이상이면 1주 시간 ÷ 5)을 더하고 365 ÷ 7 ÷ 12를 곱한 시간으로 나눕니다. 이 방식은 <a href="/guide/hourly-wage-monthly/">시급 월급 환산</a>과 같습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>휴일근로 비율은 연장근로 가산을 겹치지 않고 제2항 비율만 씁니다. 가산 비율 표와 4명 이하 사업장 이야기는 <a href="/guide/overtime-pay/">야근수당</a>에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>근무 시간대별로 야간 시간이 몇 시간인지는 <a href="/guide/night-shift-pay/">야간수당</a> 표에 있습니다. 소정근로 임금과 주휴수당은 <a href="/guide/hourly-wage-calculator/">시급 계산기</a>로, 세금과 보험료를 뗀 금액은 <a href="/guide/four-insurance-calculator/">4대보험 계산기</a>로 볼 수 있습니다.</p>
+
+  <script src="../../../scripts/overtime.ts"></script>
+</GuideLayout>

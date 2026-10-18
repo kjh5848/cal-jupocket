@@ -1,0 +1,77 @@
+---
+/**
+ * "야간수당" — 야근수당 시리즈. (야간수당 계산·야간수당 기준·야간수당 시간·알바 야간수당·편의점 야간수당·최저시급 야간수당도 이 글)
+ * 계산: src/lib/overtime.ts overtimePay() — 근로기준법 제56조 ①·③, 시행령 별표 1(rates: overtime-2026.json).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/overtime-2026.json";
+import { overtimePay } from "../../../lib/overtime";
+import { minWage } from "../../../lib/labor";
+import { won } from "../../../lib/won";
+
+const P = r.premium;
+const m26 = minWage(2026);
+const DAY = 8; // 근로기준법 제50조 제2항 1일 8시간 — 넘는 시간은 연장근로
+
+/** 휴게 없이 start~end 시(24 넘으면 다음 날)를 일했을 때 하루 임금 — 8시간까지 소정, 넘는 시간 연장, 밤 10시~오전 6시 겹치는 시간 야간 */
+function shift(start: number, end: number, small = false) {
+  const total = end - start;
+  const night = Math.max(0, Math.min(end, 24 + P.nightEnd) - Math.max(start, P.nightStart));
+  const regular = Math.min(total, DAY);
+  const x = overtimePay({ hourly: m26, overtime: total - regular, night, holidayWithin: 0, holidayOver: 0, small });
+  return { total, night, ot: total - regular, regularPay: m26 * regular, premium: x.premiumTotal, pay: m26 * regular + x.total };
+}
+const hh = (h: number) => `${String(h % 24).padStart(2, "0")}시`;
+const shifts = [
+  [22, 30],
+  [18, 26],
+  [14, 24],
+  [20, 32],
+].map(([s, e]) => ({ s, e, x: shift(s, e) }));
+const full = shift(22, 30);
+const fullSmall = shift(22, 30, true);
+const night1 = overtimePay({ hourly: m26, overtime: 0, night: 1, holidayWithin: 0, holidayOver: 0 });
+const otNight1 = overtimePay({ hourly: m26, overtime: 1, night: 1, holidayWithin: 0, holidayOver: 0 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 overtime-series.test.ts 가 rates 와 대조한다.
+const title = "야간수당 — 밤 10시부터 오전 6시 사이에 일한 시간에 통상시급의 50%를 더 받습니다";
+const description =
+  "야간수당은 오후 10시부터 다음 날 오전 6시 사이에 일한 시간에 통상시급의 50%를 더 주는 돈입니다. 그 시간이 연장근로이기도 하면 연장 50%와 겹쳐 2배가 됩니다. 2026년 최저시급 10,320원 기준 근무 시간대별 하루 임금과 편의점 알바 야간수당을 정리했습니다.";
+
+const ANSWER = `야간수당은 오후 10시부터 다음 날 오전 6시 사이에 일한 시간에 통상시급의 50%를 더 주는 돈입니다(근로기준법 제56조 제3항). 2026년 최저시급 ${won(m26)}이면 야간 1시간에 ${won(night1.premiumTotal)}이 더 붙어 ${won(m26 + night1.premiumTotal)}, 그 시간이 연장근로이기도 하면 ${won(otNight1.total)}입니다.`;
+
+const QA = [
+  { q: "야간수당은 몇 시부터 몇 시까지인가요?", a: `오후 10시부터 다음 날 오전 6시까지입니다(제56조 제3항). 이 8시간 안에 일한 시간만 야간근로로 셉니다. 오후 6시부터 새벽 2시까지 일했다면 밤 10시~새벽 2시의 4시간이 야간근로이고, 그 4시간에 통상시급의 50%가 더 붙습니다.` },
+  { q: "편의점 알바 야간수당은 얼마인가요?", a: `상시 5명 이상인 매장에서 밤 10시~오전 6시 8시간을 2026년 최저시급으로 일하면 시간 임금 ${won(full.regularPay)}에 야간 가산 ${won(full.premium)}이 붙어 하루 ${won(full.pay)}입니다. 상시 4명 이하 매장이면 가산 없이 ${won(fullSmall.pay)}입니다.` },
+  { q: "야간수당과 연장근로수당은 겹쳐서 받나요?", a: `네. 연장근로가 밤 10시 이후에 걸치면 연장 50%(제56조 제1항)와 야간 50%(제3항)가 각각 붙어 그 시간은 통상시급의 2배입니다. 휴일에 밤까지 일한 시간도 휴일 가산에 야간 50%가 더해집니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>근무 시간 (휴게 없이, 최저시급)</th><th>야간 · 연장</th><th>가산</th><th>하루 임금</th></tr></thead>
+      <tbody>
+        {shifts.map(({ s, e, x }) => <tr><th scope="row">{hh(s)} ~ {hh(e)} ({x.total}시간)</th><td>야간 {x.night}시간 · 연장 {x.ot}시간</td><td>{won(x.premium)}</td><td>{won(x.pay)}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+  <p>표는 상시 5명 이상 사업장에서 휴게시간 없이 일했다고 보고 셌습니다. 하루 8시간을 넘긴 시간은 연장근로라 50%가 따로 붙습니다. 실제 근무에 휴게시간이 있으면 그 시간을 빼고 세야 합니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>야간 가산이 붙느냐는 매장이 상시 4명 이하인지가 가릅니다(근로기준법 시행령 별표 1). 가산이 없어도 최저임금과 주휴수당(주 15시간 이상·개근)은 받아야 합니다 — 주휴수당은 <a href="/guide/weekly-holiday-pay-calculator/">주휴수당 계산기</a>로 볼 수 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>그래서 오후 2시부터 자정까지 10시간 일하면 마지막 2시간은 연장이면서 야간이라 시간당 {won(otNight1.total)}입니다. 연장·휴일까지 한 번에 넣어 보려면 <a href="/guide/overtime-pay-calculator/">야근수당 계산기</a>, 가산 비율 전체는 <a href="/guide/overtime-pay/">야근수당</a>에 있습니다.</p>
+</GuideLayout>

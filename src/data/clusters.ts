@@ -315,6 +315,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/hourly-wage/", title: "시급 계산 — 일급은 시급 × 하루 시간, 주급은 주휴수당까지, 월급은 주 40시간이면 209시간을 곱합니다", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/hourly-wage-monthly/", title: "시급 월급 환산 — 주 40시간이면 시급 × 209시간, 그보다 적게 일하면 주휴를 넣은 주 시간 × 365 ÷ 7 ÷ 12", kind: "guide", icon: "wallet", year: 2026 },
       { href: "/guide/hourly-wage-calculator/", title: "시급 계산기", kind: "calc", icon: "calculator", blurb: "시급·하루 시간·주 일수 → 일급·주급·월급·연봉, 주휴 포함" },
+      { href: "/guide/overtime-pay/", title: "야근수당 — 연장근로는 통상시급의 1.5배, 밤 10시~오전 6시는 50%를 더, 휴일 8시간을 넘기면 2배입니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/night-shift-pay/", title: "야간수당 — 밤 10시부터 오전 6시 사이에 일한 시간에 통상시급의 50%를 더 받습니다", kind: "guide", icon: "wallet", year: 2026 },
+      { href: "/guide/overtime-pay-calculator/", title: "야근수당 계산기", kind: "calc", icon: "calculator", blurb: "시급·월급과 연장·야간·휴일 시간 → 가산수당과 받을 돈" },
     ],
   },
   {
@@ -427,6 +430,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/overtime-pay-calculator/",
+  "/guide/night-shift-pay/",
+  "/guide/overtime-pay/",
   "/guide/brokerage-fee-calculator/",
   "/guide/monthly-rent-brokerage-fee/",
   "/guide/brokerage-fee/",

@@ -74,6 +74,7 @@ const SYN: Record<string, string[]> = {
   "/guide/parental-leave-pay-calculator/": ["육아휴직 급여", "육아휴직 월급", "출산휴가 급여"],
   "/guide/hourly-wage-calculator/": ["시급", "시급계산기", "시급 계산", "알바 시급", "시급 월급", "일급", "주급", "최저시급 월급"],
   "/guide/dsr-calculator/": ["DSR", "DSR계산기", "DSR 계산", "DSR 한도", "DSR 40%", "스트레스 DSR", "대출 한도", "주택담보대출 한도", "마이너스통장 DSR"],
+  "/guide/overtime-pay-calculator/": ["야근수당", "야근수당계산기", "야근수당 계산", "연장근로수당", "연장근로수당 계산", "야간수당", "야간수당 계산기", "휴일근로수당", "휴일수당", "가산수당", "통상시급"],
   "/guide/brokerage-fee-calculator/": ["중개보수", "중개보수계산기", "복비", "복비 계산기", "복비계산기", "부동산 수수료", "부동산 중개수수료", "중개수수료", "월세 복비", "전세 복비"],
   "/guide/minimum-wage-calculator/": ["최저임금", "최저시급", "2026 최저임금"],
   "/guide/take-home-calculator/": ["실수령액", "월급 얼마", "연봉 실수령", "세후 월급", "월급 실수령액"],
@@ -101,7 +102,7 @@ const SYN: Record<string, string[]> = {
 
 /** 곧 담길 도구(점선 칸) — 루틴 우선순위 순(docs/tool-backlog.md). 공개하면 여기서 뺀다 */
 const NEXT: { href: string; name: string; blurb: string; type: ToolType; icon: string; keywords: string[] }[] = [
-  { href: "/guide/overtime-pay-calculator/", name: "야근수당 계산기", blurb: "연장·야간·휴일 가산 수당", type: "labor", icon: "wallet", keywords: ["야근수당", "연장근로수당", "야간수당"] },
+  { href: "/guide/ordinary-wage-calculator/", name: "통상임금 계산기", blurb: "월급·수당 → 통상임금·통상시급", type: "labor", icon: "wallet", keywords: ["통상임금", "통상임금 계산"] },
   { href: "/guide/daily-worker-insurance-calculator/", name: "일용직 4대보험 계산기", blurb: "일당·근무일수 → 고용보험·국민연금·건강보험", type: "labor", icon: "wallet", keywords: ["일용직 4대보험", "일용직 고용보험", "일용직 국민연금"] },
   { href: "/tools/date-diff/", name: "날짜 계산기", blurb: "두 날짜 사이 · 며칠 뒤 · D-day", type: "date", icon: "calendar", keywords: ["날짜 계산", "디데이", "D-day", "며칠"] },
   { href: "/tools/percent/", name: "퍼센트 계산기", blurb: "몇 %인지 · % 올리고 내리기", type: "unit", icon: "percent", keywords: ["퍼센트", "%", "비율"] },
