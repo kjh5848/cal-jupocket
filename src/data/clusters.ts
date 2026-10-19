@@ -467,6 +467,7 @@ export const clusters: Cluster[] = [
       { href: "/tools/age/", title: "만 나이 계산기", kind: "calc", icon: "calendar", blurb: "생년월일 → 만 나이 · 연 나이 · 개월 수" },
       { href: "/tools/date-day/", title: "날짜 요일 계산기", kind: "calc", icon: "calendar", blurb: "날짜 → 무슨 요일 · 공휴일 · 몇 주차" },
       { href: "/tools/anniversary/", title: "커플 기념일 계산기", kind: "calc", icon: "calendar", blurb: "사귄 날 → 며칠째 · 100일 · 1000일 · 주년" },
+      { href: "/tools/birthday-dday/", title: "생일 디데이", kind: "calc", icon: "calendar", blurb: "생일 월·일 → 다음 생일 D-몇 · 요일 · 몇 살" },
     ],
   },
 ];

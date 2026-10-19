@@ -1,0 +1,204 @@
+---
+/**
+ * 생일 디데이 — 날짜·시간 묶음의 여섯 번째 도구(/tools/birthday-dday/). 계산은 lib/birthday-dday.ts.
+ *
+ * 질문 하나: 다음 생일이 언제이고 며칠·몇 시간 남았나, 그날 몇 살이 되나.
+ * 2월 29일생의 평년 생일은 만 나이 계산기와 같은 3월 1일이 기본(민법 제160조 ③ — rates/age-2026.json),
+ * 2월 28일(관습)·윤년만도 고를 수 있다. roberin #81 은 입력·결과 항목만 대조했다(docs/calc-benchmark.md).
+ * 첫 화면 숫자는 예시로 빌드 때 계산하고, 스크립트가 열린 날 오늘로 바꿔 다시 센다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+import { toDay, label, dday, WEEKDAYS, weekday } from "../../../lib/date-calc";
+import { birthdayDday, upcomingBirthdays } from "../../../lib/birthday-dday";
+
+const title = "생일 디데이 — 다음 생일까지 며칠, 무슨 요일, 몇 살";
+const description =
+  "생일 월·일만 고르면 다음 생일까지 D-몇과 남은 시간, 그날 무슨 요일인지 바로 나옵니다. 태어난 해를 넣으면 이번 생일에 만 몇 살이 되는지와 살아온 날도 셉니다. 2월 29일생도 됩니다.";
+
+const BASE = "2026-10-19";
+const M = 3;
+const D = 14;
+const Y = 1995;
+const t0 = toDay(BASE)!;
+const r0 = birthdayDday(M, D, Y, t0)!;
+const list0 = upcomingBirthdays(M, D, t0, "mar1", 10);
+const fmt = (n: number) => n.toLocaleString("ko-KR");
+const months = Array.from({ length: 12 }, (_, i) => i + 1);
+const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const y0 = Number(BASE.slice(0, 4));
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>생일 디데이</h1>
+      <p>
+        생일 월과 일을 고르면 다음 생일까지 며칠 남았는지, 그날이 무슨 요일인지 바로 나옵니다. 태어난 해까지 넣으면
+        이번 생일에 만 몇 살이 되는지도 함께 셉니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="month">생일 — 월</label>
+          <select id="month">
+            {months.map((m) => <option value={m} selected={m === M}>{m}월</option>)}
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="day">생일 — 일</label>
+          <select id="day">
+            {days.map((d) => <option value={d} selected={d === D}>{d}일</option>)}
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="year">태어난 해 (비워도 됩니다)</label>
+          <input type="number" id="year" inputmode="numeric" min="1900" max="2100" step="1" value={Y} placeholder="예: 1995" />
+          <p class="hint">넣으면 이번 생일 나이·지금 만 나이·살아온 날이 나옵니다.</p>
+        </div>
+        <div class="calc-input-wrap" id="leap-wrap" hidden>
+          <label for="leap">2월 29일생 — 평년 생일</label>
+          <select id="leap" data-seg>
+            <option value="mar1" selected>3월 1일 (만 나이가 오르는 날)</option>
+            <option value="feb28">2월 28일 (전날 축하)</option>
+            <option value="feb29">윤년 2월 29일만</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">기준일 (보통 오늘)</label>
+          <input type="date" id="base" value={BASE} min="1900-01-01" max="2100-12-31" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">다음 생일 {label(r0.next)}까지</p>
+          <p class="big" id="hero-value">{dday(r0.next, t0)}</p>
+          <p class="hint" id="hero-sub">{fmt(r0.daysLeft)}일 남음 · 이번 생일에 만 {r0.turningAge}세</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">남은 시간 (생일 0시까지)</span>
+            <span class="value" id="v-time">—</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">생일 요일</span>
+            <span class="value" id="v-weekday">{WEEKDAYS[weekday(r0.next)]}요일</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">이번 생일 나이</span>
+            <span class="value" id="v-age">만 {r0.turningAge}세</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">살아온 날</span>
+            <span class="value" id="v-lived">{fmt(r0.livedDays!)}일</span>
+          </div>
+        </div>
+
+        <div class="calc-input-wrap">
+          <p class="label">지난 생일에서 다음 생일까지</p>
+          <div class="bday-bar" role="progressbar" aria-labelledby="bar-text" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(r0.progress)} id="bar">
+            <i style={`width:${r0.progress.toFixed(1)}%`} id="bar-fill"></i>
+          </div>
+          <p class="hint" id="bar-text">{label(r0.prev)} → {label(r0.next)} · {r0.progress.toFixed(1)}% 지남</p>
+        </div>
+        <p class="hint" id="note">지금 만 {r0.currentAge}세 · 태어난 날은 {WEEKDAYS[weekday(r0.birth!)]}요일</p>
+
+        <details open>
+          <summary>앞으로 10번의 생일</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>날짜</th><th>나이</th><th>남은 날</th></tr></thead>
+              <tbody id="rows">
+                {list0.map((b) => (
+                  <tr><th scope="row">{label(b)}</th><td>만 {Number(label(b).slice(0, 4)) - Y}세</td><td>{dday(b, t0)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta" id="rows-note">공휴일 표시는 관공서 공휴일 목록({y0}~{y0 + 1}년) 안에서만 합니다.</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>이렇게 셉니다</h2>
+      <ul>
+        <li>
+          <strong>D-몇은 날짜만 봅니다</strong> — 오늘과 생일 날짜의 차이라 아침에 보든 밤에 보든 하루 안에서는
+          같습니다. 남은 시간은 생일 당일 0시까지라서, 생일 전날 저녁이면 D-1 인데 남은 시간은 몇 시간만 보입니다.
+        </li>
+        <li>
+          <strong>생일 당일은 하루 내내 D-Day</strong> — 자정이 지나야 다음 해 생일로 넘어갑니다. 이때 남은 시간은
+          생일이 끝날 때까지를 셉니다. 기준일을 오늘로 둔 채 화면을 켜 두면 자정에 저절로 넘어갑니다.
+        </li>
+        <li>
+          <strong>나이는 만 나이</strong> — 민법 제158조대로 태어난 날을 0살로 시작해 생일마다 한 살씩 더합니다.
+          '이번 생일 나이'는 다음 생일 연도에서 태어난 해를 뺀 값입니다. 오늘 기준 정확한 만 나이·개월 수는
+          <a href="/tools/age/">만 나이 계산기</a>와 같은 규칙입니다.
+        </li>
+        <li>
+          <strong>살아온 날</strong> — 오늘에서 태어난 날을 뺀 날수입니다. 태어난 날 당일이 0일, 다음 날이 1일입니다.
+        </li>
+      </ul>
+
+      <details>
+        <summary>2월 29일에 태어났으면 평년 생일은 언제인가요?</summary>
+        <p>
+          법으로는 평년 2월 28일이 끝나는 순간 한 살을 채우고 3월 1일부터 한 살 더 먹습니다(민법 제160조 제3항 —
+          마지막 달에 해당하는 날이 없으면 그 달 말일에 기간이 끝남). 그래서 기본은 3월 1일입니다. 하루 앞당겨
+          2월 28일에 축하하는 집도 많아 고를 수 있게 했고, 이때도 '지금 만 나이'는 법대로 3월 1일에 올라갑니다.
+          '윤년 2월 29일만'을 고르면 4년마다 오는 진짜 생일까지 셉니다. 2100년은 윤년이 아니라 그때는 8년을 기다립니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>음력 생일도 되나요?</summary>
+        <p>
+          아직 양력만 셉니다. 음력 생일은 해마다 양력 날짜가 바뀌어서, 올해 음력 생일이 양력으로 며칠인지 먼저
+          확인한 뒤 그 월·일을 고르세요. 그 해에만 맞는 값이라 내년에는 다시 바꿔야 합니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>생일 요일은 해마다 왜 한 칸씩 밀리나요?</summary>
+        <p>
+          평년은 365일, 곧 52주하고 하루라서 같은 날짜의 요일이 이듬해에 하루 뒤로 갑니다. 그 사이에 2월 29일이 끼면
+          366일이라 이틀 밀립니다. 아래 표에서 앞으로 10번의 생일 요일을 한 번에 볼 수 있습니다.
+        </p>
+      </details>
+
+      <p>
+        생일 말고 다른 날까지 남은 날은 <a href="/tools/dday/">디데이 계산기</a>, 사귄 날·결혼한 날부터 며칠째인지는
+        <a href="/tools/anniversary/">커플 기념일 계산기</a>, 어떤 날짜가 무슨 요일·공휴일인지는
+        <a href="/tools/date-day/">날짜 요일 계산기</a>가 셉니다.
+      </p>
+
+      <AdSlot label="birthday-dday-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .bday-bar { height: 10px; border-radius: var(--r-pill); background: var(--surface-2); overflow: hidden; margin: 6px 0 4px; }
+      .bday-bar i { display: block; height: 100%; border-radius: var(--r-pill); background: linear-gradient(90deg, #3f8ff0, #1f9c8e); transition: width 0.3s ease; }
+    </style>
+    <script src="../../../scripts/birthday-dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
