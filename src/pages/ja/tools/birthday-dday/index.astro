@@ -1,0 +1,242 @@
+---
+/**
+ * 誕生日まであと何日 — 일본어판 생일 디데이(/ja/tools/birthday-dday/). 한국어판 /tools/birthday-dday/ 와 계산(lib/birthday-dday.ts)·
+ * 스크립트(scripts/birthday-dday.ts)를 같이 쓰고, 문장은 일본어로 새로 썼다(번역 아님). 표기는 lib/date-format-ja.ts.
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/ja-birthday-dday-2026-10-19.csv):
+ *   誕生日まであと何日 計算·誕生日まで何日 / 誕生日まであと何時間·カウントダウン 時間 / 次の誕生日で何歳 /
+ *   うるう年 誕生日 年齢·どうなる / 次の誕生日までの日数 エクセル / 次の誕生日 英語
+ * 免許証·戸籍 축은 道路交通法·戸籍法 원문을 확인하지 않아 쓰지 않았다. 2월 28일에 축하하는 관습도 원문이 없어
+ * 세 가지 선택지를 중립적으로만 적는다. 한국 공휴일은 쓰지 않는다(일본 祝日 원문 미확인) — 요일만.
+ * 나이 규칙: 年齢計算ニ関スル法律(明治35年法律第50号)이 民法 第143条를 준용 — 2/29생은 평년 2/28 이 끝날 때 한 살
+ * (docs/country-matrix.md #97·#81 행, e-Gov 원문 2026-10-19 확인).
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, weekday } from "../../../../lib/date-calc";
+import { labelJa, ddayJa, WEEKDAYS_JA } from "../../../../lib/date-format-ja";
+import { birthdayDday, upcomingBirthdays, birthdayIn } from "../../../../lib/birthday-dday";
+
+const title = "誕生日まであと何日？次の誕生日カウントダウン — 何曜日・何歳になるか";
+const description =
+  "誕生日の月と日を選ぶだけで、次の誕生日まであと何日か、残り何時間か、その日が何曜日かをすぐ表示します。生まれた年を入れると次の誕生日で満何歳になるか、生まれてから何日たったかも計算します。2月29日生まれにも対応。";
+
+const BASE = "2026-10-19";
+const M = 3;
+const D = 14;
+const Y = 1995;
+const t0 = toDay(BASE)!;
+const r0 = birthdayDday(M, D, Y, t0)!;
+const list0 = upcomingBirthdays(M, D, t0, "mar1", 10);
+const fmt = (n: number) => n.toLocaleString("ja-JP");
+const months = Array.from({ length: 12 }, (_, i) => i + 1);
+const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const yearOf = (n: number) => Number(labelJa(n).slice(0, 4));
+const hoursLeft = r0.daysLeft * 24;
+
+// 2月29日生まれの例 — 2027年(平年)の誕生日を3つのルールで
+const leapMar1 = birthdayIn(2027, 2, 29, "mar1")!;
+const leapFeb28 = birthdayIn(2027, 2, 29, "feb28")!;
+const leapNext = upcomingBirthdays(2, 29, t0, "feb29", 1)[0];
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>誕生日まであと何日？</h1>
+      <p>
+        誕生日の月と日を選ぶと、次の誕生日まであと何日か、その日が何曜日かがすぐに出ます。生まれた年も入れると、次の誕生日で満何歳になるかもいっしょに計算します。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="month">誕生日 — 月</label>
+          <select id="month">
+            {months.map((m) => <option value={m} selected={m === M}>{m}月</option>)}
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="day">誕生日 — 日</label>
+          <select id="day">
+            {days.map((d) => <option value={d} selected={d === D}>{d}日</option>)}
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="year">生まれた年（西暦・空欄でもOK）</label>
+          <input type="number" id="year" inputmode="numeric" min="1900" max="2100" step="1" value={Y} placeholder="例：1995" />
+          <p class="hint">入れると、次の誕生日で何歳か・いまの満年齢・生まれてからの日数が出ます。</p>
+        </div>
+        <div class="calc-input-wrap" id="leap-wrap" hidden>
+          <label for="leap">2月29日生まれ — うるう年でない年の誕生日</label>
+          <select id="leap" data-seg>
+            <option value="mar1" selected>3月1日（2月28日が終わった時に満年齢が加わる）</option>
+            <option value="feb28">2月28日</option>
+            <option value="feb29">うるう年の2月29日だけ</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">基準日（ふつうは今日）</label>
+          <input type="date" id="base" value={BASE} min="1900-01-01" max="2100-12-31" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">次の誕生日 {labelJa(r0.next)}まで</p>
+          <p class="big" id="hero-value">{ddayJa(r0.next, t0)}</p>
+          <p class="hint" id="hero-sub">残り{fmt(r0.daysLeft)}日 · 次の誕生日で満{r0.turningAge}歳</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">残り時間（誕生日の午前0時まで）</span>
+            <span class="value" id="v-time">—</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">誕生日の曜日</span>
+            <span class="value" id="v-weekday">{WEEKDAYS_JA[weekday(r0.next)]}曜日</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">次の誕生日で</span>
+            <span class="value" id="v-age">満{r0.turningAge}歳</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">生まれてからの日数</span>
+            <span class="value" id="v-lived">{fmt(r0.livedDays!)}日</span>
+          </div>
+        </div>
+
+        <div class="calc-input-wrap">
+          <p class="label">前の誕生日から次の誕生日まで</p>
+          <div class="bday-bar" role="progressbar" aria-labelledby="bar-text" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(r0.progress)} id="bar">
+            <i style={`width:${r0.progress.toFixed(1)}%`} id="bar-fill"></i>
+          </div>
+          <p class="hint" id="bar-text">{labelJa(r0.prev)} → {labelJa(r0.next)} · {r0.progress.toFixed(1)}%経過</p>
+        </div>
+        <p class="hint" id="note">いまは満{r0.currentAge}歳 · 生まれた日は{WEEKDAYS_JA[weekday(r0.birth!)]}曜日</p>
+
+        <details open>
+          <summary>これから10回の誕生日</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>日付</th><th>年齢</th><th>あと何日</th></tr></thead>
+              <tbody id="rows">
+                {list0.map((b) => (
+                  <tr><th scope="row">{labelJa(b)}</th><td>満{yearOf(b) - Y}歳</td><td>{ddayJa(b, t0)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta" id="rows-note"></p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>誕生日まであと何日の計算方法</h2>
+      <ul>
+        <li>
+          <strong>「あと◯日」は日付だけで数えます</strong> — 次の誕生日の日付から今日の日付を引いた日数です。今日は数えず、誕生日の当日は数えます。朝に見ても夜に見ても、その日のうちは同じ数字です。
+        </li>
+        <li>
+          <strong>誕生日の当日は一日中「今日」</strong> — 午前0時を過ぎるまで、翌年の誕生日には切り替わりません。基準日を今日のままにして画面を開いておくと、日付が変わったときに自動で進みます。
+        </li>
+        <li>
+          <strong>今年の誕生日がもう過ぎていたら来年</strong> — たとえば{labelJa(t0)}を基準にすると、{M}月{D}日生まれの次の誕生日は{labelJa(r0.next)}で、{ddayJa(r0.next, t0)}です。
+        </li>
+      </ul>
+
+      <h2>誕生日まであと何時間？残り時間のカウントダウン</h2>
+      <p>
+        残り時間は誕生日の午前0時までを、日・時間・分で表示し、1秒ごとに進みます（基準日が今日のとき）。日付だけで大まかに見積もるなら「あと◯日 × 24時間」で、{ddayJa(r0.next, t0)}なら約{fmt(hoursLeft)}時間です。
+        誕生日の当日は、その日が終わる瞬間（翌日の午前0時）までの時間に変わります。1日は24時間として数え、お使いの端末の時計を使います。
+      </p>
+
+      <h2>次の誕生日で何歳になる？</h2>
+      <p>
+        生まれた年を入れると「次の誕生日で満◯歳」が出ます。これは次の誕生日の年から生まれた年を引いた数です。{Y}年{M}月{D}日生まれなら、{labelJa(r0.next)}で満{r0.turningAge}歳になります。
+        いまの満年齢と生まれてからの日数は<a href="/ja/tools/age/">年齢計算・満年齢</a>と同じ数え方で、生まれた日を0日、翌日を1日と数えます。
+      </p>
+      <p>
+        なお、法律の上では年齢は<strong>誕生日の前日が終わる時</strong>に1つ加わります（年齢計算ニ関スル法律が民法 第143条を準用）。このページは誕生日の当日から新しい年齢で表示しますが、その日に年齢が上がっていることに変わりはありません。
+      </p>
+
+      <h2>うるう年の2月29日生まれの誕生日と年齢</h2>
+      <p>
+        2月29日がない年の誕生日は、3つの数え方から選べます。どれを選んでも、いまの満年齢の計算は法律どおりで変わりません。
+      </p>
+      <ul>
+        <li>
+          <strong>3月1日（はじめの設定）</strong> — 民法 第143条では、最後の月に応当する日がないときはその月の末日に期間が満了します。そのため平年は2月28日が終わった時に1歳加わり、3月1日には新しい年齢になっています（例：{labelJa(leapMar1)}）。
+        </li>
+        <li>
+          <strong>2月28日</strong> — 2月の最後の日を誕生日として数えます（例：{labelJa(leapFeb28)}）。満年齢が加わるのは、この日が終わった時です。
+        </li>
+        <li>
+          <strong>うるう年の2月29日だけ</strong> — 4年に一度の本当の誕生日まで数えます。{labelJa(t0)}からなら次は{labelJa(leapNext)}で、{ddayJa(leapNext, t0)}です。2100年はうるう年ではないので、そのときは8年空きます。
+        </li>
+      </ul>
+
+      <h2>エクセルで次の誕生日までの日数を出すには</h2>
+      <p>
+        生年月日がA1にあるとき、今年の誕生日は <code>=DATE(YEAR(TODAY()),MONTH(A1),DAY(A1))</code> で作れます。これが今日より前なら年に1を足して来年の誕生日にし、そこから <code>TODAY()</code> を引けば残り日数です。
+        2月29日生まれの場合、エクセルの DATE 関数は平年の2月29日を3月1日に繰り上げるので、このページの「3月1日」と同じ日付になります。
+      </p>
+
+      <details>
+        <summary>誕生日の曜日は毎年どうして1つずつずれるのですか？</summary>
+        <p>
+          平年は365日、つまり52週と1日なので、同じ日付の曜日は翌年に1つ後ろへずれます。間に2月29日をはさむと366日なので2つずれます。上の表で、これから10回の誕生日の曜日をまとめて見られます。
+        </p>
+      </details>
+
+      <details>
+        <summary>旧暦の誕生日や和暦の生まれ年でも計算できますか？</summary>
+        <p>
+          いまは西暦（新暦）の日付だけです。生まれた年は西暦で入れてください。旧暦の誕生日は年によって新暦の日付が変わるので、その年の新暦の日付を調べてから月と日を選んでください。
+        </p>
+      </details>
+
+      <details>
+        <summary>「次の誕生日」は英語で何と言いますか？</summary>
+        <p>
+          「next birthday」です。「次の誕生日で何歳になりますか」は「How old will you be on your next birthday?」とよく言います。残りの日数は「◯ days until my birthday」のように書かれます。
+        </p>
+      </details>
+
+      <p>
+        誕生日以外の日までの残り日数は<a href="/ja/tools/dday/">あと何日・カウントダウン</a>、2つの日付の間の日数は<a href="/ja/tools/date-diff/">日数計算・日付計算</a>で計算できます。
+      </p>
+
+      <p>
+        出典：<a href="https://laws.e-gov.go.jp/law/135AC1000000050" rel="noopener">年齢計算ニ関スル法律（明治三十五年法律第五十号） — e-Gov法令検索</a> ·
+        <a href="https://laws.e-gov.go.jp/law/129AC0000000089" rel="noopener">民法（明治二十九年法律第八十九号）第143条 — e-Gov法令検索</a>（2026年10月19日確認）
+      </p>
+
+      <AdSlot label="birthday-dday-result-ja" />
+    </main>
+    <SiteFooter />
+    <style>
+      .bday-bar { height: 10px; border-radius: var(--r-pill); background: var(--surface-2); overflow: hidden; margin: 6px 0 4px; }
+      .bday-bar i { display: block; height: 100%; border-radius: var(--r-pill); background: linear-gradient(90deg, #3f8ff0, #1f9c8e); transition: width 0.3s ease; }
+    </style>
+    <script src="../../../../scripts/birthday-dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

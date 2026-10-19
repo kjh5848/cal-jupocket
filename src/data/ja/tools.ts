@@ -67,4 +67,12 @@ export const jaTools: JaTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/ja/tools/birthday-dday/",
+    name: "誕生日まであと何日",
+    blurb: "次の誕生日まであと何日・何時間か、何曜日か、次の誕生日で何歳になるか",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
