@@ -24,24 +24,23 @@ function set(id: string, text: string) {
   $(id).textContent = text;
 }
 
+/** 계산할 수 없을 때 — 지난 결과가 남지 않게 칸을 비운다 */
+function clear(heroLabel: string, note: string) {
+  set("hero-label", heroLabel);
+  set("hero-value", "—");
+  set("hero-sub", "");
+  for (const id of ["v-year", "v-korean", "v-months", "v-lived", "v-next"]) set(id, "—");
+  set("l-next", "다음 생일");
+  set("note", note);
+  lastLines = [];
+}
+
 function compute() {
   const birth = toDay(birthIn.value);
   const base = toDay(baseIn.value);
-  if (birth === null || base === null) {
-    set("hero-label", "날짜를 넣어 주세요");
-    set("hero-value", "—");
-    set("hero-sub", "");
-    set("note", "");
-    return;
-  }
+  if (birth === null || base === null) return clear("날짜를 넣어 주세요", "");
   const a = age(birth, base);
-  if (!a) {
-    set("hero-label", `${label(base)} 기준`);
-    set("hero-value", "—");
-    set("hero-sub", "");
-    set("note", "생년월일이 기준일보다 뒤입니다. 날짜를 확인해 주세요.");
-    return;
-  }
+  if (!a) return clear(`${label(base)} 기준`, "생년월일이 기준일보다 뒤입니다. 날짜를 확인해 주세요.");
 
   // 1세 미만은 개월로(민법 제158조 단서)
   const hero = a.years === 0 ? `${a.totalMonths}개월` : `만 ${a.years}세`;
