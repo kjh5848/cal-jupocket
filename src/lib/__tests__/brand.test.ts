@@ -9,9 +9,12 @@ const read = (p: string) => readFileSync(p, "utf-8");
 
 describe("브랜드", () => {
   it("상단 메뉴는 도구 · 읽을거리 · 카드뉴스", () => {
+    // 메뉴 말은 언어 사전(src/i18n/ui.ts)에 있다 — 일본어판과 같은 틀을 쓰려고 옮겼다(2026-10-19)
     const s = read("src/components/SiteHeader.astro");
-    expect(s).toContain('label: "도구"');
-    expect(s).not.toContain('label: "계산기"');
+    const dict = read("src/i18n/ui.ts");
+    expect(dict).toContain('navTools: "도구"');
+    expect(dict).not.toContain('"계산기"');
+    expect(s).toContain("label: T.navTools");
     expect(s).toContain("BrandPocket");
   });
   it("홈 title·h1", () => {

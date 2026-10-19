@@ -12,6 +12,7 @@
  *   .result-hero[data-dock="<값 id>"]  폰에서 결과가 화면 밖이면 아래 고정 띠
  *   .calc-card[data-two]               900px 이상 입력 왼쪽 · 결과 오른쪽
  */
+import { ui, pageLocale } from "../i18n/ui";
 import { readWon, shares } from "../lib/calc-ui";
 
 const num = (s: string | null | undefined) => Number(String(s ?? "").replace(/[^\d.-]/g, "")) || 0;
@@ -24,7 +25,12 @@ const h = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: s
 };
 
 /** −/+ 를 붙일 단위 — 사람 수·기간·개수. 금액(원)·비율(%)·배기량(cc)은 키보드 입력이 낫다 */
-const STEP_UNITS = new Set(["명", "개월", "년", "일", "세", "시간", "년생", "개", "회"]);
+const STEP_UNITS = new Set(["명", "개월", "년", "일", "세", "시간", "년생", "개", "회", "人", "か月", "ヶ月", "年", "日", "歳", "時間", "個", "回"]);
+/** 틀의 말(버튼·안내)은 페이지 언어로 — /ja/ 면 일본어 */
+const T = ui(pageLocale());
+/** 금액 단위 — 원 칸이면 원, 円 칸이면 円 으로 읽어 준다(만·억 / 万·億 은 같은 네 자리 단위) */
+const MONEY_UNIT: Record<string, string> = { "원": "원", "円": "円" };
+const moneyUnit = (input: HTMLInputElement) => (input.dataset.won || "원");
 
 /**
  * 표시가 없는 계산기에도 기본 틀을 입힌다 — 원 단위 금액 칸 · 사람 수·기간 칸 · 선택지 2~3개 ·
@@ -36,7 +42,7 @@ function autoTag(card: HTMLElement) {
     const input = w.querySelector<HTMLInputElement>("input");
     const unit = w.querySelector(".unit")?.textContent?.trim() ?? "";
     if (!input || input.dataset.ui === "off") continue;
-    if (unit === "원" && input.type === "text") input.dataset.won ??= "";
+    if (MONEY_UNIT[unit] && input.type === "text") input.dataset.won ??= MONEY_UNIT[unit];
     if (input.type === "number" && STEP_UNITS.has(unit)) input.dataset.step ??= "";
   }
   for (const sel of card.querySelectorAll<HTMLSelectElement>(".calc-input-wrap select")) {
@@ -73,7 +79,7 @@ function enhance(card: HTMLElement) {
     const say = h("p", "won-read");
     say.setAttribute("aria-live", "polite");
     (input.closest(".ux-field") ?? input).after(say);
-    const paint = () => (say.textContent = readWon(num(input.value)));
+    const paint = () => (say.textContent = readWon(num(input.value), moneyUnit(input)));
     // 계산기 스크립트가 값을 직접 바꾸기도 한다(연봉 ↔ 월급 환산) — 카드 안 어떤 입력이든 끝난 뒤 다시 읽는다
     card.addEventListener("input", paint);
     card.addEventListener("change", paint);
@@ -87,13 +93,13 @@ function enhance(card: HTMLElement) {
     const by = input.dataset.presetsBy ? (document.getElementById(input.dataset.presetsBy) as HTMLSelectElement | null) : null;
     const box = h("div", "ux-presets");
     box.setAttribute("role", "group");
-    box.setAttribute("aria-label", "자주 넣는 금액");
+    box.setAttribute("aria-label", T.presetsAria);
     (input.closest(".calc-input-wrap") ?? input).append(box);
     const paint = () => {
       box.replaceChildren(...(sets[by?.value ?? "default"] ?? []).map((v) => {
-        const b = h("button", "", readWon(v).replace(/원$/, ""));
+        const b = h("button", "", readWon(v, moneyUnit(input)).replace(/(원|円)$/, ""));
         b.type = "button";
-        b.addEventListener("click", () => { input.value = v.toLocaleString("ko-KR"); fire(input); });
+        b.addEventListener("click", () => { input.value = v.toLocaleString(T.numberLocale); fire(input); });
         return b;
       }));
     };
@@ -133,8 +139,8 @@ function enhance(card: HTMLElement) {
       input.value = String(Math.min(max, Math.max(min, (Number(input.value) || 0) + d * (Number(input.step) || 1))));
       fire(input);
     };
-    const minus = h("button", "", "−"); minus.type = "button"; minus.setAttribute("aria-label", "줄이기"); minus.addEventListener("click", () => step(-1));
-    const plus = h("button", "", "+"); plus.type = "button"; plus.setAttribute("aria-label", "늘리기"); plus.addEventListener("click", () => step(1));
+    const minus = h("button", "", "−"); minus.type = "button"; minus.setAttribute("aria-label", T.stepDown); minus.addEventListener("click", () => step(-1));
+    const plus = h("button", "", "+"); plus.type = "button"; plus.setAttribute("aria-label", T.stepUp); plus.addEventListener("click", () => step(1));
     field.prepend(minus);
     input.after(plus);
   }
@@ -182,15 +188,15 @@ function enhance(card: HTMLElement) {
   if (hero && dockSrc) {
     dock = h("div", "ux-dock");
     const left = h("div");
-    left.append(h("small", "", hero.querySelector(".label")?.textContent || "결과"), h("b"));
-    const go = h("a", "", "자세히 ↓") as HTMLAnchorElement;
+    left.append(h("small", "", hero.querySelector(".label")?.textContent || T.resultFallback), h("b"));
+    const go = h("a", "", T.dockMore) as HTMLAnchorElement;
     go.href = "#" + (hero.id || (hero.id = "calc-result"));
     dock.append(left, go);
     document.body.append(dock);
     new IntersectionObserver(([e]) => dock!.classList.toggle("on", !e.isIntersecting && e.boundingClientRect.top > 0)).observe(hero);
   }
   const paintResults = () => {
-    for (const s of subs) s.el.querySelector("b")!.textContent = s.chips.reduce((a, c) => a + num(c.querySelector(".value")?.textContent), 0).toLocaleString("ko-KR") + "원";
+    for (const s of subs) s.el.querySelector("b")!.textContent = s.chips.reduce((a, c) => a + num(c.querySelector(".value")?.textContent), 0).toLocaleString(T.numberLocale) + (T.htmlLang === "ja" ? "円" : "원");
     if (bar && legend) {
       const vals = groups.map((g) => g.reduce((a, id) => a + num(document.getElementById(id)?.textContent), 0));
       const pct = shares(vals);
@@ -210,14 +216,14 @@ function enhance(card: HTMLElement) {
   // 6) 결과 복사 · 처음 값으로 — 새 틀로 옮긴 계산기만(옛 계산기는 자기 버튼이 있다)
   if (hero && card.hasAttribute("data-two")) {
     const actions = h("div", "ux-actions");
-    const copy = h("button", "", "결과 복사"); copy.type = "button";
-    const reset = h("button", "", "처음 값으로"); reset.type = "button";
+    const copy = h("button", "", T.copy); copy.type = "button";
+    const reset = h("button", "", T.reset); reset.type = "button";
     copy.addEventListener("click", async () => {
       const lines = [`${hero.querySelector(".label")?.textContent ?? ""} ${hero.querySelector(".big")?.textContent ?? ""}`];
       for (const c of card.querySelectorAll(".stat-chip")) lines.push(`${c.querySelector(".label")?.textContent ?? ""} ${c.querySelector(".value")?.textContent ?? ""}`);
       lines.push(location.href);
-      try { await navigator.clipboard.writeText(lines.join("\n")); copy.textContent = "복사했어요"; } catch { copy.textContent = "복사 안 됨"; }
-      setTimeout(() => (copy.textContent = "결과 복사"), 1600);
+      try { await navigator.clipboard.writeText(lines.join("\n")); copy.textContent = T.copied; } catch { copy.textContent = T.copyFailed; }
+      setTimeout(() => (copy.textContent = T.copy), 1600);
     });
     reset.addEventListener("click", () => {
       for (const el of card.querySelectorAll<HTMLInputElement | HTMLSelectElement>("input, select")) {

@@ -1,6 +1,7 @@
-import { parseNumber, formatNumber, ratio, percentOf, change, adjust, original } from "../lib/percent";
+import { parseNumber, formatNumber, ratio, percentOf, change, adjust, original, toWari } from "../lib/percent";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
+import { pageLocale } from "../i18n/ui";
 
 /** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
 const reportUse = trackCalculatorUse("percent");
@@ -14,14 +15,84 @@ const dirRow = $("dir-row");
 const aIn = $("a") as HTMLInputElement;
 const bIn = $("b") as HTMLInputElement;
 
-/** 모드별 칸 이름 — B 가 % 인 모드는 단위 % 를 보인다 */
-const LABELS: Record<Mode, { a: string; b: string; pct: boolean }> = {
-  ratio: { a: "기준값 A (전체)", b: "비교값 B (부분)", pct: false },
-  of: { a: "전체값 A", b: "비율 B", pct: true },
-  change: { a: "이전 값 A", b: "이후 값 B", pct: false },
-  adjust: { a: "처음 값 A", b: "비율 B", pct: true },
-  original: { a: "바뀐 뒤 값 A", b: "바뀐 비율 B", pct: true },
+/**
+ * 화면 문구 — 한국어판(/tools/percent/)과 일본어판(/ja/tools/percent/)이 같은 계산을 쓴다.
+ * 계산은 산술이라 나라와 상관없고, 말만 다르다. 일본어판은 歩合(割·分·厘)을 같이 보인다.
+ */
+const KO = {
+  labels: {
+    ratio: { a: "기준값 A (전체)", b: "비교값 B (부분)", pct: false },
+    of: { a: "전체값 A", b: "비율 B", pct: true },
+    change: { a: "이전 값 A", b: "이후 값 B", pct: false },
+    adjust: { a: "처음 값 A", b: "비율 B", pct: true },
+    original: { a: "바뀐 뒤 값 A", b: "바뀐 비율 B", pct: true },
+  } as Record<Mode, { a: string; b: string; pct: boolean }>,
+  title: "퍼센트 계산 결과",
+  nan: "숫자를 넣어 주세요",
+  ratioZero: "기준값 A는 0이 아니어야 합니다",
+  divZero: "0으로는 나눌 수 없습니다",
+  ratioHero: "B는 A의",
+  a: "기준값 A",
+  b: "비교값 B",
+  ofHero: (a: string, b: string) => `${a}의 ${b}%`,
+  whole: "전체값 A",
+  rate: "비율 B",
+  changeZero: "이전 값 A는 0이 아니어야 합니다",
+  changeZeroHint: "0에서 시작한 변화는 %로 셀 수 없습니다",
+  diff: "변화량",
+  up: "늘어난 비율",
+  down: "줄어든 비율",
+  beforeAfter: "이전 → 이후",
+  adjHero: (b: string, up: boolean) => (up ? `${b}% 올린 값` : `${b}% 내린 값`),
+  adjAmount: (up: boolean) => (up ? "늘어난 만큼" : "줄어든 만큼 (할인 금액)"),
+  first: "처음 값 A",
+  origNone: "100% 내린 값에서는 원래 값을 알 수 없습니다",
+  origHero: "원래 값",
+  origAmount: (up: boolean) => (up ? "올라서 붙은 만큼" : "내려서 빠진 만큼"),
+  changed: "바뀐 뒤 값 A",
+  wari: (_p: number) => "",
+  share: "퍼센트 계산 결과 - jupocket.com",
 };
+
+const JA: typeof KO = {
+  labels: {
+    ratio: { a: "全体の値 A", b: "部分の値 B", pct: false },
+    of: { a: "全体の値 A", b: "割合 B", pct: true },
+    change: { a: "前の値 A", b: "後の値 B", pct: false },
+    adjust: { a: "元の値 A", b: "割合 B", pct: true },
+    original: { a: "変わった後の値 A", b: "変わった割合 B", pct: true },
+  },
+  title: "パーセント計算の結果",
+  nan: "数字を入力してください",
+  ratioZero: "A は 0 以外にしてください",
+  divZero: "0 では割れません",
+  ratioHero: "B は A の",
+  a: "全体の値 A",
+  b: "部分の値 B",
+  ofHero: (a, b) => `${a} の ${b}%`,
+  whole: "全体の値 A",
+  rate: "割合 B",
+  changeZero: "前の値 A は 0 以外にしてください",
+  changeZeroHint: "0 からの変化は％で表せません",
+  diff: "変化した量",
+  up: "増加率",
+  down: "減少率",
+  beforeAfter: "前 → 後",
+  adjHero: (b, up) => (up ? `${b}% 増やした値` : `${b}% 引いた値`),
+  adjAmount: (up) => (up ? "増えた分" : "引かれた分（割引額）"),
+  first: "元の値 A",
+  origNone: "100% 引いた値からは元の値がわかりません",
+  origHero: "元の値",
+  origAmount: (up) => (up ? "上がって増えた分" : "引かれた分"),
+  changed: "変わった後の値 A",
+  wari: (p) => {
+    const w = toWari(Math.abs(p));
+    return w ? `（${w}）` : "";
+  },
+  share: "パーセント計算の結果 - jupocket.com",
+};
+
+const S = pageLocale() === "ja" ? JA : KO;
 
 let lastTitle = "";
 let lastLines: [string, string][] = [];
@@ -46,36 +117,36 @@ function compute() {
   const a = parseNumber(aIn.value);
   const b = parseNumber(bIn.value);
   const f = formatNumber;
-  lastTitle = "퍼센트 계산 결과";
+  lastTitle = S.title;
   if (Number.isNaN(a) || Number.isNaN(b)) {
-    show("숫자를 넣어 주세요", "—", "", []);
+    show(S.nan, "—", "", []);
     return;
   }
   if (mode === "ratio") {
     const r = ratio(a, b);
-    if (r === null) return show("기준값 A는 0이 아니어야 합니다", "—", "0으로는 나눌 수 없습니다", []);
-    show("B는 A의", `${f(r)}%`, `${f(b)} ÷ ${f(a)} × 100`, [["기준값 A", f(a)], ["비교값 B", f(b)]]);
+    if (r === null) return show(S.ratioZero, "—", S.divZero, []);
+    show(S.ratioHero, `${f(r)}%`, `${f(b)} ÷ ${f(a)} × 100${S.wari(r)}`, [[S.a, f(a)], [S.b, f(b)]]);
   } else if (mode === "of") {
-    show(`${f(a)}의 ${f(b)}%`, f(percentOf(a, b)), `${f(a)} × ${f(b)} ÷ 100`, [["전체값 A", f(a)], ["비율 B", `${f(b)}%`]]);
+    show(S.ofHero(f(a), f(b)), f(percentOf(a, b)), `${f(a)} × ${f(b)} ÷ 100`, [[S.whole, f(a)], [S.rate, `${f(b)}%${S.wari(b)}`]]);
   } else if (mode === "change") {
     const r = change(a, b);
-    if (r === null) return show("이전 값 A는 0이 아니어야 합니다", "—", "0에서 시작한 변화는 %로 셀 수 없습니다", [["변화량", `${sign(b - a)}${f(b - a)}`]]);
-    show(r.rate >= 0 ? "늘어난 비율" : "줄어든 비율", `${sign(r.rate)}${f(r.rate)}%`, `(${f(b)} − ${f(a)}) ÷ ${f(Math.abs(a))} × 100`, [["변화량", `${sign(r.diff)}${f(r.diff)}`], ["이전 → 이후", `${f(a)} → ${f(b)}`]]);
+    if (r === null) return show(S.changeZero, "—", S.changeZeroHint, [[S.diff, `${sign(b - a)}${f(b - a)}`]]);
+    show(r.rate >= 0 ? S.up : S.down, `${sign(r.rate)}${f(r.rate)}%`, `(${f(b)} − ${f(a)}) ÷ ${f(Math.abs(a))} × 100`, [[S.diff, `${sign(r.diff)}${f(r.diff)}`], [S.beforeAfter, `${f(a)} → ${f(b)}`]]);
   } else if (mode === "adjust") {
     const r = adjust(a, b, dir);
     const up = dir === "up";
-    show(up ? `${f(b)}% 올린 값` : `${f(b)}% 내린 값`, f(r.result), `${f(a)} ${up ? "+" : "−"} (${f(a)} × ${f(b)}%)`, [[up ? "늘어난 만큼" : "줄어든 만큼 (할인 금액)", f(r.amount)], ["처음 값 A", f(a)]]);
+    show(S.adjHero(f(b), up) + S.wari(b), f(r.result), `${f(a)} ${up ? "+" : "−"} (${f(a)} × ${f(b)}%)`, [[S.adjAmount(up), f(r.amount)], [S.first, f(a)]]);
   } else {
     const r = original(a, b, dir);
-    if (r === null) return show("100% 내린 값에서는 원래 값을 알 수 없습니다", "—", "", []);
+    if (r === null) return show(S.origNone, "—", "", []);
     const up = dir === "up";
-    show("원래 값", f(r.base), `${f(a)} ÷ (1 ${up ? "+" : "−"} ${f(b)}%)`, [[up ? "올라서 붙은 만큼" : "내려서 빠진 만큼", f(Math.abs(r.amount))], ["바뀐 뒤 값 A", f(a)]]);
+    show(S.origHero, f(r.base), `${f(a)} ÷ (1 ${up ? "+" : "−"} ${f(b)}%)`, [[S.origAmount(up), f(Math.abs(r.amount))], [S.changed, f(a)]]);
   }
 }
 
 function setMode() {
   const mode = modeSel.value as Mode;
-  const L = LABELS[mode];
+  const L = S.labels[mode];
   $("a-label").textContent = L.a;
   $("b-label").textContent = L.b;
   $("b-unit").hidden = !L.pct;
@@ -99,7 +170,7 @@ $("btn-download").addEventListener("click", () => {
 });
 $("btn-share").addEventListener("click", async () => {
   track("share_result", { calculator: "percent" });
-  await shareCard(buildCard(), "퍼센트 계산 결과 - jupocket.com");
+  await shareCard(buildCard(), S.share);
 });
 
 setMode();

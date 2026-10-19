@@ -2114,3 +2114,20 @@ details[open] summary {
 .preset-chip:hover { background: var(--brand-wash); box-shadow: 0 0 0 1.5px var(--link); }
 .preset-chip:active { scale: 0.96; }
 .won-read:empty { min-height: 0; margin: 0; }
+
+/*
+ * 일본어판(/ja/, <html lang="ja">) — 글꼴과 줄바꿈.
+ * 한국어는 띄어쓰기 단위로만 끊지만(keep-all) 일본어는 띄어쓰기가 없어 keep-all 이면 문단이 한 줄로
+ * 넘친다. 글자 단위로 끊되 금칙 처리(。、가 줄 앞에 오지 않게)는 strict 로 지킨다.
+ */
+:lang(ja) body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP",
+    "Yu Gothic UI", "Yu Gothic", Meiryo, "Segoe UI", sans-serif;
+  word-break: normal;
+  line-break: strict;
+}
+.site-nav .lang-switch {
+  color: var(--muted);
+  font-size: 0.875rem;
+}

@@ -2,6 +2,8 @@
  * 내가 써 본 도구 — 도감 수집(설계 6-1). 그 브라우저의 localStorage('jp-used', 주소 배열)에만.
  * 로그인·서버 저장·알림·연속 방문 압박은 하지 않는다. 저장이 막혀도 화면은 정상(빈 수집).
  */
+import { ui, pageLocale } from "../i18n/ui";
+
 export const USED_KEY = "jp-used";
 
 const defaultStore = (): Storage | null => {
@@ -33,7 +35,17 @@ export function showCollected(): void {
   const el = document.createElement("div");
   el.className = "collect-toast";
   el.setAttribute("role", "status");
-  el.innerHTML = '<span class="stamp" aria-hidden="true">써봄</span><span>주머니에 담겼어요 · <a href="/#tools">도구 도감 보기</a></span>';
+  const T = ui(pageLocale());
+  const stamp = document.createElement("span");
+  stamp.className = "stamp";
+  stamp.setAttribute("aria-hidden", "true");
+  stamp.textContent = T.collectedStamp;
+  const msg = document.createElement("span");
+  const link = document.createElement("a");
+  link.href = T.collectedHref;
+  link.textContent = T.collectedLink;
+  msg.append(`${T.collected} · `, link);
+  el.append(stamp, msg);
   document.body.append(el);
   requestAnimationFrame(() => el.classList.add("on"));
   setTimeout(() => { el.classList.remove("on"); setTimeout(() => el.remove(), 400); }, 3600);

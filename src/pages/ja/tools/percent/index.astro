@@ -1,0 +1,151 @@
+---
+/**
+ * パーセント計算 — 일본어판 첫 도구. 한국어판 /tools/percent/ 와 계산(lib/percent.ts)·스크립트를 같이 쓰고,
+ * 문장은 일본어로 새로 썼다(번역 아님). 산술이라 나라 제도·rates 와 상관없다(조사표 일본 칸 '같음').
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/ja-percent-2026-10-19.csv):
+ *   パーセント 計算方法·計算式 / 割引 計算の仕方·電卓 / 増減率 計算 マイナス
+ * 일본에서는 할인을 '3割引き' 처럼 歩合로 말해서, 결과 옆에 割·分·厘 를 같이 보인다(toWari).
+ * 세금(消費税) 숫자는 쓰지 않는다 — 일본 rates 는 아직 초안이다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+
+const title = "パーセント計算 — 何％か・割引後の価格・増減率の計算式";
+const description =
+  "B が A の何％か、A の B％はいくらか、何％増えたか減ったかをすぐ計算します。割引後の価格と、割引前の元の値の逆算もできます。割・分・厘の表示つき。";
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>パーセント計算</h1>
+      <p>
+        知りたいことを選んで、数字を 2 つ入れてください。小数第 3 位を四捨五入して表示します。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">知りたいこと</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>B は A の何％？</option>
+            <option value="of">A の B％はいくら？</option>
+            <option value="change">A から B で何％変わった？</option>
+            <option value="adjust">A を B％増やす・引くと？</option>
+            <option value="original">B％変わった A の元の値は？</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">増やす・引く</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>引く（割引）</option>
+            <option value="up">増やす（値上げ）</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">全体の値 A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">部分の値 B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B は A の</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100（2割5分）</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">全体の値 A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">部分の値 B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>パーセントの計算式</h2>
+      <ul>
+        <li><strong>何％か</strong> — 80 問中 60 問正解なら 60 ÷ 80 × 100 = 75％。部分 ÷ 全体 × 100 です。</li>
+        <li><strong>A の B％</strong> — 3,000 円の 15％は 3,000 × 15 ÷ 100 = 450 円。</li>
+        <li><strong>増減率</strong> — 2,000 から 2,500 になれば (2,500 − 2,000) ÷ 2,000 × 100 = +25％。後の値 − 前の値を、前の値で割ります。</li>
+        <li><strong>元の値</strong> — 2 割引きで 4,000 円なら、元の値は 4,000 ÷ 0.8 = 5,000 円。4,000 × 1.2 = 4,800 円ではありません。</li>
+      </ul>
+
+      <h2>割引の計算の仕方</h2>
+      <p>
+        「◯％オフ」「◯割引き」の値段は、元の値 × (1 − 割合) で出ます。5,000 円の 30％オフ（3 割引き）なら
+        5,000 × 0.7 = 3,500 円で、割引額は 1,500 円です。電卓なら <kbd>5000</kbd> <kbd>×</kbd> <kbd>0.7</kbd>
+        と押すのがいちばん早く、引く額を先に出す必要はありません。
+      </p>
+      <p>
+        歩合で言うと 1 割 = 10％、1 分 = 1％、1 厘 = 0.1％です。この計算機は結果の横に
+        「2割5分」のように歩合も表示します（小数第 1 位までの、100％以下の割合だけ）。
+      </p>
+
+      <details>
+        <summary>20％値上げして 20％値下げすると、なぜ元に戻らないのですか？</summary>
+        <p>
+          2 回目の計算の基準が変わるからです。100 を 20％増やすと 120、120 から 20％引くと 120 × 0.8 = 96 です。
+          元の 100 に戻すには、120 から 16.67％だけ引く必要があります。「元の値」の計算で確かめられます。
+        </p>
+      </details>
+
+      <details>
+        <summary>増減率の計算で、前の値がマイナスのときは？</summary>
+        <p>
+          増えた方向をプラスで読めるよう、前の値の絶対値で割ります。損失が −100 万から −50 万に減れば
+          (−50 − (−100)) ÷ 100 × 100 = +50％です。前の値が 0 のときは割れないので、変化した量だけ表示します。
+        </p>
+      </details>
+
+      <details>
+        <summary>パーセントとポイント（％ポイント）の違いは？</summary>
+        <p>
+          金利が 3％から 4％になれば <strong>1 ポイント</strong>上がったことになり、増減率では
+          (4 − 3) ÷ 3 × 100 = <strong>33.33％</strong>上がったことになります。％どうしの差はポイント、
+          その差が前の値の何％かは増減率で数えます。
+        </p>
+      </details>
+
+      <details>
+        <summary>全角の数字や「％」で入力してもいいですか？</summary>
+        <p>はい。「２０％」「１，２００」のような全角の入力も、半角に直して計算します。</p>
+      </details>
+
+      <AdSlot label="percent-result-ja" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

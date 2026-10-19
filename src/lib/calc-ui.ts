@@ -3,17 +3,19 @@
  */
 
 /** 36000000 → "3,600만원", 120000000 → "1억 2,000만원", 4166666 → "416만 6,666원". 0·음수·NaN → "" */
-export function readWon(n: number): string {
+export function readWon(n: number, unit = "원"): string {
   if (!Number.isFinite(n) || n <= 0) return "";
   const v = Math.floor(n);
   const eok = Math.floor(v / 1e8);
   const man = Math.floor((v % 1e8) / 1e4);
   const won = v % 1e4;
   const parts: string[] = [];
-  if (eok) parts.push(`${eok.toLocaleString("ko-KR")}억`);
-  if (man) parts.push(`${man.toLocaleString("ko-KR")}만`);
+  // 円 이면 일본식 네 자리 단위(億·万) — 자릿수 규칙은 같다
+  const [E, M] = unit === "円" ? ["億", "万"] : ["억", "만"];
+  if (eok) parts.push(`${eok.toLocaleString("ko-KR")}${E}`);
+  if (man) parts.push(`${man.toLocaleString("ko-KR")}${M}`);
   if (won && !eok) parts.push(won.toLocaleString("ko-KR"));
-  return parts.join(" ") + "원";
+  return parts.join(" ") + unit;
 }
 
 /** 구성 비율(정수 %, 합은 늘 100). 내림한 뒤 모자란 만큼 나머지가 큰 쪽부터 1씩 — 각각 반올림하면 9.5/90.5 가 10+91=101 이 된다. 음수·NaN 은 0, 합이 0 이면 전부 0 */

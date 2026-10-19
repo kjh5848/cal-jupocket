@@ -8,6 +8,8 @@
  * 나눠 이 컴포넌트를 "메타 태그"라는 단일 책임으로 유지한다.
  */
 import { ogPathFor } from "../lib/og-pages";
+import { ui, localeOf, LOCALES } from "../i18n/ui";
+import { alternatesFor } from "../i18n/alternates";
 
 interface Props {
   title: string;
@@ -19,6 +21,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 // 공유했을 때 나가는 그림. 글마다 굽는다(social/render-og.mjs).
 // 절대 URL이어야 한다 — 상대 경로는 대부분의 플랫폼이 무시한다.
 const ogImage = new URL(ogPathFor(Astro.url.pathname), Astro.site);
+// 언어는 주소로 정한다(/ja/ 아래면 일본어). 같은 계산을 하는 다른 언어판이 있으면 서로 가리킨다
+const locale = localeOf(Astro.url.pathname);
+const T = ui(locale);
+const alt = alternatesFor(Astro.url.pathname);
+const altLinks = LOCALES.filter((l) => alt[l]).map((l) => ({ lang: l, href: new URL(alt[l]!, Astro.site).href }));
 ---
 
 <meta charset="utf-8" />
@@ -34,13 +41,15 @@ const ogImage = new URL(ogPathFor(Astro.url.pathname), Astro.site);
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical.href} />
-<link rel="alternate" type="application/rss+xml" title="주포켓 — 세금 가이드" href="/rss.xml" />
+{altLinks.length > 1 && altLinks.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+{altLinks.length > 1 && <link rel="alternate" hreflang="x-default" href={altLinks.find((a) => a.lang === "ko")!.href} />}
+{locale === "ko" && <link rel="alternate" type="application/rss+xml" title="주포켓 — 세금 가이드" href="/rss.xml" />}
 <meta property="og:type" content="website" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical.href} />
-<meta property="og:site_name" content="주포켓" />
-<meta property="og:locale" content="ko_KR" />
+<meta property="og:site_name" content={T.brand} />
+<meta property="og:locale" content={T.ogLocale} />
 <meta property="og:image" content={ogImage.href} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />

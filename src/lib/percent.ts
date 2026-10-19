@@ -16,9 +16,9 @@ export function round2(x: number): number {
   return r === 0 ? 0 : r;
 }
 
-/** 입력 칸 문자열 → 숫자. 쉼표·공백·% 를 지우고, 못 읽으면 NaN. */
+/** 입력 칸 문자열 → 숫자. 쉼표·공백·% 를 지우고, 못 읽으면 NaN. 전각 숫자·기호(２０％, 일본어 입력기)는 반각으로 읽는다. */
 export function parseNumber(raw: string): number {
-  const t = raw.replace(/[,\s%]/g, "");
+  const t = raw.normalize("NFKC").replace(/[,\s%]/g, "");
   if (t === "" || t === "-" || t === ".") return NaN;
   return /^-?\d*\.?\d*$/.test(t) ? Number(t) : NaN;
 }
@@ -64,4 +64,18 @@ export function original(a: number, p: number, dir: "up" | "down"): { base: numb
   if (factor === 0) return null;
   const base = (a * 100) / factor;
   return { base: round2(base), amount: round2(a - base) };
+}
+
+/**
+ * 일본식 歩合 표기 — 1割 = 10%, 1分 = 1%, 1厘 = 0.1%(25% → 2割5分, 12.5% → 1割2分5厘).
+ * 일본에서 할인을 '3割引き' 로 말하므로 일본어판 결과 옆에 같이 보인다.
+ * 0 초과 100 이하, 소수 첫째 자리까지만(그보다 잘면 歩合 로 쓰지 않는다) — 아니면 null.
+ */
+export function toWari(p: number): string | null {
+  const t = Math.round(p * 10);
+  if (!(p > 0 && p <= 100) || Math.abs(p * 10 - t) > 1e-9) return null;
+  const wari = Math.floor(t / 100);
+  const bu = Math.floor((t % 100) / 10);
+  const rin = t % 10;
+  return `${wari ? `${wari}割` : ""}${bu ? `${bu}分` : ""}${rin ? `${rin}厘` : ""}`;
 }

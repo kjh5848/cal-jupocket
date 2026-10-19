@@ -1,6 +1,6 @@
 /** 퍼센트 계산기 — 경계값과 반올림(부동소수 오차) 고정. 법 숫자 없음, 손으로 셈한 값. */
 import { describe, it, expect } from "vitest";
-import { round2, parseNumber, formatNumber, ratio, percentOf, change, adjust, original } from "../percent";
+import { round2, parseNumber, formatNumber, ratio, percentOf, change, adjust, original, toWari } from "../percent";
 
 describe("round2", () => {
   it("부동소수로 .xx4999… 가 된 반 올림 값을 올린다", () => {
@@ -83,5 +83,24 @@ describe("원래 값 역산", () => {
   });
   it("100% 내린 값에서는 원래 값을 알 수 없다", () => {
     expect(original(0, 100, "down")).toBeNull();
+  });
+});
+
+describe("일본어판 — 전각 입력 · 歩合(割·分·厘)", () => {
+  it("전각 숫자·％ 를 읽는다", () => {
+    expect(parseNumber("２０％")).toBe(20);
+    expect(parseNumber("１，２００")).toBe(1200);
+  });
+  it("10% = 1割, 1% = 1分, 0.1% = 1厘", () => {
+    expect(toWari(30)).toBe("3割");
+    expect(toWari(25)).toBe("2割5分");
+    expect(toWari(12.5)).toBe("1割2分5厘");
+    expect(toWari(0.5)).toBe("5厘");
+    expect(toWari(100)).toBe("10割");
+  });
+  it("0 이하·100 초과·소수 둘째 자리 이하는 쓰지 않는다", () => {
+    expect(toWari(0)).toBeNull();
+    expect(toWari(120)).toBeNull();
+    expect(toWari(33.33)).toBeNull();
   });
 });

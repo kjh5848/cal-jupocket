@@ -1,0 +1,66 @@
+---
+/**
+ * 일본어판 홈(/ja/). 한국어판 홈과 같은 틀(히어로 + 도구 카드)이지만 내용은 따로다 —
+ * 일본어판에는 일본 제도로 검증된 도구와 나라와 상관없는 산술 도구만 들어온다(src/data/ja/tools.ts).
+ *
+ * 도감 번호·수집 진행률·검색은 아직 두지 않는다. 도구가 몇 개 없을 때 '1/1' 진행률은
+ * 비어 보이기만 하고, 검색은 고를 것이 생긴 뒤에 의미가 있다. 도구가 늘면 한국어판 부품을 붙인다.
+ */
+import BaseHead from "../../components/BaseHead.astro";
+import ClarityHead from "../../components/ClarityHead.astro";
+import GtagHead from "../../components/GtagHead.astro";
+import AdSenseHead from "../../components/AdSenseHead.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import { jaTools, JA_TYPE_LABEL } from "../../data/ja/tools";
+import { typeInfo } from "../../data/tool-types";
+import { icons } from "../../data/icons";
+import "../../styles/global.css";
+
+const title = "jupocket — 計算ツールをまとめたポケット";
+const description =
+  "パーセント・割引・日付などの計算ツールを集めたサイトです。税金や年金のツールは、国税庁などの公式情報で確かめたものから順に追加します。";
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main class="home">
+      <section class="home-hero">
+        <div class="home-hero-inner">
+          <h1>何を計算しますか？</h1>
+          <p class="hero-lede">
+            よく使う計算をすぐ使えるツールにしました。税金・年金のツールは、国税庁・日本年金機構などの公式情報で数字を確かめたものから追加していきます。
+          </p>
+        </div>
+      </section>
+
+      <section id="tools" aria-labelledby="tools-h">
+        <h2 id="tools-h" class="home-h">ツール</h2>
+        <div class="tool-grid">
+          {
+            jaTools.map((t) => (
+              <a class="tool-card" href={t.href} data-type={t.type} style={`--cm:${typeInfo(t.type).color}`}>
+                <span class="tool-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[t.icon] ?? icons.calculator} />
+                </span>
+                <span class="tool-body">
+                  <span class="tool-title">{t.name}</span>
+                  <span class="tool-blurb">{t.blurb}</span>
+                  <span class="dex-type">{JA_TYPE_LABEL[t.type]}</span>
+                </span>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+    </main>
+    <SiteFooter />
+  </body>
+</html>
