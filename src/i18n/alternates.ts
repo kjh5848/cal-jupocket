@@ -20,6 +20,7 @@ export const PAIRS: { ko: string; ja: string }[] = [
   { ko: "/tools/age/", ja: "/ja/tools/age/" },
   { ko: "/tools/birthday-dday/", ja: "/ja/tools/birthday-dday/" },
   { ko: "/tools/unix-time/", ja: "/ja/tools/unix-time/" },
+  { ko: "/tools/time-calc/", ja: "/ja/tools/time-calc/" },
 ];
 
 /** 이 주소와 같은 페이지의 각 언어판. 짝이 없으면 빈 객체 */

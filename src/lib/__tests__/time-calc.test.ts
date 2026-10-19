@@ -5,6 +5,7 @@
 import { describe, it, expect } from "vitest";
 import {
   MIN_AT, MAX_AT, parseAt, toMinutes, shiftAt, split, splitText, atParts, atText, ampmText, dayShiftText, between, hoursText,
+  splitTextJa, atTextJa, dayShiftTextJa,
 } from "../time-calc";
 
 const at = (date: string, time: string) => {
@@ -105,5 +106,24 @@ describe("표기", () => {
     expect(dayShiftText(s, at("2026-10-09", "01:00"))).toBe("10일 전");
     expect(split(0)).toEqual({ d: 0, h: 0, m: 0 });
     expect(splitText(0)).toBe("0분");
+  });
+});
+
+describe("일본어판 표기", () => {
+  it("atTextJa · splitTextJa · dayShiftTextJa", () => {
+    expect(atTextJa(at("2026-10-19", "12:15"))).toBe("2026年10月19日（月）12:15");
+    expect(atTextJa(at("2024-03-01", "00:00"))).toBe("2024年3月1日（金）00:00");
+    expect(splitTextJa(165)).toBe("2時間45分");
+    expect(splitTextJa(30 * 60 + 90)).toBe("1日7時間30分");
+    expect(splitTextJa(100)).toBe("1時間40分");
+    expect(splitTextJa(1440)).toBe("1日");
+    expect(splitTextJa(0)).toBe("0分");
+    expect(splitTextJa(1000 * 1440)).toBe("1,000日");
+    const s = at("2026-10-19", "10:00");
+    expect(dayShiftTextJa(s, at("2026-10-19", "23:59"))).toBe("同じ日");
+    expect(dayShiftTextJa(s, at("2026-10-20", "00:00"))).toBe("翌日");
+    expect(dayShiftTextJa(s, at("2026-10-18", "23:00"))).toBe("前日");
+    expect(dayShiftTextJa(s, at("2026-10-22", "01:00"))).toBe("3日後");
+    expect(dayShiftTextJa(s, at("2026-10-09", "01:00"))).toBe("10日前");
   });
 });

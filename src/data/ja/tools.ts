@@ -83,4 +83,12 @@ export const jaTools: JaTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/ja/tools/time-calc/",
+    name: "時間計算",
+    blurb: "何時間後・何分後は何時か、2つの時刻の間の経過時間を何時間何分で計算",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

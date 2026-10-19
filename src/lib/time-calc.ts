@@ -11,6 +11,7 @@
  * - 두 일시 사이: 끝 − 시작. 끝이 더 이르면 크기는 같게 보여 주고 sign = −1 로 알린다.
  */
 import { toDay, fromDay, weekday, WEEKDAYS } from "./date-calc";
+import { WEEKDAYS_JA } from "./date-format-ja";
 
 export const MIN_PER_DAY = 1440;
 export const MIN_AT = (toDay("1900-01-01") as number) * MIN_PER_DAY;
@@ -128,4 +129,35 @@ export function between(start: number, end: number): Between {
 export function hoursText(total: number): string {
   const v = Math.round((total / 60) * 100) / 100;
   return v.toLocaleString("ko-KR", { maximumFractionDigits: 2 });
+}
+
+/*
+ * 일본어판(/ja/tools/time-calc/) 표기 — 계산은 위 함수 그대로, 말만 일본어.
+ * 午前·午後 12시간제는 넣지 않았다 — 0시·12시를 午前0時/午前12時 중 어느 쪽으로 쓰는지 원문을 확인하지 않았다.
+ */
+
+/** '1日7時間30分' — 0인 단위는 빼고, 전부 0이면 '0分' */
+export function splitTextJa(total: number): string {
+  const { d, h, m } = split(total);
+  const parts: string[] = [];
+  if (d) parts.push(`${d.toLocaleString("ja-JP")}日`);
+  if (h) parts.push(`${h}時間`);
+  if (m || !parts.length) parts.push(`${m}分`);
+  return parts.join("");
+}
+
+/** '2026年10月19日（月）12:15' */
+export function atTextJa(at: number): string {
+  const p = atParts(at);
+  const [y, mo, d] = p.date.split("-").map(Number);
+  return `${y}年${mo}月${d}日（${WEEKDAYS_JA[p.wd]}）${p.time}`;
+}
+
+/** 결과 날짜가 며칠 옮겨 갔나 — '同じ日' · '翌日' · '3日後' · '前日' · '2日前' */
+export function dayShiftTextJa(start: number, end: number): string {
+  const n = Math.floor(end / MIN_PER_DAY) - Math.floor(start / MIN_PER_DAY);
+  if (n === 0) return "同じ日";
+  if (n === 1) return "翌日";
+  if (n === -1) return "前日";
+  return n > 0 ? `${n.toLocaleString("ja-JP")}日後` : `${(-n).toLocaleString("ja-JP")}日前`;
 }
