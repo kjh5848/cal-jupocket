@@ -1,0 +1,189 @@
+---
+/**
+ * 유닉스 타임스탬프 변환기 — 날짜·시간 묶음(/tools/unix-time/). 계산은 lib/unix-time.ts.
+ *
+ * 질문 하나: 이 숫자는 언제인가, 이 시각은 어떤 숫자인가 — 양쪽 칸 어느 쪽을 고쳐도 다른 쪽이 따라온다.
+ * 기준은 POSIX 4.19(1970-01-01 00:00 UTC 부터 센 초, 하루 86400초)와 표준시법(동경 135도 = UTC+9) —
+ * rates/unix-time-2026.json. roberin #90 은 입력·결과 항목만 대조했다(docs/calc-benchmark.md).
+ * 첫 화면 숫자는 빌드 때 고정 예시(BASE_MS)로 계산하고, '지금' 줄은 스크립트가 채운다.
+ * 동의어는 네이버 자동완성(keywords/ac-unix-time-2026-10-19.csv).
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+import { KST, toParts, koText, isoText, secondsText, dateValue, timeValue } from "../../../lib/unix-time";
+
+const title = "유닉스 타임스탬프 변환기 — 초·밀리초 ↔ 한국 날짜·시각";
+const description =
+  "유닉스 타임스탬프(에포크 초·밀리초)를 넣으면 한국 시간(KST)·UTC 날짜와 요일이 바로 나오고, 날짜·시각을 넣으면 타임스탬프로 바꿔 줍니다. 10자리·13자리 자동 판별, 소수 초, 1970년 이전 음수도 됩니다.";
+
+/** 첫 화면 예시 — 2026-10-19 12:34:56 KST */
+const BASE_MS = 1_792_380_896_000;
+const p0 = toParts(BASE_MS, KST);
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>유닉스 타임스탬프 변환기</h1>
+      <p>
+        로그·DB·API 에서 본 10자리, 13자리 숫자가 언제인지 한국 시간으로 바로 봅니다. 반대로 날짜와 시각을 넣으면
+        타임스탬프 숫자가 나옵니다. 어느 칸을 고쳐도 다른 칸이 따라옵니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="zone">시간대</label>
+          <select id="zone" data-seg>
+            <option value="kst" selected>한국 KST (UTC+9)</option>
+            <option value="utc">UTC</option>
+            <option value="device">이 기기 시간대</option>
+          </select>
+          <p class="hint" id="zone-hint">날짜 칸과 결과를 이 시간대로 읽고 씁니다. 타임스탬프 숫자는 시간대와 상관없이 같습니다.</p>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="ts">타임스탬프</label>
+          <input type="text" id="ts" inputmode="decimal" autocomplete="off" spellcheck="false" value={String(BASE_MS / 1000)} placeholder="예: 1704067200" />
+          <p class="hint" id="ts-hint">10자리는 초, 13자리는 밀리초로 읽었습니다.</p>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">숫자 단위</label>
+          <select id="unit" data-seg>
+            <option value="auto" selected>자동</option>
+            <option value="s">초</option>
+            <option value="ms">밀리초</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="date">날짜</label>
+          <input type="date" id="date" value={dateValue(p0)} min="1900-01-01" max="9999-12-30" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="time">시각 (시:분:초)</label>
+          <input type="time" id="time" step="1" value={timeValue(p0)} />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="msec">밀리초 (0~999)</label>
+          <input type="number" id="msec" inputmode="numeric" min="0" max="999" step="1" value="0" />
+        </div>
+
+        <div class="actions">
+          <button id="btn-now" type="button" class="secondary">지금 시각</button>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">한국 시간 (KST)</p>
+          <p class="big" id="hero-value">{koText(p0)}</p>
+          <p class="hint" id="hero-sub">UTC {isoText(BASE_MS, 0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">초 (s)</span>
+            <span class="value mono" id="v-sec">{secondsText(BASE_MS)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">밀리초 (ms)</span>
+            <span class="value mono" id="v-ms">{BASE_MS}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601 (UTC)</span>
+            <span class="value mono" id="v-iso">{isoText(BASE_MS, 0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601 (선택 시간대)</span>
+            <span class="value mono" id="v-iso-local">{isoText(BASE_MS, KST)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">지금과의 차이</span>
+            <span class="value" id="v-rel">—</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+        <p class="meta" id="now-line">지금: —</p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>이렇게 바꿉니다</h2>
+      <ul>
+        <li>
+          <strong>유닉스 타임스탬프 = 1970년 1월 1일 0시(UTC)부터 센 초</strong> — 국제 표준 POSIX(IEEE Std 1003.1)의
+          정의이고, 하루를 정확히 86,400초로 셉니다. 윤초는 넣지 않습니다.
+        </li>
+        <li>
+          <strong>한국 시간은 UTC + 9시간</strong> — 표준시에 관한 법률이 동경 135도 자오선을 표준으로 정하고 있어
+          135 ÷ 15 = 9시간 빠릅니다. 같은 숫자라도 UTC 로는 0시, 한국으로는 오전 9시입니다.
+        </li>
+        <li>
+          <strong>10자리는 초, 13자리는 밀리초</strong> — 자동으로 고를 때 소수점이 있으면 초, 정수는 11자리까지 초,
+          12자리부터 밀리초로 읽습니다. 다르게 읽어야 하면 단위를 직접 고르세요. 쉼표·공백은 지우고 읽습니다.
+        </li>
+        <li>
+          <strong>날짜 → 숫자도 같은 칸에서</strong> — 날짜·시각·밀리초를 바꾸면 위의 타임스탬프 칸이 그 값으로
+          바뀝니다. 날짜는 고른 시간대로 읽습니다.
+        </li>
+      </ul>
+
+      <details>
+        <summary>1970년 이전 날짜는 어떻게 되나요?</summary>
+        <p>
+          음수로 나옵니다. 1969년 12월 31일 23시 59분 59초(UTC)가 −1 입니다. POSIX 공식 자체는 1970년 이후만 정해
+          두었지만, 대부분의 프로그램 언어처럼 하루 86,400초를 거꾸로 늘려 셉니다. 이 변환기는 1900년 1월 1일부터
+          9999년까지 받습니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>2038년 문제가 뭔가요?</summary>
+        <p>
+          초를 32비트 부호 있는 정수에 담으면 가장 큰 값이 2,147,483,647 이고, 이 숫자가 2038년 1월 19일
+          03:14:07(UTC), 한국 시간 낮 12:14:07 입니다. 1초만 지나도 값이 넘쳐 음수(1901년)로 돌아가는 오래된
+          시스템이 있어 '2038년 문제'라고 부릅니다. 이 값을 넘는 시각을 넣으면 결과 아래에 따로 알려 줍니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>KST 를 고정 UTC+9 로 셉니다 — 옛 날짜도 맞나요?</summary>
+        <p>
+          지금의 한국 표준시는 UTC+9 이고 서머타임(일광절약시간)은 쓰지 않습니다. 다만 표준시법은 대통령령으로
+          일광절약시간을 둘 수 있게 하고 있어, 과거에 이를 실시했던 기간의 한국 시각은 이 표시와 다를 수 있습니다.
+          옛 기록을 맞춰 볼 때는 UTC 값을 기준으로 보세요. 숫자 자체는 시간대와 상관없이 같습니다.
+        </p>
+      </details>
+
+      <p>
+        날짜 사이 날수는 <a href="/tools/date-diff/">날짜 계산기</a>, 어떤 날짜가 무슨 요일·몇 주차인지는
+        <a href="/tools/date-day/">날짜 요일 계산기</a>, 남은 날은 <a href="/tools/dday/">디데이 계산기</a>가 셉니다.
+      </p>
+
+      <AdSlot label="unix-time-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .mono { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+      #hero-value { overflow-wrap: anywhere; }
+    </style>
+    <script src="../../../scripts/unix-time.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
