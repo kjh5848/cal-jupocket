@@ -181,6 +181,61 @@ export function dday(target: number, today: number): string {
   return d > 0 ? `D-${d}` : `D+${-d}`;
 }
 
+const DAY_SEC = 86_400;
+
+export interface Countdown {
+  /** 'D-12' · 'D-Day' · 'D+3' — 날짜만 비교한다(시각은 보지 않는다) */
+  dday: string;
+  /** 목표일이 기준일보다 뒤면 1, 같은 날 0, 앞이면 −1 */
+  side: 1 | 0 | -1;
+  /** 두 날짜 사이 일수(절댓값) */
+  days: number;
+  /** 기준일을 1일째로 센 일수 = days + 1. D 표시는 바꾸지 않는다 */
+  countDays: number;
+  /** 지금부터 목표 순간까지 초. 양수면 남음, 0 이하면 지남 */
+  seconds: number;
+}
+
+/**
+ * 디데이(/tools/dday/). '지금'은 인자로 받는다 — 기준일의 일련번호와 그날 0시부터 흐른 초.
+ *
+ * 정한 규칙(테스트로 고정):
+ * - D 표시와 일수는 날짜만 본다. 같은 날이면 시각과 상관없이 D-Day.
+ * - 기준일 포함(countDays)은 기준일을 1일째로 세는 보조 일수다. 지난 날짜도 +1(사귄 지 N일째와 같은 셈).
+ * - 시각을 안 넣으면 목표 순간은 그날이 끝날 때(다음 날 0시). 넣으면 그날 그 시각.
+ * - 남은 초 = (목표일 − 기준일) × 86,400 + (목표 시각 초 − 지금 초). 하루는 86,400초로 센다 — 한국은 서머타임이 없다.
+ */
+export function countdown(target: number, targetSec: number | null, base: number, nowSec: number): Countdown {
+  const d = target - base;
+  const days = Math.abs(d);
+  return {
+    dday: dday(target, base),
+    side: d > 0 ? 1 : d < 0 ? -1 : 0,
+    days,
+    countDays: days + 1,
+    seconds: d * DAY_SEC + (targetSec ?? DAY_SEC) - nowSec,
+  };
+}
+
+/** 초 → '3일 4시간 0분' (하루 미만이면 초까지). 부호는 버린다 */
+export function durationText(sec: number): string {
+  const s = Math.abs(Math.trunc(sec));
+  const day = Math.floor(s / DAY_SEC);
+  const h = Math.floor((s % DAY_SEC) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (day > 0) return `${day.toLocaleString("ko-KR")}일 ${h}시간 ${m}분`;
+  return `${h}시간 ${m}분 ${s % 60}초`;
+}
+
+/** 'HH:MM' → 그날 0시부터 초. 형식이 틀리면 null */
+export function timeToSec(s: string): number | null {
+  const m = /^(\d{2}):(\d{2})$/.exec(s.trim());
+  if (!m) return null;
+  const [h, mi] = [Number(m[1]), Number(m[2])];
+  if (h > 23 || mi > 59) return null;
+  return h * 3600 + mi * 60;
+}
+
 /** '2026-10-19 (월)' */
 export function label(n: number): string {
   return `${fromDay(n)} (${WEEKDAYS[weekday(n)]})`;

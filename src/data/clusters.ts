@@ -462,6 +462,7 @@ export const clusters: Cluster[] = [
     title: "날짜·시간",
     links: [
       { href: "/tools/date-diff/", title: "날짜 계산기", kind: "calc", icon: "calendar", blurb: "두 날짜 사이 며칠 · 며칠 뒤 · 업무일" },
+      { href: "/tools/dday/", title: "디데이 계산기", kind: "calc", icon: "calendar", blurb: "목표일까지 D-몇 · 남은 시간 · N일째" },
     ],
   },
 ];

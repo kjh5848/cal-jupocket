@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import rates from "../../rates/kr-holidays-2026.json";
 import {
   toDay, fromDay, weekday, addMonths, span, shift, shiftBusiness, dday, label, spanText, holidayName, isBusinessDay,
+  countdown, durationText, timeToSec,
 } from "../date-calc";
 
 const d = (s: string) => toDay(s)!;
@@ -157,5 +158,50 @@ describe("#75 날짜 차이 대조 입력 — 기간·시간 환산·며칠 뒤�
     expect(label(shift(d("2026-03-01"), -30, "day"))).toBe("2026-01-30 (금)");
     expect(label(shift(d("2024-02-29"), 365, "day"))).toBe("2025-02-28 (금)");
     expect(label(shift(d("2026-10-19"), 1000, "day"))).toBe("2029-07-15 (일)");
+  });
+});
+
+describe("#78 디데이 — 날짜는 D 표시, 시각은 남은 시간", () => {
+  const T = 10 * 3600 + 16 * 60; // 기준일 오전 10:16
+  it("같은 날은 시각과 상관없이 D-Day, 기준일 포함이면 1일", () => {
+    const c = countdown(d("2026-10-19"), null, d("2026-10-19"), T);
+    expect([c.dday, c.side, c.days, c.countDays]).toEqual(["D-Day", 0, 0, 1]);
+    expect(durationText(c.seconds)).toBe("13시간 44분 0초"); // 그날 끝(다음 날 0시)까지
+  });
+  it("D-1 · D+1 경계", () => {
+    expect(countdown(d("2026-10-20"), null, d("2026-10-19"), 0).dday).toBe("D-1");
+    expect(countdown(d("2026-10-18"), null, d("2026-10-19"), 0).dday).toBe("D+1");
+  });
+  it("100일 뒤(2027-01-27)는 D-100, 기준일 포함 101일", () => {
+    const c = countdown(d("2027-01-27"), null, d("2026-10-19"), T);
+    expect([c.dday, c.days, c.countDays]).toEqual(["D-100", 100, 101]);
+    expect(durationText(c.seconds)).toBe("100일 13시간 44분");
+  });
+  it("지난 날짜(10/1)는 D+18, 기준일 포함 19일, 그날 끝에서 17일 10시간 16분 지남", () => {
+    const c = countdown(d("2026-10-01"), null, d("2026-10-19"), T);
+    expect([c.dday, c.side, c.days, c.countDays]).toEqual(["D+18", -1, 18, 19]);
+    expect(c.seconds).toBeLessThan(0);
+    expect(durationText(c.seconds)).toBe("17일 10시간 16분");
+  });
+  it("윤일 2028-02-29 는 D-498, 2027-02-29 는 없는 날", () => {
+    expect(countdown(d("2028-02-29"), null, d("2026-10-19"), T).dday).toBe("D-498");
+    expect(toDay("2027-02-29")).toBeNull();
+  });
+  it("같은 날 14:00 기준 18:00 은 4시간 남음, 09:00 은 5시간 지남 — 둘 다 D-Day", () => {
+    const now = 14 * 3600;
+    const a = countdown(d("2026-07-10"), timeToSec("18:00"), d("2026-07-10"), now);
+    const b = countdown(d("2026-07-10"), timeToSec("09:00"), d("2026-07-10"), now);
+    expect([a.dday, a.seconds, durationText(a.seconds)]).toEqual(["D-Day", 4 * 3600, "4시간 0분 0초"]);
+    expect([b.dday, b.seconds, durationText(b.seconds)]).toEqual(["D-Day", -5 * 3600, "5시간 0분 0초"]);
+  });
+  it("3일 뒤 18:00 — D-3 · 3일 7시간 44분", () => {
+    const c = countdown(d("2026-10-22"), timeToSec("18:00"), d("2026-10-19"), T);
+    expect([c.dday, durationText(c.seconds)]).toEqual(["D-3", "3일 7시간 44분"]);
+  });
+  it("시각 형식", () => {
+    expect(timeToSec("00:00")).toBe(0);
+    expect(timeToSec("23:59")).toBe(86_340);
+    expect(timeToSec("24:00")).toBeNull();
+    expect(timeToSec("9:00")).toBeNull();
   });
 });
