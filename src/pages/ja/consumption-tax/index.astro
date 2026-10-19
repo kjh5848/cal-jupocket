@@ -1,0 +1,208 @@
+---
+/**
+ * 消費税 計算 — 일본어판 제도 도구(basis "jp-law"). 한국어판 부가세(/vat/)와는 제도가 달라 짝(hreflang)을 맺지 않는다.
+ * 계산은 lib/jp/consumption-tax.ts, 숫자는 rates/jp/consumption-tax-2026.json(国税庁 No.6303·No.6902
+ * [令和8年4月1日現在法令等], 消費税法施行令 第70条の10 — 2026-10-20 확인).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/ja-consumption-tax-2026-10-20.csv):
+ *   消費税 計算式·計算方法 / 10 と 8 の違い / 計算 切り捨て 切り上げ·小数点以下 / 税抜き 計算 エクセル / 電卓 / 10% いつから
+ * 簡易課税·7.8%/2.2% 내역 금액(地方分 끝수 처리 원문 미확인)·음식료품 인하 후 세율(원문에 없음)은 계산하지 않는다.
+ * 軽減税率 대상은 No.6303 문장 범위까지만 — イートイン 등 개별 판정은 쓰지 않는다(税理士法).
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { fromExclusive, fromInclusive } from "../../../lib/jp/consumption-tax";
+import { formatYen } from "../../../lib/money";
+import "../../../styles/global.css";
+
+const title = "消費税計算 — 税抜・税込の計算式と10％・8％、切り捨て・四捨五入";
+const description =
+  "税抜価格から税込価格を、税込価格から税抜価格と消費税額を計算します。標準税率10％・軽減税率8％、1円未満の端数は切り捨て・四捨五入・切り上げから選べます。国税庁の税率表にもとづく計算式つき。";
+
+const y = formatYen;
+const ex10 = fromExclusive(10000, 10);
+const ex8 = fromExclusive(10000, 8);
+const in1000 = { floor: fromInclusive(1000, 10, "floor"), round: fromInclusive(1000, 10, "round"), ceil: fromInclusive(1000, 10, "ceil") };
+const odd = { floor: fromExclusive(1234, 8, "floor"), round: fromExclusive(1234, 8, "round") };
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>消費税計算（税抜・税込）</h1>
+      <p>
+        金額と税率を選ぶと、税込価格・税抜価格と消費税額（国の消費税と地方消費税の合計）を出します。税率は国税庁の税率表
+        （令和8年4月1日現在の法令等）の標準税率 10％・軽減税率 8％です。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="ct-mode">入れる金額</label>
+          <select id="ct-mode" data-seg>
+            <option value="exclusive" selected>税抜 → 税込</option>
+            <option value="inclusive">税込 → 税抜</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-rate">税率</label>
+          <select id="ct-rate" data-seg>
+            <option value="10" selected>10％（標準）</option>
+            <option value="8">8％（軽減）</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label id="ct-input-label" for="ct-amount">税抜価格（本体価格）</label>
+          <input type="text" inputmode="numeric" id="ct-amount" value="10,000" data-won autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-round">消費税額の1円未満の端数</label>
+          <select id="ct-round" data-seg>
+            <option value="floor" selected>切り捨て</option>
+            <option value="round">四捨五入</option>
+            <option value="ceil">切り上げ</option>
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value" data-bar="out-exclusive,out-tax">
+          <p class="label" id="hero-label">税込価格</p>
+          <p class="big" id="hero-value">{y(ex10.inclusive)}</p>
+          <p class="hint" id="ct-formula">消費税 = {y(10000)} × 10％（1円未満切り捨て）</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">税抜価格</span>
+            <span class="value" id="out-exclusive">{y(ex10.exclusive)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="tax-label">消費税（10%）</span>
+            <span class="value" id="out-tax">{y(ex10.tax)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">税込価格</span>
+            <span class="value" id="out-inclusive">{y(ex10.inclusive)}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>消費税の計算式</h2>
+      <ul>
+        <li>
+          <strong>税抜 → 税込</strong> — 税込価格 = 税抜価格 + 税抜価格 × 10％（軽減税率は 8％）。
+          {y(10000)} なら消費税 {y(ex10.tax)}、税込 {y(ex10.inclusive)}。8％なら税込 {y(ex8.inclusive)} です。
+        </li>
+        <li>
+          <strong>税込 → 消費税額</strong> — 消費税額 = 税込価格 × 10/110（軽減税率は 8/108）。
+          税抜価格は 税込価格 − 消費税額 です。{y(ex10.inclusive)} なら消費税 {y(fromInclusive(ex10.inclusive, 10).tax)}、
+          税抜 {y(fromInclusive(ex10.inclusive, 10).exclusive)}。
+        </li>
+      </ul>
+      <p>
+        10/110 と 8/108 は、消費税法施行令 第70条の10 が適格請求書（インボイス）の消費税額の計算方法として定める割合と同じです。
+        税込価格を 1.1 で割っても税抜価格は出ますが、割り切れないときの端数の出方が変わるので、この計算機は消費税額を先に出し、
+        税込価格から引いています。
+      </p>
+
+      <h2>消費税10％と8％の違い</h2>
+      <p>
+        10％（標準税率）の内訳は消費税 7.8％と地方消費税 2.2％、8％（軽減税率）は消費税 6.24％と地方消費税 1.76％です。
+        国税庁の説明では、軽減税率の対象は次の 2 つです。
+      </p>
+      <ul>
+        <li>飲食料品の譲渡（食品表示法に規定する食品。酒類を除き、外食は含みません）</li>
+        <li>週 2 回以上発行される新聞の定期購読契約にもとづく譲渡</li>
+      </ul>
+      <p>
+        個別の商品や販売方法がどちらに当たるかは、この計算機では判断しません。国税庁の案内や税務署で確かめてください。
+      </p>
+
+      <h2>1円未満の端数は切り捨て？四捨五入？</h2>
+      <p>
+        消費税法施行令 第70条の10 は、適格請求書の消費税額に 1 円未満の端数が出たときは「処理する」と定めていますが、
+        切り捨て・切り上げ・四捨五入のどれにするかはこの条文に書かれていません。計算方法も、1 枚の適格請求書ごとに
+        税率の異なるごとに合計した金額に掛ける方法です（商品 1 つずつの端数を足すのではありません）。
+      </p>
+      <p>
+        たとえば税込 {y(1000)}（10％）の消費税額は 1,000 × 10/110 = 90.90… 円で、切り捨てなら {y(in1000.floor.tax)}
+        （税抜 {y(in1000.floor.exclusive)}）、四捨五入・切り上げなら {y(in1000.round.tax)}（税抜 {y(in1000.round.exclusive)}）です。
+        税抜 {y(1234)}（8％）なら 98.72 円で、切り捨て {y(odd.floor.tax)}・四捨五入 {y(odd.round.tax)} になります。
+        計算機の初期値は切り捨てにしてありますが、これは画面の設定で、法令の決まりではありません。
+      </p>
+
+      <h2>税抜き・税込みの計算をエクセルや電卓でするには</h2>
+      <ul>
+        <li>税込（10％）：<code>=A1+ROUNDDOWN(A1*10/100,0)</code></li>
+        <li>税込から消費税額（10％）：<code>=ROUNDDOWN(A1*10/110,0)</code>、税抜は <code>=A1-ROUNDDOWN(A1*10/110,0)</code></li>
+        <li>8％のときは 10/100 を 8/100、10/110 を 8/108 に。四捨五入は ROUND、切り上げは ROUNDUP です。</li>
+      </ul>
+      <p>
+        電卓なら税込は <kbd>10000</kbd> <kbd>×</kbd> <kbd>1.1</kbd>、税込から消費税額は <kbd>11000</kbd> <kbd>×</kbd>
+        <kbd>10</kbd> <kbd>÷</kbd> <kbd>110</kbd> です。端数は表示された小数点以下を自分で処理します。
+      </p>
+
+      <h2>値札の「税込」表示</h2>
+      <p>
+        消費者にあらかじめ価格を表示するときは、消費税額を含めた価格（税込価格）を表示することが義務付けられています（総額表示）。
+        国税庁は 10％の例として「11,000円（税込）」「11,000円（うち消費税額等1,000円）」「11,000円（税抜価格10,000円）」を挙げています。
+      </p>
+
+      <details>
+        <summary>消費税10％はいつからですか？</summary>
+        <p>
+          国税庁は税率の引上げを「令和元年10月1日～」として案内しています。令和元年（2019年）10月1日以後の取引でも、
+          経過措置が適用されるものは旧税率 8％（消費税 6.3％・地方消費税 1.7％）です。この計算機の 8％は軽減税率で、旧税率とは内訳が違います。
+        </p>
+      </details>
+
+      <details>
+        <summary>飲食料品の税率が変わる予定はありますか？</summary>
+        <p>
+          国税庁の税率表には、令和9年4月1日から令和11年3月31日までの 2 年間、飲食料品の譲渡について消費税率が引き下げられると
+          書かれています。この計算機は令和8年4月1日現在の税率（10％・8％）で計算します。引下げ後の税率は、その時点の国税庁の案内を見てください。
+        </p>
+      </details>
+
+      <details>
+        <summary>簡易課税の計算はできますか？</summary>
+        <p>この計算機は税抜・税込の換算だけをします。事業者が納める消費税額の計算（原則課税・簡易課税）はしません。</p>
+      </details>
+
+      <details>
+        <summary>全角の数字で入力してもいいですか？</summary>
+        <p>はい。「１２３４」のような全角の数字も半角に直して計算します。</p>
+      </details>
+
+      <h2>出典</h2>
+      <ul>
+        <li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shohi/6303.htm" rel="noopener" target="_blank">国税庁 タックスアンサー No.6303 消費税及び地方消費税の税率</a>（令和8年4月1日現在法令等）</li>
+        <li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shohi/6902.htm" rel="noopener" target="_blank">国税庁 タックスアンサー No.6902 「総額表示」の義務付け</a>（令和8年4月1日現在法令等）</li>
+        <li><a href="https://laws.e-gov.go.jp/law/363CO0000000360" rel="noopener" target="_blank">e-Gov 法令検索 消費税法施行令 第70条の10</a></li>
+      </ul>
+
+      <AdSlot label="consumption-tax-result-ja" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/jp-consumption-tax.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

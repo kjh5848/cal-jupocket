@@ -99,4 +99,12 @@ export const jaTools: JaTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/ja/consumption-tax/",
+    name: "消費税計算（税抜・税込）",
+    blurb: "税抜価格から税込価格、税込価格から税抜価格と消費税額を10％・8％で計算",
+    type: "tax",
+    icon: "calculator",
+    basis: "jp-law",
+  },
 ];
