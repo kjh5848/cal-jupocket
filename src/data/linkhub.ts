@@ -364,6 +364,7 @@ export const hubEntries: HubEntry[] = [
   { no: 337, href: "/tools/time-calc/", label: "시간 계산기", kind: "calc" },
   { no: 338, href: "/tools/service-period/", label: "근속 기간 계산기", kind: "calc" },
   { no: 339, href: "/tools/year-left/", label: "올해 남은 날", kind: "calc" },
+  { no: 340, href: "/tools/milestone-age/", label: "환갑·칠순 계산기", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */

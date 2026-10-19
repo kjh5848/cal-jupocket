@@ -1,0 +1,65 @@
+{
+  "title": "환갑·칠순·팔순 — 기념 나이 이름과 날짜 규칙",
+  "verifiedOn": "2026-10-19",
+  "sources": [
+    {
+      "name": "표준국어대사전 '환갑2(還甲)' — 육십갑자의 '갑'으로 되돌아온다는 뜻으로, 태어난 지 60돌이 되는 해. 또는 그 나이(≒회갑·화갑·주갑·환력)",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=환갑"
+    },
+    {
+      "name": "표준국어대사전 '진갑(進甲)' — 환갑의 이듬해. 또는 그해의 생일",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=진갑"
+    },
+    {
+      "name": "표준국어대사전 '칠순1(七旬)' 「2」 일흔 살 · '고희(古稀)' 일흔 살을 이르는 말",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=칠순"
+    },
+    {
+      "name": "표준국어대사전 '망팔2(望八)' — 여든을 바라본다는 뜻으로, 나이 일흔한 살",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=망팔"
+    },
+    {
+      "name": "표준국어대사전 '희수1(喜壽)' — 나이 일흔일곱 살(동음이의 '희수2(稀壽)'는 일흔 살)",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=희수"
+    },
+    {
+      "name": "표준국어대사전 '팔순(八旬)' — 여든 살",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=팔순"
+    },
+    {
+      "name": "표준국어대사전 '망구2(望九)' — 아흔을 바라본다는 뜻으로, 나이 여든한 살",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=망구"
+    },
+    {
+      "name": "표준국어대사전 '미수4(米壽)' — 여든여덟 살",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=미수"
+    },
+    {
+      "name": "표준국어대사전 '구순2(九旬)' — 아흔 살",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=구순"
+    },
+    {
+      "name": "표준국어대사전 '망백(望百)' — 백을 바라본다는 뜻으로, 나이 아흔한 살",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=망백"
+    },
+    {
+      "name": "표준국어대사전 '백수6(白壽)' — 아흔아홉 살('百'에서 '一'을 빼면 '白')",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=백수"
+    },
+    {
+      "name": "민법 제158조 · 행정기본법 제7조의2 — 나이는 만 나이(rates/age-2026.json 과 같은 원문)",
+      "url": "https://www.law.go.kr/법령/민법/제158조"
+    }
+  ],
+  "rules": {
+    "noLaw": "환갑·칠순 같은 이름은 법이 아니라 말(사전 뜻풀이)과 관습이다. 법령에 이 나이를 정한 조문은 찾지 못했다",
+    "yearDefined": "환갑은 '태어난 지 60돌이 되는 해' → 출생 연도 + 60. 진갑은 그 이듬해(+ 61). 만 나이·세는 나이 어느 쪽으로 봐도 같은 해",
+    "ageDefined": "칠순(70)·망팔(71)·희수(77)·팔순(80)·망구(81)·미수(88)·구순(90)·망백(91)·백수(99)는 사전이 'N 살'이라고만 적어 만 나이인지 세는 나이인지 정하지 않는다 → 만 N세가 되는 날(출생 연도 + N)을 기본으로, 세는 나이로 지내면 출생 연도 + N − 1 해를 함께 보인다",
+    "fullAgeDay": "만 N세가 되는 날 = N번째 생일(민법 제158조·제160조 — lib/age.ts dayOfAge). 2월 29일생은 평년이면 3월 1일"
+  },
+  "notIncluded": [
+    "졸수(90)·산수(80)·상수(100) — 표준국어대사전에서 그 뜻으로 확인되지 않아 뺌(구순·팔순으로 대신)",
+    "음력 생일 → 양력 변환(천문연 음양력 자료로 확인한 뒤 붙일 후보 — 만 나이 계산기와 같은 이유)",
+    "간지(갑자·을축…) — 해 경계(설·입춘) 원문을 정하지 않아 넣지 않음"
+  ]
+}
