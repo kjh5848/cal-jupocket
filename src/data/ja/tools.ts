@@ -59,4 +59,12 @@ export const jaTools: JaTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/ja/tools/age/",
+    name: "年齢計算・満年齢",
+    blurb: "生年月日から満年齢・数え年・月齢・小学校と中学校の学年を計算",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
