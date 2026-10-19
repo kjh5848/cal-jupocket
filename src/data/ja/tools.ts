@@ -43,4 +43,12 @@ export const jaTools: JaTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/ja/tools/compound/",
+    name: "積立の複利計算",
+    blurb: "初期投資と毎月の積立を年利回りで運用すると何年後にいくらになるか",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

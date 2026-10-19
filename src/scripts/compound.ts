@@ -1,11 +1,13 @@
 /**
- * 적립식 복리 계산기 — /tools/compound/.
+ * 적립식 복리 계산기 — /tools/compound/ · 일본어판 /ja/tools/compound/.
  * 계산은 src/lib/compound.ts compound() 가 한다. 여기서는 입력을 읽고 결과를 그린다.
+ * 두 언어판이 같은 계산을 쓰고 말·통화 표기만 다르다(pageLocale()).
  */
-import { compound, won, type Timing } from "../lib/compound";
-import { formatWon, parseAmount, formatAmountInput } from "../lib/money";
+import { compound, type Timing } from "../lib/compound";
+import { formatWon, formatYen, parseAmount, formatAmountInput } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
+import { pageLocale } from "../i18n/ui";
 
 const reportUse = trackCalculatorUse("compound");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -19,16 +21,49 @@ const timing = $<HTMLSelectElement>("cp-timing");
 const tax = $<HTMLInputElement>("cp-tax");
 const infl = $<HTMLInputElement>("cp-infl");
 
+const KO = {
+  money: formatWon,
+  spell: (y: number, r: number) => [y ? `${y}년` : "", r ? `${r}개월` : ""].filter(Boolean).join(" ") || "0개월",
+  note: (months: number, monthlyRate: string, start: boolean) => `${months}개월 · 월 이율 ${monthlyRate}% · ${start ? "매달 초" : "매달 말"} 적립`,
+  noTax: "0원",
+  goalNone: "목표 없음",
+  goalNever: "기간 안에 못 닿음",
+  goalAtStart: "처음부터 넘음",
+  goalAt: (s: string) => `${s}째`,
+  yearRow: (year: number, rest: number) => (rest === 0 ? `${year}년째` : `${year}년째 (${rest}개월)`),
+  after: (s: string) => `${s} 뒤 잔액`,
+  paid: "넣은 돈",
+  gain: "불어난 돈",
+  afterTax: "세후 금액",
+  title: "적립식 복리 계산 결과",
+  share: "적립식 복리 계산 결과 - jupocket.com",
+};
+
+const JA: typeof KO = {
+  money: formatYen,
+  spell: (y, r) => [y ? `${y}年` : "", r ? `${r}か月` : ""].join("") || "0か月",
+  note: (months, monthlyRate, start) => `${months}か月 · 月利 ${monthlyRate}% · ${start ? "毎月初め" : "毎月末"}に積立`,
+  noTax: "0円",
+  goalNone: "目標なし",
+  goalAtStart: "最初から到達",
+  goalNever: "期間内に届かない",
+  goalAt: (s) => `${s}目`,
+  yearRow: (year, rest) => (rest === 0 ? `${year}年目` : `${year}年目（${rest}か月）`),
+  after: (s) => `${s}後の残高`,
+  paid: "元本（積立総額）",
+  gain: "運用益",
+  afterTax: "税引後",
+  title: "積立の複利計算の結果",
+  share: "積立の複利計算の結果 - jupocket.com",
+};
+
+const S = pageLocale() === "ja" ? JA : KO;
+
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const num = (el: HTMLInputElement, lo: number, hi: number) => clamp(Number(el.value) || 0, lo, hi);
-const w = (x: number) => formatWon(won(x));
-const signed = (x: number) => (won(x) < 0 ? `−${formatWon(-won(x))}` : formatWon(won(x)));
-
-function spell(m: number) {
-  const y = Math.floor(m / 12);
-  const r = m % 12;
-  return [y ? `${y}년` : "", r ? `${r}개월` : ""].filter(Boolean).join(" ") || "0개월";
-}
+const w = (x: number) => S.money(x);
+const signed = (x: number) => (Math.round(x) < 0 ? `−${S.money(-x)}` : S.money(x));
+const spell = (m: number) => S.spell(Math.floor(m / 12), m % 12);
 
 let lastLines: [string, string][] = [];
 
@@ -50,19 +85,19 @@ function render() {
   });
 
   $("cp-hero").textContent = w(x.balance);
-  $("cp-note").textContent = `${months}개월 · 월 이율 ${(ratePct / 12).toFixed(4)}% · ${t === "start" ? "매달 초" : "매달 말"} 적립`;
+  $("cp-note").textContent = S.note(months, (ratePct / 12).toFixed(4), t === "start");
   $("cp-paid").textContent = w(x.paid);
   $("cp-gain2").textContent = signed(x.gain);
-  $("cp-tax-v").textContent = won(x.tax) ? `−${w(x.tax)}` : "0원";
+  $("cp-tax-v").textContent = Math.round(x.tax) ? `−${w(x.tax)}` : S.noTax;
   $("cp-after").textContent = w(x.afterTax);
   $("cp-real").textContent = w(x.real);
-  $("cp-goal-v").textContent = !G ? "목표 없음" : x.goalMonth === null ? "기간 안에 못 닿음" : x.goalMonth === 0 ? "처음부터 넘음" : `${spell(x.goalMonth)}째`;
+  $("cp-goal-v").textContent = !G ? S.goalNone : x.goalMonth === null ? S.goalNever : x.goalMonth === 0 ? S.goalAtStart : S.goalAt(spell(x.goalMonth));
   $("cp-rows").replaceChildren(
     ...x.years.map((y) => {
       const tr = document.createElement("tr");
       const th = document.createElement("th");
       th.scope = "row";
-      th.textContent = y.month % 12 === 0 ? `${y.year}년째` : `${y.year}년째 (${y.month % 12}개월)`;
+      th.textContent = S.yearRow(y.year, y.month % 12);
       const cells = [w(y.paid), signed(y.gain), w(y.balance)].map((v) => {
         const td = document.createElement("td");
         td.textContent = v;
@@ -73,10 +108,10 @@ function render() {
     }),
   );
   lastLines = [
-    [`${spell(months)} 뒤 잔액`, w(x.balance)],
-    ["넣은 돈", w(x.paid)],
-    ["불어난 돈", signed(x.gain)],
-    ["세후 금액", w(x.afterTax)],
+    [S.after(spell(months)), w(x.balance)],
+    [S.paid, w(x.paid)],
+    [S.gain, signed(x.gain)],
+    [S.afterTax, w(x.afterTax)],
   ];
 }
 
@@ -95,14 +130,14 @@ for (const el of [principal, monthly, goal]) {
 for (const el of [rate, period, tax, infl]) el.addEventListener("input", onUserInput);
 for (const el of [unit, timing]) el.addEventListener("change", onUserInput);
 
-const buildCard = () => renderCard({ title: "적립식 복리 계산 결과", lines: lastLines, footer: "jupocket.com" });
+const buildCard = () => renderCard({ title: S.title, lines: lastLines, footer: "jupocket.com" });
 $("btn-download").addEventListener("click", () => {
   track("save_result", { calculator: "compound" });
   downloadCard(buildCard(), "compound-result.png");
 });
 $("btn-share").addEventListener("click", async () => {
   track("share_result", { calculator: "compound" });
-  await shareCard(buildCard(), "적립식 복리 계산 결과 - jupocket.com");
+  await shareCard(buildCard(), S.share);
 });
 
 render();

@@ -5,6 +5,11 @@ export function formatWon(v: number): string {
   return won(v).toLocaleString("ko-KR") + "원";
 }
 
+/** 일본어판(/ja/) 금액 표기 — 1円 단위 반올림, '1,234,567円' */
+export function formatYen(v: number): string {
+  return won(v).toLocaleString("ja-JP") + "円";
+}
+
 // 입력창은 콤마 표시를 위해 type="text"를 쓴다 — 숫자만 뽑아 파싱한다.
 export function parseAmount(raw: string): number {
   const digits = raw.replace(/[^0-9]/g, "");

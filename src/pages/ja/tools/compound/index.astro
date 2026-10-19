@@ -1,0 +1,199 @@
+---
+/**
+ * 積立の複利計算 — 일본어판. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고,
+ * 문장은 일본어로 새로 썼다(번역 아님). 복리 산술이라 나라 제도와 상관없다(조사표 일본 칸 '같음').
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/ja-compound-2026-10-19.csv):
+ *   積立 複利計算 シミュレーション / 計算式·月利 / 元本·初期投資·一括 / エクセル·電卓 / ボーナス
+ * 세율 기본값은 0% — 한국어판의 15.4% 는 한국 원천징수라 쓰지 않고, 일본 이자 세율(rates/jp/interest-income)은
+ * 아직 초안이라 숫자를 적지 않는다. 사용자가 자기 계좌·상품에 맞게 넣는 가정값으로만 둔다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import { formatYen } from "../../../../lib/money";
+import "../../../../styles/global.css";
+
+const title = "積立の複利計算シミュレーション — 元本・毎月の積立・利回りで何年後いくら";
+const description =
+  "初期投資（元本）と毎月の積立額を年利回りで月複利運用すると、何年後にいくらになるかを計算します。元本と運用益の内訳、税引後の金額、物価を引いた今の価値、目標額に届く時期、年ごとの表つき。";
+
+const base = { principal: 1_000_000, monthly: 30_000, ratePct: 5, months: 240, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const y = (x: number) => formatYen(x);
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>積立の複利計算シミュレーション</h1>
+      <p>
+        最初に入れるお金（元本・初期投資）と毎月の積立額、想定する年利回りを入れると、毎月の複利で何年後にいくらになるかを
+        表示します。利回り・税率・物価上昇率はどれも仮定の数字で、実際の運用結果を約束するものではありません。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">最初に入れるお金（初期投資）</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value="1,000,000" data-won autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">毎月の積立額</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="30,000" data-won autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">想定する年利回り</label>
+          <input type="number" id="cp-rate" value="5" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">積立期間</label>
+          <input type="number" id="cp-period" value="20" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="期間の単位">
+            <option value="years" selected>年</option>
+            <option value="months">か月</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">積み立てるタイミング</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>毎月初め（その月から運用）</option>
+            <option value="end">毎月末（翌月から運用）</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">運用益にかける税率</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">年の物価上昇率</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">目標額（任意）</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder="例: 10,000,000" data-won autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="元本|運用益"
+          data-dock="cp-hero"
+        >
+          <p class="label">期間終了時の残高（税引前）</p>
+          <p class="big" id="cp-hero">{y(ex.balance)}</p>
+          <p class="meta" id="cp-note">240か月 · 月利 0.4167% · 毎月初めに積立</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">元本（積立総額）</span><span class="value" id="cp-paid">{y(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">運用益</span><span class="value" id="cp-gain2">{y(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">税金（仮定）</span><span class="value" id="cp-tax-v">0円</span></div>
+          <div class="stat-chip"><span class="label">税引後</span><span class="value" id="cp-after">{y(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">今のお金の価値</span><span class="value" id="cp-real">{y(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">目標到達</span><span class="value" id="cp-goal-v">目標なし</span></div>
+        </div>
+
+        <details>
+          <summary>年ごとの積立額・運用益・残高</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>期間</th><th>その年の積立額</th><th>その年の運用益</th><th>残高</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">{r.year}年目</th><td>{y(r.paid)}</td><td>{y(r.gain)}</td><td>{y(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">最初に入れたお金は「その年の積立額」に入れず、残高にだけ含めています。</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>積立の複利計算の計算式</h2>
+      <ul>
+        <li><strong>月利</strong> — 年利回り ÷ 12。年 5％なら毎月 0.4167％ずつ増えると考えます。</li>
+        <li><strong>毎月初めに積み立てる場合</strong> — その月に入れた分も含めた残高に、その月の利息がつきます: (残高 + 積立額) × (1 + 月利)。</li>
+        <li><strong>毎月末に積み立てる場合</strong> — 先に利息がつき、そのあとで入れます: 残高 × (1 + 月利) + 積立額。最後の月の積立額は増えないので、少しだけ少なくなります。</li>
+        <li><strong>税金</strong> — (残高 − 元本) がプラスのときだけ、その運用益に入力した税率を一度かけます。マイナスなら 0 円です。</li>
+        <li><strong>今のお金の価値</strong> — 税引後の金額 ÷ (1 + 年の物価上昇率)<sup>年数</sup>。20 年後の金額が、今のお金でどれくらいかを見る数字です。</li>
+      </ul>
+      <p>
+        たとえば初期投資 {y(base.principal)}、毎月 {y(base.monthly)}、年 5％で 20 年積み立てると、元本 {y(ex.paid)} に対して
+        残高は {y(ex.balance)}（運用益 {y(ex.gain)}）です。同じ条件で毎月末に積み立てると {y(exEnd.balance)} になります。
+      </p>
+
+      <h2>元本（初期投資）と毎月の積立の違い</h2>
+      <p>
+        最初にまとめて入れたお金は、1 か月目から最後まで丸ごと複利で増えます。毎月の積立は、あとから入れた分ほど運用される期間が
+        短くなります。上の例で初期投資 {y(base.principal)} だけを 20 年置いておくと {y(lump.balance)} です。積立額を 0 円にすると
+        一括投資だけの結果、初期投資を 0 円にすると積立だけの結果を見られます。
+      </p>
+
+      <h2>エクセル・電卓で複利計算をするには</h2>
+      <p>
+        エクセルなら FV 関数で同じ数字が出ます。毎月初めの積立なら
+        <code>=FV(5%/12, 240, -30000, -1000000, 1)</code>、毎月末なら最後の 1 を 0 にします。お金を「出す」側として
+        積立額と元本をマイナスで入れるのがポイントです。電卓で月ごとに計算する場合は、(残高 + 積立額) × 1.004166… を
+        月の数だけくり返します。
+      </p>
+
+      <details>
+        <summary>税率は何％で入れればいいですか？</summary>
+        <p>
+          初期値は 0％です。運用益にかかる税金は、口座の種類や商品（預貯金の利子・投資信託・株式など）によって扱いが違うため、
+          この計算機では決めていません。ご自身の口座・商品の扱いを確かめて、仮定の数字として入れてください。預貯金の利子の
+          課税は国税庁の
+          <a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1310.htm" rel="noopener" target="_blank">タックスアンサー No.1310</a>
+          に説明があります。
+        </p>
+      </details>
+
+      <details>
+        <summary>ボーナス月に積立額を増やす計算はできますか？</summary>
+        <p>
+          この計算機は毎月同じ金額を積み立てる場合だけを計算します。ボーナス月の増額分は、年間の増額分 ÷ 12 を毎月の積立額に
+          足すとおおよその目安になります（入れる時期がずれる分、実際とは少し違います）。
+        </p>
+      </details>
+
+      <details>
+        <summary>利回りが 0％やマイナスのときは？</summary>
+        <p>
+          0％なら元本がそのまま残ります。マイナスの利回りも入れられ、そのときは運用益がマイナスで表示され、税金はかかりません。
+          実際の運用は年ごとに上下するので、平均が同じでも結果は変わります。
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-ja" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

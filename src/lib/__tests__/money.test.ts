@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   won,
   formatWon,
+  formatYen,
   parseAmount,
   formatAmountInput,
   currentValueOrDefault,
@@ -60,5 +61,12 @@ describe("formatMan — 문장 안에서 읽는 금액", () => {
 
   it("0은 0원", () => {
     expect(formatMan(0)).toBe("0원");
+  });
+});
+
+describe("formatYen (일본어판 금액)", () => {
+  it("1円 단위 반올림 + 콤마 + 円", () => {
+    expect(formatYen(1234567.4)).toBe("1,234,567円");
+    expect(formatYen(0)).toBe("0円");
   });
 });
