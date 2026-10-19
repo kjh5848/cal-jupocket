@@ -30,7 +30,8 @@ const STEP_UNITS = new Set(["명", "개월", "년", "일", "세", "시간", "년
 const T = ui(pageLocale());
 /** 금액 단위 — 원 칸이면 원, 円 칸이면 円 으로 읽어 준다(만·억 / 万·億 은 같은 네 자리 단위) */
 const MONEY_UNIT: Record<string, string> = { "원": "원", "円": "円" };
-const moneyUnit = (input: HTMLInputElement) => (input.dataset.won || "원");
+// 마크업에 data-won 을 직접 쓴 칸(값 "")은 페이지 언어로 정한다 — 일본어판이면 円
+const moneyUnit = (input: HTMLInputElement) => input.dataset.won || (T.htmlLang === "ja" ? "円" : "원");
 
 /**
  * 표시가 없는 계산기에도 기본 틀을 입힌다 — 원 단위 금액 칸 · 사람 수·기간 칸 · 선택지 2~3개 ·

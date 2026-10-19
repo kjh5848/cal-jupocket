@@ -46,3 +46,11 @@ describe.skipIf(!built)("실수령액 계산기 마크업 계약", () => {
     for (const a of ["data-seg", "data-step", "data-won", "data-presets", "data-receipt", "data-bar", "data-dock", "data-two"]) expect(html, a).toContain(a);
   });
 });
+
+describe("readWon — 일본어판 円", () => {
+  it("円 이면 万·億 으로 읽는다", () => {
+    expect(readWon(12000, "円")).toBe("1万 2,000円");
+    expect(readWon(150000000, "円")).toBe("1億 5,000万円");
+    expect(readWon(12000)).toBe("1만 2,000원");
+  });
+});
