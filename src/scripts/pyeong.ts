@@ -1,5 +1,5 @@
-import { pyeong, rectM2, fmtArea, type AreaUnit, type AreaBasis } from "../lib/pyeong";
-import { parseNumber } from "../lib/percent";
+import { pyeong, rectM2, areaRatio, fmtArea, type AreaUnit, type AreaBasis } from "../lib/pyeong";
+import { parseNumber, round2 } from "../lib/percent";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 
@@ -115,6 +115,46 @@ for (const b of document.querySelectorAll<HTMLButtonElement>("[data-preset]")) {
   });
 }
 
+// ── 둘째 칸: 두 면적(+분양가) → 전용률·공용면적·평당 분양가 ──
+const rSupply = $("r-supply") as HTMLInputElement;
+const rExcl = $("r-excl") as HTMLInputElement;
+const rPrice = $("r-price") as HTMLInputElement;
+const won = (n: number) => `${Math.round(n).toLocaleString("ko-KR")}원`;
+
+function computeRatio() {
+  const s = parseNumber(rSupply.value);
+  const e = parseNumber(rExcl.value);
+  const price = parseNumber(rPrice.value);
+  const x = areaRatio(s, e, price);
+  const ids = ["r-common", "r-pp-s", "r-m2-s", "r-pp-e"];
+  if (!x) {
+    set("r-hero", "—");
+    set("r-hero-sub", "");
+    for (const id of ids) set(id, "—");
+    set("r-note", e > s && s > 0 ? "전용면적은 공급면적보다 클 수 없습니다. 두 칸이 바뀌지 않았는지 보세요." : "공급면적과 전용면적을 ㎡로 넣어 주세요.");
+    return;
+  }
+  set("r-hero", `${round2(x.ratioPct).toFixed(2)}%`);
+  set("r-hero-sub", `전용 ${fmtArea(x.exclusive.pyeong)}평 / 공급 ${fmtArea(x.supply.pyeong)}평`);
+  set("r-common", `${fmtArea(x.common.m2)}㎡ · ${fmtArea(x.common.pyeong)}평`);
+  set("r-pp-s", x.price ? won(x.price.perPyeongSupply) : "—");
+  set("r-m2-s", x.price ? won(x.price.perM2Supply) : "—");
+  set("r-pp-e", x.price ? won(x.price.perPyeongExclusive) : "—");
+  set(
+    "r-note",
+    x.price
+      ? `전용 기준 ㎡당 ${won(x.price.perM2Exclusive)}. 공급으로 나눈 값과 전용으로 나눈 값은 전용률만큼 차이가 납니다.`
+      : "분양가를 넣으면 평당 값이 나옵니다. 어느 면적으로 나누느냐에 따라 값이 달라 두 기준을 함께 보여 줍니다.",
+  );
+}
+
+for (const el of [rSupply, rExcl, rPrice]) {
+  el.addEventListener("input", () => {
+    reportUse(1);
+    computeRatio();
+  });
+}
+
 const buildCard = () => renderCard({ title: lastTitle, lines: lastLines, footer: "jupocket.com" });
 $("btn-download").addEventListener("click", () => {
   track("save_result", { calculator: "pyeong" });
@@ -126,3 +166,4 @@ $("btn-share").addEventListener("click", async () => {
 });
 
 compute();
+computeRatio();

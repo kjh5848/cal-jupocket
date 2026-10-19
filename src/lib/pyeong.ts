@@ -56,6 +56,43 @@ export function pyeong(value: number, unit: AreaUnit, basis: AreaBasis, ratioPct
   return { given: allUnits(m2), other: otherM2 === null ? null : allUnits(otherM2) };
 }
 
+export interface AreaRatioResult {
+  supply: Areas;
+  exclusive: Areas;
+  /** 공용면적 = 공급 − 전용 */
+  common: Areas;
+  /** 전용률 % = 전용 ÷ 공급 × 100 (반올림 전) */
+  ratioPct: number;
+  /** 분양가를 넣었을 때만 — 원, 반올림 전. 공급·전용 어느 쪽으로 나눴는지 둘 다 */
+  price: { perPyeongSupply: number; perM2Supply: number; perPyeongExclusive: number; perM2Exclusive: number } | null;
+}
+
+/**
+ * 분양 공고의 두 면적(㎡) → 전용률·공용면적, 분양가(원)를 넣으면 평당·㎡당 값(roberin #57 방향).
+ * 전용이 공급보다 크거나 0 이하·숫자 아님이면 null. 분양가가 0 이하·숫자 아님이면 price 만 null.
+ */
+export function areaRatio(supplyM2: number, exclusiveM2: number, priceWon = NaN): AreaRatioResult | null {
+  if (!(supplyM2 > 0) || !(exclusiveM2 > 0) || exclusiveM2 > supplyM2) return null;
+  const supply = allUnits(supplyM2);
+  const exclusive = allUnits(exclusiveM2);
+  const price =
+    priceWon > 0
+      ? {
+          perPyeongSupply: priceWon / supply.pyeong,
+          perM2Supply: priceWon / supplyM2,
+          perPyeongExclusive: priceWon / exclusive.pyeong,
+          perM2Exclusive: priceWon / exclusiveM2,
+        }
+      : null;
+  return {
+    supply,
+    exclusive,
+    common: allUnits(supplyM2 - exclusiveM2),
+    ratioPct: (exclusiveM2 / supplyM2) * 100,
+    price,
+  };
+}
+
 /** 가로 × 세로(m) → ㎡. 둘 중 하나라도 0 이하면 null */
 export function rectM2(widthM: number, depthM: number): number | null {
   if (!(widthM > 0) || !(depthM > 0)) return null;

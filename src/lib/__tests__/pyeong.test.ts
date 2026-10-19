@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toM2, fromM2, pyeong, rectM2, fmtArea } from "../pyeong";
+import { toM2, fromM2, pyeong, rectM2, fmtArea, areaRatio } from "../pyeong";
 import { round2 } from "../percent";
 import rates from "../../rates/pyeong-2026.json";
 
@@ -67,5 +67,40 @@ describe("경계값", () => {
   it("표기는 둘째 자리까지, 천 단위 쉼표", () => {
     expect(fmtArea(1067.5)).toBe("1,067.50");
     expect(fmtArea(12000 / 121)).toBe("99.17");
+  });
+});
+
+describe("두 면적 → 전용률·공용면적·평당 분양가 (roberin #57 대조 입력, 기대값은 Python Fraction 손셈)", () => {
+  it("공급 112.4 ㎡ · 전용 84.97 ㎡ · 8억 5천만 원", () => {
+    const x = areaRatio(112.4, 84.97, 850_000_000)!;
+    expect(r(x.supply.pyeong)).toBe(34);
+    expect(r(x.exclusive.pyeong)).toBe(25.7);
+    expect(r(x.common.m2)).toBe(27.43);
+    expect(r(x.common.pyeong)).toBe(8.3);
+    expect(r(x.ratioPct)).toBe(75.6);
+    expect(Math.round(x.price!.perPyeongSupply)).toBe(24_999_265);
+    expect(Math.round(x.price!.perM2Supply)).toBe(7_562_278);
+    expect(Math.round(x.price!.perPyeongExclusive)).toBe(33_069_523);
+    expect(Math.round(x.price!.perM2Exclusive)).toBe(10_003_531);
+  });
+  it("공급 79 ㎡ · 전용 59.99 ㎡ · 5억 원", () => {
+    const x = areaRatio(79, 59.99, 500_000_000)!;
+    expect(r(x.supply.pyeong)).toBe(23.9);
+    expect(r(x.exclusive.pyeong)).toBe(18.15);
+    expect(r(x.common.m2)).toBe(19.01);
+    expect(r(x.ratioPct)).toBe(75.94);
+    expect(Math.round(x.price!.perPyeongSupply)).toBe(20_922_691);
+    expect(Math.round(x.price!.perM2Supply)).toBe(6_329_114);
+  });
+  it("경계 — 전용 = 공급이면 100%·공용 0, 전용 > 공급·0 이하는 null, 분양가 없으면 price null", () => {
+    const x = areaRatio(33, 33, 100_000_000)!;
+    expect(x.ratioPct).toBe(100);
+    expect(x.common.m2).toBe(0);
+    expect(Math.round(x.price!.perPyeongSupply)).toBe(10_017_531);
+    expect(areaRatio(100, 120)).toBeNull();
+    expect(areaRatio(0, 10)).toBeNull();
+    expect(areaRatio(84, NaN)).toBeNull();
+    expect(areaRatio(112, 84)!.price).toBeNull();
+    expect(areaRatio(112, 84, 0)!.price).toBeNull();
   });
 });

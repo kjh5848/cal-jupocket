@@ -5,6 +5,7 @@
  * 질문 하나: 이 면적은 몇 평(몇 ㎡)인가. 전용·공급 반대쪽 면적은 전용률을 넣으면 추정으로 덤으로 나온다.
  * 단위 값은 rates/pyeong-2026.json(1평 = 400/121 ㎡ · ft 는 영국 WMA 1985 원문), 면적 용어는 주택법 시행규칙
  * 제2조·주택공급에 관한 규칙 제21조 ⑤ 원문. roberin #62 는 입력·결과 항목만 대조했다(docs/calc-benchmark.md).
+ * 아래 둘째 칸(전용률·평당 분양가)은 roberin #57 아파트 면적 계산기를 합친 것 — 두 면적을 알 때 전용률을 '구하는' 방향.
  * 프리셋 59·84·33 ㎡ 는 네이버 자동완성(keywords/ac-pyeong-2026-10-19.csv)에서.
  */
 import BaseHead from "../../../components/BaseHead.astro";
@@ -16,14 +17,15 @@ import AdSenseHead from "../../../components/AdSenseHead.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
 import "../../../styles/global.css";
-import { pyeong, fmtArea } from "../../../lib/pyeong";
+import { pyeong, areaRatio, fmtArea } from "../../../lib/pyeong";
 import rates from "../../../rates/pyeong-2026.json";
 
-const title = "평수 계산기 — 평 ↔ ㎡ ↔ ft², 전용·공급면적 환산";
+const title = "평수 계산기 — 평 ↔ ㎡ ↔ ft², 전용률·평당 분양가";
 const description =
-  "㎡를 넣으면 몇 평인지, 평을 넣으면 몇 ㎡인지 바로 보여 줍니다. 1평 = 400/121㎡ 그대로 계산하고, 전용률을 넣으면 전용면적 ↔ 공급면적도 추정합니다. 가로·세로 길이로 방 평수도 셉니다.";
+  "㎡를 넣으면 몇 평인지, 평을 넣으면 몇 ㎡인지 바로 보여 줍니다. 1평 = 400/121㎡ 그대로 계산하고, 전용률을 넣으면 전용면적 ↔ 공급면적도 추정하고, 두 면적을 알면 전용률·공용면적·평당 분양가를 구합니다. 가로·세로 길이로 방 평수도 셉니다.";
 
 const x0 = pyeong(84, "m2", "exclusive", 75)!;
+const r0 = areaRatio(112, 84)!;
 ---
 
 <html lang="ko">
@@ -118,6 +120,49 @@ const x0 = pyeong(84, "m2", "exclusive", 75)!;
         </div>
       </div>
 
+      <h2 id="ratio-calc">분양 공고 숫자로 전용률·평당 분양가</h2>
+      <p>
+        공고에 전용면적과 공급면적이 둘 다 있으면 전용률을 짐작할 필요가 없습니다. 두 숫자를 넣으면 전용률과 공용면적이,
+        분양가까지 넣으면 평당·㎡당 값이 나옵니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="r-supply">공급면적 (㎡)</label>
+          <input type="text" inputmode="decimal" id="r-supply" value="112" autocomplete="off" />
+          <label for="r-excl">전용면적 (㎡)</label>
+          <input type="text" inputmode="decimal" id="r-excl" value="84" autocomplete="off" />
+          <label for="r-price">분양가 (원, 선택)</label>
+          <input type="text" inputmode="numeric" id="r-price" value="" placeholder="예: 800000000" autocomplete="off" data-won />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">전용률</p>
+          <p class="big" id="r-hero">{r0.ratioPct.toFixed(2)}%</p>
+          <p class="hint" id="r-hero-sub">전용 {fmtArea(r0.exclusive.pyeong)}평 / 공급 {fmtArea(r0.supply.pyeong)}평</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">공용면적</span>
+            <span class="value" id="r-common">{fmtArea(r0.common.m2)}㎡ · {fmtArea(r0.common.pyeong)}평</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">평당 분양가 (공급 기준)</span>
+            <span class="value" id="r-pp-s">—</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">㎡당 분양가 (공급 기준)</span>
+            <span class="value" id="r-m2-s">—</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">평당 분양가 (전용 기준)</span>
+            <span class="value" id="r-pp-e">—</span>
+          </div>
+        </div>
+        <p class="hint" id="r-note">분양가를 넣으면 평당 값이 나옵니다. 어느 면적으로 나누느냐에 따라 값이 달라 두 기준을 함께 보여 줍니다.</p>
+      </div>
+
       <h2>이렇게 계산합니다</h2>
       <ul>
         <li>
@@ -133,6 +178,14 @@ const x0 = pyeong(84, "m2", "exclusive", 75)!;
         <li>
           <strong>공급 → 전용</strong>은 공급면적 × 전용률, <strong>전용 → 공급</strong>은 전용면적 ÷ 전용률입니다.
           법이 정한 공식이 아니라 추정이라, 정확한 숫자는 분양 공고나 건축물대장에서 확인하세요.
+        </li>
+        <li>
+          <strong>전용률</strong> = 전용면적 ÷ 공급면적 × 100, <strong>공용면적</strong> = 공급 − 전용입니다. 112㎡ 중 84㎡가
+          전용이면 75%, 공용은 28㎡(8.47평)입니다.
+        </li>
+        <li>
+          <strong>평당 분양가</strong> = 분양가 ÷ 평수입니다. 공급면적으로 나누면 값이 작아지고 전용면적으로 나누면 커지므로,
+          광고의 평당가와 비교할 때는 어느 면적으로 나눴는지부터 맞춰 보세요.
         </li>
       </ul>
 
