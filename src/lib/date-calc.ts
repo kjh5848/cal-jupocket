@@ -94,6 +94,8 @@ export interface Span {
   /** 주 + 남는 일 */
   weeks: number;
   weekRest: number;
+  /** 시간 환산 — 총 일수 × 24 (한국은 서머타임이 없어 하루 = 24시간) */
+  hours: number;
   /** 토·일을 뺀 날 수(시작일부터 센 날들 중) */
   weekdays: number;
   /** 토·일·공휴일을 뺀 날 수. 공휴일 목록 범위를 벗어나면 null */
@@ -139,6 +141,7 @@ export function span(a: number, b: number, inclusive: boolean): Span {
     restDays,
     weeks: Math.floor(days / 7),
     weekRest: days % 7,
+    hours: days * 24,
     weekdays,
     businessDays: covered ? business : null,
     holidaysOnWeekdays: hs,

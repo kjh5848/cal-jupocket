@@ -55,7 +55,7 @@ function computeSpan() {
   show(
     inclIn.checked ? "두 날짜 사이 (종료일 포함)" : "두 날짜 사이",
     `${s.days.toLocaleString("ko-KR")}일`,
-    `${spanText(s)} · ${s.weeks}주 ${s.weekRest}일`,
+    `${spanText(s)} · ${s.weeks}주 ${s.weekRest}일 · ${s.hours.toLocaleString("ko-KR")}시간`,
     [
       ["평일 (토·일 뺌)", `${s.weekdays.toLocaleString("ko-KR")}일`],
       ["업무일 (공휴일도 뺌)", s.businessDays === null ? "—" : `${s.businessDays.toLocaleString("ko-KR")}일`],

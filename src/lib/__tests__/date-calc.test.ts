@@ -139,3 +139,23 @@ describe("D-day", () => {
     expect(dday(d("2026-10-16"), t)).toBe("D+3");
   });
 });
+
+describe("#75 날짜 차이 대조 입력 — 기간·시간 환산·며칠 뒤·앞", () => {
+  it("2026 전체(미포함) 364일 · 52주 0일 · 8,736시간", () => {
+    const s = span(d("2026-01-01"), d("2026-12-31"), false);
+    expect([s.days, s.weeks, s.weekRest, s.hours]).toEqual([364, 52, 0, 8736]);
+  });
+  it("윤년 2/28~3/1 은 2일 · 48시간, 10/19~2027-01-27 은 100일 · 2,400시간", () => {
+    expect(span(d("2024-02-28"), d("2024-03-01"), false).hours).toBe(48);
+    const s = span(d("2026-10-19"), d("2027-01-27"), false);
+    expect([s.days, s.months, s.restDays, s.weeks, s.weekRest, s.hours]).toEqual([100, 3, 8, 14, 2, 2400]);
+  });
+  it("종료일 포함이면 시간도 하루치 더한다", () => {
+    expect(span(d("2026-01-01"), d("2026-12-31"), true).hours).toBe(8760);
+  });
+  it("3/1 − 30일 = 1/30(금), 2024-02-29 + 365일 = 2025-02-28(금), + 1,000일 = 2029-07-15(일)", () => {
+    expect(label(shift(d("2026-03-01"), -30, "day"))).toBe("2026-01-30 (금)");
+    expect(label(shift(d("2024-02-29"), 365, "day"))).toBe("2025-02-28 (금)");
+    expect(label(shift(d("2026-10-19"), 1000, "day"))).toBe("2029-07-15 (일)");
+  });
+});

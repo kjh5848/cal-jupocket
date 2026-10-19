@@ -102,7 +102,7 @@ const fmtDate = (iso: string) => {
         <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
           <p class="label" id="hero-label">두 날짜 사이</p>
           <p class="big" id="hero-value">{s0.days}일</p>
-          <p class="hint" id="hero-sub">{spanText(s0)} · {s0.weeks}주 {s0.weekRest}일</p>
+          <p class="hint" id="hero-sub">{spanText(s0)} · {s0.weeks}주 {s0.weekRest}일 · {s0.hours.toLocaleString("ko-KR")}시간</p>
         </div>
 
         <div class="stat-row" data-receipt id="receipt">
