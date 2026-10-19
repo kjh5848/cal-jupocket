@@ -6,6 +6,7 @@ import { describe, it, expect } from "vitest";
 import { servicePeriodOf, periodText } from "../service-period";
 import { fromDay } from "../date-calc";
 import { parseDate, oneYearServed } from "../severance-pay";
+import { spanTextJa } from "../date-format-ja";
 
 const sp = (a: string, b: string, retireMode = false) => {
   const r = servicePeriodOf(a, b, retireMode);
@@ -99,4 +100,26 @@ describe("퇴직금 계산기와 같은 '1년 이상' 판정", () => {
       expect(sp(a, b).oneYear).toBe(oneYearServed(parseDate(a)!, parseDate(b)!));
     });
   }
+});
+
+/** 일본어판(/ja/tools/service-period/) 본문 예시 — 民法 第140条(午前零時 시작은 초일 산입)·第143条 ② 손계산 */
+describe("일본어판 표기 (spanTextJa)", () => {
+  const ja = (a: string, b: string) => {
+    const p = sp(a, b);
+    return spanTextJa({ years: p.years, months: p.months, restDays: p.days });
+  };
+  it("첫 화면 2020-04-01 ~ 2026-09-30 → 6年6か月, 7年目", () => {
+    expect(ja("2020-04-01", "2026-09-30")).toBe("6年6か月");
+    expect(sp("2020-04-01", "2026-09-30").years + 1).toBe(7);
+  });
+  it("입사 당일 → 1日, 満0年(1年目)", () => {
+    expect(ja("2026-04-01", "2026-04-01")).toBe("1日");
+    expect(sp("2026-04-01", "2026-04-01").years).toBe(0);
+  });
+  it("4/15 입사 → 이듬해 4/14 까지 1年", () => expect(ja("2025-04-15", "2026-04-14")).toBe("1年"));
+  it("1/31 입사 → 2/27 까지 28日, 2/28 까지 1か月(末日満了)", () => {
+    expect(ja("2026-01-31", "2026-02-27")).toBe("28日");
+    expect(ja("2026-01-31", "2026-02-28")).toBe("1か月");
+  });
+  it("2/29 입사 → 평년 2/28 까지 1年", () => expect(ja("2024-02-29", "2025-02-28")).toBe("1年"));
 });

@@ -91,4 +91,12 @@ export const jaTools: JaTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/ja/tools/service-period/",
+    name: "勤続年数 計算",
+    blurb: "入社日から終了日まで何年何か月何日か、在籍日数・何年目かを民法の数え方で計算",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

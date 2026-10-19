@@ -1,0 +1,188 @@
+---
+/**
+ * 勤続年数 計算 — 일본어판 근속 기간 계산기(/ja/tools/service-period/). 한국어판 /tools/service-period/ 와 계산
+ * (lib/service-period.ts)·스크립트(scripts/service-period.ts)를 같이 쓰고, 문장은 일본어로 새로 썼다(번역 아님).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/ja-service-period-2026-10-20.csv):
+ *   勤続年数 計算方法·数え方 / 数え方 ヶ月·年目 / 計算 エクセル 何年何ヶ月·関数 / 計算 退職金 / 計算 育休 / 在籍期間 計算
+ * 셈은 民法 第140条(午前零時から始まる期間は初日算入)·第143条(応当日の前日満了, 応当日がなければ月末満了) —
+ * e-Gov API 원문 2026-10-20 재확인(docs/country-matrix.md #93 행). 년·월·일은 만 나이 계산기와 같은 셈.
+ * 한국판의 퇴직일(마지막 근무일 다음 날)·퇴직금 1년 요건·근속연수(재직일수 ÷ 365 = 한국 퇴직금 셈)·육아휴직 산입은
+ * 한국 노동 제도라 일본어판에서 뺐다 — 終了日(그날 포함)을 하나만 받고, ÷365 는 산술 라벨로만 둔다.
+ * 退職金 축은 国税庁 タックスアンサー No.1420 [令和8年4月1日現在法令等](2026-10-20 확인)의 1年未満の端数は1年に切り上げ
+ * 문장과 원문 예시(10年2か月 → 11年)만 인용 — 控除額 금액은 rates/jp/retirement-income-2026.json 이 초안이라 쓰지 않는다.
+ * 有給·失業保険(雇用保険)·履歴書 축은 제도 원문 미확인이라 쓰지 않았다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { servicePeriodOf, type ServicePeriod } from "../../../../lib/service-period";
+import { labelJa, spanTextJa } from "../../../../lib/date-format-ja";
+
+const title = "勤続年数 計算 — 入社日から何年何ヶ月？在籍期間の数え方";
+const description =
+  "入社日と終了日（在籍の最後の日）を入れると、勤続年数が何年何か月何日か、在籍日数・満了した月数・何年目かがすぐわかります。月末入社やうるう日入社も民法の期間の数え方どおりに計算。エクセルの DATEDIF で同じ結果を出す式も紹介します。";
+
+const t = (p: ServicePeriod) => spanTextJa({ years: p.years, months: p.months, restDays: p.days });
+
+/** 最初に表示する例 — 2020年4月1日入社、2026年9月30日まで */
+const P0 = servicePeriodOf("2020-04-01", "2026-09-30")!;
+/** 本文の例 — 月の途中の入社、月末入社、2月29日入社、入社当日 */
+const M0 = servicePeriodOf("2025-04-15", "2026-04-14")!;
+const E0 = servicePeriodOf("2026-01-31", "2026-02-27")!;
+const E1 = servicePeriodOf("2026-01-31", "2026-02-28")!;
+const L0 = servicePeriodOf("2024-02-29", "2025-02-28")!;
+const D0 = servicePeriodOf("2026-04-01", "2026-04-01")!;
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>勤続年数 計算（在籍期間）</h1>
+      <p>
+        入社日と、在籍した最後の日を入れると、勤続年数が何年何か月何日かが出ます。いまの会社なら終了日を今日にしてください。入力するとすぐに結果が変わります。
+      </p>
+
+      <div class="calc-card">
+        <div class="calc-input-wrap">
+          <label for="sp-start">入社日</label>
+          <input type="date" id="sp-start" value="2020-04-01" min="1900-01-01" max="9999-12-30" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="sp-end">終了日（この日まで数える）</label>
+          <input type="date" id="sp-end" value="2026-09-30" min="1900-01-01" max="9999-12-30" />
+        </div>
+        <input type="hidden" id="sp-kind" value="last" />
+
+        <div class="actions">
+          <button id="sp-today" type="button" class="secondary">終了日を今日にする</button>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="sp-hero">
+          <p class="label" id="sp-label">勤続年数</p>
+          <p class="big" id="sp-hero">{t(P0)}</p>
+          <p class="hint" id="sp-sub">{labelJa(P0.start)} 入社 → {labelJa(P0.last)} まで（両日を含む）</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">在籍日数</span>
+            <span class="value" id="sp-days">{P0.serviceDays.toLocaleString("ja-JP")}日</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">満了した月数</span>
+            <span class="value" id="sp-months">{P0.totalMonths.toLocaleString("ja-JP")}か月</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">週</span>
+            <span class="value" id="sp-weeks">{P0.weeks.toLocaleString("ja-JP")}週{P0.weekRest}日</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">在籍日数 ÷ 365</span>
+            <span class="value" id="sp-yd">{P0.yearsDecimal.toFixed(2)}年</span>
+          </div>
+        </div>
+        <p class="hint" id="sp-one">入社した年を1年目と数えると、{P0.years + 1}年目です。</p>
+        <p class="hint" id="sp-next">満{P0.nextYears}年になるのは {labelJa(P0.nextLastDay)} まで勤めたとき — 終了日の{P0.daysToNext.toLocaleString("ja-JP")}日後です。</p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>勤続年数の計算方法・数え方</h2>
+      <ul>
+        <li>
+          <strong>入社日を1日目として数えます。</strong>民法 第140条は期間の初日を数えないのが原則ですが、その期間が午前0時から始まるときは初日も数えると定めています。入社日は1日の始まりから在籍しているので、入社日も含めます。入社したその日で終わると{t(D0)}です。
+        </li>
+        <li>
+          <strong>1年・1か月はカレンダーで数えます。</strong>民法 第143条により、期間は応当日（入社日と同じ日付）の前日に満了します。{labelJa(M0.start)}入社なら、{labelJa(M0.last)}まで勤めると{t(M0)}です。
+        </li>
+        <li>
+          <strong>月末に入社したとき</strong>は、最後の月に同じ日付がなければその月の末日に満了します（同条 第2項ただし書）。1月31日入社は、2月27日までだと{t(E0)}、2月28日まで勤めると{t(E1)}です。2月29日入社は、平年の2月28日まで勤めると{t(L0)}になります。
+        </li>
+        <li>
+          <strong>在籍日数</strong>は入社日から終了日まで、両方の日を含めた日数です。<strong>満了した月数</strong>は、何年何か月をすべて月に直した数です（{t(P0)} → {P0.totalMonths}か月）。
+        </li>
+      </ul>
+
+      <h2>勤続年数の「何年目」の数え方</h2>
+      <p>
+        「満◯年」は勤め終えた年数、「◯年目」は入社した年を1年目とする数え方です。満{P0.years}年{P0.months}か月なら{P0.years + 1}年目、入社したその日は満0年で1年目です。上の計算機は両方を表示します。
+      </p>
+
+      <h2>エクセルで勤続年数を何年何ヶ月で計算する関数</h2>
+      <p>A1 に入社日、B1 に終了日（在籍の最後の日）を入れたとき：</p>
+      <ul>
+        <li><strong>年</strong>：<code>=DATEDIF(A1,B1+1,"Y")</code></li>
+        <li><strong>か月</strong>：<code>=DATEDIF(A1,B1+1,"YM")</code></li>
+        <li><strong>日</strong>：<code>=DATEDIF(A1,B1+1,"MD")</code></li>
+        <li><strong>在籍日数</strong>：<code>=B1-A1+1</code></li>
+      </ul>
+      <p>
+        DATEDIF は終わりの日を数えないので、終了日を含めるために <code>B1+1</code> とします。<code>"MD"</code> は月末をまたぐと結果がずれることがあるため、月末入社のときはこの計算機で確かめてください。
+      </p>
+
+      <h2>退職金の勤続年数は1年未満を切り上げる</h2>
+      <p>
+        退職金の税金（退職所得）で使う勤続年数は、1年未満の端数があれば1年に切り上げます。国税庁の例では、勤続年数10年2か月の人は11年として退職所得控除額を計算します。
+      </p>
+      <p>
+        ただし、役員として勤めた期間がある場合、前の年以前や同じ年にほかの退職金を受け取った場合、途中で勤務しなかった期間がある場合などは計算が変わることがあり、この計算機はそれらに対応していません。くわしくは下の国税庁のページで確認してください。
+      </p>
+
+      <details>
+        <summary>育休・休職の期間は差し引かれますか？</summary>
+        <p>
+          この計算機は、入社日から終了日までをそのまま数え、育児休業や休職の期間を差し引きません。勤続年数に休業期間を含めるかどうかは、使う場面（会社の規程や制度）によって扱いが異なることがあるため、それぞれの決まりを確認してください。
+        </p>
+      </details>
+
+      <details>
+        <summary>退職日と最終出社日、どちらを入れればいいですか？</summary>
+        <p>
+          在籍していた最後の日を入れてください。この計算機は終了日を含めて数えます。最終出社日のあとも在籍していた期間がある場合（休暇を使ってから退職するなど）は、最終出社日ではなく在籍の最後の日を入れると在籍期間になります。
+        </p>
+      </details>
+
+      <details>
+        <summary>日数計算と月数がちがうのはなぜですか？</summary>
+        <p>
+          月末に入社した場合にちがうことがあります。<a href="/ja/tools/date-diff/">日数計算・日付計算</a>は存在しない日付をその月の末日にそろえて数え、この計算機は民法 第143条どおり、その月の末日まで勤めて1か月が満了したと数えます。<a href="/ja/tools/age/">年齢計算・満年齢</a>と同じ数え方です。
+        </p>
+      </details>
+
+      <p>
+        2つの日付の間の日数や何日後かは<a href="/ja/tools/date-diff/">日数計算・日付計算</a>、満年齢は<a href="/ja/tools/age/">年齢計算・満年齢</a>で計算できます。
+      </p>
+
+      <p>
+        出典：<a href="https://laws.e-gov.go.jp/law/129AC0000000089" rel="noopener">民法（明治二十九年法律第八十九号） 第140条・第143条 — e-Gov法令検索</a>（2026年10月20日確認） ·
+        <a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1420.htm" rel="noopener">国税庁 タックスアンサー No.1420 退職金を受け取ったとき（退職所得）</a>［令和8年4月1日現在法令等］（2026年10月20日確認）
+      </p>
+
+      <AdSlot label="service-period-result-ja" />
+    </main>
+    <SiteFooter />
+    <style>
+      #sp-hero { overflow-wrap: anywhere; }
+    </style>
+    <script src="../../../../scripts/service-period.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
