@@ -40,7 +40,7 @@ function calc() {
       ? "계속근로 1년 이상입니다. 퇴직금은 4주 평균 주 15시간 이상 일했다면 받는 대상입니다."
       : `아직 1년이 안 됩니다. 계속근로 1년 미만이면 퇴직금 대상이 아닙니다(근로자퇴직급여 보장법 제4조).`,
   );
-  set("sp-next", `만 ${p.nextYears}년은 ${label(p.nextLastDay)}까지 일하면 찹니다 — 종료일에서 ${p.daysToNext.toLocaleString("ko-KR")}일 뒤.`);
+  set("sp-next", `만 ${p.nextYears}년은 ${label(p.nextLastDay)}까지 일하면 찹니다 — 마지막 근무일에서 ${p.daysToNext.toLocaleString("ko-KR")}일 뒤.`);
   lastLines = [
     ["입사일", label(p.start)],
     ["마지막 근무일", label(p.last)],
