@@ -355,6 +355,7 @@ export const hubEntries: HubEntry[] = [
   { no: 328, href: "/guide/parking-account-tax/", label: "파킹통장 세금 — 이자소득세 15.4%", kind: "guide" },
   { no: 329, href: "/guide/parking-account-interest-calculator/", label: "파킹통장 이자 계산기", kind: "calc" },
   { no: 330, href: "/tools/dday/", label: "디데이 계산기", kind: "calc" },
+  { no: 331, href: "/tools/age/", label: "만 나이 계산기", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */

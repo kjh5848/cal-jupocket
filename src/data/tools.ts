@@ -85,6 +85,7 @@ const SYN: Record<string, string[]> = {
   "/tools/compound/": ["복리", "복리계산기", "복리 계산기", "복리 계산", "복리 계산법", "복리 계산 공식", "복리 계산 방법", "월복리 계산기", "연복리 계산기", "적립식 복리", "적립식 복리계산기", "적립식 복리 계산식", "주식복리계산기", "코인복리계산기"],
   "/tools/date-diff/": ["날짜 계산", "날짜계산기", "날짜 계산기 일수", "남은 날짜 계산", "일수 계산", "기간 계산", "며칠", "며칠 뒤", "업무일 계산", "영업일 계산", "평일 계산", "개월 계산"],
   "/tools/dday/": ["디데이", "디데이계산기", "디데이 계산", "디데이계산", "D-day", "D-day 계산기", "디데이 계산기 시간", "디데이 계산기 기준일", "며칠 남았", "남은 시간", "N일째", "기념일 며칠째"],
+  "/tools/age/": ["만 나이", "만나이", "만나이계산기", "만 나이 계산", "만 나이 계산기", "만나이 계산법", "만 나이 계산 방법", "나이 계산", "나이 계산기", "연 나이", "세는 나이", "한국 나이", "개월 수", "아기 개월수", "만나이계산기 개월수"],
   "/guide/minimum-wage-calculator/": ["최저임금", "최저시급", "2026 최저임금"],
   "/guide/take-home-calculator/": ["실수령액", "월급 얼마", "연봉 실수령", "세후 월급", "월급 실수령액", "하루 실수령액", "월급 하루", "일급 환산"],
   "/property-tax/": ["재산세", "주택 재산세", "재산세 고지서"],
@@ -111,9 +112,9 @@ const SYN: Record<string, string[]> = {
 
 /** 곧 담길 도구(점선 칸) — 루틴 우선순위 순(docs/tool-backlog.md). 공개하면 여기서 뺀다 */
 const NEXT: { href: string; name: string; blurb: string; type: ToolType; icon: string; keywords: string[] }[] = [
-  { href: "/tools/age/", name: "만 나이 계산기", blurb: "생년월일 → 만 나이 · 연 나이", type: "date", icon: "calendar", keywords: ["만 나이", "나이 계산", "만나이 계산기"] },
   { href: "/tools/date-day/", name: "날짜 요일 계산기", blurb: "날짜 → 무슨 요일 · 몇째 주", type: "date", icon: "calendar", keywords: ["요일 계산", "무슨 요일", "날짜 요일"] },
   { href: "/tools/char-count/", name: "글자 수 세기", blurb: "공백 포함·제외 · 바이트 · 원고지", type: "text", icon: "document", keywords: ["글자 수", "글자수 세기", "글자수", "바이트 계산"] },
+  { href: "/tools/anniversary/", name: "커플 기념일 계산기", blurb: "사귄 날 → 100일 · 1년 · 1000일", type: "date", icon: "calendar", keywords: ["커플 기념일", "100일 계산", "1000일 계산"] },
   { href: "/tools/pyeong/", name: "평수 계산기", blurb: "평 ↔ ㎡ · 공급·전용면적", type: "unit", icon: "calculator", keywords: ["평수", "평 계산", "제곱미터 평", "㎡"] },
 ];
 

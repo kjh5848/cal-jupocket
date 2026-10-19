@@ -1,0 +1,169 @@
+---
+/**
+ * 만 나이 계산기 — 날짜·시간 묶음의 세 번째 도구(/tools/age/). 계산은 lib/age.ts.
+ *
+ * 질문 하나: 생년월일이 이날이면 지금 만 몇 살인가. 연 나이·세는 나이·개월 수·살아온 날은 같은 입력에서 덤으로 나온다.
+ * 규칙은 민법 제158조·제160조 ②③, 행정기본법 제7조의2 원문(rates/age-2026.json).
+ * roberin #97 은 입력·결과 항목만 대조했다(docs/calc-benchmark.md). 첫 화면 숫자는 예시 날짜로 빌드 때 계산하고,
+ * 스크립트가 열린 날 오늘로 바꿔 다시 센다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+import { toDay, label } from "../../../lib/date-calc";
+import { age } from "../../../lib/age";
+import rates from "../../../rates/age-2026.json";
+
+const title = "만 나이 계산기 — 생년월일로 만 나이·연 나이·개월 수";
+const description =
+  "생년월일을 넣으면 오늘 기준 만 나이를 바로 보여 줍니다. 연 나이·세는 나이, 아기 개월 수, 살아온 날, 다음에 한 살 더 먹는 날까지 민법 제158조 셈법 그대로 계산합니다.";
+
+const BASE = "2026-10-19";
+const BIRTH = "1996-03-15";
+const a0 = age(toDay(BIRTH)!, toDay(BASE)!)!;
+const fmt = (n: number) => n.toLocaleString("ko-KR");
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>만 나이 계산기</h1>
+      <p>
+        생년월일을 넣으면 오늘 기준 만 나이가 바로 나옵니다. 2023년 6월 28일부터 법과 행정에서 쓰는 나이는
+        만 나이로 통일됐습니다. 다른 날 기준으로 보려면 기준일을 바꾸세요.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="birth">생년월일</label>
+          <input type="date" id="birth" value={BIRTH} max="2100-12-31" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">기준일 (보통 오늘)</label>
+          <input type="date" id="base" value={BASE} />
+          <div class="ux-presets" role="group" aria-label="기준일 고르기">
+            <button type="button" data-preset="today">오늘</button>
+            <button type="button" data-preset="newyear">내년 1월 1일</button>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{label(toDay(BASE)!)} 기준</p>
+          <p class="big" id="hero-value">만 {a0.years}세</p>
+          <p class="hint" id="hero-sub">{a0.years}세 {a0.months}개월 {a0.days}일 · 다음 생일까지 {a0.daysToNext}일</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">연 나이</span>
+            <span class="value" id="v-year">{a0.yearAge}세</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">세는 나이</span>
+            <span class="value" id="v-korean">{a0.koreanAge}살</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">개월 수</span>
+            <span class="value" id="v-months">{fmt(a0.totalMonths)}개월</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">살아온 날</span>
+            <span class="value" id="v-lived">{fmt(a0.livedDays)}일</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l-next">만 {a0.nextAge}세 되는 날</span>
+            <span class="value" id="v-next">{label(a0.next)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>만 나이는 이렇게 셉니다</h2>
+      <ul>
+        <li>
+          <strong>만 나이</strong> — 태어난 날을 0세로 시작해 생일이 돌아올 때마다 한 살씩 더합니다. 생일 전날까지는
+          그 전 나이, 생일 당일부터 한 살 많습니다. 민법 제158조가 '출생일을 산입하여 만 나이로 계산'하도록 정해
+          두었습니다.
+        </li>
+        <li>
+          <strong>연 나이</strong> — 올해 연도에서 태어난 연도를 뺀 값입니다. 생일과 상관없이 1월 1일에 모두 한 살을
+          더합니다. 청소년 보호법처럼 '19세가 되는 해의 1월 1일'을 기준으로 삼는 법에서 이 셈을 씁니다.
+        </li>
+        <li>
+          <strong>세는 나이</strong> — 연 나이에 1을 더한 값으로, 태어나자마자 1살로 치는 옛 셈입니다. 법적 효력은
+          없고 일상에서 참고로만 씁니다.
+        </li>
+        <li>
+          <strong>개월 수</strong> — 1세가 안 된 아기는 개월로 표시할 수 있습니다(민법 제158조 단서). 예방접종·영유아
+          검진 일정을 볼 때 이 숫자를 씁니다.
+        </li>
+      </ul>
+
+      <details>
+        <summary>2월 29일생은 평년에 언제 한 살 더 먹나요?</summary>
+        <p>
+          3월 1일입니다. 민법 제160조 ③은 마지막 달에 해당하는 날이 없으면 그 달 말일로 기간이 끝난다고 정합니다.
+          평년에는 2월 29일이 없으니 2월 28일로 한 해가 끝나고, 다음 날인 3월 1일부터 한 살 많습니다. 윤년에는
+          2월 29일 당일입니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>31일에 태어난 아기는 개월 수를 어떻게 세나요?</summary>
+        <p>
+          같은 원리입니다. 30일까지 있는 달에는 31일이 없어 그 달 말일로 한 달이 끝나고, 다음 달 1일에 한 달이
+          찹니다. 1월 31일생이면 3월 1일에 1개월, 3월 31일에 2개월입니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>만 나이로 바뀌었는데 아직 연 나이를 쓰는 곳이 있나요?</summary>
+        <p>
+          있습니다. 행정기본법 제7조의2는 '다른 법령에 특별한 규정이 있는 경우'를 빼고 만 나이를 쓰라고 합니다.
+          청소년 보호법의 청소년 기준처럼 연도로 정한 규정은 그대로입니다. 어떤 일에 나이 제한이 걸려 있다면 그
+          법 조문이 만 나이인지 연도 기준인지 확인하세요.
+        </p>
+      </details>
+
+      <p class="hint">
+        근거:
+        {rates.sources.map((s, i) => (
+          <>
+            {i > 0 && " · "}
+            <a href={s.url} rel="noopener" target="_blank">{s.name.split(" — ")[0].split("(")[0]}</a>
+          </>
+        ))}
+        (확인 {rates.verifiedOn})
+      </p>
+
+      <p>
+        두 날짜 사이 기간은 <a href="/tools/date-diff/">날짜 계산기</a>, 생일까지 남은 날은
+        <a href="/tools/dday/">디데이 계산기</a>가 셉니다.
+      </p>
+
+      <AdSlot label="age-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/age.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
