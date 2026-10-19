@@ -1,0 +1,308 @@
+---
+/**
+ * 国民年金保険料 計算 — 일본어판 제도 도구(basis "jp-law"). 한국어판 국민연금 보험료(/national-pension-premium/)는
+ * 소득 × 요율, 일본 第1号被保険者는 정액이라 제도가 달라 짝(hreflang)을 맺지 않는다.
+ * 계산은 lib/jp/national-pension.ts, 숫자는 rates/jp/national-pension-premium-2026.json(日本年金機構 国民年金保険料·
+ * 付加保険料の納付·国民年金保険料の前納 — 令和8年度, 2026-10-20 확인).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/ja-national-pension-2026-10-20.csv):
+ *   国民年金 保険料 いくら·月額·2026·計算 / 前納 割引·2年·クレジットカード·前納額 / 付加年金 いくらもらえる·シュミレーション·メリット デメリット
+ * 쓰지 않는 것(원문 미확인·허용 출처 밖): 임의 月분 前納(前納金額一覧 PDF)·免除·追納 금액, 社会保険料控除로 줄어드는 세액,
+ * 특정 달의 納付期限 날짜(祝日), 加入 연령 범위(いつまで払う), 国民年金基金·iDeCo 와의 비교(どっちが得).
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import {
+  MONTHLY,
+  NEXT_YEAR_MONTHLY,
+  ADD_ON,
+  ADD_ON_PENSION_PER_MONTH,
+  FULL_BASIC_PENSION,
+  payment,
+  premiumBaseline,
+  addOnBaseline,
+  addOnPension,
+  addOnPaid,
+  type Plan,
+} from "../../../lib/jp/national-pension";
+import { formatYen } from "../../../lib/money";
+import "../../../styles/global.css";
+
+const title = "国民年金保険料の計算 — 令和8年度の月額・前納の割引額・付加年金シミュレーション";
+const description =
+  "国民年金保険料（令和8年度 月額17,920円）を、毎月納付・早割・6カ月・1年・2年前納と、口座振替・納付書・クレジットカード別に計算。前納の割引額と、付加保険料400円で増える付加年金額もわかります。日本年金機構の公表額にもとづく計算機。";
+
+const y = formatYen;
+const first = payment("oneYear", "slip", false)!;
+const firstBaseline = premiumBaseline("oneYear");
+const rows: { plan: Plan; label: string }[] = [
+  { plan: "twoYear", label: "2年前納" },
+  { plan: "oneYear", label: "1年前納" },
+  { plan: "sixMonth", label: "6カ月前納" },
+  { plan: "early", label: "早割（当月末振替）" },
+  { plan: "monthly", label: "毎月納付" },
+];
+const cell = (plan: Plan, method: "slip" | "debit", addOn: boolean) => {
+  const r = payment(plan, method, addOn);
+  if (!r) return { pay: "―", off: "―" };
+  const pay = addOn ? r.addOn : r.premium;
+  const off = addOn ? r.addOnDiscount : r.premiumDiscount;
+  return { pay: y(pay), off: off > 0 ? y(off) : "―" };
+};
+const yearly = MONTHLY * 12;
+const ex480 = addOnPension(480);
+const defaultYears = 40;
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>国民年金保険料の計算（前納・付加年金）</h1>
+      <p>
+        国民年金第1号被保険者と任意加入被保険者が納める国民年金保険料を、納付方法ごとに計算します。金額は日本年金機構が公表している
+        令和8年度の額（月額 {y(MONTHLY)}）と前納の納付額です。所得にかかわらず同じ定額なので、入力するのは納付方法だけです。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="np-plan">納付方法</label>
+          <select id="np-plan">
+            <option value="monthly">毎月納付</option>
+            <option value="early">早割（当月末振替）</option>
+            <option value="sixMonth">6カ月前納</option>
+            <option value="oneYear" selected>1年前納</option>
+            <option value="twoYear">2年前納</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="np-method">支払い方法</label>
+          <select id="np-method" data-seg>
+            <option value="slip" selected>納付書・クレジットカード</option>
+            <option value="debit">口座振替</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="np-addon">付加保険料（月額 {y(ADD_ON)}）</label>
+          <select id="np-addon" data-seg>
+            <option value="no" selected>納付しない</option>
+            <option value="yes">納付する</option>
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value" data-bar="out-premium,out-addon">
+          <p class="label">1回の納付額</p>
+          <p class="big" id="hero-value">{y(first.total)}</p>
+          <p class="hint" id="np-hint">{first.months}カ月分・毎月納付より {y(first.discount)} 少ない</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">定額保険料</span>
+            <span class="value" id="out-premium">{y(first.premium)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">付加保険料</span>
+            <span class="value" id="out-addon">納付しない</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">割引額</span>
+            <span class="value" id="out-discount">{y(first.discount)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">毎月納付の場合</span>
+            <span class="value" id="out-baseline">{y(firstBaseline)}</span>
+          </div>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="np-years">付加保険料を納める年数（付加年金の計算）</label>
+          <input type="number" id="np-years" value={defaultYears} min="0" max="50" inputmode="numeric" />
+          <span class="unit">年</span>
+        </div>
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">納付月数</span>
+            <span class="value" id="out-months">{defaultYears * 12}月</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">付加年金（年額）</span>
+            <span class="value" id="out-pension">{y(addOnPension(defaultYears * 12))}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">納める付加保険料の合計</span>
+            <span class="value" id="out-paid">{y(addOnPaid(defaultYears * 12))}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>国民年金の保険料はいくら？（令和8年度）</h2>
+      <p>
+        令和8年度の国民年金保険料は 1カ月あたり {y(MONTHLY)} です。12カ月分を毎月納付すると {y(yearly)} になります。
+        これに上乗せして月額 {y(ADD_ON)} の付加保険料を納めると、将来の老齢基礎年金が増えます。
+      </p>
+      <p>
+        納付期限は「納付対象月の翌月末日」です。末日が土曜日・日曜日・祝日・年末年始（12月31日、1月2日、1月3日）に当たるときは、
+        翌月最初の金融機関等の営業日になります。国民年金第3号被保険者は、自分で保険料を納める必要はありません。
+      </p>
+
+      <h2>前納の割引額一覧（2年・1年・6カ月・早割）</h2>
+      <p>まとめて前払い（前納）すると割引があります。日本年金機構が公表している令和8年度の 1 回あたりの納付額です。</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">国民年金保険料</th>
+              <th scope="col">納付書・クレジットカード</th>
+              <th scope="col">割引額</th>
+              <th scope="col">口座振替</th>
+              <th scope="col">割引額</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => {
+              const s = cell(r.plan, "slip", false);
+              const d = cell(r.plan, "debit", false);
+              return (
+                <tr>
+                  <th scope="row">{r.label}</th>
+                  <td>{s.pay}</td>
+                  <td>{s.off}</td>
+                  <td>{d.pay}</td>
+                  <td>{d.off}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">付加保険料</th>
+              <th scope="col">納付書・クレジットカード</th>
+              <th scope="col">割引額</th>
+              <th scope="col">口座振替</th>
+              <th scope="col">割引額</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => {
+              const s = cell(r.plan, "slip", true);
+              const d = cell(r.plan, "debit", true);
+              return (
+                <tr>
+                  <th scope="row">{r.label}</th>
+                  <td>{s.pay}</td>
+                  <td>{s.off}</td>
+                  <td>{d.pay}</td>
+                  <td>{d.off}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        割引額は、同じ期間を毎月納付したときの合計との差です。納付書払いとクレジットカード払いは同じ金額で、口座振替がいちばん割引が
+        大きくなります。早割（当月末振替）は口座振替だけの方法で、付加保険料には早割の割引がありません。
+      </p>
+
+      <h2>2年前納の割引額の計算</h2>
+      <p>
+        2年前納は今年度と来年度の 2 年分をまとめて納めます。比べる相手は、令和8年度の {y(MONTHLY)} × 12カ月と
+        令和9年度の {y(NEXT_YEAR_MONTHLY)} × 12カ月を毎月納付した合計 {y(premiumBaseline("twoYear"))} です。
+        納付書・クレジットカードなら {y(payment("twoYear", "slip", false)!.premium)} で割引 {y(payment("twoYear", "slip", false)!.discount)}、
+        口座振替なら {y(payment("twoYear", "debit", false)!.premium)} で割引 {y(payment("twoYear", "debit", false)!.discount)} です。
+      </p>
+
+      <h2>付加年金はいくらもらえる？</h2>
+      <p>
+        付加年金の額（年額）は「{y(ADD_ON_PENSION_PER_MONTH)} × 付加保険料を納めた月数」です。月 {y(ADD_ON)} を納めて、
+        受け取るときは 1 カ月につき年 {y(ADD_ON_PENSION_PER_MONTH)} が上乗せされるので、2 年以上受け取ると納めた付加保険料以上になります。
+      </p>
+      <p>
+        日本年金機構の例では、20歳から60歳までの40年間（480月）納めると {y(ADD_ON_PENSION_PER_MONTH)} × 480月 = {y(ex480)}（年額）。
+        40年間定額保険料を納めた場合の老齢基礎年金 {y(FULL_BASIC_PENSION)} に足して {y(FULL_BASIC_PENSION + ex480)}（年額）になります
+        （昭和31年4月2日以後生まれの方の額）。このとき納める付加保険料は {y(ADD_ON)} × 480月 = {y(addOnPaid(480))} です。
+      </p>
+
+      <h2>付加保険料を納められる人</h2>
+      <ul>
+        <li>国民年金第1号被保険者</li>
+        <li>65歳未満の任意加入被保険者（農業者年金の被保険者は納付が必要）</li>
+      </ul>
+      <p>
+        国民年金保険料の免除（法定免除・全額免除・一部免除・納付猶予・学生納付特例）を受けている方と、国民年金基金の加入員は納められません
+        （産前産後免除の方は納められます）。個人型確定拠出年金とは同時に加入できますが、拠出限度額との関係は運営管理機関に確認するよう
+        案内されています。付加保険料は申し出た月の分から納められ、さかのぼって納めることはできません。
+      </p>
+
+      <h2>納めた保険料と社会保険料控除</h2>
+      <p>
+        納めた国民年金保険料は、所得税と個人住民税の計算で全額が社会保険料控除の対象になります。控除でいくら税金が変わるかは、
+        この計算機では計算しません。
+      </p>
+
+      <details>
+        <summary>クレジットカードで前納すると割引はありますか？</summary>
+        <p>
+          はい。公表されている納付額では、クレジットカード払いは納付書払いと同じ金額です（例：1年前納 {y(first.premium)}、割引 {y(first.discount)}）。
+          口座振替のほうが割引額は大きくなります。
+        </p>
+      </details>
+
+      <details>
+        <summary>来年度（令和9年度）の保険料はいくらですか？</summary>
+        <p>
+          日本年金機構は 2年前納の説明で令和9年度の保険料を月額 {y(NEXT_YEAR_MONTHLY)} としています。この計算機の毎月納付・早割・6カ月・1年前納は
+          令和8年度の額で計算します。
+        </p>
+      </details>
+
+      <details>
+        <summary>保険料を払うのが難しいときは？</summary>
+        <p>
+          免除制度・納付猶予制度・学生納付特例制度があります。免除された期間の金額はこの計算機では計算しません。
+          日本年金機構の「国民年金保険料の免除制度・納付猶予制度」を確認してください。
+        </p>
+      </details>
+
+      <details>
+        <summary>会社員の厚生年金保険料も計算できますか？</summary>
+        <p>この計算機は国民年金の定額保険料だけです。給与に応じて決まる厚生年金保険料は計算しません。</p>
+      </details>
+
+      <h2>出典</h2>
+      <ul>
+        <li><a href="https://www.nenkin.go.jp/service/kokunen/hokenryo/hokenryo.html" rel="noopener" target="_blank">日本年金機構 国民年金保険料</a>（更新日 2026年4月1日）</li>
+        <li><a href="https://www.nenkin.go.jp/service/kokunen/hokenryo/zenno.html" rel="noopener" target="_blank">日本年金機構 国民年金保険料の前納</a>（更新日 2026年9月4日）</li>
+        <li><a href="https://www.nenkin.go.jp/service/kokunen/hokenryo/fukanofu.html" rel="noopener" target="_blank">日本年金機構 付加保険料の納付</a>（更新日 2026年7月23日）</li>
+      </ul>
+
+      <AdSlot label="national-pension-result-ja" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/jp-national-pension.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

@@ -107,4 +107,12 @@ export const jaTools: JaTool[] = [
     icon: "calculator",
     basis: "jp-law",
   },
+  {
+    href: "/ja/national-pension/",
+    name: "国民年金保険料の計算",
+    blurb: "令和8年度の月額・前納（2年・1年・6カ月・早割）の割引額・付加年金がいくら増えるかを計算",
+    type: "pension",
+    icon: "calculator",
+    basis: "jp-law",
+  },
 ];
