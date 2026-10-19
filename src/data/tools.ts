@@ -86,6 +86,7 @@ const SYN: Record<string, string[]> = {
   "/tools/date-diff/": ["날짜 계산", "날짜계산기", "날짜 계산기 일수", "남은 날짜 계산", "일수 계산", "기간 계산", "며칠", "며칠 뒤", "업무일 계산", "영업일 계산", "평일 계산", "개월 계산"],
   "/tools/dday/": ["디데이", "디데이계산기", "디데이 계산", "디데이계산", "D-day", "D-day 계산기", "디데이 계산기 시간", "디데이 계산기 기준일", "며칠 남았", "남은 시간", "N일째", "기념일 며칠째"],
   "/tools/age/": ["만 나이", "만나이", "만나이계산기", "만 나이 계산", "만 나이 계산기", "만나이 계산법", "만 나이 계산 방법", "나이 계산", "나이 계산기", "연 나이", "세는 나이", "한국 나이", "개월 수", "아기 개월수", "만나이계산기 개월수"],
+  "/tools/date-day/": ["요일 계산", "요일 계산기", "요일계산기", "날짜 요일", "날짜 요일 계산", "날짜 요일 확인", "무슨 요일", "무슨요일", "몇 요일", "오늘 날짜 요일", "요일 계산법", "요일 계산 방법", "몇주차", "몇 주차", "이번주 몇주차", "오늘 몇주차", "10월 몇주차", "주차 계산", "주차 계산기", "달력 주차 계산", "ISO 주차", "연중 일수", "윤년"],
   "/tools/pyeong/": ["평수", "평수 계산", "평수 계산기", "평수계산기", "평 계산", "평수 계산법", "제곱미터 평", "제곱미터 평수", "평 제곱미터", "평 제곱미터 변환", "㎡ 평", "m2 평", "전용면적 평수", "전용면적 평수 계산", "공급면적", "아파트 평수 계산기", "집 평수 계산", "방 크기 평수", "가로세로 평수계산기", "평형 계산기", "84제곱미터 평수", "59제곱미터 평수"],
   "/guide/minimum-wage-calculator/": ["최저임금", "최저시급", "2026 최저임금"],
   "/guide/take-home-calculator/": ["실수령액", "월급 얼마", "연봉 실수령", "세후 월급", "월급 실수령액", "하루 실수령액", "월급 하루", "일급 환산"],
@@ -113,10 +114,10 @@ const SYN: Record<string, string[]> = {
 
 /** 곧 담길 도구(점선 칸) — 루틴 우선순위 순(docs/tool-backlog.md). 공개하면 여기서 뺀다 */
 const NEXT: { href: string; name: string; blurb: string; type: ToolType; icon: string; keywords: string[] }[] = [
-  { href: "/tools/date-day/", name: "날짜 요일 계산기", blurb: "날짜 → 무슨 요일 · 몇째 주", type: "date", icon: "calendar", keywords: ["요일 계산", "무슨 요일", "날짜 요일"] },
   { href: "/tools/char-count/", name: "글자 수 세기", blurb: "공백 포함·제외 · 바이트 · 원고지", type: "text", icon: "document", keywords: ["글자 수", "글자수 세기", "글자수", "바이트 계산"] },
   { href: "/tools/school-year/", name: "입학·졸업 연도 계산기", blurb: "생년월일 → 초·중·고 입학·졸업 연도", type: "date", icon: "calendar", keywords: ["입학 연도", "졸업 연도", "학번 계산", "몇 학년"] },
   { href: "/tools/anniversary/", name: "커플 기념일 계산기", blurb: "사귄 날 → 100일 · 1년 · 1000일", type: "date", icon: "calendar", keywords: ["커플 기념일", "100일 계산", "1000일 계산"] },
+  { href: "/tools/csat-dday/", name: "수능 디데이", blurb: "수능까지 D-몇 · 남은 주 · 남은 시간", type: "date", icon: "calendar", keywords: ["수능 디데이", "수능 d-day", "수능 며칠 남았"] },
 ];
 
 const hubNo = new Map(hubEntries.map((e) => [e.href, e.no]));

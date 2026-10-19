@@ -47,6 +47,10 @@ const CASES: [string, string][] = [
   ["평수 계산", "/tools/pyeong/"],
   ["제곱미터 평", "/tools/pyeong/"],
   ["ㅍㅅㄱㅅㄱ", "/tools/pyeong/"],
+  ["요일 계산기", "/tools/date-day/"],
+  ["무슨 요일", "/tools/date-day/"],
+  ["몇주차", "/tools/date-day/"],
+  ["ㅇㅇㄱㅅㄱ", "/tools/date-day/"],
   ["복리계산기", "/tools/compound/"],
   ["적립식 복리", "/tools/compound/"],
   ["주식복리계산기", "/tools/compound/"],
@@ -96,8 +100,8 @@ describe("이상한 입력", () => {
     expect(searchTools(tools, "ㅎㅎㅎㅎㅎㅎ")).toEqual([]);
   });
   it("곧 담길 도구는 공개 도구 뒤", () => {
-    // 만 나이 계산기가 공개돼(2026-10-19) "나이" 로는 곧 담길 도구가 안 걸린다 — 날짜 계산기·디데이(공개)와 날짜 요일 계산기(곧)가 같이 걸리는 "날짜"
-    const r = searchTools(tools, "날짜");
+    // 날짜 요일 계산기가 공개돼(2026-10-19) "날짜" 로는 곧 담길 도구가 안 걸린다 — 디데이 계산기(공개)와 수능 디데이(곧)가 같이 걸리는 "디데이"
+    const r = searchTools(tools, "디데이");
     const firstNext = r.findIndex((x) => x.tool.status === "next");
     expect(firstNext).toBeGreaterThan(-1);
     expect(r.slice(firstNext).every((x) => x.tool.status === "next")).toBe(true);

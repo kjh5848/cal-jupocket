@@ -357,6 +357,7 @@ export const hubEntries: HubEntry[] = [
   { no: 330, href: "/tools/dday/", label: "디데이 계산기", kind: "calc" },
   { no: 331, href: "/tools/age/", label: "만 나이 계산기", kind: "calc" },
   { no: 332, href: "/tools/pyeong/", label: "평수 계산기", kind: "calc" },
+  { no: 333, href: "/tools/date-day/", label: "날짜 요일 계산기", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */

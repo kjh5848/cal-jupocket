@@ -1,0 +1,177 @@
+---
+/**
+ * 날짜 요일 계산기 — 날짜·시간 묶음의 네 번째 도구(/tools/date-day/). 계산은 lib/date-day.ts.
+ *
+ * 질문 하나: 이 날짜가 무슨 요일인가. 공휴일 여부·그해 몇째 날·주차·윤년은 같은 입력에서 덤으로 나온다.
+ * 윤년은 USNO, ISO 주차는 ISO 8601 정의(rates/date-day-2026.json), 공휴일은 rates/kr-holidays-2026.json.
+ * roberin #74 는 입력·결과 항목만 대조했다(docs/calc-benchmark.md). 첫 화면 숫자는 예시 날짜로 빌드 때 계산하고,
+ * 스크립트가 열린 날 오늘로 바꿔 다시 센다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+import { toDay, WEEKDAYS } from "../../../lib/date-calc";
+import { dayInfo, WEEKDAY_EN } from "../../../lib/date-day";
+import rates from "../../../rates/date-day-2026.json";
+
+const title = "날짜 요일 계산기 — 무슨 요일·몇 주차·공휴일 확인";
+const description =
+  "날짜를 넣으면 무슨 요일인지 바로 보여 줍니다. 공휴일 여부, 그해 몇 번째 날과 남은 날, ISO 주차·달력 주차·이번 달 몇째 주, 윤년까지 한 번에 확인합니다.";
+
+const BASE = "2026-10-19";
+const d0 = dayInfo(toDay(BASE)!);
+const fmt = (n: number) => n.toLocaleString("ko-KR");
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>날짜 요일 계산기</h1>
+      <p>
+        날짜를 고르면 그날이 무슨 요일인지, 공휴일인지, 그해 몇 번째 날이고 몇 주차인지 바로 나옵니다. 1900년부터
+        2100년까지 양력 날짜를 넣을 수 있습니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="date">확인할 날짜</label>
+          <input type="date" id="date" value={BASE} min="1900-01-01" max="2100-12-31" />
+          <div class="ux-presets" role="group" aria-label="날짜 고르기">
+            <button type="button" data-preset="today">오늘</button>
+            <button type="button" data-preset="tomorrow">내일</button>
+            <button type="button" data-preset="newyear">내년 1월 1일</button>
+            <button type="button" data-preset="christmas">올해 크리스마스</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="start">주 시작 요일 (달력 주차·이번 달 몇째 주에 씀)</label>
+          <select id="start" data-seg>
+            <option value="0" selected>일요일</option>
+            <option value="1">월요일</option>
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{d0.year}년 {d0.month}월 {d0.date}일</p>
+          <p class="big" id="hero-value">{WEEKDAYS[d0.weekday]}요일</p>
+          <p class="hint" id="hero-sub">평일 · {d0.month}월 {d0.nthText} · {WEEKDAY_EN[d0.weekday]}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">그해 몇째 날</span>
+            <span class="value" id="v-doy">{d0.dayOfYear}일째 / {d0.daysInYear}일</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">올해 남은 날</span>
+            <span class="value" id="v-left">{fmt(d0.daysLeft)}일</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 주차</span>
+            <span class="value" id="v-iso">{d0.iso.year}년 {d0.iso.week}주차</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">달력 주차</span>
+            <span class="value" id="v-cal">{d0.calWeek}주차</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">이번 달 몇째 주</span>
+            <span class="value" id="v-month">{d0.month}월 {d0.monthWeek}째 주</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">윤년</span>
+            <span class="value" id="v-leap">{d0.leap ? "윤년 (366일)" : "평년 (365일)"}</span>
+          </div>
+        </div>
+        <p class="hint" id="note">분기 {d0.quarter}분기 · ISO 표기 {d0.isoText} · Unix(UTC 0시) {d0.unix}</p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>주차는 세는 법이 여러 가지입니다</h2>
+      <ul>
+        <li>
+          <strong>ISO 주차</strong> — 국제 표준 ISO 8601 의 셈입니다. 주는 월요일에 시작하고, 그해 첫 목요일이 든
+          주가 1주차입니다. 그래서 1월 1~3일이 전년도 마지막 주(52주·53주)가 되거나, 12월 말이 다음 해 1주차가 될 수
+          있습니다. 2021년 1월 3일은 2020년 53주차, 2024년 12월 30일은 2025년 1주차입니다.
+        </li>
+        <li>
+          <strong>달력 주차</strong> — 1월 1일이 든 주를 1주차로 세는 셈입니다. 주 시작 요일(일요일·월요일)에 따라
+          결과가 달라질 수 있어 위에서 고를 수 있게 했습니다. 엑셀 WEEKNUM 함수가 이 방식입니다.
+        </li>
+        <li>
+          <strong>이번 달 몇째 주</strong> — 이 계산기는 그 달 1일이 든 달력 줄을 첫째 주로 셉니다. 회사나 기관에
+          따라 '목요일이 든 주부터 첫째 주'처럼 다르게 세는 곳이 있으니, 일정표가 정한 방식을 먼저 확인하세요.
+        </li>
+        <li>
+          <strong>몇째 요일</strong> — 그 달에 같은 요일이 몇 번째로 오는지입니다(1~7일은 첫째, 8~14일은 둘째).
+          '둘째 주 화요일'처럼 달력 줄로 세는 것과 다를 수 있어 따로 보여 줍니다.
+        </li>
+      </ul>
+
+      <details>
+        <summary>윤년은 어떻게 정하나요?</summary>
+        <p>
+          4로 나눠지는 해가 윤년입니다. 다만 100으로 나눠지는 해는 400으로도 나눠질 때만 윤년입니다. 그래서 2000년은
+          윤년이고 1900년·2100년은 평년입니다. 윤년에는 2월이 29일까지 있어 한 해가 366일입니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>공휴일은 몇 년까지 확인되나요?</summary>
+        <p>
+          관공서 공휴일 목록(2026~2027년)에 있는 날만 공휴일로 표시합니다. 그 밖의
+          해는 토·일만 판정하고 공휴일인지는 따로 확인하라고 안내합니다. 대체공휴일·임시공휴일은 정부 발표가 나온 뒤에
+          목록에 더합니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>요일을 손으로 계산할 수도 있나요?</summary>
+        <p>
+          알고 있는 날짜에서 며칠 떨어졌는지 센 다음 7로 나눈 나머지만큼 요일을 옮기면 됩니다. 예를 들어 2026년
+          10월 19일(월)에서 100일 뒤는 100 ÷ 7 의 나머지가 2라서 수요일입니다. 해를 넘길 때는 평년이 1요일,
+          윤년이 2요일씩 밀립니다.
+        </p>
+      </details>
+
+      <p class="hint">
+        근거:
+        {rates.sources.map((s, i) => (
+          <>
+            {i > 0 && " · "}
+            <a href={s.url} rel="noopener" target="_blank">{s.name.split(" — ")[0].split("(")[0].trim()}</a>
+          </>
+        ))}
+        (확인 {rates.verifiedOn})
+      </p>
+
+      <p>
+        두 날짜 사이 기간이나 며칠 뒤 날짜는 <a href="/tools/date-diff/">날짜 계산기</a>, 목표일까지 남은 날은
+        <a href="/tools/dday/">디데이 계산기</a>가 셉니다.
+      </p>
+
+      <AdSlot label="date-day-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/date-day.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
