@@ -115,4 +115,12 @@ export const jaTools: JaTool[] = [
     icon: "calculator",
     basis: "jp-law",
   },
+  {
+    href: "/ja/hourly-wage-base/",
+    name: "1時間あたりの賃金の計算",
+    blurb: "月給・日給から割増賃金（残業代）の基礎となる1時間あたりの賃金と月平均所定労働時間を計算",
+    type: "labor",
+    icon: "calculator",
+    basis: "jp-law",
+  },
 ];
