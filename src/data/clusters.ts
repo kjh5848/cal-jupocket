@@ -451,6 +451,7 @@ export const clusters: Cluster[] = [
     title: "단위·변환",
     links: [
       { href: "/tools/percent/", title: "퍼센트 계산기", kind: "calc", icon: "percent", blurb: "몇 %인지 · % 올리고 내리기 · 변화율" },
+      { href: "/tools/pyeong/", title: "평수 계산기", kind: "calc", icon: "calculator", blurb: "평 ↔ ㎡ ↔ ft² · 전용·공급면적 추정" },
     ],
   },
   /*

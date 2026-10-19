@@ -1,0 +1,187 @@
+---
+/**
+ * 평수 계산기 — 단위·변환 묶음의 두 번째 도구(/tools/pyeong/). 계산은 lib/pyeong.ts.
+ *
+ * 질문 하나: 이 면적은 몇 평(몇 ㎡)인가. 전용·공급 반대쪽 면적은 전용률을 넣으면 추정으로 덤으로 나온다.
+ * 단위 값은 rates/pyeong-2026.json(1평 = 400/121 ㎡ · ft 는 영국 WMA 1985 원문), 면적 용어는 주택법 시행규칙
+ * 제2조·주택공급에 관한 규칙 제21조 ⑤ 원문. roberin #62 는 입력·결과 항목만 대조했다(docs/calc-benchmark.md).
+ * 프리셋 59·84·33 ㎡ 는 네이버 자동완성(keywords/ac-pyeong-2026-10-19.csv)에서.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+import { pyeong, fmtArea } from "../../../lib/pyeong";
+import rates from "../../../rates/pyeong-2026.json";
+
+const title = "평수 계산기 — 평 ↔ ㎡ ↔ ft², 전용·공급면적 환산";
+const description =
+  "㎡를 넣으면 몇 평인지, 평을 넣으면 몇 ㎡인지 바로 보여 줍니다. 1평 = 400/121㎡ 그대로 계산하고, 전용률을 넣으면 전용면적 ↔ 공급면적도 추정합니다. 가로·세로 길이로 방 평수도 셉니다.";
+
+const x0 = pyeong(84, "m2", "exclusive", 75)!;
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>평수 계산기</h1>
+      <p>
+        면적을 넣으면 평·㎡·ft²가 한꺼번에 나옵니다. 아파트는 '전용 84㎡'처럼 전용면적으로 공고되고, 흔히 말하는
+        '34평형'은 공용 복도·계단까지 더한 공급면적이라 숫자가 다릅니다. 전용률을 넣으면 반대쪽 면적도 짐작해 봅니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="how">무엇을 넣나요</label>
+          <select id="how" data-seg>
+            <option value="area" selected>면적</option>
+            <option value="rect">가로 × 세로 (m)</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap" id="area-wrap">
+          <label for="unit">단위</label>
+          <select id="unit" data-seg>
+            <option value="m2" selected>㎡</option>
+            <option value="pyeong">평</option>
+            <option value="ft2">ft²</option>
+          </select>
+          <label for="area">면적</label>
+          <input type="text" inputmode="decimal" id="area" value="84" autocomplete="off" />
+          <div class="ux-presets" role="group" aria-label="자주 찾는 면적">
+            <button type="button" data-preset="m2:59">전용 59㎡</button>
+            <button type="button" data-preset="m2:84">전용 84㎡</button>
+            <button type="button" data-preset="m2:33">33㎡</button>
+            <button type="button" data-preset="pyeong:30">30평</button>
+          </div>
+        </div>
+
+        <div class="calc-input-wrap" id="rect-wrap" hidden>
+          <label for="w">가로 (m)</label>
+          <input type="text" inputmode="decimal" id="w" value="3.3" autocomplete="off" />
+          <label for="d">세로 (m)</label>
+          <input type="text" inputmode="decimal" id="d" value="4" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="basis">이 면적은</label>
+          <select id="basis" data-seg>
+            <option value="exclusive" selected>전용면적 (집 안)</option>
+            <option value="supply">공급면적 (공용 포함)</option>
+          </select>
+          <label for="ratio">전용률 (%)</label>
+          <input type="text" inputmode="decimal" id="ratio" value="75" autocomplete="off" />
+          <p class="hint">75%는 예시입니다. 단지마다 달라서 분양 공고의 전용·공급면적으로 나눠 넣으세요.</p>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">전용면적</p>
+          <p class="big" id="hero-value">{fmtArea(x0.given.pyeong)}평</p>
+          <p class="hint" id="hero-sub">{fmtArea(x0.given.m2)}㎡ · {fmtArea(x0.given.ft2)}ft²</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">㎡</span>
+            <span class="value" id="v-m2">{fmtArea(x0.given.m2)}㎡</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ft²</span>
+            <span class="value" id="v-ft2">{fmtArea(x0.given.ft2)}ft²</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l-other">공급면적 추정</span>
+            <span class="value" id="v-other">{fmtArea(x0.other!.pyeong)}평</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l-other-m2">공급면적 추정 ㎡</span>
+            <span class="value" id="v-other-m2">{fmtArea(x0.other!.m2)}㎡</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>이렇게 계산합니다</h2>
+      <ul>
+        <li>
+          <strong>1평 = 400/121㎡ (약 3.3058㎡)</strong> — 평은 사방 6자 정사각형이고 1자는 10/33m입니다. 그래서
+          (60/33)² = 400/121㎡입니다. 3.3으로 어림하면 30평에서 0.17㎡쯤 어긋나 여기서는 분수 그대로 셉니다.
+        </li>
+        <li>
+          <strong>㎡ → 평</strong>은 ㎡ × 121 ÷ 400(= × 0.3025)입니다. 84㎡ × 0.3025 = 25.41평.
+        </li>
+        <li>
+          <strong>1ft² = 0.09290304㎡</strong> — 1야드 = 0.9144m, 1피트는 그 3분의 1인 0.3048m를 제곱한 값입니다.
+        </li>
+        <li>
+          <strong>공급 → 전용</strong>은 공급면적 × 전용률, <strong>전용 → 공급</strong>은 전용면적 ÷ 전용률입니다.
+          법이 정한 공식이 아니라 추정이라, 정확한 숫자는 분양 공고나 건축물대장에서 확인하세요.
+        </li>
+      </ul>
+
+      <details>
+        <summary>전용면적과 공급면적은 무엇이 다른가요?</summary>
+        <p>
+          전용면적은 외벽 안쪽으로 그 집만 쓰는 면적입니다(주택법 시행규칙 제2조). 공급면적은 흔히 전용면적에 계단·복도·현관
+          같은 주거공용면적을 더한 값을 말합니다. 분양 공고는 세대 면적을 전용면적으로 적고, 공용면적은 따로 적을 수
+          있습니다(주택공급에 관한 규칙 제21조 ⑤). 발코니 같은 서비스면적은 둘 다에 들어가지 않습니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>전용 84㎡는 왜 '34평형'이라고 부르나요?</summary>
+        <p>
+          84㎡는 25.41평이지만, 공용면적을 더한 공급면적이 112㎡ 안팎(전용률 75% 가정)이면 33.88평, 반올림해 '34평형'이
+          됩니다. 같은 84㎡라도 단지의 전용률에 따라 32평형이 되기도 하고 35평형이 되기도 합니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>광고에 '평'을 써도 되나요?</summary>
+        <p>
+          평은 법정단위가 아닙니다. 계량에 관한 법률 제6조는 비법정단위를 계량이나 광고에 쓰지 못하게 하고, 정해진
+          표시요건을 갖추면 ㎡ 같은 법정단위와 함께 적을 수 있게 합니다. 이 계산기는 ㎡를 기준으로 평을 함께 보여 줍니다.
+        </p>
+      </details>
+
+      <p class="hint">
+        근거:
+        {rates.sources.map((s, i) => (
+          <>
+            {i > 0 && " · "}
+            <a href={s.url} rel="noopener" target="_blank">{s.name.split(" — ")[0].split("(")[0]}</a>
+          </>
+        ))}
+        (확인 {rates.verifiedOn})
+      </p>
+
+      <p>
+        취득세는 <a href="/acquisition-tax/">취득세 계산기</a>, 복비는
+        <a href="/guide/brokerage-fee-calculator/">중개보수 계산기</a>가 셉니다.
+      </p>
+
+      <AdSlot label="pyeong-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/pyeong.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
