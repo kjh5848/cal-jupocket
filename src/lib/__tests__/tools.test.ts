@@ -28,7 +28,7 @@ describe("도구 레지스트리", () => {
   it("클러스터의 계산기와 계산기 카드가 있는 글이 전부 들어 있다", () => {
     const hrefs = new Set(liveTools.map((t) => t.href));
     for (const c of clusters) for (const l of c.links) if (l.kind === "calc") expect(hrefs.has(l.href), l.href).toBe(true);
-    expect(liveTools.length).toBe(60);
+    expect(liveTools.length).toBe(61);
   });
   it("범용(/tools/) 도구에는 법 원문 검증 표시가 없다", () => {
     const p = liveTools.find((t) => t.href === "/tools/percent/")!;
