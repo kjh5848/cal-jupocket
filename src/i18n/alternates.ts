@@ -16,6 +16,7 @@ export const PAIRS: { ko: string; ja: string }[] = [
   { ko: "/tools/percent/", ja: "/ja/tools/percent/" },
   { ko: "/tools/date-diff/", ja: "/ja/tools/date-diff/" },
   { ko: "/tools/compound/", ja: "/ja/tools/compound/" },
+  { ko: "/tools/dday/", ja: "/ja/tools/dday/" },
 ];
 
 /** 이 주소와 같은 페이지의 각 언어판. 짝이 없으면 빈 객체 */

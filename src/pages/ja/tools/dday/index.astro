@@ -1,0 +1,181 @@
+---
+/**
+ * あと何日 — 일본어판 디데이(/ja/tools/dday/). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts)를 같이 쓰고, 문장은 일본어로 새로 썼다(번역 아님). 표기는 lib/date-format-ja.ts.
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/ja-dday-2026-10-19.csv):
+ *   あと何日 計算·カウントダウン / あと何日 今日 入れる·数え方 / あと何日でクリスマス·今年終わる /
+ *   残り日数 計算 エクセル / カウントダウン 日数 土日除く·平日 / あと何日 英語
+ * 'D-12' 표기는 일본에서 쓰지 않아 'あと12日'(ddayJa)로 낸다. 법 숫자는 없다 — 初日不算入(民法 第140条)과
+ * 표준시(明治十九年勅令第五十一号)는 이전 회차에 e-Gov 원문으로 확인한 것(docs/country-matrix.md #75·#90 행).
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, countdown } from "../../../../lib/date-calc";
+import { labelJa, ddayJa, durationTextJa } from "../../../../lib/date-format-ja";
+
+const title = "あと何日？残り日数カウントダウン — 今日から何日・何時間";
+const description =
+  "目標の日付を入れると、今日からあと何日か、残り何日何時間かをすぐ表示します。試験や締め切りのように時刻が決まっている予定は時刻まで、今日を1日目と数えた日数もいっしょに出します。";
+
+const BASE = "2026-10-19";
+const TARGET = "2027-01-27";
+const base = toDay(BASE)!;
+const target = toDay(TARGET)!;
+const c0 = countdown(target, null, base, 0);
+const xmas = toDay("2026-12-25")!;
+const yearEnd = toDay("2026-12-31")!;
+const newYear = toDay("2027-01-01")!;
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>あと何日？残り日数カウントダウン</h1>
+      <p>
+        目標の日付を選ぶと、あと何日か、残り時間がすぐに出ます。試験の開始や申込の締め切りのように時刻が決まっている予定は「時刻まで数える」をオンにしてください。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">目標の日付</label>
+          <input type="date" id="target" value={TARGET} />
+          <div class="ux-presets" role="group" aria-label="よく使う日付">
+            <button type="button" data-preset="plus100">100日後</button>
+            <button type="button" data-preset="xmas">クリスマス</button>
+            <button type="button" data-preset="yearend">大晦日</button>
+            <button type="button" data-preset="newyear">元日</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">時刻まで数える</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">目標の時刻</label>
+          <input type="time" id="time" value="09:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">基準日（ふつうは今日）</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{labelJa(target)}まで</p>
+          <p class="big" id="hero-value">{ddayJa(target, base)}</p>
+          <p class="hint" id="hero-sub">残り{c0.days}日 · 基準日を1日目と数えると目標日は{c0.countDays}日目</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">残り時間</span>
+            <span class="value" id="v1">{durationTextJa(c0.seconds)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">1日目から数えると</span>
+            <span class="value" id="v2">{c0.countDays}日目</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">基準日</span>
+            <span class="value" id="v3">{labelJa(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>「あと何日」の数え方 — 今日は入れる？入れない？</h2>
+      <p>
+        この計算機の「あと◯日」は<strong>目標日 − 今日</strong>の日数です。今日は数えず、目標日は数えます。明日なら「あと1日」、目標日の当日は何時でも「今日」、1日過ぎると「1日前」になります。
+        日・週・月・年で期間を決めるときに初日を算入しない、という民法 第140条の数え方と同じ向きです。
+      </p>
+      <p>
+        いっぽうで、付き合い始めた日・入社日・禁煙を始めた日のように<strong>初日を1日目</strong>と数えたいときは、「1日目から数えると」の数字を見てください。
+        「あと◯日」より 1 多くなります。たとえば {labelJa(base)}を1日目とすると、{labelJa(target)}は{c0.countDays}日目です。
+      </p>
+
+      <h2>残り時間を時刻までカウントダウン</h2>
+      <ul>
+        <li>
+          <strong>日付だけのとき</strong> — 目標日が終わる瞬間（翌日の午前0時）までの時間を数えます。
+        </li>
+        <li>
+          <strong>時刻を入れたとき</strong> — その時刻までを数えます。そのため目標日の当日でも、時刻を過ぎると「経過時間」に変わります。午前9時に始まる試験なら、9時を過ぎた瞬間から経過時間です。
+        </li>
+        <li>
+          <strong>残り時間は1秒ごとに進みます</strong> — 基準日が今日のときだけ。基準日を別の日にすると、その日の午前0時から数えます。
+        </li>
+      </ul>
+
+      <h2>あと何日でクリスマス・今年が終わる？</h2>
+      <p>
+        上のボタンで目標日をすぐに入れられます。{labelJa(base)}から数えると、クリスマス（{labelJa(xmas)}）まで{ddayJa(xmas, base)}、
+        大晦日（{labelJa(yearEnd)}）まで{ddayJa(yearEnd, base)}、元日（{labelJa(newYear)}）まで{ddayJa(newYear, base)}です。
+        ページを開いた日が今日として自動で入るので、いつ開いてもその日からの日数が出ます。
+      </p>
+
+      <h2>エクセルで残り日数を計算するには</h2>
+      <p>
+        エクセルでは日付が数値として扱われるので、目標日のセルから <code>TODAY()</code> を引けば残り日数になります（例：<code>=A1-TODAY()</code>）。
+        結果が日付の形で表示されたときは、セルの表示形式を「標準」か「数値」に変えてください。初日を1日目と数えるなら、さらに 1 を足します。
+      </p>
+
+      <details>
+        <summary>土日を除いた平日だけで、あと何日か知りたいときは？</summary>
+        <p>
+          このページは土日も含めた日数です。土日を除いた平日の日数は<a href="/ja/tools/date-diff/">日数計算・日付計算</a>で、開始日に今日、終了日に目標日を入れると出ます（祝日は除いていません）。
+        </p>
+      </details>
+
+      <details>
+        <summary>過ぎた日付を入れるとどうなりますか？</summary>
+        <p>
+          「◯日前」と表示され、残り時間の欄が経過時間に変わります。締め切りから何日過ぎたか、始めてから何日たったかを見るときにそのまま使えます。
+        </p>
+      </details>
+
+      <details>
+        <summary>「あと何日」は英語で何と言いますか？</summary>
+        <p>
+          残りの日数は「◯ days left」や「◯ days to go」とよく書かれます。カウントダウンの表示に使うときの参考にしてください。
+        </p>
+      </details>
+
+      <details>
+        <summary>海外の予定でも合っていますか？</summary>
+        <p>
+          お使いの端末の時計と日付で数えます。海外のライブや航空便のように現地の時刻で決まっている予定は、日本時間に直して入れてください。日本の標準時は東経135度の時刻です。1日は24時間として数えます。
+        </p>
+      </details>
+
+      <p>
+        出典：<a href="https://laws.e-gov.go.jp/law/129AC0000000089" rel="noopener">民法（明治二十九年法律第八十九号）第140条 — e-Gov法令検索</a> ·
+        <a href="https://laws.e-gov.go.jp/law/119IO0000000051" rel="noopener">本初子午線経度計算方及標準時ノ件（明治十九年勅令第五十一号） — e-Gov法令検索</a>（2026年10月19日確認）
+      </p>
+
+      <AdSlot label="dday-result-ja" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

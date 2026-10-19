@@ -51,4 +51,12 @@ export const jaTools: JaTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/ja/tools/dday/",
+    name: "あと何日・カウントダウン",
+    blurb: "目標の日付まであと何日か・残り何時間か・今日を1日目と数えた日数",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

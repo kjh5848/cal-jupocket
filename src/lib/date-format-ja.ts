@@ -8,6 +8,8 @@
  */
 import { fromDay, weekday, type Span } from "./date-calc";
 
+const DAY_SEC = 86_400;
+
 export const WEEKDAYS_JA = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
 /** '2026年10月19日（月）' */
@@ -30,4 +32,14 @@ export function ddayJa(target: number, today: number): string {
   const d = target - today;
   if (d === 0) return "今日";
   return d > 0 ? `あと${d.toLocaleString("ja-JP")}日` : `${(-d).toLocaleString("ja-JP")}日前`;
+}
+
+/** 초 → '3日4時間0分' (하루 미만이면 초까지). 부호는 버린다 — 디데이 일본어판(/ja/tools/dday/) */
+export function durationTextJa(sec: number): string {
+  const s = Math.abs(Math.trunc(sec));
+  const day = Math.floor(s / DAY_SEC);
+  const h = Math.floor((s % DAY_SEC) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (day > 0) return `${day.toLocaleString("ja-JP")}日${h}時間${m}分`;
+  return `${h}時間${m}分${s % 60}秒`;
 }
