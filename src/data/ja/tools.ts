@@ -35,4 +35,12 @@ export const jaTools: JaTool[] = [
     icon: "percent",
     basis: "math",
   },
+  {
+    href: "/ja/tools/date-diff/",
+    name: "日数計算・日付計算",
+    blurb: "2つの日付の間は何日か・何日後は何月何日か・土日を除く平日",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

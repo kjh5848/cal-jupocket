@@ -1,0 +1,185 @@
+---
+/**
+ * 日数計算・日付計算 — 일본어판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를
+ * 같이 쓰고, 문장은 일본어로 새로 썼다(번역 아님). 표기는 lib/date-format-ja.ts.
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/ja-date-diff-2026-10-19.csv):
+ *   何日後 計算·何日後の日付 / 日付計算 何日前·何日間·何ヶ月後·週数 / 日数計算 平日のみ / 日数 数え方 民法·起算日
+ * 民法 第140条(初日不算入)·第143条(暦による期間) 원문은 e-Gov 법령 API 로 확인(2026-10-19).
+ * 営業日(祝日 빼기)은 넣지 않았다 — 일본 祝日 목록을 허용 출처에서 확인하지 않았다. 토·일만 뺀 平日까지.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span } from "../../../../lib/date-calc";
+import { labelJa, spanTextJa } from "../../../../lib/date-format-ja";
+
+const title = "日数計算・日付計算 — 何日後・何日前・2つの日付の間は何日か";
+const description =
+  "2つの日付の間が何日・何か月か、今日から100日後は何月何日かをすぐ計算します。初日を数えるかどうか（民法の初日不算入）の切り替えと、土日を除いた平日の日数つき。";
+
+const START = "2026-10-19";
+const END = "2026-12-31";
+const s0 = span(toDay(START)!, toDay(END)!, false);
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>日数計算・日付計算</h1>
+      <p>
+        2つの日付の間を数えるか、ある日付から前後に動かすかを選んでください。日付を変えると結果もすぐ変わります。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">計算すること</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>2つの日付の間</option>
+            <option value="shift">何日後・何日前</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">開始日</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">終了日</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">初日も数える（開始日と終了日の両方を含める）</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">基準日</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">どれだけ</label>
+            <input type="number" inputmode="numeric" id="amount" value="100" min="0" max="36500" data-step />
+            <select id="unit" aria-label="単位">
+              <option value="day" selected>日</option>
+              <option value="week">週間</option>
+              <option value="month">か月</option>
+              <option value="year">年</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">向き</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>後（未来）</option>
+              <option value="before">前（過去）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">2つの日付の間</p>
+          <p class="big" id="hero-value">{s0.days}日</p>
+          <p class="hint" id="hero-sub">{spanTextJa(s0)} · {s0.weeks}週{s0.weekRest}日 · {s0.hours.toLocaleString("ja-JP")}時間</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">平日（土日を除く）</span>
+            <span class="value" id="v1">{s0.weekdays}日</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">期間</span>
+            <span class="value" id="v2">{labelJa(s0.from)} → {labelJa(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>日数の数え方 — 初日を入れるか入れないか</h2>
+      <p>
+        この計算機の基本は「終了日 − 開始日」です。10月1日から10月3日までなら 2日。開始日の当日は数えません。
+        民法 第140条も、日・週・月・年で期間を決めたときは<strong>初日を算入しない</strong>（ただし期間が午前0時から始まるときは除く）と定めています。
+      </p>
+      <p>
+        旅行の日程のように、開始日と終了日の両方を1日として数えたいときは「初日も数える」をオンにしてください。
+        10月1日〜10月3日は 3日になり、か月の数え方も終了日の翌日までで数えます（1月1日〜12月31日 = 1年）。
+      </p>
+      <p>
+        契約や法令で数え方が決まっているときは、そちらが優先です（民法 第138条）。期間の満了日の決まり（第141条〜第143条）は、
+        この計算機の「何か月後」の日付とは別のものです。
+      </p>
+
+      <h2>何日後・何日前の日付を出す</h2>
+      <ul>
+        <li>
+          <strong>何日後</strong> — 基準日に日数を足します。2026年10月19日の 100日後は
+          {labelJa(toDay(START)! + 100)}です。
+        </li>
+        <li><strong>何週間後</strong> — 週数 × 7日を足します。</li>
+        <li>
+          <strong>何か月後・何年後</strong> — 同じ日付の月を進めます。1月31日の 1か月後のように、その月にない日付なら
+          その月の末日（2月28日、うるう年は2月29日）に合わせます。
+        </li>
+      </ul>
+
+      <h2>平日だけを数える（土日を除く）</h2>
+      <p>
+        「平日」は期間の中から土曜日と日曜日を除いた日数です。<strong>祝日は除いていません</strong>。
+        祝日や会社の休日を除いた営業日の数は、ここから該当する日を引いてください。
+      </p>
+
+      <details>
+        <summary>「何日間」と「何日後」はどう違いますか？</summary>
+        <p>
+          「何日間」は2つの日付の間の長さ、「何日後」はある日付から先の日付です。10月1日の 2日後は 10月3日で、
+          10月1日〜10月3日の長さは初日を数えなければ 2日、数えれば 3日です。
+        </p>
+      </details>
+
+      <details>
+        <summary>時間に直すとどうなりますか？</summary>
+        <p>日数 × 24 時間で表示しています。73日なら 1,752時間です。</p>
+      </details>
+
+      <details>
+        <summary>終了日を開始日より前にしてしまったら？</summary>
+        <p>2つの日付を入れ替えて数え、そのことを結果の下に表示します。</p>
+      </details>
+
+      <p>
+        出典：<a href="https://laws.e-gov.go.jp/law/129AC0000000089" rel="noopener">民法（明治二十九年法律第八十九号）第138条〜第143条 — e-Gov法令検索</a>（2026年10月19日確認）
+      </p>
+
+      <AdSlot label="date-diff-result-ja" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

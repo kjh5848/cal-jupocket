@@ -14,6 +14,7 @@ import type { Locale } from "./ui";
 export const PAIRS: { ko: string; ja: string }[] = [
   { ko: "/", ja: "/ja/" },
   { ko: "/tools/percent/", ja: "/ja/tools/percent/" },
+  { ko: "/tools/date-diff/", ja: "/ja/tools/date-diff/" },
 ];
 
 /** 이 주소와 같은 페이지의 각 언어판. 짝이 없으면 빈 객체 */
