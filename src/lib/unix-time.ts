@@ -13,6 +13,7 @@
  * - 범위: 1900-01-01 00:00 UTC 이상, 9999-12-31 00:00 UTC 미만.
  */
 import { toDay, weekday, WEEKDAYS } from "./date-calc";
+import { WEEKDAYS_JA } from "./date-format-ja";
 import rates from "../rates/unix-time-2026.json";
 
 export type Unit = "auto" | "s" | "ms";
@@ -91,6 +92,12 @@ export function koText(p: Parts): string {
   return `${p.y}년 ${p.mo}월 ${p.d}일 (${WEEKDAYS[p.wd]}) ${p2(p.h)}:${p2(p.mi)}:${p2(p.s)}${frac}`;
 }
 
+/** 일본어판(/ja/tools/unix-time/) — '2026年10月19日（月）12:34:56' */
+export function jaText(p: Parts): string {
+  const frac = p.ms ? `.${p3(p.ms)}` : "";
+  return `${p.y}年${p.mo}月${p.d}日（${WEEKDAYS_JA[p.wd]}）${p2(p.h)}:${p2(p.mi)}:${p2(p.s)}${frac}`;
+}
+
 /** 'UTC+09:00' 꼴 */
 export function offsetText(offsetMin: number): string {
   const sign = offsetMin < 0 ? "-" : "+";
@@ -151,4 +158,22 @@ export function relativeText(diffMs: number): string {
   if (mi && d < 100) parts.push(`${mi}분`);
   if (!d && !h && (s || !mi)) parts.push(`${s}초`);
   return `${parts.join(" ")} ${diffMs < 0 ? "전" : "후"}`;
+}
+
+/** 일본어판 — '3日4時間5分前/後', 1초 안이면 '今'. 끊는 규칙은 relativeText 와 같다 */
+export function relativeTextJa(diffMs: number): string {
+  const a = Math.abs(diffMs);
+  if (a < 1000) return "今";
+  let sec = Math.floor(a / 1000);
+  const d = Math.floor(sec / 86_400);
+  sec -= d * 86_400;
+  const h = Math.floor(sec / 3600);
+  const mi = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  let t = "";
+  if (d) t += `${d.toLocaleString("ja-JP")}日`;
+  if (h) t += `${h}時間`;
+  if (mi && d < 100) t += `${mi}分`;
+  if (!d && !h && (s || !mi)) t += `${s}秒`;
+  return `${t}${diffMs < 0 ? "前" : "後"}`;
 }

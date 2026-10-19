@@ -8,6 +8,7 @@ import { toDay } from "../date-calc";
 import {
   KST, INT32_MAX, MIN_MS, MAX_MS,
   parseTimestamp, toParts, koText, isoText, secondsText, floorSeconds, fromParts, relativeText, dateValue, timeValue,
+  jaText, relativeTextJa,
 } from "../unix-time";
 
 const ok = (raw: string, unit?: "auto" | "s" | "ms") => {
@@ -128,5 +129,21 @@ describe("지금과의 차이", () => {
     expect(relativeText(120_000)).toBe("2분 후");
     expect(relativeText(-(3 * 86_400 + 4 * 3600 + 5 * 60) * 1000)).toBe("3일 4시간 5분 전");
     expect(relativeText(400 * 86_400_000)).toBe("400일 후");
+  });
+});
+
+describe("일본어판 표기 (/ja/tools/unix-time/)", () => {
+  it("日本時間 = UTC+9 — 2026-10-19 12:34:56 JST, 0 は 1970年1月1日（木）09:00:00", () => {
+    expect(jaText(toParts(1_792_380_896_000, KST))).toBe("2026年10月19日（月）12:34:56");
+    expect(jaText(toParts(0, KST))).toBe("1970年1月1日（木）09:00:00");
+    expect(jaText(toParts(-1, 0))).toBe("1969年12月31日（水）23:59:59.999");
+    expect(jaText(toParts(INT32_MAX * 1000, KST))).toBe("2038年1月19日（火）12:14:07");
+  });
+  it("前・後と単位", () => {
+    expect(relativeTextJa(500)).toBe("今");
+    expect(relativeTextJa(-45_000)).toBe("45秒前");
+    expect(relativeTextJa(90_000)).toBe("1分30秒後");
+    expect(relativeTextJa(-(3 * 86_400 + 4 * 3600 + 5 * 60) * 1000)).toBe("3日4時間5分前");
+    expect(relativeTextJa(400 * 86_400_000)).toBe("400日後");
   });
 });

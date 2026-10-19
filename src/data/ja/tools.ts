@@ -75,4 +75,12 @@ export const jaTools: JaTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/ja/tools/unix-time/",
+    name: "UNIX時間 変換",
+    blurb: "エポック秒・ミリ秒（13桁）を日本時間とUTCの日時に、日時をUNIX時間に変換",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

@@ -1,0 +1,227 @@
+---
+/**
+ * UNIX時間 変換 — 일본어판 유닉스 타임스탬프 변환기(/ja/tools/unix-time/). 한국어판 /tools/unix-time/ 와
+ * 계산(lib/unix-time.ts)·스크립트(scripts/unix-time.ts)를 같이 쓰고, 문장은 일본어로 새로 썼다(번역 아님).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/ja-unix-time-2026-10-19.csv):
+ *   unix時間とは·エポック秒とは / 桁数·13桁·ミリ秒 / 変換 エクセル·計算式 / 2038年問題·オーバーフロー /
+ *   コマンド·linux·windows·python·javascript / タイムゾーン·utc / unix時間 今·エポック秒 現在
+ * 시간대 "kst" 값(UTC+9)은 일본 표준시와 같다 — 東経135度(明治十九年勅令第五十一号, e-Gov 원문 2026-10-19 확인,
+ * docs/country-matrix.md #90 행). 화면 이름만 日本時間（JST）. 법 숫자는 그것뿐이다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { KST, INT32_MAX, toParts, jaText, isoText, secondsText, dateValue, timeValue } from "../../../../lib/unix-time";
+
+const title = "UNIX時間 変換 — エポック秒・ミリ秒（13桁）⇔ 日本時間";
+const description =
+  "UNIX時間（エポック秒）やミリ秒の13桁の数字を入れると、日本時間（JST）とUTCの日付・曜日・時刻にすぐ変換します。日付と時刻からUNIX時間への変換、10桁・13桁の自動判別、エクセルの計算式、2038年問題もまとめました。";
+
+/** 最初に表示する例 — 2026-10-19 12:34:56 JST */
+const BASE_MS = 1_792_380_896_000;
+const p0 = toParts(BASE_MS, KST);
+const BASE_S = secondsText(BASE_MS);
+const zero = jaText(toParts(0, KST));
+const y2038 = jaText(toParts(INT32_MAX * 1000, KST));
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>UNIX時間 変換（エポック秒 ⇔ 日本時間）</h1>
+      <p>
+        ログやデータベース、APIで見かけた10桁・13桁の数字が何時なのかを日本時間ですぐ確認できます。逆に日付と時刻を入れると、UNIX時間の数字になります。どちらの欄を変えても、もう一方がついてきます。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="zone">タイムゾーン</label>
+          <select id="zone" data-seg>
+            <option value="kst" selected>日本時間 JST（UTC+9）</option>
+            <option value="utc">UTC</option>
+            <option value="device">この端末のタイムゾーン</option>
+          </select>
+          <p class="hint" id="zone-hint">日付の欄と結果をこのタイムゾーンで読み書きします。UNIX時間の数字はタイムゾーンに関係なく同じです。</p>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="ts">UNIX時間（タイムスタンプ）</label>
+          <input type="text" id="ts" inputmode="decimal" autocomplete="off" spellcheck="false" value={BASE_S} placeholder="例：1704067200" />
+          <p class="hint" id="ts-hint">10桁は秒、13桁はミリ秒として読みます。</p>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">数字の単位</label>
+          <select id="unit" data-seg>
+            <option value="auto" selected>自動</option>
+            <option value="s">秒</option>
+            <option value="ms">ミリ秒</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="date">日付</label>
+          <input type="date" id="date" value={dateValue(p0)} min="1900-01-01" max="9999-12-30" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="time">時刻（時:分:秒）</label>
+          <input type="time" id="time" step="1" value={timeValue(p0)} />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="msec">ミリ秒（0〜999）</label>
+          <input type="number" id="msec" inputmode="numeric" min="0" max="999" step="1" value="0" />
+        </div>
+
+        <div class="actions">
+          <button id="btn-now" type="button" class="secondary">現在時刻</button>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">日本時間（JST）</p>
+          <p class="big" id="hero-value">{jaText(p0)}</p>
+          <p class="hint" id="hero-sub">UTC {isoText(BASE_MS, 0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">秒（s）</span>
+            <span class="value mono" id="v-sec">{BASE_S}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ミリ秒（ms）</span>
+            <span class="value mono" id="v-ms">{BASE_MS}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601（UTC）</span>
+            <span class="value mono" id="v-iso">{isoText(BASE_MS, 0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601（選んだタイムゾーン）</span>
+            <span class="value mono" id="v-iso-local">{isoText(BASE_MS, KST)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">現在との差</span>
+            <span class="value" id="v-rel">—</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+        <p class="meta" id="now-line">現在：—</p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>UNIX時間（エポック秒）とは</h2>
+      <p>
+        UNIX時間は、<strong>1970年1月1日0時0分0秒（UTC）から数えた秒数</strong>です。この起点をエポックと呼ぶので「エポック秒」とも言います。
+        国際規格 POSIX（IEEE Std 1003.1）の定義で、1日をちょうど 86,400秒として数え、うるう秒は入れません。
+        たとえば 0 は UTC で1970年1月1日0時、日本時間では{zero}です。
+      </p>
+
+      <h2>日本時間はUTC＋9時間</h2>
+      <p>
+        日本の標準時は東経135度の子午線の時刻と定められています（明治十九年勅令第五十一号）。135 ÷ 15 = 9 なので、UTCより<strong>9時間進んで</strong>います。
+        同じ数字でも UTC では0時、日本時間では午前9時です。この計算機は日本時間をいつも UTC+9 として計算します。海外の時刻を見たいときは「この端末のタイムゾーン」か「UTC」を選んでください。
+      </p>
+
+      <h2>10桁は秒、13桁はミリ秒 — 桁数で見分ける</h2>
+      <ul>
+        <li>
+          <strong>10桁（例：{BASE_S}）</strong> — 秒単位のUNIX時間です。2001年9月から2286年11月までの時刻は10桁になります。
+        </li>
+        <li>
+          <strong>13桁（例：{BASE_MS}）</strong> — ミリ秒単位です。JavaScript の <code>Date.now()</code> や Java の <code>System.currentTimeMillis()</code> はこの形で返します。秒に直すには 1,000 で割ります。
+        </li>
+        <li>
+          <strong>自動判別のルール</strong> — 小数点があれば秒、整数なら11桁までは秒、12桁からはミリ秒として読みます。違う読み方をしたいときは単位を選んでください。カンマや空白は取り除いて読みます。
+        </li>
+      </ul>
+
+      <h2>エクセルでUNIX時間を変換する計算式</h2>
+      <p>
+        エクセルの日付は1日を 1 とするシリアル値なので、秒を 86,400 で割って1970年1月1日を足すと日付になります。A1 に秒単位のUNIX時間があるときの式です。
+      </p>
+      <ul>
+        <li>UTC の日時：<code>=A1/86400+DATE(1970,1,1)</code></li>
+        <li>日本時間：<code>=A1/86400+DATE(1970,1,1)+9/24</code></li>
+        <li>13桁（ミリ秒）のとき：<code>=A1/86400000+DATE(1970,1,1)+9/24</code></li>
+        <li>日本時間の日時 → UNIX時間（秒）：<code>=(A1-9/24-DATE(1970,1,1))*86400</code></li>
+      </ul>
+      <p>
+        結果が数字のまま表示されたときは、セルの表示形式を「yyyy/mm/dd hh:mm:ss」などの日付・時刻に変えてください。
+      </p>
+
+      <h2>コマンド・プログラムで変換するには</h2>
+      <ul>
+        <li><strong>Linux（GNU date）</strong>：<code>date -d @{BASE_S}</code> で日時に、<code>date +%s</code> で現在のUNIX時間</li>
+        <li><strong>Windows（PowerShell）</strong>：<code>[DateTimeOffset]::FromUnixTimeSeconds({BASE_S})</code></li>
+        <li><strong>Python</strong>：<code>datetime.fromtimestamp({BASE_S}, tz=timezone.utc)</code>（<code>from datetime import datetime, timezone</code>）</li>
+        <li><strong>JavaScript</strong>：<code>new Date({BASE_S} * 1000)</code>（秒は1,000倍してミリ秒に）</li>
+      </ul>
+      <p>
+        結果を手早く確かめたいときは、上の計算機に数字を貼り付ければ日本時間とUTCが同時に出ます。
+      </p>
+
+      <h2>2038年問題とは</h2>
+      <p>
+        秒を32ビットの符号付き整数に入れると、最大値は 2,147,483,647 です。この数字は2038年1月19日 03:14:07（UTC）、日本時間で{y2038}にあたります。
+        1秒でも過ぎると値があふれて負の数（1901年）に戻ってしまう古いシステムがあるため「2038年問題」と呼ばれます。この計算機では、この値を超える時刻を入れると結果の下でお知らせします。
+      </p>
+
+      <details>
+        <summary>1970年より前の日付はどうなりますか？</summary>
+        <p>
+          負の数になります。1969年12月31日23時59分59秒（UTC）が −1 です。POSIX の式そのものは1970年以降について定めていますが、多くのプログラミング言語と同じように1日 86,400秒を逆向きに数えています。この計算機は1900年1月1日から9999年まで扱えます。
+        </p>
+      </details>
+
+      <details>
+        <summary>現在のUNIX時間は？</summary>
+        <p>
+          「現在時刻」ボタンを押すと、いまのUNIX時間が入ります。計算機の下の「現在」の行には、秒とミリ秒の値が1秒ごとに進んで表示されます（お使いの端末の時計を使います）。
+        </p>
+      </details>
+
+      <details>
+        <summary>小数点のついた数字（1792380896.789 など）も変換できますか？</summary>
+        <p>
+          できます。小数点以下3桁（ミリ秒）までの秒として読みます。それより細かいマイクロ秒・ナノ秒（16桁・19桁）には対応していません。
+        </p>
+      </details>
+
+      <p>
+        日付と日付の間が何日かは<a href="/ja/tools/date-diff/">日数計算・日付計算</a>、目標の日まであと何日かは<a href="/ja/tools/dday/">あと何日・カウントダウン</a>で計算できます。
+      </p>
+
+      <p>
+        出典：<a href="https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html" rel="noopener">The Open Group Base Specifications Issue 8（IEEE Std 1003.1-2024）4.19 Seconds Since the Epoch</a> ·
+        <a href="https://laws.e-gov.go.jp/law/119IO0000000051" rel="noopener">本初子午線経度計算方及標準時ノ件（明治十九年勅令第五十一号） — e-Gov法令検索</a>（2026年10月19日確認）
+      </p>
+
+      <AdSlot label="unix-time-result-ja" />
+    </main>
+    <SiteFooter />
+    <style>
+      .mono { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+      #hero-value { overflow-wrap: anywhere; }
+    </style>
+    <script src="../../../../scripts/unix-time.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
