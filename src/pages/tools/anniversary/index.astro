@@ -1,0 +1,193 @@
+---
+/**
+ * 커플 기념일 계산기 — 날짜·시간 묶음의 다섯 번째 도구(/tools/anniversary/). 계산은 lib/anniversary.ts.
+ *
+ * 질문 하나: 사귄 날(결혼한 날·태어난 날)부터 오늘이 며칠째이고, 100일·1000일·주년은 언제인가.
+ * 시작일을 1일째로 세는 건 관습이라 법령 근거가 없다 — 0일 셈도 고를 수 있게 했다.
+ * roberin #85 는 입력·결과 항목만 대조했다(docs/calc-benchmark.md). 첫 화면 숫자는 예시 날짜로 빌드 때 계산하고,
+ * 스크립트가 열린 날 오늘로 바꿔 다시 센다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+import { toDay, label, dday, spanText } from "../../../lib/date-calc";
+import { anniversary, dayMark, yearMark, DAY_MARKS, YEAR_MARKS } from "../../../lib/anniversary";
+
+const title = "커플 기념일 계산기 — 100일·1000일·주년 날짜와 요일";
+const description =
+  "사귄 날짜를 넣으면 오늘이 며칠째인지, 100일·200일·1000일과 1주년이 언제 무슨 요일인지 바로 보여 줍니다. 결혼기념일·아기 100일도 같은 방식으로 셉니다.";
+
+const BASE = "2026-10-19";
+const START = "2026-02-14";
+const s0 = toDay(START)!;
+const t0 = toDay(BASE)!;
+const a0 = anniversary(s0, t0);
+const fmt = (n: number) => n.toLocaleString("ko-KR");
+const rows = [...DAY_MARKS.map((n) => dayMark(s0, n)), ...YEAR_MARKS.map((n) => yearMark(s0, n))];
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>커플 기념일 계산기</h1>
+      <p>
+        사귄 날짜를 고르면 오늘이 며칠째인지, 100일·1000일·주년이 언제 무슨 요일인지 바로 나옵니다. 결혼한 날이나
+        아기가 태어난 날을 넣어도 같은 방식으로 셉니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="kind">무슨 기념일인가요</label>
+          <select id="kind" data-seg>
+            <option value="couple" selected>사귄 날</option>
+            <option value="wedding">결혼한 날</option>
+            <option value="baby">아기가 태어난 날</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="start" id="start-label">사귄 날짜</label>
+          <input type="date" id="start" value={START} min="1900-01-01" max="2100-12-31" />
+          <div class="ux-presets" role="group" aria-label="시작일 예시">
+            <button type="button" data-preset="today">오늘</button>
+            <button type="button" data-preset="minus99">99일 전</button>
+            <button type="button" data-preset="lastyear">1년 전 오늘</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="first-one">시작일을 1일째로 센다</label>
+          <input type="checkbox" id="first-one" checked />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">기준일 (보통 오늘)</label>
+          <input type="date" id="base" value={BASE} min="1900-01-01" max="2100-12-31" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">사귄 지</p>
+          <p class="big" id="hero-value">{fmt(a0.count!)}일째</p>
+          <p class="hint" id="hero-sub">함께한 기간 {spanText(a0)} · {fmt(a0.weeks)}주</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l-next">가까운 기념일 · {a0.next!.name}</span>
+            <span class="value" id="v-next">{label(a0.next!.day)} {dday(a0.next!.day, t0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">100일</span>
+            <span class="value" id="v-100">{label(a0.d100)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">1000일</span>
+            <span class="value" id="v-1000">{label(a0.d1000)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">1주년</span>
+            <span class="value" id="v-y1">{label(a0.y1)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <details open>
+          <summary>기념일 한눈에 (일수 · 주년)</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>기념일</th><th>날짜</th><th>남은 날</th></tr></thead>
+              <tbody id="rows">
+                {rows.map((m) => (
+                  <tr><th scope="row">{m.name}</th><td>{label(m.day)}</td><td>{dday(m.day, t0)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta" id="rows-note">공휴일 표시는 관공서 공휴일 목록(2026~2027년) 안에서만 합니다.</p>
+        </details>
+
+        <div class="calc-input-wrap">
+          <label for="lookup-n">N일째는 언제? (일수 넣기)</label>
+          <input type="number" id="lookup-n" inputmode="numeric" min="1" max="36500" step="1" placeholder="예: 777" />
+          <p class="hint" id="lookup-n-out">알고 싶은 일수를 넣으세요.</p>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lookup-d">이 날짜는 며칠째?</label>
+          <input type="date" id="lookup-d" min="1900-01-01" max="2100-12-31" />
+          <p class="hint" id="lookup-d-out">생일·여행 날짜를 골라 보세요.</p>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>기념일은 이렇게 셉니다</h2>
+      <ul>
+        <li>
+          <strong>사귄 날이 1일째</strong> — 한국에서 커플 기념일과 아기 100일(백일)은 시작한 날을 1일로 세는 게
+          관습입니다. 그래서 100일은 시작일에서 99일 뒤, 1000일은 999일 뒤입니다. 법으로 정한 셈은 아니어서, 시작일을
+          0일로 세고 싶으면 위 체크를 끄세요. 그러면 모든 일수 기념일이 하루씩 늦어집니다.
+        </li>
+        <li>
+          <strong>주년·개월은 달력 날짜</strong> — 1주년은 365일 뒤가 아니라 이듬해 같은 날입니다. 그래서 1일째로
+          세면 1주년이 365일보다 하루 늦고, 사이에 2월 29일이 끼면 이틀 늦습니다. 시작일이 31일이면 30일까지인 달은
+          말일(30일·2월 28일)을 기념일로 잡습니다. 2월 29일에 시작했다면 평년 주년은 2월 28일입니다.
+        </li>
+        <li>
+          <strong>함께한 기간은 간격</strong> — '7개월 21일'처럼 보여 주는 기간은 시작일부터 오늘까지 지난 시간이라
+          시작일 당일은 1일째지만 기간은 0일입니다. 개월은 시작일에서 매번 다시 세서(예: 31개월째 날) 위 표의
+          개월 기념일과 날짜가 맞습니다.
+        </li>
+      </ul>
+
+      <details>
+        <summary>100일이 다른 계산기와 하루 차이 나요</summary>
+        <p>
+          시작일을 1일로 셌는지, 0일로 셌는지 차이입니다. 날짜 계산기에서 '100일 뒤'를 구하면 시작일을 빼고 세서
+          하루 늦게 나옵니다. 커플 100일·아기 백일은 보통 시작일을 1일째로 셉니다. 체크를 껐다 켜 보면 두 날짜를
+          바로 비교할 수 있습니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>결혼기념일 몇 주년도 되나요?</summary>
+        <p>
+          '결혼한 날'을 고르면 같은 표에서 1·2·3·5·10주년부터 30주년까지 날짜와 요일이 나옵니다. 주년은 일수가 아니라
+          같은 날짜라 1일째·0일째 셈과 상관없습니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>지난 기념일도 보이나요?</summary>
+        <p>
+          표의 '남은 날' 칸이 D+숫자면 이미 지난 기념일입니다. 몇 년 전에 시작했어도 그대로 넣으면 지금이 며칠째인지와
+          다음 기념일이 나옵니다. 기준일을 바꾸면 그날 기준으로 다시 셉니다.
+        </p>
+      </details>
+
+      <p>
+        목표일까지 남은 날은 <a href="/tools/dday/">디데이 계산기</a>, 두 날짜 사이 기간은
+        <a href="/tools/date-diff/">날짜 계산기</a>, 기념일이 무슨 요일인지·공휴일인지는
+        <a href="/tools/date-day/">날짜 요일 계산기</a>가 셉니다.
+      </p>
+
+      <AdSlot label="anniversary-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/anniversary.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
