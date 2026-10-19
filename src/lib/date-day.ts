@@ -14,7 +14,7 @@ import { weekday, fromDay, holidayName, holidayCovered } from "./date-calc";
 
 export const WEEKDAY_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
 export const WEEKDAY_HANJA = ["日", "月", "火", "水", "木", "金", "土"] as const;
-const ORD = ["첫째", "둘째", "셋째", "넷째", "다섯째"] as const;
+const ORD = ["첫째", "둘째", "셋째", "넷째", "다섯째", "여섯째"] as const;
 
 /** 주 시작 요일 — 0 = 일요일, 1 = 월요일 */
 export type WeekStart = 0 | 1;
@@ -61,6 +61,8 @@ export interface DayInfo {
   calWeek: number;
   /** 월 주차(그 달 1일이 든 줄 = 1주) */
   monthWeek: number;
+  /** '10월 넷째 주' */
+  monthWeekText: string;
   /** 그 달의 같은 요일 중 몇 번째(1~5) */
   nth: number;
   nthText: string;
@@ -79,6 +81,7 @@ export function dayInfo(n: number, start: WeekStart = 0): DayInfo {
   const dayOfYear = n - jan1 + 1;
   const iso = isoWeek(n);
   const nth = Math.ceil(date / 7);
+  const monthWeek = Math.ceil((date + offset(first, start)) / 7);
   return {
     year,
     month,
@@ -94,7 +97,8 @@ export function dayInfo(n: number, start: WeekStart = 0): DayInfo {
     iso,
     isoText: `${iso.year}-W${String(iso.week).padStart(2, "0")}-${((w + 6) % 7) + 1}`,
     calWeek: Math.ceil((dayOfYear + offset(jan1, start)) / 7),
-    monthWeek: Math.ceil((date + offset(first, start)) / 7),
+    monthWeek,
+    monthWeekText: `${month}월 ${ORD[monthWeek - 1]} 주`,
     nth,
     nthText: `${ORD[nth - 1]} ${["일", "월", "화", "수", "목", "금", "토"][w]}요일`,
     unix: n * 86_400,

@@ -42,6 +42,8 @@ describe("날짜 요일 계산기", () => {
     expect([a.monthWeek, a.nth, a.nthText]).toEqual([4, 3, "셋째 월요일"]);
     expect(at("2024-12-30", 0).monthWeek).toBe(5);
     expect(at("2024-12-30", 1).monthWeek).toBe(6);
+    expect(at("2024-12-30", 1).monthWeekText).toBe("12월 여섯째 주");
+    expect(a.monthWeekText).toBe("10월 넷째 주");
     expect(at("2026-10-09").nthText).toBe("둘째 금요일");
   });
 

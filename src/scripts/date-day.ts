@@ -52,7 +52,7 @@ function compute() {
   set("v-left", `${fmt(d.daysLeft)}일`);
   set("v-iso", `${d.iso.year}년 ${d.iso.week}주차`);
   set("v-cal", `${d.calWeek}주차`);
-  set("v-month", `${d.month}월 ${d.monthWeek}째 주`);
+  set("v-month", d.monthWeekText);
   set("v-leap", d.leap ? "윤년 (366일)" : "평년 (365일)");
 
   const notes = [`${d.quarter}분기 · ISO 표기 ${d.isoText} · Unix(UTC 0시) ${d.unix}`];
@@ -64,7 +64,7 @@ function compute() {
   lastLines = [
     ["요일", `${dayName} · ${kind}`],
     ["그해 몇째 날", `${d.dayOfYear}일째 · ${fmt(d.daysLeft)}일 남음`],
-    ["주차", `ISO ${d.iso.year}-W${String(d.iso.week).padStart(2, "0")} · ${d.month}월 ${d.monthWeek}째 주`],
+    ["주차", `ISO ${d.iso.year}-W${String(d.iso.week).padStart(2, "0")} · ${d.monthWeekText}`],
     ["윤년", d.leap ? "윤년" : "평년"],
   ];
 }
