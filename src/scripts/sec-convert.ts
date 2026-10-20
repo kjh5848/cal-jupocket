@@ -1,4 +1,19 @@
-import { toNanos, partsToNanos, convertAll, readable, readableJa, clock, minSec, UNITS, UNIT_NAME, UNIT_NAME_JA, type Unit } from "../lib/sec-convert";
+import {
+  toNanos,
+  partsToNanos,
+  convertAll,
+  readable,
+  readableJa,
+  readableEn,
+  withUnitEn,
+  clock,
+  minSec,
+  UNITS,
+  UNIT_NAME,
+  UNIT_NAME_JA,
+  UNIT_NAME_EN,
+  type Unit,
+} from "../lib/sec-convert";
 import { pickLang } from "../i18n/ui";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
@@ -15,10 +30,12 @@ const set = (id: string, text: string) => {
   $(id).textContent = text;
 };
 /**
- * 화면 문구 — 한국어판(/tools/sec-convert/)과 일본어판(/ja/tools/sec-convert/)이 같은 계산(lib/sec-convert.ts)을 쓴다.
+ * 화면 문구 — 한국어판(/tools/sec-convert/)·일본어판(/ja/tools/sec-convert/)·영어판(/en-us/tools/sec-convert/ 등, 영어 판 공용)이
+ * 같은 계산(lib/sec-convert.ts)을 쓴다. withUnit 은 값 + 단위 — KO·JA 는 붙여 쓰고 EN 은 띄우고 복수형.
  */
 const KO = {
   unit: UNIT_NAME,
+  withUnit: (v: string, u: Unit) => `${v}${UNIT_NAME[u]}`,
   readable,
   heroLabel: (v: string, unit: Unit) => `${v}${UNIT_NAME[unit]}${unit === "s" || unit === "ms" ? "는" : "은"}`,
   heroSub: (other: string, unit: Unit, hms: string) => `${other}${unit === "min" ? "초" : "분"} · 시:분:초 ${hms}`,
@@ -33,6 +50,7 @@ const KO = {
 
 const JA: typeof KO = {
   unit: UNIT_NAME_JA,
+  withUnit: (v: string, u: Unit) => `${v}${UNIT_NAME_JA[u]}`,
   readable: readableJa,
   heroLabel: (v: string, unit: Unit) => `${v}${UNIT_NAME_JA[unit]}は`,
   heroSub: (other: string, unit: Unit, hms: string) => `${other}${unit === "min" ? "秒" : "分"} ・ 時:分:秒 ${hms}`,
@@ -45,7 +63,22 @@ const JA: typeof KO = {
   shareText: "秒・分・時間 変換 - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA });
+const EN: typeof KO = {
+  unit: UNIT_NAME_EN,
+  withUnit: withUnitEn,
+  readable: readableEn,
+  heroLabel: (v: string, unit: Unit) => `${withUnitEn(v, unit)} is`,
+  heroSub: (other: string, unit: Unit, hms: string) => `${withUnitEn(other, unit === "min" ? "s" : "min")} · h:mm:ss ${hms}`,
+  bad: "Enter a number of 0 or more (up to 6 decimal places and 15 whole digits)",
+  lineIn: "Input",
+  lineReadable: "Hours, minutes, seconds",
+  partsSub: (min: string, ms: { minutes: bigint; seconds: string }, h: string, r: string) =>
+    `${withUnitEn(min, "min")}${ms.seconds === "0" ? "" : ` (${ms.minutes.toLocaleString("en-US")} min ${ms.seconds} sec)`} · ${withUnitEn(h, "h")} · ${r}`,
+  cardTitle: "Seconds to Minutes Converter",
+  shareText: "Seconds to Minutes Converter - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN });
 
 let lastLines: [string, string][] = [];
 
@@ -67,7 +100,7 @@ function compute() {
   set("hero-sub", S.heroSub(all[unit === "min" ? "s" : "min"], unit, clock(n)));
   for (const u of UNITS) set(`v-${u}`, all[u]);
   lastLines = [
-    [S.lineIn, `${all[unit]}${S.unit[unit]}`],
+    [S.lineIn, S.withUnit(all[unit], unit)],
     [S.lineReadable, S.readable(n)],
     [S.unit.s, all.s],
     [S.unit.min, all.min],
@@ -85,7 +118,7 @@ function computeParts() {
   }
   set("p-err", "");
   const all = convertAll(n);
-  set("p-value", `${all.s}${S.unit.s}`);
+  set("p-value", S.withUnit(all.s, "s"));
   set("p-sub", S.partsSub(all.min, minSec(n), all.h, S.readable(n)));
 }
 

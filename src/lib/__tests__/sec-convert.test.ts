@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseScaled, toNanos, partsToNanos, inUnit, convertAll, readable, readableJa, clock, split, minSec } from "../sec-convert";
+import { parseScaled, toNanos, partsToNanos, inUnit, convertAll, readable, readableJa, readableEn, withUnitEn, clock, split, minSec } from "../sec-convert";
 import rates from "../../rates/sec-convert-2026.json";
 
 const ns = (raw: string, u: Parameters<typeof toNanos>[1]) => toNanos(raw, u)!;
@@ -103,5 +103,25 @@ describe("총 분 + 남은 초(minSec) — roberin #88 대조", () => {
   });
   it("하루를 넘어도 분으로 이어 센다 — 1일 0시간 1분 30.5초 → 1441분 30.5초", () => {
     expect(minSec(partsToNanos("1", "", "1", "30.5")!)).toEqual({ minutes: 1441n, seconds: "30.5" });
+  });
+});
+
+describe("영어판 풀어 쓰기(readableEn·withUnitEn)", () => {
+  it("3725 s → 1 hour 2 minutes 5 seconds, 1,440.25 min → 1 day 0 hours 0 minutes 15 seconds, 0 → 0 seconds", () => {
+    expect(readableEn(ns("3725", "s"))).toBe("1 hour 2 minutes 5 seconds");
+    expect(readableEn(ns("1,440.25", "min"))).toBe("1 day 0 hours 0 minutes 15 seconds");
+    expect(readableEn(0n)).toBe("0 seconds");
+  });
+  it("단수는 정확히 1 일 때만 — 1 s, 0.5 s, 61 s, 1,000,000 s(11 days)", () => {
+    expect(readableEn(ns("1", "s"))).toBe("1 second");
+    expect(readableEn(ns("0.5", "s"))).toBe("0.5 seconds");
+    expect(readableEn(ns("61", "s"))).toBe("1 minute 1 second");
+    expect(readableEn(ns("1000000", "s"))).toBe("11 days 13 hours 46 minutes 40 seconds");
+  });
+  it("withUnitEn — 쉼표 값·소수 그대로, '1' 만 단수", () => {
+    expect(withUnitEn("3,725", "s")).toBe("3,725 seconds");
+    expect(withUnitEn("1", "h")).toBe("1 hour");
+    expect(withUnitEn("1.5", "min")).toBe("1.5 minutes");
+    expect(withUnitEn("0.001", "s")).toBe("0.001 seconds");
   });
 });

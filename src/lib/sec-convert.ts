@@ -19,6 +19,9 @@ export const MS_PER: Record<Unit, bigint> = { ms: 1n, s: 1000n, min: 60_000n, h:
 export const UNIT_NAME: Record<Unit, string> = { ms: "밀리초", s: "초", min: "분", h: "시간", d: "일" };
 /** 일본어판(/ja/tools/sec-convert/) 단위 이름 */
 export const UNIT_NAME_JA: Record<Unit, string> = { ms: "ミリ秒", s: "秒", min: "分", h: "時間", d: "日" };
+/** 영어판(/en-us/tools/sec-convert/ 등) 단위 이름 — select·칩 라벨용(대문자 복수) */
+export const UNIT_NAME_EN: Record<Unit, string> = { ms: "Milliseconds", s: "Seconds", min: "Minutes", h: "Hours", d: "Days" };
+const EN_ONE: Record<Unit, string> = { ms: "millisecond", s: "second", min: "minute", h: "hour", d: "day" };
 export const UNITS: Unit[] = ["ms", "s", "min", "h", "d"];
 
 const SCALE = 1_000_000n; // 입력 소수 여섯 자리
@@ -122,4 +125,20 @@ export function clock(ns: bigint): string {
 /** 모든 단위 값 한 번에 */
 export function convertAll(ns: bigint): Record<Unit, string> {
   return Object.fromEntries(UNITS.map((u) => [u, inUnit(ns, u)])) as Record<Unit, string>;
+}
+
+/** 영어 값 + 단위 — 정확히 '1' 일 때만 단수: '1 second', '0 seconds', '0.5 minutes', '3,725 seconds' */
+export function withUnitEn(value: string, unit: Unit): string {
+  return `${value} ${EN_ONE[unit]}${value === "1" ? "" : "s"}`;
+}
+
+/** 영어판 풀어 쓰기 '1 day 0 hours 2 minutes 5 seconds' — 규칙은 readable 과 같다(앞쪽 0 단위는 빼고, 0이면 '0 seconds') */
+export function readableEn(ns: bigint): string {
+  const p = split(ns);
+  const out: string[] = [];
+  if (p.days > 0n) out.push(withUnitEn(comma(p.days.toString()), "d"));
+  if (out.length || p.hours > 0n) out.push(withUnitEn(p.hours.toString(), "h"));
+  if (out.length || p.minutes > 0n) out.push(withUnitEn(p.minutes.toString(), "min"));
+  out.push(withUnitEn(p.seconds, "s"));
+  return out.join(" ");
 }
