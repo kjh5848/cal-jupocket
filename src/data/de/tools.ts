@@ -26,4 +26,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/de/tools/compound/",
+    ko: "/tools/compound/",
+    name: "Zinseszinsrechner",
+    blurb: "Startkapital plus monatliche Sparrate: Endkapital, Zinsen, Inflation und Tabelle pro Jahr",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

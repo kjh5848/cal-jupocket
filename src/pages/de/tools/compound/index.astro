@@ -1,0 +1,237 @@
+---
+/**
+ * Zinseszinsrechner — 독일어판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 DE 사전), 문장은 독일 자동완성으로 새로 썼다(번역 아님). 복리 산술이라 rates 와 상관없다(조사표 독일 칸 '같음').
+ *
+ * 금액 꼴은 lib/de/money.ts 의 euroDe — '1 000 Euro'(§ 32a EStG "12 348 Euro"·§ 20 Abs. 9 EStG "1 000 Euro"), € 기호·Intl de-DE 는 안 쓴다.
+ *
+ * 소제목은 독일 구글 자동완성에서 왔다(keywords/de-compound-2026-10-21.csv, hl de · gl de):
+ *   zinseszinsrechner mit monatlicher einzahlung · zinseszins berechnen monatlich formel / sparplan rechner etf·zinsen /
+ *   sparplan rechner inflation / zinseszinsrechner tabelle / zinseszins berechnen excel·formel excel / zinseszinsrechner tagesgeld
+ *   (dynamik·entnahmeplan·kredit·bitcoin·täglich 축은 계산기가 하지 않아 버림)
+ * 세율 기본값은 0 % — 한국어판 15.4 % 는 한국 원천징수라 쓰지 않는다. 독일 세금 숫자는 gesetze-im-internet.de 원문만(확인 2026-10-21):
+ *   § 43a Abs. 1 EStG Kapitalertragsteuer 25 Prozent · § 32d Abs. 1 EStG 25 Prozent, Kirchensteuer 가 있으면 낮아짐(Satz 3) ·
+ *   § 3 Abs. 1 Nr. 5 SolzG 1995 Kapitalertragsteuer 에 Soli · § 4 SolzG 5,5 Prozent · § 20 Abs. 9 EStG Sparer-Pauschbetrag 1 000 / 2 000 Euro.
+ *   Soli 는 따로 보이게 적는다(de.md 주의). Kirchensteuer·Teilfreistellung·Vorabpauschale 는 계산하지 않는다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 compound() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import { euroDe, decimalDe } from "../../../../lib/de/money";
+import { intDe } from "../../../../lib/de/date-format";
+import "../../../../styles/global.css";
+
+const title = "Zinseszinsrechner mit monatlicher Einzahlung — Sparplan, Inflation, Excel";
+const description =
+  "Zinseszins berechnen in Euro: Startkapital plus monatliche Sparrate, Zinsen, Endkapital, Wert nach Inflation, Tabelle pro Jahr und die Formel für Excel (ZW).";
+
+const base = { principal: 1_000, monthly: 250, ratePct: 5, months: 120, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const real2 = compound({ ...base, timing: "start", inflationPct: 2 });
+/** 25 % Kapitalertragsteuer + 5,5 % Soli darauf */
+const soliPart = 25 * 0.055;
+const kapSoli = 25 + soliPart;
+const exTax = compound({ ...base, timing: "start", taxPct: kapSoli });
+const pct = (x: number, d: number) => decimalDe(x.toFixed(d));
+const monthlyRate = pct(base.ratePct / 12, 4);
+---
+
+<html lang="de-DE">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Zinseszinsrechner</h1>
+      <p>
+        Startkapital, monatliche Sparrate und einen Zinssatz oder eine erwartete Rendite eingeben. Der Rechner verzinst das
+        Guthaben jeden Monat mit und zeigt das Endkapital, wie viel davon eingezahlt wurde und wie viel aus Zinsen stammt. Zinssatz,
+        Steuer und Inflation sind Ihre eigenen Annahmen — der Rechner sagt nicht voraus, was ein Konto oder ein Fonds tatsächlich bringt.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">Startkapital (Euro)</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value={intDe(base.principal)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">Monatliche Sparrate (Euro)</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value={intDe(base.monthly)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">Zinssatz oder Rendite pro Jahr</label>
+          <input type="number" id="cp-rate" value="5" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">Laufzeit</label>
+          <input type="number" id="cp-period" value="10" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="Einheit der Laufzeit">
+            <option value="years" selected>Jahre</option>
+            <option value="months">Monate</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">Einzahlung</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>Am Monatsanfang</option>
+            <option value="end">Am Monatsende</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">Steuer auf die Erträge (Annahme)</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">Inflation pro Jahr</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">Sparziel (Euro, optional)</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder={`z. B. ${intDe(40_000)}`} autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="Eingezahlt|Zinsen"
+          data-dock="cp-hero"
+        >
+          <p class="label">Endkapital (vor Steuern)</p>
+          <p class="big" id="cp-hero">{euroDe(ex.balance)}</p>
+          <p class="meta" id="cp-note">120 Monate · {monthlyRate} Prozent pro Monat · Einzahlung am Monatsanfang</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Eingezahlt</span><span class="value" id="cp-paid">{euroDe(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">Zinsen</span><span class="value" id="cp-gain2">{euroDe(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">Steuer (Annahme)</span><span class="value" id="cp-tax-v">{euroDe(0)}</span></div>
+          <div class="stat-chip"><span class="label">Nach Steuern</span><span class="value" id="cp-after">{euroDe(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">Kaufkraft heute</span><span class="value" id="cp-real">{euroDe(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">Sparziel erreicht</span><span class="value" id="cp-goal-v">Kein Ziel</span></div>
+        </div>
+
+        <details>
+          <summary>Tabelle pro Jahr: Einzahlungen, Zinsen und Guthaben</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Zeitraum</th><th>Eingezahlt im Jahr</th><th>Zinsen im Jahr</th><th>Guthaben</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">{r.year}. Jahr</th><td>{euroDe(r.paid)}</td><td>{euroDe(r.gain)}</td><td>{euroDe(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">Das Startkapital zählt nicht zu „Eingezahlt im Jahr“, es steckt nur im Guthaben.</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Als Bild speichern</button>
+          <button id="btn-share" type="button" class="secondary">Teilen</button>
+        </div>
+      </div>
+
+      <h2>Zinseszins mit monatlicher Einzahlung: so wird gerechnet</h2>
+      <ul>
+        <li><strong>Monatszins</strong> — r = Jahreszins ÷ 12. Bei 5 Prozent im Jahr sind das {monthlyRate} Prozent pro Monat.</li>
+        <li><strong>Einzahlung am Monatsanfang</strong> — die neue Rate wird im selben Monat schon verzinst: Guthaben = (Guthaben + Rate) × (1 + r).</li>
+        <li><strong>Einzahlung am Monatsende</strong> — erst kommen die Zinsen, dann die Rate: Guthaben = Guthaben × (1 + r) + Rate. Die letzte Rate bringt keine Zinsen mehr, das Ergebnis ist etwas kleiner.</li>
+        <li><strong>Formel</strong> — nach n Monaten: K<sub>n</sub> = K<sub>0</sub> × (1 + r)<sup>n</sup> + R × [(1 + r)<sup>n</sup> − 1] ÷ r. Bei Einzahlung am Monatsanfang wird der Teil mit R noch einmal mit (1 + r) multipliziert. K<sub>0</sub> ist das Startkapital, R die monatliche Sparrate.</li>
+        <li><strong>Steuer</strong> — liegt das Endkapital über der Summe der Einzahlungen, wird der eingegebene Steuersatz einmal auf diesen Gewinn angewandt. Ein Verlust wird nicht besteuert.</li>
+      </ul>
+      <p>
+        Beispiel: {euroDe(base.principal)} Startkapital und {euroDe(base.monthly)} im Monat bei 5 Prozent Zinsen im Jahr über 10 Jahre.
+        Eingezahlt werden {euroDe(ex.paid)}, am Ende stehen {euroDe(ex.balance)} da — davon {euroDe(ex.gain)} Zinsen und Zinseszinsen.
+        Mit Einzahlung am Monatsende wären es {euroDe(exEnd.balance)}.
+      </p>
+
+      <h2>Sparplan oder Einmalanlage</h2>
+      <p>
+        Geld, das am ersten Tag eingezahlt wird, wächst über die ganze Laufzeit; jede spätere Rate hat weniger Zeit. Im Beispiel würde
+        das Startkapital von {euroDe(base.principal)} allein nach 10 Jahren {euroDe(lump.balance)} ergeben. Für eine reine Einmalanlage die
+        Sparrate auf 0 setzen, für einen reinen Sparplan das Startkapital auf 0.
+      </p>
+
+      <h2>Sparplan-Rechner für ETF und Tagesgeld</h2>
+      <p>
+        Bei Tagesgeld oder Festgeld ist der Zinssatz bekannt, beim ETF-Sparplan nur eine angenommene Rendite — Kurse schwanken, und ein
+        Jahr kann auch negativ sein. Der Rechner rechnet mit einem gleichbleibenden Satz und teilt ihn durch 12. Kosten des Fonds,
+        Kaufgebühren, eine jährlich steigende Sparrate (Dynamik) und Entnahmen sind nicht enthalten.
+      </p>
+
+      <h2>Zinseszinsrechner mit Inflation</h2>
+      <p>
+        „Kaufkraft heute“ teilt das Guthaben nach Steuern durch (1 + Inflation)<sup>Jahre</sup>. Bei 2 Prozent Inflation sind die
+        {" "}{euroDe(ex.balance)} aus dem Beispiel nach heutiger Kaufkraft etwa {euroDe(real2.real)} wert. Mit 0 Prozent Inflation sieht man
+        nur den Nominalbetrag.
+      </p>
+
+      <h2>Zinseszins berechnen in Excel</h2>
+      <p>
+        Die Funktion ZW (Zukunftswert) liefert dasselbe Ergebnis. Für Einzahlungen am Monatsanfang:
+        <code>=ZW(5%/12;120;-250;-1000;1)</code>, für Einzahlungen am Monatsende die letzte 1 durch 0 ersetzen. Sparrate und
+        Startkapital stehen mit Minus, weil das Geld abfließt. Die Tabelle pro Jahr oben lässt sich so Zeile für Zeile nachbauen.
+      </p>
+
+      <details>
+        <summary>Welcher Steuersatz gilt für Zinsen und Kapitalerträge?</summary>
+        <p>
+          Die Kapitalertragsteuer beträgt nach § 43a Abs. 1 EStG 25 Prozent des Kapitalertrags (ebenso § 32d Abs. 1 EStG). Darauf kommt
+          der Solidaritätszuschlag von 5,5 Prozent (§ 3 Abs. 1 Nr. 5 und § 4 SolzG 1995), also {pct(soliPart, 3)} Prozentpunkte — zusammen
+          {" "}{pct(kapSoli, 3)} Prozent. Wer {pct(kapSoli, 3)} eingibt, erhält im Beispiel nach Steuern {euroDe(exTax.afterTax)}.
+        </p>
+        <p>
+          Nicht enthalten: die Kirchensteuer (wenn sie anfällt, ermäßigt sich die Steuer nach § 32d Abs. 1 Satz 3 EStG) und der
+          Sparer-Pauschbetrag von 1 000 Euro, bei zusammen veranlagten Ehegatten 2 000 Euro (§ 20 Abs. 9 EStG). Der Rechner besteuert den
+          ganzen Gewinn erst am Ende — tatsächlich wird jedes Jahr abgerechnet, und Regeln für Fonds wie Teilfreistellung oder
+          Vorabpauschale sind nicht abgebildet. Den Satz für Ihren Fall wählen Sie selbst; 0 Prozent zeigt das Ergebnis vor Steuern.
+        </p>
+        <p>
+          Quellen: <a href="https://www.gesetze-im-internet.de/estg/__43a.html" rel="noopener" target="_blank">§ 43a EStG</a> ·
+          <a href="https://www.gesetze-im-internet.de/estg/__32d.html" rel="noopener" target="_blank">§ 32d EStG</a> ·
+          <a href="https://www.gesetze-im-internet.de/estg/__20.html" rel="noopener" target="_blank">§ 20 EStG</a> ·
+          <a href="https://www.gesetze-im-internet.de/solzg_1995/__3.html" rel="noopener" target="_blank">§ 3 SolzG 1995</a> ·
+          <a href="https://www.gesetze-im-internet.de/solzg_1995/__4.html" rel="noopener" target="_blank">§ 4 SolzG 1995</a>,
+          abgerufen am 21.10.2026.
+        </p>
+      </details>
+
+      <details>
+        <summary>Rechnet der Rechner mit monatlicher oder jährlicher Verzinsung?</summary>
+        <p>
+          Monatlich: der Jahreszins wird durch 12 geteilt und jeden Monat gutgeschrieben. 5 Prozent im Jahr ergeben so über ein volles Jahr
+          etwa {pct((Math.pow(1 + 0.05 / 12, 12) - 1) * 100, 2)} Prozent. Eine tägliche Verzinsung rechnet er nicht.
+        </p>
+      </details>
+
+      <details>
+        <summary>Kann ich Cent oder ein Komma eingeben?</summary>
+        <p>
+          Beträge sind ganze Euro. Leerzeichen und Punkte werden ignoriert, ein Komma aber nicht als Cent gelesen — also 1500 statt
+          1500,50 eingeben. Beim Zinssatz ist ein Dezimalwert wie 3,5 möglich.
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-de" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
