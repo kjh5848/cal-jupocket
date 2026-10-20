@@ -45,3 +45,16 @@ export function ddayFr(target: number, today: number): string {
   if (d === 0) return "aujourd’hui";
   return d > 0 ? `dans ${joursFr(d)}` : `il y a ${joursFr(-d)}`;
 }
+
+/**
+ * 남은·지난 초 → '2 jours, 3 heures et 4 minutes' (디데이 프랑스어판 /fr/tools/dday/).
+ * 하루가 넘으면 jour·heure·minute, 하루 안이면 heure·minute·seconde. 0·1 단수.
+ */
+export function durationTextFr(sec: number): string {
+  const s = Math.abs(Math.trunc(sec));
+  const day = Math.floor(s / 86_400);
+  const h = Math.floor((s % 86_400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (day > 0) return `${joursFr(day)}, ${pluralFr(h, "heure")} et ${pluralFr(m, "minute")}`;
+  return `${pluralFr(h, "heure")}, ${pluralFr(m, "minute")} et ${pluralFr(s % 60, "seconde")}`;
+}

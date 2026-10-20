@@ -1,6 +1,7 @@
 import { toDay, fromDay, countdown, durationText, timeToSec, label, shift, type Countdown } from "../lib/date-calc";
 import { labelJa, ddayJa, durationTextJa } from "../lib/date-format-ja";
 import { labelDe, ddayDe, durationTextDe, intDe } from "../lib/de/date-format";
+import { labelFr, ddayFr, durationTextFr, nFr } from "../lib/fr/date-format";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pickLang } from "../i18n/ui";
@@ -193,7 +194,37 @@ const ZH_HANT: typeof KO = {
   shareText: "倒數日計算結果 - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE, "zh-Hant": ZH_HANT });
+/**
+ * 프랑스어판(/fr/tools/dday/). 표기는 lib/fr/date-format.ts — 'dans 64 jours' · 'aujourd’hui' · 'il y a 3 jours',
+ * 날짜 'ven. 25 décembre 2026'(Intl fr-FR, timeZone UTC), 0·1 단수. 서머타임은 '하루 = 24시간' 동작 고지만(전환 규칙 원문 미확인).
+ */
+const FR: typeof KO = {
+  title: "Compte à rebours",
+  needDate: "Saisissez une date",
+  until: (when: string) => `Jusqu’au ${when}`,
+  hero: (_c: Countdown, target: number, base: number) => ddayFr(target, base),
+  sub: (c: Countdown) =>
+    c.side === 0
+      ? "La date cible est le même jour que la date de départ"
+      : c.side > 0
+        ? `En comptant la date de départ comme jour 1, la date cible est le jour ${nFr(c.countDays)}`
+        : `En comptant la date cible comme jour 1, la date de départ est le jour ${nFr(c.countDays)}`,
+  left: "Temps restant",
+  passed: "Temps écoulé",
+  countLabel: "En comptant le jour 1",
+  count: (c: Countdown) => `Jour ${nFr(c.countDays)}`,
+  baseLabel: "Date de départ",
+  ddayLabel: "Compte à rebours",
+  label: labelFr,
+  duration: durationTextFr,
+  noteNoTime:
+    "Sans heure, le compte va jusqu’à la fin de la date cible (minuit). Chaque jour compte 24 heures : si un changement d’heure tombe entre-temps, le nombre d’heures peut être décalé d’une heure.",
+  noteNotToday: "La date de départ n’est pas aujourd’hui : le temps restant est compté à partir de minuit ce jour-là.",
+  notePastTime: "La date cible est aujourd’hui, mais l’heure cible est déjà passée.",
+  shareText: "Compte à rebours - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE, "zh-Hant": ZH_HANT, fr: FR });
 
 let lastLines: [string, string][] = [];
 let lastTitle = S.title;
