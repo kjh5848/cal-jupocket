@@ -14,6 +14,7 @@ import {
   UNIT_NAME_EN,
   type Unit,
 } from "../lib/sec-convert";
+import { UNIT_NAME_ID, withUnitId, readableId } from "../lib/id/sec-convert";
 import { pickLang } from "../i18n/ui";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
@@ -31,6 +32,7 @@ const set = (id: string, text: string) => {
 };
 /**
  * 화면 문구 — 한국어판(/tools/sec-convert/)·일본어판(/ja/tools/sec-convert/)·영어판(/en-us/tools/sec-convert/ 등, 영어 판 공용)이
+ * 인도네시아어판(/id/tools/sec-convert/, 표기는 lib/id/sec-convert.ts)이
  * 같은 계산(lib/sec-convert.ts)을 쓴다. withUnit 은 값 + 단위 — KO·JA 는 붙여 쓰고 EN 은 띄우고 복수형.
  */
 const KO = {
@@ -78,7 +80,22 @@ const EN: typeof KO = {
   shareText: "Seconds to Minutes Converter - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN });
+const ID: typeof KO = {
+  unit: UNIT_NAME_ID,
+  withUnit: withUnitId,
+  readable: readableId,
+  heroLabel: (v: string, unit: Unit) => `${withUnitId(v, unit)} =`,
+  heroSub: (other: string, unit: Unit, hms: string) => `${withUnitId(other, unit === "min" ? "s" : "min")} · jam:menit:detik ${hms}`,
+  bad: "Masukkan angka 0 atau lebih (desimal pakai titik, paling banyak 6 angka di belakang titik dan 15 digit bulat)",
+  lineIn: "Input",
+  lineReadable: "Jam, menit, detik",
+  partsSub: (min: string, ms: { minutes: bigint; seconds: string }, h: string, r: string) =>
+    `${withUnitId(min, "min")}${ms.seconds === "0" ? "" : ` (${ms.minutes.toLocaleString("en-US")} menit ${ms.seconds} detik)`} · ${withUnitId(h, "h")} · ${r}`,
+  cardTitle: "Konversi Detik ke Menit dan Jam",
+  shareText: "Konversi Detik ke Menit dan Jam - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID });
 
 let lastLines: [string, string][] = [];
 

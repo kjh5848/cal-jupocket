@@ -1,0 +1,333 @@
+---
+/**
+ * Konversi detik ke menit dan jam — 인도네시아어판 여섯 번째 도구(초·분·시간 변환). 한국어판 /tools/sec-convert/ 와
+ * 계산(lib/sec-convert.ts)·스크립트(scripts/sec-convert.ts 의 ID 사전)를 같이 쓰고, 인도네시아어 단위 표기는 lib/id/sec-convert.ts.
+ * 문장은 인도네시아어로 새로 썼다(번역 아님). 조사표 인도네시아 칸 '같음'(#91, SI 브로슈어 표 8).
+ *
+ * 소제목은 인도네시아 구글 자동완성에서 왔다(keywords/id-sec-convert-2026-10-21.csv, hl id · gl id):
+ *   1 jam berapa detik(3600·setengah) / detik ke jam dibagi atau dikali·rumus detik ke jam / menit ke jam rumus·dibagi berapa /
+ *   jam desimal·jam ke desimal·ubah desimal ke jam·kalkulator jam desimal / milidetik ke detik dibagi berapa /
+ *   konversi detik ke menit di excel·rumus excel / konversi derajat menit detik(각도 — FAQ 로 구분)
+ * 단위 값은 SI 브로슈어 표 8 뿐 — 인도네시아 법 숫자 없음. 근무시간·초과근무·휴게 규칙은 kemnaker 원문을 열지 않아 쓰지 않는다.
+ * 숫자 표기는 계산기 입력과 같게 쉼표 천 단위·점 소수(인도네시아 소수 쉼표 관습은 허용 출처 미확인 — FAQ 로 안내). 예시 숫자는 lib 함수로 계산.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toNanos, partsToNanos, convertAll, clock, minSec, UNITS } from "../../../../lib/sec-convert";
+import { UNIT_NAME_ID, withUnitId, readableId } from "../../../../lib/id/sec-convert";
+
+const title = "Konversi Detik ke Menit dan Jam — 1 Jam Berapa Detik, Jam Desimal dan Milidetik";
+const description =
+  "Ubah detik, menit, jam, hari atau milidetik sekaligus, lihat 1 jam berapa detik, ubah jam kerja ke jam desimal, dan salin rumus Excel atau Python.";
+
+const EX = "5400";
+const n0 = toNanos(EX, "s")!;
+const all0 = convertAll(n0);
+const p0 = partsToNanos("", "2", "15", "")!;
+const pAll0 = convertAll(p0);
+const pMs0 = minSec(p0);
+
+/** 본문 예시 — 1시간·1.5시간, 270초, 135분, 8:15~16:45 근무에서 1시간 휴게, 100,000초, 90,000밀리초 */
+const H1 = convertAll(toNanos("1", "h")!);
+const H15 = convertAll(toNanos("1.5", "h")!);
+const S270 = toNanos("270", "s")!;
+const S270all = convertAll(S270);
+const M135 = toNanos("135", "min")!;
+const M135all = convertAll(M135);
+const SHIFT_MIN = String(16 * 60 + 45 - (8 * 60 + 15) - 60);
+const SHIFT = toNanos(SHIFT_MIN, "min")!;
+const SHIFTall = convertAll(SHIFT);
+const H775 = toNanos("7.75", "h")!;
+const D1 = convertAll(toNanos("1", "d")!);
+const S100k = toNanos("100000", "s")!;
+const S100kAll = convertAll(S100k);
+const MS90 = toNanos("90000", "ms")!;
+const MS90all = convertAll(MS90);
+const MS1 = convertAll(toNanos("1", "ms")!);
+---
+
+<html lang="id-ID">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Konversi detik ke menit dan jam — juga hari, milidetik dan jam desimal</h1>
+      <p>
+        Ketik angka lalu pilih satuannya. Hasilnya langsung muncul dalam milidetik, detik, menit, jam dan hari, ditambah
+        bentuk "sekian jam sekian menit sekian detik" dan tampilan jam:menit:detik. Patokannya tetap: 1 menit = 60 detik,
+        1 jam = {H1.s} detik, 1 hari = {D1.s} detik. Desimal ditulis dengan titik (1.5), koma hanya pemisah ribuan.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="val">Jumlah</label>
+          <input type="text" id="val" inputmode="decimal" autocomplete="off" value={EX} placeholder="mis. 5400" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">Satuan</label>
+          <select id="unit" data-seg>
+            {UNITS.map((u) => <option value={u} selected={u === "s"}>{UNIT_NAME_ID[u]}</option>)}
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{withUnitId(all0.s, "s")} =</p>
+          <p class="big" id="hero-value">{readableId(n0)}</p>
+          <p class="hint" id="hero-sub">{withUnitId(all0.min, "min")} · jam:menit:detik {clock(n0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          {UNITS.map((u) => (
+            <div class="stat-chip">
+              <span class="label">{UNIT_NAME_ID[u]}</span>
+              <span class="value" id={`v-${u}`}>{all0[u]}</span>
+            </div>
+          ))}
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Simpan PNG</button>
+          <button id="btn-share" type="button" class="secondary">Bagikan</button>
+        </div>
+      </div>
+
+      <h2 id="parts">Jam, menit dan detik → total detik, menit dan jam desimal</h2>
+      <p>
+        Waktunya sudah terpisah — durasi rapat, lama perjalanan, panjang video? Isi kotak yang perlu saja dan biarkan yang lain
+        kosong.
+      </p>
+      <div class="calc-card" data-two>
+        <div class="sc-parts">
+          <div class="calc-input-wrap">
+            <label for="p-d">Hari</label>
+            <input type="text" id="p-d" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-h">Jam</label>
+            <input type="text" id="p-h" inputmode="decimal" autocomplete="off" value="2" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-m">Menit</label>
+            <input type="text" id="p-m" inputmode="decimal" autocomplete="off" value="15" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-s">Detik</label>
+            <input type="text" id="p-s" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+        </div>
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">Total</p>
+          <p class="big" id="p-value">{withUnitId(pAll0.s, "s")}</p>
+          <p class="hint" id="p-sub">
+            {withUnitId(pAll0.min, "min")}{pMs0.seconds === "0" ? "" : ` (${pMs0.minutes.toLocaleString("en-US")} menit ${pMs0.seconds} detik)`} · {withUnitId(pAll0.h, "h")} · {readableId(p0)}
+          </p>
+        </div>
+        <p class="hint" id="p-err" role="alert"></p>
+      </div>
+
+      <h2>1 jam berapa detik?</h2>
+      <p>
+        1 jam = 60 menit, dan 1 menit = 60 detik, jadi 1 jam = 60 × 60 = <strong>{H1.s} detik</strong>. Satu setengah jam
+        (ketik 1.5 dengan satuan Jam) = {H15.s} detik atau {H15.min} menit. Setengah jam = 1,800 detik, seperempat jam = 900
+        detik.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Jam</th><th>Menit</th><th>Detik</th></tr>
+        </thead>
+        <tbody>
+          {["0.25", "0.5", "1", "1.5", "2", "3", "8", "24"].map((h) => {
+            const a = convertAll(toNanos(h, "h")!);
+            return (
+              <tr>
+                <td>{h}</td>
+                <td>{a.min}</td>
+                <td>{a.s}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h2>Detik ke jam: dibagi atau dikali?</h2>
+      <p>
+        Dari satuan kecil ke satuan besar selalu <strong>dibagi</strong>, dari satuan besar ke kecil <strong>dikali</strong>.
+      </p>
+      <ul>
+        <li>Detik ke menit: dibagi 60 · menit ke detik: dikali 60</li>
+        <li>Detik ke jam: dibagi {H1.s} · jam ke detik: dikali {H1.s}</li>
+        <li>Menit ke jam: dibagi 60 · jam ke menit: dikali 60</li>
+      </ul>
+      <p>
+        Contoh: 270 detik ÷ 60 = {S270all.min} menit, yaitu {readableId(S270)}. Hati-hati, {S270all.min} menit
+        <strong>bukan</strong> 4 menit 50 detik — angka di belakang titik adalah pecahan menit. Kalikan dengan 60 untuk
+        mendapatkan detiknya: 0.5 × 60 = 30.
+      </p>
+
+      <h2>Rumus menit ke jam</h2>
+      <p>
+        Jam = menit ÷ 60. Rapat {M135all.min} menit = {M135all.h} jam, atau {readableId(M135)}. Kalau ingin "sekian jam sekian
+        menit", ambil hasil bagi bulatnya sebagai jam (135 ÷ 60 = 2) dan sisanya sebagai menit (135 − 120 = 15).
+      </p>
+
+      <h2>Jam desimal untuk rekap jam kerja</h2>
+      <p>
+        Aplikasi absensi dan lembar rekap sering meminta jam dalam bentuk desimal (7.5) bukan jam dan menit (7 jam 30 menit).
+        Contoh satu hari:
+      </p>
+      <ol>
+        <li>Masuk 8:15, pulang 16:45 — 8 jam 30 menit di tempat kerja</li>
+        <li>Kurangi istirahat 1 jam → {SHIFT_MIN} menit</li>
+        <li>{SHIFT_MIN} ÷ 60 = <strong>{SHIFTall.h} jam</strong></li>
+      </ol>
+      <table>
+        <thead>
+          <tr><th>Menit</th><th>Jam desimal</th><th>Jam dan menit</th></tr>
+        </thead>
+        <tbody>
+          {["6", "12", "15", "20", "30", "40", "45", "50", "90"].map((m) => {
+            const n = toNanos(m, "min")!;
+            return (
+              <tr>
+                <td>{m}</td>
+                <td>{convertAll(n).h}</td>
+                <td>{readableId(n)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <p>
+        Mengubah desimal ke jam dan menit: ambil angka bulatnya, lalu kalikan sisanya dengan 60. 7.75 jam = 7 jam + 0.75 × 60
+        = {readableId(H775)}. Pilih "Jam" di atas dan ketik 7.75 untuk mengecek. Kalkulator ini hanya mengubah satuan — tidak
+        membulatkan jam absen dan tidak menghitung lembur atau aturan istirahat; itu mengikuti perusahaan dan peraturan yang
+        berlaku untuk pekerjaan Anda.
+      </p>
+
+      <h2>Detik ke hari, jam, menit dan detik</h2>
+      <p>Mulai dari satuan terbesar, lalu sisanya diturunkan. Untuk 100,000 detik:</p>
+      <ol>
+        <li>100,000 ÷ {D1.s} = 1 hari, sisa 13,600</li>
+        <li>13,600 ÷ {H1.s} = 3 jam, sisa 2,800</li>
+        <li>2,800 ÷ 60 = 46 menit, sisa 40</li>
+        <li>Jadi 100,000 detik = <strong>{readableId(S100k)}</strong>, atau {withUnitId(S100kAll.h, "h")}</li>
+      </ol>
+      <p>
+        1 hari = 24 jam = {D1.min} menit = {D1.s} detik. Tampilan jam:menit:detik terus menghitung lewat 24 jam, jadi 100,000
+        detik tampil sebagai {clock(S100k)}.
+      </p>
+
+      <h2>Milidetik ke detik dibagi berapa?</h2>
+      <p>
+        Milidetik dibagi 1,000 = detik, dibagi 60,000 = menit, dibagi 3,600,000 = jam. Catatan stopwatch 90,000 milidetik =
+        {" "}{MS90all.s} detik = {MS90all.min} menit, atau {readableId(MS90)}. Hasil disimpan sampai enam angka di belakang
+        titik, jadi 1 milidetik tampil sebagai {MS1.s} detik dan dibulatkan menjadi {MS1.min} menit.
+      </p>
+
+      <h2>Rumus Excel dan Google Sheets</h2>
+      <ul>
+        <li><strong>Detik ke menit</strong>: <code>=A1/60</code> · <strong>detik ke jam</strong>: <code>=A1/3600</code></li>
+        <li><strong>Menit ke jam</strong>: <code>=A1/60</code> · <strong>jam ke menit</strong>: <code>=A1*60</code></li>
+        <li>
+          <strong>Detik ditampilkan sebagai jam:menit:detik</strong>: <code>=A1/86400</code> lalu format sel kustom
+          <code>[h]:mm:ss</code> — spreadsheet menyimpan waktu sebagai pecahan hari, karena itu dibagi 86400.
+        </li>
+        <li>
+          <strong>Jam masuk–pulang ke jam desimal</strong>: jam masuk di B1, jam pulang di C1, <code>=(C1-B1)*24</code>
+          memberi jam desimal; kurangi istirahat, mis. <code>=(C1-B1)*24-1</code>. Format hasilnya sebagai angka.
+        </li>
+        <li>
+          Rumus dengan lebih dari satu argumen memakai pemisah sesuai pengaturan bahasa — kalau koma ditolak, ganti dengan
+          titik koma (<code>;</code>).
+        </li>
+      </ul>
+
+      <h2>Python, JavaScript dan SQL</h2>
+      <pre><code>{`# Python
+jam, sisa = divmod(detik, 3600)
+menit, dtk = divmod(sisa, 60)
+
+// JavaScript
+const jam = Math.floor(detik / 3600);
+const menit = Math.floor((detik % 3600) / 60);
+const dtk = detik % 60;
+
+-- MySQL (jam:menit:detik)
+SELECT SEC_TO_TIME(5400);
+
+-- PostgreSQL (interval 01:30:00)
+SELECT 5400 * INTERVAL '1 second';`}</code></pre>
+      <p>
+        Mulai dari milidetik? Bagi 1000 dulu. Hitungan pecahan biasa di komputer bisa memberi sisa seperti 66.00000000000001
+        untuk 1.1 × 60; kalkulator ini menghitung dalam nanodetik bulat, jadi sisa seperti itu tidak muncul.
+      </p>
+
+      <details>
+        <summary>Kenapa tidak ada minggu, bulan atau tahun?</summary>
+        <p>
+          1 minggu selalu 7 hari, tetapi 1 bulan 28 sampai 31 hari dan 1 tahun 365 atau 366 hari, jadi jumlah detiknya tidak
+          tetap. Untuk selisih dua tanggal, pakai <a href="/id/tools/date-diff/">kalkulator tanggal</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Dari mana angka 60 dan 3,600?</summary>
+        <p>
+          Biro Internasional Timbangan dan Ukuran (BIPM) mencantumkan menit, jam dan hari di Tabel 8 Brosur SI sebagai satuan
+          di luar SI yang diterima untuk dipakai bersama SI: 1 min = 60 s, 1 h = 60 min = 3600 s, 1 d = 24 h = 86 400 s.
+        </p>
+      </details>
+
+      <details>
+        <summary>Boleh mengetik 1,5 dengan koma?</summary>
+        <p>
+          Tidak — kalkulator ini membaca koma dan spasi sebagai pemisah ribuan lalu mengabaikannya, jadi 1,5 terbaca 15. Untuk
+          desimal pakai titik: 1.5. Angka di hasil juga ditulis begitu (1,440 = seribu empat ratus empat puluh). Angka negatif
+          ditolak karena lama waktu tidak bisa kurang dari nol.
+        </p>
+      </details>
+
+      <details>
+        <summary>Bisa untuk derajat, menit, detik sudut?</summary>
+        <p>
+          Tidak. Derajat, menit dan detik pada koordinat (1° = 60′ = 3600″) memakai nama yang sama tetapi mengukur sudut, bukan
+          waktu.
+        </p>
+      </details>
+
+      <p>
+        Butuh waktu dari Unix timestamp? Coba <a href="/id/tools/unix-time/">konversi Unix timestamp</a>, atau
+        <a href="/id/tools/dday/">hitung mundur hari</a> untuk tanggal yang akan datang.
+      </p>
+
+      <p>
+        Sumber: <a href="https://www.bipm.org/en/publications/si-brochure" rel="noopener">BIPM, The International System of Units (SI
+        Brochure), Table 8: Non-SI units accepted for use with the SI</a> (dicek 21 Oktober 2026)
+      </p>
+
+      <AdSlot label="sec-convert-result-id" />
+    </main>
+    <SiteFooter />
+    <style>
+      .sc-parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 10px; }
+      @media (max-width: 560px) { .sc-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      pre { overflow-x: auto; }
+    </style>
+    <script src="../../../../scripts/sec-convert.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

@@ -53,4 +53,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/id/tools/sec-convert/",
+    ko: "/tools/sec-convert/",
+    name: "Konversi Detik, Menit, Jam",
+    blurb: "Detik ke menit, jam dan hari sekaligus, jam:menit:detik, jam desimal untuk rekap jam kerja, dan milidetik",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
