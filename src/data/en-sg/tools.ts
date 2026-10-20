@@ -26,4 +26,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-sg/tools/compound/",
+    ko: "/tools/compound/",
+    name: "Compound Interest Calculator",
+    blurb: "Grow a starting sum plus monthly deposits in Singapore dollars: interest earned, months to reach a savings goal, after-tax and inflation-adjusted balance",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

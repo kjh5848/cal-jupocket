@@ -1,0 +1,231 @@
+---
+/**
+ * Compound interest calculator — 싱가포르판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 EN 사전, 통화는 판의 SGD·en-SG), 문장은 싱가포르 영어로 새로 썼다(번역 아님).
+ * 복리 산술이라 rates 와 상관없다(조사표 싱가포르 칸 '같음').
+ *
+ * 소제목은 싱가포르 구글 자동완성에서 왔다(keywords/sg-compound-2026-10-21.csv, hl en · gl sg):
+ *   compound interest calculator sgd · monthly deposit · monthly contributions / is there a formula for calculating compound interest /
+ *   how much to save per month singapore · monthly savings calculator singapore / savings account calculator singapore ·
+ *   savings interest calculator singapore / compound interest calculator cpf · savings calculator cpf
+ * 세율 기본값은 0% — 한국어판 15.4% 는 한국 원천징수라 쓰지 않는다. 싱가포르 쪽 사실은 IRAS 원문에서 확인한 것만:
+ *   approved banks in Singapore·licensed finance companies 예금 이자는 non-taxable, non-approved·unlicensed 쪽은 taxable
+ *   (https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/what-is-taxable-what-is-not/interest,
+ *   Last updated 15 October 2026, 확인 2026-10-21). CPF 이자율 숫자는 확인하지 않아 쓰지 않는다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 compound() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import "../../../../styles/global.css";
+
+const title = "Compound Interest Calculator Singapore (SGD) — Monthly Deposits, Formula, Savings Goal";
+const description =
+  "Singapore compound interest calculator in SGD: a starting sum plus monthly deposits, interest earned, monthly saving for a goal, inflation and Excel FV.";
+
+const base = { principal: 10_000, monthly: 500, ratePct: 3, months: 120, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const onlyMonthly = compound({ ...base, principal: 0, timing: "start" });
+const real2 = compound({ ...base, timing: "start", inflationPct: 2 });
+const higher = compound({ ...base, monthly: 800, timing: "start" });
+const sgd = (x: number) =>
+  Math.round(x).toLocaleString("en-SG", { style: "currency", currency: "SGD", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+---
+
+<html lang="en-SG">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Compound Interest Calculator (SGD)</h1>
+      <p>
+        Key in a starting sum, how much you put aside every month and an interest rate per year. The calculator adds interest
+        monthly and shows your ending balance in Singapore dollars, split into your own deposits and the interest earned. The rate,
+        tax and inflation you enter are your own assumptions — the result is not a quote from any bank, insurer or CPF account.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">Starting sum ($)</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value="10,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">Monthly deposit ($)</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="500" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">Interest rate or return per year</label>
+          <input type="number" id="cp-rate" value="3" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">Period</label>
+          <input type="number" id="cp-period" value="10" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="Time unit">
+            <option value="years" selected>years</option>
+            <option value="months">months</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">When you deposit</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>Start of each month</option>
+            <option value="end">End of each month</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">Tax on the interest (assumption)</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">Inflation per year</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">Savings goal ($, optional)</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder="e.g. 100,000" autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="Deposits|Interest"
+          data-dock="cp-hero"
+        >
+          <p class="label">Ending balance (before tax)</p>
+          <p class="big" id="cp-hero">{sgd(ex.balance)}</p>
+          <p class="meta" id="cp-note">120 months · 0.25% a month · deposits at the start of each month</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total deposits</span><span class="value" id="cp-paid">{sgd(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">Interest earned</span><span class="value" id="cp-gain2">{sgd(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">Tax (assumed)</span><span class="value" id="cp-tax-v">$0</span></div>
+          <div class="stat-chip"><span class="label">After tax</span><span class="value" id="cp-after">{sgd(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">In today's dollars</span><span class="value" id="cp-real">{sgd(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">Goal reached</span><span class="value" id="cp-goal-v">No goal set</span></div>
+        </div>
+
+        <details>
+          <summary>Year-by-year deposits, interest and balance</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Period</th><th>Deposits that year</th><th>Interest that year</th><th>Balance</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">Year {r.year}</th><td>{sgd(r.paid)}</td><td>{sgd(r.gain)}</td><td>{sgd(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">The starting sum is not counted in "Deposits that year"; it only shows up in the balance.</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Is there a formula for calculating compound interest?</h2>
+      <p>Yes. This calculator uses monthly compounding, worked out step by step:</p>
+      <ul>
+        <li><strong>Monthly rate</strong> — r = yearly rate ÷ 12. At 3% a year that is 0.25% a month.</li>
+        <li><strong>Deposit at the start of the month</strong> — the new money earns that month's interest: balance = (balance + deposit) × (1 + r).</li>
+        <li><strong>Deposit at the end of the month</strong> — interest goes in first, then the deposit: balance = balance × (1 + r) + deposit. The last deposit earns nothing, so the total is slightly lower.</li>
+        <li><strong>Closed form</strong> — after n months, FV = P(1 + r)<sup>n</sup> + PMT × [(1 + r)<sup>n</sup> − 1] ÷ r, with the PMT part multiplied by (1 + r) once more when you deposit at the start of the month. P is the starting sum and PMT the monthly deposit.</li>
+        <li><strong>Tax</strong> — if you enter a tax rate, it is taken once from the gain (ending balance minus total deposits). A loss is not taxed.</li>
+      </ul>
+      <p>
+        Example: {sgd(base.principal)} to start and {sgd(base.monthly)} a month at 3% a year for 10 years. You put in
+        {" "}{sgd(ex.paid)} and end with {sgd(ex.balance)}, so {sgd(ex.gain)} is interest. If you deposit at the end of each month
+        instead, the balance is {sgd(exEnd.balance)}.
+      </p>
+
+      <h2>Compound interest with monthly deposits vs a lump sum</h2>
+      <p>
+        Money that is in the account from day one compounds for the full period; each monthly deposit has less time left to grow.
+        In the example, the {sgd(base.principal)} starting sum on its own grows to {sgd(lump.balance)}, while the {sgd(base.monthly)}
+        monthly deposits on their own grow to {sgd(onlyMonthly.balance)}. Put $0 in either box to see one part at a time.
+      </p>
+
+      <h2>How much to save per month to reach a goal</h2>
+      <p>
+        Type a figure into "Savings goal" and the calculator tells you after how long the balance first reaches it, or that it is not
+        reached within the period. Then adjust the monthly deposit until the goal lands where you want it. For example, raising the
+        deposit from {sgd(base.monthly)} to {sgd(800)} a month (same {sgd(base.principal)} start, 3%, 10 years) lifts the ending balance
+        from {sgd(ex.balance)} to {sgd(higher.balance)}.
+      </p>
+
+      <h2>Savings account interest and inflation</h2>
+      <p>
+        A savings account may pay different rates on different balance tiers or only when you meet conditions, and rates can change.
+        This calculator uses one flat rate for the whole period, so treat the result as a what-if, not as your bank's figure. "In
+        today's dollars" divides the after-tax balance by (1 + inflation)<sup>years</sup>: at 2% inflation the example's
+        {" "}{sgd(ex.balance)} is worth about {sgd(real2.real)} in today's money.
+      </p>
+
+      <h2>Compound interest in Excel or Google Sheets</h2>
+      <p>
+        The FV function gives the same result. For deposits at the start of each month use
+        <code>=FV(3%/12, 120, -500, -10000, 1)</code>; for the end of the month change the last 1 to 0. The deposit and starting sum are
+        negative because they are money going out of your pocket.
+      </p>
+
+      <details>
+        <summary>Do I pay tax on bank interest in Singapore?</summary>
+        <p>
+          IRAS lists interest from deposits with approved banks in Singapore and with finance companies licensed in Singapore as
+          non-taxable, while interest from non-approved banks or unlicensed finance companies is taxable. That is why the tax box starts at 0% — enter a rate only if your interest is taxable
+          (<a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/what-is-taxable-what-is-not/interest" rel="noopener" target="_blank">IRAS: Interest</a>,
+          last updated 15 October 2026, checked 21 October 2026).
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I use it as a CPF compound interest calculator?</summary>
+        <p>
+          Only as a rough picture of growth at a rate you choose. CPF accounts earn interest under their own rules set by the CPF
+          Board, which this calculator does not model, and no CPF rate is filled in here. For your actual CPF balances and
+          projections, use the calculators on <a href="https://www.cpf.gov.sg/" rel="noopener" target="_blank">cpf.gov.sg</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Is this the same as simple interest?</summary>
+        <p>
+          No. Simple interest is calculated on the starting amount only; compound interest also earns on interest already added. For
+          a product that pays simple interest, the figure here will be higher than what you actually receive.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I enter cents or a $ sign?</summary>
+        <p>
+          Amounts are whole dollars. A typed $ sign and commas are ignored, but a decimal point is not read as cents — enter 1500
+          rather than 1,500.50.
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-en-sg" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
