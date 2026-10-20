@@ -1,5 +1,6 @@
 import { toDay, fromDay, countdown, durationText, timeToSec, label, shift, type Countdown } from "../lib/date-calc";
 import { labelJa, ddayJa, durationTextJa } from "../lib/date-format-ja";
+import { labelDe, ddayDe, durationTextDe, intDe } from "../lib/de/date-format";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pickLang } from "../i18n/ui";
@@ -119,7 +120,37 @@ const EN: typeof KO = {
   shareText: "Days until countdown - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN });
+/**
+ * 독일어판(/de/tools/dday/). 표기는 lib/de/date-format.ts — 'noch 64 Tage' · 'Heute' · 'vor 3 Tagen',
+ * 날짜 'Donnerstag, 24. Dezember 2026'(BGB 원문 꼴), 천 단위 줄바꿈 없는 공백. Intl 안 씀.
+ */
+const DE: typeof KO = {
+  title: "Countdown",
+  needDate: "Bitte ein Datum eingeben",
+  until: (when: string) => `Bis ${when}`,
+  hero: (c: Countdown) => ddayDe(c),
+  sub: (c: Countdown) =>
+    c.side === 0
+      ? "Der Zieltag ist derselbe Tag wie der Ausgangstag"
+      : c.side > 0
+        ? `Zählt man den Ausgangstag als Tag 1, ist der Zieltag Tag ${intDe(c.countDays)}`
+        : `Zählt man den Zieltag als Tag 1, ist der Ausgangstag Tag ${intDe(c.countDays)}`,
+  left: "Verbleibende Zeit",
+  passed: "Vergangene Zeit",
+  countLabel: "Ab Tag 1 gezählt",
+  count: (c: Countdown) => `Tag ${intDe(c.countDays)}`,
+  baseLabel: "Ausgangstag",
+  ddayLabel: "Countdown",
+  label: labelDe,
+  duration: durationTextDe,
+  noteNoTime:
+    "Ohne Uhrzeit wird bis zum Ende des Zieltags (Mitternacht) gezählt. Jeder Tag zählt 24 Stunden – liegt die Zeitumstellung dazwischen, kann die Stundenzahl um eine Stunde abweichen.",
+  noteNotToday: "Der Ausgangstag ist nicht heute, deshalb zählt die verbleibende Zeit ab Mitternacht des Ausgangstags.",
+  notePastTime: "Der Zieltag ist heute, die Uhrzeit ist aber schon vorbei.",
+  shareText: "Countdown-Ergebnis - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE });
 
 let lastLines: [string, string][] = [];
 let lastTitle = S.title;
