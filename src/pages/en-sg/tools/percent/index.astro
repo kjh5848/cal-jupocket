@@ -1,0 +1,207 @@
+---
+/**
+ * Percentage Calculator — 싱가포르 영어판 첫 도구. 한국어판 /tools/percent/ 와 계산(lib/percent.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/percent.ts 의 EN 사전 — 영어 판 공용), 문장은 싱가포르 자동완성으로 새로 썼다(번역 아님). 산술이라 나라 제도·rates 와 상관없다(조사표 싱가포르 칸 '같음').
+ *
+ * 소제목은 싱가포르 구글 자동완성에서 왔다(keywords/sg-percent-2026-10-20.csv, hl en · gl sg):
+ *   percentage of a number formula·trick·without calculator / percentage increase and decrease formula·with example /
+ *   percentage increase from one number to another / percentage discount formula·meaning·example /
+ *   percentage calculator of marks·grade / percentage increase formula excel / percentage calculator difference
+ * GST·CPF 같은 싱가포르 요율 숫자는 쓰지 않는다(자동완성에 gst·cpf percentage singapore 가 있지만 rates 로 검증한 값이 아니고 이 도구의 계산이 아니다).
+ * 통화 기호 관습은 원문 확인 전이라 예시는 숫자만 쓴다. title·description 은 같은 영어 판(en-us·en-au 등)과 갈리게 Singapore 를 넣었다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+
+const title = "Percentage Calculator Singapore — Increase, Decrease & Discount Formula";
+const description =
+  "Find a percentage of a number, the percentage increase or decrease from one number to another, or a price after a discount. With formulas, marks and Excel.";
+---
+
+<html lang="en-SG">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Percentage Calculator</h1>
+      <p>
+        Choose what you're working out, then type in two numbers. Answers are rounded to two decimal places.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">What are you working out?</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>B is what % of A?</option>
+            <option value="of">What is B% of A?</option>
+            <option value="change">% increase or decrease from A to B</option>
+            <option value="adjust">A plus or minus B%</option>
+            <option value="original">Original value before a B% change</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">Increase or decrease</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>Decrease (percentage off)</option>
+            <option value="up">Increase (mark-up)</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">Whole value A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">Part value B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B is this percent of A</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Whole value A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Part value B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Percentage of a number formula</h2>
+      <p>
+        B% of A = A × B ÷ 100. So 18% of 250 is 250 × 18 ÷ 100 = 45. The reverse question — what percentage is one
+        number of another — is part ÷ whole × 100. Using the same numbers, 45 ÷ 250 × 100 = 18%.
+      </p>
+
+      <h2>Percentage of a number trick (no calculator needed)</h2>
+      <p>Start from 10% and 1%, then build the rest:</p>
+      <ul>
+        <li><strong>10%</strong> — shift the decimal point one place to the left. 10% of 460 is 46.</li>
+        <li><strong>1%</strong> — shift it two places. 1% of 460 is 4.6.</li>
+        <li><strong>5%</strong> — half of 10%. 5% of 460 is 23.</li>
+        <li><strong>25%</strong> — a quarter. <strong>50%</strong> — a half. <strong>20%</strong> — double the 10%.</li>
+        <li><strong>17%</strong> = 10% + 5% + 1% + 1% = 46 + 23 + 4.6 + 4.6 = 78.2.</li>
+      </ul>
+      <p>
+        You can also swap the two numbers: x% of y equals y% of x. 16% of 50 sounds awkward, but 50% of 16 is simply 8.
+      </p>
+
+      <h2>Percentage increase and decrease formula, with examples</h2>
+      <p>
+        Percentage change = (new value − old value) ÷ old value × 100. If the answer is positive it is an increase;
+        if it is negative it is a decrease.
+      </p>
+      <ul>
+        <li><strong>Increase from 40 to 50</strong> — (50 − 40) ÷ 40 × 100 = +25%.</li>
+        <li><strong>Decrease from 50 to 40</strong> — (40 − 50) ÷ 50 × 100 = −20%.</li>
+      </ul>
+      <p>
+        The gap is 10 both times, yet the percentages differ, because the change is always measured against the number
+        you started with. Pick "% increase or decrease from A to B" above and put the starting number in A.
+      </p>
+
+      <h2>Percentage discount formula</h2>
+      <p>
+        A discount percentage tells you how much of the original price is taken off. The price you pay is
+        original × (1 − discount ÷ 100), and the amount saved is original × discount ÷ 100.
+      </p>
+      <ul>
+        <li>Example: 15% off an item priced 120 — you pay 120 × 0.85 = 102 and save 18.</li>
+        <li>
+          To find the discount percentage from two prices, use the decrease formula: from 80 down to 60 is
+          (60 − 80) ÷ 80 × 100 = −25%, so it was 25% off.
+        </li>
+      </ul>
+      <p>
+        Two discounts in a row multiply rather than add. 30% off followed by an extra 10% off leaves
+        0.7 × 0.9 = 0.63 of the price, which is 37% off — not 40%.
+      </p>
+
+      <h2>Percentage of marks</h2>
+      <p>
+        Marks percentage = marks scored ÷ total marks × 100. Scoring 68 out of 80 gives 68 ÷ 80 × 100 = 85%. In the
+        calculator, choose "B is what % of A?", enter the total in A and your score in B. For several papers, add up
+        all the marks scored and all the totals first, then divide once; averaging each paper's percentage gives the
+        wrong overall figure when the papers have different totals.
+      </p>
+
+      <h2>Percentage increase formula in Excel</h2>
+      <p>Put the old value in A2 and the new value in B2:</p>
+      <ul>
+        <li>Percentage increase or decrease: <code>=(B2-A2)/A2</code>, then apply the % cell format.</li>
+        <li>B2 as a percentage of A2: <code>=B2/A2</code>, formatted as %.</li>
+        <li>B2% of A2, where B2 holds a plain number such as 18: <code>=A2*B2/100</code>.</li>
+        <li>Price after a B2% discount: <code>=A2*(1-B2/100)</code>.</li>
+      </ul>
+      <p>
+        When B2 is already formatted as a percentage, 18% is stored as 0.18 — drop the <code>/100</code>. Google
+        Sheets takes the same formulas.
+      </p>
+
+      <details>
+        <summary>Percentage calculator difference: is that the same as percentage change?</summary>
+        <p>
+          No. Percentage change has a direction and divides by the starting value. Percentage difference treats both
+          numbers equally and divides by their average: |A − B| ÷ ((A + B) ÷ 2) × 100. For 40 and 50 it is
+          10 ÷ 45 × 100 = 22.22%. This calculator works out percentage change.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why does +10% then −10% leave me below where I started?</summary>
+        <p>
+          The 10% decrease is taken from the larger number. 200 up 10% is 220, and 220 down 10% is 198. Getting from
+          220 back to 200 needs a 9.09% decrease — use "Original value before a B% change" to check.
+        </p>
+      </details>
+
+      <details>
+        <summary>What is the difference between a percentage and a percentage point?</summary>
+        <p>
+          When a rate moves from 2% to 3%, it went up by <strong>1 percentage point</strong>, but that is a
+          (3 − 2) ÷ 2 × 100 = <strong>50%</strong> increase in the rate itself.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I type commas or currency signs?</summary>
+        <p>
+          Commas and a % sign are accepted, so 1,500 and 18% both work. Leave out currency signs and type the number only.
+        </p>
+      </details>
+
+      <AdSlot label="percent-result-en-sg" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
