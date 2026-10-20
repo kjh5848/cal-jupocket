@@ -26,4 +26,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/id/tools/compound/",
+    ko: "/tools/compound/",
+    name: "Kalkulator Bunga Majemuk",
+    blurb: "Modal awal plus setoran bulanan dengan asumsi imbal hasil — total bunga, setelah pajak dan inflasi, per tahun",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

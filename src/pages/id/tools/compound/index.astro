@@ -1,0 +1,253 @@
+---
+/**
+ * Kalkulator Bunga Majemuk — 인도네시아어판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 ID 사전, 통화는 판의 IDR·id-ID), 문장은 인도네시아어로 새로 썼다(번역 아님).
+ * 복리 산술이라 rates 와 상관없다(조사표 인도네시아 칸 '같음').
+ *
+ * 소제목은 인도네시아 구글 자동완성에서 왔다(keywords/id-compound-2026-10-21.csv, hl id · gl id):
+ *   rumus bunga majemuk (modal akhir·bulanan) / rumus bunga majemuk dan bunga tunggal / kalkulator bunga majemuk bulanan·harian·tahunan /
+ *   simulasi investasi bulanan · kalkulator compound interest rupiah / rumus bunga majemuk mencari modal awal·mencari suku bunga
+ * 세율 기본값은 0% — 한국어판 15.4% 는 한국 원천징수라 쓰지 않고, 인도네시아 세율은 허용 출처에서 이번 회차에 열지 않아 숫자를 적지 않는다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 compound() 와 같은 식으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import "../../../../styles/global.css";
+
+const title = "Kalkulator Bunga Majemuk Rupiah — Setoran Bulanan, Rumus Modal Akhir, Inflasi";
+const description =
+  "Hitung bunga majemuk dalam rupiah: modal awal plus setoran bulanan, total bunga, saldo setelah pajak dan inflasi, tabel per tahun, serta rumus modal akhir.";
+
+const base = { principal: 10_000_000, monthly: 1_000_000, ratePct: 6, months: 120, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const real3 = compound({ ...base, timing: "start", inflationPct: 3 });
+const years = base.months / 12;
+const r = base.ratePct / 100;
+/** 같은 6%를 bunga tunggal(단리)로 — 일시금만 */
+const simple = base.principal * (1 + r * years);
+/** 같은 6%를 매일(365)·매년 복리로 — 일시금만 */
+const lumpDaily = base.principal * Math.pow(1 + r / 365, 365 * years);
+const lumpYearly = base.principal * Math.pow(1 + r, years);
+/** mencari modal awal: 10년 뒤 Rp 100 juta 가 되려면 지금 얼마(월 복리, 추가 setoran 없음) */
+const target = 100_000_000;
+const pv = target / Math.pow(1 + r / 12, base.months);
+const pvCheck = compound({ ...base, principal: Math.round(pv), monthly: 0, timing: "start" });
+/** mencari suku bunga: Rp 10 juta → Rp 20 juta dalam 10 tahun(연 복리) */
+const doubled = 20_000_000;
+const rateFound = (Math.pow(doubled / base.principal, 1 / years) - 1) * 100;
+const pct = (x: number, d = 2) => x.toLocaleString("id-ID", { minimumFractionDigits: d, maximumFractionDigits: d });
+const rp = (x: number) =>
+  Math.round(x).toLocaleString("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+const note = `${base.months} bulan · bunga ${(base.ratePct / 12).toFixed(4)}% per bulan · setoran di awal bulan`;
+---
+
+<html lang="id-ID">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Kalkulator Bunga Majemuk dengan Setoran Bulanan</h1>
+      <p>
+        Masukkan modal awal, setoran rutin setiap bulan, dan perkiraan imbal hasil per tahun. Kalkulator ini menghitung bunga
+        berbunga setiap bulan, lalu menunjukkan saldo akhir, berapa yang berasal dari uang Anda sendiri, dan berapa yang berasal
+        dari bunga. Imbal hasil, tarif pajak, dan inflasi semuanya asumsi yang Anda isi sendiri — hasilnya bukan ramalan kinerja
+        produk investasi atau tabungan mana pun.
+      </p>
+      <p class="meta">Nominal dalam rupiah bulat: ketik 10000000 atau 10.000.000, tanpa desimal.</p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">Modal awal (Rp)</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value="10.000.000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">Setoran per bulan (Rp)</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="1.000.000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">Perkiraan imbal hasil per tahun</label>
+          <input type="number" id="cp-rate" value="6" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">Jangka waktu</label>
+          <input type="number" id="cp-period" value="10" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="Satuan waktu">
+            <option value="years" selected>tahun</option>
+            <option value="months">bulan</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">Waktu setoran</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>Awal bulan</option>
+            <option value="end">Akhir bulan</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">Tarif pajak atas bunga (asumsi)</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">Inflasi per tahun</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">Target dana (Rp, boleh kosong)</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder="mis. 250.000.000" autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="Setoran|Bunga"
+          data-dock="cp-hero"
+        >
+          <p class="label">Saldo akhir (sebelum pajak)</p>
+          <p class="big" id="cp-hero">{rp(ex.balance)}</p>
+          <p class="meta" id="cp-note">{note}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total setoran</span><span class="value" id="cp-paid">{rp(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">Total bunga</span><span class="value" id="cp-gain2">{rp(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">Pajak (asumsi)</span><span class="value" id="cp-tax-v">{rp(0)}</span></div>
+          <div class="stat-chip"><span class="label">Setelah pajak</span><span class="value" id="cp-after">{rp(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">Nilai uang hari ini</span><span class="value" id="cp-real">{rp(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">Target tercapai</span><span class="value" id="cp-goal-v">Tanpa target</span></div>
+        </div>
+
+        <details>
+          <summary>Tabel setoran, bunga, dan saldo per tahun</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Periode</th><th>Setoran tahun itu</th><th>Bunga tahun itu</th><th>Saldo</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((y) => <tr><th scope="row">Tahun ke-{y.year}</th><td>{rp(y.paid)}</td><td>{rp(y.gain)}</td><td>{rp(y.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">Modal awal tidak dihitung di kolom "Setoran tahun itu"; modal awal hanya masuk ke saldo.</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Simpan sebagai gambar</button>
+          <button id="btn-share" type="button" class="secondary">Bagikan</button>
+        </div>
+      </div>
+
+      <h2>Rumus bunga majemuk bulanan dan modal akhir</h2>
+      <ul>
+        <li><strong>Bunga per bulan</strong> — i = bunga per tahun ÷ 12. Dengan 6% per tahun, i = 0,5% per bulan.</li>
+        <li><strong>Modal akhir tanpa setoran</strong> — M<sub>n</sub> = M<sub>0</sub> × (1 + i)<sup>n</sup>, dengan M<sub>0</sub> modal awal dan n jumlah bulan.</li>
+        <li><strong>Setoran di awal bulan</strong> — setoran baru ikut mendapat bunga bulan itu: saldo = (saldo + setoran) × (1 + i).</li>
+        <li><strong>Setoran di akhir bulan</strong> — bunga ditambahkan dulu, baru setoran masuk: saldo = saldo × (1 + i) + setoran. Setoran terakhir tidak sempat berbunga, jadi hasilnya sedikit lebih kecil.</li>
+        <li><strong>Rumus ringkas</strong> — M<sub>n</sub> = M<sub>0</sub>(1 + i)<sup>n</sup> + S × [(1 + i)<sup>n</sup> − 1] ÷ i, dengan S setoran per bulan. Untuk setoran di awal bulan, bagian S dikalikan (1 + i) sekali lagi.</li>
+        <li><strong>Pajak</strong> — jika saldo akhir lebih besar dari total uang yang Anda setor, tarif yang Anda isi dikenakan sekali pada selisih itu. Rugi tidak dikenai pajak.</li>
+      </ul>
+      <p>
+        Contoh: modal awal {rp(base.principal)}, setoran {rp(base.monthly)} per bulan, 6% per tahun selama {years} tahun. Total yang
+        Anda setor {rp(ex.paid)}, saldo akhirnya {rp(ex.balance)}, dan {rp(ex.gain)} di antaranya bunga. Jika setoran dilakukan di
+        akhir bulan, saldo akhirnya {rp(exEnd.balance)}.
+      </p>
+
+      <h2>Bunga majemuk dan bunga tunggal</h2>
+      <p>
+        Pada bunga tunggal, bunga selalu dihitung dari modal awal saja: M<sub>n</sub> = M<sub>0</sub> × (1 + i × n). Pada bunga
+        majemuk, bunga yang sudah didapat ikut berbunga lagi. Dengan modal {rp(base.principal)} dan 6% per tahun selama {years}
+        tahun tanpa setoran tambahan, bunga tunggal menghasilkan {rp(simple)}, sedangkan bunga majemuk bulanan menghasilkan
+        {rp(lump.balance)}. Selisihnya makin besar jika jangka waktunya makin panjang.
+      </p>
+
+      <h2>Bunga majemuk bulanan, harian, dan tahunan</h2>
+      <p>
+        Kalkulator ini menghitung bunga setiap bulan, sesuai dengan setoran bulanan. Dengan bunga 6% per tahun yang sama, modal
+        {rp(base.principal)} selama {years} tahun menjadi {rp(lumpYearly)} jika bunga dihitung tahunan, {rp(lump.balance)} jika
+        bulanan, dan {rp(lumpDaily)} jika harian (365 kali setahun). Perbedaannya kecil; besar imbal hasil yang Anda asumsikan jauh
+        lebih menentukan daripada seberapa sering bunga dihitung.
+      </p>
+
+      <h2>Simulasi investasi bulanan dengan inflasi</h2>
+      <p>
+        Angka "Nilai uang hari ini" membagi saldo setelah pajak dengan (1 + inflasi)<sup>tahun</sup>. Dengan inflasi 3% per tahun,
+        saldo contoh {rp(ex.balance)} setara dengan sekitar {rp(real3.real)} dalam nilai uang sekarang. Biarkan inflasi 0% jika Anda
+        hanya ingin melihat angka nominal.
+      </p>
+      <p>
+        Untuk modal awal saja, isi setoran per bulan dengan 0. Untuk setoran rutin saja, isi modal awal dengan 0. Modal awal
+        berbunga sepanjang jangka waktu, sedangkan setiap setoran bulanan punya waktu berbunga yang makin pendek.
+      </p>
+
+      <h2>Rumus bunga majemuk untuk mencari modal awal dan suku bunga</h2>
+      <ul>
+        <li>
+          <strong>Mencari modal awal</strong> — M<sub>0</sub> = M<sub>n</sub> ÷ (1 + i)<sup>n</sup>. Agar menjadi
+          {rp(target)} dalam {years} tahun dengan 6% per tahun (dihitung bulanan) tanpa setoran tambahan, modal awal yang
+          dibutuhkan sekitar {rp(pv)}. Masukkan angka itu ke kalkulator dengan setoran 0 dan hasilnya {rp(pvCheck.balance)}.
+        </li>
+        <li>
+          <strong>Mencari suku bunga</strong> — i = (M<sub>n</sub> ÷ M<sub>0</sub>)<sup>1/n</sup> − 1. Agar
+          {rp(base.principal)} menjadi {rp(doubled)} dalam {years} tahun dengan bunga dihitung tahunan, dibutuhkan sekitar
+          {pct(rateFound)}% per tahun.
+        </li>
+      </ul>
+
+      <h2>Rumus bunga majemuk di Excel atau Google Sheets</h2>
+      <p>
+        Fungsi FV memberi hasil yang sama dengan kalkulator ini. Untuk setoran di awal bulan:
+        <code>=FV(6%/12; 120; -1000000; -10000000; 1)</code>. Untuk setoran di akhir bulan, ganti angka 1 terakhir dengan 0.
+        Setoran dan modal awal ditulis negatif karena itu uang yang keluar dari kantong Anda. Pemisah argumen bisa titik koma atau
+        koma, tergantung pengaturan bahasa dan wilayah lembar kerja Anda.
+      </p>
+
+      <details>
+        <summary>Berapa tarif pajak yang harus saya isi?</summary>
+        <p>
+          Nilai bawaannya 0%. Perlakuan pajak atas bunga dan hasil investasi berbeda menurut jenis produknya, jadi kalkulator ini
+          tidak memilihkan tarif untuk Anda. Isi asumsi yang sesuai dengan produk Anda, dan periksa ketentuannya di situs
+          Direktorat Jenderal Pajak, <a href="https://www.pajak.go.id/" rel="noopener" target="_blank">pajak.go.id</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Bisakah saya memasukkan sen atau desimal?</summary>
+        <p>
+          Nominal dihitung dalam rupiah bulat. Titik, koma, dan tulisan "Rp" diabaikan, jadi 1.500.000 dan 1500000 dibaca sama.
+          Desimal tidak dibaca — 1.500.000,50 akan dibaca 150000050, jadi ketik tanpa angka di belakang koma.
+        </p>
+      </details>
+
+      <details>
+        <summary>Apa yang terjadi jika imbal hasilnya 0% atau negatif?</summary>
+        <p>
+          Dengan 0%, saldo akhir sama persis dengan total setoran. Dengan imbal hasil negatif, bunga tampil negatif dan tidak ada
+          pajak. Imbal hasil sungguhan naik turun dari tahun ke tahun, jadi rata-rata yang sama bisa berakhir dengan saldo yang
+          berbeda.
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-id" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

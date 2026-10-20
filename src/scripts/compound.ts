@@ -3,9 +3,11 @@
  * 계산은 src/lib/compound.ts compound() 가 한다. 여기서는 입력을 읽고 결과를 그린다.
  * 여러 언어판이 같은 계산을 쓰고 말·통화 표기만 다르다(pickLang). 영어 사전은 다섯 판 공용이라
  * 통화는 페이지 판의 currency·numberLocale(src/i18n/locales.ts)로 정한다 — 1 단위 반올림.
+ * 인도네시아어판(/id/tools/compound/)은 ID 사전 — 통화는 같은 판 formatter(IDR, id-ID). 입력칸 천 단위 표기도
+ * 판의 numberLocale 로 쓴다(ko·ja·en 은 쉼표 그대로, id 는 점 — 결과 'Rp 10.000.000' 과 맞춤).
  */
 import { compound, type Timing } from "../lib/compound";
-import { formatWon, formatYen, parseAmount, formatAmountInput } from "../lib/money";
+import { formatWon, formatYen, parseAmount } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pageLocale, pickLang } from "../i18n/ui";
@@ -81,7 +83,27 @@ const EN: typeof KO = {
   share: "Compound interest result - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN });
+const ID: typeof KO = {
+  money: enMoney,
+  spell: (y, r) => [y ? `${y} tahun` : "", r ? `${r} bulan` : ""].filter(Boolean).join(" ") || "0 bulan",
+  note: (months, monthlyRate, start) => `${months} bulan · bunga ${monthlyRate}% per bulan · setoran di ${start ? "awal" : "akhir"} bulan`,
+  noTax: enMoney(0),
+  goalNone: "Tanpa target",
+  goalNever: "Tidak tercapai dalam jangka waktu ini",
+  goalAtStart: "Sudah tercapai sejak awal",
+  goalAt: (s) => `Setelah ${s}`,
+  yearRow: (year, rest) => (rest === 0 ? `Tahun ke-${year}` : `Tahun ke-${year} (${rest} bulan)`),
+  after: (s) => `Saldo setelah ${s}`,
+  paid: "Total setoran",
+  gain: "Total bunga",
+  afterTax: "Setelah pajak",
+  title: "Hasil kalkulator bunga majemuk",
+  share: "Hasil kalkulator bunga majemuk - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID });
+/** 입력칸 천 단위 표기 — 판의 numberLocale(ko-KR·ja-JP·en-* 는 쉼표, id-ID 는 점). parseAmount 는 숫자만 읽어 어느 쪽이든 같다. */
+const formatInput = (v: number) => v.toLocaleString(EN_MONEY.numberLocale);
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const num = (el: HTMLInputElement, lo: number, hi: number) => clamp(Number(el.value) || 0, lo, hi);
@@ -147,7 +169,7 @@ function onUserInput() {
 for (const el of [principal, monthly, goal]) {
   el.addEventListener("input", () => {
     const v = parseAmount(el.value);
-    el.value = v ? formatAmountInput(v) : el.value.trim() === "" ? "" : "0";
+    el.value = v ? formatInput(v) : el.value.trim() === "" ? "" : "0";
     onUserInput();
   });
 }
