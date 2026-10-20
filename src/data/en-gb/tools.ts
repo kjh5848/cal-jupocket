@@ -26,4 +26,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-gb/tools/compound/",
+    ko: "/tools/compound/",
+    name: "Compound interest calculator",
+    blurb: "Grow a lump sum plus monthly savings in pounds: interest earned, AER conversion, after-tax and inflation-adjusted balance",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

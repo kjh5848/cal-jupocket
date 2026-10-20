@@ -1,0 +1,231 @@
+---
+/**
+ * Compound interest calculator — 영국판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 EN 사전, 통화는 판의 GBP), 문장은 영국 영어로 새로 썼다(번역 아님). 복리 산술이라 rates 와 상관없다(조사표 영국 칸 '같음').
+ *
+ * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-compound-2026-10-20.csv, hl en · gl gb):
+ *   compound interest calculator uk monthly · regular savings calculator uk / savings calculator uk aer /
+ *   compound interest calculator with inflation / compound interest calculator uk stocks and shares isa · pension / ... uk excel
+ * 세율 기본값은 0% — 한국어판 15.4% 는 한국 원천징수라 쓰지 않는다. 영국 세금 숫자는 GOV.UK 에서 확인한 것만:
+ *   'You can save tax-free with Individual Savings Accounts (ISAs)' · 2026 to 2027 ISA 한도 £20,000
+ *   (https://www.gov.uk/individual-savings-accounts, 확인 2026-10-20). 그 밖의 세율·공제는 적지 않는다.
+ * AER 환산(12 × [(1 + AER)^(1/12) − 1])은 산술이다. 본문 숫자는 전부 아래 frontmatter 에서 compound() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import "../../../../styles/global.css";
+
+const title = "Compound Interest Calculator UK — Monthly Savings, AER, Inflation";
+const description =
+  "UK compound interest calculator in pounds: a lump sum plus regular monthly savings, interest earned, AER conversion, inflation-adjusted value and Excel FV.";
+
+const base = { principal: 1_000, monthly: 250, ratePct: 5, months: 120, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const real3 = compound({ ...base, timing: "start", inflationPct: 3 });
+/** 연 5% 를 12 로 나눠 매달 복리로 돌리면 실제 1년 이율(AER)은 얼마인가 */
+const aerOf5 = (Math.pow(1 + 0.05 / 12, 12) - 1) * 100;
+/** AER 5% 와 같은 결과를 내는 연 이율(매달 복리) */
+const nominalFor5 = 12 * (Math.pow(1.05, 1 / 12) - 1) * 100;
+const exAer = compound({ ...base, ratePct: Number(nominalFor5.toFixed(3)), timing: "start" });
+const gbp = (x: number) =>
+  Math.round(x).toLocaleString("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+---
+
+<html lang="en-GB">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Compound Interest Calculator</h1>
+      <p>
+        Put in a starting balance, what you save each month and an interest rate or expected return. The calculator compounds the
+        pot monthly and shows the final balance, how much of it you paid in and how much is interest. The rate, tax and inflation
+        figures are your own assumptions — nothing here forecasts what a real account or fund will do.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">Starting balance (£)</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value="1,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">Monthly saving (£)</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="250" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">Interest rate or return a year</label>
+          <input type="number" id="cp-rate" value="5" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">Length of time</label>
+          <input type="number" id="cp-period" value="10" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="Time unit">
+            <option value="years" selected>years</option>
+            <option value="months">months</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">When you pay in</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>Start of each month</option>
+            <option value="end">End of each month</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">Tax on the interest (assumption)</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">Inflation a year</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">Savings target (£, optional)</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder="e.g. 40,000" autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="Paid in|Interest"
+          data-dock="cp-hero"
+        >
+          <p class="label">Final balance (before tax)</p>
+          <p class="big" id="cp-hero">{gbp(ex.balance)}</p>
+          <p class="meta" id="cp-note">120 months · 0.4167% a month · deposits at the start of each month</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total paid in</span><span class="value" id="cp-paid">{gbp(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">Interest earned</span><span class="value" id="cp-gain2">{gbp(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">Tax (assumed)</span><span class="value" id="cp-tax-v">£0</span></div>
+          <div class="stat-chip"><span class="label">After tax</span><span class="value" id="cp-after">{gbp(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">In today's money</span><span class="value" id="cp-real">{gbp(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">Target reached</span><span class="value" id="cp-goal-v">No goal set</span></div>
+        </div>
+
+        <details>
+          <summary>Year-by-year payments, interest and balance</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Period</th><th>Paid in that year</th><th>Interest that year</th><th>Balance</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">Year {r.year}</th><td>{gbp(r.paid)}</td><td>{gbp(r.gain)}</td><td>{gbp(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">The starting balance is not counted in "Paid in that year"; it is only part of the balance.</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Compound interest with monthly savings: how it is worked out</h2>
+      <ul>
+        <li><strong>Monthly rate</strong> — r = yearly rate ÷ 12. At 5% a year that is about 0.4167% a month.</li>
+        <li><strong>Paying in at the start of the month</strong> — the new money earns that month's interest: balance = (balance + saving) × (1 + r).</li>
+        <li><strong>Paying in at the end of the month</strong> — interest goes on first, then the deposit: balance = balance × (1 + r) + saving. The last payment earns nothing, so the total is slightly lower.</li>
+        <li><strong>Formula</strong> — after n months, FV = P(1 + r)<sup>n</sup> + PMT × [(1 + r)<sup>n</sup> − 1] ÷ r, with the PMT part multiplied by (1 + r) once more for start-of-month payments. P is the starting balance and PMT the monthly saving.</li>
+        <li><strong>Tax</strong> — if the final balance is more than you paid in, the tax rate you enter is taken once from that gain. A loss is not taxed.</li>
+      </ul>
+      <p>
+        Example: {gbp(base.principal)} to start, {gbp(base.monthly)} a month at 5% a year for 10 years. You pay in {gbp(ex.paid)}{" "}
+        and finish with {gbp(ex.balance)}, of which {gbp(ex.gain)} is interest. Paying in at the end of each month instead gives
+        {" "}{gbp(exEnd.balance)}.
+      </p>
+
+      <h2>Regular savings vs a lump sum</h2>
+      <p>
+        Money paid in on day one compounds for the whole term; each monthly payment has less time left to grow. In the example the
+        {" "}{gbp(base.principal)} starting balance on its own would be {gbp(lump.balance)} after 10 years. Set the monthly saving to £0
+        for a lump sum only, or the starting balance to £0 for a regular saver only.
+      </p>
+
+      <h2>Savings rates quoted as AER</h2>
+      <p>
+        UK savings accounts usually quote an AER (annual equivalent rate), which already includes the effect of interest being paid
+        and compounded during the year. This calculator divides the yearly rate by 12 and compounds every month, so typing 5% here
+        works out at about {aerOf5.toFixed(2)}% over a full year — a little more than a 5% AER. To match a 5% AER exactly, enter
+        12 × [(1 + 0.05)<sup>1/12</sup> − 1] ≈ {nominalFor5.toFixed(3)}%. In the example that gives {gbp(exAer.balance)} instead of
+        {" "}{gbp(ex.balance)}.
+      </p>
+
+      <h2>Compound interest calculator with inflation</h2>
+      <p>
+        The "In today's money" figure divides the after-tax balance by (1 + inflation)<sup>years</sup>. With 3% inflation the
+        example's {gbp(ex.balance)} is worth about {gbp(real3.real)} in today's pounds. Leave inflation at 0% to see the cash
+        figure only.
+      </p>
+
+      <h2>Compound interest formula in Excel</h2>
+      <p>
+        The FV function gives the same answer. For start-of-month payments use
+        <code>=FV(5%/12, 120, -250, -1000, 1)</code>; for end-of-month payments change the last 1 to 0. The saving and the starting
+        balance are negative because they are money going out. Google Sheets uses the same formula.
+      </p>
+
+      <details>
+        <summary>Can I use it for a stocks and shares ISA?</summary>
+        <p>
+          Yes, as long as you enter an assumed return rather than a guaranteed one — investments can fall as well as rise. GOV.UK
+          says you can save tax-free with Individual Savings Accounts, so the default tax rate of 0% suits money held inside an ISA.
+          The calculator does not stop you going over the yearly ISA limit, which GOV.UK gives as £20,000 for the 2026 to 2027 tax
+          year (<a href="https://www.gov.uk/individual-savings-accounts" rel="noopener" target="_blank">Individual Savings Accounts</a>,
+          checked 20 October 2026).
+        </p>
+      </details>
+
+      <details>
+        <summary>What about savings outside an ISA?</summary>
+        <p>
+          Whether you pay tax on savings interest depends on your other income and allowances, so the calculator does not choose a
+          rate. Enter your own assumption, or 0% if no tax is due. GOV.UK explains the rules in
+          <a href="https://www.gov.uk/apply-tax-free-interest-on-savings" rel="noopener" target="_blank">Tax on savings interest</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does it work as a pension calculator?</summary>
+        <p>
+          It shows how a steady monthly amount grows at an assumed return. It does not add tax relief, employer contributions, pay
+          rises, charges or withdrawals — if your employer pays in too, add their monthly amount to yours.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I enter pence or a £ sign?</summary>
+        <p>
+          Amounts are whole pounds. A typed £ sign and commas are ignored, but a decimal point is not read as pence — enter 1500
+          rather than 1,500.50.
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-en-gb" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
