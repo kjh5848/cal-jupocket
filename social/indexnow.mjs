@@ -33,20 +33,25 @@ async function sitemapUrls() {
   return out;
 }
 
+/**
+ * 엔진에 직접 보낸다. api.indexnow.org 는 새 키 확인이 늦어 첫날 몇 시간 403(SiteVerificationNotCompleted)을
+ * 냈다(2026-10-20) — Bing 은 같은 키로 바로 200. 하나라도 받으면 성공으로 친다(참여 엔진끼리 공유한다).
+ */
+const ENDPOINTS = ["https://www.bing.com/indexnow", "https://searchadvisor.naver.com/indexnow", "https://api.indexnow.org/indexnow"];
+
 async function submit(urlList) {
   for (let i = 0; i < urlList.length; i += 10000) {
     const chunk = urlList.slice(i, i + 10000);
-    const res = await fetch("https://api.indexnow.org/indexnow", {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ host: HOST, key: INDEXNOW_KEY, keyLocation: `${SITE}/${INDEXNOW_KEY}.txt`, urlList: chunk }),
-    });
-    // 200 받음 · 202 받음(키 확인 대기) · 400 형식 오류 · 403 키 불일치 · 422 호스트 불일치 · 429 너무 잦음
-    console.log(`IndexNow ${res.status} — ${chunk.length}개`);
-    if (res.status >= 300) {
-      console.error(await res.text().catch(() => ""));
-      process.exit(1);
+    const body = JSON.stringify({ host: HOST, key: INDEXNOW_KEY, keyLocation: `${SITE}/${INDEXNOW_KEY}.txt`, urlList: chunk });
+    let ok = 0;
+    for (const ep of ENDPOINTS) {
+      const res = await fetch(ep, { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8" }, body }).catch((e) => ({ status: 0, text: async () => String(e) }));
+      // 200 받음 · 202 받음(키 확인 대기) · 400 형식 오류 · 403 키 불일치/확인 전 · 422 호스트 불일치 · 429 너무 잦음
+      console.log(`IndexNow ${new URL(ep).host} ${res.status} — ${chunk.length}개`);
+      if (res.status === 200 || res.status === 202) ok++;
+      else console.error("  " + (await res.text().catch(() => "")).slice(0, 200));
     }
+    if (!ok) process.exit(1);
   }
 }
 
