@@ -1,0 +1,104 @@
+{
+  "country": "US",
+  "year": 2026,
+  "draft": true,
+  "verifiedOn": "2026-10-21",
+  "status": "초안 — 페이지에서 쓰지 않는다(다음 회차가 2순위로 /en-us/ 페이지를 만들며 draft 를 지움). 연방 Schedule A 의료비 항목별 공제만, 주(州) 소득세 의료비 공제는 다루지 않음(us.md 주의). 숫자 전부 원문 확인(notVerified 비움, 2026-10-21)",
+  "sources": [
+    {
+      "label": "IRS Topic no. 502, Medical and dental expenses (Page Last Reviewed or Updated: 09-Oct-2026)",
+      "url": "https://www.irs.gov/taxtopics/tc502",
+      "checkedOn": "2026-10-21",
+      "quote": "If you itemize your deductions for a taxable year on Schedule A (Form 1040) … you may be able to deduct the medical and dental expenses you paid for yourself, your spouse, and your dependents during the taxable year to the extent these expenses exceed 7.5% of your adjusted gross income for the year. The deduction applies only to expenses not compensated by insurance or otherwise"
+    },
+    {
+      "label": "26 U.S.C. 213(a)·(b)·(d)(1) — OLRC 다운로드 htm_usc26@119-121.zip(PRELIMusc26.htm, 2026-10-15 판)",
+      "url": "https://uscode.house.gov/download/releasepoints/us/pl/119/121/htm_usc26@119-121.zip",
+      "checkedOn": "2026-10-21",
+      "quote": "213(a) expenses paid during the taxable year, not compensated for by insurance or otherwise, for medical care of the taxpayer, his spouse, or a dependent … to the extent that such expenses exceed 7.5 percent of adjusted gross income. (b) medicine or a drug … only if … a prescribed drug or is insulin. — 연도 제한(일몰) 문구 없음"
+    },
+    {
+      "label": "Schedule A (Form 1040) 2025, lines 1–4",
+      "url": "https://www.irs.gov/pub/irs-pdf/f1040sa.pdf",
+      "checkedOn": "2026-10-21",
+      "quote": "Caution: Do not include expenses reimbursed or paid by others. 1 Medical and dental expenses (see instructions) 2 Enter amount from Form 1040 or 1040-SR, line 11b 3 Multiply line 2 by 7.5% (0.075) 4 Subtract line 3 from line 1. If line 3 is more than line 1, enter -0-"
+    },
+    {
+      "label": "Instructions for Schedule A (Form 1040) (2025) (Page Last Reviewed or Updated: 30-Apr-2026)",
+      "url": "https://www.irs.gov/instructions/i1040sca",
+      "checkedOn": "2026-10-21",
+      "quote": "You can deduct only the part of your medical and dental expenses that exceeds 7.5% of the amount of your adjusted gross income on Form 1040 or 1040-SR, line 11b. … Line 1 … total of your medical and dental expenses after you reduce these expenses by any payments received from insurance or other sources … can't include insurance premiums paid by making a pretax reduction to your employee compensation … 21 cents a mile … Don't deduct more than $50 a night for each person"
+    },
+    {
+      "label": "IRS Publication 502 (2025), Medical and Dental Expenses — For use in preparing 2025 Returns (Page Last Reviewed or Updated: 30-Apr-2026)",
+      "url": "https://www.irs.gov/publications/p502",
+      "checkedOn": "2026-10-21",
+      "quote": "You can deduct on Schedule A (Form 1040) only the part of your medical and dental expenses that is more than 7.5% of your adjusted gross income (AGI). … standard medical mileage rate of 21 cents a mile [2025] … The amount you include in medical expenses for lodging can't be more than $50 for each night for each person … Age 40 or under—$480 … Age 71 or over—$6,020 [2025] … Note: The limit on premiums is for each person."
+    },
+    {
+      "label": "IRS Standard mileage rates (Page Last Reviewed or Updated: 28-Jul-2026)",
+      "url": "https://www.irs.gov/tax-professionals/standard-mileage-rates",
+      "checkedOn": "2026-10-21",
+      "quote": "2026 (July 1 – Dec. 31) Medical or military moving 23.5 (IR-2026-29) · 2026 (Jan. 1 – June 30) 20.5 (IR-2025-128) · 2025 21 (IR-2024-312)"
+    },
+    {
+      "label": "Rev. Proc. 2025-32 (2026 inflation adjustments) §3.14 Standard Deduction, §3.27 Eligible Long-Term Care Premiums",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+      "checkedOn": "2026-10-21",
+      "quote": "For taxable years beginning in 2026 … MFJ and Surviving Spouses $32,200 · Heads of Households $24,150 · Unmarried $16,100 · MFS $16,100 … aged or blind $1,650 … increased to $2,050 if … unmarried and not a surviving spouse … LTC: 40 or less $500 · >40 ≤50 $930 · >50 ≤60 $1,860 · >60 ≤70 $4,960 · >70 $6,200"
+    },
+    {
+      "label": "IRS Publication 501 (2025) Table 6·Table 8 — For use in preparing 2025 Returns (Page Last Reviewed or Updated: 30-Apr-2026)",
+      "url": "https://www.irs.gov/publications/p501",
+      "checkedOn": "2026-10-21",
+      "quote": "Table 6 [2025]: Single or Married filing separately $15,750 · Married filing jointly or Qualifying surviving spouse 31,500 · Head of household 23,625 … If born before January 2, 1961, or blind, multiply $2,000 ($1,600 if married) by the number in the box above."
+    }
+  ],
+  "floor": {
+    "agiPercent": 7.5,
+    "rule": "공제액 = max(0, 의료비(보험·기타로 보전받은 금액 뺀 것) − AGI × 0.075) — Schedule A line 1 − line 3, 음수면 0(line 4). AGI = Form 1040 line 11b. 세액공제가 아니라 소득공제이고, 항목별 공제(Schedule A)를 고를 때만 쓸모 있음",
+    "statute": "26 U.S.C. 213(a) — 7.5 percent, 일몰 문구 없음(2026-10-15 판). 2026 Schedule A 서식은 아직 안 나옴 — 7.5% 는 법조문 근거로 2026 에도 같음"
+  },
+  "mileage": {
+    "unit": "USD per mile",
+    "byPeriod": [
+      { "period": "2025", "rate": 0.21, "source": "IR-2024-312 · Pub 502 (2025)" },
+      { "period": "2026-01-01..2026-06-30", "rate": 0.205, "source": "IR-2025-128" },
+      { "period": "2026-07-01..2026-12-31", "rate": 0.235, "source": "IR-2026-29" }
+    ],
+    "rule": "실제 기름값·오일 대신 표준 단가 × 마일 가능, 주차비·통행료는 어느 방식이든 더함. 감가상각·보험·수리는 안 됨(Pub 502). 2026 은 한 해에 단가가 둘 — 7월 1일 전후 마일을 나눠 곱해야 함"
+  },
+  "lodgingPerNightPerPerson": 50,
+  "longTermCarePremiumLimit": {
+    "rule": "qualified LTC 보험료는 사람마다(each person) 그해 말 나이 구간 한도까지만 의료비에 넣음",
+    "2025": [
+      { "ageTo": 40, "limit": 480 },
+      { "ageFrom": 41, "ageTo": 50, "limit": 900 },
+      { "ageFrom": 51, "ageTo": 60, "limit": 1800 },
+      { "ageFrom": 61, "ageTo": 70, "limit": 4810 },
+      { "ageFrom": 71, "limit": 6020 }
+    ],
+    "2026": [
+      { "ageTo": 40, "limit": 500 },
+      { "ageFrom": 41, "ageTo": 50, "limit": 930 },
+      { "ageFrom": 51, "ageTo": 60, "limit": 1860 },
+      { "ageFrom": 61, "ageTo": 70, "limit": 4960 },
+      { "ageFrom": 71, "limit": 6200 }
+    ]
+  },
+  "standardDeduction": {
+    "rule": "의료비 공제는 항목별 공제 합계가 표준공제보다 클 때만 의미가 있음(Schedule A 지침 General Instructions 'take the larger of your itemized deductions or your standard deduction'). 페이지는 비교만 보여주고 다른 항목(SALT·모기지 이자·기부)은 사용자가 넣게",
+    "2025": { "single": 15750, "marriedFilingSeparately": 15750, "marriedFilingJointly": 31500, "qualifyingSurvivingSpouse": 31500, "headOfHousehold": 23625, "agedOrBlindAdditional": { "unmarried": 2000, "married": 1600 } },
+    "2026": { "single": 16100, "marriedFilingSeparately": 16100, "marriedFilingJointly": 32200, "qualifyingSurvivingSpouse": 32200, "headOfHousehold": 24150, "agedOrBlindAdditional": { "unmarried": 2050, "married": 1650 } }
+  },
+  "examples": [
+    { "from": "Pub 502 (2025) Car expenses Example", "miles": 2800, "rate": 0.21, "tollsParking": 100, "actualGasOil": 430, "standardTotal": 688, "actualTotal": 530, "note": "2,800 × 0.21 = 588 + 100 = 688 > 530 이라 688 을 넣음" },
+    { "from": "Pub 502 (2025) Premium tax credit Example 1", "premiums": 8700, "allowedPTC": 3600, "line1Premiums": 5100 },
+    { "from": "Pub 502 (2025) Premium tax credit Example 2", "premiums": 8700, "allowedPTC": 4900, "line1Premiums": 3800 },
+    { "from": "Pub 502 (2025) Nursing services", "weeklyPay": 300, "householdShare": 0.1, "includible": 270 },
+    { "from": "손계산(원문 예시 아님 — Schedule A line 1–4 식)", "agi": 60000, "expenses": 7000, "line3": 4500, "line4": 2500 },
+    { "from": "손계산(원문 예시 아님)", "agi": 80000, "expenses": 5000, "line3": 6000, "line4": 0 }
+  ],
+  "notVerified": [],
+  "note": "공제액(소득에서 빼는 금액)까지만 계산한다 — '아낀 세금'은 한계세율·신고 유형·다른 공제가 필요해 계산하지 않음(세율표 안 씀). 한국 의료비 세액공제(총급여 3% 초과분 × 15%, 한도)와 1:1 대응이 아님: 미국은 AGI 7.5% 초과분 전액을 소득공제, 공제율·상한 없음, 항목별 공제를 고를 때만. HSA·FSA 로 낸 의료비는 이미 세금 혜택을 받아 넣지 못함(Pub 502·969, 자세한 규칙은 이 파일 밖). self-employed health insurance deduction(Form 7206)은 Schedule 1 조정 항목이라 이 계산 밖 — 남은 보험료만 line 1. 주 소득세 의료비 공제는 주마다 달라 다루지 않음. 1040 금액 반올림(whole dollars) 규칙은 1040 지침을 안 읽어 쓰지 않음 — 페이지는 센트까지 계산. Pub 502·Pub 501 은 2025 판(2025 신고용)이라 2025 숫자에 2026 을 붙이지 않았음 — 2026 숫자는 Rev. Proc. 2025-32·mileage 표에서만. Pub 502 (2026) 이 나오면(2027 초) 다시 대조"
+}
