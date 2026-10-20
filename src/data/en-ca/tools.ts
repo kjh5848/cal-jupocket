@@ -26,4 +26,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-ca/tools/compound/",
+    ko: "/tools/compound/",
+    name: "Compound Interest Calculator",
+    blurb: "Grow a starting balance plus monthly deposits in Canadian dollars: interest earned, daily vs monthly compounding, TFSA and GIC notes, after-tax and inflation-adjusted balance",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

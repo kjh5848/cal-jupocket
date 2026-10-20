@@ -1,0 +1,252 @@
+---
+/**
+ * Compound interest calculator — 캐나다판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 EN 사전, 통화는 판의 CAD), 문장은 캐나다 영어로 새로 썼다(번역 아님). 복리 산술이라 rates 와 상관없다(조사표 캐나다 칸 '같음').
+ *
+ * 소제목은 캐나다 구글 자동완성에서 왔다(keywords/ca-compound-2026-10-21.csv, hl en · gl ca):
+ *   compound interest calculator canada monthly · savings calculator canada / tfsa compound interest calculator /
+ *   compound interest calculator canada daily / gic compound interest calculator · gic simple interest calculator /
+ *   compound interest calculator canada with inflation / compound interest calculator cra / rrsp compound interest calculator canada
+ * 세율 기본값은 0% — 한국어판 15.4% 는 한국 원천징수라 쓰지 않는다. 캐나다 쪽 사실은 canada.ca(CRA) 원문에서 확인한 것만:
+ *   2026 TFSA dollar limit $7,000(https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/calculate-room.html, 2026-02-20),
+ *   "Generally, income earned in a TFSA is tax-free, even when it is withdrawn."(RC4157 Rev. 25,
+ *   https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/rc4157/deducting-income-tax-on-pension-other-income-filing-t4a-slip-summary.html),
+ *   이자는 total income 으로 신고·compound GIC 는 complete investment year 마다 신고(line 12100,
+ *   https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/personal-income/line-12100-interest-other-investment-income.html, 2026-01-20).
+ *   모두 확인 2026-10-21. 세율 숫자는 적지 않는다(연방·주 세율과 개인 사정마다 다름).
+ * 일복리·연복리 ↔ 월복리 환산은 산술이다. 본문 숫자는 전부 아래 frontmatter 에서 compound() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import "../../../../styles/global.css";
+
+const title = "Compound Interest Calculator Canada — Monthly Savings, TFSA, GIC, Inflation";
+const description =
+  "Canadian compound interest calculator in dollars: starting balance plus monthly deposits, interest earned, daily vs monthly compounding, TFSA and GIC notes.";
+
+const base = { principal: 5_000, monthly: 500, ratePct: 4, months: 120, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const regular = compound({ ...base, principal: 0, timing: "start" });
+const real2 = compound({ ...base, timing: "start", inflationPct: 2 });
+/** 연 4% 를 매일 복리로 돌릴 때와 같은 결과를 내는 월복리 연 이율 */
+const monthlyForDaily = 12 * (Math.pow(1 + 0.04 / 365, 365 / 12) - 1) * 100;
+const exDaily = compound({ ...base, ratePct: Number(monthlyForDaily.toFixed(3)), timing: "start" });
+/** 연 1회 복리(연 4%)와 같은 결과를 내는 월복리 연 이율 — 연복리 GIC 비교용 */
+const monthlyForAnnual = 12 * (Math.pow(1.04, 1 / 12) - 1) * 100;
+const gic = 10_000;
+const gicCompound5 = compound({ principal: gic, monthly: 0, ratePct: Number(monthlyForAnnual.toFixed(3)), months: 60, taxPct: 0, inflationPct: 0, timing: "start" });
+const gicSimpleInterest5 = gic * 0.04 * 5;
+const cad = (x: number) =>
+  Math.round(x).toLocaleString("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+---
+
+<html lang="en-CA">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Compound Interest Calculator</h1>
+      <p>
+        Enter a starting balance, how much you add each month and an annual interest rate or return. The calculator adds interest
+        every month and shows the ending balance, how much of it is your own deposits and how much is interest. The rate, tax and
+        inflation figures are assumptions you choose — the result is not a quote for any real savings account, GIC, TFSA or RRSP.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">Starting balance ($)</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value="5,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">Monthly deposit ($)</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="500" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">Annual interest rate or return</label>
+          <input type="number" id="cp-rate" value="4" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">Term</label>
+          <input type="number" id="cp-period" value="10" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="Time unit">
+            <option value="years" selected>years</option>
+            <option value="months">months</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">Deposit timing</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>Start of each month</option>
+            <option value="end">End of each month</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">Tax on the interest (assumption)</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">Inflation per year</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">Savings goal ($, optional)</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder="e.g. 50,000" autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="Deposits|Interest"
+          data-dock="cp-hero"
+        >
+          <p class="label">Ending balance (before tax)</p>
+          <p class="big" id="cp-hero">{cad(ex.balance)}</p>
+          <p class="meta" id="cp-note">120 months · 0.3333% a month · deposits at the start of each month</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total deposits</span><span class="value" id="cp-paid">{cad(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">Interest earned</span><span class="value" id="cp-gain2">{cad(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">Tax (assumed)</span><span class="value" id="cp-tax-v">$0</span></div>
+          <div class="stat-chip"><span class="label">After tax</span><span class="value" id="cp-after">{cad(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">In today's dollars</span><span class="value" id="cp-real">{cad(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">Goal reached</span><span class="value" id="cp-goal-v">No goal set</span></div>
+        </div>
+
+        <details>
+          <summary>Year-by-year deposits, interest and balance</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Period</th><th>Deposits that year</th><th>Interest that year</th><th>Balance</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">Year {r.year}</th><td>{cad(r.paid)}</td><td>{cad(r.gain)}</td><td>{cad(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">The starting balance is not counted in "Deposits that year"; it only shows up in the balance.</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Monthly compound interest in Canada: how it is worked out</h2>
+      <ul>
+        <li><strong>Monthly rate</strong> — r = annual rate ÷ 12. At 4% a year that is about 0.333% a month.</li>
+        <li><strong>Deposit at the start of the month</strong> — the new money earns that month's interest: balance = (balance + deposit) × (1 + r).</li>
+        <li><strong>Deposit at the end of the month</strong> — interest is added first, then the deposit: balance = balance × (1 + r) + deposit. The last deposit earns nothing, so the total is a little lower.</li>
+        <li><strong>Formula</strong> — after n months, FV = P(1 + r)<sup>n</sup> + PMT × [(1 + r)<sup>n</sup> − 1] ÷ r, with the PMT part multiplied by (1 + r) once more for start-of-month deposits. P is the starting balance and PMT the monthly deposit.</li>
+        <li><strong>Tax</strong> — if the ending balance is above your total deposits, the tax rate you enter is taken once from that gain. A loss is not taxed.</li>
+      </ul>
+      <p>
+        Example: {cad(base.principal)} to start and {cad(base.monthly)} a month at 4% a year for 10 years. You put in
+        {" "}{cad(ex.paid)} and end with {cad(ex.balance)}, of which {cad(ex.gain)} is interest. With deposits at the end of
+        each month instead, the balance is {cad(exEnd.balance)}.
+      </p>
+
+      <h2>Savings calculator: a lump sum vs monthly deposits</h2>
+      <p>
+        Money that is there from day one compounds for the whole term; each later deposit has less time to grow. In the example the
+        {" "}{cad(base.principal)} starting balance on its own grows to {cad(lump.balance)} in 10 years, while the
+        {" "}{cad(base.monthly)} monthly deposits on their own grow to {cad(regular.balance)}. Set either field to $0 to see one part
+        alone. To check a savings goal, type it in the goal field.
+      </p>
+
+      <h2>TFSA compound interest calculator</h2>
+      <p>
+        The CRA says that, generally, income earned in a TFSA is tax-free, even when it is withdrawn. So for money held in a TFSA,
+        leave the tax field at 0%. What limits a TFSA is contribution room rather than tax: the CRA gives the 2026 TFSA dollar
+        limit as $7,000, and your own room also depends on earlier years' limits, contributions and withdrawals. This calculator
+        does not check room — if your monthly deposits add up to more than your room for the year, check with the CRA before you
+        contribute (<a href="https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributing/calculate-room.html" rel="noopener" target="_blank">CRA: Calculate your TFSA contribution room</a>,
+        checked 21 October 2026).
+      </p>
+
+      <h2>Daily compound interest vs monthly</h2>
+      <p>
+        This calculator compounds once a month. If your rate is compounded daily, the same annual rate grows a little faster. To
+        get the daily result here, convert the rate first: monthly-equivalent rate = 12 × [(1 + rate ÷ 365)<sup>365/12</sup> − 1].
+        For 4% compounded daily that is about {monthlyForDaily.toFixed(3)}%; entering it lifts the example to
+        {" "}{cad(exDaily.balance)} from {cad(ex.balance)}. Your account agreement says how often interest is calculated and paid.
+      </p>
+
+      <h2>GIC compound interest vs simple interest</h2>
+      <p>
+        Some GICs add interest to the balance (compound), others pay it out as it is earned (simple). For {cad(gic)} at 4% a year
+        for 5 years, interest paid out once a year adds up to {cad(gicSimpleInterest5)}. If it compounds once a year instead,
+        enter a monthly-equivalent rate of 12 × [(1.04)<sup>1/12</sup> − 1] ≈ {monthlyForAnnual.toFixed(3)}%, a {cad(gic)}
+        {" "}starting balance, $0 a month and 5 years: the balance comes to {cad(gicCompound5.balance)}, or
+        {" "}{cad(gicCompound5.gain)} of interest. Check the GIC's terms for how interest is compounded and when it is paid.
+      </p>
+
+      <h2>Compound interest calculator with inflation</h2>
+      <p>
+        "In today's dollars" divides the after-tax balance by (1 + inflation)<sup>years</sup>. With 2% inflation, the example's
+        {" "}{cad(ex.balance)} is worth about {cad(real2.real)} in today's money. Leave inflation at 0% for the plain dollar figure.
+      </p>
+
+      <h2>Compound interest formula in Excel</h2>
+      <p>
+        Excel's FV function gives the same answer. For start-of-month deposits use
+        <code>=FV(4%/12, 120, -500, -5000, 1)</code>; for end-of-month deposits change the final 1 to 0. The deposit and the
+        starting balance are negative because they are money going out. Google Sheets takes the same formula.
+      </p>
+
+      <details>
+        <summary>Is interest outside a TFSA taxed? (compound interest and the CRA)</summary>
+        <p>
+          The CRA says interest and other investment income are part of your total income and must be reported on your return. For
+          an investment such as a compound GIC, where interest is reinvested and usually paid only when it matures, you report the
+          interest earned in each complete investment year, even if you did not get a T5 slip. The tax itself depends on federal
+          and provincial rates and your own situation, so the calculator does not assume one — enter your own figure in the tax
+          field if you want an after-tax estimate
+          (<a href="https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/personal-income/line-12100-interest-other-investment-income.html" rel="noopener" target="_blank">CRA: Line 12100 – Interest and other investment income</a>,
+          checked 21 October 2026).
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I use it as an RRSP or RESP compound interest calculator?</summary>
+        <p>
+          Only as a rough picture of growth at an assumed return. RRSPs and RESPs have their own rules for contributions, tax and
+          withdrawals, and invested balances also move with fees and with returns that go up and down. None of that is modelled
+          here.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I enter cents or a $ sign?</summary>
+        <p>
+          Amounts are whole dollars. A typed $ sign and commas are ignored, but a decimal point is not read as cents — enter 1500
+          rather than 1,500.50.
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-en-ca" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
