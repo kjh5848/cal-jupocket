@@ -79,7 +79,7 @@ const REUSED = computeGift({
 });
 
 const ONE = computeGift({ amount: 억, relation: "ascendant" });
-const ANSWER = `증여세 면제한도(증여재산공제)는 10년 동안 배우자 ${formatMan(relationCap("spouse"))}, 부모에게 받는 성년 자녀 ${formatMan(ASCENDANT_CAP)}(미성년 ${formatMan(MINOR_CAP)}), 자녀에게 받는 부모 ${formatMan(relationCap("descendant"))}, 그 밖의 친족 ${formatMan(relationCap("relative"))}입니다(상속세 및 증여세법 제53조). 결혼·출산이면 부모에게 받을 때 ${formatMan(MB)}이 더 붙고, 신고는 증여받은 달의 말일부터 3개월 안에 받은 사람이 합니다(제68조). 2026년 1월 2일 시행 법 기준, 국가법령정보센터 원문 확인 ${r.verifiedOn}.`;
+const ANSWER = `증여세 면제한도(증여재산공제)는 10년 동안 배우자 ${formatMan(relationCap("spouse"))}, 부모에게 받는 성년 자녀 ${formatMan(ASCENDANT_CAP)}(미성년 ${formatMan(MINOR_CAP)}), 자녀에게 받는 부모 ${formatMan(relationCap("descendant"))}, 그 밖의 친족 ${formatMan(relationCap("relative"))}입니다(상속세 및 증여세법 제53조). 결혼·출산이면 부모에게 받을 때 ${formatMan(MB)}이 더 붙고, 신고는 증여받은 달 말일부터 3개월 안입니다(${r.verifiedOn} 법령 원문 확인).`;
 const QA = [
   { q: "증여세 면제한도, 누구에게 얼마인가요?", a: `준 사람과의 관계로 정해집니다. 배우자 ${formatMan(relationCap("spouse"))}, 직계존속(부모·조부모) ${formatMan(ASCENDANT_CAP)}(받는 사람이 미성년자면 ${formatMan(MINOR_CAP)}), 직계비속 ${formatMan(relationCap("descendant"))}, 4촌 이내 혈족·3촌 이내 인척 ${formatMan(relationCap("relative"))}이고 이 금액까지는 세금이 0원입니다(제53조).` },
   { q: "왜 여기저기 “10년”이 붙나요?", a: `공제가 한 번 쓰는 금액이 아니라 10년 한도이기 때문입니다. 증여받기 전 10년 안에 공제받은 금액을 합쳐 한도를 넘으면 공제하지 않고(제53조), 같은 사람에게 10년 안에 받은 금액도 합산합니다(제47조 제2항). 10년이 지나면 한도가 다시 생깁니다.` },
