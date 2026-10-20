@@ -53,4 +53,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-gb/tools/sec-convert/",
+    ko: "/tools/sec-convert/",
+    name: "Seconds to minutes converter",
+    blurb: "Milliseconds, seconds, minutes, hours and days side by side, h:mm:ss and a decimal hours chart for UK timesheets",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
