@@ -16,6 +16,14 @@ import {
 } from "../lib/sec-convert";
 import { UNIT_NAME_ID, withUnitId, readableId } from "../lib/id/sec-convert";
 import { UNIT_NAME_ZH_HANT, withUnitZhHant, readableZhHant } from "../lib/hk/sec-convert";
+import {
+  UNIT_NAME_FR,
+  withUnitFr,
+  readableFr,
+  readInputFr,
+  digitsFr,
+  partsSubFr,
+} from "../lib/fr/sec-convert";
 import { pickLang } from "../i18n/ui";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
@@ -112,13 +120,31 @@ const ZH_HANT: typeof KO = {
   shareText: "秒、分鐘、小時換算 - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT });
+/** 프랑스어판(/fr/tools/sec-convert/) — 숫자는 fr-FR 꼴(천 단위 좁은 공백·소수 쉼표), 표기는 lib/fr/sec-convert.ts. */
+const FR: typeof KO = {
+  unit: UNIT_NAME_FR,
+  withUnit: withUnitFr,
+  readable: readableFr,
+  heroLabel: (v: string, unit: Unit) => `${withUnitFr(v, unit)} =`,
+  heroSub: (other: string, unit: Unit, hms: string) => `${withUnitFr(other, unit === "min" ? "s" : "min")} · h:mm:ss ${digitsFr(hms)}`,
+  bad: "Entrez un nombre positif ou nul (virgule ou point pour les décimales, 6 décimales et 15 chiffres entiers au plus)",
+  lineIn: "Valeur",
+  lineReadable: "Heures, minutes, secondes",
+  partsSub: partsSubFr,
+  cardTitle: "Convertir secondes, minutes, heures",
+  shareText: "Convertir secondes, minutes, heures - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT, fr: FR });
+/** 입력 읽기·숫자 칸 표기 — 프랑스어판만 쉼표 소수를 읽고 fr-FR 꼴로 쓴다. 다른 판은 그대로. */
+const readIn = pickLang<(raw: string) => string>({ ko: (raw) => raw, fr: readInputFr });
+const num = pickLang<(s: string) => string>({ ko: (s) => s, fr: digitsFr });
 
 let lastLines: [string, string][] = [];
 
 function compute() {
   const unit = unitIn.value as Unit;
-  const n = toNanos(valIn.value, unit);
+  const n = toNanos(readIn(valIn.value), unit);
   if (n === null) {
     set("err", S.bad);
     set("hero-value", "—");
@@ -132,18 +158,18 @@ function compute() {
   set("hero-label", S.heroLabel(all[unit], unit));
   set("hero-value", S.readable(n));
   set("hero-sub", S.heroSub(all[unit === "min" ? "s" : "min"], unit, clock(n)));
-  for (const u of UNITS) set(`v-${u}`, all[u]);
+  for (const u of UNITS) set(`v-${u}`, num(all[u]));
   lastLines = [
     [S.lineIn, S.withUnit(all[unit], unit)],
     [S.lineReadable, S.readable(n)],
-    [S.unit.s, all.s],
-    [S.unit.min, all.min],
-    [S.unit.h, all.h],
+    [S.unit.s, num(all.s)],
+    [S.unit.min, num(all.min)],
+    [S.unit.h, num(all.h)],
   ];
 }
 
 function computeParts() {
-  const n = partsToNanos(parts[0].value, parts[1].value, parts[2].value, parts[3].value);
+  const n = partsToNanos(readIn(parts[0].value), readIn(parts[1].value), readIn(parts[2].value), readIn(parts[3].value));
   if (n === null) {
     set("p-err", S.bad);
     set("p-value", "—");
