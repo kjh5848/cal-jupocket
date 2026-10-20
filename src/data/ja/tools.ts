@@ -109,6 +109,15 @@ export const tools: LocaleTool[] = [
     basis: "math",
   },
   {
+    href: "/ja/tools/time-12-24/",
+    ko: "/tools/time-12-24/",
+    name: "12時間表記・24時間表記 変換",
+    blurb: "午後3時40分 ↔ 15:40 をすぐ変換、午前0時・午後0時・正午・午前12時の書き方も確認",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
+  {
     href: "/ja/consumption-tax/",
     name: "消費税計算（税抜・税込）",
     blurb: "税抜価格から税込価格、税込価格から税抜価格と消費税額を10％・8％で計算",

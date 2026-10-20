@@ -1,0 +1,252 @@
+---
+/**
+ * 12時間表記・24時間表記 変換 — 일본어판(/ja/tools/time-12-24/). 한국어판 /tools/time-12-24/ 와 셈은 같지만
+ * 12시 쪽 표기 규칙(한국 12:00 = 오후 12:00 ↔ 일본 改暦ノ布告 午前十二時 = 午刻)이 달라 계산은 lib/jp/time-12-24.ts,
+ * 스크립트는 이 페이지 안 <script> 로 따로 둔다. 문장은 일본어로 새로 썼다(번역 아님).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/jp-time-12-24-2026-10-21.csv):
+ *   午前0時 午後0時 違い / 午前12時 何時·いつ·午後0時 どっち / 午後12時 いつ·正午 / 正午は午前か午後か /
+ *   午前12時30分とは·午後12時30分 いつ / 12時間表記 24時間表記 変換·違い·英語 / エクセル 24時間表記 変換 / 午前 午後 由来
+ * 근거(e-Gov 법령 API, 2026-10-21 확인): 改暦ノ布告(105DF0000000337) 본문·時刻表, 人事院規則九―一五·二〇―〇 의 '午後零時'.
+ * 公用文·プリント(小学生) 축은 허용 출처 원문이 없어 쓰지 않았다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { parseTimeJa, text24, textJa, colonJa, textEn, hourTableJa } from "../../../../lib/jp/time-12-24";
+
+const title = "12時間表記・24時間表記 変換 — 午後3時は15時、午前0時・午後0時・正午の書き方";
+const description =
+  "午後3時40分は15:40、23:59は午後11時59分のように12時間表記と24時間表記をすぐ変換します。午前0時と午後0時の違い、午前12時・午後12時はいつか、正午の書き方を改暦ノ布告の時刻表で確かめられます。";
+
+const EX = "15:40";
+const m0 = parseTimeJa(EX)!.min;
+const table = hourTableJa();
+const PRESETS: [string, string][] = [
+  ["午前0時", "午前0時"],
+  ["正午", "正午"],
+  ["午後0時30分", "午後0時30分"],
+  ["午後3:40", "午後3:40"],
+  ["23:59", "23:59"],
+];
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>12時間表記・24時間表記 変換</h1>
+      <p>
+        午後3時40分は24時間表記で15:40です。午後の時刻は「時」に12を足し、24時間表記の13時以降は12を引いて「午後」を付けます。
+        この計算機は0時を基準に、深夜0時を午前0時、正午を午後0時と書きます。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="t-in">時刻（午前・午後の表記でも24時間表記でも）</label>
+          <input type="text" id="t-in" autocomplete="off" value={EX} placeholder="例：午後3時40分・15:40・3:40 PM" />
+        </div>
+        <div class="t-presets">
+          {PRESETS.map(([label, v]) => <button type="button" class="secondary" data-t={v}>{label}</button>)}
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{EX} =</p>
+          <p class="big" id="hero-value">{textJa(m0)}</p>
+          <p class="hint" id="hero-sub">{colonJa(m0)} ・ {textEn(m0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip"><span class="label">24時間表記</span><span class="value" id="v-24">{text24(m0)}</span></div>
+          <div class="stat-chip"><span class="label">12時間表記</span><span class="value" id="v-12">{textJa(m0)}</span></div>
+          <div class="stat-chip"><span class="label">午前・午後＋コロン</span><span class="value" id="v-colon">{colonJa(m0)}</span></div>
+          <div class="stat-chip"><span class="label">英語</span><span class="value" id="v-en">{textEn(m0)}</span></div>
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>0時〜23時の対照表</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>24時間表記</th><th>12時間表記</th><th>24時間表記</th><th>12時間表記</th></tr></thead>
+          <tbody>
+            {table.slice(0, 12).map((r, i) => (
+              <tr><td>{r[0]}</td><td>{r[1]}{i === 0 ? "（＝午後12時）" : ""}</td><td>{table[i + 12][0]}</td><td>{table[i + 12][1]}{i === 0 ? "（＝午前12時・正午）" : ""}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>変換のしかた</h2>
+      <ul>
+        <li>
+          <strong>午後 → 24時間表記は12を足す</strong> — 午後3時40分は 3 + 12 = 15時で15:40。午前は数字がそのままで、午前9時5分は09:05です。分はどちらの表記でも変わりません。
+        </li>
+        <li>
+          <strong>24時間表記 → 午後は12を引く</strong> — 13時〜23時は12を引いて「午後」を付けます（18:30 → 午後6時30分）。1時〜11時は「午前」を付けるだけです。
+        </li>
+        <li>
+          <strong>12時台だけは「午後0時」</strong> — 12:30は午後0時30分、0:30は午前0時30分です。0時を基準にすると、午前も午後も0時〜11時59分の範囲に収まります。
+        </li>
+        <li>
+          <strong>24:00・25時は入れない</strong> — 一日が終わる時刻は翌日の00:00として入れてください。この計算機は表記を変えるだけで、日付や時差は計算しません。
+        </li>
+      </ul>
+
+      <h2>午前0時と午後0時の違い</h2>
+      <p>
+        午前0時は日付が変わる深夜の時刻（00:00）、午後0時は昼の12時（12:00、正午）です。明治5年の改暦ノ布告は「子刻ヨリ午刻迄ヲ十二時ニ分チ午前幾時ト称シ午刻ヨリ子刻迄ヲ十二時ニ分チ午後幾時ト称候事」として、午刻（正午）までを午前、正午から子刻（深夜0時）までを午後と定めました。
+      </p>
+
+      <details>
+        <summary>午前12時はいつですか？</summary>
+        <p>
+          改暦ノ布告の時刻表では、午前は「零時」から始まって「十二時 午刻」で終わります。つまり午前12時は正午、24時間表記の12:00です。同じ12:00を、この計算機は0時を基準にして午後0時と表示します。
+        </p>
+      </details>
+
+      <details>
+        <summary>午後12時はいつですか？</summary>
+        <p>
+          時刻表の午後は「一時」から「十二時 子刻」までで、表の最初には「午前零時 即午後十二時」とあります。午後12時はその日が終わる深夜の時刻で、24時間表記では翌日の00:00です。計算機に「午後12時」と入れると00:00（翌日）を表示します。
+        </p>
+      </details>
+
+      <details>
+        <summary>正午は午前ですか、午後ですか？</summary>
+        <p>
+          布告は正午（午刻）を午前と午後の境目にしていて、時刻表では午前の最後が「十二時 午刻」です。いまの法令には「午後零時三十分」（人事院規則九―一五）や「午後零時から午後一時まで」（人事院規則二〇―〇）のように、正午からの1時間を午後0時台と書く例があります。迷うときは「正午」か24時間表記の12:00と書くと確実です。
+        </p>
+      </details>
+
+      <details>
+        <summary>午前12時30分・午後12時30分は何時ですか？</summary>
+        <p>
+          どちらも改暦ノ布告の時刻表にはない書き方です。午前は12時ちょうど（午刻）で終わり、午後12時は深夜0時なので、その30分後を「12時30分」と書く欄がありません。昼の12:30なら午後0時30分、深夜の0:30なら午前0時30分と入れてください。この計算機は午前12時30分・午後12時30分を受け付けず、書き直しをお願いする表示を出します。
+        </p>
+      </details>
+
+      <details>
+        <summary>英語のAM・PMではどう書きますか？</summary>
+        <p>
+          この計算機はデジタル時計と同じく、深夜0時を12:00 AM、正午を12:00 PM、15:40を3:40 PMと表示します。12:30 AMは0:30、12:30 PMは12:30として読みます。AM・PMの12時の扱いは日本の法令が決めているものではなく、この計算機の読み方です。
+        </p>
+      </details>
+
+      <details>
+        <summary>エクセルで24時間表記と12時間表記を変換するには？</summary>
+        <p>
+          A1に時刻が入っているとき、24時間表記の文字にするには <code>=TEXT(A1,"hh:mm")</code>、AM・PM付きにするには <code>=TEXT(A1,"h:mm AM/PM")</code> を使います。「15:40」のような文字を時刻の値に戻すのは <code>=TIMEVALUE("15:40")</code> です。AM/PMの部分の表示は、Excelの言語設定で変わることがあります。
+        </p>
+      </details>
+
+      <p>
+        何時間後は何時か、2つの時刻の間は何時間かは<a href="/ja/tools/time-calc/">時間計算</a>、秒や分を時間に直すのは<a href="/ja/tools/sec-convert/">秒・分・時間 変換</a>で計算できます。
+      </p>
+
+      <h2>出典</h2>
+      <ul>
+        <li><a href="https://laws.e-gov.go.jp/law/105DF0000000337" rel="noopener" target="_blank">明治五年太政官布告第三百三十七号（改暦ノ布告）</a>（e-Gov法令検索、2026年10月21日確認）</li>
+        <li><a href="https://laws.e-gov.go.jp/law/339RJNJ09015000" rel="noopener" target="_blank">人事院規則九―一五（宿日直手当）</a>・<a href="https://laws.e-gov.go.jp/law/409RJNJ20000000" rel="noopener" target="_blank">人事院規則二〇―〇</a>（「午後零時」の用例、2026年10月21日確認）</li>
+      </ul>
+
+      <AdSlot label="time-12-24-result-ja" />
+    </main>
+    <SiteFooter />
+    <style>
+      .t-presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+    </style>
+    <script>
+      import { parseTimeJa, text24, textJa, colonJa, textEn, alt12 } from "../../../../lib/jp/time-12-24";
+      import { renderCard, downloadCard, shareCard } from "../../../../lib/result-card";
+      import { track, trackCalculatorUse } from "../../../../lib/track";
+
+      const reportUse = trackCalculatorUse("jp-time-12-24");
+      const $ = (id: string) => document.getElementById(id)!;
+      const inp = $("t-in") as HTMLInputElement;
+      const set = (id: string, text: string) => {
+        $(id).textContent = text;
+      };
+
+      let lastLines: [string, string][] = [];
+
+      function compute() {
+        const p = parseTimeJa(inp.value);
+        if (!p) {
+          set(
+            "err",
+            "例：午後3時40分・15:40・3:40 PM・正午（24時間表記は0〜23時。12時台は午後0時30分・午前0時30分のように入れてください）",
+          );
+          for (const id of ["hero-label", "hero-value", "hero-sub", "v-24", "v-12", "v-colon", "v-en"]) set(id, "—");
+          lastLines = [];
+          return;
+        }
+        set("err", p.dayEnd ? "午後12時はその日が終わる時刻です。24時間表記では翌日の00:00になります。" : "");
+        const alt = alt12(p.min);
+        const tag = alt ? `（＝${alt}${p.min === 0 ? "" : "・正午"}）` : "";
+        if (p.from === "12") {
+          set("hero-label", `${inp.value.trim()} =`);
+          set("hero-value", p.dayEnd ? `${text24(p.min)}（翌日）` : text24(p.min));
+        } else {
+          set("hero-label", `${text24(p.min)} =`);
+          set("hero-value", textJa(p.min));
+        }
+        set("hero-sub", `${textJa(p.min)}${tag} ・ ${textEn(p.min)}`);
+        set("v-24", text24(p.min));
+        set("v-12", textJa(p.min));
+        set("v-colon", colonJa(p.min));
+        set("v-en", textEn(p.min));
+        lastLines = [
+          ["24時間表記", text24(p.min)],
+          ["12時間表記", textJa(p.min) + tag],
+          ["英語", textEn(p.min)],
+        ];
+      }
+
+      inp.addEventListener("input", () => {
+        reportUse(1);
+        compute();
+      });
+      for (const b of document.querySelectorAll<HTMLButtonElement>("[data-t]")) {
+        b.addEventListener("click", () => {
+          inp.value = b.dataset.t!;
+          reportUse(1);
+          compute();
+        });
+      }
+
+      const buildCard = () => renderCard({ title: "12時間表記・24時間表記 変換", lines: lastLines, footer: "jupocket.com" });
+      $("btn-download").addEventListener("click", () => {
+        if (!lastLines.length) return;
+        track("save_result", { calculator: "jp-time-12-24" });
+        downloadCard(buildCard(), "time-12-24-result.png");
+      });
+      $("btn-share").addEventListener("click", async () => {
+        if (!lastLines.length) return;
+        track("share_result", { calculator: "jp-time-12-24" });
+        await shareCard(buildCard(), "12時間表記・24時間表記 変換 - jupocket.com");
+      });
+
+      compute();
+    </script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
