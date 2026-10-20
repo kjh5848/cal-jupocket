@@ -1,0 +1,172 @@
+---
+/**
+ * Percentage calculator — 영국판 첫 도구. 한국어판 /tools/percent/ 와 계산(lib/percent.ts)·스크립트(EN 사전)를 같이 쓰고,
+ * 문장은 영국 영어로 새로 썼다(번역 아님). 산술이라 나라 제도·rates 와 상관없다(조사표 영국 칸 '같음').
+ *
+ * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-percent-2026-10-20.csv):
+ *   how to calculate percentage of a number / percentage increase·decrease formula · between two numbers /
+ *   percentage off calculator · of money / percentage difference / of marks
+ * title·description 은 같은 영어 판(en-us·en-au 등)과 갈리게 UK 를 넣었다.
+ * VAT 숫자는 쓰지 않는다 — 영국 rates(src/rates/gb/vat-2026.json)는 아직 초안이다.
+ * 이 계산기에는 percentage difference(차이 ÷ 평균) 모드가 없어서, 그 말은 질문에서 change 와의 차이만 설명한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+
+const title = "Percentage Calculator UK — Percentage of a Number, Increase and Decrease";
+const description =
+  "UK percentage calculator: a percentage of a number, what percentage one number is of another, percentage increase or decrease and a price after a discount.";
+---
+
+<html lang="en-GB">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Percentage calculator</h1>
+      <p>
+        Choose what you want to find, then enter two numbers. Results are rounded to 2 decimal places.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">What do you want to find?</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>What % of A is B?</option>
+            <option value="of">What is B% of A?</option>
+            <option value="change">% change from A to B</option>
+            <option value="adjust">Add or take B% off A</option>
+            <option value="original">Original value before a B% change</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">Increase or decrease</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>Decrease (% off)</option>
+            <option value="up">Increase</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">Whole value A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">Part value B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B as a percentage of A</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Whole value A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Part value B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How to calculate a percentage of a number</h2>
+      <p>
+        Multiply the number by the percentage and divide by 100. 15% of 3,000 is 3,000 × 15 ÷ 100 = 450.
+        To go the other way and find what percentage one number is of another, divide the part by the whole
+        and multiply by 100: 45 marks out of 60 is 45 ÷ 60 × 100 = 75%.
+      </p>
+
+      <h2>Percentage increase and decrease formula</h2>
+      <p>
+        Take the old value away from the new value, divide by the old value and multiply by 100:
+      </p>
+      <ul>
+        <li><strong>Increase</strong> — from 2,000 to 2,500 is (2,500 − 2,000) ÷ 2,000 × 100 = +25%.</li>
+        <li><strong>Decrease</strong> — from 80 to 60 is (60 − 80) ÷ 80 × 100 = −25%.</li>
+      </ul>
+      <p>
+        Always divide by the value you started with. Going from 60 back up to 80 is a 33.33% increase, not 25%,
+        because the starting point is now 60.
+      </p>
+
+      <h2>Working out a price after a percentage off</h2>
+      <p>
+        A price with a percentage off is the original × (1 − the percentage as a decimal). 30% off 50.00 is
+        50.00 × 0.7 = 35.00, so the discount is 15.00. On a calculator, pressing <kbd>50</kbd> <kbd>×</kbd>
+        <kbd>0.7</kbd> is quicker than working out the discount first and taking it away.
+      </p>
+      <p>
+        To find the original price from a sale price, divide instead: 40.00 after 20% off was 40.00 ÷ 0.8 = 50.00
+        before the sale. Adding 20% back on (40.00 × 1.2 = 48.00) does not get you to the original.
+      </p>
+
+      <details>
+        <summary>Why doesn't a 20% rise followed by a 20% cut get back to the start?</summary>
+        <p>
+          Because the second percentage is taken from a different number. 100 plus 20% is 120, and 20% off 120 is
+          120 × 0.8 = 96. To get back to 100 from 120 you only need to take off 16.67%. The "original value" option
+          shows this.
+        </p>
+      </details>
+
+      <details>
+        <summary>What is the difference between percentage change and percentage difference?</summary>
+        <p>
+          Percentage change has a direction: it compares a new value with an old one and divides by the old value.
+          Percentage difference compares two values with no before and after, so it divides the gap by the average
+          of the two. This calculator works out percentage change; for 40 and 60 that is +50% going up and
+          −33.33% going down.
+        </p>
+      </details>
+
+      <details>
+        <summary>What happens if the old value is negative?</summary>
+        <p>
+          The calculator divides by the size of the old value (ignoring the minus sign), so a move upwards always
+          shows as an increase. A loss shrinking from −100 to −50 is (−50 − (−100)) ÷ 100 × 100 = +50%. If the old
+          value is 0 there is nothing to divide by, so only the difference is shown.
+        </p>
+      </details>
+
+      <details>
+        <summary>What is a percentage point?</summary>
+        <p>
+          If an interest rate goes from 3% to 4%, it has risen by <strong>1 percentage point</strong>, but the
+          percentage increase is (4 − 3) ÷ 3 × 100 = <strong>33.33%</strong>. The gap between two percentages is
+          measured in points; how big that gap is compared with the starting rate is the percentage change.
+        </p>
+      </details>
+
+      <AdSlot label="percent-result-en-gb" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
