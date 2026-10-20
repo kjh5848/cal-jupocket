@@ -2,6 +2,7 @@ import { parseNumber, formatNumber, parseNumberDe, formatNumberDe, ratio, percen
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pickLang } from "../i18n/ui";
+import { parseNumberFr, formatNumberFr } from "../lib/fr/number";
 
 /** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
 const reportUse = trackCalculatorUse("percent");
@@ -21,6 +22,7 @@ const bIn = $("b") as HTMLInputElement;
  * 영어 사전(EN)은 영어 다섯 판이 같이 쓰므로 통화 기호 등 한 나라 표기를 넣지 않는다.
  * 번체 사전(ZH_HANT)은 대만판·홍콩판이 같이 쓰므로 한 곳에만 쓰는 말(打折 등)·통화 기호를 넣지 않는다.
  * 독일어판(/de/tools/percent/)은 숫자 읽기·쓰기도 다르다 — 소수 쉼표(12,5), 천 단위 공백(아래 NUM).
+ * 프랑스어판(FR)도 숫자 읽기·쓰기가 다르다 — 쉼표가 소수점이라 lib/fr/number.ts 를 쓴다(NUM).
  */
 const KO = {
   labels: {
@@ -200,9 +202,44 @@ const DE: typeof KO = {
   share: "Ergebnis Prozentrechner - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE });
-/** 숫자 읽기·쓰기 — 독일어판만 소수 쉼표, 나머지 판은 지금 그대로 */
-const NUM = pickLang({ ko: { parse: parseNumber, fmt: formatNumber }, de: { parse: parseNumberDe, fmt: formatNumberDe } });
+const FR: typeof KO = {
+  labels: {
+    ratio: { a: "Valeur totale A", b: "Valeur partielle B", pct: false },
+    of: { a: "Valeur totale A", b: "Pourcentage B", pct: true },
+    change: { a: "Valeur de départ A", b: "Valeur d’arrivée B", pct: false },
+    adjust: { a: "Valeur initiale A", b: "Pourcentage B", pct: true },
+    original: { a: "Valeur après variation A", b: "Pourcentage de variation B", pct: true },
+  },
+  title: "Résultat du calcul de pourcentage",
+  nan: "Saisissez un nombre",
+  ratioZero: "A ne peut pas valoir 0",
+  divZero: "Division par 0 impossible",
+  ratioHero: "B représente ce pourcentage de A",
+  a: "Valeur totale A",
+  b: "Valeur partielle B",
+  ofHero: (a, b) => `${b} % de ${a}`,
+  whole: "Valeur totale A",
+  rate: "Pourcentage B",
+  changeZero: "La valeur de départ A ne peut pas valoir 0",
+  changeZeroHint: "Une évolution qui part de 0 ne s’exprime pas en pourcentage",
+  diff: "Écart",
+  up: "Taux d’augmentation",
+  down: "Taux de baisse",
+  beforeAfter: "Départ → arrivée",
+  adjHero: (b, up) => (up ? `Après une hausse de ${b} %` : `Après une remise de ${b} %`),
+  adjAmount: (up) => (up ? "Montant ajouté" : "Montant de la remise"),
+  first: "Valeur initiale A",
+  origNone: "Après une baisse de 100 %, la valeur initiale est introuvable",
+  origHero: "Valeur initiale",
+  origAmount: (up) => (up ? "Montant de la hausse" : "Montant retiré"),
+  changed: "Valeur après variation A",
+  wari: (_p) => "",
+  share: "Résultat du calcul de pourcentage - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE, fr: FR });
+/** 숫자 읽기·쓰기 — 독일어판·프랑스어판만 소수 쉼표, 나머지 판은 지금 그대로 */
+const NUM = pickLang({ ko: { parse: parseNumber, fmt: formatNumber }, de: { parse: parseNumberDe, fmt: formatNumberDe }, fr: { parse: parseNumberFr, fmt: formatNumberFr } });
 
 let lastTitle = "";
 let lastLines: [string, string][] = [];
