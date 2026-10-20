@@ -40,7 +40,7 @@ import "../../../styles/global.css";
 
 const title = "Minimum Wage Calculator — Salary to Hourly vs the $7.25 Federal Minimum (FLSA)";
 const description =
-  "Convert a weekly, biweekly, monthly or yearly salary to an hourly rate the FLSA way and check it against the $7.25 federal minimum wage with overtime.";
+  "Convert a weekly, biweekly, monthly or yearly salary to an hourly rate the FLSA way and check it against the $7.25 federal minimum wage and overtime floor.";
 
 const defPay = 30_000;
 const defHours = 40;
@@ -223,10 +223,16 @@ const fmtH = (h: number) => `${h}`;
         A workweek is a fixed 168-hour period, and hours cannot be averaged over two or more weeks.
       </p>
       <p>
-        So a salary has to cover more than {usd(FEDERAL_MIN)} × hours once a week goes past 40. For 45 hours the federal floor is
+        So the minimum-wage floor for a week rises faster once it goes past 40 hours. For 45 hours it is
         {usd(FEDERAL_MIN)} × 40 + {otRate} × 5 = {usd(floor45)} a week ({usd(Math.round(floor45 * 52 * 100) / 100)} a year). A salary of
         {usd0(17_000)} a year is {usd(ot45.weekly)} a week — {usd(ot45.hourly)} an hour over 45 hours, which looks fine, but it is
-        {usd(-ot45.margin)} a week short of the minimum with overtime. That is what the calculator's "minimum for these hours" shows.
+        {usd(-ot45.margin)} a week below that floor. That floor is what the calculator's "minimum for these hours" shows.
+      </p>
+      <p>
+        Clearing the floor does not settle overtime. Under 29 CFR 778.113 a salary is divided by the hours it is meant to pay for to
+        get the employee's regular rate, and a non-exempt employee is owed at least {OT_MULT} times that regular rate — not just
+        {OT_MULT} times {usd(FEDERAL_MIN)} — for every hour over {fmtH(OT_HOURS)}. This calculator checks only the minimum-wage floor;
+        it does not work out the overtime owed on a particular salary.
       </p>
       <p>
         Some salaried jobs are exempt from minimum wage and overtime. Whether a job is exempt depends on its duties and salary under

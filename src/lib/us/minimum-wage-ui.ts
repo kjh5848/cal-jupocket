@@ -49,8 +49,10 @@ function compute() {
     pay === 0 || hours === 0
       ? "Enter the pay and the hours worked in a week."
       : c.meets
-        ? `At or above the ${youth ? "youth" : "federal"} minimum of ${usd(minimum)} an hour${c.overtimeHours > 0 ? " with overtime" : ""} — ${usd(c.margin)} a week to spare.`
-        : `Below the ${youth ? "youth" : "federal"} minimum${c.overtimeHours > 0 ? " with overtime" : ""} — ${usd(-c.margin)} a week short.`;
+        ? c.overtimeHours > 0 && period !== "hourly"
+          ? `Covers the ${youth ? "youth" : "federal"} minimum-wage floor for ${hours} hours (${usd(minimum)}, 1.5× over 40) by ${usd(c.margin)} a week. Overtime at 1.5× your own rate is a separate check.`
+          : `At or above the ${youth ? "youth" : "federal"} minimum of ${usd(minimum)} an hour — ${usd(c.margin)} a week to spare.`
+        : `Below the ${youth ? "youth" : "federal"} minimum-wage floor for ${hours} hours${c.overtimeHours > 0 ? " (1.5× over 40)" : ""} — ${usd(-c.margin)} a week short.`;
   $("out-weekly").textContent = usd(c.weekly);
   $("out-floor").textContent = usd(c.floor);
   $("out-ot").textContent = c.overtimeHours > 0 ? `${c.overtimeHours} h at 1.5×` : "None";
