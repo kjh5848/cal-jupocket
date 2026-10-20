@@ -24,6 +24,14 @@ import {
   digitsFr,
   partsSubFr,
 } from "../lib/fr/sec-convert";
+import {
+  UNIT_NAME_DE,
+  withUnitDe,
+  readableDe,
+  readInputDe,
+  digitsDe,
+  partsSubDe,
+} from "../lib/de/sec-convert";
 import { pickLang } from "../i18n/ui";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
@@ -135,10 +143,25 @@ const FR: typeof KO = {
   shareText: "Convertir secondes, minutes, heures - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT, fr: FR });
-/** 입력 읽기·숫자 칸 표기 — 프랑스어판만 쉼표 소수를 읽고 fr-FR 꼴로 쓴다. 다른 판은 그대로. */
-const readIn = pickLang<(raw: string) => string>({ ko: (raw) => raw, fr: readInputFr });
-const num = pickLang<(s: string) => string>({ ko: (s) => s, fr: digitsFr });
+/** 독일어판(/de/tools/sec-convert/) — 소수 쉼표·천 단위 줄바꿈 없는 공백, 정확히 1만 단수. 표기는 lib/de/sec-convert.ts. */
+const DE: typeof KO = {
+  unit: UNIT_NAME_DE,
+  withUnit: withUnitDe,
+  readable: readableDe,
+  heroLabel: (v: string, unit: Unit) => `${withUnitDe(v, unit)} =`,
+  heroSub: (other: string, unit: Unit, hms: string) => `${withUnitDe(other, unit === "min" ? "s" : "min")} · h:mm:ss ${digitsDe(hms)}`,
+  bad: "Bitte eine Zahl ab 0 eingeben (Dezimalstellen mit Komma oder Punkt, höchstens 6 Nachkommastellen und 15 Vorkommastellen)",
+  lineIn: "Wert",
+  lineReadable: "Stunden, Minuten, Sekunden",
+  partsSub: partsSubDe,
+  cardTitle: "Sekunden in Minuten umrechnen",
+  shareText: "Sekunden in Minuten umrechnen - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT, fr: FR, de: DE });
+/** 입력 읽기·숫자 칸 표기 — 프랑스어·독일어판만 쉼표 소수를 읽고 그 나라 꼴로 쓴다. 다른 판은 그대로. */
+const readIn = pickLang<(raw: string) => string>({ ko: (raw) => raw, fr: readInputFr, de: readInputDe });
+const num = pickLang<(s: string) => string>({ ko: (s) => s, fr: digitsFr, de: digitsDe });
 
 let lastLines: [string, string][] = [];
 
