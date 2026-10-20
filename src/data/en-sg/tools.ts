@@ -44,4 +44,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-sg/tools/unix-time/",
+    ko: "/tools/unix-time/",
+    name: "Unix Timestamp Converter",
+    blurb: "A Unix timestamp in seconds or 13-digit milliseconds to a date in UTC or Singapore time on your device, and a date back to epoch time",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
