@@ -23,7 +23,7 @@ const title = "종부세 세율 — 0.5%부터 2.7%까지, 3주택 이상은 과
 const description =
   "종부세 세율은 과세표준에 따라 2주택 이하 0.5~2.7%, 3주택 이상 0.5~5%입니다. 과세표준 12억원까지는 두 표가 같고 그 위에서 갈립니다. 일반 법인은 2주택 이하 2.7%, 3주택 이상 5% 단일세율이고, 종부세액의 20%가 농어촌특별세로 붙습니다.";
 
-const ANSWER = `종부세 세율은 과세표준에 따라 2주택 이하 ${pct(A[0].rate)}~${pct(A[A.length - 1].rate)}, 3주택 이상 ${pct(B[0].rate)}~${pct(B[B.length - 1].rate)}입니다(종합부동산세법 제9조 제1항). 과세표준 ${eokwon(r.rates.sameUntil)}까지는 두 표가 같습니다. 일반 법인은 ${pct(r.corporation.upTo2Homes)}·${pct(r.corporation.from3Homes)} 단일세율입니다.`;
+const ANSWER = `종부세 세율은 과세표준에 따라 2주택 이하 ${pct(A[0].rate)}~${pct(A[A.length - 1].rate)}, 3주택 이상 ${pct(B[0].rate)}~${pct(B[B.length - 1].rate)}입니다(종합부동산세법 제9조 제1항). 과세표준 ${eokwon(r.rates.sameUntil)}까지는 두 표가 같습니다. 일반 법인은 ${pct(r.corporation.upTo2Homes)}·${pct(r.corporation.from3Homes)} 단일세율입니다. 과세기준일은 ${r.assessmentDate.date}입니다(${r.verifiedOn} 원문 확인).`;
 
 const QA = [
   { q: "종부세 세율은 얼마인가요?", a: `개인 주택분은 과세표준 구간별 누진세율입니다. 2주택 이하는 ${pct(A[0].rate)}에서 시작해 94억원 초과 ${pct(A[A.length - 1].rate)}까지, 3주택 이상은 같은 ${pct(B[0].rate)}에서 시작해 최고 ${pct(B[B.length - 1].rate)}까지 올라갑니다(제9조 제1항 표).` },

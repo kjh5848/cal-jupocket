@@ -6,7 +6,7 @@
 
 현재: 보류 2 · 있음 27 · 가져옴 29 · 할 일 374
 
-다음: 2026-10-21 보강 회차 차례(.kr-mode=improve) — 색인 안 된 한국어 글 하나. 그다음 새 도구 회차 후보: #16 연봉계산기(https://roberin.com/my-salary-calculator/, /guide/take-home-calculator/ 와 대조해 있음/합침 판정) → #6 보유세(재산세+종부세 합산, 재산세액 공제 원문 확인 먼저)
+다음: 새 도구 회차 차례(.kr-mode=new) — #16 연봉계산기(https://roberin.com/my-salary-calculator/, /guide/take-home-calculator/ 와 대조해 있음/합침 판정) → #6 보유세(재산세+종부세 합산, 재산세액 공제 원문 확인 먼저). 지난 보강(2026-10-21 07시): /guide/jongbu-rate/ — 답 문단 과세기준일·확인일, 색인된 /guide/comprehensive-property-tax/·/guide/property-tax/ 에서 문맥 링크, 합칠 후보 없음(세율표만 다루는 글은 이것 하나)
 
 | # | 우리 분류 | roberin 분류 | roberin 주소 | 도구 | 상태 | 우리 주소 | 메모 |
 |---|---|---|---|---|---|---|---|
