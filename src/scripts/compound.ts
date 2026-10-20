@@ -1,13 +1,15 @@
 /**
- * 적립식 복리 계산기 — /tools/compound/ · 일본어판 /ja/tools/compound/.
+ * 적립식 복리 계산기 — /tools/compound/ · 일본어판 /ja/tools/compound/ · 영어판(/en-us/tools/compound/ 등).
  * 계산은 src/lib/compound.ts compound() 가 한다. 여기서는 입력을 읽고 결과를 그린다.
- * 두 언어판이 같은 계산을 쓰고 말·통화 표기만 다르다(pageLocale()).
+ * 여러 언어판이 같은 계산을 쓰고 말·통화 표기만 다르다(pickLang). 영어 사전은 다섯 판 공용이라
+ * 통화는 페이지 판의 currency·numberLocale(src/i18n/locales.ts)로 정한다 — 1 단위 반올림.
  */
 import { compound, type Timing } from "../lib/compound";
 import { formatWon, formatYen, parseAmount, formatAmountInput } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
-import { pageLocale } from "../i18n/ui";
+import { pageLocale, pickLang } from "../i18n/ui";
+import { meta } from "../i18n/locales";
 
 const reportUse = trackCalculatorUse("compound");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -57,7 +59,29 @@ const JA: typeof KO = {
   share: "積立の複利計算の結果 - jupocket.com",
 };
 
-const S = pageLocale() === "ja" ? JA : KO;
+const EN_MONEY = meta(pageLocale());
+const enMoney = (v: number) =>
+  Math.round(v).toLocaleString(EN_MONEY.numberLocale, { style: "currency", currency: EN_MONEY.currency, maximumFractionDigits: 0, minimumFractionDigits: 0 });
+const EN: typeof KO = {
+  money: enMoney,
+  spell: (y, r) =>
+    [y ? `${y} year${y === 1 ? "" : "s"}` : "", r ? `${r} month${r === 1 ? "" : "s"}` : ""].filter(Boolean).join(" ") || "0 months",
+  note: (months, monthlyRate, start) => `${months} months · ${monthlyRate}% a month · deposits at the ${start ? "start" : "end"} of each month`,
+  noTax: enMoney(0),
+  goalNone: "No goal set",
+  goalNever: "Not reached in this period",
+  goalAtStart: "Reached from the start",
+  goalAt: (s) => `After ${s}`,
+  yearRow: (year, rest) => (rest === 0 ? `Year ${year}` : `Year ${year} (${rest} mo)`),
+  after: (s) => `Balance after ${s}`,
+  paid: "Total contributions",
+  gain: "Interest earned",
+  afterTax: "After tax",
+  title: "Compound interest result",
+  share: "Compound interest result - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN });
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const num = (el: HTMLInputElement, lo: number, hi: number) => clamp(Number(el.value) || 0, lo, hi);
