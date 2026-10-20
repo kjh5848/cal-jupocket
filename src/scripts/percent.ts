@@ -19,6 +19,7 @@ const bIn = $("b") as HTMLInputElement;
  * 화면 문구 — 한국어판(/tools/percent/)·일본어판(/ja/tools/percent/)·영어판(/en-us/tools/percent/ 등)이 같은 계산을 쓴다.
  * 계산은 산술이라 나라와 상관없고, 말만 다르다. 일본어판은 歩合(割·分·厘)을 같이 보인다.
  * 영어 사전(EN)은 영어 다섯 판이 같이 쓰므로 통화 기호 등 한 나라 표기를 넣지 않는다.
+ * 번체 사전(ZH_HANT)은 대만판·홍콩판이 같이 쓰므로 한 곳에만 쓰는 말(打折 등)·통화 기호를 넣지 않는다.
  */
 const KO = {
   labels: {
@@ -128,7 +129,42 @@ const EN: typeof KO = {
   share: "Percentage calculator result - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN });
+const ZH_HANT: typeof KO = {
+  labels: {
+    ratio: { a: "全部的數 A", b: "部分的數 B", pct: false },
+    of: { a: "全部的數 A", b: "百分比 B", pct: true },
+    change: { a: "原本的數 A", b: "後來的數 B", pct: false },
+    adjust: { a: "原本的數 A", b: "百分比 B", pct: true },
+    original: { a: "變動後的數 A", b: "變動的百分比 B", pct: true },
+  },
+  title: "百分比計算結果",
+  nan: "請輸入數字",
+  ratioZero: "A 不能是 0",
+  divZero: "不能除以 0",
+  ratioHero: "B 佔 A 的",
+  a: "全部的數 A",
+  b: "部分的數 B",
+  ofHero: (a, b) => `${a} 的 ${b}%`,
+  whole: "全部的數 A",
+  rate: "百分比 B",
+  changeZero: "原本的數 A 不能是 0",
+  changeZeroHint: "從 0 開始的變化無法用百分比表示",
+  diff: "變化量",
+  up: "成長率（增加）",
+  down: "減少率",
+  beforeAfter: "原本 → 後來",
+  adjHero: (b, up) => (up ? `增加 ${b}% 後` : `減少 ${b}% 後`),
+  adjAmount: (up) => (up ? "增加的部分" : "減少的部分（折扣金額）"),
+  first: "原本的數 A",
+  origNone: "減少 100% 之後無法推回原本的數",
+  origHero: "原本的數",
+  origAmount: (up) => (up ? "增加的部分" : "減少的部分"),
+  changed: "變動後的數 A",
+  wari: (_p) => "",
+  share: "百分比計算結果 - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT });
 
 let lastTitle = "";
 let lastLines: [string, string][] = [];
