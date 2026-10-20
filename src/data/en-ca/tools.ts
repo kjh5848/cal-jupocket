@@ -53,4 +53,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-ca/tools/sec-convert/",
+    ko: "/tools/sec-convert/",
+    name: "Seconds to Minutes Converter",
+    blurb: "Milliseconds, seconds, minutes, hours and days at once, h:mm:ss, and decimal hours for a Canadian timesheet or time card",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
