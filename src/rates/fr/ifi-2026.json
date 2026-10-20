@@ -1,0 +1,71 @@
+{
+  "country": "FR",
+  "year": 2026,
+  "draft": true,
+  "verifiedOn": "2026-10-21",
+  "status": "초안 — 페이지에서 쓰지 않는다(아래 notVerified 가 남음). 조사표 종부세 행(/guide/jongbu-calculator/)의 프랑스 칸. IFI 2026 = 1.1.2026 현재 patrimoine immobilier net taxable 기준(브로슈어 IR 2026 p.337–340: avis août 2026, paiement 15.9.2026, dons 기간은 2024 신고기한 ~ 2025 신고기한).",
+  "note": "한국 종부세(공시가격 합계 − 공제 × 공정시장가액비율 × 누진세율)와 구조가 다르다: 시가(valeur vénale) 기준 순자산(부채 공제), 과세 대상이 되면 800 000 € 부터 6단 누진, 1,3~1,4 M€ 구간 décote, 소득 75 % plafonnement. 과세 단위는 IFI 고유 foyer(concubin 포함, 성년 자녀는 IR 에 rattaché 여도 따로) — IR foyer 와 다름. décote 계수 주의: impots.gouv.fr '/particulier/calcul-de-lifi'(modifié le 08/04/2026) 웹 문장은 '17 500 – (1,25 x montant du patrimoine net taxable)' 로 % 가 빠져 있음 — 브로슈어 IR 2026 p.338 과 BOFiP BOI-PAT-IFI-40-10 §20 은 1,25 % 이므로 0.0125 로 적는다(웹 문장만 보고 1.25 를 곱하지 말 것). 원문(웹·브로슈어·BOFiP)에 개정 예정 문장 없음(2026-10-21). 1.1.2027 기준(IFI 2027)으로 쓰기 전에 2027 브로슈어로 다시 확인 — 숫자를 추측해 넘기지 않는다.",
+  "sources": [
+    { "label": "impots.gouv.fr — Brochure pratique IR 2026, « La déclaration d'impôt sur la fortune immobilière (IFI) 2026 » (CGI, art. 964 et suivants ; BOI-PAT-IFI), p.337–340", "url": "https://www.impots.gouv.fr/www2/fichiers/documentation/brochure/ir_2026/pdf_som/18-IFI_337a340.pdf", "checkedOn": "2026-10-21", "quote": "p.338 Tableau 1 Barème de l'IFI … décote … supérieur ou égal à 1,3 et inférieur à 1,4 million d'euros … 17 500 – (1,25% x montant du patrimoine net taxable)" },
+    { "label": "impots.gouv.fr — Calcul de l'IFI (publié le 09/02/2018, modifié le 08/04/2026)", "url": "https://www.impots.gouv.fr/particulier/calcul-de-lifi", "checkedOn": "2026-10-21", "quote": "le seuil d'imposition à l'IFI correspond à un patrimoine net taxable de 1 300 000 € … lorsque vous êtes imposable à l'IFI, le calcul commence à 800 000 €" },
+    { "label": "service-public.gouv.fr — Impôt sur la fortune immobilière (IFI), F563 (Vérifié le 06 mars 2026)", "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F563", "checkedOn": "2026-10-21", "quote": "supérieure à 1 300 000 € au 1er janvier 2026 … abattement de 30 % sur sa valeur au 1er janvier 2026" },
+    { "label": "BOFiP BOI-PAT-IFI-40-10 (Calcul de l'impôt — Tarif de l'impôt, version en vigueur du 08/06/2018)", "url": "https://bofip.impots.gouv.fr/bofip/11319-PGP.html/identifiant=BOI-PAT-IFI-40-10-20180608", "checkedOn": "2026-10-21", "quote": "§10 tarif art. 977 CGI (même barème) · §20 décote 17 500 € − 1,25 % P pour 1 300 000 € ≤ P < 1 400 000 € · exemple P = 1 374 000 € : 2 500 + 518 = 3 018 €, décote 325 €, IFI 2 693 €" },
+    { "label": "BOFiP BOI-PAT-IFI-40 (Calcul de l'impôt, version en vigueur du 08/06/2018)", "url": "https://bofip.impots.gouv.fr/bofip/11318-PGP.html/identifiant=BOI-PAT-IFI-40-20180608", "checkedOn": "2026-10-21", "quote": "§1 base d'application du tarif = valeur nette taxable du patrimoine immobilier (arrondi — voir notVerified)" }
+  ],
+  "valuationDate": "1er janvier de l'année d'imposition (1.1.2026 pour l'IFI 2026), valeur vénale",
+  "thresholdEur": 1300000,
+  "thresholdRule": "imposable si patrimoine immobilier net taxable > 1 300 000 € (strictement supérieur — brochure p.337 « supérieur à 1,3 million d'euros »)",
+  "barèmeStartsAtEur": 800000,
+  "brackets": [
+    { "fromEur": 0, "upToEur": 800000, "rate": 0 },
+    { "fromEur": 800000, "upToEur": 1300000, "rate": 0.005 },
+    { "fromEur": 1300000, "upToEur": 2570000, "rate": 0.007 },
+    { "fromEur": 2570000, "upToEur": 5000000, "rate": 0.01 },
+    { "fromEur": 5000000, "upToEur": 10000000, "rate": 0.0125 },
+    { "fromEur": 10000000, "upToEur": null, "rate": 0.015 }
+  ],
+  "decote": {
+    "fromEur": 1300000,
+    "belowEur": 1400000,
+    "bounds": "P ≥ 1 300 000 € et P < 1 400 000 € (brochure p.338 · BOFiP §20) — l'impôt étant dû seulement si P > 1 300 000 €",
+    "baseEur": 17500,
+    "rateOfP": 0.0125,
+    "formula": "décote = 17 500 − 1,25 % × P",
+    "officialExample": { "source": "BOFiP BOI-PAT-IFI-40-10 (exemple au 1.1.2018, même barème)", "patrimoineEur": 1374000, "barèmeEur": 3018, "decoteEur": 325, "ifiEur": 2693 }
+  },
+  "afterDecote": "brochure p.338 : « Sur le montant d'IFI calculé viennent ensuite éventuellement s'imputer les réductions d'impôt, le plafonnement et l'IFI acquitté hors de France. »",
+  "residencePrincipaleAbattement": 0.3,
+  "deductibleDebts": {
+    "rule": "dettes existantes au 1er janvier, supportées par le foyer IFI, afférentes à des actifs imposables (à proportion de la fraction imposable)",
+    "capRule": "si valeur vénale des biens et parts taxables > 5 000 000 € et dettes déductibles > 60 % de cette valeur : la fraction des dettes au-delà de 60 % n'est déductible qu'à 50 %",
+    "capAssetsEur": 5000000,
+    "capShare": 0.6,
+    "capDeductibleShare": 0.5,
+    "exemptAssets": "dettes afférentes à des biens totalement exonérés : non déductibles ; partiellement exonérés : à hauteur de la part non exonérée"
+  },
+  "partialExemptions": {
+    "boisForetsGroupementsForestiers": 0.75,
+    "biensRurauxBailLongTermeEtGFA": "3/4 si valeur totale ≤ 101 897 €, moitié au-delà ; limite appliquée distinctement aux biens ruraux et aux parts de GFA",
+    "biensRurauxLimitEur": 101897
+  },
+  "donsReduction": {
+    "rate": 0.75,
+    "capEur": 50000,
+    "period": "versements de la date limite de dépôt de la déclaration de revenus 2024 à celle de la déclaration de revenus 2025 (IFI 2026)",
+    "lines": "9NC (organismes établis en France) · 9NG (autre État européen)"
+  },
+  "plafonnement": {
+    "shareOfIncome": 0.75,
+    "rule": "IFI réduit de la différence entre (IFI + impôts dus en France et à l'étranger au titre des revenus et produits de l'année précédente) et 75 % du total des revenus mondiaux nets de frais professionnels de l'année précédente (après seuls déficits catégoriels imputables art. 156 CGI), revenus exonérés d'IR et produits soumis à prélèvement libératoire",
+    "residence": "redevables ayant leur domicile fiscal en France (impots.gouv.fr calcul-de-lifi)",
+    "lines": "annexe 5 : 9PR (impôts dus au titre des revenus 2025) · 9PX (revenus et produits 2025)"
+  },
+  "foyer": "IFI : célibataire/veuf/divorcé/séparé, couple marié (même imposition distincte), pacsés, concubins, enfants mineurs sous administration légale ; enfant majeur rattaché à l'IR = foyer IFI à lui seul (brochure p.337)",
+  "notVerified": [
+    "arrondi de la base et de l'impôt : BOI-PAT-IFI-40 §1 (lu via outil de résumé) mentionnerait une valeur nette taxable « arrondie à la dizaine de milliers d'euros la plus proche », mais l'exemple officiel de BOI-PAT-IFI-40-10 calcule sur 1 374 000 € non arrondi — contradiction non résolue ; arrondi du montant d'IFI à l'euro non lu",
+    "ordre exact réductions (dons) → plafonnement → IFI acquitté hors de France : la brochure les énumère sans fixer l'ordre",
+    "CGI art. 977 (barème, décote) et art. 979 (plafonnement) : texte Légifrance non lu (HTTP 403, 2026-10-21) — barème et décote vérifiés par brochure 2026 + BOFiP en vigueur",
+    "aucun exemple chiffré officiel pour l'IFI 2026 (seul l'exemple BOFiP au 1.1.2018) — calcul témoin non officiel : P = 1 350 000 € → barème 2 850 €, décote 625 €, IFI 2 225 € ; P = 1 400 000 € → décote 0",
+    "algorithme_ifi.pdf (open data impots.gouv.fr) : métadonnées 2023, texte non lisible — non utilisé"
+  ]
+}
