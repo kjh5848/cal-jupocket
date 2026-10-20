@@ -15,6 +15,7 @@ import {
   type Unit,
 } from "../lib/sec-convert";
 import { UNIT_NAME_ID, withUnitId, readableId } from "../lib/id/sec-convert";
+import { UNIT_NAME_ZH_HANT, withUnitZhHant, readableZhHant } from "../lib/hk/sec-convert";
 import { pickLang } from "../i18n/ui";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
@@ -95,7 +96,23 @@ const ID: typeof KO = {
   shareText: "Konversi Detik ke Menit dan Jam - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID });
+/** 번체 중국어 — 홍콩판(/zh-hk/tools/sec-convert/)이 쓰고 대만판도 같이 쓸 수 있는 중립 서면어(표기는 lib/hk/sec-convert.ts). */
+const ZH_HANT: typeof KO = {
+  unit: UNIT_NAME_ZH_HANT,
+  withUnit: withUnitZhHant,
+  readable: readableZhHant,
+  heroLabel: (v: string, unit: Unit) => `${withUnitZhHant(v, unit)}等於`,
+  heroSub: (other: string, unit: Unit, hms: string) => `${withUnitZhHant(other, unit === "min" ? "s" : "min")} · 時:分:秒 ${hms}`,
+  bad: "請輸入 0 或以上的數字（小數最多6位，整數最多15位）",
+  lineIn: "輸入",
+  lineReadable: "時分秒",
+  partsSub: (min: string, ms: { minutes: bigint; seconds: string }, h: string, r: string) =>
+    `${withUnitZhHant(min, "min")}${ms.seconds === "0" ? "" : `（${ms.minutes.toLocaleString("en-US")}分${ms.seconds}秒）`} · ${withUnitZhHant(h, "h")} · ${r}`,
+  cardTitle: "秒、分鐘、小時換算",
+  shareText: "秒、分鐘、小時換算 - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT });
 
 let lastLines: [string, string][] = [];
 

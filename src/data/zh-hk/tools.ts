@@ -53,4 +53,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/zh-hk/tools/sec-convert/",
+    ko: "/tools/sec-convert/",
+    name: "時間換算器",
+    blurb: "秒、分鐘、小時、天及毫秒互相換算，寫成幾小時幾分鐘幾秒，並把分鐘換算成小數小時",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
