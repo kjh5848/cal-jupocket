@@ -1,15 +1,65 @@
 {
   "country": "JP",
   "draft": true,
-  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(일본어판이 열린 뒤). 일본 退職所得은 (수입금액 − 退職所得控除額) × 1/2 를 다른 소득과 나눠 과세한다. 우리처럼 근속연수 1년 미만 끝수는 1년으로 올리지만, 환산급여(÷ 근속연수 × 12) 단계가 없고 1/2 을 곱하는 방식이라 계산 구조가 다르다. 세율표(速算表)·특정임원·단기퇴직 300만엔 초과분·障害者 100만엔 가산은 미확인(원문 주석만 읽음).",
-  "verifiedOn": "2026-10-17",
-  "sources": [{ "label": "国税庁 タックスアンサー No.1420 退職金を受け取ったとき(退職所得) [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1420.htm" }],
+  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다. 2026-10-21 원문 5건(No.1420·2732·2732 別紙·2735·2741, 모두 [令和8年4月1日現在法令等]) 재확인 — 速算表 7단·102.1%·例 91,890円/380,322円/1,633,600円/994,454円·No.2735 10,210円/45,945円/35,735円 일치, notVerified 없음 → 다음 회차가 2순위로 lib·테스트·페이지를 만들 때 draft 해제. 일본 退職所得은 (수입금액 − 退職所得控除額) × 1/2 를 다른 소득과 나눠 과세한다. 우리처럼 근속연수 1년 미만 끝수는 1년으로 올리지만, 환산급여(÷ 근속연수 × 12) 단계가 없고 1/2 을 곱하는 방식이라 계산 구조가 다르다. 2026-10-20 보강: 速算表(2732_besshi)·特定役員/短期 식(No.2732)·같은 해 2곳(No.2735)·같은 해 여러 종류(No.2741) 원문 확인. 令和9年分 이후 防衛特別所得税가 생기지만 No.1420 은 '合計税率に変更はありません…源泉徴収税額の計算方法に変更は生じません'이라고 적음 → 102.1% 식 그대로. 같은 해 여러 종류(No.2741)는 (注2) '一定の調整計算'(각 수입금액이 각 공제액에 못 미칠 때)의 방법이 원문에 없어 계산하지 않는다(outOfScope).",
+  "verifiedOn": "2026-10-21",
+  "lawVersion": "国税庁 タックスアンサー No.1420·No.2732·No.2732 別紙·No.2735·No.2741 [令和8年4月1日現在法令等]",
+  "sources": [
+    { "label": "国税庁 タックスアンサー No.1420 退職金を受け取ったとき(退職所得) [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1420.htm" },
+    { "label": "国税庁 タックスアンサー No.2732 退職手当等に対する源泉徴収 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2732.htm" },
+    { "label": "国税庁 タックスアンサー 別紙 退職所得の源泉徴収税額の速算表 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2732_besshi.htm" },
+    { "label": "国税庁 タックスアンサー No.2735 同じ年に2か所以上から退職手当等が支払われるとき [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2735.htm" },
+    { "label": "国税庁 タックスアンサー No.2741 同じ年に一般退職手当等のほか、短期退職手当等や特定役員退職手当等がある場合 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2741.htm" }
+  ],
   "incomeFormula": "(収入金額 − 退職所得控除額) × 1/2",
   "yearsRoundUp": "勤続年数の1年未満の端数は1年に切り上げ(例: 10年2か月 → 11年)",
   "deduction": [
     { "upToYears": 20, "perYearYen": 400000, "minYen": 800000 },
     { "upToYears": null, "baseYen": 8000000, "perYearYen": 700000, "fromYears": 20 }
   ],
+  "disabilityAddYen": 1000000,
+  "disabilityOrder": "No.2732 (注): 上記の方法により計算した額(80万円未満の場合は80万円)に100万円を加える — 최저 80万円 적용 뒤 가산. 障害者になったことが直接の原因で退職した場合",
+  "taxableIncomeRounding": "課税退職所得金額 1,000円未満 切り捨て(No.2732 注1·2732_besshi ※)",
+  "categories": {
+    "general": "一般退職手当等: (収入金額 − 退職所得控除額) × 1/2",
+    "specifiedOfficer": "特定役員退職手当等(役員等勤続年数 5年以下인 사람이 그 役員等勤続年数에 대응해 받는 것): 収入金額 − 退職所得控除額 (1/2 없음). 役員等 = 法人の取締役·執行役·会計参与·監査役·理事·監事·清算人 등, 国会議員·地方議会議員, 国家·地方公務員(No.1420 注1)",
+    "shortTerm": "短期退職手当等(役員等 이외로 근무한 기간으로 센 勤続年数 5年以下, 役員等 기간도 포함해 셈, 特定役員 아님 — 令和4年1月1日 이후 지급분): 残額 ≦ 300万円 → 残額 × 1/2, 残額 > 300万円 → 150万円 + {収入金額 − (300万円 + 退職所得控除額)}",
+    "shortTermThresholdYen": 3000000,
+    "shortTermHalfPartYen": 1500000
+  },
+  "withholdingTable": {
+    "label": "退職所得の源泉徴収税額の速算表 — 税額 = ((A) × (B) − (C)) × 102.1%, 1円未満 切り捨て",
+    "surtaxNumerator": 1021,
+    "surtaxDenominator": 1000,
+    "brackets": [
+      { "upToYen": 1950000, "rate": 0.05, "deductionYen": 0 },
+      { "upToYen": 3300000, "rate": 0.10, "deductionYen": 97500 },
+      { "upToYen": 6950000, "rate": 0.20, "deductionYen": 427500 },
+      { "upToYen": 9000000, "rate": 0.23, "deductionYen": 636000 },
+      { "upToYen": 18000000, "rate": 0.33, "deductionYen": 1536000 },
+      { "upToYen": 40000000, "rate": 0.40, "deductionYen": 2796000 },
+      { "upToYen": null, "rate": 0.45, "deductionYen": 4796000 }
+    ]
+  },
   "noDeclarationWithholding": 0.2042,
-  "notVerified": ["退職所得の源泉徴収税額の速算表", "特定役員退職手当等·短期退職手当等の細部", "同一年·前年以前の退職金がある場合の控除額"]
+  "noDeclarationRounding": "退職手当等の支給額 × 20.42%, 1円未満 切り捨て(No.2732) — 본인이 確定申告으로 정산",
+  "sameYearMultiplePayers": "No.2735: 이미 받은 退職手当等과 합산해 収入金額, 勤続年数는 가장 긴 期間 + 겹치지 않는 期間(1年未満 切り上げ), 速算表 세액(1円未満 切り捨て)에서 이미 원천징수된 세액을 뺌(마이너스면 0, 환급은 確定申告)",
+  "priorRetirementOverlap": "No.2732: 前年以前4年内(確定拠出年金 老齢給付一時金 관련 9年·19年) 받은 退職手当等과 勤続期間이 겹치면, 本年分 控除額 − 重複期間 年数(1年未満 切り捨て)로 센 控除額相当額. 前の退職手当等 収入金額이 그 控除額에 못 미치면 重複期間 계산용 期間 = 800万円以下 収入金額 ÷ 40万円, 800万円超 (収入金額 − 800万円) ÷ 70万円 + 20(1未満 切り捨て)",
+  "examples": [
+    { "source": "2732_besshi", "taxableYen": 7000000, "taxYen": 994454 },
+    { "source": "No.2732 例1", "paymentYen": 8000000, "service": "10年2か月", "years": 11, "deductionYen": 4400000, "taxableYen": 1800000, "taxYen": 91890 },
+    { "source": "No.2732 例2", "paymentYen": 23000000, "service": "29年2か月", "years": 30, "deductionYen": 15000000, "taxableYen": 4000000, "taxYen": 380322, "note": "380,322.5円 → 1円未満 切り捨て" },
+    { "source": "No.2732 申告書なし", "paymentYen": 8000000, "taxYen": 1633600 },
+    { "source": "No.1420 例2", "years": 30, "deductionYen": 15000000 },
+    { "source": "No.2735 A社", "paymentYen": 4000000, "years": 9, "deductionYen": 3600000, "taxableYen": 200000, "taxYen": 10210 },
+    { "source": "No.2735 B社(A社 합산)", "paymentYen": 5800000, "service": "9年4か月", "years": 10, "deductionYen": 4000000, "taxableYen": 900000, "taxYen": 45945, "alreadyWithheldYen": 10210, "withholdYen": 35735 },
+    { "source": "No.2741 短期+特定役員", "specifiedDeductionYen": 1200000, "shortDeductionYen": 800000, "incomeYen": 16500000 },
+    { "source": "No.2741 一般+短期+特定役員", "specifiedDeductionYen": 900000, "shortDeductionYen": 850000, "generalDeductionYen": 2250000, "incomeYen": 31550000 }
+  ],
+  "outOfScope": [
+    "같은 해 一般·短期·特定役員 여러 종류(No.2741) — 식과 예시는 원문 확인했으나 (注2) 각 수입금액이 각 공제액에 못 미칠 때의 '一定の調整計算' 방법이 원문에 없어 계산하지 않는다",
+    "勤続期間에 넣고 빼는 기간(No.2732 (1)~(6): 휴직·日額表丙欄·前の退職手当等 기초 기간 등)의 개별 판정 — 사용자가 勤続年数를 넣는 방식으로 두고 판정하지 않는다(税理士法)",
+    "住民税(退職所得 分離課税 住民税) — 허용 출처(総務省) 원문 미확인"
+  ],
+  "notVerified": []
 }
