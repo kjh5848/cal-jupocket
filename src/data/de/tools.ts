@@ -35,4 +35,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/de/tools/dday/",
+    ko: "/tools/dday/",
+    name: "Countdown-Rechner",
+    blurb: "Wie viele Tage noch bis Heiligabend, Silvester oder einem beliebigen Datum — mit Stunden und Minuten",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

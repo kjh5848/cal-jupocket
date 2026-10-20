@@ -1,0 +1,260 @@
+---
+/**
+ * Countdown-Rechner — 독일어판 네 번째 도구(디데이). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 DE 사전, 표기는 lib/de/date-format.ts — 'noch 64 Tage' · 'Donnerstag, 24. Dezember 2026')를
+ * 같이 쓰고, 문장은 독일 자동완성으로 새로 썼다(번역 아님). 조사표 독일 칸 '단위'.
+ *
+ * 소제목은 독일 구글 자동완성에서 왔다(keywords/de-dday-2026-10-21.csv, hl de · gl de):
+ *   wie viele tage bis · countdown tage bis datum / tage bis weihnachten 24.12 · wie viele tage bis heiligabend ·
+ *   tage bis silvester 2026 · wie viele tage bis 2027 · halloween / countdown rechner tage stunden /
+ *   countdown tage bis urlaub · zur hochzeit / wie viele tage bis sommerferien · herbstferien / countdown rechner arbeitstage
+ * 프리셋 버튼: 100 Tage · Heiligabend(eve, 이 판에서 더함) · Silvester(yearend) · Neujahr(newyear).
+ * 법 숫자는 서머타임 규칙 하나 — § 2 SoZV(https://www.gesetze-im-internet.de/sozv/__2.html, 확인 2026-10-21):
+ *   3월 마지막 일요일 2시(MEZ) → 3시, 10월 마지막 일요일 3시(MESZ) → 2시. 날짜는 아래 lastSunday() 로 그 규칙에서 센다.
+ * 하루는 24시간으로 센다 — 전환일을 끼면 실제 남은 시간이 1시간 다르다(본문에 적음).
+ * 공휴일·방학 날짜는 주(Land)마다 달라 허용 출처로 확인하지 않아 숫자로 쓰지 않는다.
+ * 본문 숫자는 전부 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, countdown, weekday } from "../../../../lib/date-calc";
+import { labelDe, ddayDe, durationTextDe, intDe } from "../../../../lib/de/date-format";
+
+const title = "Countdown-Rechner — Wie viele Tage bis Weihnachten, Silvester oder einem Datum?";
+const description =
+  "Wie viele Tage noch bis zu einem Datum? Countdown in Tagen, Stunden und Minuten — bis Heiligabend, Silvester, Urlaub oder Hochzeit, mit Zeitumstellung.";
+
+const d = (iso: string) => toDay(iso)!;
+/** 그 해·달의 마지막 일요일 (§ 2 SoZV 규칙) */
+const lastSunday = (y: number, m: number) => {
+  const last = d(`${m === 12 ? y + 1 : y}-${String(m === 12 ? 1 : m + 1).padStart(2, "0")}-01`) - 1;
+  return last - weekday(last);
+};
+
+const BASE = "2026-10-21";
+const base = d(BASE);
+const target = base + 100;
+const c0 = countdown(target, null, base, 0);
+
+// 본문 예시 — 전부 BASE 에서 센다
+const halloween = d("2026-10-31");
+const eve = d("2026-12-24");
+const xmas1 = d("2026-12-25");
+const nye = d("2026-12-31");
+const ny = d("2027-01-01");
+const cHalloween = countdown(halloween, null, base, 0);
+const cEve = countdown(eve, null, base, 0);
+const cXmas1 = countdown(xmas1, null, base, 0);
+const cNye = countdown(nye, null, base, 0);
+const cNy = countdown(ny, null, base, 0);
+const tomorrow = countdown(base + 1, null, base, 0);
+const pastDay = d("2026-09-01");
+const past = countdown(pastDay, null, base, 0);
+
+// Zeitumstellung (§ 2 SoZV)
+const backOct = lastSunday(2026, 10);
+const fwdMar = lastSunday(2027, 3);
+
+// Prüfung am 1. Dezember um 9 Uhr — geöffnet am BASE um 15 Uhr
+const exam = d("2026-12-01");
+const cExam = countdown(exam, 9 * 3600, base, 15 * 3600);
+const examD = Math.floor(cExam.seconds / 86_400);
+const examH = Math.floor((cExam.seconds % 86_400) / 3600);
+const hours = (v: number) => `${intDe(v)} ${v === 1 ? "Stunde" : "Stunden"}`;
+const days = (v: number) => `${intDe(v)} ${v === 1 ? "Tag" : "Tage"}`;
+---
+
+<html lang="de-DE">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Wie viele Tage bis …? Countdown-Rechner</h1>
+      <p>
+        Wählen Sie ein Datum — der Rechner zeigt, wie viele Tage noch übrig sind und wie viel Zeit bis dahin bleibt. Für eine
+        Prüfung, einen Flug oder eine Feier mit fester Uhrzeit setzen Sie den Haken bei „Bis zu einer Uhrzeit“.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">Zieltag</label>
+          <input type="date" id="target" value="2027-01-29" />
+          <div class="ux-presets" role="group" aria-label="Häufige Daten">
+            <button type="button" data-preset="plus100">100 Tage</button>
+            <button type="button" data-preset="eve">Heiligabend</button>
+            <button type="button" data-preset="yearend">Silvester</button>
+            <button type="button" data-preset="newyear">Neujahr</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">Bis zu einer Uhrzeit</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">Uhrzeit</label>
+          <input type="time" id="time" value="09:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">Ausgangstag (meist heute)</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Bis {labelDe(target)}</p>
+          <p class="big" id="hero-value">{ddayDe(c0)}</p>
+          <p class="hint" id="hero-sub">Zählt man den Ausgangstag als Tag 1, ist der Zieltag Tag {intDe(c0.countDays)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Verbleibende Zeit</span>
+            <span class="value" id="v1">{durationTextDe(c0.seconds)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Ab Tag 1 gezählt</span>
+            <span class="value" id="v2">Tag {intDe(c0.countDays)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">Ausgangstag</span>
+            <span class="value" id="v3">{labelDe(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Als Bild speichern</button>
+          <button id="btn-share" type="button" class="secondary">Teilen</button>
+        </div>
+      </div>
+
+      <h2>Wie viele Tage bis zu einem Datum — zählt heute mit?</h2>
+      <p>
+        „Noch … Tage“ ist <strong>Zieltag minus heute</strong>. Der heutige Tag zählt nicht mit, der Zieltag schon. Bis morgen
+        ist es also {ddayDe(tomorrow)}, am Zieltag selbst steht den ganzen Tag „Heute“, und ein vergangenes Datum erscheint als
+        „vor … Tagen“.
+      </p>
+      <p>
+        Wer den ersten Tag als Tag 1 zählen möchte — etwa den ersten Arbeitstag, den ersten rauchfreien Tag oder einen Jahrestag —,
+        liest den Wert „Ab Tag 1 gezählt“. Er ist immer um eins größer. Zählt man {labelDe(base)} als Tag 1, ist
+        {" "}{labelDe(target)} Tag {intDe(c0.countDays)}.
+      </p>
+
+      <h2>Tage bis Weihnachten, Silvester und 2027</h2>
+      <p>Gezählt ab {labelDe(base)}:</p>
+      <ul>
+        <li>Halloween ({labelDe(halloween)}): {ddayDe(cHalloween)}</li>
+        <li>Heiligabend ({labelDe(eve)}): {ddayDe(cEve)}</li>
+        <li>1. Weihnachtstag ({labelDe(xmas1)}): {ddayDe(cXmas1)}</li>
+        <li>Silvester ({labelDe(nye)}): {ddayDe(cNye)}</li>
+        <li>Neujahr 2027 ({labelDe(ny)}): {ddayDe(cNy)}</li>
+      </ul>
+      <p>
+        Der Knopf „Heiligabend“ springt auf den 24. Dezember — ist er in diesem Jahr schon vorbei, auf den des nächsten Jahres.
+        „Silvester“ setzt den 31. Dezember, „Neujahr“ den 1. Januar des Folgejahres. Beim Öffnen trägt die Seite das heutige
+        Datum als Ausgangstag ein, die Zahlen gelten also immer ab dem Tag Ihres Besuchs.
+      </p>
+
+      <h2>Countdown in Tagen, Stunden und Minuten</h2>
+      <ul>
+        <li>
+          <strong>Nur Datum</strong> — gezählt wird bis zum Ende des Zieltags, also bis Mitternacht zu Beginn des nächsten Tages.
+        </li>
+        <li>
+          <strong>Mit Uhrzeit</strong> — gezählt wird bis zu dieser Uhrzeit. Ist sie vorbei, auch am Zieltag selbst, wechselt das
+          Feld zu „Vergangene Zeit“. Am {labelDe(base)} um 15 Uhr geöffnet, liegt eine Prüfung am {labelDe(exam)} um 9 Uhr
+          {" "}{days(examD)} und {hours(examH)} entfernt.
+        </li>
+        <li>
+          <strong>Die Restzeit läuft sekundengenau mit</strong> — aber nur, solange der Ausgangstag heute ist. Bei einem anderen
+          Ausgangstag zählt der Rechner ab Mitternacht dieses Tages.
+        </li>
+      </ul>
+
+      <h2>Zeitumstellung: Sommerzeit und Winterzeit</h2>
+      <p>
+        Der Rechner zählt jeden Tag mit genau 24 Stunden. Nach § 2 der Sommerzeitverordnung endet die mitteleuropäische Sommerzeit
+        am letzten Sonntag im Oktober um 3 Uhr (die Uhr wird auf 2 Uhr zurückgestellt) und beginnt am letzten Sonntag im März um
+        2 Uhr (die Uhr springt auf 3 Uhr). Das sind {labelDe(backOct)} und {labelDe(fwdMar)}.
+      </p>
+      <ul>
+        <li>
+          Läuft ein Countdown über den {labelDe(backOct)}, bleibt in Wirklichkeit <strong>eine Stunde mehr</strong> als angezeigt
+          — die Prüfung oben ist also tatsächlich {days(examD)} und {hours(examH + 1)} entfernt.
+        </li>
+        <li>
+          Läuft er über den {labelDe(fwdMar)}, bleibt <strong>eine Stunde weniger</strong>.
+        </li>
+        <li>Die Zahl der Tage ändert sich dadurch nicht.</li>
+      </ul>
+
+      <h2>Countdown bis zum Urlaub, zur Hochzeit oder zum Geburtstag</h2>
+      <p>
+        Tragen Sie den ersten Urlaubstag, den Hochzeitstag oder den nächsten Geburtstag als Zieltag ein. Ist der Geburtstag in
+        diesem Jahr schon vorbei, nehmen Sie das Datum im nächsten Jahr — sonst zeigt der Rechner, vor wie vielen Tagen er war. Mit
+        „Bis zu einer Uhrzeit“ endet der Countdown genau zur Abflugzeit oder zum Beginn der Trauung.
+      </p>
+
+      <h2>Tage bis zu einem Datum in Excel</h2>
+      <p>
+        Excel speichert ein Datum als Zahl. Zieht man <code>HEUTE()</code> vom Zieltag ab, erhält man die verbleibenden Tage —
+        mit dem Zieltag in A1 also <code>=A1-HEUTE()</code>. Erscheint das Ergebnis als Datum, stellen Sie das Zellenformat auf
+        „Zahl“ um. Wer heute als Tag 1 mitzählen will, rechnet <code>+1</code>.
+      </p>
+
+      <details>
+        <summary>Wie viele Tage bis zu den Sommerferien oder Herbstferien?</summary>
+        <p>
+          Die Ferientermine sind nicht überall gleich, sondern unterscheiden sich je nach Bundesland. Tragen Sie den ersten
+          Ferientag Ihres Landes als Zieltag ein.
+        </p>
+      </details>
+
+      <details>
+        <summary>Kann ich nur Arbeitstage bis zu einem Datum zählen?</summary>
+        <p>
+          Diese Seite zählt alle Kalendertage, Wochenenden eingeschlossen. Für die Tage von Montag bis Freitag geben Sie heute und
+          den Zieltag in den <a href="/de/tools/date-diff/">Tagerechner</a> ein — Feiertage werden dort nicht abgezogen.
+        </p>
+      </details>
+
+      <details>
+        <summary>Was passiert bei einem Datum in der Vergangenheit?</summary>
+        <p>
+          Der Rechner zeigt dann „vor … Tagen“, und das Zeitfeld heißt „Vergangene Zeit“ — praktisch, um zu sehen, wie lange eine
+          Frist oder ein Starttermin her ist. Ab {labelDe(base)} gezählt lag {labelDe(pastDay)} {ddayDe(past)}.
+        </p>
+      </details>
+
+      <details>
+        <summary>Funktioniert der Countdown für ein Ereignis in einer anderen Zeitzone?</summary>
+        <p>
+          Der Countdown nutzt Uhr und Datum Ihres Geräts. Bei einem Konzert, einem Produktstart oder einem Flug in einer anderen
+          Zeitzone rechnen Sie die Uhrzeit vorher in deutsche Zeit um.
+        </p>
+      </details>
+
+      <p class="hint">
+        Quelle: <a href="https://www.gesetze-im-internet.de/sozv/__2.html">§ 2 Sommerzeitverordnung (SoZV)</a> auf
+        gesetze-im-internet.de. Abgerufen am 21.10.2026.
+      </p>
+
+      <AdSlot label="dday-result-de" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

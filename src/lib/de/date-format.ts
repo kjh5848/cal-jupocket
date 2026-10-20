@@ -70,3 +70,26 @@ export function relDe(target: number, today: number): string {
   const w = `${intDe(k)} ${k === 1 ? "Tag" : "Tagen"}`;
   return d > 0 ? `in ${w}` : `vor ${w}`;
 }
+
+/**
+ * 디데이 독일어판(/de/tools/dday/) — 'D-12' 대신 'noch 12 Tage' · 'heute' · 'vor 3 Tagen'.
+ * side: 1 남음 · 0 오늘 · -1 지남 (date-calc 의 Countdown 과 같은 뜻)
+ */
+export function ddayDe(c: { side: number; days: number }): string {
+  if (c.side === 0) return "Heute";
+  if (c.side > 0) return `noch ${countDe(c.days, "day")}`;
+  return `vor ${intDe(c.days)} ${c.days === 1 ? "Tag" : "Tagen"}`;
+}
+
+const TIME_FORMS = { hour: ["Stunde", "Stunden"], minute: ["Minute", "Minuten"], second: ["Sekunde", "Sekunden"] } as const;
+const t = (v: number, u: keyof typeof TIME_FORMS) => `${intDe(v)} ${TIME_FORMS[u][v === 1 ? 0 : 1]}`;
+
+/** 초 → '65 Tage, 3 Stunden und 12 Minuten' · 하루 미만이면 '3 Stunden, 12 Minuten und 5 Sekunden' (하루 = 24시간) */
+export function durationTextDe(sec: number): string {
+  const s = Math.abs(Math.trunc(sec));
+  const day = Math.floor(s / 86_400);
+  const h = Math.floor((s % 86_400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (day > 0) return `${countDe(day, "day")}, ${t(h, "hour")} und ${t(m, "minute")}`;
+  return `${t(h, "hour")}, ${t(m, "minute")} und ${t(s % 60, "second")}`;
+}
