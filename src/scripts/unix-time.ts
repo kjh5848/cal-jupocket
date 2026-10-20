@@ -4,6 +4,7 @@ import {
   type Unit,
 } from "../lib/unix-time";
 import { pickLang } from "../i18n/ui";
+import { frText, relativeTextFr } from "../lib/fr/unix-time";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 
@@ -174,7 +175,39 @@ const ID: typeof KO = {
   now: (s: number, ms: number) => `Sekarang: ${s} detik · ${ms} milidetik`,
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID });
+/** 프랑스어판(/fr/tools/unix-time/) — 영어판처럼 UTC·이 기기 시간대만(heure de Paris 오프셋 숫자는 쓰지 않는다), 표기는 lib/fr/unix-time.ts */
+const FR: typeof KO = {
+  text: (p) => frText(p),
+  homeOffset: deviceOffset,
+  rel: relativeTextFr,
+  utc: "UTC",
+  device: (o: string) => `Mon fuseau horaire (${o})`,
+  home: "Mon fuseau horaire",
+  homeSub: (t: string) => `Mon fuseau horaire : ${t}`,
+  utcSub: (t: string) => `UTC ${t}`,
+  msWrote: "Écrit en millisecondes.",
+  sWrote: "Écrit en secondes.",
+  int32: "Cet instant dépasse le plus grand nombre de secondes d’un entier signé sur 32 bits (2 147 483 647 = 2038-01-19 03:14:07 UTC) — d’anciens systèmes ne peuvent pas l’enregistrer.",
+  negative: "C’est avant 1970, le nombre est donc négatif — compté à rebours à raison de 86 400 secondes par jour.",
+  lineSec: "Timestamp Unix (secondes)",
+  lineMs: "Millisecondes",
+  err: {
+    empty: "Saisissez un timestamp",
+    format: "Chiffres uniquement (la notation scientifique comme 1e9 n’est pas acceptée)",
+    "ms-fraction": "Les millisecondes sont un nombre entier — choisissez l’unité secondes pour des décimales",
+    "too-precise": "Les secondes acceptent au plus trois décimales (millisecondes)",
+    range: "Seules les valeurs entre le 1er janvier 1900 et le 30 décembre 9999 (UTC) sont converties",
+  },
+  unitName: (u: "s" | "ms") => (u === "s" ? "secondes" : "millisecondes"),
+  readAuto: (n: number, u: string) => `${n} chiffres — lu en ${u}. Choisissez l’unité si ce n’est pas le cas.`,
+  read: (u: string) => `Lu en ${u}.`,
+  badDate: "Vérifiez la date et l’heure (millisecondes de 0 à 999)",
+  cardTitle: "Timestamp Unix",
+  shareText: "Convertisseur timestamp Unix - jupocket.com",
+  now: (s: number, ms: number) => `Maintenant : ${s} secondes · ${ms} millisecondes`,
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, fr: FR });
 
 /** 그 순간의 시간대 오프셋(분). 이 기기 시간대는 서머타임이 있으면 순간마다 다르다 */
 function offsetAt(ms: number): number {
