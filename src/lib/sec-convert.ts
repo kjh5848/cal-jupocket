@@ -17,6 +17,8 @@ export type Unit = "ms" | "s" | "min" | "h" | "d";
 /** 단위 하나가 몇 밀리초인가 — SI 브로슈어 표 8 */
 export const MS_PER: Record<Unit, bigint> = { ms: 1n, s: 1000n, min: 60_000n, h: 3_600_000n, d: 86_400_000n };
 export const UNIT_NAME: Record<Unit, string> = { ms: "밀리초", s: "초", min: "분", h: "시간", d: "일" };
+/** 일본어판(/ja/tools/sec-convert/) 단위 이름 */
+export const UNIT_NAME_JA: Record<Unit, string> = { ms: "ミリ秒", s: "秒", min: "分", h: "時間", d: "日" };
 export const UNITS: Unit[] = ["ms", "s", "min", "h", "d"];
 
 const SCALE = 1_000_000n; // 입력 소수 여섯 자리
@@ -91,6 +93,17 @@ export function readable(ns: bigint): string {
   if (out.length || p.minutes > 0n) out.push(`${p.minutes}분`);
   out.push(`${p.seconds}초`);
   return out.join(" ");
+}
+
+/** 일본어판 풀어 쓰기 '1日0時間2分5秒' — 규칙은 readable 과 같다(앞쪽 0 단위는 빼고, 0이면 '0秒') */
+export function readableJa(ns: bigint): string {
+  const p = split(ns);
+  const out: string[] = [];
+  if (p.days > 0n) out.push(`${comma(p.days.toString())}日`);
+  if (out.length || p.hours > 0n) out.push(`${p.hours}時間`);
+  if (out.length || p.minutes > 0n) out.push(`${p.minutes}分`);
+  out.push(`${p.seconds}秒`);
+  return out.join("");
 }
 
 /** 시:분:초 — 시간은 24를 넘어도 그대로('26:00:15', '0:01:30.5') */

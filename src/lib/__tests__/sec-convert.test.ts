@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseScaled, toNanos, partsToNanos, inUnit, convertAll, readable, clock, split } from "../sec-convert";
+import { parseScaled, toNanos, partsToNanos, inUnit, convertAll, readable, readableJa, clock, split } from "../sec-convert";
 import rates from "../../rates/sec-convert-2026.json";
 
 const ns = (raw: string, u: Parameters<typeof toNanos>[1]) => toNanos(raw, u)!;
@@ -71,5 +71,18 @@ describe("정확도·경계", () => {
     expect(readable(n)).toBe("1시간 30분 0초");
     expect(inUnit(partsToNanos("1", "2", "3", "4.5")!, "s")).toBe("93,784.5");
     expect(partsToNanos("1", "x", "", "")).toBeNull();
+  });
+});
+
+describe("일본어판 풀어 쓰기(readableJa)", () => {
+  it("3725秒 → 1時間2分5秒, 1,440.25分 → 1日0時間0分15秒, 0 → 0秒", () => {
+    expect(readableJa(ns("3725", "s"))).toBe("1時間2分5秒");
+    expect(readableJa(ns("1,440.25", "min"))).toBe("1日0時間0分15秒");
+    expect(readableJa(0n)).toBe("0秒");
+  });
+  it("10000秒 → 2時間46分40秒, 59.5秒 → 59.5秒, 90分 → 1時間30分0秒", () => {
+    expect(readableJa(ns("10000", "s"))).toBe("2時間46分40秒");
+    expect(readableJa(ns("59.5", "s"))).toBe("59.5秒");
+    expect(readableJa(partsToNanos("", "", "90", "")!)).toBe("1時間30分0秒");
   });
 });
