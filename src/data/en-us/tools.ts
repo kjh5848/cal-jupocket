@@ -62,4 +62,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-us/tools/sec-convert/",
+    ko: "/tools/sec-convert/",
+    name: "Seconds to Minutes Converter",
+    blurb: "Seconds, minutes, hours, days and milliseconds at once — X hours Y minutes Z seconds, h:mm:ss and decimal hours",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
