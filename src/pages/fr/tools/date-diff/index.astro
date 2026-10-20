@@ -1,0 +1,275 @@
+---
+/**
+ * Calcul du nombre de jours entre deux dates — 프랑스어판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/date-diff.ts 의 FR 사전, 날짜 표기는 lib/fr/date-format.ts — 'mar. 20 octobre 2026'), 문장은 프랑스 자동완성으로 새로 썼다(번역 아님).
+ * 그레고리력 산술이라 rates 와 상관없다(조사표 프랑스 칸 '단위').
+ *
+ * 소제목은 프랑스 구글 자동완성에서 왔다(keywords/fr-date-diff-2026-10-21.csv, hl fr · gl fr):
+ *   calcul nombre de jours entre deux dates · en ligne · ouvrés · sans week-end / ajouter 30·60·90 jours à une date ·
+ *   ajouter jours ouvrés à une date / nombre de jours ouvrés en 2026 · par mois · entre deux dates /
+ *   … excel · excel sans datedif · libreoffice · google sheet
+ * 계산기는 공휴일을 빼지 않는다(토·일만 뺀 lundi–vendredi). 본문의 2026년 fêtes légales 11일은
+ * service-public.gouv.fr F2405(Vérifié le 01 janvier 2026, Code du travail L3133-1)에서 읽은 날짜이고,
+ * 그중 평일에 걸린 날 수는 아래 frontmatter 에서 weekday() 로 센다.
+ * 시간 환산(일수 × 24)은 넣지 않는다 — 서머타임(heure d’été) 전환일은 하루가 24시간이 아니다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span, shift, weekday } from "../../../../lib/date-calc";
+import { labelFr, joursFr, semainesFr, spanTextFr } from "../../../../lib/fr/date-format";
+
+const title = "Calcul du nombre de jours entre deux dates — ajouter des jours, jours ouvrés";
+const description =
+  "Calculez le nombre de jours entre deux dates (inclus ou non), ajoutez ou retirez des jours, semaines ou mois à une date et comptez les jours du lundi au vendredi.";
+
+const d = (iso: string) => toDay(iso)!;
+
+const START = "2026-10-20";
+const END = "2026-12-31";
+const s0 = span(d(START), d(END), false);
+
+// 본문 예시
+const ex1 = span(d("2026-11-02"), d("2026-11-06"), false);
+const ex1i = span(d("2026-11-02"), d("2026-11-06"), true);
+const plus30 = shift(d(START), 30, "day");
+const plus60 = shift(d(START), 60, "day");
+const plus90 = shift(d(START), 90, "day");
+const minus45 = shift(d(START), -45, "day");
+const plus4w = shift(d(START), 4, "week");
+const plus6m = shift(d(START), 6, "month");
+const jan31 = d("2027-01-31");
+const jan31plus1m = shift(jan31, 1, "month");
+const oct = span(d("2026-10-01"), d("2026-10-31"), true);
+
+// 2026년 fêtes légales — service-public.gouv.fr F2405 (Vérifié le 01 janvier 2026)
+const FERIES_2026: [string, string][] = [
+  ["2026-01-01", "Jour de l’An"],
+  ["2026-04-06", "Lundi de Pâques"],
+  ["2026-05-01", "1er Mai"],
+  ["2026-05-08", "Victoire 1945"],
+  ["2026-05-14", "Ascension"],
+  ["2026-05-25", "Lundi de Pentecôte"],
+  ["2026-07-14", "Fête nationale"],
+  ["2026-08-15", "Assomption"],
+  ["2026-11-01", "Toussaint"],
+  ["2026-11-11", "Armistice 1918"],
+  ["2026-12-25", "Noël"],
+];
+const isWeekday = (n: number) => weekday(n) >= 1 && weekday(n) <= 5;
+const feriesSemaine = FERIES_2026.filter(([iso]) => isWeekday(d(iso)));
+const feriesWeekend = FERIES_2026.filter(([iso]) => !isWeekday(d(iso)));
+const y2026 = span(d("2026-01-01"), d("2026-12-31"), true);
+const ouvres2026 = y2026.weekdays - feriesSemaine.length;
+---
+
+<html lang="fr-FR">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Calcul du nombre de jours entre deux dates</h1>
+      <p>
+        Comptez les jours qui séparent deux dates, ou trouvez la date qui tombe un certain nombre de jours, de semaines ou de
+        mois plus tard. Le résultat se met à jour pendant la saisie.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">Que voulez-vous calculer ?</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>Nombre de jours entre deux dates</option>
+            <option value="shift">Ajouter ou retirer des jours à une date</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">Date de début</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">Date de fin</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">Inclure le premier et le dernier jour</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">Date de départ</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">Combien</label>
+            <input type="number" inputmode="numeric" id="amount" value="30" min="0" max="36500" data-step />
+            <select id="unit" aria-label="Unité">
+              <option value="day" selected>jours</option>
+              <option value="week">semaines</option>
+              <option value="month">mois</option>
+              <option value="year">ans</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">Sens</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>Ajouter (date plus tard)</option>
+              <option value="before">Retirer (date plus tôt)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Nombre de jours entre les deux dates</p>
+          <p class="big" id="hero-value">{joursFr(s0.days)}</p>
+          <p class="hint" id="hero-sub">{spanTextFr(s0)} · {semainesFr(s0.weeks)} et {joursFr(s0.weekRest)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Du lundi au vendredi</span>
+            <span class="value" id="v1">{joursFr(s0.weekdays)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Période</span>
+            <span class="value" id="v2">{labelFr(s0.from)} → {labelFr(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Enregistrer en image</button>
+          <button id="btn-share" type="button" class="secondary">Partager</button>
+        </div>
+      </div>
+
+      <h2>Calcul du nombre de jours entre deux dates en ligne — inclus ou non</h2>
+      <p>
+        Par défaut, la calculatrice soustrait la date de début de la date de fin : le premier jour n’est pas compté. Du lundi
+        2 au vendredi 6 novembre 2026, cela donne {joursFr(ex1.days)}.
+      </p>
+      <p>
+        Cochez <strong>Inclure le premier et le dernier jour</strong> quand les deux bornes comptent — un séjour, une
+        formation, une période « du … au … inclus ». La même semaine donne alors {joursFr(ex1i.days)}.
+      </p>
+      <p>
+        L’ordre des dates n’a pas d’importance : si la date de fin est plus ancienne, les deux dates sont inversées et un
+        message l’indique sous le résultat. À l’ouverture, la page compte les jours d’aujourd’hui au 31 décembre de l’année.
+      </p>
+
+      <h2>Ajouter des jours à une date — 30, 60 ou 90 jours</h2>
+      <ul>
+        <li>
+          <strong>En jours</strong> — 30 jours après le {labelFr(d(START))}, on arrive au {labelFr(plus30)} ; 60 jours
+          après, au {labelFr(plus60)} ; 90 jours après, au {labelFr(plus90)}. 45 jours avant, c’était le {labelFr(minus45)}.
+        </li>
+        <li><strong>En semaines</strong> — une semaine vaut 7 jours : 4 semaines après le {labelFr(d(START))}, c’est le {labelFr(plus4w)}.</li>
+        <li>
+          <strong>En mois et en années</strong> — le mois change et le quantième reste le même : 6 mois après le
+          {" "}{labelFr(d(START))}, c’est le {labelFr(plus6m)}. Si ce jour n’existe pas dans le mois d’arrivée, on prend le
+          dernier jour du mois : 1 mois après le {labelFr(jan31)}, c’est le {labelFr(jan31plus1m)}.
+        </li>
+      </ul>
+      <p>
+        « 30 jours » et « 1 mois » ne donnent donc pas toujours la même date : choisissez l’unité écrite dans votre délai.
+      </p>
+
+      <h2>Nombre de jours ouvrés entre deux dates, sans week-end</h2>
+      <p>
+        La case <strong>Du lundi au vendredi</strong> compte les jours de semaine de la période, avec le même réglage
+        « inclus » que le total : octobre 2026 (du 1er au 31) en compte {joursFr(oct.weekdays)} sur {joursFr(oct.days)}.
+      </p>
+      <p>
+        <strong>Les jours fériés ne sont pas retirés.</strong> Selon Service-Public, un jour ouvré est un jour effectivement
+        travaillé dans l’entreprise, en général 5 par semaine, alors que les jours ouvrables comprennent aussi le samedi.
+        Parmi les fêtes légales, seul le 1er Mai est obligatoirement chômé pour tous les salariés : pour les autres, cela
+        dépend de l’entreprise ou de la convention collective. Retirez donc vous-même les jours fériés non travaillés chez vous.
+      </p>
+
+      <h2>Nombre de jours ouvrés en 2026</h2>
+      <p>
+        L’année 2026 compte {joursFr(y2026.weekdays)} du lundi au vendredi. Dans le cas général, il y a 11 fêtes légales ;
+        en 2026, {feriesSemaine.length} d’entre elles tombent un jour de semaine :
+      </p>
+      <ul>
+        {feriesSemaine.map(([iso, name]) => <li>{name} — {labelFr(d(iso))}</li>)}
+      </ul>
+      <p>
+        {feriesWeekend.map(([iso, name]) => `${name} (${labelFr(d(iso))})`).join(", ")} tombent un week-end. Si tous les
+        jours fériés sont chômés dans votre entreprise, il reste {joursFr(ouvres2026)} ouvrés en 2026, avant congés.
+        En Alsace-Moselle, le Vendredi saint et le 26 décembre s’ajoutent ; en outre-mer, la commémoration de l’abolition
+        de l’esclavage aussi, à une date propre à chaque territoire.
+      </p>
+
+      <h2>Calcul du nombre de jours entre deux dates sur Excel, LibreOffice ou Google Sheets</h2>
+      <p>Avec la date de début en A2 et la date de fin en B2 (Excel en français, séparateur point-virgule) :</p>
+      <ul>
+        <li><code>=B2-A2</code> — nombre de jours, sans DATEDIF (cellule au format nombre).</li>
+        <li><code>=B2-A2+1</code> — nombre de jours, bornes incluses.</li>
+        <li><code>=DATEDIF(A2;B2;"m")</code> — nombre de mois entiers (<code>"y"</code> pour les années).</li>
+        <li><code>=A2+30</code> ou <code>=MOIS.DECALER(A2;6)</code> — ajouter 30 jours, ou 6 mois.</li>
+        <li>
+          <code>=NB.JOURS.OUVRES(A2;B2;H2:H12)</code> — jours du lundi au vendredi entre les deux dates, moins les jours
+          fériés listés en H2:H12. La fonction compte les deux bornes : comparez-la au résultat « inclus » ci-dessus.
+        </li>
+      </ul>
+      <p>Dans Google Sheets et LibreOffice Calc, la soustraction <code>=B2-A2</code> fonctionne de la même façon.</p>
+
+      <details>
+        <summary>« Entre deux dates » et « dans X jours », c’est pareil ?</summary>
+        <p>
+          Non. Le nombre de jours entre deux dates mesure un écart ; « dans X jours » donne une date. 4 jours après le
+          2 novembre, c’est le 6 novembre, et l’écart du 2 au 6 novembre est de {joursFr(ex1.days)}, ou {joursFr(ex1i.days)}
+          {" "}bornes incluses.
+        </p>
+      </details>
+
+      <details>
+        <summary>Les années bissextiles sont-elles prises en compte ?</summary>
+        <p>
+          Oui. Le calcul suit le calendrier grégorien : le 29 février compte dans une année bissextile, et un an après un
+          29 février, on tombe le 28 février d’une année ordinaire.
+        </p>
+      </details>
+
+      <details>
+        <summary>Pourquoi le résultat n’est-il pas donné en heures ?</summary>
+        <p>
+          Les jours de passage à l’heure d’été et à l’heure d’hiver durent 23 ou 25 heures : multiplier les jours par 24
+          décalerait le résultat d’une heure. La page s’en tient aux jours et aux semaines.
+        </p>
+      </details>
+
+      <p class="hint">
+        Sources : <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F2405" rel="noopener">Service-Public — Jours fériés</a>
+        (vérifié le 1er janvier 2026) ·
+        <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F2258" rel="noopener">Service-Public — Congés payés du salarié (jours ouvrés, jours ouvrables)</a>
+        (vérifié le 30 avril 2026).
+      </p>
+
+      <AdSlot label="date-diff-result-fr" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

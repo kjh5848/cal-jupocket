@@ -17,4 +17,13 @@ export const tools: LocaleTool[] = [
     icon: "percent",
     basis: "math",
   },
+  {
+    href: "/fr/tools/date-diff/",
+    ko: "/tools/date-diff/",
+    name: "Nombre de jours entre deux dates",
+    blurb: "Jours entre deux dates (inclus ou non), date après X jours, semaines ou mois, et jours du lundi au vendredi",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
