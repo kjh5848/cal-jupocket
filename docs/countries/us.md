@@ -18,3 +18,4 @@
 
 | 날짜 | 도구 | 조사표 판정 | 상태 | 주소 | 메모 |
 |---|---|---|---|---|---|
+| 2026-10-20 | 퍼센트(#211) | 같음 | 발행 | /en-us/tools/percent/ | 미국판 첫 도구 — `src/pages/en-us/index.astro`(LocaleHome)·`src/data/en-us/tools.ts`(ko 짝 /tools/percent/) 같이 만듦. 표 위 1순위 53행(#24 실수령액 → 하루·시간)은 한국어판이 가이드 안 절(`/guide/take-home-calculator/#per-day`)이라 스크립트 공유·짝이 안 돼 건너뜀(일본 회차와 같은 사유). 공유 스크립트 `src/scripts/percent.ts` 를 `pickLang({ ko, ja, en })` 로 바꾸고 EN 사전 추가(KO·JA 문자열 그대로, 영어 다섯 판 공용이라 통화 기호 없음) — 별도 커밋. 자동완성 `keywords/us-percent-2026-10-20.csv` — percentage calculator formula / percent off price·coupon / percent change between two numbers·formula / percent change vs percent difference / percentage increase formula excel·google sheets / for grades. percent difference(평균으로 나눔)는 식 설명만, 계산은 안 함. 법 숫자 없음 — sales tax·팁은 주·도시마다 달라 쓰지 않음. 입력 `$` 는 parseNumber 가 못 읽어 FAQ 로 안내. 미리보기 서버는 무인 회차라 띄우지 않음 — 빌드 HTML(lang en-US·hreflang ko/ja/en-US 양쪽·25% 초기값)만 확인 |
