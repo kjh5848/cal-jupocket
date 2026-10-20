@@ -2,6 +2,7 @@ import { toDay, span, spanText, label, shift, shiftBusiness, dday, holidayRange,
 import { labelJa, spanTextJa, ddayJa } from "../lib/date-format-ja";
 import { labelFr, pluralFr, joursFr, semainesFr, spanTextFr, ddayFr } from "../lib/fr/date-format";
 import { labelDe, shortDe, countDe, spanTextDe, weeksTextDe, relDe, type UnitDe } from "../lib/de/date-format";
+import { labelEs, spanTextEs, weekTextEs, ddayEs, daysEs, pluralEs } from "../lib/es/date-format";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pickLang } from "../i18n/ui";
@@ -294,7 +295,51 @@ const FR: typeof KO = {
   shareText: "Résultat du calcul de dates - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE, id: ID, fr: FR });
+/**
+ * 스페인어판(/es/tools/date-diff/). 표기는 lib/es/date-format(martes, 20 de octubre de 2026 · 2 meses y 11 días).
+ * 업무일(festivos 빼기)·시간 환산은 넣지 않는다 — 월~금만 센 값은 'días hábiles' 라 부르지 않는다(Ley 39/2015 art. 30.2).
+ */
+const UNIT_ES: Record<Unit, [string, string]> = {
+  day: ["día", "días"],
+  week: ["semana", "semanas"],
+  month: ["mes", "meses"],
+  year: ["año", "años"],
+};
+
+const ES: typeof KO = {
+  spanTitle: "Calculadora de fechas — días entre dos fechas",
+  shiftTitle: "Calculadora de fechas — sumar o restar a una fecha",
+  needDates: "Escribe las dos fechas",
+  needBase: "Escribe la fecha de partida",
+  needInt: "Escribe un número entero, 0 o más",
+  swapped: "La fecha final era anterior a la de inicio, así que se han intercambiado.",
+  spanLabel: (incl: boolean) => (incl ? "Días entre las dos fechas (con el último día)" : "Días entre las dos fechas"),
+  days: daysEs,
+  spanSub: (s: Span) => `${spanTextEs(s)} · ${weekTextEs(s)}`,
+  spanChips: (s: Span): [string, string][] => [
+    ["De lunes a viernes", daysEs(s.weekdays)],
+    ["Fechas", `${labelEs(s.from)} → ${labelEs(s.to)}`],
+  ],
+  spanNotes: () => [],
+  unitName: (u: Unit) => u,
+  shiftWhat: (amount: number, unitName: string, after: boolean) => {
+    const [one, many] = UNIT_ES[unitName as Unit] ?? UNIT_ES.day;
+    return `${pluralEs(amount, one, many)} ${after ? "después" : "antes"}`;
+  },
+  bizOut: "",
+  label: labelEs,
+  todaySub: (target: number, today: number) => {
+    const r = ddayEs(target, today);
+    return r === "hoy" ? "Es hoy" : `Desde hoy: ${r}`;
+  },
+  baseChip: "Fecha de partida",
+  betweenChip: "Diferencia",
+  between: (s: Span) => `${daysEs(s.days)} (${spanTextEs(s)})`,
+  monthEnd: "Si ese día no existe en el mes de llegada (31, 29 de febrero), se toma el último día del mes.",
+  shareText: "Resultado de la calculadora de fechas - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE, id: ID, fr: FR, es: ES });
 
 /** 이 기기 기준 오늘(지역 날짜) */
 function todayDay(): number {
