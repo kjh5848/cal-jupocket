@@ -123,7 +123,58 @@ const EN: typeof KO = {
   now: (s: number, ms: number) => `Now: ${s} seconds · ${ms} milliseconds`,
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN });
+/** 인도네시아어판 — '3 hari 4 jam 5 menit yang lalu / lagi', 1초 안이면 'sekarang'. 끊는 규칙은 relativeText 와 같다 */
+function relativeTextId(diffMs: number): string {
+  const a = Math.abs(diffMs);
+  if (a < 1000) return "sekarang";
+  let sec = Math.floor(a / 1000);
+  const d = Math.floor(sec / 86_400);
+  sec -= d * 86_400;
+  const h = Math.floor(sec / 3600);
+  const mi = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  const unit = (n: number, w: string) => `${n.toLocaleString("id-ID")} ${w}`;
+  const parts: string[] = [];
+  if (d) parts.push(unit(d, "hari"));
+  if (h) parts.push(unit(h, "jam"));
+  if (mi && d < 100) parts.push(unit(mi, "menit"));
+  if (!d && !h && (s || !mi)) parts.push(unit(s, "detik"));
+  return `${parts.join(" ")} ${diffMs < 0 ? "yang lalu" : "lagi"}`;
+}
+
+/** 인도네시아어판(/id/tools/unix-time/) — 영어판처럼 UTC·이 기기 시간대만(WIB 등 오프셋 숫자는 쓰지 않는다), 날짜는 <html lang="id-ID"> Intl 표기 */
+const ID: typeof KO = {
+  text: (p) => enText(p, EN_LANG),
+  homeOffset: deviceOffset,
+  rel: relativeTextId,
+  utc: "UTC",
+  device: (o: string) => `Zona waktu perangkat ini (${o})`,
+  home: "Zona waktu perangkat ini",
+  homeSub: (t: string) => `Zona waktu perangkat ini: ${t}`,
+  utcSub: (t: string) => `UTC ${t}`,
+  msWrote: "Ditulis dalam milidetik.",
+  sWrote: "Ditulis dalam detik.",
+  int32: "Waktu ini melewati batas detik bilangan bulat 32-bit bertanda (2.147.483.647 = 2038-01-19 03:14:07 UTC) — sistem lama mungkin tidak bisa menyimpannya.",
+  negative: "Waktunya sebelum 1970, jadi angkanya negatif — dihitung mundur 86.400 detik per hari.",
+  lineSec: "Unix timestamp (detik)",
+  lineMs: "Milidetik",
+  err: {
+    empty: "Masukkan timestamp",
+    format: "Masukkan angka saja (notasi ilmiah seperti 1e9 tidak diterima)",
+    "ms-fraction": "Milidetik harus bilangan bulat — pilih satuan detik kalau ada desimal",
+    "too-precise": "Detik hanya sampai tiga angka di belakang titik (milidetik)",
+    range: "Hanya nilai antara 1 Januari 1900 dan 30 Desember 9999 (UTC) yang dikonversi",
+  },
+  unitName: (u: "s" | "ms") => (u === "s" ? "detik" : "milidetik"),
+  readAuto: (n: number, u: string) => `${n} digit — dibaca sebagai ${u}. Pilih satuan kalau keliru.`,
+  read: (u: string) => `Dibaca sebagai ${u}.`,
+  badDate: "Periksa tanggal dan jam (milidetik 0–999)",
+  cardTitle: "Konversi Unix Timestamp",
+  shareText: "Konversi Unix Timestamp - jupocket.com",
+  now: (s: number, ms: number) => `Sekarang: ${s} detik · ${ms} milidetik`,
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID });
 
 /** 그 순간의 시간대 오프셋(분). 이 기기 시간대는 서머타임이 있으면 순간마다 다르다 */
 function offsetAt(ms: number): number {

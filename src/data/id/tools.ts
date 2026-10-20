@@ -44,4 +44,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/id/tools/unix-time/",
+    ko: "/tools/unix-time/",
+    name: "Konversi Unix Timestamp",
+    blurb: "Unix timestamp detik atau milidetik ke tanggal dan jam UTC atau zona waktu perangkat, dan tanggal kembali ke epoch time",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
