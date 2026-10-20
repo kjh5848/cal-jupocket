@@ -1,0 +1,77 @@
+{
+  "country": "GB",
+  "draft": true,
+  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(아래 notVerified 가 남음). 조사표 연차 행(/guide/annual-leave-calculator/)의 영국 칸. 한국 연차(근속 가산·1년 미만 월 1일)와 계산 구조가 다르다: 영국은 법정 최소 5.6주(4주 + 1.6주) · 합계 28일 상한 · 근속 가산 없음. 숫자는 GOV.UK 안내(Holiday entitlement, updated_at 2026-10-16)와 Working Time Regulations 1998(SI 1998/1833, 적용 지역 E+W+S, legislation.gov.uk 수정일 2026-09-29) · Working Time Regulations (Northern Ireland) 2016(SR 2016/49, 수정일 2026-04-03)에서 읽은 것만. 페이지를 내면 어느 지역 규정인지(GB = 잉글랜드·웨일스·스코틀랜드 / 북아일랜드) 밝힐 것. 고용 계약이 더 많이 줄 수 있음(Extra leave) — 계산기는 법정 최소만.",
+  "verifiedOn": "2026-10-21",
+  "sources": [
+    { "label": "GOV.UK — Holiday entitlement (Entitlement · Calculate leave entitlement · Holiday pay · Booking time off · Taking holiday before leaving a job), content API updated_at 2026-10-16", "url": "https://www.gov.uk/holiday-entitlement-rights" },
+    { "label": "Working Time Regulations 1998 reg 13 (4주, leave year, 첫해 비례, 이월)", "url": "https://www.legislation.gov.uk/uksi/1998/1833/regulation/13" },
+    { "label": "Working Time Regulations 1998 reg 13A (추가 1.6주, 합계 28일 상한, 이월 합의)", "url": "https://www.legislation.gov.uk/uksi/1998/1833/regulation/13A" },
+    { "label": "Working Time Regulations 1998 reg 14 (퇴사 때 미사용 휴가 보상 (A × B) − C)", "url": "https://www.legislation.gov.uk/uksi/1998/1833/regulation/14" },
+    { "label": "Working Time Regulations 1998 reg 15A (첫해 월 1/12 발생, 반나절 단위 끝수)", "url": "https://www.legislation.gov.uk/uksi/1998/1833/regulation/15A" },
+    { "label": "Working Time Regulations 1998 reg 15B (irregular hours·part-year, 12.07%, 2024-04-01 이후 leave year)", "url": "https://www.legislation.gov.uk/uksi/1998/1833/regulation/15B" },
+    { "label": "Working Time Regulations (Northern Ireland) 2016 reg 15·16·19", "url": "https://www.legislation.gov.uk/nisr/2016/49/contents" }
+  ],
+  "statutoryWeeks": {
+    "base": 4,
+    "additional": 1.6,
+    "total": 5.6,
+    "capDays": 28,
+    "source": "GB reg 13(1) 4주 + reg 13A(2)(e) 1.6주(2009-04-01 이후 leave year), 13A(3) 합계 최대 28일 · NI reg 15(1) 4주 + 16(1) 1.6주, 16(2) 최대 28일 — 같은 값. GOV.UK: 'Most workers who work a 5-day week must receive at least 28 days' paid annual leave', '6 days a week are only entitled to 28 days'"
+  },
+  "regularHours": {
+    "formula": "min(주 근무일 × 5.6, 28) 일",
+    "checks": [
+      { "daysPerWeek": 5, "days": 28, "source": "GOV.UK Entitlement" },
+      { "daysPerWeek": 3, "days": 16.8, "source": "GOV.UK Working part-time '3 × 5.6'" },
+      { "daysPerWeek": 6, "days": 28, "source": "GOV.UK Limits on statutory leave" }
+    ],
+    "bankHolidays": "법정 유급휴가에 넣어도 되고 따로 줄 의무 없음(GOV.UK 'Bank or public holidays do not have to be given as paid leave')"
+  },
+  "startingPartWay": {
+    "rule": "leave year 중간에 입사하면 남은 leave year 비율만큼(GB reg 13(5)·13A(5), NI reg 15(4)·16(4))",
+    "firstYearAccrual": "첫해에는 매달 첫날 1년치의 1/12 씩 쌓인 만큼만 쓸 수 있음(GB reg 15A(2A), NI reg 19(2)) — 2001-10-25 이전 입사자는 GB 15A(4)로 제외",
+    "rounding": "쌓인 양에 반나절이 아닌 끝수가 있으면 반나절 미만은 반나절로, 반나절 초과는 하루로(GB 15A(3), NI 19(3))",
+    "checks": [
+      { "case": "주 5일, 1/1 시작 leave year, 1/13 입사 — 1월치", "raw": "28 ÷ 12 = 2.33", "rounded": 2.5, "source": "GOV.UK Calculate leave entitlement 예시" },
+      { "case": "주 5일, 입사 3개월 뒤", "raw": "28 ÷ 12 × 3", "rounded": 7, "source": "GOV.UK Accrual system 예시" }
+    ],
+    "proRataAlternative": "첫 달을 일한 날 비례(pro-rata)로 계산할 수도 있음(GOV.UK) — 이 경우 첫날 1/12 이 붙지 않음"
+  },
+  "irregularHoursGB": {
+    "appliesTo": "GB 의 irregular hours worker·part-year worker, 2024-04-01 이후 시작한 leave year(reg 15B(1)). 그 전 leave year 는 reg 13·13A(주 평균 근무로 추정)",
+    "rate": 0.1207,
+    "formula": "급여 기간에 일한 시간 × 12.07%, 급여 기간 마지막 날 발생(reg 15B(3)(b)), leave year 최대 28일(15B(4))",
+    "rounding": "30분 미만 끝수는 0, 30분 이상은 1시간(reg 15B(5)) — GOV.UK 'rounded up to the nearest hour if ... 0.5 of an hour or more'",
+    "checks": [
+      { "hoursWorked": 30, "raw": 3.621, "accruedHours": 4, "source": "GOV.UK 예시 '30 × 12.07 ÷ 100 = 3.621' → 4 hours" }
+    ]
+  },
+  "carryOver": {
+    "standard": "28일 받는 근로자는 최대 8일 이월(GOV.UK) — 법적 근거는 reg 13A(7) '1.6주분을 relevant agreement 로 이월 가능'. 4주분(reg 13)은 원칙적으로 그해에만(13(9)(a))",
+    "statutoryLeave": "출산·부성·입양 등 statutory leave 때문에 못 쓴 휴가는 다음 해로 이월(GB 13(14)·13A(7A))",
+    "sickLeave": "병가로 못 쓴 휴가: regular hours 는 28일 중 최대 20일, irregular·part-year 는 최대 28일(GOV.UK) · 4주분은 leave year 끝에서 18개월 안에 써야 함(GB 13(15))"
+  },
+  "leaving": {
+    "paymentInLieu": "퇴사 때만 미사용 법정 휴가를 돈으로(GOV.UK, reg 13(9)(b)) — gross misconduct 해고여도 지급",
+    "formula": "relevant agreement 가 없으면 (A × B) − C 일치의 휴가 급여 — A = reg 13·13A 연간 휴가, B = 퇴사일 전에 지난 leave year 비율, C = 그 leave year 에 쓴 휴가(GB reg 14(3)(b))",
+    "overTaken": "더 많이 쓴 경우 미리 서면 합의가 없으면 최종 급여에서 빼면 안 됨(GOV.UK)"
+  },
+  "holidayPay": {
+    "rule": "법정 휴가 1주마다 a week's pay(GOV.UK). regular hours 는 최소 4주를 'normal' rate, 남은 1.6주를 'basic' rate 로 · irregular·part-year 는 전부 normal rate",
+    "averaging": "변동 급여는 직전 52주(급여 있는 주만, 최대 104주까지 거슬러) 평균(GOV.UK) — 법 조문(reg 16·Employment Rights Act 1996 s.221–224)은 이번에 읽지 않음",
+    "rolledUp": "regular hours 는 시급에 휴가 급여를 섞는 rolled-up holiday pay 금지 · irregular·part-year 는 2024-04-01 이후 leave year 면 가능(GOV.UK)",
+    "records": "2026-04-06 부터 고용주는 휴가·휴가 급여 기록을 6년 보관(GOV.UK)"
+  },
+  "notice": {
+    "worker": "쉬려는 기간의 2배 + 1일 전 통지(예: 1일 휴가 → 3일 전) — 계약이 다르면 계약대로(GOV.UK Booking time off)",
+    "employerRefuse": "거절·취소는 요청 기간 + 1일 전(예: 10일 휴가 → 11일 전)(GOV.UK)",
+    "lawCheck": "reg 15 조문은 이번에 읽지 않음"
+  },
+  "notVerified": [
+    "북아일랜드의 irregular hours·part-year 근로자 계산법 — NI 2016 규정 목차(reg 15·16·17·18·19·20·33)에 GB reg 15B(12.07%) 같은 조항이 보이지 않음. NI 는 주 평균 근무로 계산하는지 원문 미확인(이번에 nidirect 는 허용 출처 밖이라 안 봄). 페이지는 12.07% 계산을 GB 한정으로 밝히거나 NI 를 빼야 함",
+    "holiday pay 금액 계산(week's pay 평균) — GOV.UK 안내만 읽고 reg 16·ERA 1996 s.221–224 조문은 안 읽음. 첫 페이지는 일수·시간만 계산하고 금액은 계산하지 않으면 막지 않음",
+    "통지 기간 조문(GB reg 15) — GOV.UK 문장만 읽음(숫자 계산에는 안 씀)",
+    "NI 퇴사 보상(NI reg 17)·이월 조항 — 목차만 보고 본문 안 읽음"
+  ]
+}
