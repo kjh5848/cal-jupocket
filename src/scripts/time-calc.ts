@@ -1,5 +1,5 @@
 import {
-  parseAt, toMinutes, shiftAt, atText, ampmText, dayShiftText, splitText, between, hoursText, atParts,
+  parseAt, toMinutes, shiftAt, atText, ampmText, dayShiftText, splitText, between, hoursText, atParts, parseBreak, netMinutes,
   atTextJa, dayShiftTextJa, splitTextJa,
 } from "../lib/time-calc";
 import { pageLocale } from "../i18n/ui";
@@ -38,6 +38,9 @@ const KO = {
   between: "사이",
   betweenRev: "사이 (끝이 시작보다 이릅니다)",
   reversed: "끝 날짜·시각이 시작보다 앞이라 거꾸로 센 크기입니다. 밤을 넘겼다면 끝 날짜를 다음 날로 바꾸세요.",
+  badBreak: "휴게 시간은 0 이상의 정수(분)로 넣어 주세요",
+  overBreak: "휴게 시간이 시작~끝 사이보다 깁니다",
+  net: (b: string) => `휴게 ${b} 뺀 시간`,
   cardTitle: "시간 계산",
   shareText: "시간 계산 - jupocket.com",
 };
@@ -61,6 +64,9 @@ const JA: typeof KO = {
   between: "経過時間",
   betweenRev: "経過時間（終了が開始より前です）",
   reversed: "終了の日時が開始より前なので、逆向きに数えた長さです。日付をまたいだときは終了日を翌日にしてください。",
+  badBreak: "休憩時間は0以上の整数（分）で入れてください",
+  overBreak: "休憩時間が開始〜終了の間より長いです",
+  net: (b: string) => `休憩${b}を引いた時間`,
   cardTitle: "時間計算",
   shareText: "時間計算 - jupocket.com",
 };
@@ -104,20 +110,27 @@ function calcA() {
 function calcB() {
   const s = parseAt(val("b-sdate"), val("b-stime"));
   const e = parseAt(val("b-edate"), val("b-etime"));
-  if (s === null || e === null) {
-    set("b-label", S.badB);
+  // 휴게 칸은 한국어판에만 있다 — 없으면 0분
+  const brkEl = document.getElementById("b-break") as HTMLInputElement | null;
+  const brk = brkEl ? parseBreak(brkEl.value) : 0;
+  const fail = (msg: string) => {
+    set("b-label", msg);
     set("b-hero", "—");
-    for (const id of ["b-hours", "b-mins", "b-hm"]) set(id, "—");
+    for (const id of ["b-hours", "b-mins", "b-hm", "b-gross"]) if (document.getElementById(id)) set(id, "—");
     set("b-note", "");
-    return;
-  }
+  };
+  if (s === null || e === null) return fail(S.badB);
+  if (brk === null) return fail(S.badBreak);
   const b = between(s, e);
-  set("b-label", b.sign < 0 ? S.betweenRev : S.between);
-  set("b-hero", S.span(b.total));
+  const net = netMinutes(b.total, brk);
+  if (net === null) return fail(S.overBreak);
+  set("b-label", b.sign < 0 ? S.betweenRev : brk > 0 ? S.net(S.span(brk)) : S.between);
+  set("b-hero", S.span(net));
   set("b-sub", `${S.at(s)} → ${S.at(e)}`);
-  set("b-hours", S.hours(hoursText(b.total)));
-  set("b-mins", S.mins(b.total));
-  set("b-hm", `${Math.floor(b.total / 60).toLocaleString("ko-KR")}:${String(b.total % 60).padStart(2, "0")}`);
+  set("b-hours", S.hours(hoursText(net)));
+  set("b-mins", S.mins(net));
+  set("b-hm", `${Math.floor(net / 60).toLocaleString("ko-KR")}:${String(net % 60).padStart(2, "0")}`);
+  if (document.getElementById("b-gross")) set("b-gross", S.span(b.total));
   set("b-note", b.sign < 0 ? S.reversed : "");
 }
 
@@ -125,7 +138,8 @@ for (const id of ["a-op", "a-date", "a-time", "a-d", "a-h", "a-m"]) {
   $(id).addEventListener("input", () => { reportUse(1); calcA(); });
   $(id).addEventListener("change", calcA);
 }
-for (const id of ["b-sdate", "b-stime", "b-edate", "b-etime"]) {
+for (const id of ["b-sdate", "b-stime", "b-edate", "b-etime", "b-break"]) {
+  if (!document.getElementById(id)) continue;
   $(id).addEventListener("input", () => { reportUse(1); calcB(); });
   $(id).addEventListener("change", calcB);
 }

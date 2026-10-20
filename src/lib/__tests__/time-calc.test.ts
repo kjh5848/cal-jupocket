@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from "vitest";
 import {
-  MIN_AT, MAX_AT, parseAt, toMinutes, shiftAt, split, splitText, atParts, atText, ampmText, dayShiftText, between, hoursText,
+  MIN_AT, MAX_AT, parseAt, toMinutes, shiftAt, split, splitText, atParts, atText, ampmText, dayShiftText, between, hoursText, parseBreak, netMinutes,
   splitTextJa, atTextJa, dayShiftTextJa,
 } from "../time-calc";
 
@@ -125,5 +125,32 @@ describe("일본어판 표기", () => {
     expect(dayShiftTextJa(s, at("2026-10-18", "23:00"))).toBe("前日");
     expect(dayShiftTextJa(s, at("2026-10-22", "01:00"))).toBe("3日後");
     expect(dayShiftTextJa(s, at("2026-10-09", "01:00"))).toBe("10日前");
+  });
+});
+
+describe("휴게 시간 빼기 (#89 시간 간격)", () => {
+  it("parseBreak — 빈 칸 0, 정수만", () => {
+    expect(parseBreak("")).toBe(0);
+    expect(parseBreak(" 60 ")).toBe(60);
+    expect(parseBreak("1,440")).toBe(1440);
+    expect(parseBreak("-5")).toBeNull();
+    expect(parseBreak("1.5")).toBeNull();
+    expect(parseBreak("abc")).toBeNull();
+  });
+  it("netMinutes — 사이 − 휴게, 휴게가 더 길면 null", () => {
+    // 09:00 ~ 18:00, 휴게 60분 → 8시간
+    const b1 = between(at("2026-10-19", "09:00"), at("2026-10-19", "18:00"));
+    expect(netMinutes(b1.total, 60)).toBe(480);
+    expect(hoursText(480)).toBe("8");
+    // 22:00 ~ 다음 날 06:30, 휴게 30분 → 8시간
+    const b2 = between(at("2026-10-19", "22:00"), at("2026-10-20", "06:30"));
+    expect(netMinutes(b2.total, 30)).toBe(480);
+    // 08:15 ~ 다음 날 08:14 → 1,439분 = 23.98시간
+    const b3 = between(at("2026-10-19", "08:15"), at("2026-10-20", "08:14"));
+    expect(netMinutes(b3.total, 0)).toBe(1439);
+    expect(hoursText(1439)).toBe("23.98");
+    // 경계: 휴게 = 사이 → 0, 휴게 > 사이 → null
+    expect(netMinutes(30, 30)).toBe(0);
+    expect(netMinutes(30, 31)).toBeNull();
   });
 });

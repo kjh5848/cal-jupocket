@@ -125,6 +125,23 @@ export function between(start: number, end: number): Between {
   return { sign: diff < 0 ? -1 : 1, total, split: split(total), hours: total / 60 };
 }
 
+/** 휴게 시간 칸(분) → 0 이상의 정수 분. 빈 칸은 0, 음수·소수·숫자 아님은 null */
+export function parseBreak(raw: string): number | null {
+  const s = raw.replace(/[\s,]/g, "");
+  if (s === "") return 0;
+  if (!/^\d+$/.test(s)) return null;
+  const n = Number(s);
+  return Number.isSafeInteger(n) ? n : null;
+}
+
+/**
+ * 사이(총 분)에서 휴게(분)를 뺀 실제 시간 — 근무·작업 시간 셈(#89 시간 간격, roberin 은 입력·결과 항목만 대조).
+ * 휴게가 사이보다 길면 null(음수 시간을 보여 주지 않는다). 법정 휴게 기준은 넣지 않았다 — 순수 뺄셈.
+ */
+export function netMinutes(total: number, breakMin: number): number | null {
+  return breakMin > total ? null : total - breakMin;
+}
+
 /** 총 시간 표기 — 소수 둘째 자리까지, 끝의 0은 뺌(450분 → '7.5') */
 export function hoursText(total: number): string {
   const v = Math.round((total / 60) * 100) / 100;
