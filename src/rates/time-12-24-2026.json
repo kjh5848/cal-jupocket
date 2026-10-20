@@ -1,0 +1,29 @@
+{
+  "title": "12·24시간제 변환 — 오전·오후·정오·자정의 뜻",
+  "verifiedOn": "2026-10-21",
+  "sources": [
+    {
+      "name": "국립국어원 표준국어대사전 '오전2(午前)' — 밤 열두 시부터 낮 열두 시까지의 시간",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=%EC%98%A4%EC%A0%84"
+    },
+    {
+      "name": "국립국어원 표준국어대사전 '오후2(午後)' — 낮 열두 시부터 밤 열두 시까지의 시간",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=%EC%98%A4%ED%9B%84"
+    },
+    {
+      "name": "국립국어원 표준국어대사전 '정오1(正午)' — 낮 열두 시",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=%EC%A0%95%EC%98%A4"
+    },
+    {
+      "name": "국립국어원 표준국어대사전 '자정1(子正)' — 밤 열두 시",
+      "url": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=%EC%9E%90%EC%A0%95"
+    }
+  ],
+  "minutes": { "midnight": 0, "noon": 720 },
+  "rules": {
+    "boundary": "사전의 오전·오후 범위는 둘 다 '낮 열두 시'를 끝점으로 써서 12:00 이 어느 쪽인지 사전만으로는 갈리지 않는다. 12:00 = 오후 12:00, 00:00 = 오전 12:00 은 관례이고 시간 계산기(/tools/time-calc/ ampmText)와 같은 표기. 그래서 결과에 정오·자정을 함께 적는다",
+    "input12": "오전·오후·AM·PM + 시 1~12(오전 0시·오후 0시도 받음) + 분 00~59. 오후 13:00 같은 표기는 오류",
+    "input24": "시 0~23 + 분 00~59. 24:00 은 받지 않는다 — 다음 날 00:00(자정)",
+    "notIncluded": "밤·낮·새벽·저녁 말머리는 받지 않는다 — '밤 1시' 가 몇 시인지 정한 원문 없음(자정 = 밤 열두 시만 사전에 있음). 초·날짜·시간대는 다루지 않는다"
+  }
+}

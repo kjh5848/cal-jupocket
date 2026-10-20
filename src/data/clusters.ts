@@ -474,6 +474,7 @@ export const clusters: Cluster[] = [
       { href: "/tools/year-left/", title: "올해 남은 날", kind: "calc", icon: "calendar", blurb: "올해 며칠 남았나 · 몇 번째 날 · 몇 % 지났나" },
       { href: "/tools/milestone-age/", title: "환갑·칠순 계산기", kind: "calc", icon: "calendar", blurb: "생년월일 → 환갑·칠순·팔순 날짜 · D-day" },
       { href: "/tools/sec-convert/", title: "초·분·시간 변환", kind: "calc", icon: "calendar", blurb: "초 ↔ 분 ↔ 시간 ↔ 일 · 몇 시간 몇 분 몇 초" },
+      { href: "/tools/time-12-24/", title: "12·24시간제 변환", kind: "calc", icon: "calendar", blurb: "오후 3:40 ↔ 15:40 · 자정·정오 표기 · 0~23시 대조표" },
     ],
   },
 ];

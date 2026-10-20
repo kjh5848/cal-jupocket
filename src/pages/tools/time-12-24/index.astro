@@ -1,0 +1,153 @@
+---
+/**
+ * 12·24시간제 변환 — 날짜·시간 묶음의 도구(/tools/time-12-24/). 계산은 lib/time-12-24.ts.
+ *
+ * 질문 하나: 이 시각을 다른 표기로 쓰면 무엇인가(오후 3:40 ↔ 15:40).
+ * 오전·오후·정오·자정의 뜻은 표준국어대사전(rates/time-12-24-2026.json). roberin #154 는 입력·결과 항목만 대조했다(docs/calc-benchmark.md).
+ * 첫 화면 숫자는 예시(15:40)로 빌드 때 계산하고, 스크립트가 입력을 받아 다시 센다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+import { parseTime, text24, text12, spoken, textEn, hourTable } from "../../../lib/time-12-24";
+
+const title = "12·24시간제 변환 — 오후 3시는 15시, 자정·정오 표기까지";
+const description =
+  "오후 3:40은 15:40, 23:59는 오후 11:59처럼 12시간제와 24시간제를 바로 바꿉니다. 자정 00:00은 오전 12:00, 정오 12:00은 오후 12:00으로 쓰고, 0시~23시 대조표와 영어 AM·PM 표기도 함께 봅니다.";
+
+const EX = "15:40";
+const m0 = parseTime(EX)!.min;
+const table = hourTable();
+const PRESETS: [string, string][] = [
+  ["자정", "00:00"],
+  ["정오", "12:00"],
+  ["오후 3:40", "오후 3:40"],
+  ["23:59", "23:59"],
+];
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>12·24시간제 변환</h1>
+      <p>
+        오후 3:40은 24시간제로 15:40입니다. 오후 시각은 시에 12를 더하고, 24시간제의 13시 이후는 12를 빼서 오후를 붙입니다.
+        00:00(자정)은 오전 12:00, 12:00(정오)은 오후 12:00입니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="t-in">시각 (오전·오후 표기나 24시간제 아무거나)</label>
+          <input type="text" id="t-in" autocomplete="off" value={EX} placeholder="예: 오후 3:40 · 15:40 · 3:40 PM" />
+        </div>
+        <div class="t-presets">
+          {PRESETS.map(([label, v]) => <button type="button" class="secondary" data-t={v}>{label}</button>)}
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{EX} =</p>
+          <p class="big" id="hero-value">{text12(m0)}</p>
+          <p class="hint" id="hero-sub">{spoken(m0)} · {textEn(m0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip"><span class="label">24시간제</span><span class="value" id="v-24">{text24(m0)}</span></div>
+          <div class="stat-chip"><span class="label">12시간제</span><span class="value" id="v-12">{text12(m0)}</span></div>
+          <div class="stat-chip"><span class="label">말로 읽기</span><span class="value" id="v-say">{spoken(m0)}</span></div>
+          <div class="stat-chip"><span class="label">영어</span><span class="value" id="v-en">{textEn(m0)}</span></div>
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>0시 ~ 23시 대조표</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>24시간제</th><th>12시간제</th><th>24시간제</th><th>12시간제</th></tr></thead>
+          <tbody>
+            {table.slice(0, 12).map((r, i) => (
+              <tr><td>{r[0]}</td><td>{r[1]}{i === 0 ? " (자정)" : ""}</td><td>{table[i + 12][0]}</td><td>{table[i + 12][1]}{i === 0 ? " (정오)" : ""}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>이렇게 바꿉니다</h2>
+      <ul>
+        <li>
+          <strong>오후 → 24시간제는 12 더하기</strong> — 오후 3:40은 3 + 12 = 15시, 15:40입니다. 오전은 숫자 그대로라 오전
+          9:05는 09:05입니다. 분은 어느 쪽이든 바뀌지 않습니다.
+        </li>
+        <li>
+          <strong>24시간제 → 오후는 12 빼기</strong> — 13시부터 23시는 12를 빼고 오후를 붙입니다(18:30 → 오후 6:30). 1시부터
+          11시는 오전을 붙이기만 합니다.
+        </li>
+        <li>
+          <strong>12가 들어가는 두 시각만 조심</strong> — 00:00은 오전 12:00, 12:00은 오후 12:00입니다. 그래서 오전 12:30은
+          한밤중(00:30), 오후 12:30은 점심때(12:30)입니다.
+        </li>
+        <li>
+          <strong>24:00은 넣지 않습니다</strong> — 하루가 끝나는 순간은 다음 날 00:00(자정)으로 넣어 주세요. 시각의 표기만
+          바꾸고 날짜·시간대는 그대로 둡니다.
+        </li>
+      </ul>
+
+      <details>
+        <summary>자정은 오전 12시인가요, 오후 12시인가요?</summary>
+        <p>
+          표준국어대사전은 오전을 '밤 열두 시부터 낮 열두 시까지', 오후를 '낮 열두 시부터 밤 열두 시까지'로 풉니다. 그래서
+          하루가 시작되는 자정(00:00)은 오전 12시(오전 0시라고도 씀), 정오(12:00)는 오후 12시로 씁니다. 다만 두 범위가
+          열두 시를 끝점으로 같이 쓰기 때문에 헷갈릴 수 있어, 약속 시간에는 '자정'·'정오'나 24시간제로 적는 편이 확실합니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>밤 12시에 만나자는 건 언제인가요?</summary>
+        <p>
+          사전에서 자정은 '밤 열두 시'입니다. 보통은 그날이 끝나고 다음 날로 넘어가는 순간이라, 24시간제로는 다음 날 00:00입니다.
+          '10월 21일 밤 12시'라면 날짜를 넘겨 10월 22일 00:00으로 적어 두면 틀릴 일이 없습니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>영어로 12 AM, 12 PM은 무엇인가요?</summary>
+        <p>
+          이 변환기는 디지털 시계처럼 12:00 AM을 자정(00:00), 12:00 PM을 정오(12:00)로 씁니다. 다만 미국 표준기술연구소(NIST)는
+          정오가 오전도 오후도 아니라서 12 a.m.·12 p.m.은 모호하니 쓰지 말고 12 noon, 12 midnight으로 적으라고 안내합니다.
+          일본은 1872년 개력 포고의 시각표가 정오를 '午前十二時'로 적어, 같은 12시라도 나라마다 표기가 갈립니다.
+        </p>
+      </details>
+
+      <p>
+        시작 시각에 몇 시간을 더하거나 두 시각 사이가 몇 시간인지는 <a href="/tools/time-calc/">시간 계산기</a>, 분·초를 시간으로
+        바꾸는 건 <a href="/tools/sec-convert/">초·분·시간 변환</a>이 합니다.
+      </p>
+
+      <AdSlot label="time-12-24-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .t-presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+    </style>
+    <script src="../../../scripts/time-12-24.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
