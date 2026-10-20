@@ -1,0 +1,168 @@
+---
+/**
+ * 초·분·시간 변환 — 날짜·시간 묶음의 도구(/tools/sec-convert/). 계산은 lib/sec-convert.ts.
+ *
+ * 질문 하나: 이 초(분·시간)는 다른 단위로 얼마이고, 몇 시간 몇 분 몇 초인가.
+ * 기준은 SI 브로슈어 표 8(rates/sec-convert-2026.json). roberin #91 은 입력·결과 항목만 대조했다(docs/calc-benchmark.md).
+ * 첫 화면 숫자는 예시(3725초)로 빌드 때 계산하고, 스크립트가 입력을 받아 다시 센다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+import { toNanos, partsToNanos, convertAll, readable, clock, UNITS, UNIT_NAME } from "../../../lib/sec-convert";
+
+const title = "초·분·시간 변환 — 초를 분으로, 분을 시간으로, 몇 시간 몇 분 몇 초";
+const description =
+  "초·분·시간·일·밀리초를 서로 바로 바꿉니다. 3725초가 몇 분인지(62.083333분), 몇 시간 몇 분 몇 초인지(1시간 2분 5초) 함께 나오고, 시간·분·초를 넣으면 총 몇 초인지도 셉니다.";
+
+const EX = "3725";
+const n0 = toNanos(EX, "s")!;
+const all0 = convertAll(n0);
+const p0 = partsToNanos("", "1", "30", "")!;
+const pAll0 = convertAll(p0);
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>초·분·시간 변환</h1>
+      <p>
+        숫자 하나와 단위를 고르면 밀리초·초·분·시간·일로 한꺼번에 바꾸고, 몇 일 몇 시간 몇 분 몇 초인지도 풀어 씁니다.
+        1분 = 60초, 1시간 = 3,600초, 1일 = 86,400초로 셉니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="val">값</label>
+          <input type="text" id="val" inputmode="decimal" autocomplete="off" value={EX} placeholder="예: 3725" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">단위</label>
+          <select id="unit" data-seg>
+            {UNITS.map((u) => <option value={u} selected={u === "s"}>{UNIT_NAME[u]}</option>)}
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">3,725초는</p>
+          <p class="big" id="hero-value">{readable(n0)}</p>
+          <p class="hint" id="hero-sub">{all0.min}분 · 시:분:초 {clock(n0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          {UNITS.map((u) => (
+            <div class="stat-chip">
+              <span class="label">{UNIT_NAME[u]}</span>
+              <span class="value" id={`v-${u}`}>{all0[u]}</span>
+            </div>
+          ))}
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2 id="parts">일·시간·분·초 → 총 몇 초</h2>
+      <div class="calc-card" data-two>
+        <div class="sc-parts">
+          <div class="calc-input-wrap">
+            <label for="p-d">일</label>
+            <input type="text" id="p-d" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-h">시간</label>
+            <input type="text" id="p-h" inputmode="decimal" autocomplete="off" value="1" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-m">분</label>
+            <input type="text" id="p-m" inputmode="decimal" autocomplete="off" value="30" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-s">초</label>
+            <input type="text" id="p-s" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+        </div>
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">합치면</p>
+          <p class="big" id="p-value">{pAll0.s}초</p>
+          <p class="hint" id="p-sub">{pAll0.min}분 · {pAll0.h}시간 · {readable(p0)}</p>
+        </div>
+        <p class="hint" id="p-err" role="alert"></p>
+      </div>
+
+      <h2>이렇게 셉니다</h2>
+      <ul>
+        <li>
+          <strong>초 → 분은 60으로 나누기</strong> — 3,725초 ÷ 60 = 62.083333분. 분 → 시간도 60으로, 시간 → 일은
+          24로 나눕니다. 거꾸로 바꿀 때는 곱합니다(1.5분 × 60 = 90초).
+        </li>
+        <li>
+          <strong>풀어 쓰기는 큰 단위부터 몫과 나머지</strong> — 3,725초는 3,600초(1시간)를 빼면 125초, 120초(2분)를
+          빼면 5초가 남아 1시간 2분 5초입니다. 시:분:초 표기는 하루를 넘어도 시간을 그대로 늘려 씁니다(24:00:15).
+        </li>
+        <li>
+          <strong>소수는 여섯째 자리까지</strong> — 결과는 소수 여섯째 자리에서 반올림합니다. 계산은 정수로 해서
+          1.1분이 66.00000000000001초처럼 꼬이지 않고 정확히 66초가 됩니다.
+        </li>
+        <li>
+          <strong>주·월·년은 넣지 않았습니다</strong> — 한 달은 28~31일, 한 해는 365일이나 366일이라 한 숫자로 바꿀 수
+          없습니다. 달력으로 세는 기간은 <a href="/tools/date-diff/">날짜 계산기</a>가 셉니다.
+        </li>
+      </ul>
+
+      <details>
+        <summary>1.5분은 1분 50초인가요?</summary>
+        <p>
+          아닙니다. 1.5분의 0.5는 '분의 절반'이라 30초입니다 — 1분 30초 = 90초. 소수 분을 초로 볼 때는 소수 부분에 60을
+          곱하면 됩니다(0.25분 = 15초, 0.1분 = 6초).
+        </p>
+      </details>
+
+      <details>
+        <summary>엑셀에서 초를 분으로 바꾸려면?</summary>
+        <p>
+          초가 A1 칸에 있으면 <code>=A1/60</code> 이 분, <code>=A1/3600</code> 이 시간입니다. 시:분:초로 보고 싶으면
+          <code>=A1/86400</code> 을 넣고 셀 서식을 <code>[h]:mm:ss</code> 로 바꿉니다 — 엑셀은 하루를 1로 세기 때문입니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>하루가 86,401초인 날도 있나요?</summary>
+        <p>
+          협정세계시(UTC)에 윤초가 끼는 날은 그 하루가 1초 깁니다. 하지만 시간 길이를 바꿀 때 쓰는 '1일 = 86,400초'는
+          국제단위계(SI)가 정한 고정 값이라, 이 변환기는 언제나 86,400초로 셉니다.
+        </p>
+      </details>
+
+      <p>
+        시작 시각에 몇 시간을 더하거나 두 시각 사이가 몇 시간인지는 <a href="/tools/time-calc/">시간 계산기</a>, 초 단위
+        타임스탬프를 날짜로 바꾸는 건 <a href="/tools/unix-time/">유닉스 타임스탬프 변환기</a>가 합니다.
+      </p>
+
+      <AdSlot label="sec-convert-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .sc-parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 10px; }
+    </style>
+    <script src="../../../scripts/sec-convert.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

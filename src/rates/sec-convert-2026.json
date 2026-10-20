@@ -1,0 +1,26 @@
+{
+  "title": "초·분·시간 변환 — 시간 길이 단위의 초 수",
+  "verifiedOn": "2026-10-20",
+  "sources": [
+    {
+      "name": "BIPM, The International System of Units (SI Brochure) 9판(2019, 영문 2026 갱신) Table 8 Non-SI units — 1 min = 60 s, 1 h = 60 min = 3600 s, 1 d = 24 h = 86 400 s. DOI 10.59161/AUEZ1291",
+      "url": "https://www.bipm.org/en/publications/si-brochure"
+    },
+    {
+      "name": "같은 브로슈어 Table 7 SI prefixes — milli(m) = 10⁻³ 이라 1 ms = 0.001 s",
+      "url": "https://www.bipm.org/en/publications/si-brochure"
+    }
+  ],
+  "secondsPer": { "ms": 0.001, "s": 1, "min": 60, "h": 3600, "d": 86400 },
+  "rules": {
+    "length": "시간의 '길이'만 바꾼다. 오후 3시 같은 시각·날짜·시간대는 다른 도구(/tools/time-calc/·/tools/unix-time/)",
+    "input": "0 이상의 수. 쉼표·공백은 무시, 소수는 여섯째 자리까지, 정수 부분은 15자리까지",
+    "rounding": "단위별 값은 소수 여섯째 자리에서 반올림하고 끝의 0 을 지운다. 계산은 나노초 정수(BigInt)라 1.1분 = 66초가 정확히 나온다",
+    "parts": "일·시간·분·초 풀어 쓰기는 마이크로초로 반올림한 뒤 나눈다"
+  },
+  "notIncluded": [
+    "주·월·년 — 주는 SI 표 8 에 없고, 월·년은 길이가 달라 한 숫자로 바꿀 수 없다(날짜 계산기·디데이에서 달력으로 셈)",
+    "윤초 — 협정세계시에 가끔 끼는 1초. 시간 길이 변환에서는 하루 = 86 400초로 셈",
+    "일광절약시간(서머타임) — 시각의 문제라 길이 변환과 관계없음"
+  ]
+}
