@@ -56,3 +56,15 @@ export function payPerDay(i: PerDayInput) {
   const perWorkHour = days > 0 && workHours > 0 ? fl(monthly / (days * workHours)) : 0;
   return { monthly, days, monthDays: daysInMonth(i.year, i.month), workHours, perDay, perWorkHour };
 }
+
+/**
+ * 물건 가격 ÷ 근무시간당 실수령 — 그 돈을 벌려면 몇 시간 일해야 하나.
+ *   필요한 분 = 가격 × 계산 기준일 × 실근무시간 × 60 ÷ 월 금액 (분 미만 버림)
+ * 근무시간당 금액을 원 미만에서 버리기 전 값으로 나눈다. 근무일은 소수 첫째 자리까지.
+ */
+export function workTimeFor(price: number, monthly: number, days: number, workHours: number) {
+  const p = Math.max(0, fl(price || 0));
+  if (!(monthly > 0) || !(days > 0) || !(workHours > 0) || p === 0) return { minutes: 0, hours: 0, mins: 0, workDays: 0 };
+  const minutes = fl((p * days * workHours * 60) / monthly);
+  return { minutes, hours: Math.floor(minutes / 60), mins: minutes % 60, workDays: Math.floor((minutes / (workHours * 60)) * 10 + 1e-6) / 10 };
+}

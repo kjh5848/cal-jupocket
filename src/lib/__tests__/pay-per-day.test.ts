@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { daysInMonth, workDaysInMonth, payPerDay } from "../pay-per-day";
+import { daysInMonth, workDaysInMonth, payPerDay, workTimeFor } from "../pay-per-day";
 
 describe("계산 기준일", () => {
   it("월 날짜 수 — 윤년 2월 포함", () => {
@@ -60,10 +60,33 @@ describe("하루·근무시간당 금액(원 미만 버림)", () => {
   });
 });
 
+describe("물건 가격 → 필요한 근무시간(분 미만 버림)", () => {
+  // 300만원 · 2026년 2월 주 5일(20일) · 8시간 → 160시간, 시간당 18,750원
+  it("10만원 → 5시간 20분 · 근무일 0.6일", () => {
+    expect(workTimeFor(100_000, 3_000_000, 20, 8)).toEqual({ minutes: 320, hours: 5, mins: 20, workDays: 0.6 });
+  });
+  it("5천원 → 16분", () => {
+    expect(workTimeFor(5_000, 3_000_000, 20, 8)).toMatchObject({ hours: 0, mins: 16 });
+  });
+  it("100만원 → 53시간 20분 · 6.6일", () => {
+    expect(workTimeFor(1_000_000, 3_000_000, 20, 8)).toEqual({ minutes: 3200, hours: 53, mins: 20, workDays: 6.6 });
+  });
+  it("버리기 전 시급으로 나눈다 — 600만원 22일 7시간(38,961.03…원) · 100만원 → 25시간 40분", () => {
+    // 1,000,000 × 22 × 7 × 60 ÷ 6,000,000 = 1540분
+    expect(workTimeFor(1_000_000, 6_000_000, 22, 7)).toMatchObject({ minutes: 1540, hours: 25, mins: 40 });
+  });
+  it("월 금액·날·시간·가격이 0이면 0", () => {
+    expect(workTimeFor(100_000, 0, 20, 8).minutes).toBe(0);
+    expect(workTimeFor(100_000, 3_000_000, 0, 8).minutes).toBe(0);
+    expect(workTimeFor(100_000, 3_000_000, 20, 0).minutes).toBe(0);
+    expect(workTimeFor(0, 3_000_000, 20, 8).minutes).toBe(0);
+  });
+});
+
 describe("실수령액 계산기 화면", () => {
   it("하루·시간 나누기 칸이 빌드에 들어 있다", () => {
     const html = readFileSync("dist/guide/take-home-calculator/index.html", "utf-8");
-    for (const id of ["pd-month", "pd-pattern", "pd-days", "pd-hours", "pd-break", "pd-day", "pd-hour"]) expect(html, id).toContain(`id="${id}"`);
+    for (const id of ["pd-month", "pd-pattern", "pd-days", "pd-hours", "pd-break", "pd-day", "pd-hour", "pd-price", "pd-need"]) expect(html, id).toContain(`id="${id}"`);
     expect(html).toContain("공휴일");
   });
 });

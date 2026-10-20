@@ -3,7 +3,7 @@
  * 계산은 src/lib/take-home.ts takeHome() 가 한다. 여기서는 입력을 읽고 결과를 그린다.
  */
 import { takeHome } from "../lib/take-home";
-import { payPerDay, type WorkPattern } from "../lib/pay-per-day";
+import { payPerDay, workTimeFor, type WorkPattern } from "../lib/pay-per-day";
 import { formatWon, parseAmount, formatAmountInput } from "../lib/money";
 import { trackCalculatorUse } from "../lib/track";
 
@@ -63,6 +63,7 @@ const pdPattern = $<HTMLSelectElement>("pd-pattern");
 const pdDays = $<HTMLInputElement>("pd-days");
 const pdHours = $<HTMLInputElement>("pd-hours");
 const pdBreak = $<HTMLInputElement>("pd-break");
+const pdPrice = $<HTMLInputElement>("pd-price");
 const pad2 = (n: number) => String(n).padStart(2, "0");
 {
   const d = new Date();
@@ -90,7 +91,16 @@ function renderPerDay() {
   $("pd-hour").textContent = formatWon(r.perWorkHour);
   $("pd-work").textContent = `${r.workHours}시간`;
   $("pd-count").textContent = `${r.days}일`;
+  // 물건 가격 → 그 돈을 벌려면 일할 시간(근무시간당 금액으로 나눔)
+  const need = workTimeFor(parseAmount(pdPrice.value), r.monthly, r.days, r.workHours);
+  $("pd-need").textContent = `${need.hours}시간 ${need.mins}분`;
+  $("pd-need-days").textContent = `${need.workDays}일`;
 }
+pdPrice.addEventListener("input", () => {
+  const n = parseAmount(pdPrice.value);
+  pdPrice.value = n ? formatAmountInput(n) : "";
+  renderPerDay();
+});
 for (const el of [pdMonth, pdPattern, pdDays, pdHours, pdBreak]) el.addEventListener("input", renderPerDay);
 pdPattern.addEventListener("change", renderPerDay);
 for (const el of [mode, amount, nontax, family, kids]) el.addEventListener("input", renderPerDay);
