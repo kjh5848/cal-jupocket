@@ -1,0 +1,247 @@
+---
+/**
+ * Days between dates calculator — 호주판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/date-diff.ts 의 EN 사전, 날짜 표기는 <html lang="en-AU"> 로 '20 October 2026'), 문장은 호주 영어로 새로 썼다(번역 아님).
+ * 그레고리력 산술이라 rates 와 상관없다(조사표 호주 칸 '단위').
+ *
+ * 소제목은 호주 구글 자동완성에서 왔다(keywords/au-date-diff-2026-10-20.csv, hl en · gl au):
+ *   days between dates calculator australia · between 2 dates / add days to date calculator · online /
+ *   date calculator in months · weeks between dates / working days calculator australia · nsw · victoria · qld · wa /
+ *   days between dates calculator excel · add days to date in excel
+ * 계산기는 공휴일을 빼지 않는다(토·일만 뺀 weekdays). 공휴일 날짜·개수는 허용 출처(fairwork.gov.au)를
+ * 이번 회차에 열지 못해(응답 시간 초과, 2026-10-20) 본문에 숫자로 쓰지 않는다.
+ * 시간 환산(일수 × 24)은 넣지 않는다 — 일광 절약 시간 전환일은 하루가 24시간이 아니다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 span()·shift() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span, shift, type Span } from "../../../../lib/date-calc";
+
+const title = "Days Between Dates Calculator Australia — Add Days, Count Working Days";
+const description =
+  "Australian date calculator: days between two dates (inclusive or not), add or subtract days, weeks or months from a date, and count Monday–Friday working days.";
+
+/** 하루 번호 → 'Tue, 20 October 2026' (UTC 자정이라 timeZone UTC) */
+const labelAu = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("en-AU", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${v.toLocaleString("en-AU")} ${one}${v === 1 ? "" : "s"}`;
+const spanTextAu = (s: Span) => {
+  const parts: string[] = [];
+  if (s.years) parts.push(plural(s.years, "year"));
+  if (s.months) parts.push(plural(s.months, "month"));
+  if (s.restDays || parts.length === 0) parts.push(plural(s.restDays, "day"));
+  return parts.join(", ");
+};
+const d = (iso: string) => toDay(iso)!;
+
+const START = "2026-10-20";
+const END = "2026-12-31";
+const s0 = span(d(START), d(END), false);
+
+// 본문 예시
+const ex1 = span(d("2026-11-02"), d("2026-11-06"), false);
+const ex1i = span(d("2026-11-02"), d("2026-11-06"), true);
+const fy = span(d("2026-07-01"), d("2027-06-30"), true);
+const plus30 = shift(d(START), 30, "day");
+const plus90 = shift(d(START), 90, "day");
+const minus60 = shift(d(START), -60, "day");
+const plus4w = shift(d(START), 4, "week");
+const plus6m = shift(d(START), 6, "month");
+const jan31 = d("2027-01-31");
+const jan31plus1m = shift(jan31, 1, "month");
+const fortnight = span(d("2026-10-19"), d("2026-10-30"), true);
+---
+
+<html lang="en-AU">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Days between dates calculator</h1>
+      <p>
+        Work out how many days there are between two dates, or find the date a number of days, weeks or months away.
+        Dates are written day first, the way they are in Australia, and the answer changes as you type.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">What do you want to work out?</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>Days between two dates</option>
+            <option value="shift">Add or subtract from a date</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">Start date</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">End date</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">Inclusive — count both the first and the last day</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">Start date</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">How many</label>
+            <input type="number" inputmode="numeric" id="amount" value="30" min="0" max="36500" data-step />
+            <select id="unit" aria-label="Unit">
+              <option value="day" selected>days</option>
+              <option value="week">weeks</option>
+              <option value="month">months</option>
+              <option value="year">years</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">Direction</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>Add (later date)</option>
+              <option value="before">Subtract (earlier date)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Days between</p>
+          <p class="big" id="hero-value">{plural(s0.days, "day")}</p>
+          <p class="hint" id="hero-sub">{spanTextAu(s0)} · {plural(s0.weeks, "week")}, {plural(s0.weekRest, "day")}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Weekdays (Mon–Fri)</span>
+            <span class="value" id="v1">{plural(s0.weekdays, "day")}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Dates</span>
+            <span class="value" id="v2">{labelAu(s0.from)} → {labelAu(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Days between two dates in Australia — inclusive or not</h2>
+      <p>
+        By default the calculator takes the start date away from the end date, so the first day isn't counted:
+        Monday 2 November to Friday 6 November 2026 is {plural(ex1.days, "day")}.
+      </p>
+      <p>
+        Tick <strong>Inclusive</strong> if both the first and the last day should count — leave, a booking, a course or a
+        period written as "including today". The same week then comes to {plural(ex1i.days, "day")}. The Australian
+        financial year, 1 July 2026 to 30 June 2027, is {plural(fy.days, "day")} counted inclusively.
+      </p>
+      <p>
+        You can enter the dates in either order — if the end date is earlier, the calculator swaps them and says so under the
+        result. The page opens with today as the start and 31 December as the end, so you can see how many days are left in the
+        calendar year.
+      </p>
+
+      <h2>Add days to a date</h2>
+      <ul>
+        <li>
+          <strong>Days from today</strong> — 30 days after {labelAu(d(START))} is {labelAu(plus30)}, 90 days after is
+          {" "}{labelAu(plus90)}, and 60 days before is {labelAu(minus60)}.
+        </li>
+        <li><strong>Weeks</strong> — weeks × 7 days. Four weeks after {labelAu(d(START))} is {labelAu(plus4w)}.</li>
+        <li>
+          <strong>Months and years</strong> — the month changes and the day of the month stays the same: six months after
+          {" "}{labelAu(d(START))} is {labelAu(plus6m)}. If the new month is too short you get its last day, so one month
+          after {labelAu(jan31)} is {labelAu(jan31plus1m)}.
+        </li>
+      </ul>
+
+      <h2>Date calculator in months and weeks between dates</h2>
+      <p>
+        Below the total, the range is broken down two ways: years, months and days (whole calendar months first, then the
+        days left over), and weeks and days. The opening range shows {spanTextAu(s0)}, or {plural(s0.weeks, "week")} and
+        {" "}{plural(s0.weekRest, "day")}, next to the {plural(s0.days, "day")} total.
+      </p>
+
+      <h2>Working days calculator — NSW, Victoria, Queensland, WA and the rest</h2>
+      <p>
+        The <strong>Weekdays</strong> figure counts every Monday to Friday in the range, using the same inclusive setting as
+        the total. Monday 19 October to Friday 30 October 2026, inclusive, is a fortnight of
+        {" "}{plural(fortnight.weekdays, "weekday")}.
+      </p>
+      <p>
+        <strong>Public holidays are not taken off.</strong> They're declared by each state and territory, so the list in New
+        South Wales isn't the same as in Victoria, Queensland or Western Australia. Subtract your own state's public holidays
+        that land on a weekday — and any days your workplace closes — from the weekday count to get working days.
+      </p>
+
+      <h2>Days between dates in Excel</h2>
+      <p>With the start date in A2 and the end date in B2, the same answers in Excel or Google Sheets are:</p>
+      <ul>
+        <li><code>=B2-A2</code> — days between, not inclusive (format the cell as a number).</li>
+        <li><code>=B2-A2+1</code> — days between, inclusive.</li>
+        <li><code>=DATEDIF(A2,B2,"m")</code> — whole months between the dates (<code>"y"</code> for whole years).</li>
+        <li><code>=A2+30</code> or <code>=EDATE(A2,6)</code> — add 30 days, or add six months.</li>
+        <li>
+          <code>=NETWORKDAYS(A2,B2,H2:H20)</code> — weekdays between the dates, less the public holidays you list in H2:H20.
+          NETWORKDAYS counts both ends, so compare it with the inclusive result here.
+        </li>
+      </ul>
+
+      <details>
+        <summary>Is "days between" the same as "days from today"?</summary>
+        <p>
+          No. "Days between" measures a gap; "days from today" gives you a date. Four days after 2 November is 6 November,
+          and the gap from 2 to 6 November is {plural(ex1.days, "day")}, or {plural(ex1i.days, "day")} inclusive.
+        </p>
+      </details>
+
+      <details>
+        <summary>Are leap years included?</summary>
+        <p>
+          Yes. The calculator uses the Gregorian calendar, so 29 February counts in a leap year, and one year after
+          29 February is 28 February in an ordinary year.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why doesn't it show hours?</summary>
+        <p>
+          On the days daylight saving starts or ends, the day is 23 or 25 hours long, so days × 24 would be an hour out.
+          The page sticks to days and weeks.
+        </p>
+      </details>
+
+      <AdSlot label="date-diff-result-en-au" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
