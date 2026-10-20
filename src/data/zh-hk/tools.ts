@@ -26,4 +26,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/zh-hk/tools/compound/",
+    ko: "/tools/compound/",
+    name: "複利計算機",
+    blurb: "以港元計算起始本金加每月供款的複息：利息收益、儲到目標要多久、稅後及扣除通脹後的結餘",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

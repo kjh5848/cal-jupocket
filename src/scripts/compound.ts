@@ -101,7 +101,26 @@ const ID: typeof KO = {
   share: "Hasil kalkulator bunga majemuk - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID });
+/** 繁體中文 — 대만판·홍콩판 공용. 통화는 같은 판 formatter(zh-tw TWD · zh-hk HKD) */
+const ZH_HANT: typeof KO = {
+  money: enMoney,
+  spell: (y, r) => [y ? `${y}年` : "", r ? `${r}個月` : ""].join("") || "0個月",
+  note: (months, monthlyRate, start) => `${months}個月 · 月利率 ${monthlyRate}% · ${start ? "每月月初" : "每月月底"}存入`,
+  noTax: enMoney(0),
+  goalNone: "未設目標",
+  goalNever: "期間內未能達到",
+  goalAtStart: "一開始已達到",
+  goalAt: (s) => `${s}後達到`,
+  yearRow: (year, rest) => (rest === 0 ? `第${year}年` : `第${year}年（${rest}個月）`),
+  after: (s) => `${s}後結餘`,
+  paid: "投入本金",
+  gain: "利息收益",
+  afterTax: "稅後金額",
+  title: "複利計算結果",
+  share: "複利計算結果 - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT });
 /** 입력칸 천 단위 표기 — 판의 numberLocale(ko-KR·ja-JP·en-* 는 쉼표, id-ID 는 점). parseAmount 는 숫자만 읽어 어느 쪽이든 같다. */
 const formatInput = (v: number) => v.toLocaleString(EN_MONEY.numberLocale);
 

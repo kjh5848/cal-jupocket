@@ -1,0 +1,228 @@
+---
+/**
+ * 複利計算機 — 홍콩 繁體中文판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 ZH_HANT 사전 — 대만판·홍콩판 공용, 통화는 판의 HKD·zh-HK), 문장은 홍콩 구글 자동완성으로
+ * 새로 썼다(번역 아님). 복리 산술이라 rates 와 상관없다(조사표 홍콩 칸 '같음').
+ *
+ * 소제목은 홍콩 구글 자동완성에서 왔다(keywords/hk-compound-2026-10-21.csv, hl zh-HK · gl hk):
+ *   複息計算 · 複息計算機 · 複息計算方法 / 每月供款 計算 · 月供 複利 計算 · 每月存款 複利計算 /
+ *   儲蓄計劃 計算 · 儲蓄計劃 計算機 / excel 複息計算 · 複利計算機excel / 複利計算機 每年投入 · 股息再投入
+ * 대만·일본 쪽 결과(0050·國泰·定期定額·聰明主婦·積立·怎麼按)는 뺐다. 強積金 숫자는 쓰지 않는다.
+ * 세율 기본값은 0% — 한국어판 15.4% 는 한국 원천징수라 쓰지 않는다. 홍콩 쪽 사실은 稅務局 원문에서 읽은 한 줄만:
+ *   「利得税」 페이지의 豁免 항목 '在香港存放於認可機構的存款所賺取的利息(在 1998 年 6 月 22 日或之後所累算的)，但不包括財務機構…'
+ *   (https://www.ird.gov.hk/chi/tax/bus_pft.htm, 페이지에 갱신일 표기 없음, 확인 2026-10-21). 이것은 利得税 항목이라 그 범위로만 쓴다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 compound() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import "../../../../styles/global.css";
+
+const title = "複利計算機（香港）— 港元複息計算、每月供款、計算方法及 Excel";
+const description =
+  "香港複利計算機（港元）：輸入本金、每月供款和年利率，計出期末結餘、利息收益、儲到目標要多久、扣除通脹後的價值，附複息計算方法及 Excel FV 公式。";
+
+const base = { principal: 50_000, monthly: 3_000, ratePct: 4, months: 120, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const onlyMonthly = compound({ ...base, principal: 0, timing: "start" });
+const real2 = compound({ ...base, timing: "start", inflationPct: 2 });
+const higher = compound({ ...base, monthly: 4_000, timing: "start" });
+const yearly = compound({ ...base, monthly: 3_000, months: 12, principal: 0, timing: "start" });
+/** scripts/compound.ts ZH_HANT 의 money 와 같은 식(판의 numberLocale zh-HK · currency HKD, 1 단위 반올림) */
+const hkd = (x: number) =>
+  Math.round(x).toLocaleString("zh-HK", { style: "currency", currency: "HKD", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+const yearRow = (year: number, rest: number) => (rest === 0 ? `第${year}年` : `第${year}年（${rest}個月）`);
+---
+
+<html lang="zh-Hant-HK">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>複利計算機（港元）</h1>
+      <p>
+        輸入一筆起始本金、每月供款金額和年利率，計算機會按月計複息，列出期末結餘，並分開顯示你自己投入的本金和利息收益。
+        利率、稅率和通脹率都是你自己輸入的假設，結果並非任何銀行、保險公司或基金的報價。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">起始本金（港元）</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value="50,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">每月供款（港元）</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="3,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">年利率或年回報率</label>
+          <input type="number" id="cp-rate" value="4" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">期間</label>
+          <input type="number" id="cp-period" value="10" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="期間單位">
+            <option value="years" selected>年</option>
+            <option value="months">個月</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">供款時間</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>每月月初</option>
+            <option value="end">每月月底</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">利息稅率（假設）</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">每年通脹率</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">儲蓄目標（港元，可留空）</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder="例如 500,000" autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="本金|利息"
+          data-dock="cp-hero"
+        >
+          <p class="label">期末結餘（稅前）</p>
+          <p class="big" id="cp-hero">{hkd(ex.balance)}</p>
+          <p class="meta" id="cp-note">120個月 · 月利率 0.3333% · 每月月初存入</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">投入本金</span><span class="value" id="cp-paid">{hkd(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">利息收益</span><span class="value" id="cp-gain2">{hkd(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">稅款（假設）</span><span class="value" id="cp-tax-v">{hkd(0)}</span></div>
+          <div class="stat-chip"><span class="label">稅後金額</span><span class="value" id="cp-after">{hkd(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">折合今日價值</span><span class="value" id="cp-real">{hkd(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">達到目標</span><span class="value" id="cp-goal-v">未設目標</span></div>
+        </div>
+
+        <details>
+          <summary>逐年本金、利息及結餘</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>期間</th><th>當年供款</th><th>當年利息</th><th>結餘</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">{yearRow(r.year, r.month % 12)}</th><td>{hkd(r.paid)}</td><td>{hkd(r.gain)}</td><td>{hkd(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">「當年供款」不包括起始本金，起始本金只計入結餘。</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">儲存為圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2>複息計算方法</h2>
+      <p>這個計算機按月計複息，每個月逐步計算：</p>
+      <ul>
+        <li><strong>月利率</strong> — r = 年利率 ÷ 12。年利率 4% 即每月約 0.3333%。</li>
+        <li><strong>月初供款</strong> — 新存入的錢當月就計息：結餘 = （結餘 + 供款）×（1 + r）。</li>
+        <li><strong>月底供款</strong> — 先計息再存入：結餘 = 結餘 ×（1 + r）+ 供款。最後一期供款未有利息，所以總額略低。</li>
+        <li><strong>公式</strong> — n 個月後 FV = P（1 + r）<sup>n</sup> + PMT ×［（1 + r）<sup>n</sup> − 1］÷ r；月初供款的話，PMT 部分再乘一次（1 + r）。P 是起始本金，PMT 是每月供款。</li>
+        <li><strong>稅款</strong> — 如輸入稅率，會在期末從收益（期末結餘 − 投入本金）扣除一次；虧損不扣稅。</li>
+      </ul>
+      <p>
+        例子：起始本金 {hkd(base.principal)}，每月供款 {hkd(base.monthly)}，年利率 4%，供 10 年。合共投入 {hkd(ex.paid)}，
+        期末結餘 {hkd(ex.balance)}，其中 {hkd(ex.gain)} 是利息。如改為每月月底供款，結餘是 {hkd(exEnd.balance)}。
+      </p>
+
+      <h2>每月供款計算：月供複利和一筆過有甚麼分別</h2>
+      <p>
+        第一天已存入的錢可以計足整段期間的複息，每月供款則越後存入、計息時間越短。以上例子中，
+        {hkd(base.principal)} 起始本金單獨計，10 年後是 {hkd(lump.balance)}；{hkd(base.monthly)} 的每月供款單獨計，
+        10 年後是 {hkd(onlyMonthly.balance)}。把其中一格改為 0，就可以分開看。
+        若想看「每年投入」的效果，可把期間單位改為個月：例如每月 {hkd(base.monthly)}、供 12 個月，一年後結餘是 {hkd(yearly.balance)}。
+      </p>
+
+      <h2>儲蓄計劃計算：要儲多久才到目標</h2>
+      <p>
+        在「儲蓄目標」輸入金額，計算機會顯示結餘第一次達到目標要多久，或者在期間內未能達到。再調整每月供款，看看何時達標。
+        例如每月供款由 {hkd(base.monthly)} 加到 {hkd(4_000)}（同樣 {hkd(base.principal)} 起始本金、4%、10 年），
+        期末結餘由 {hkd(ex.balance)} 增至 {hkd(higher.balance)}。
+      </p>
+      <p>
+        市面上的「儲蓄計劃」很多是保險產品，回報可能分為保證和非保證部分，亦可能有提早退保的條款。
+        這裡只用一個固定年利率計到底，不能代替產品文件上的數字。
+      </p>
+
+      <h2>通脹和股息再投入</h2>
+      <p>
+        「折合今日價值」把稅後金額除以（1 + 通脹率）<sup>年數</sup>。通脹率 2% 時，例子中的 {hkd(ex.balance)}
+        約等於今日的 {hkd(real2.real)}。如果你把收到的股息或利息全部再投入，可以把它們當作回報的一部分計入年回報率；
+        若會提走利息，複利效果就會比這裡顯示的少。
+      </p>
+
+      <h2>Excel 複息計算</h2>
+      <p>
+        Excel 或 Google 試算表的 FV 函數可得出相同結果。每月月初供款用
+        <code>=FV(4%/12, 120, -3000, -50000, 1)</code>；月底供款把最後的 1 改為 0。供款和本金用負數，因為那是從你口袋付出的錢。
+      </p>
+
+      <details>
+        <summary>銀行存款利息要交稅嗎？</summary>
+        <p>
+          稅務局「利得税」頁面列出的豁免項目包括「在香港存放於認可機構的存款所賺取的利息(在 1998 年 6 月 22 日或之後所累算的)」，
+          但不包括財務機構所收取或累算的利息（<a href="https://www.ird.gov.hk/chi/tax/bus_pft.htm" rel="noopener" target="_blank">稅務局：利得税</a>，
+          2026 年 10 月 21 日查閱）。這是利得税的條文，其他情況請以稅務局資料為準。所以稅率一格預設為 0%，有需要時自行輸入。
+        </p>
+      </details>
+
+      <details>
+        <summary>可以用來計強積金嗎？</summary>
+        <p>
+          只能按你自己輸入的回報率粗略估算增長。強積金有各自的基金回報、收費和供款規則，這個計算機沒有計入，也沒有填入任何強積金數字。
+        </p>
+      </details>
+
+      <details>
+        <summary>複息和單息有甚麼分別？</summary>
+        <p>
+          單息只按本金計利息；複息會連已加入的利息一起再計息。如果產品是按單息派息，這裡的數字會比實際收到的高。
+        </p>
+      </details>
+
+      <details>
+        <summary>可以輸入毫子或 $ 符號嗎？</summary>
+        <p>
+          金額以整數港元計算。輸入的 $ 符號和逗號會被略去，但小數點不會當作毫子 — 請輸入 1500，不要輸入 1,500.50。
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-zh-hk" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
