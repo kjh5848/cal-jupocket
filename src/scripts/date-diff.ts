@@ -1,5 +1,6 @@
 import { toDay, span, spanText, label, shift, shiftBusiness, dday, holidayRange, type Unit, type Span } from "../lib/date-calc";
 import { labelJa, spanTextJa, ddayJa } from "../lib/date-format-ja";
+import { labelFr, pluralFr, joursFr, semainesFr, spanTextFr, ddayFr } from "../lib/fr/date-format";
 import { labelDe, shortDe, countDe, spanTextDe, weeksTextDe, relDe, type UnitDe } from "../lib/de/date-format";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
@@ -256,7 +257,44 @@ const ID: typeof KO = {
   shareText: "Hasil kalkulator tanggal - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE, id: ID });
+/**
+ * 프랑스어판(/fr/tools/date-diff/). 표기는 lib/fr/date-format.ts — 'mar. 20 octobre 2026', 0·1 은 단수(0 jour).
+ * 업무일(공휴일 빼기)·시간 환산은 넣지 않는다 — fêtes légales 중 의무 휴무는 1er Mai 뿐이라 회사마다 다르고(service-public F2405), 서머타임 전환일이 있다.
+ */
+const UNIT_FR: Record<Unit, [string, string]> = { day: ["jour", "jours"], week: ["semaine", "semaines"], month: ["mois", "mois"], year: ["an", "ans"] };
+
+const FR: typeof KO = {
+  spanTitle: "Calcul de dates — nombre de jours entre deux dates",
+  shiftTitle: "Calcul de dates — ajouter ou retirer des jours",
+  needDates: "Saisissez les deux dates",
+  needBase: "Saisissez une date de départ",
+  needInt: "Saisissez un nombre entier, 0 ou plus",
+  swapped: "La date de fin était avant la date de début : les deux dates ont été inversées.",
+  spanLabel: (incl: boolean) => (incl ? "Nombre de jours, bornes incluses" : "Nombre de jours entre les deux dates"),
+  days: joursFr,
+  spanSub: (s: Span) => `${spanTextFr(s)} · ${semainesFr(s.weeks)} et ${joursFr(s.weekRest)}`,
+  spanChips: (s: Span): [string, string][] => [
+    ["Du lundi au vendredi", joursFr(s.weekdays)],
+    ["Période", `${labelFr(s.from)} → ${labelFr(s.to)}`],
+  ],
+  spanNotes: () => [],
+  unitName: (u: Unit) => u,
+  shiftWhat: (amount: number, unitName: string, after: boolean) =>
+    `${pluralFr(amount, ...UNIT_FR[unitName as Unit])} ${after ? "après" : "avant"}`,
+  bizOut: "",
+  label: labelFr,
+  todaySub: (target: number, today: number) => {
+    const r = ddayFr(target, today);
+    return r === "aujourd’hui" ? "C’est aujourd’hui" : `Par rapport à aujourd’hui : ${r}`;
+  },
+  baseChip: "Date de départ",
+  betweenChip: "Écart",
+  between: (s: Span) => `${joursFr(s.days)} (${spanTextFr(s)})`,
+  monthEnd: "Si ce jour n’existe pas dans le mois d’arrivée (le 31, le 29 février), le dernier jour du mois est retenu.",
+  shareText: "Résultat du calcul de dates - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE, id: ID, fr: FR });
 
 /** 이 기기 기준 오늘(지역 날짜) */
 function todayDay(): number {
