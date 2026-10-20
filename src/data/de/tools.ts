@@ -53,4 +53,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/de/tools/sec-convert/",
+    ko: "/tools/sec-convert/",
+    name: "Sekunden in Minuten umrechnen",
+    blurb: "Millisekunden, Sekunden, Minuten, Stunden und Tage umrechnen — mit Industriestunden und h:mm:ss",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

@@ -1,0 +1,372 @@
+---
+/**
+ * Sekunden in Minuten umrechnen — 독일어판 여섯 번째 도구(초·분·시간 변환). 한국어판 /tools/sec-convert/ 와
+ * 계산(lib/sec-convert.ts)·스크립트(scripts/sec-convert.ts 의 DE 사전)를 같이 쓰고, 독일어 입력 읽기·표기는 lib/de/sec-convert.ts.
+ * 문장은 독일어로 새로 썼다(번역 아님). 조사표 독일 칸 '같음'(#91, SI 브로슈어 표 8). 둘째 계산기가 #88(시·분·초 → 총 분·총 초)을 받는다.
+ *
+ * 소제목은 독일 구글 자동완성에서 왔다(keywords/de-sec-convert-2026-10-21.csv, hl de · gl de):
+ *   sekunden in minuten (umrechnen·formel·rechner) / sekunden in minuten und stunden · in tage stunden und minuten /
+ *   minuten in stunden (dezimal·tabelle·formel·excel) / stunden in minuten (tabelle·8·12·24 stunden) / 3600 sekunden in minuten /
+ *   industriestunden (umrechnen·tabelle·formel·in minuten·excel) / millisekunden in sekunden (formel·abkürzung) /
+ *   unix sekunden umrechnen → unix-time 링크 · grad sekunden umrechnen → 각도 details · sekunden in jahre → 월·년 details
+ * 법 근거: EinhV § 1·Anlage 1(Minute min·Stunde h·Tag d 가 시간의 gesetzliche Einheiten, 정의는 Richtlinie 80/181/EWG 로 넘김 — 그 원문은 열지 않음)·
+ * Anlage 2(Milli = 10⁻³). 60·3 600·86 400 값은 BIPM SI 브로슈어 표 8. 근로시간·휴게(ArbZG) 숫자는 이번 회차에 열지 않아 쓰지 않는다.
+ * 숫자 표기는 소수 쉼표·천 단위 줄바꿈 없는 공백(다른 독일어판 도구와 같음). 예시 숫자는 lib 함수로 계산.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toNanos, partsToNanos, convertAll, minSec, UNITS } from "../../../../lib/sec-convert";
+import {
+  UNIT_NAME_DE,
+  withUnitDe,
+  readableDe,
+  clockDe,
+  digitsDe as D,
+  partsSubDe,
+} from "../../../../lib/de/sec-convert";
+import { intDe } from "../../../../lib/de/date-format";
+
+const title = "Sekunden in Minuten umrechnen — Minuten in Stunden, Industriestunden, Millisekunden";
+const description =
+  "Sekunden, Minuten, Stunden, Tage und Millisekunden auf einen Blick umrechnen, Minuten in Industriestunden (dezimal) wandeln und die Excel-Formel kopieren.";
+
+const EX = "5400";
+const n0 = toNanos(EX, "s")!;
+const all0 = convertAll(n0);
+const p0 = partsToNanos("", "2", "15", "")!;
+const pAll0 = convertAll(p0);
+
+/** 본문 예시 — 1 h·1,5 h, 3 600 s, 270 s, 135 min, 8:30–17:00 − 1 h Pause, 7,75 h, 100 000 s, 90 000 ms, 1 Industrieminute */
+const H1 = convertAll(toNanos("1", "h")!);
+const H15 = convertAll(toNanos("1.5", "h")!);
+const S3600 = convertAll(toNanos("3600", "s")!);
+const S270 = toNanos("270", "s")!;
+const S270all = convertAll(S270);
+const M135 = toNanos("135", "min")!;
+const M135all = convertAll(M135);
+const SHIFT_MIN = String(17 * 60 - (8 * 60 + 30) - 60);
+const SHIFT = toNanos(SHIFT_MIN, "min")!;
+const SHIFTall = convertAll(SHIFT);
+const H775 = toNanos("7.75", "h")!;
+const D1 = convertAll(toNanos("1", "d")!);
+const S100k = toNanos("100000", "s")!;
+const S100kAll = convertAll(S100k);
+const MS90 = toNanos("90000", "ms")!;
+const MS90all = convertAll(MS90);
+const MS1 = convertAll(toNanos("1", "ms")!);
+const IM = convertAll(toNanos("0.01", "h")!);
+---
+
+<html lang="de-DE">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Sekunden in Minuten und Stunden umrechnen — auch Tage, Millisekunden und Industriestunden</h1>
+      <p>
+        Zahl eingeben, Einheit wählen: Das Ergebnis erscheint sofort in Millisekunden, Sekunden, Minuten, Stunden und Tagen,
+        dazu als „X Stunden Y Minuten Z Sekunden“ und im Format h:mm:ss. Die Verhältnisse sind fest: 1 Minute = 60 Sekunden,
+        1 Stunde = {D(H1.s)} Sekunden, 1 Tag = {D(D1.s)} Sekunden. Dezimalstellen mit Komma (1,5) oder Punkt (1.5).
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="val">Wert</label>
+          <input type="text" id="val" inputmode="decimal" autocomplete="off" value={EX} placeholder="z. B. 5400" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">Einheit</label>
+          <select id="unit" data-seg>
+            {UNITS.map((u) => <option value={u} selected={u === "s"}>{UNIT_NAME_DE[u]}</option>)}
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{withUnitDe(all0.s, "s")} =</p>
+          <p class="big" id="hero-value">{readableDe(n0)}</p>
+          <p class="hint" id="hero-sub">{withUnitDe(all0.min, "min")} · h:mm:ss {clockDe(n0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          {UNITS.map((u) => (
+            <div class="stat-chip">
+              <span class="label">{UNIT_NAME_DE[u]}</span>
+              <span class="value" id={`v-${u}`}>{D(all0[u])}</span>
+            </div>
+          ))}
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Als PNG speichern</button>
+          <button id="btn-share" type="button" class="secondary">Teilen</button>
+        </div>
+      </div>
+
+      <h2 id="parts">Stunden, Minuten und Sekunden → Summe in Sekunden, Minuten und Dezimalstunden</h2>
+      <p>
+        Die Dauer liegt schon aufgeteilt vor — ein Termin, eine Fahrt, ein Video? Nur die passenden Felder ausfüllen, die
+        anderen leer lassen. Überläufe sind erlaubt: 90 Minuten werden zu 1 Stunde 30 Minuten.
+      </p>
+      <div class="calc-card" data-two>
+        <div class="sc-parts">
+          <div class="calc-input-wrap">
+            <label for="p-d">Tage</label>
+            <input type="text" id="p-d" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-h">Stunden</label>
+            <input type="text" id="p-h" inputmode="decimal" autocomplete="off" value="2" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-m">Minuten</label>
+            <input type="text" id="p-m" inputmode="decimal" autocomplete="off" value="15" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-s">Sekunden</label>
+            <input type="text" id="p-s" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+        </div>
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">Summe</p>
+          <p class="big" id="p-value">{withUnitDe(pAll0.s, "s")}</p>
+          <p class="hint" id="p-sub">{partsSubDe(pAll0.min, minSec(p0), pAll0.h, readableDe(p0))}</p>
+        </div>
+        <p class="hint" id="p-err" role="alert"></p>
+      </div>
+
+      <h2>Sekunden in Minuten umrechnen: Formel</h2>
+      <p>
+        Von der kleinen zur großen Einheit wird <strong>geteilt</strong>, von der großen zur kleinen
+        <strong>multipliziert</strong>:
+      </p>
+      <ul>
+        <li>Sekunden in Minuten: ÷ 60 · Minuten in Sekunden: × 60</li>
+        <li>Sekunden in Stunden: ÷ {D(H1.s)} · Stunden in Sekunden: × {D(H1.s)}</li>
+        <li>Minuten in Stunden: ÷ 60 · Stunden in Minuten: × 60</li>
+        <li>Sekunden in Tage: ÷ {D(D1.s)}</li>
+      </ul>
+      <p>
+        So sind {D(S3600.s)} Sekunden genau {D(S3600.min)} Minuten, also 1 Stunde. Und 270 Sekunden ÷ 60 = {D(S270all.min)}
+        Minuten, das heißt {readableDe(S270)}. Vorsicht: {D(S270all.min)} Minuten sind <strong>nicht</strong> 4 Minuten
+        50 Sekunden — die Stellen nach dem Komma sind ein Bruchteil einer Minute. Mal 60 genommen ergeben sie die Sekunden:
+        0,5 × 60 = 30.
+      </p>
+
+      <h2>Sekunden in Tage, Stunden und Minuten</h2>
+      <p>Man beginnt bei der größten Einheit und rechnet mit dem Rest weiter. Für {intDe(100000)} Sekunden:</p>
+      <ol>
+        <li>{intDe(100000)} ÷ {D(D1.s)} = 1 Tag, Rest {intDe(13600)}</li>
+        <li>{intDe(13600)} ÷ {D(H1.s)} = 3 Stunden, Rest {intDe(2800)}</li>
+        <li>{intDe(2800)} ÷ 60 = 46 Minuten, Rest 40</li>
+        <li>Also {intDe(100000)} Sekunden = <strong>{readableDe(S100k)}</strong>, das sind {withUnitDe(S100kAll.h, "h")}</li>
+      </ol>
+      <p>
+        Ein Tag mit 24 Stunden hat {D(D1.min)} Minuten und {D(D1.s)} Sekunden. Die Anzeige h:mm:ss zählt über 24 Stunden
+        hinaus weiter: {intDe(100000)} Sekunden stehen dort als {clockDe(S100k)}.
+      </p>
+
+      <h2>Stunden in Minuten: Tabelle</h2>
+      <p>
+        1 Stunde = 60 Minuten = {D(H1.s)} Sekunden. Anderthalb Stunden (1,5 mit der Einheit Stunden) sind {D(H15.min)} Minuten
+        oder {D(H15.s)} Sekunden.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Stunden</th><th>Minuten</th><th>Sekunden</th></tr>
+        </thead>
+        <tbody>
+          {["0.25", "0.5", "1", "1.5", "2", "3", "8", "12", "24"].map((h) => {
+            const a = convertAll(toNanos(h, "h")!);
+            return (
+              <tr>
+                <td>{D(h)}</td>
+                <td>{D(a.min)}</td>
+                <td>{D(a.s)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h2>Minuten in Stunden umrechnen — dezimal</h2>
+      <p>
+        Stunden = Minuten ÷ 60. Eine Besprechung von {D(M135all.min)} Minuten dauert {D(M135all.h)} Stunden, also
+        {" "}{readableDe(M135)}. Für Stunden und Minuten nimmt man den ganzzahligen Teil der Division als Stunden
+        (135 ÷ 60 = 2) und den Rest als Minuten (135 − 120 = 15).
+      </p>
+      <p>
+        Umgekehrt, von Dezimalstunden zu Stunden und Minuten: ganze Zahl behalten, den Rest mal 60. 7,75 Stunden = 7 Stunden +
+        0,75 × 60 = {readableDe(H775)}. Zum Prüfen oben „Stunden“ wählen und 7,75 eingeben.
+      </p>
+
+      <h2>Industriestunden umrechnen: Tabelle und Formel</h2>
+      <p>
+        In Zeiterfassung und Lohnabrechnung werden Arbeitszeiten oft als Dezimalstunden geführt, auch Industriestunden
+        genannt: Eine Stunde ist dann in 100 Industrieminuten geteilt statt in 60 Minuten. 1 Industrieminute =
+        1/100 Stunde = {D(IM.min)} Minuten = {D(IM.s)} Sekunden. Die Umrechnung ist dieselbe wie oben: Minuten ÷ 60. Ein
+        Beispiel:
+      </p>
+      <ol>
+        <li>Beginn 8:30 Uhr, Ende 17:00 Uhr — 8 Stunden 30 Minuten</li>
+        <li>Abzüglich 1 Stunde Pause → {SHIFT_MIN} Minuten</li>
+        <li>{SHIFT_MIN} ÷ 60 = <strong>{D(SHIFTall.h)} Industriestunden</strong> (7 Stunden 30 Minuten)</li>
+      </ol>
+      <table>
+        <thead>
+          <tr><th>Minuten</th><th>Industriestunden</th><th>Stunden und Minuten</th></tr>
+        </thead>
+        <tbody>
+          {["6", "10", "12", "15", "20", "30", "40", "45", "50", "90"].map((m) => {
+            const n = toNanos(m, "min")!;
+            return (
+              <tr>
+                <td>{m}</td>
+                <td>{D(convertAll(n).h)}</td>
+                <td>{readableDe(n)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <p>
+        Dieser Rechner wechselt nur die Einheit. Er rundet keine Stempelzeiten und berechnet weder Überstunden noch
+        Pausenzeiten — welche Regeln gelten, hängt von Arbeitsvertrag, Tarifvertrag und Arbeitsrecht ab.
+      </p>
+
+      <h2>Millisekunden in Sekunden umrechnen</h2>
+      <p>
+        Millisekunden ÷ {intDe(1000)} = Sekunden, ÷ {intDe(60000)} = Minuten, ÷ {intDe(3600000)} = Stunden. Die Abkürzung ist
+        ms („Milli“ steht für den Faktor 10⁻³). {intDe(90000)} Millisekunden = {D(MS90all.s)} Sekunden = {D(MS90all.min)}
+        Minuten, also {readableDe(MS90)}. Die Ergebnisse haben höchstens sechs Nachkommastellen: 1 Millisekunde wird als
+        {" "}{D(MS1.s)} Sekunden angezeigt und auf {D(MS1.min)} Minuten gerundet.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Millisekunden</th><th>Sekunden</th></tr>
+        </thead>
+        <tbody>
+          {["10", "50", "100", "200", "500", "1000", "2000", "5000", "10000"].map((ms) => (
+            <tr>
+              <td>{intDe(Number(ms))}</td>
+              <td>{D(convertAll(toNanos(ms, "ms")!).s)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2>Excel-Formeln (deutsche Version)</h2>
+      <ul>
+        <li><strong>Sekunden in Minuten</strong>: <code>=A1/60</code> · <strong>Sekunden in Stunden</strong>: <code>=A1/3600</code></li>
+        <li><strong>Minuten in Dezimalstunden</strong>: <code>=A1/60</code> · <strong>Stunden in Minuten</strong>: <code>=A1*60</code></li>
+        <li><strong>Millisekunden in Sekunden</strong>: <code>=A1/1000</code></li>
+        <li>
+          <strong>Sekunden als Stunden:Minuten:Sekunden anzeigen</strong>: <code>=A1/86400</code> und als benutzerdefiniertes
+          Zahlenformat <code>[h]:mm:ss</code> — Excel speichert Zeiten als Bruchteile eines Tages, daher die Division durch 86400.
+        </li>
+        <li>
+          <strong>Uhrzeit in Industriestunden</strong>: Beginn in B1, Ende in C1, <code>=(C1-B1)*24</code> ergibt
+          Dezimalstunden; mit einer Stunde Pause <code>=(C1-B1)*24-1</code>. Die Zelle als Zahl formatieren.
+        </li>
+        <li>
+          <strong>Ganze Stunden und Restminuten</strong>: <code>=GANZZAHL(A1/60)</code> und <code>=REST(A1;60)</code> — in der
+          deutschen Version trennt ein Semikolon die Argumente, Dezimalzahlen schreibt man mit Komma.
+        </li>
+      </ul>
+
+      <h2>Python, JavaScript und SQL</h2>
+      <pre><code>{`# Python
+stunden, rest = divmod(sekunden, 3600)
+minuten, sek = divmod(rest, 60)
+
+// JavaScript
+const stunden = Math.floor(sekunden / 3600);
+const minuten = Math.floor((sekunden % 3600) / 60);
+const sek = sekunden % 60;
+
+-- MySQL (h:mm:ss)
+SELECT SEC_TO_TIME(5400);
+
+-- PostgreSQL (Intervall 01:30:00)
+SELECT 5400 * INTERVAL '1 second';`}</code></pre>
+      <p>
+        Bei Millisekunden zuerst durch 1000 teilen. Mit Gleitkommazahlen kann 1.1 × 60 zu 66.00000000000001 werden; dieser
+        Rechner rechnet in ganzen Nanosekunden, solche Reste entstehen hier nicht.
+      </p>
+
+      <details>
+        <summary>Warum keine Wochen, Monate oder Jahre?</summary>
+        <p>
+          Eine Woche hat immer 7 Tage, aber ein Monat hat 28 bis 31 Tage und ein Jahr 365 oder 366 — die Zahl der Sekunden
+          steht also nicht fest. Für den Abstand zwischen zwei Daten gibt es den
+          <a href="/de/tools/date-diff/">Tagerechner</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Woher kommen 60 und {D(H1.s)}?</summary>
+        <p>
+          Minute (min), Stunde (h) und Tag (d) sind in Deutschland gesetzliche Einheiten der Zeit (Anlage 1 der
+          Einheitenverordnung); für ihre Definitionen verweist § 1 EinhV auf die EU-Richtlinie 80/181/EWG. Das Internationale
+          Büro für Maß und Gewicht (BIPM) führt sie in Tabelle 8 der SI-Broschüre: 1 min = 60 s, 1 h = 60 min = 3600 s,
+          1 d = 24 h = {D(D1.s)} s. Vorsätze wie „Milli“ dürfen nach § 1 Abs. 3 EinhV nicht vor Minute, Stunde und Tag stehen —
+          deshalb gibt es Millisekunden, aber keine „Millistunden“.
+        </p>
+      </details>
+
+      <details>
+        <summary>Komma oder Punkt bei Dezimalstellen?</summary>
+        <p>
+          Beides: 1,5 und 1.5 ergeben dasselbe. Leerzeichen werden ignoriert, {intDe(86400)} geht also. Ein Punkt mit genau drei
+          Ziffern danach gilt als Tausenderpunkt (1.500 = {intDe(1500)}), ebenso in 1.234,5. Zwei Kommas oder negative Zahlen
+          werden abgelehnt — eine Dauer kann nicht kleiner als null sein.
+        </p>
+      </details>
+
+      <details>
+        <summary>Und Grad, Minuten, Sekunden bei Winkeln?</summary>
+        <p>
+          Das ist etwas anderes: Bei GPS-Koordinaten heißen die Teile ebenfalls Minute und Sekunde (1° = 60′ = 3600″), sie
+          messen aber einen Winkel, keine Dauer. Die Einheitenverordnung führt sie getrennt als Einheiten des ebenen Winkels.
+        </p>
+      </details>
+
+      <p>
+        Unix-Sekunden umrechnen? Dafür gibt es den <a href="/de/tools/unix-time/">Unix-Timestamp-Rechner</a>, für ein Datum in
+        der Zukunft den <a href="/de/tools/dday/">Countdown-Rechner</a>.
+      </p>
+
+      <p class="hint">
+        Quellen: <a href="https://www.gesetze-im-internet.de/einhv/__1.html">§ 1 Einheitenverordnung (EinhV)</a> ·
+        {" "}<a href="https://www.gesetze-im-internet.de/einhv/anlage_1.html">Anlage 1 EinhV (gesetzliche Einheiten)</a> ·
+        {" "}<a href="https://www.gesetze-im-internet.de/einhv/anlage_2.html">Anlage 2 EinhV (Vorsätze)</a> auf
+        gesetze-im-internet.de ·
+        {" "}<a href="https://www.bipm.org/en/publications/si-brochure" rel="noopener">BIPM, SI-Broschüre, Tabelle 8</a>.
+        Abgerufen am 21.10.2026.
+      </p>
+
+      <AdSlot label="sec-convert-result-de" />
+    </main>
+    <SiteFooter />
+    <style>
+      .sc-parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 10px; }
+      @media (max-width: 560px) { .sc-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      pre { overflow-x: auto; }
+    </style>
+    <script src="../../../../scripts/sec-convert.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
