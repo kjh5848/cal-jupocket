@@ -3,6 +3,7 @@ import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pickLang } from "../i18n/ui";
 import { parseNumberFr, formatNumberFr } from "../lib/fr/number";
+import { parseNumberEs, formatNumberEs } from "../lib/es/number";
 
 /** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
 const reportUse = trackCalculatorUse("percent");
@@ -24,6 +25,7 @@ const bIn = $("b") as HTMLInputElement;
  * 번체 사전(ZH_HANT)은 대만판·홍콩판이 같이 쓰므로 한 곳에만 쓰는 말(打折 등)·통화 기호를 넣지 않는다.
  * 독일어판(/de/tools/percent/)은 숫자 읽기·쓰기도 다르다 — 소수 쉼표(12,5), 천 단위 공백(아래 NUM).
  * 프랑스어판(FR)도 숫자 읽기·쓰기가 다르다 — 쉼표가 소수점이라 lib/fr/number.ts 를 쓴다(NUM).
+ * 스페인어판(ES, /es/tools/percent/)도 쉼표 소수점·공백 천 단위 — lib/es/number.ts(RD 2032/2009 Anexo III 2.8·2.9, NUM).
  */
 const KO = {
   labels: {
@@ -273,9 +275,44 @@ const ID: typeof KO = {
   share: "Hasil kalkulator persen - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE, fr: FR, id: ID });
-/** 숫자 읽기·쓰기 — 독일어판·프랑스어판만 소수 쉼표, 나머지 판은 지금 그대로 */
-const NUM = pickLang({ ko: { parse: parseNumber, fmt: formatNumber }, de: { parse: parseNumberDe, fmt: formatNumberDe }, fr: { parse: parseNumberFr, fmt: formatNumberFr } });
+const ES: typeof KO = {
+  labels: {
+    ratio: { a: "Cantidad total A", b: "Parte B", pct: false },
+    of: { a: "Cantidad total A", b: "Porcentaje B", pct: true },
+    change: { a: "Valor inicial A", b: "Valor final B", pct: false },
+    adjust: { a: "Valor de partida A", b: "Porcentaje B", pct: true },
+    original: { a: "Valor tras el cambio A", b: "Porcentaje aplicado B", pct: true },
+  },
+  title: "Resultado de la calculadora de porcentajes",
+  nan: "Escribe un número",
+  ratioZero: "A no puede ser 0",
+  divZero: "No se puede dividir entre 0",
+  ratioHero: "B es este porcentaje de A",
+  a: "Cantidad total A",
+  b: "Parte B",
+  ofHero: (a, b) => `${b}% de ${a}`,
+  whole: "Cantidad total A",
+  rate: "Porcentaje B",
+  changeZero: "El valor inicial A no puede ser 0",
+  changeZeroHint: "Un cambio que parte de 0 no se puede expresar en porcentaje",
+  diff: "Diferencia",
+  up: "Porcentaje de aumento",
+  down: "Porcentaje de disminución",
+  beforeAfter: "Inicial → final",
+  adjHero: (b, up) => (up ? `Tras subir un ${b}%` : `Tras un ${b}% de descuento`),
+  adjAmount: (up) => (up ? "Cantidad añadida" : "Cantidad descontada (ahorro)"),
+  first: "Valor de partida A",
+  origNone: "Con un 100% de descuento no se puede saber el valor original",
+  origHero: "Valor original",
+  origAmount: (up) => (up ? "Lo que añadió la subida" : "Lo que quitó el descuento"),
+  changed: "Valor tras el cambio A",
+  wari: (_p) => "",
+  share: "Resultado de la calculadora de porcentajes - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE, fr: FR, id: ID, es: ES });
+/** 숫자 읽기·쓰기 — 독일어판·프랑스어판·스페인어판만 소수 쉼표, 나머지 판은 지금 그대로 */
+const NUM = pickLang({ ko: { parse: parseNumber, fmt: formatNumber }, de: { parse: parseNumberDe, fmt: formatNumberDe }, fr: { parse: parseNumberFr, fmt: formatNumberFr }, es: { parse: parseNumberEs, fmt: formatNumberEs } });
 
 let lastTitle = "";
 let lastLines: [string, string][] = [];
