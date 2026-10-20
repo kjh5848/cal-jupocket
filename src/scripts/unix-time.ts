@@ -5,6 +5,8 @@ import {
 } from "../lib/unix-time";
 import { pickLang } from "../i18n/ui";
 import { frText, relativeTextFr } from "../lib/fr/unix-time";
+import { deText, relativeTextDe } from "../lib/de/unix-time";
+import { intDe } from "../lib/de/date-format";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 
@@ -260,7 +262,42 @@ const ZH_HANT: typeof KO = {
   now: (s: number, ms: number) => `現在：${s} 秒 · ${ms} 毫秒`,
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, fr: FR, "zh-Hant": ZH_HANT });
+/**
+ * 독일어판(/de/tools/unix-time/) — 영어판처럼 UTC·이 기기 시간대만, 날짜는 lib/de/unix-time.ts 의 BGB 머리 꼴
+ * ('Montag, 19. Oktober 2026, 03:34:56'), 천 단위는 줄바꿈 없는 공백(intDe). Intl 을 쓰지 않는다.
+ */
+const DE: typeof KO = {
+  text: (p) => deText(p),
+  homeOffset: deviceOffset,
+  rel: relativeTextDe,
+  utc: "UTC",
+  device: (o: string) => `Ihre Zeitzone (${o})`,
+  home: "Ihre Zeitzone",
+  homeSub: (t: string) => `Ihre Zeitzone: ${t}`,
+  utcSub: (t: string) => `UTC ${t}`,
+  msWrote: "In Millisekunden geschrieben.",
+  sWrote: "In Sekunden geschrieben.",
+  int32: `Dieser Zeitpunkt liegt nach dem größten vorzeichenbehafteten 32-Bit-Sekundenwert (${intDe(INT32_MAX)} = 2038-01-19 03:14:07 UTC) — ältere Systeme können ihn eventuell nicht speichern.`,
+  negative: `Der Zeitpunkt liegt vor 1970, daher ist die Zahl negativ — rückwärts gezählt mit ${intDe(86_400)} Sekunden pro Tag.`,
+  lineSec: "Unix-Timestamp (Sekunden)",
+  lineMs: "Millisekunden",
+  err: {
+    empty: "Bitte einen Timestamp eingeben",
+    format: "Bitte nur Ziffern eingeben (Exponentialschreibweise wie 1e9 geht nicht)",
+    "ms-fraction": "Millisekunden müssen ganzzahlig sein — für Nachkommastellen die Einheit Sekunden wählen",
+    "too-precise": "Sekunden gehen bis zur dritten Nachkommastelle (Millisekunden)",
+    range: "Umgerechnet werden nur Werte zwischen dem 1. Januar 1900 und dem 30. Dezember 9999 (UTC)",
+  },
+  unitName: (u: "s" | "ms") => (u === "s" ? "Sekunden" : "Millisekunden"),
+  readAuto: (n: number, u: string) => `${n} Stellen — als ${u} gelesen. Stimmt das nicht, Einheit wählen.`,
+  read: (u: string) => `Als ${u} gelesen.`,
+  badDate: "Bitte Datum und Uhrzeit prüfen (Millisekunden 0–999)",
+  cardTitle: "Unix-Timestamp",
+  shareText: "Unix-Timestamp-Rechner - jupocket.com",
+  now: (s: number, ms: number) => `Jetzt: ${s} Sekunden · ${ms} Millisekunden`,
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, fr: FR, "zh-Hant": ZH_HANT, de: DE });
 
 /** 그 순간의 시간대 오프셋(분). 이 기기 시간대는 서머타임이 있으면 순간마다 다르다 */
 function offsetAt(ms: number): number {
