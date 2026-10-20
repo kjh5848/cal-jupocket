@@ -71,4 +71,12 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-us/fica-tax/",
+    name: "FICA Tax Calculator",
+    blurb: "2026 Social Security 6.2% up to $184,500, Medicare 1.45% and Additional Medicare 0.9% withheld from a paycheck, plus the employer share",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];

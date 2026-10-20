@@ -1,13 +1,30 @@
 {
   "country": "US",
   "year": 2026,
-  "verifiedOn": "2026-10-17",
-  "status": "초안 — 페이지에서 쓰지 않음(나라별 언어판 전)",
+  "verifiedOn": "2026-10-21",
+  "status": "검증됨 — /en-us/fica-tax/ 가 쓴다(lib/us/fica.ts). 연방 FICA 근로자 원천징수·사업주 부담분만",
   "sources": [
-    { "label": "IRS Topic no. 751, Social Security and Medicare withholding rates", "url": "https://www.irs.gov/taxtopics/tc751" }
+    { "label": "IRS Topic no. 751, Social Security and Medicare withholding rates", "url": "https://www.irs.gov/taxtopics/tc751", "lastReviewed": "2026-09-24", "checkedOn": "2026-10-21" },
+    { "label": "IRS Publication 15 (2026), Employer's Tax Guide — What's New, section 9, section 14", "url": "https://www.irs.gov/publications/p15", "lastReviewed": "For use in 2026", "checkedOn": "2026-10-21" },
+    { "label": "IRS Questions and answers for the Additional Medicare Tax", "url": "https://www.irs.gov/businesses/small-businesses-self-employed/questions-and-answers-for-the-additional-medicare-tax", "lastReviewed": "2026-08-11", "checkedOn": "2026-10-21" },
+    { "label": "IRS Topic no. 608, Excess Social Security and RRTA tax withheld", "url": "https://www.irs.gov/taxtopics/tc608", "lastReviewed": "2026-10-16", "checkedOn": "2026-10-21" },
+    { "label": "IRS Topic no. 759, Form 940 — Employer's Annual Federal Unemployment (FUTA) Tax Return", "url": "https://www.irs.gov/taxtopics/tc759", "lastReviewed": "2026-09-24", "checkedOn": "2026-10-21" }
   ],
   "socialSecurity": { "employee": 0.062, "employer": 0.062, "wageBase": 184500, "currency": "USD" },
-  "medicare": { "employee": 0.0145, "employer": 0.0145 },
-  "additionalMedicare": { "rate": 0.009, "withholdOver": 200000, "note": "employer withholds on wages over $200,000 in a calendar year regardless of filing status; employee only" },
-  "note": "한국 4대보험(국민연금·건강·장기요양·고용)과 대응이 1:1 이 아니다 — 연방 FICA 만 확인. 실업보험(FUTA·주 SUTA)·주별 장애보험은 미확인"
+  "medicare": { "employee": 0.0145, "employer": 0.0145, "wageBase": null },
+  "additionalMedicare": {
+    "rate": 0.009,
+    "withholdOver": 200000,
+    "employerMatch": false,
+    "thresholds": {
+      "marriedFilingJointly": 250000,
+      "marriedFilingSeparately": 125000,
+      "single": 200000,
+      "headOfHousehold": 200000,
+      "qualifyingWidow": 200000
+    },
+    "note": "employer withholds on wages over $200,000 in a calendar year regardless of filing status or wages from another employer; employee only, no employer match. thresholds 는 신고 때 실제 세액(Form 8959) 기준"
+  },
+  "notVerified": [],
+  "note": "한국 4대보험과 1:1 대응이 아니다 — 근로자 급여에서 떼는 연방 세금은 FICA(Social Security·Medicare·Additional Medicare)만. FUTA 는 Pub 15 section 14 'Only the employer pays FUTA tax; it isn't withheld from the employee's wages' 라 근로자 공제 계산에서 뺌(근거 있는 제외, 숫자 안 씀). 주(州) 실업보험·장애보험(SUTA·SDI)은 주의 원칙(연방 숫자만)으로 다루지 않음. 연방 소득세 원천징수(Pub 15-T)·자영업자 SECA 도 이 파일 밖. 2027 과세 상한은 SSA·IRS 발표 뒤 다시 확인"
 }

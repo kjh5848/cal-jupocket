@@ -1,0 +1,323 @@
+---
+/**
+ * FICA Tax Calculator — 미국 영어판 제도 도구(basis "law"). 한국어판 4대보험(/guide/four-insurance-calculator/)과
+ * 제도가 달라 짝(hreflang)을 맺지 않는다(조사표 미국 칸 '제도').
+ * 계산은 lib/us/fica.ts, 화면은 lib/us/fica-ui.ts, 숫자는 rates/us/payroll-fica-2026.json
+ * (IRS Topic 751 · Pub 15 (2026) · Additional Medicare Tax Q&A · Topic 608 · Topic 759 — 2026-10-21 확인).
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-fica-2026-10-21.csv):
+ *   fica tax rate 2026·percentage / fica tax limit·max·cap 2026 / social security tax withholding max·limit 2026 /
+ *   fica tax-employee share / medicare tax calculation example / additional medicare tax calculator / fica tax refund
+ * 쓰지 않는 것(이번 회차 원문 미확인·주의 원칙): 연방 소득세 원천징수(Pub 15-T), 주(州) 세금·SDI·SUTA 금액,
+ * 자영업자 SECA, FICA 면제 대상(fica tax exemption — 학생·비거주자 등), W-4V(연금 수령액 원천징수).
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import {
+  SS_RATE,
+  SS_EMPLOYER_RATE,
+  SS_WAGE_BASE,
+  MEDICARE_RATE,
+  MEDICARE_EMPLOYER_RATE,
+  ADDL_RATE,
+  ADDL_WITHHOLD_OVER,
+  ADDL_THRESHOLDS,
+  MAX_SS_TAX,
+  withholding,
+  additionalMedicareLiability,
+  usd,
+  usd0,
+  pct,
+} from "../../../lib/us/fica";
+import "../../../styles/global.css";
+
+const title = "FICA Tax Calculator 2026 — Social Security & Medicare Withholding, $184,500 Limit";
+const description =
+  "2026 FICA tax per paycheck or year: Social Security 6.2% up to $184,500, Medicare 1.45%, Additional Medicare 0.9% over $200,000, and the employer match.";
+
+const defPay = 5000;
+const first = withholding(defPay, 0);
+const ex50 = withholding(50_000);
+const ex250 = withholding(250_000);
+const cross = withholding(10_000, 180_000);
+const after = withholding(15_000, 190_000);
+const twoJobs = withholding(120_000);
+const excess = twoJobs.ss * 2 - MAX_SS_TAX;
+const defYear = 250_000;
+const liab = additionalMedicareLiability(defYear, "single");
+const mfj = additionalMedicareLiability(300_000, "marriedFilingJointly");
+const combinedRate = SS_RATE + MEDICARE_RATE;
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>FICA Tax Calculator (2026)</h1>
+      <p>
+        FICA is the federal payroll tax that funds Social Security and Medicare. Your employer takes it out of every paycheck and
+        pays a matching share on top. Enter the gross wages for one paycheck — or a full year's pay — and how much this employer has
+        already paid you this year, and the calculator shows each part of the tax using the 2026 rates published by the IRS.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="fc-wages">Gross wages this paycheck ($)</label>
+          <input type="text" inputmode="decimal" id="fc-wages" value="5,000" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="fc-ytd">Wages already paid this year by this employer ($)</label>
+          <input type="text" inputmode="decimal" id="fc-ytd" value="0" autocomplete="off" data-ui="off" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value" data-bar="out-ss,out-medicare,out-addl">
+          <p class="label">Employee FICA withheld</p>
+          <p class="big" id="hero-value">{usd(first.total)}</p>
+          <p class="hint" id="fc-hint">{((first.total / defPay) * 100).toFixed(2)}% of this paycheck</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">Social Security ({pct(SS_RATE)})</span>
+            <span class="value" id="out-ss">{usd(first.ss)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Medicare ({pct(MEDICARE_RATE)})</span>
+            <span class="value" id="out-medicare">{usd(first.medicare)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Additional Medicare ({pct(ADDL_RATE)})</span>
+            <span class="value" id="out-addl">{usd(first.addl)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Pay after FICA only</span>
+            <span class="value" id="out-net">{usd(defPay - first.total)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Employer's matching share</span>
+            <span class="value" id="out-employer">{usd(first.employerTotal)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Year-to-date wages after this paycheck</span>
+            <span class="value" id="out-ytd">{usd(first.ytdAfter)}</span>
+          </div>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="fc-year">Total 2026 Medicare wages, all jobs ($)</label>
+          <input type="text" inputmode="decimal" id="fc-year" value="250,000" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="fc-status">Filing status</label>
+          <select id="fc-status" data-ui="off">
+            <option value="single" selected>Single</option>
+            <option value="marriedFilingJointly">Married filing jointly (combined wages)</option>
+            <option value="marriedFilingSeparately">Married filing separately</option>
+            <option value="headOfHousehold">Head of household</option>
+            <option value="qualifyingWidow">Qualifying widow(er)</option>
+          </select>
+        </div>
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">Additional Medicare Tax owed for the year</span>
+            <span class="value" id="out-liability">{usd(liab)}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>FICA tax rate for 2026</h2>
+      <p>
+        FICA has two parts. The employee share is {pct(combinedRate)} of wages — {pct(SS_RATE)} for Social Security and
+        {pct(MEDICARE_RATE)} for Medicare — and the employer pays the same amount again, for {pct(combinedRate * 2)} in total.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Tax</th>
+              <th scope="col">Employee</th>
+              <th scope="col">Employer</th>
+              <th scope="col">Wages it applies to</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Social Security</th>
+              <td>{pct(SS_RATE)}</td>
+              <td>{pct(SS_EMPLOYER_RATE)}</td>
+              <td>First {usd0(SS_WAGE_BASE)} of 2026 wages</td>
+            </tr>
+            <tr>
+              <th scope="row">Medicare</th>
+              <td>{pct(MEDICARE_RATE)}</td>
+              <td>{pct(MEDICARE_EMPLOYER_RATE)}</td>
+              <td>All wages, no limit</td>
+            </tr>
+            <tr>
+              <th scope="row">Additional Medicare</th>
+              <td>{pct(ADDL_RATE)}</td>
+              <td>None (no employer match)</td>
+              <td>Wages over {usd0(ADDL_WITHHOLD_OVER)} from one employer in the year</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>FICA tax limit for 2026: the Social Security maximum</h2>
+      <p>
+        Only Social Security has a cap. For 2026 the wage base limit is {usd0(SS_WAGE_BASE)}, so the most Social Security tax
+        one employer can withhold from you this year is {usd0(SS_WAGE_BASE)} × {pct(SS_RATE)} = {usd0(MAX_SS_TAX)}. Once your wages
+        from that employer reach the limit, Social Security withholding stops for the rest of the year. Medicare has no wage limit —
+        it keeps coming out of every paycheck.
+      </p>
+      <p>
+        That is why the calculator asks for wages already paid this year. A paycheck that crosses the limit is only partly taxed for
+        Social Security: with {usd0(180_000)} paid so far and a {usd0(10_000)} paycheck, only {usd0(cross.ssWages)} is under the cap,
+        so Social Security is {usd(cross.ss)} and Medicare is {usd(cross.medicare)}.
+      </p>
+
+      <h2>How to calculate FICA tax: examples</h2>
+      <ul>
+        <li>
+          <strong>{usd0(50_000)} salary:</strong> {usd0(50_000)} × {pct(SS_RATE)} = {usd0(ex50.ss)} Social Security, plus
+          {usd0(50_000)} × {pct(MEDICARE_RATE)} = {usd0(ex50.medicare)} Medicare — {usd0(ex50.total)} for the year. The employer
+          pays another {usd0(ex50.employerTotal)}.
+        </li>
+        <li>
+          <strong>{usd0(250_000)} salary:</strong> Social Security stops at {usd0(MAX_SS_TAX)}. Medicare is {usd0(ex250.medicare)}.
+          The {usd0(ex250.addlWages)} above {usd0(ADDL_WITHHOLD_OVER)} adds {usd0(ex250.addl)} of Additional Medicare Tax, for
+          {usd0(ex250.total)} in total. The employer share is {usd0(ex250.employerTotal)}, because there is no match for the 0.9%.
+        </li>
+        <li>
+          <strong>Late in a high-pay year:</strong> with {usd0(190_000)} paid so far and a {usd0(15_000)} paycheck, there is no
+          Social Security left to withhold, Medicare is {usd(after.medicare)} and the {usd0(after.addlWages)} that goes past
+          {usd0(ADDL_WITHHOLD_OVER)} adds {usd(after.addl)}.
+        </li>
+      </ul>
+      <p>
+        Each amount is rounded to the cent here. Payroll software may round differently, so a real pay stub can be a cent or two off.
+      </p>
+
+      <h2>Additional Medicare Tax calculator</h2>
+      <p>
+        Your employer must withhold the extra {pct(ADDL_RATE)} on wages it pays you above {usd0(ADDL_WITHHOLD_OVER)} in a calendar
+        year, whatever your filing status and whatever you earn elsewhere. What you actually owe is figured on your return, using the
+        threshold for your filing status:
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Filing status</th>
+              <th scope="col">Threshold</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Married filing jointly</th><td>{usd0(ADDL_THRESHOLDS.marriedFilingJointly)}</td></tr>
+            <tr><th scope="row">Married filing separately</th><td>{usd0(ADDL_THRESHOLDS.marriedFilingSeparately)}</td></tr>
+            <tr><th scope="row">Single</th><td>{usd0(ADDL_THRESHOLDS.single)}</td></tr>
+            <tr><th scope="row">Head of household (with qualifying person)</th><td>{usd0(ADDL_THRESHOLDS.headOfHousehold)}</td></tr>
+            <tr><th scope="row">Qualifying widow(er) with dependent child</th><td>{usd0(ADDL_THRESHOLDS.qualifyingWidow)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        So the two can differ. A married couple filing jointly who each earn {usd0(150_000)} have nothing withheld, because neither
+        employer pays over {usd0(ADDL_WITHHOLD_OVER)}, but their combined {usd0(300_000)} is {usd0(300_000 - ADDL_THRESHOLDS.marriedFilingJointly)}
+        over the joint threshold, so they owe {usd0(mfj)}. The second part of the calculator above does this yearly figure — it uses
+        Medicare wages only and leaves out self-employment income.
+      </p>
+
+      <h2>FICA tax refund: too much Social Security withheld</h2>
+      <p>
+        Each employer withholds Social Security up to the limit on its own. If you had two jobs paying {usd0(120_000)} each, both would
+        withhold {usd0(twoJobs.ss)}, {usd0(twoJobs.ss * 2)} in total, which is {usd0(excess)} more than the {usd0(MAX_SS_TAX)} maximum.
+        The IRS says that with more than one employer you may be able to claim the excess as a credit against your income tax on your
+        return. If a single employer withheld too much, that employer should fix it; if it doesn't, you can ask for a refund on Form 843
+        with copies of your Forms W-2.
+      </p>
+
+      <h2>What this FICA calculator does not include</h2>
+      <ul>
+        <li>Federal income tax withholding — that depends on your Form W-4 and the IRS withholding tables, which are not used here.</li>
+        <li>State and local taxes, including state disability or unemployment programs. They differ from state to state.</li>
+        <li>
+          FUTA, the federal unemployment tax. The IRS employer's guide says only the employer pays FUTA tax and it isn't withheld from
+          the employee's wages, so it never comes out of your paycheck.
+        </li>
+        <li>Self-employment tax for freelancers and business owners, which is figured differently on your return.</li>
+        <li>
+          Which kinds of pay count as wages. Some benefits are not subject to FICA — for example, employer payments for an accident or
+          health plan aren't wages for Social Security and Medicare. Enter the wages that are subject to FICA.
+        </li>
+      </ul>
+
+      <details>
+        <summary>What percentage is FICA tax?</summary>
+        <p>
+          For most employees it is {pct(combinedRate)} of each paycheck: {pct(SS_RATE)} Social Security and {pct(MEDICARE_RATE)} Medicare.
+          It drops to {pct(MEDICARE_RATE)} once your wages pass {usd0(SS_WAGE_BASE)} for the year, and rises by {pct(ADDL_RATE)} on wages
+          over {usd0(ADDL_WITHHOLD_OVER)} from one employer.
+        </p>
+      </details>
+
+      <details>
+        <summary>What is the maximum Social Security tax for 2026?</summary>
+        <p>
+          {usd0(MAX_SS_TAX)} for an employee ({pct(SS_RATE)} of {usd0(SS_WAGE_BASE)}), and the same amount for the employer. There is no
+          maximum for Medicare.
+        </p>
+      </details>
+
+      <details>
+        <summary>How do I figure FICA for a whole year?</summary>
+        <p>Enter your yearly gross wages in the paycheck box and leave "already paid this year" at 0.</p>
+      </details>
+
+      <details>
+        <summary>Does the employer's share come out of my pay?</summary>
+        <p>
+          No. The employer pays its {pct(SS_EMPLOYER_RATE)} and {pct(MEDICARE_EMPLOYER_RATE)} in addition to your wages. It is shown so you
+          can see the total cost; it is not subtracted from "pay after FICA only".
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I enter cents or a dollar sign?</summary>
+        <p>Yes. A $ sign and commas are ignored, and cents after a decimal point are kept (for example 2,307.69).</p>
+      </details>
+
+      <h2>Sources</h2>
+      <ul>
+        <li><a href="https://www.irs.gov/taxtopics/tc751" rel="noopener" target="_blank">IRS Topic no. 751, Social Security and Medicare withholding rates</a> (last reviewed Sep 24, 2026)</li>
+        <li><a href="https://www.irs.gov/publications/p15" rel="noopener" target="_blank">IRS Publication 15 (2026), Employer's Tax Guide</a></li>
+        <li><a href="https://www.irs.gov/businesses/small-businesses-self-employed/questions-and-answers-for-the-additional-medicare-tax" rel="noopener" target="_blank">IRS Questions and answers for the Additional Medicare Tax</a> (last reviewed Aug 11, 2026)</li>
+        <li><a href="https://www.irs.gov/taxtopics/tc608" rel="noopener" target="_blank">IRS Topic no. 608, Excess Social Security and RRTA tax withheld</a> (last reviewed Oct 16, 2026)</li>
+      </ul>
+      <p>Rates checked on October 21, 2026, for wages paid in 2026. This is a calculator, not tax advice.</p>
+
+      <AdSlot label="fica-tax-result-en-us" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/us/fica-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
