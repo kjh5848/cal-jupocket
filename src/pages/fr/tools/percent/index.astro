@@ -1,0 +1,234 @@
+---
+/**
+ * Calcul de pourcentage — 프랑스어판 첫 도구. 한국어판 /tools/percent/ 와 계산(lib/percent.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/percent.ts 의 FR 사전, 숫자 읽기·쓰기는 lib/fr/number.ts — 쉼표 소수점), 문장은 프랑스 자동완성으로 새로 썼다(번역 아님).
+ * 산술이라 나라 제도·rates 와 상관없다(조사표 프랑스 칸 '같음').
+ *
+ * 소제목은 프랑스 구글 자동완성에서 왔다(keywords/fr-percent-2026-10-20.csv, hl fr · gl fr):
+ *   pourcentage d'un nombre formule·par rapport à un autre·par rapport au total / faire·trouver pourcentage d'un nombre /
+ *   pourcentage d'évolution formule·entre deux valeurs·entre deux années / coefficient multiplicateur·réciproque·successive·global /
+ *   calcul remise·réduction·solde pourcentage·inversé / calcul augmentation pourcentage salaire·prix / formule … excel
+ * TVA·HT/TTC 같은 프랑스 세율 숫자는 쓰지 않는다(rates 로 검증한 값이 아니고 이 도구의 계산이 아니다).
+ * 금액은 기호 위치 관습을 원문으로 확인하지 않아 '€' 대신 'euros' 로 쓴다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+
+const title = "Calcul de pourcentage — évolution, augmentation, remise et formule";
+const description =
+  "Calculez le pourcentage d’un nombre, le pourcentage d’évolution entre deux valeurs ou un prix après remise. Formules, coefficient multiplicateur et Excel.";
+---
+
+<html lang="fr-FR">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Calcul de pourcentage</h1>
+      <p>
+        Choisissez ce que vous cherchez, puis saisissez deux nombres. La virgule sert de séparateur décimal (12,5) ;
+        les résultats sont arrondis à deux décimales.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">Que voulez-vous calculer ?</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>B représente quel % de A ?</option>
+            <option value="of">Combien font B % de A ?</option>
+            <option value="change">Pourcentage d’évolution de A à B</option>
+            <option value="adjust">A augmenté ou diminué de B %</option>
+            <option value="original">Valeur initiale avant une variation de B %</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">Hausse ou baisse</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>Baisse (remise, réduction)</option>
+            <option value="up">Hausse (augmentation)</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">Valeur totale A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">Valeur partielle B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B représente ce pourcentage de A</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Valeur totale A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Valeur partielle B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Enregistrer en image</button>
+          <button id="btn-share" type="button" class="secondary">Partager</button>
+        </div>
+      </div>
+
+      <h2>Pourcentage d’un nombre : la formule</h2>
+      <p>
+        B % de A = A × B ÷ 100. Ainsi, 18 % de 250 font 250 × 18 ÷ 100 = 45. Pour la question inverse — le
+        pourcentage d’un nombre par rapport à un autre, ou par rapport au total — on divise la partie par le total
+        et on multiplie par 100 : 45 ÷ 250 × 100 = 18 %.
+      </p>
+      <p>
+        Exemple avec un total : 36 bonnes réponses sur 48 questions, c’est 36 ÷ 48 × 100 = 75 %. Dans le
+        calculateur, choisissez « B représente quel % de A ? », mettez le total dans A et la partie dans B.
+      </p>
+
+      <h2>Trouver le pourcentage d’un nombre de tête</h2>
+      <p>Partez de 10 % et de 1 %, puis assemblez :</p>
+      <ul>
+        <li><strong>10 %</strong> — décalez la virgule d’un rang vers la gauche. 10 % de 460 font 46.</li>
+        <li><strong>1 %</strong> — décalez-la de deux rangs. 1 % de 460 font 4,6.</li>
+        <li><strong>5 %</strong> — la moitié de 10 %. 5 % de 460 font 23.</li>
+        <li><strong>25 %</strong> — le quart. <strong>50 %</strong> — la moitié. <strong>20 %</strong> — le double de 10 %.</li>
+        <li><strong>17 %</strong> = 10 % + 5 % + 1 % + 1 % = 46 + 23 + 4,6 + 4,6 = 78,2.</li>
+      </ul>
+      <p>
+        On peut aussi inverser les deux nombres : x % de y = y % de x. 16 % de 50 paraît compliqué, mais 50 % de 16
+        font tout simplement 8.
+      </p>
+
+      <h2>Pourcentage d’évolution entre deux valeurs : la formule</h2>
+      <p>
+        Taux d’évolution = (valeur d’arrivée − valeur de départ) ÷ valeur de départ × 100. Un résultat positif
+        indique une augmentation, un résultat négatif une baisse.
+      </p>
+      <ul>
+        <li><strong>De 40 à 50</strong> — (50 − 40) ÷ 40 × 100 = +25 %.</li>
+        <li><strong>De 50 à 40</strong> — (40 − 50) ÷ 50 × 100 = −20 %.</li>
+        <li>
+          <strong>Entre deux années</strong> — une valeur passe de 1 250 à 1 400 : (1 400 − 1 250) ÷ 1 250 × 100 = +12 %.
+        </li>
+      </ul>
+      <p>
+        L’écart est de 10 dans les deux premiers cas, mais les pourcentages diffèrent : l’évolution se mesure toujours
+        par rapport à la valeur de départ. Choisissez « Pourcentage d’évolution de A à B » et mettez la valeur de
+        départ dans A.
+      </p>
+
+      <h2>Coefficient multiplicateur, évolutions successives et évolution réciproque</h2>
+      <p>
+        Une évolution de t % revient à multiplier par le coefficient multiplicateur CM = 1 + t ÷ 100. Une hausse de
+        25 % donne CM = 1,25 ; une baisse de 20 % donne CM = 0,8.
+      </p>
+      <ul>
+        <li>
+          <strong>Évolutions successives</strong> — les coefficients se multiplient, les pourcentages ne
+          s’additionnent pas. +10 % puis +20 % : 1,1 × 1,2 = 1,32, soit une évolution globale de +32 % (et non +30 %).
+        </li>
+        <li>
+          <strong>Évolution réciproque</strong> — pour revenir à la valeur de départ, on prend l’inverse du
+          coefficient. Après +25 % (CM = 1,25), il faut 1 ÷ 1,25 = 0,8, soit −20 % : c’est exactement le cas « de 40 à
+          50 » puis « de 50 à 40 » ci-dessus.
+        </li>
+      </ul>
+
+      <h2>Calcul d’une remise ou d’une réduction en pourcentage</h2>
+      <p>
+        Prix après remise = prix initial × (1 − remise ÷ 100), et montant de la remise = prix initial × remise ÷ 100.
+      </p>
+      <ul>
+        <li>Remise de 15 % sur un article affiché 120 euros : on paie 120 × 0,85 = 102 euros et on économise 18 euros.</li>
+        <li>
+          Pourcentage de remise entre deux prix : de 80 à 60 euros, (60 − 80) ÷ 80 × 100 = −25 %, soit une
+          réduction de 25 %.
+        </li>
+        <li>
+          Soldes cumulées : −30 % puis −10 % supplémentaires laissent 0,7 × 0,9 = 0,63 du prix, soit −37 % au total,
+          pas −40 %.
+        </li>
+      </ul>
+      <p>
+        <strong>Remise inversée</strong> — pour retrouver le prix avant remise, on divise au lieu de multiplier : un
+        prix soldé de 84 euros après −30 % correspond à 84 ÷ 0,7 = 120 euros. Dans le calculateur, choisissez
+        « Valeur initiale avant une variation de B % » et « Baisse ».
+      </p>
+
+      <h2>Calcul d’une augmentation en pourcentage (prix, salaire)</h2>
+      <p>
+        Valeur après augmentation = valeur × (1 + taux ÷ 100). Un montant de 2 000 augmenté de 3 % donne
+        2 000 × 1,03 = 2 060. Dans l’autre sens, passer de 2 000 à 2 100 représente
+        (2 100 − 2 000) ÷ 2 000 × 100 = +5 %. Le calcul est le même pour un prix ou un salaire : il ne dit rien des
+        cotisations ni des impôts, il compare seulement deux montants.
+      </p>
+
+      <h2>Formule de pourcentage dans Excel</h2>
+      <p>Mettez l’ancienne valeur en A2 et la nouvelle en B2 :</p>
+      <ul>
+        <li>Pourcentage d’évolution : <code>=(B2-A2)/A2</code>, puis le format de cellule Pourcentage.</li>
+        <li>B2 en pourcentage de A2 : <code>=B2/A2</code>, au format Pourcentage.</li>
+        <li>B2 % de A2, si B2 contient un nombre simple comme 18 : <code>=A2*B2/100</code>.</li>
+        <li>Prix après une remise de B2 % : <code>=A2*(1-B2/100)</code>.</li>
+      </ul>
+      <p>
+        Si B2 est déjà au format Pourcentage, 18 % y est stocké sous la forme 0,18 : supprimez alors le
+        <code>/100</code>. Les mêmes formules fonctionnent dans Google Sheets.
+      </p>
+
+      <details>
+        <summary>Pourquoi +10 % puis −10 % ne ramènent-ils pas au point de départ ?</summary>
+        <p>
+          La baisse de 10 % s’applique au nombre le plus grand. 200 augmenté de 10 % donne 220, et 220 diminué de
+          10 % donne 198. Pour revenir de 220 à 200, il faut une baisse de 9,09 % — vérifiez-le avec « Valeur
+          initiale avant une variation de B % ».
+        </p>
+      </details>
+
+      <details>
+        <summary>Quelle différence entre un pourcentage et un point de pourcentage ?</summary>
+        <p>
+          Quand un taux passe de 2 % à 3 %, il augmente de <strong>1 point de pourcentage</strong>, mais le taux
+          lui-même progresse de (3 − 2) ÷ 2 × 100 = <strong>50 %</strong>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Puis-je saisir une virgule, des espaces ou le signe % ?</summary>
+        <p>
+          Oui : 12,5 et 12.5 sont lus comme le même nombre, les espaces entre les milliers (1 500) et le signe %
+          sont ignorés. N’écrivez pas de point pour séparer les milliers (1.500 serait lu comme 1,5) et laissez de
+          côté le symbole monétaire.
+        </p>
+      </details>
+
+      <AdSlot label="percent-result-fr" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
