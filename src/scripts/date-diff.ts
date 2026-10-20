@@ -2,7 +2,7 @@ import { toDay, span, spanText, label, shift, shiftBusiness, dday, holidayRange,
 import { labelJa, spanTextJa, ddayJa } from "../lib/date-format-ja";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
-import { pageLocale } from "../i18n/ui";
+import { pickLang } from "../i18n/ui";
 
 /** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
 const reportUse = trackCalculatorUse("date-diff");
@@ -85,7 +85,54 @@ const JA: typeof KO = {
   shareText: "日付計算の結果 - jupocket.com",
 };
 
-const S = pageLocale() === "ja" ? JA : KO;
+/**
+ * 영어판(/en-us/tools/date-diff/ — 영어 다섯 판 공용). 날짜는 페이지 lang(en-US·en-GB…)의 Intl 표기라 월·일 순서가 판마다 맞는다.
+ * 하루 번호는 UTC 자정이라 timeZone "UTC" 필수(없으면 미국 방문자에게 하루 앞 날짜가 보인다).
+ * 업무일(공휴일 빼기)·시간 환산은 넣지 않는다 — 그 나라 공휴일·서머타임 원문을 확인하지 않았다.
+ */
+const enLang = document.documentElement.lang || "en-US";
+const labelEn = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString(enLang, { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${n(v, enLang)} ${one}${v === 1 ? "" : "s"}`;
+const spanTextEn = (s: Span) => {
+  const parts: string[] = [];
+  if (s.years) parts.push(plural(s.years, "year"));
+  if (s.months) parts.push(plural(s.months, "month"));
+  if (s.restDays || parts.length === 0) parts.push(plural(s.restDays, "day"));
+  return parts.join(", ");
+};
+
+const EN: typeof KO = {
+  spanTitle: "Date calculator — days between two dates",
+  shiftTitle: "Date calculator — add or subtract days",
+  needDates: "Enter both dates",
+  needBase: "Enter a start date",
+  needInt: "Enter a whole number, 0 or more",
+  swapped: "The end date was before the start date, so the two dates were swapped.",
+  spanLabel: (incl: boolean) => (incl ? "Days between (end date included)" : "Days between"),
+  days: (v: number) => plural(v, "day"),
+  spanSub: (s: Span) => `${spanTextEn(s)} · ${plural(s.weeks, "week")}, ${plural(s.weekRest, "day")}`,
+  spanChips: (s: Span): [string, string][] => [
+    ["Weekdays (Mon–Fri)", plural(s.weekdays, "day")],
+    ["Dates", `${labelEn(s.from)} → ${labelEn(s.to)}`],
+  ],
+  spanNotes: () => [],
+  unitName: (u: Unit) => ({ day: "day", week: "week", month: "month", year: "year" })[u],
+  shiftWhat: (amount: number, unitName: string, after: boolean) => `${plural(amount, unitName)} ${after ? "after" : "before"}`,
+  bizOut: "",
+  label: labelEn,
+  todaySub: (target: number, today: number) => {
+    const d = target - today;
+    return d === 0 ? "That's today" : d > 0 ? `${plural(d, "day")} from today` : `${plural(-d, "day")} ago`;
+  },
+  baseChip: "Start date",
+  betweenChip: "Days between",
+  between: (s: Span) => `${plural(s.days, "day")} (${spanTextEn(s)})`,
+  monthEnd: "If that day doesn't exist in the month (the 31st, Feb 29), the last day of the month is used.",
+  shareText: "Date calculator result - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN });
 
 /** 이 기기 기준 오늘(지역 날짜) */
 function todayDay(): number {
