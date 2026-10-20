@@ -1,0 +1,223 @@
+---
+/**
+ * Compound Interest Calculator — 미국 영어판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 EN 사전, 통화는 판의 USD), 문장은 영어로 새로 썼다(번역 아님). 복리 산술이라 rates 와 상관없다(조사표 미국 칸 '같음').
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-compound-2026-10-20.csv):
+ *   compound interest calculator with monthly contributions / ...formula·equation / ...excel formula·google sheets /
+ *   compound interest calculator with inflation / compound interest calculator daily·monthly / 401k·retirement·roth ira
+ * 세율 기본값은 0% — 한국어판 15.4% 는 한국 원천징수라 쓰지 않고, 미국 세율은 계좌(과세·401(k)·IRA·Roth)마다 달라 숫자를 적지 않는다.
+ * 사용자가 넣는 가정값으로만 둔다. 본문 숫자는 전부 아래 frontmatter 에서 compound() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import "../../../../styles/global.css";
+
+const title = "Compound Interest Calculator with Monthly Contributions — Formula, Inflation, Excel";
+const description =
+  "Grow a starting balance plus monthly contributions with monthly compounding: interest earned, after-tax and inflation-adjusted value, yearly table, Excel FV.";
+
+const base = { principal: 10_000, monthly: 500, ratePct: 7, months: 240, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const real3 = compound({ ...base, timing: "start", inflationPct: 3 });
+/** 같은 연 7%를 매일(365) 복리로 돌렸을 때 일시금 — 월 복리와 차이 보기 */
+const lumpDaily = base.principal * Math.pow(1 + base.ratePct / 100 / 365, 365 * 20);
+const usd = (x: number) =>
+  Math.round(x).toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Compound Interest Calculator with Monthly Contributions</h1>
+      <p>
+        Enter a starting balance, how much you add each month and an expected annual return. The calculator compounds the balance
+        every month and shows what you would have at the end, how much of it is your own money and how much is growth. The return,
+        tax rate and inflation rate are all assumptions — nothing here predicts what a real investment will do.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">Initial deposit ($)</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value="10,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">Monthly contribution ($)</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="500" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">Expected annual return</label>
+          <input type="number" id="cp-rate" value="7" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">Length of time</label>
+          <input type="number" id="cp-period" value="20" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="Time unit">
+            <option value="years" selected>years</option>
+            <option value="months">months</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">When you contribute</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>Start of each month</option>
+            <option value="end">End of each month</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">Tax rate on the growth (assumption)</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">Annual inflation rate</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">Savings goal ($, optional)</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder="e.g. 250,000" autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="Contributions|Interest"
+          data-dock="cp-hero"
+        >
+          <p class="label">Ending balance (before tax)</p>
+          <p class="big" id="cp-hero">{usd(ex.balance)}</p>
+          <p class="meta" id="cp-note">240 months · 0.5833% a month · deposits at the start of each month</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total contributions</span><span class="value" id="cp-paid">{usd(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">Interest earned</span><span class="value" id="cp-gain2">{usd(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">Tax (assumed)</span><span class="value" id="cp-tax-v">$0</span></div>
+          <div class="stat-chip"><span class="label">After tax</span><span class="value" id="cp-after">{usd(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">In today's dollars</span><span class="value" id="cp-real">{usd(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">Goal reached</span><span class="value" id="cp-goal-v">No goal set</span></div>
+        </div>
+
+        <details>
+          <summary>Year-by-year contributions, interest and balance</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Period</th><th>Contributed that year</th><th>Interest that year</th><th>Balance</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">Year {r.year}</th><td>{usd(r.paid)}</td><td>{usd(r.gain)}</td><td>{usd(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">The initial deposit is not counted in "Contributed that year"; it is only part of the balance.</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Compound interest formula with monthly contributions</h2>
+      <ul>
+        <li><strong>Monthly rate</strong> — r = annual return ÷ 12. At 7% a year that is about 0.5833% a month.</li>
+        <li><strong>Contributions at the start of the month</strong> — the new money earns that month's interest: balance = (balance + contribution) × (1 + r).</li>
+        <li><strong>Contributions at the end of the month</strong> — interest is added first, then the deposit: balance = balance × (1 + r) + contribution. The last deposit never earns anything, so the total is a little lower.</li>
+        <li><strong>Closed form</strong> — after n months, FV = P(1 + r)<sup>n</sup> + PMT × [(1 + r)<sup>n</sup> − 1] ÷ r, with the PMT part multiplied by (1 + r) once more for start-of-month deposits. P is the initial deposit and PMT the monthly contribution.</li>
+        <li><strong>Tax</strong> — if the ending balance is above what you put in, the tax rate you enter is applied once to that gain. A loss is not taxed.</li>
+      </ul>
+      <p>
+        Example: {usd(base.principal)} to start, {usd(base.monthly)} a month, 7% a year for 20 years. You put in {usd(ex.paid)}
+        and end with {usd(ex.balance)} — {usd(ex.gain)} of that is interest. With end-of-month deposits the same plan ends at
+        {usd(exEnd.balance)}.
+      </p>
+
+      <h2>Initial deposit vs monthly contributions</h2>
+      <p>
+        Money you put in on day one compounds for the whole period; each monthly contribution has less time left to grow. In the
+        example, the {usd(base.principal)} starting deposit on its own would become {usd(lump.balance)} after 20 years. Set the
+        monthly contribution to $0 to see a lump sum only, or the initial deposit to $0 to see contributions only.
+      </p>
+
+      <h2>Compound interest calculator with inflation</h2>
+      <p>
+        The "In today's dollars" figure divides the after-tax balance by (1 + inflation)<sup>years</sup>. With 3% inflation the
+        example's {usd(ex.balance)} is worth about {usd(real3.real)} in today's money. Leave inflation at 0% to see the nominal
+        number only.
+      </p>
+
+      <h2>Daily vs monthly compounding</h2>
+      <p>
+        This calculator compounds monthly, which matches monthly contributions. Compounding daily at the same stated rate adds very
+        little: the {usd(base.principal)} lump sum at 7% for 20 years is {usd(lump.balance)} with monthly compounding and
+        {usd(lumpDaily)} with daily compounding. The return you assume matters far more than how often it compounds.
+      </p>
+
+      <h2>Compound interest formula in Excel or Google Sheets</h2>
+      <p>
+        The FV function gives the same result. For start-of-month deposits use
+        <code>=FV(7%/12, 240, -500, -10000, 1)</code>; for end-of-month deposits change the last 1 to 0. The contribution and the
+        initial deposit are entered as negative numbers because they are money going out. Google Sheets uses the same formula.
+      </p>
+
+      <details>
+        <summary>What tax rate should I enter?</summary>
+        <p>
+          The default is 0%. How investment growth is taxed depends on the account — a taxable brokerage or savings account, a
+          401(k), a traditional IRA or a Roth IRA are all treated differently — so the calculator does not pick a rate for you.
+          Enter an assumption that fits your own situation. The IRS explains how interest and capital gains are taxed in
+          <a href="https://www.irs.gov/taxtopics/tc403" rel="noopener" target="_blank">Topic no. 403, Interest received</a> and
+          <a href="https://www.irs.gov/taxtopics/tc409" rel="noopener" target="_blank">Topic no. 409, Capital gains and losses</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I use this as a 401(k) or retirement calculator?</summary>
+        <p>
+          You can use it to see how a steady monthly amount grows at an assumed return. It does not add employer matching,
+          contribution limits, raises or withdrawals — for a match, add the employer's monthly amount to your contribution.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I enter cents or a dollar sign?</summary>
+        <p>
+          Amounts are whole dollars. A typed $ sign and commas are ignored, but a decimal point is not read as cents — enter
+          1500 rather than 1,500.50.
+        </p>
+      </details>
+
+      <details>
+        <summary>What happens with a 0% or negative return?</summary>
+        <p>
+          At 0% you end with exactly what you put in. A negative return shows negative interest and no tax. Real returns go up and
+          down from year to year, so the same average can lead to a different ending balance.
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-en-us" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

@@ -26,4 +26,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-us/tools/compound/",
+    ko: "/tools/compound/",
+    name: "Compound Interest Calculator",
+    blurb: "Starting balance plus monthly contributions at an assumed return — interest earned, after tax and inflation, year by year",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];
