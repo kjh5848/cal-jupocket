@@ -1,0 +1,42 @@
+{
+  "country": "US",
+  "year": 2026,
+  "draft": true,
+  "verifiedOn": "2026-10-21",
+  "status": "초안 — 페이지에서 쓰지 않는다. 연방(FLSA) 숫자만, 주(州) 최저임금은 다루지 않음(us.md 주의)",
+  "sources": [
+    { "label": "U.S. DOL Wage and Hour Division — Minimum Wage", "url": "https://www.dol.gov/agencies/whd/minimum-wage", "checkedOn": "2026-10-21", "quote": "The federal minimum wage is $7.25 per hour effective July 24, 2009. … Some state laws provide greater employee protections; employers must comply with both." },
+    { "label": "U.S. DOL WHD Fact Sheet #15: Tipped Employees Under the FLSA", "url": "https://www.dol.gov/agencies/whd/fact-sheets/15-tipped-employees-flsa", "checkedOn": "2026-10-21", "quote": "An employer must pay a tipped worker at least $2.13 per hour under the FLSA. … The maximum tip credit that an employer can currently claim is $5.12 per hour … customarily and regularly receive more than $30 a month in tips" },
+    { "label": "eCFR 29 CFR 531.50, 531.57, 531.59 (up to date as of 2026-10-16)", "url": "https://www.ecfr.gov/current/title-29/subtitle-B/chapter-V/subchapter-B/part-531", "checkedOn": "2026-10-21", "quote": "531.50(a)(1) cash wage … not be less than the cash wage required … on August 20, 1996 [i.e., $2.13]; 531.59(a) tip credit = minimum wage required by section 6(a)(1) minus cash wage paid (at least $2.13); if tips are less than the tip credit the employer pays the balance" },
+    { "label": "U.S. DOL WHD Fact Sheet #23: Overtime Pay Requirements of the FLSA (Revised October 2019)", "url": "https://www.dol.gov/agencies/whd/fact-sheets/23-flsa-overtime-pay", "checkedOn": "2026-10-21", "quote": "overtime pay for hours worked in excess of 40 in a workweek at a rate not less than time and one-half their regular rates of pay … Averaging of hours over two or more weeks is not permitted." },
+    { "label": "eCFR 29 CFR 778.104, 778.105, 778.107 (up to date as of 2026-10-16)", "url": "https://www.ecfr.gov/current/title-29/subtitle-B/chapter-V/subchapter-B/part-778", "checkedOn": "2026-10-21", "quote": "778.105 workweek = fixed and regularly recurring period of 168 hours — seven consecutive 24-hour periods; 778.107 not less than one and one-half times the regular rate, regular rate may in no event be less than the statutory minimum; 778.104 no averaging over 2 or more weeks" }
+  ],
+  "federalMinimumWage": { "hourly": 7.25, "currency": "USD", "effective": "2009-07-24" },
+  "tipped": {
+    "cashWageMin": 2.13,
+    "maxTipCredit": 5.12,
+    "tipsPerMonthThreshold": 30,
+    "rule": "tip credit = 7.25 − cash wage(≥ 2.13). 실제 팁이 tip credit 보다 적으면 사업주가 모자란 만큼 더 줘서 시급 7.25 를 맞춤(531.59)"
+  },
+  "overtime": { "weeklyHours": 40, "multiplier": 1.5, "workweekHours": 168, "averagingAllowed": false },
+  "salaryToHourly": {
+    "source": "eCFR 29 CFR 778.113 (up to date as of 2026-10-16) https://www.ecfr.gov/current/title-29/section-778.113 (API: /api/versioner/v1/full/2026-10-16/title-29.xml?part=778&section=778.113) — checkedOn 2026-10-21",
+    "weekly": "regular rate = 주급 ÷ 그 주급이 보상하려는 시간",
+    "monthlyToWeekly": { "multiply": 12, "divide": 52 },
+    "semimonthlyToWeekly": { "multiply": 24, "divide": 52 },
+    "examples": [
+      { "weeklySalary": 350, "hours": 35, "regularRate": 10, "overtimeRate": 15 },
+      { "weeklySalary": 375, "hours": 40, "regularRate": 9.38 },
+      { "monthlySalary": 1560, "hours": 40, "regularRate": 9 },
+      { "semimonthlySalary": 780, "hours": 40, "regularRate": 9 }
+    ],
+    "alternative": "7(g)(3) 규정에 따라 월급 ÷ 그 달 근무일 ÷ 하루 정규시간으로 정할 수도 있음(당사자 약정) — 식 자세한 조건은 이번에 끝까지 안 읽음"
+  },
+  "stateRule": "주 법이 더 보호하면 둘 다 지켜야 함(DOL) — 주별 금액은 숫자로 쓰지 않음",
+  "notVerified": [
+    "youth minimum wage(29 U.S.C. 206(g) — 금액·나이·90일): DOL Fact Sheet #32 주소 404(…/32-youth-minimum-wage, …-flsa), uscode.house.gov 점검 중(Under Maintenance, 2026-10-21) — 추측하지 않음",
+    "29 U.S.C. 206(a)(1)(C)·207(a)(1)·218(a) 법조문 원문: uscode.house.gov 점검 중이라 못 읽음 — 숫자는 DOL·eCFR 로 확인했으나 법조문 대조는 다음 회차",
+    "월급 환산 대안(778.113(b) 끝 — 근무일 기준 식, 7(g)(3) 약정)의 조건: 문단을 끝까지 읽지 않음 — 페이지는 12 ÷ 52 식만 쓸 것"
+  ],
+  "note": "월급 → 시급 환산은 778.113(b) 12 ÷ 52 식이 원문에 있음(월 $1,560·주 40시간 → $9). 한국 최저임금(월 209시간·주휴수당)과 1:1 대응이 아님 — 미국은 주 40시간 넘는 시간에 1.5배(초과근무) 기준이고 주휴 개념 없음. 2009-07-24 뒤 연방 금액 변경 없음(DOL 문장 기준). 연방 계약직(EO 14026)·면제 근로자(white-collar exemption) 급여 기준은 이 파일 밖"
+}
