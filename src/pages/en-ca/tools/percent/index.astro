@@ -1,0 +1,183 @@
+---
+/**
+ * Percent calculator — 캐나다판 첫 도구. 한국어판 /tools/percent/ 와 계산(lib/percent.ts)·스크립트(EN 사전)를 같이 쓰고,
+ * 문장은 캐나다 영어로 새로 썼다(번역 아님). 산술이라 나라 제도·rates 와 상관없다(조사표 캐나다 칸 '같음').
+ *
+ * 소제목은 캐나다 구글 자동완성에서 왔다(keywords/ca-percent-2026-10-20.csv):
+ *   percent off calculator (canada · with tax · of $50) / percent increase or decrease formula · between two numbers /
+ *   percentage of a number formula / percentage calculator grade · of marks
+ * title·description 은 같은 영어 판(en-us·en-gb·en-au·en-sg)과 갈리게 Canada 를 넣었다.
+ * 판매세(GST·HST·PST) 세율은 쓰지 않는다 — 주마다 다르고 캐나다 rates 로 검증하지 않았다. 계산 순서만 설명한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+
+const title = "Percent Calculator Canada — Percent Off, Increase & Decrease, Percentage of a Number";
+const description =
+  "Percent calculator for Canada: price after a percent off, percent increase or decrease between two numbers, a percentage of a number and test marks.";
+---
+
+<html lang="en-CA">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Percent calculator</h1>
+      <p>
+        Pick what you are working out and type in two numbers. Answers are rounded to two decimal places.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">What do you want to find?</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>What % of A is B?</option>
+            <option value="of">What is B% of A?</option>
+            <option value="change">% change from A to B</option>
+            <option value="adjust">Add or take B% off A</option>
+            <option value="original">Original value before a B% change</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">Increase or decrease</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>Decrease (% off)</option>
+            <option value="up">Increase</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">Whole value A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">Part value B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B as a percentage of A</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Whole value A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Part value B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Percent off calculator: price after a discount</h2>
+      <p>
+        Multiply the price by what is left after the discount. 25% off $80.00 leaves 75%, so the sale price is
+        $80.00 × 0.75 = $60.00 and you save $20.00. For 30% off $50.00 it is $50.00 × 0.70 = $35.00. Pick
+        "Add or take B% off A", set it to decrease and enter the price and the percent.
+      </p>
+      <p>
+        Going backwards needs a division, not a multiplication. If a jacket is $68.00 after 15% off, the tag price
+        was $68.00 ÷ 0.85 = $80.00. The "Original value before a B% change" option does this.
+      </p>
+
+      <h2>Percent off with tax</h2>
+      <p>
+        Sales tax in Canada depends on the province or territory, so this calculator does not add any tax by itself.
+        Work it out in two steps: take the discount off first, then use "Add or take B% off A" set to increase with
+        the combined tax rate for where you are shopping. Each step multiplies the price, so doing them in the other
+        order gives the same total.
+      </p>
+
+      <h2>Percent increase or decrease formula</h2>
+      <p>
+        Subtract the starting value from the new value, divide by the starting value, then multiply by 100.
+      </p>
+      <ul>
+        <li><strong>Increase</strong> — rent going from $1,600 to $1,720 is (1,720 − 1,600) ÷ 1,600 × 100 = +7.5%.</li>
+        <li><strong>Decrease</strong> — a bill dropping from $120 to $90 is (90 − 120) ÷ 120 × 100 = −25%.</li>
+      </ul>
+      <p>
+        The starting value is always the one you divide by. That is why going from $90 back up to $120 is a 33.33%
+        increase, not 25%.
+      </p>
+
+      <h2>Percentage of a number formula</h2>
+      <p>
+        Turn the percent into a decimal and multiply: 12% of 450 is 450 × 0.12 = 54. To find what percent one number
+        is of another, divide the part by the whole and multiply by 100 — 18 out of 24 is 18 ÷ 24 × 100 = 75%.
+      </p>
+
+      <h2>Percentage calculator for grades and marks</h2>
+      <p>
+        A test mark works the same way: marks earned ÷ marks possible × 100. 42 out of 56 is 75%. Enter the total
+        as A and your mark as B with "What % of A is B?". Adding up percentages from separate tests does not give
+        your overall grade unless every test is worth the same number of marks — add the marks first, then divide.
+      </p>
+
+      <details>
+        <summary>Why doesn't a 20% increase followed by a 20% decrease get back to the start?</summary>
+        <p>
+          The second 20% is taken from a bigger number. 100 plus 20% is 120, and 20% off 120 is 120 × 0.8 = 96. To
+          return to 100 from 120 you only need to take off 16.67%, which the "Original value" option shows.
+        </p>
+      </details>
+
+      <details>
+        <summary>Is percent change the same as percent difference?</summary>
+        <p>
+          No. Percent change has a before and an after and divides by the before value. Percent difference treats
+          the two numbers equally and divides the gap by their average. This calculator gives percent change: from
+          40 to 60 is +50%, and from 60 to 40 is −33.33%.
+        </p>
+      </details>
+
+      <details>
+        <summary>What if the starting value is negative or zero?</summary>
+        <p>
+          The calculator divides by the size of the starting value without its minus sign, so moving up always reads
+          as an increase: a loss going from −200 to −150 is +25%. With a starting value of 0 there is nothing to
+          divide by, so only the difference is shown.
+        </p>
+      </details>
+
+      <details>
+        <summary>What is the difference between a percent and a percentage point?</summary>
+        <p>
+          When a rate moves from 4% to 5%, it went up by <strong>1 percentage point</strong>. Compared with where it
+          started, that is a (5 − 4) ÷ 4 × 100 = <strong>25%</strong> increase. Points measure the gap between two
+          percentages; percent change measures how big that gap is relative to the first one.
+        </p>
+      </details>
+
+      <AdSlot label="percent-result-en-ca" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
