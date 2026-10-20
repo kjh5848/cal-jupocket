@@ -35,4 +35,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/fr/tools/dday/",
+    ko: "/tools/dday/",
+    name: "Compte à rebours",
+    blurb: "Combien de jours avant une date — compte à rebours en direct en jours, heures et minutes, ou aujourd’hui compté comme jour 1",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

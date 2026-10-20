@@ -1,0 +1,210 @@
+---
+/**
+ * Compte à rebours — 프랑스어판 네 번째 도구(디데이). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 FR 사전)를 같이 쓰고, 문장은 프랑스 자동완성으로 새로 썼다(번역 아님). 조사표 프랑스 칸 '단위'.
+ *
+ * 소제목은 프랑스 구글 자동완성에서 왔다(keywords/fr-dday-2026-10-21.csv, hl fr · gl fr):
+ *   combien de jours avant · dans combien de jours · jours restants avant date / compte à rebours jours heures minutes secondes ·
+ *   compte à rebours jour et heure / combien de jours avant noël 2026 · halloween 2026 · la fin de l'année · 2027 /
+ *   dans combien de jours c'est la rentrée · les vacances · jour restant avant le bac / compte à rebours jours excel · jours ouvrés
+ * 'D-12' 는 프랑스에서 쓰지 않아 'dans 100 jours' 로 낸다. 프리셋은 한국어판과 같은 네 개(100일·12/25·12/31·1/1)만.
+ * rentrée·vacances scolaires·bac·계절 날짜는 허용 출처(impots·service-public·legifrance·urssaf·economie) 밖이라 숫자를 안 쓰고
+ * 직접 넣으라고만 쓴다. 하루는 24시간으로 센다 — 서머타임 전환 규칙 원문을 확인하지 않아 전환 날짜는 쓰지 않는다.
+ * Excel 함수 이름(AUJOURDHUI)은 Microsoft 원문(허용 출처 밖)으로 확인하지 않았다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, fromDay, countdown } from "../../../../lib/date-calc";
+import { labelFr, ddayFr, durationTextFr, joursFr, pluralFr, nFr } from "../../../../lib/fr/date-format";
+
+const title = "Combien de jours avant… ? Compte à rebours en jours, heures et minutes";
+const description =
+  "Combien de jours avant une date : compte à rebours en jours, heures, minutes et secondes. Noël 2026, fin de l’année, 2027, examen à une heure précise.";
+
+const d = (iso: string) => toDay(iso)!;
+const left = (t: number, b: number) => ddayFr(t, b);
+
+const BASE = "2026-10-21";
+const base = d(BASE);
+const target = base + 100;
+const c0 = countdown(target, null, base, 0);
+
+// 본문 예시 — 전부 BASE 에서 센다
+const halloween = d("2026-10-31");
+const xmas = d("2026-12-25");
+const nye = d("2026-12-31");
+const ny = d("2027-01-01");
+const cXmas = countdown(xmas, null, base, 0);
+// 오전 9시 시작 — 기준일 오후 3시(15:00)에 열었을 때
+const exam = countdown(xmas, 9 * 3600, base, 15 * 3600);
+const examD = Math.floor(exam.seconds / 86_400);
+const examH = Math.floor((exam.seconds % 86_400) / 3600);
+const pastDay = d("2026-09-01");
+---
+
+<html lang="fr-FR">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Combien de jours avant… ? Compte à rebours</h1>
+      <p>
+        Choisissez une date : le compte à rebours affiche le nombre de jours restants et le temps qui reste, à la seconde près.
+        Pour un examen, un vol ou une échéance à une heure précise, activez « Jusqu’à une heure ».
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">Date cible</label>
+          <input type="date" id="target" value={fromDay(target)} />
+          <div class="ux-presets" role="group" aria-label="Dates courantes">
+            <button type="button" data-preset="plus100">Dans 100 jours</button>
+            <button type="button" data-preset="xmas">Noël</button>
+            <button type="button" data-preset="yearend">31 décembre</button>
+            <button type="button" data-preset="newyear">Jour de l’an</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">Jusqu’à une heure</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">Heure cible</label>
+          <input type="time" id="time" value="09:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">Date de départ (en général aujourd’hui)</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Jusqu’au {labelFr(target)}</p>
+          <p class="big" id="hero-value">{left(target, base)}</p>
+          <p class="hint" id="hero-sub">En comptant la date de départ comme jour 1, la date cible est le jour {nFr(c0.countDays)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Temps restant</span>
+            <span class="value" id="v1">{durationTextFr(c0.seconds)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">En comptant le jour 1</span>
+            <span class="value" id="v2">Jour {nFr(c0.countDays)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">Date de départ</span>
+            <span class="value" id="v3">{labelFr(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Enregistrer l’image</button>
+          <button id="btn-share" type="button" class="secondary">Partager</button>
+        </div>
+      </div>
+
+      <h2>Combien de jours avant une date : aujourd’hui compte-t-il ?</h2>
+      <p>
+        Le nombre affiché, c’est <strong>date cible − aujourd’hui</strong>. Aujourd’hui n’est pas compté, la date cible l’est.
+        Demain est donc {left(base + 1, base)}, la date cible elle-même affiche « aujourd’hui » toute la journée, et une date
+        déjà passée affiche « il y a … jours ».
+      </p>
+      <p>
+        Pour compter le premier jour comme jour 1 — premier jour d’un nouveau travail, arrêt du tabac, début d’une relation —,
+        regardez plutôt la case « En comptant le jour 1 ». Elle vaut toujours un de plus. En comptant le {labelFr(base)} comme
+        jour 1, le {labelFr(target)} est le jour {nFr(c0.countDays)}.
+      </p>
+
+      <h2>Compte à rebours en jours, heures, minutes et secondes</h2>
+      <ul>
+        <li>
+          <strong>Date seule</strong> — le compte va jusqu’à la fin de la date cible (minuit, au début du jour suivant).
+        </li>
+        <li>
+          <strong>Date et heure</strong> — le compte va jusqu’à cette heure. Une fois l’heure passée, même le jour J, la case
+          devient « Temps écoulé ». Ouvert le {labelFr(base)} à 15 h, un rendez-vous le {labelFr(xmas)} à 9 h est dans
+          {" "}{joursFr(examD)} et {pluralFr(examH, "heure")}.
+        </li>
+        <li>
+          <strong>Le temps restant défile chaque seconde</strong> — seulement quand la date de départ est aujourd’hui. Avec une
+          autre date de départ, le compte part de minuit ce jour-là.
+        </li>
+        <li>
+          <strong>Changement d’heure</strong> — chaque jour compte exactement 24 heures. Si un passage à l’heure d’été ou d’hiver
+          tombe entre aujourd’hui et la date cible, le nombre d’heures peut être décalé d’une heure. Le nombre de jours, lui, ne
+          change pas.
+        </li>
+      </ul>
+
+      <h2>Combien de jours avant Noël 2026, Halloween et 2027</h2>
+      <p>Les boutons au-dessus du calculateur remplissent les dates courantes. En partant du {labelFr(base)} :</p>
+      <ul>
+        <li>Halloween ({labelFr(halloween)}) : {left(halloween, base)}</li>
+        <li>Noël ({labelFr(xmas)}) : {left(xmas, base)}, soit {durationTextFr(cXmas.seconds)} jusqu’à la fin du 25</li>
+        <li>Fin de l’année ({labelFr(nye)}) : {left(nye, base)}</li>
+        <li>Jour de l’an 2027 ({labelFr(ny)}) : {left(ny, base)}</li>
+      </ul>
+      <p>La page met la date du jour à l’ouverture : les nombres sont toujours comptés à partir du jour de votre visite.</p>
+
+      <h2>Dans combien de jours c’est la rentrée, les vacances ou le bac ?</h2>
+      <p>
+        Les dates de rentrée, de vacances scolaires et d’examens changent d’une année à l’autre : cette page ne les remplit pas.
+        Saisissez comme date cible la date indiquée par votre établissement, et le compte à rebours se met à jour. Pour une
+        épreuve qui commence à une heure précise, cochez « Jusqu’à une heure ».
+      </p>
+
+      <h2>Compte à rebours de jours dans Excel</h2>
+      <p>
+        Excel enregistre les dates comme des nombres : il suffit de soustraire la date du jour à la date cible, par exemple
+        {" "}<code>=A1-AUJOURDHUI()</code> avec la date cible en A1. Si le résultat s’affiche comme une date, passez la cellule
+        au format Nombre. Ajoutez 1 pour compter aujourd’hui comme jour 1.
+      </p>
+
+      <details>
+        <summary>Comment compter seulement les jours ouvrés avant une date ?</summary>
+        <p>
+          Ce compte à rebours compte tous les jours du calendrier, week-ends compris. Pour les jours du lundi au vendredi,
+          saisissez aujourd’hui et la date cible dans le <a href="/fr/tools/date-diff/">calcul du nombre de jours entre deux
+          dates</a> — il ne retire pas les jours fériés, mais la page rappelle la liste des fêtes légales.
+        </p>
+      </details>
+
+      <details>
+        <summary>Que se passe-t-il si la date est déjà passée ?</summary>
+        <p>
+          Le résultat affiche « il y a … jours » et la case devient « Temps écoulé » — pratique pour savoir depuis combien de
+          temps une échéance est dépassée. En partant du {labelFr(base)}, le {labelFr(pastDay)} c’était {left(pastDay, base)}.
+        </p>
+      </details>
+
+      <details>
+        <summary>Et pour un événement dans un autre fuseau horaire ?</summary>
+        <p>
+          Le compte à rebours utilise l’horloge et la date de votre appareil. Pour un concert, une sortie ou un vol fixé dans un
+          autre fuseau horaire, convertissez d’abord l’heure de début dans votre propre fuseau avant de la saisir.
+        </p>
+      </details>
+
+      <AdSlot label="dday-result-fr" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
