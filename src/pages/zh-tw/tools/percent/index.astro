@@ -1,0 +1,187 @@
+---
+/**
+ * 百分比計算機 — 대만 번체판 첫 도구. 한국어판 /tools/percent/ 와 계산(lib/percent.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/percent.ts 의 ZH_HANT 사전 — 대만·홍콩 번체판 공용), 문장은 대만 자동완성으로 새로 썼다(번역 아님).
+ * 산술이라 나라 제도·rates 와 상관없다(조사표 대만 칸 '같음').
+ *
+ * 소제목은 대만 구글 자동완성에서 왔다(keywords/tw-percent-2026-10-20.csv, hl zh-TW · gl tw):
+ *   百分比計算公式·方法 / 成長率計算公式·方式·負數 / 打折計算公式·方式·打折數計算 /
+ *   打折計算機怎麼按·百分比計算機怎麼按 / 百分比公式 excel·試算表 / 升幅 百分比計算
+ * 打折(打八折 = 원가의 80%)은 대만판 본문에서만 설명한다 — 공유 사전에는 넣지 않는다.
+ * 營業稅 같은 대만 세율 숫자는 쓰지 않는다(rates 로 검증한 값이 아니고 이 도구의 계산이 아니다). 통화 기호는 쓰지 않고 숫자만.
+ * title·description 은 같은 번체 판(zh-hk)과 갈리게 台灣 을 넣었다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+
+const title = "百分比計算機（台灣）— 百分比公式、成長率與打折計算";
+const description =
+  "線上算出一個數的百分之幾、從 A 到 B 的成長率或減少率，以及打幾折後的價格。附百分比計算公式、負數成長率與 Excel 公式。";
+---
+
+<html lang="zh-Hant-TW">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>百分比計算機</h1>
+      <p>先選要算什麼，再輸入兩個數字。結果四捨五入到小數點後兩位。</p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">要算什麼？</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>B 佔 A 的百分之幾？</option>
+            <option value="of">A 的 B% 是多少？</option>
+            <option value="change">從 A 到 B 的成長率／減少率</option>
+            <option value="adjust">A 增加或減少 B%</option>
+            <option value="original">變動 B% 之前的原本數字</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">增加還是減少</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>減少（折扣）</option>
+            <option value="up">增加（漲價）</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">全部的數 A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">部分的數 B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B 佔 A 的</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">全部的數 A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">部分的數 B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">存成圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2>百分比計算公式</h2>
+      <p>
+        百分比就是「以 100 為分母」的比例，常見的算法有兩種：
+      </p>
+      <ul>
+        <li><strong>部分 ÷ 全部 × 100</strong> — 250 人裡有 45 人，就是 45 ÷ 250 × 100 = 18%。</li>
+        <li><strong>全部 × 百分比 ÷ 100</strong> — 250 的 18% 是 250 × 18 ÷ 100 = 45。</li>
+      </ul>
+      <p>
+        不用計算機也能估：10% 就是把小數點往左移一位（460 的 10% 是 46），1% 移兩位（4.6），5% 是 10% 的一半（23）。
+        460 的 17% = 10% + 5% + 1% + 1% = 46 + 23 + 4.6 + 4.6 = 78.2。
+      </p>
+
+      <h2>成長率計算公式</h2>
+      <p>
+        成長率 = （後來的數 − 原本的數）÷ 原本的數 × 100%。結果是正的就是成長（升幅），負的就是減少（跌幅）。
+      </p>
+      <ul>
+        <li><strong>40 變成 50</strong> — （50 − 40）÷ 40 × 100 = +25%。</li>
+        <li><strong>50 變成 40</strong> — （40 − 50）÷ 50 × 100 = −20%。</li>
+      </ul>
+      <p>
+        兩次都差 10，百分比卻不一樣，因為成長率永遠是拿「原本的數」來比。在上面選「從 A 到 B 的成長率／減少率」，把原本的數填在 A。
+      </p>
+
+      <h2>成長率計算遇到負數怎麼辦？</h2>
+      <p>
+        原本的數是負的（例如虧損 20 變成獲利 10），直接套公式會得到 30 ÷ (−20) = −150%，明明變好了卻顯示負的。
+        常見的做法是分母取絕對值：（10 − (−20)）÷ |−20| × 100 = +150%。本計算機就是用這個算法。
+        原本的數是 0 時沒有辦法算成長率，只能看變化量。
+      </p>
+
+      <h2>打折計算公式：打八折是幾 %？</h2>
+      <p>
+        「打幾折」說的是要付原價的幾成。打八折 = 付 80%，也就是便宜 20%；打 85 折 = 付 85%，便宜 15%。
+      </p>
+      <ul>
+        <li><strong>折後價 = 原價 × 折數 ÷ 10</strong> — 原價 1,200 打八折：1,200 × 0.8 = 960，省下 240。</li>
+        <li><strong>打幾折 = 售價 ÷ 原價 × 10</strong> — 原價 800 賣 600：600 ÷ 800 = 0.75，等於打七五折（便宜 25%）。</li>
+      </ul>
+      <p>
+        用上面的計算機：選「A 增加或減少 B%」、選「減少（折扣）」，A 填原價，B 填「便宜的 %」——打八折就填 20，不是 80。
+      </p>
+      <p>
+        折上折要相乘，不能相加。打八折再打九折是 0.8 × 0.9 = 0.72，也就是打七二折（便宜 28%），不是便宜 30%。
+      </p>
+
+      <h2>打折計算機怎麼按？</h2>
+      <p>
+        最不會出錯的按法是直接乘小數：1,200 打八折就按 <code>1200 × 0.8 =</code>，得到 960。
+        很多計算機也可以按 <code>1200 × 80 %</code>，但 % 鍵的動作依機型不同，結果不對時改用乘小數的方式。
+      </p>
+
+      <h2>百分比公式 Excel／Google 試算表</h2>
+      <p>A2 放原本的數、B2 放後來的數：</p>
+      <ul>
+        <li>成長率：<code>=(B2-A2)/A2</code>，儲存格格式設成百分比。原本的數可能是負的時候用 <code>=(B2-A2)/ABS(A2)</code>。</li>
+        <li>B2 佔 A2 的百分比：<code>=B2/A2</code>，格式設成百分比。</li>
+        <li>A2 的 B2%（B2 填 18 這種數字）：<code>=A2*B2/100</code>。</li>
+        <li>A2 打 B2 折（B2 填 8 代表八折）：<code>=A2*B2/10</code>。</li>
+      </ul>
+      <p>B2 已經設成百分比格式時，18% 會存成 0.18，公式裡的 <code>/100</code> 要拿掉。</p>
+
+      <details>
+        <summary>先漲 10% 再跌 10%，為什麼回不到原本？</summary>
+        <p>
+          跌的 10% 是從比較大的數算的。200 漲 10% 是 220，220 跌 10% 是 198。要從 220 回到 200 只需要跌 9.09%——
+          可以用「變動 B% 之前的原本數字」驗算。
+        </p>
+      </details>
+
+      <details>
+        <summary>百分比和百分點有什麼不同？</summary>
+        <p>
+          利率從 2% 變成 3%，是上升了 <strong>1 個百分點</strong>，但以利率本身來看是（3 − 2）÷ 2 × 100 =
+          <strong>50%</strong> 的成長。
+        </p>
+      </details>
+
+      <details>
+        <summary>可以輸入逗號或 % 符號嗎？</summary>
+        <p>可以。1,500 和 18% 都能讀。金額前面的貨幣符號請拿掉，只輸入數字。</p>
+      </details>
+
+      <AdSlot label="percent-result-zh-tw" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
