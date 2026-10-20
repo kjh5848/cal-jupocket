@@ -218,13 +218,16 @@ for (const b of document.querySelectorAll<HTMLButtonElement>("[data-preset]")) {
     const base = toDay(baseIn.value) ?? now().day;
     const y = Number(fromDay(base).slice(0, 4));
     const xmas = toDay(`${y}-12-25`)!;
+    const eve = toDay(`${y}-12-24`)!;
     const target = {
       plus100: shift(base, 100, "day"),
       xmas: xmas >= base ? xmas : toDay(`${y + 1}-12-25`)!,
       newyear: toDay(`${y + 1}-01-01`)!,
       // 일본어판만 — 'あと何日で今年終わる'
       yearend: toDay(`${y}-12-31`)!,
-    }[b.dataset.preset as "plus100" | "xmas" | "newyear" | "yearend"];
+      // 독일어판만 — 'Tage bis Weihnachten' 은 24.12.(Heiligabend)까지 센다
+      eve: eve >= base ? eve : toDay(`${y + 1}-12-24`)!,
+    }[b.dataset.preset as "plus100" | "xmas" | "newyear" | "yearend" | "eve"];
     targetIn.value = fromDay(target);
     reportUse(1);
     compute();
