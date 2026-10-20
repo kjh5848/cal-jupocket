@@ -62,4 +62,12 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-gb/vat/",
+    name: "VAT calculator",
+    blurb: "Add or remove UK VAT at 20% or 5% — net, VAT and gross in pounds, using HMRC's VAT fraction and penny rounding",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];

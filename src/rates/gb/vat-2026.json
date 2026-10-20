@@ -1,10 +1,15 @@
 {
   "country": "GB",
-  "draft": true,
-  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(영어판이 열린 뒤). 품목 분류(어느 품목이 5%·0%인지)는 확인하지 않았다.",
-  "verifiedOn": "2026-10-17",
-  "sources": [{ "label": "GOV.UK — VAT rates", "url": "https://www.gov.uk/vat-rates" }],
+  "note": "영국판 /en-gb/vat/ 에서 쓴다(표준 20%·경감 5% 의 net ↔ gross 환산만). 어느 품목이 20%·5%·0% 인지(품목 분류)는 계산하지 않는다 — 페이지는 gov.uk/vat-rates 의 예시 문장과 링크만. 등록 기준액·reverse charge·북아일랜드 규칙은 이 회차에 원문을 읽지 않아 쓰지 않는다. vat-rates 페이지에 개정 예정 문장 없음(2026-10-21).",
+  "verifiedOn": "2026-10-21",
+  "sources": [
+    { "label": "GOV.UK — VAT rates", "url": "https://www.gov.uk/vat-rates" },
+    { "label": "HMRC — VAT guide (VAT Notice 700), Last updated 25 June 2026 — 7.3.1 VAT fractions · 17.5 · 17.5.1 · 17.6 rounding", "url": "https://www.gov.uk/guidance/vat-guide-notice-700" }
+  ],
   "standardRate": 0.2,
+  "standardRateFrom": "2011-01-04 (17.5% 에서 인상 — gov.uk/vat-rates)",
   "reducedRate": 0.05,
-  "zeroRate": 0
+  "zeroRate": 0,
+  "vatFraction": "Notice 700 7.3.1: rate ÷ (100 + rate) — 20% 는 20/120 = 1/6, 5% 는 1/21. 예: £2.40(20% 포함) 의 VAT 는 40p",
+  "rounding": "Notice 700 17.5: invoice traders 는 인보이스 VAT 합계를 whole penny 로 round down 가능(retailers 에는 대개 맞지 않음). 17.5.1: 줄별 VAT 는 0.1p 로 round down 또는 1p·0.5p 로 nearest, 일관되게. 17.6: retail scheme 을 쓰지 않는 retailers 가 줄·인보이스 단위로 계산하면 round down 금지, 각 계산을 올림·내림(반올림)은 가능"
 }
