@@ -1,4 +1,4 @@
-import { parseNumber, formatNumber, ratio, percentOf, change, adjust, original, toWari } from "../lib/percent";
+import { parseNumber, formatNumber, parseNumberDe, formatNumberDe, ratio, percentOf, change, adjust, original, toWari } from "../lib/percent";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pickLang } from "../i18n/ui";
@@ -20,6 +20,7 @@ const bIn = $("b") as HTMLInputElement;
  * 계산은 산술이라 나라와 상관없고, 말만 다르다. 일본어판은 歩合(割·分·厘)을 같이 보인다.
  * 영어 사전(EN)은 영어 다섯 판이 같이 쓰므로 통화 기호 등 한 나라 표기를 넣지 않는다.
  * 번체 사전(ZH_HANT)은 대만판·홍콩판이 같이 쓰므로 한 곳에만 쓰는 말(打折 등)·통화 기호를 넣지 않는다.
+ * 독일어판(/de/tools/percent/)은 숫자 읽기·쓰기도 다르다 — 소수 쉼표(12,5), 천 단위 공백(아래 NUM).
  */
 const KO = {
   labels: {
@@ -164,7 +165,44 @@ const ZH_HANT: typeof KO = {
   share: "百分比計算結果 - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT });
+const DE: typeof KO = {
+  labels: {
+    ratio: { a: "Grundwert A", b: "Prozentwert B", pct: false },
+    of: { a: "Grundwert A", b: "Prozentsatz B", pct: true },
+    change: { a: "Alter Wert A", b: "Neuer Wert B", pct: false },
+    adjust: { a: "Ausgangswert A", b: "Prozentsatz B", pct: true },
+    original: { a: "Wert nach der Änderung A", b: "Prozentsatz der Änderung B", pct: true },
+  },
+  title: "Ergebnis Prozentrechner",
+  nan: "Bitte eine Zahl eingeben",
+  ratioZero: "A darf nicht 0 sein",
+  divZero: "Durch 0 kann man nicht teilen",
+  ratioHero: "B ist so viel Prozent von A",
+  a: "Grundwert A",
+  b: "Prozentwert B",
+  ofHero: (a, b) => `${b}% von ${a}`,
+  whole: "Grundwert A",
+  rate: "Prozentsatz B",
+  changeZero: "Der alte Wert A darf nicht 0 sein",
+  changeZeroHint: "Eine Veränderung ab 0 lässt sich nicht in Prozent angeben",
+  diff: "Differenz",
+  up: "Prozentuale Zunahme",
+  down: "Prozentuale Abnahme",
+  beforeAfter: "Alt → neu",
+  adjHero: (b, up) => (up ? `Nach ${b}% Aufschlag` : `Nach ${b}% Rabatt`),
+  adjAmount: (up) => (up ? "Aufschlag" : "Rabatt (Ersparnis)"),
+  first: "Ausgangswert A",
+  origNone: "Nach 100% Rabatt lässt sich der ursprüngliche Wert nicht bestimmen",
+  origHero: "Ursprünglicher Wert",
+  origAmount: (up) => (up ? "Durch den Aufschlag dazugekommen" : "Abgezogen"),
+  changed: "Wert nach der Änderung A",
+  wari: (_p) => "",
+  share: "Ergebnis Prozentrechner - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE });
+/** 숫자 읽기·쓰기 — 독일어판만 소수 쉼표, 나머지 판은 지금 그대로 */
+const NUM = pickLang({ ko: { parse: parseNumber, fmt: formatNumber }, de: { parse: parseNumberDe, fmt: formatNumberDe } });
 
 let lastTitle = "";
 let lastLines: [string, string][] = [];
@@ -186,9 +224,9 @@ const sign = (x: number) => (x > 0 ? "+" : "");
 function compute() {
   const mode = modeSel.value as Mode;
   const dir = dirSel.value === "up" ? "up" : "down";
-  const a = parseNumber(aIn.value);
-  const b = parseNumber(bIn.value);
-  const f = formatNumber;
+  const a = NUM.parse(aIn.value);
+  const b = NUM.parse(bIn.value);
+  const f = NUM.fmt;
   lastTitle = S.title;
   if (Number.isNaN(a) || Number.isNaN(b)) {
     show(S.nan, "—", "", []);
@@ -230,7 +268,7 @@ modeSel.addEventListener("change", setMode);
 dirSel.addEventListener("change", compute);
 for (const el of [aIn, bIn]) {
   el.addEventListener("input", () => {
-    reportUse(Math.abs(parseNumber(aIn.value)) || 1);
+    reportUse(Math.abs(NUM.parse(aIn.value)) || 1);
     compute();
   });
 }

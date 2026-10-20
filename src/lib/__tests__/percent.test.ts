@@ -1,6 +1,6 @@
 /** 퍼센트 계산기 — 경계값과 반올림(부동소수 오차) 고정. 법 숫자 없음, 손으로 셈한 값. */
 import { describe, it, expect } from "vitest";
-import { round2, parseNumber, formatNumber, ratio, percentOf, change, adjust, original, toWari } from "../percent";
+import { round2, parseNumber, formatNumber, parseNumberDe, formatNumberDe, ratio, percentOf, change, adjust, original, toWari } from "../percent";
 
 describe("round2", () => {
   it("부동소수로 .xx4999… 가 된 반 올림 값을 올린다", () => {
@@ -26,6 +26,43 @@ describe("parseNumber · formatNumber", () => {
     expect(formatNumber(4110.885)).toBe("4,110.89");
     expect(formatNumber(40000)).toBe("40,000");
     expect(formatNumber(33.333333)).toBe("33.33");
+  });
+});
+
+describe("parseNumberDe · formatNumberDe (독일어판 — 소수 쉼표)", () => {
+  it("쉼표는 소수점", () => {
+    expect(parseNumberDe("12,5")).toBe(12.5);
+    expect(parseNumberDe("-3,5")).toBe(-3.5);
+    expect(parseNumberDe("20 %")).toBe(20);
+    expect(parseNumberDe("0,75")).toBe(0.75);
+  });
+  it("천 단위 점·공백은 지운다", () => {
+    expect(parseNumberDe("1.234,5")).toBe(1234.5);
+    expect(parseNumberDe("1.500")).toBe(1500);
+    expect(parseNumberDe("12 348")).toBe(12348);
+    expect(parseNumberDe("12 348,50")).toBe(12348.5);
+  });
+  it("세 자리 묶음이 아닌 점은 소수점", () => {
+    expect(parseNumberDe("12.5")).toBe(12.5);
+    expect(parseNumberDe("1.5")).toBe(1.5);
+  });
+  it("못 읽는 입력은 NaN", () => {
+    expect(Number.isNaN(parseNumberDe("1,2,3"))).toBe(true);
+    expect(Number.isNaN(parseNumberDe("1.23,4"))).toBe(true);
+    expect(Number.isNaN(parseNumberDe(""))).toBe(true);
+    expect(Number.isNaN(parseNumberDe("12a"))).toBe(true);
+  });
+  it("소수 쉼표, 천 단위 공백(줄바꿈 없는 공백), 소수 둘째 자리까지", () => {
+    expect(formatNumberDe(4110.885)).toBe("4 110,89");
+    expect(formatNumberDe(40000)).toBe("40 000");
+    expect(formatNumberDe(33.333333)).toBe("33,33");
+    expect(formatNumberDe(-9.09)).toBe("-9,09");
+    expect(formatNumberDe(25)).toBe("25");
+    expect(formatNumberDe(1234567.5)).toBe("1 234 567,5");
+  });
+  it("한국어판 표기는 그대로", () => {
+    expect(formatNumber(1234567.5)).toBe("1,234,567.5");
+    expect(parseNumber("12,5")).toBe(125);
   });
 });
 

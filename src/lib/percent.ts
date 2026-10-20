@@ -28,6 +28,39 @@ export function formatNumber(x: number): string {
   return round2(x).toLocaleString("ko-KR", { maximumFractionDigits: 2 });
 }
 
+/**
+ * 독일어판(/de/tools/percent/) 입력 읽기 — 소수점은 쉼표(12,5 = 12.5). 독일 법령 원문이 소수에 쉼표를 쓴다
+ * (§ 4 SolzG 1995 "5,5 Prozent", https://www.gesetze-im-internet.de/solzg_1995/__4.html, 확인 2026-10-20).
+ * 쉼표가 있으면 점은 천 단위로만 받는다(1.234,5). 쉼표 없이 1.500 처럼 점 뒤가 정확히 세 자리씩이면 천 단위,
+ * 그 밖의 점(12.5)은 소수점으로 읽는다. 공백·% 는 지운다. 못 읽으면 NaN.
+ */
+export function parseNumberDe(raw: string): number {
+  let t = raw.normalize("NFKC").replace(/[\s%]/g, "");
+  const groups = /^-?\d{1,3}(\.\d{3})+$/;
+  const commas = t.split(",").length - 1;
+  if (commas > 1) return NaN;
+  if (commas === 1) {
+    const [int, frac] = t.split(",");
+    if (int.includes(".") && !groups.test(int)) return NaN;
+    t = `${int.replace(/\./g, "")}.${frac}`;
+  } else if (groups.test(t)) {
+    t = t.replace(/\./g, "");
+  }
+  if (t === "" || t === "-" || t === ".") return NaN;
+  return /^-?\d*\.?\d*$/.test(t) ? Number(t) : NaN;
+}
+
+/**
+ * 독일어판 화면 표기 — 소수 쉼표, 천 단위는 공백(줄바꿈 없는 공백), 소수는 둘째 자리까지(끝 0은 지움).
+ * 독일 법령 원문의 숫자 표기를 따른다(§ 32a EStG "12 348 Euro"·"914,51", https://www.gesetze-im-internet.de/estg/__32a.html, 확인 2026-10-20).
+ */
+export function formatNumberDe(x: number): string {
+  const r = round2(x);
+  const [int, frac] = Math.abs(r).toLocaleString("en-US", { maximumFractionDigits: 2, useGrouping: false }).split(".");
+  const grouped = int.replace(/\B(?=(\d{3})+$)/g, " ");
+  return `${r < 0 ? "-" : ""}${grouped}${frac ? `,${frac}` : ""}`;
+}
+
 /** B 는 A 의 몇 %인가 — B ÷ A × 100. A 가 0이면 null. */
 export function ratio(a: number, b: number): number | null {
   if (a === 0) return null;
