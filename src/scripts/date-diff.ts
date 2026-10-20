@@ -132,7 +132,53 @@ const EN: typeof KO = {
   shareText: "Date calculator result - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN });
+/**
+ * 번체판(/zh-tw/·/zh-hk/ 공용). 날짜는 페이지 lang(zh-Hant-TW·zh-Hant-HK)의 Intl 표기('2026年10月20日週二'), timeZone "UTC" 필수.
+ * 두 판이 같이 쓰므로 한쪽에만 쓰는 말(民國·國定假日 등)은 넣지 않는다. 업무일(공휴일 빼기)·시간 환산은 넣지 않는다.
+ */
+const zhLang = document.documentElement.lang || "zh-Hant-TW";
+const labelZh = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString(zhLang, { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const dayZh = (v: number) => `${n(v, zhLang)}天`;
+const spanTextZh = (s: Span) => {
+  const parts: string[] = [];
+  if (s.years) parts.push(`${n(s.years, zhLang)}年`);
+  if (s.months) parts.push(`${n(s.months, zhLang)}個月`);
+  if (s.restDays || parts.length === 0) parts.push(dayZh(s.restDays));
+  return parts.join("");
+};
+
+const ZH_HANT: typeof KO = {
+  spanTitle: "日期計算結果 — 兩個日期相差幾天",
+  shiftTitle: "日期計算結果 — 幾天後、幾天前",
+  needDates: "請輸入兩個日期",
+  needBase: "請輸入基準日期",
+  needInt: "請輸入 0 以上的整數",
+  swapped: "結束日期早於開始日期，已將兩個日期對調後計算。",
+  spanLabel: (incl: boolean) => (incl ? "兩個日期相差（含頭尾）" : "兩個日期相差"),
+  days: dayZh,
+  spanSub: (s: Span) => `${spanTextZh(s)} · ${n(s.weeks, zhLang)}週${n(s.weekRest, zhLang)}天`,
+  spanChips: (s: Span): [string, string][] => [
+    ["平日（週一到週五）", dayZh(s.weekdays)],
+    ["期間", `${labelZh(s.from)} → ${labelZh(s.to)}`],
+  ],
+  spanNotes: () => [],
+  unitName: (u: Unit) => ({ day: "天", week: "週", month: "個月", year: "年" })[u],
+  shiftWhat: (amount: number, unitName: string, after: boolean) => `${n(amount, zhLang)}${unitName}${after ? "後" : "前"}`,
+  bizOut: "",
+  label: labelZh,
+  todaySub: (target: number, today: number) => {
+    const d = target - today;
+    return d === 0 ? "就是今天" : d > 0 ? `距今天還有${dayZh(d)}` : `${dayZh(-d)}前`;
+  },
+  baseChip: "基準日期",
+  betweenChip: "相差",
+  between: (s: Span) => `${dayZh(s.days)}（${spanTextZh(s)}）`,
+  monthEnd: "如果那個月沒有這一天（31日、2月29日），就取那個月的最後一天。",
+  shareText: "日期計算結果 - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT });
 
 /** 이 기기 기준 오늘(지역 날짜) */
 function todayDay(): number {
