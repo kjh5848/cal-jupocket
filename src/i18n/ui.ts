@@ -369,7 +369,8 @@ const WORDS: Record<Lang, Words> = {
     collected: "Masuk ke saku",
     collectedLink: "Lihat semua alat",
     typeLabel: { tax: "Pajak", labor: "Gaji & kerja", pension: "Pensiun & asuransi", home: "Rumah & mobil", inherit: "Waris & hibah", money: "Uang & keuangan", date: "Tanggal & waktu", media: "Foto & dokumen", text: "Teks & dev", unit: "Satuan", health: "Kesehatan", life: "Sehari-hari" },
-    homeTitle: "jupocket — kalkulator sehari-hari",
+    // 제목에 하이픈 중복어(sehari-hari)를 쓰면 seo.test 의 slug 검사에 걸린다(2026-10-20 인도네시아 회차)
+    homeTitle: "jupocket Indonesia — kalkulator harian",
     homeDescription:
       "Kalkulator persentase, tanggal, dan uang di satu tempat. Alat pajak dan gaji ditambahkan setelah angkanya dicek dengan sumber resmi pemerintah.",
     homeH1: "Mau menghitung apa?",

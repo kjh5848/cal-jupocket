@@ -48,6 +48,7 @@ const one = (html: string, re: RegExp) => html.match(re)?.[1]?.trim() ?? null;
 
 describe.skipIf(!has)("빌드 산출물 SEO 불변식", () => {
   it("모든 페이지에 title 이 있고 slug 가 새어나오지 않는다", () => {
+    const slugs = new Set(pages.flatMap((p) => p.path.split("/").filter((x) => x.includes("-"))));
     const bad: string[] = [];
     for (const p of pages) {
       const t = one(p.html, /<title>(.*?)<\/title>/s);
@@ -56,9 +57,11 @@ describe.skipIf(!has)("빌드 산출물 SEO 불변식", () => {
         continue;
       }
       // slug 는 영소문자와 하이픈뿐이다. 제목에 그 꼴의 낱말이 통째로
-      // 들어 있으면 사람이 쓴 제목이 아니라 식별자가 샌 것이다.
-      const leaked = t.match(/(?:^|\s)([a-z0-9]+(?:-[a-z0-9]+){1,})(?:\s|$)/);
-      if (leaked) bad.push(`${p.path} — slug 누출: ${leaked[1]}`);
+      // 들어 있고 그것이 실제 페이지 주소 조각이면 사람이 쓴 제목이 아니라 식별자가 샌 것이다.
+      // 주소 조각과 대조하는 이유: 영어·인도네시아어 판 제목에는 take-home·year-end·sehari-hari 같은
+      // 하이픈 낱말이 정상으로 들어간다(2026-10-20 나라판 — 인도네시아 홈 제목이 걸렸다).
+      const leaked = [...t.matchAll(/(?:^|\s)([a-z0-9]+(?:-[a-z0-9]+){1,})(?=\s|$)/g)].map((m) => m[1]).find((w) => slugs.has(w));
+      if (leaked) bad.push(`${p.path} — slug 누출: ${leaked}`);
     }
     expect(bad).toEqual([]);
   });
