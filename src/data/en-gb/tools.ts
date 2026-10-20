@@ -44,4 +44,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-gb/tools/unix-time/",
+    ko: "/tools/unix-time/",
+    name: "Unix timestamp converter",
+    blurb: "Epoch time in seconds or 13-digit milliseconds to a UK-format date in UTC or your time zone (GMT/BST), and back",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
