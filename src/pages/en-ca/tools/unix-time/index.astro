@@ -1,0 +1,267 @@
+---
+/**
+ * Unix Timestamp Converter — 캐나다 영어판 다섯 번째 도구(유닉스 타임스탬프 변환). 한국어판 /tools/unix-time/ 와
+ * 계산(lib/unix-time.ts)·스크립트(scripts/unix-time.ts 의 EN 사전 — 날짜 표기는 <html lang="en-CA"> 로 Intl 표기)를
+ * 같이 쓰고, 문장은 캐나다 영어로 새로 썼다(번역 아님). 조사표 캐나다 칸 '같음'(POSIX 4.19). 고친 공유 파일 없음.
+ *
+ * 소제목은 캐나다 구글 자동완성에서 왔다(keywords/ca-unix-time-2026-10-21.csv, hl en · gl ca):
+ *   epoch time converter online·to date / epoch time canada·toronto / unix timestamp now / unix time converter milliseconds /
+ *   epoch time converter to est·pst·cst·utc, unix time converter with timezone / convert epoch time to est in excel,
+ *   unix time converter excel formula / unix time converter python·c / unix timestamp discord / microseconds·nanoseconds
+ * 시간대는 UTC 와 '이 기기 시간대'만 — 캐나다 표준시 오프셋(EST·PST 등 숫자)·서머타임은 허용 출처 원문으로 이번에
+ * 확인하지 않아 오프셋 숫자를 쓰지 않는다. 본문 예시 숫자는 전부 아래 frontmatter 에서 lib 함수로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { INT32_MAX, toParts, enText, isoText, secondsText, dateValue, timeValue } from "../../../../lib/unix-time";
+
+const LANG = "en-CA";
+const title = "Epoch Time Converter Canada — Unix Timestamp to Date, UTC or Local Time";
+const description =
+  "Paste a 10-digit Unix timestamp or 13-digit milliseconds for the date in UTC or your device's time zone (Toronto, Vancouver…), or turn a date into epoch time.";
+
+/** 처음 보이는 예 — 2026-10-19 03:34:56 UTC */
+const BASE_MS = 1_792_380_896_000;
+const p0 = toParts(BASE_MS, 0);
+const BASE_S = secondsText(BASE_MS);
+const zero = enText(toParts(0, 0), LANG);
+const minus1 = enText(toParts(-1000, 0), LANG);
+const y2038 = enText(toParts(INT32_MAX * 1000, 0), LANG);
+const wrap = enText(toParts(-(INT32_MAX + 1) * 1000, 0), LANG);
+---
+
+<html lang="en-CA">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Epoch Time Converter: Unix Timestamp to Date and Back</h1>
+      <p>
+        A log file, a database column or an API response hands you something like 1792380896 and you need to know what moment
+        that is. Enter the number below to see the date and time, or enter a date and time to get the Unix timestamp. Change
+        either side and the other follows right away — in UTC or in whatever time zone your device uses.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="zone">Time zone</label>
+          <select id="zone" data-seg>
+            <option value="utc" selected>UTC</option>
+            <option value="device">Your time zone</option>
+          </select>
+          <p class="hint" id="zone-hint">The date fields and the result use this time zone. The timestamp itself doesn't change.</p>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="ts">Unix timestamp</label>
+          <input type="text" id="ts" inputmode="decimal" autocomplete="off" spellcheck="false" value={BASE_S} placeholder="e.g. 1704067200" />
+          <p class="hint" id="ts-hint">10 digits are read as seconds, 13 digits as milliseconds.</p>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">Unit</label>
+          <select id="unit" data-seg>
+            <option value="auto" selected>Auto</option>
+            <option value="s">Seconds</option>
+            <option value="ms">Milliseconds</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="date">Date</label>
+          <input type="date" id="date" value={dateValue(p0)} min="1900-01-01" max="9999-12-30" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="time">Time (24-hour, hh:mm:ss)</label>
+          <input type="time" id="time" step="1" value={timeValue(p0)} />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="msec">Milliseconds (0–999)</label>
+          <input type="number" id="msec" inputmode="numeric" min="0" max="999" step="1" value="0" />
+        </div>
+
+        <div class="actions">
+          <button id="btn-now" type="button" class="secondary">Now</button>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">UTC</p>
+          <p class="big" id="hero-value">{enText(p0, LANG)}</p>
+          <p class="hint" id="hero-sub"></p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">Seconds (s)</span>
+            <span class="value mono" id="v-sec">{BASE_S}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Milliseconds (ms)</span>
+            <span class="value mono" id="v-ms">{BASE_MS}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601 (UTC)</span>
+            <span class="value mono" id="v-iso">{isoText(BASE_MS, 0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601 (selected time zone)</span>
+            <span class="value mono" id="v-iso-local">{isoText(BASE_MS, 0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">From now</span>
+            <span class="value" id="v-rel">—</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+        <p class="meta" id="now-line">Now: —</p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>What a Unix timestamp counts</h2>
+      <p>
+        Epoch time is a running count of <strong>seconds since 00:00:00 UTC on January 1, 1970</strong>. The POSIX standard
+        (IEEE Std 1003.1) defines it so that every day is exactly 86,400 seconds, with leap seconds ignored. So 0 is {zero} UTC,
+        and −1,000 milliseconds is {minus1} UTC.
+      </p>
+
+      <h2>Unix timestamp now</h2>
+      <p>
+        Below the converter, the "Now" line ticks over every second with the current timestamp in seconds and milliseconds.
+        Press <strong>Now</strong> to drop the current moment into the converter. Both values are read from your device's clock,
+        so if that clock is off, they are too.
+      </p>
+
+      <h2>Seconds or milliseconds?</h2>
+      <ul>
+        <li>
+          <strong>10 digits, like {BASE_S}</strong> — seconds. Every timestamp from September 2001 to November 2286 is 10 digits
+          long.
+        </li>
+        <li>
+          <strong>13 digits, like {BASE_MS}</strong> — milliseconds. That's what JavaScript's <code>Date.now()</code> and Java's
+          {" "}<code>System.currentTimeMillis()</code> give you. Divide by 1,000 to get seconds.
+        </li>
+        <li>
+          <strong>What Auto does</strong> — a value with a decimal point is treated as seconds; a whole number with 11 digits or
+          fewer is seconds, and 12 digits or more is milliseconds. Commas and spaces are skipped. If Auto guesses wrong, set the
+          unit yourself.
+        </li>
+      </ul>
+
+      <h2>Epoch time to EST, PST or another Canadian time zone</h2>
+      <p>
+        A timestamp has no time zone of its own: the same number is the same instant in Halifax, Toronto, Winnipeg, Calgary and
+        Vancouver. What changes is how that instant reads on a local clock. Choose <strong>Your time zone</strong> and the
+        converter uses the zone your phone or computer is set to — Eastern if you're in Toronto, Pacific if you're in Vancouver,
+        and so on — and shows the offset from UTC beside the result. To see another zone, switch your device's time zone and
+        come back. Daylight saving time is applied by your device's own time zone rules, which is why a winter date and a
+        summer date can show different offsets for the same city.
+      </p>
+
+      <h2>Convert epoch time in Excel</h2>
+      <p>
+        Spreadsheets count dates as days, with one day equal to 1. So divide the seconds by 86,400 and add the epoch date. If
+        cell A1 holds a timestamp in seconds:
+      </p>
+      <ul>
+        <li>Date and time in UTC: <code>=A1/86400+DATE(1970,1,1)</code></li>
+        <li>From 13-digit milliseconds: <code>=A1/86400000+DATE(1970,1,1)</code></li>
+        <li>To Eastern, Pacific or any local time: <code>=A1/86400+DATE(1970,1,1)+(offset/24)</code>, where offset is the UTC offset in hours that the converter shows for that date (keep its sign)</li>
+        <li>From a UTC date and time back to a timestamp: <code>=(A1-DATE(1970,1,1))*86400</code></li>
+      </ul>
+      <p>
+        If the cell only shows a long decimal, give it a date and time format such as <code>yyyy-mm-dd hh:mm:ss</code>. The same
+        formulas work in Google Sheets.
+      </p>
+
+      <h2>Unix time in Python, JavaScript, C and SQL</h2>
+      <ul>
+        <li><strong>Python</strong>: <code>datetime.fromtimestamp({BASE_S}, tz=timezone.utc)</code> (with <code>from datetime import datetime, timezone</code>)</li>
+        <li><strong>pandas</strong>: <code>pd.to_datetime({BASE_S}, unit="s")</code>, or <code>unit="ms"</code> for milliseconds</li>
+        <li><strong>JavaScript</strong>: <code>new Date({BASE_S} * 1000)</code> — multiply seconds by 1,000 first</li>
+        <li><strong>C</strong>: <code>time_t t = {BASE_S}; gmtime(&amp;t);</code> for UTC, <code>localtime(&amp;t)</code> for local time</li>
+        <li><strong>MySQL</strong>: <code>SELECT FROM_UNIXTIME({BASE_S});</code></li>
+        <li><strong>PostgreSQL</strong>: <code>SELECT to_timestamp({BASE_S});</code></li>
+        <li><strong>Linux / macOS shell</strong>: <code>date +%s</code> prints the current timestamp; GNU <code>date -d @{BASE_S}</code> turns one into a date</li>
+      </ul>
+      <p>To check any of these, paste the same number into the converter above and compare.</p>
+
+      <h2>Discord timestamps</h2>
+      <p>
+        Write <code>&lt;t:{BASE_S}:F&gt;</code> in a Discord message and each reader sees that moment in their own time zone —
+        useful when a game night includes people in both Montréal and Edmonton. The letter at the end sets the style:
+        {" "}<code>t</code>/<code>T</code> for short and long time, <code>d</code>/<code>D</code> for short and long date,
+        {" "}<code>f</code>/<code>F</code> for date and time, and <code>R</code> for relative ("in 2 hours"). It takes seconds,
+        not milliseconds.
+      </p>
+
+      <h2>Why 2038 matters</h2>
+      <p>
+        A signed 32-bit integer tops out at 2,147,483,647 — as a Unix timestamp, {y2038} UTC. A second later, software that still
+        keeps time in a signed 32-bit number overflows to a negative value and reads it as {wrap} UTC. The converter flags any
+        time beyond that point in a note under the result.
+      </p>
+
+      <details>
+        <summary>Can it handle dates before 1970?</summary>
+        <p>
+          Yes — they come out negative. −1 is one second before the epoch, the last second of December 31, 1969 in UTC. POSIX
+          only spells out the formula from 1970 on, but this converter, like most programming languages, keeps counting backward
+          at 86,400 seconds a day. The range is January 1, 1900 to the year 9999.
+        </p>
+      </details>
+
+      <details>
+        <summary>What about decimals, microseconds and nanoseconds?</summary>
+        <p>
+          A value with a decimal point, such as 1792380896.789, is taken as seconds with up to three decimal places
+          (milliseconds). Microsecond (16-digit) and nanosecond (19-digit) timestamps aren't accepted — divide by 1,000 or
+          1,000,000 to get milliseconds first.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why is my answer a few hours off?</summary>
+        <p>
+          Almost always it's UTC versus local time: the number was read as UTC when you meant Eastern or Pacific time, or the
+          other way around. Flip between <strong>UTC</strong> and <strong>Your time zone</strong> to compare. If the year comes out
+          as 1970 or far in the future, the unit is off by a factor of 1,000 — pick seconds or milliseconds manually.
+        </p>
+      </details>
+
+      <p>
+        Counting days instead of seconds? Try the <a href="/en-ca/tools/date-diff/">days between dates calculator</a>, or the
+        {" "}<a href="/en-ca/tools/dday/">days until countdown</a> for a date that's coming up.
+      </p>
+
+      <p>
+        Source: <a href="https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html" rel="noopener">The Open Group Base Specifications Issue 8 (IEEE Std 1003.1-2024), 4.19 Seconds Since the Epoch</a> (checked October 21, 2026)
+      </p>
+
+      <AdSlot label="unix-time-result-en-ca" />
+    </main>
+    <SiteFooter />
+    <style>
+      .mono { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+      #hero-value { overflow-wrap: anywhere; }
+    </style>
+    <script src="../../../../scripts/unix-time.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
