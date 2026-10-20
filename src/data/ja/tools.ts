@@ -114,4 +114,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/ja/overtime-pay/",
+    name: "残業代（割増賃金）の計算",
+    blurb: "時間外25%・月60時間超50%・法定休日35%・深夜25%の割増率で、1時間あたりの賃金から残業代の割増分を計算",
+    type: "labor",
+    icon: "calculator",
+    basis: "law",
+  },
 ];

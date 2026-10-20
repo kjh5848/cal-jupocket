@@ -1,0 +1,297 @@
+---
+/**
+ * 残業代（割増賃金）の計算 — 일본어판 제도 도구(basis "law"). 한국어판 야근수당과는 비율·심야 시간대·월 60시간 규정이 달라 짝을 맺지 않는다.
+ * 계산은 lib/jp/overtime-pay.ts, 근거는 rates/jp/overtime-2026.json(労働基準法 第32条·第35条·第37条·第41条·第116条,
+ * 割増賃金令 平成六年政令第五号, 労働基準法施行規則 第19条の2·第20条·第21条·第25条の2 — e-Gov API 2026-10-20 확인,
+ * 厚生労働省 리플릿「月60時間を超える時間外労働の割増賃金率が引き上げられます」2022.4).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/jp-overtime-pay-2026-10-20.csv):
+ *   残業代 計算方法·計算式·月給·時給 / 深夜手当 計算 / 休日出勤 割増率 土曜日·日曜日·祝日 / 割増賃金 計算 小数点以下·四捨五入
+ * 端数 처리(通達)·1分単位·代休/振替休日·固定残業代·管理監督者의 深夜 割増는 읽은 원문에 없어 쓰지 않는다.
+ * 1時間あたりの賃金은 /ja/hourly-wage-base/ 에서 구한다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { overtimePay, formatYenFloor } from "../../../lib/jp/overtime-pay";
+import { formatSen, monthlyAverageHours, annualWorkDays } from "../../../lib/jp/hourly-wage-base";
+import "../../../styles/global.css";
+
+const title = "残業代の計算 — 時間外25%・月60時間超50%・休日35%・深夜25%の割増率と計算方法";
+const description =
+  "1時間あたりの賃金と時間外・法定休日・深夜（午後10時〜午前5時）の時間数から残業代の割増分を計算します。月60時間超の50%、深夜と重なるときの50%・75%・60%を労働基準法 第37条と施行規則 第20条にもとづいて説明します。";
+
+const f = formatYenFloor;
+const hourly0 = 2000;
+const first = overtimePay({ hourly: hourly0, overtimeHours: 20, holidayHours: 8, nightHours: 4 });
+const row = (k: string) => first.rows.find((r) => r.key === k)!;
+const ex70 = overtimePay({ hourly: hourly0, overtimeHours: 70, holidayHours: 0, nightHours: 0 });
+const hwHourly = 250000 / monthlyAverageHours(annualWorkDays(365, 120), 8);
+const hwEx = overtimePay({ hourly: hwHourly, overtimeHours: 20, holidayHours: 0, nightHours: 0 });
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>残業代（割増賃金）の計算</h1>
+      <p>
+        1時間あたりの賃金と、1か月の時間外労働・法定休日労働・深夜労働の時間数から、割増賃金の額を計算します。割増率は労働基準法 第37条、
+        政令（平成六年政令第五号）、労働基準法施行規則 第20条（e-Gov 法令検索で令和8年10月20日に確認した現行条文）です。
+        1時間あたりの賃金は<a href="/ja/hourly-wage-base/">1時間あたりの賃金の計算</a>で出せます。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="ot-hourly">1時間あたりの賃金</label>
+          <input type="text" inputmode="decimal" id="ot-hourly" value="2,000" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ot-overtime">時間外労働（1か月の合計・法定休日を除く）</label>
+          <input type="number" id="ot-overtime" inputmode="decimal" min="0" step="0.25" value="20" />
+          <span class="unit">時間</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ot-holiday">法定休日の労働</label>
+          <input type="number" id="ot-holiday" inputmode="decimal" min="0" step="0.25" value="8" />
+          <span class="unit">時間</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ot-night">深夜（午後10時〜午前5時）の労働</label>
+          <input type="number" id="ot-night" inputmode="decimal" min="0" step="0.25" value="4" />
+          <span class="unit">時間</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label">割増賃金（割増分）</p>
+          <p class="big" id="hero-value">{f(first.premium)}</p>
+          <p class="hint" id="ot-total">時間外・休日の時間の通常の賃金 {f(first.baseForExtraHours)} を足すと {f(first.total)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">時間外（60時間まで）× 25%</span>
+            <span class="value" id="out-overtime">{f(row("overtime").premium)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">時間外（60時間を超えた分）× 50%</span>
+            <span class="value" id="out-over60">{f(row("over60").premium)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">法定休日 × 35%</span>
+            <span class="value" id="out-holiday">{f(row("holiday").premium)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">深夜 × 25%</span>
+            <span class="value" id="out-night">{f(row("night").premium)}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>残業代の計算方法と計算式</h2>
+      <p>厚生労働省のリーフレット「割増賃金の基礎となる賃金とは？」（令和6年3月）は、割増賃金を次の式で説明しています。</p>
+      <ul>
+        <li>割増賃金額 ＝ 1時間あたりの賃金 × 時間外労働・休日労働・深夜労働の時間数 × 割増賃金率</li>
+      </ul>
+      <p>この計算機の内訳は次のとおりです。</p>
+      <ul>
+        <li>時間外（60時間まで）＝ 1時間あたりの賃金 × 時間数 × 25%</li>
+        <li>時間外（60時間を超えた分）＝ 1時間あたりの賃金 × 時間数 × 50%</li>
+        <li>法定休日 ＝ 1時間あたりの賃金 × 時間数 × 35%</li>
+        <li>深夜 ＝ 1時間あたりの賃金 × 時間数 × 25%（時間外・休日の時間と重なっていても足す）</li>
+      </ul>
+      <p>
+        いちばん上の数字は割増分の合計です。時間外と法定休日の時間は所定の時間の外なので、その時間の通常の賃金（1時間あたりの賃金 × 時間数）を
+        足した金額もその下に出しています。所定労働時間の中の深夜は、その時間の通常の賃金が月給などにすでに入っているので、深夜の 25% だけを足します。
+      </p>
+      <p>
+        上の初期値（1時間 {f(hourly0)}・時間外 20 時間・法定休日 8 時間・深夜 4 時間）なら、
+        {f(row("overtime").premium)} ＋ {f(row("holiday").premium)} ＋ {f(row("night").premium)} ＝ {f(first.premium)} です。
+      </p>
+
+      <h2>月給の人の残業代</h2>
+      <p>
+        月給制では、まず月給を月平均所定労働時間で割って 1時間あたりの賃金を出します（労働基準法施行規則 第19条）。
+        家族手当・通勤手当・住宅手当など 7 つの賃金は割り算の前に除きます（労働基準法 第37条 第5項・施行規則 第21条）。
+        たとえば基礎となる賃金 {f(250000)}・年間休日 120 日・1 日 8 時間なら 1時間あたり {formatSen(hwHourly)} で、
+        時間外 20 時間の割増分は {f(hwEx.premium)} です。
+      </p>
+      <p>
+        割増が必要なのは、労働基準法 第32条の 1 日 8 時間・1 週 40 時間を超えた時間（法定時間外）です。会社の所定労働時間が 7 時間で 8 時間まで働いた場合の
+        1 時間のように、法定の範囲内の残業は第37条の割増の対象ではありません。なお、施行規則 第25条の2 は、物品の販売・理容（別表第一 第8号）、
+        映画の映写・演劇などの興行（第10号、映画の製作を除く）、保健衛生（第13号）、旅館・飲食店・接客業・娯楽場（第14号）の事業で常時 10 人未満の
+        労働者を使う場合は 1 週 44 時間・1 日 8 時間まで働かせることができると定めています。
+      </p>
+
+      <h2>月60時間を超える時間外労働は50%</h2>
+      <p>
+        労働基準法 第37条 第1項ただし書は、時間外労働が 1 か月 60 時間を超えたら、超えた時間に 5 割以上の割増を払うと定めています。
+        厚生労働省のリーフレットによると、中小企業も 2023 年 4 月 1 日から 50% です（e-Gov の現行の労働基準法にも、以前の中小企業向け猶予の
+        附則 第138条はありません）。1 か月の起算日から時間外労働を累計して 60 時間を超えた時点から 50% になります。
+      </p>
+      <p>
+        たとえば 1時間 {f(hourly0)} で時間外が 70 時間なら、60 時間 × 25% と 10 時間 × 50% で {f(ex70.premium)} です。
+        超えた部分の割増の代わりに有給の休暇（代替休暇）を与える労使協定の仕組みもあります（第37条 第3項・施行規則 第19条の2）。
+        この計算機は代替休暇を計算しません。
+      </p>
+
+      <h2>深夜手当の計算 — 時間外や休日と重なったとき</h2>
+      <p>
+        午後10時から午前5時までの労働には 2 割 5 分以上の割増が必要です（第37条 第4項）。施行規則 第20条は、深夜と重なったときの率を次のように定めています。
+      </p>
+      <table>
+        <thead>
+          <tr><th>働いた時間</th><th>割増率</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>時間外（60時間まで）＋ 深夜</td><td>50%</td></tr>
+          <tr><td>時間外（60時間を超えた分）＋ 深夜</td><td>75%</td></tr>
+          <tr><td>法定休日 ＋ 深夜</td><td>60%</td></tr>
+          <tr><td>所定労働時間内の深夜</td><td>25%</td></tr>
+        </tbody>
+      </table>
+      <p>
+        どれも「時間外 25%・50%」「休日 35%」に深夜の 25% を足した率です。そのためこの計算機は深夜の時間を 1 つの欄で受け取り、
+        時間外・休日の割増に 25% を足しています。深夜の時間がどの区分にあっても、結果は上の表と同じになります。
+      </p>
+
+      <h2>休日出勤の割増率 — 土曜日・日曜日・祝日</h2>
+      <p>
+        35% になるのは<strong>法定休日</strong>の労働です。労働基準法 第35条は、毎週少なくとも 1 回（または 4 週間を通じて 4 日以上）の休日を
+        与えるよう定めています。この休日に働いた時間が法定休日労働で、割増率は政令で 35% です。
+      </p>
+      <p>
+        それ以外の休日（週休 2 日の会社のもう 1 日など）の労働は、1 週 40 時間を超えた分が時間外労働になります。リーフレットは、月 60 時間の計算に
+        法定休日の労働時間は入らず、それ以外の休日の労働時間は入ると説明しています。土曜日・日曜日・祝日のどれが法定休日かは曜日では決まらず、
+        会社の就業規則で確かめる必要があります。
+      </p>
+
+      <h2>小数点以下・端数は四捨五入？</h2>
+      <p>
+        労働基準法 第37条と施行規則 第19条・第20条には、1時間あたりの賃金や割増賃金の円未満の端数をどう処理するかは書かれていません。
+        この計算機は端数処理をせずに計算し、画面では 1 円未満を切り捨てて表示しています。これは表示の設定で、法令の決まりではありません。
+      </p>
+
+      <details>
+        <summary>パートやアルバイトの残業代も同じ計算ですか？</summary>
+        <p>
+          労働基準法 第37条は雇用形態で分けていません。時給制なら、その時給が 1時間あたりの賃金です（施行規則 第19条 第1項 一号）。
+          同居の親族だけを使う事業と家事使用人には労働基準法が適用されません（第116条 第2項）。
+        </p>
+      </details>
+
+      <details>
+        <summary>管理職には残業代がないのですか？</summary>
+        <p>
+          労働基準法 第41条は、監督若しくは管理の地位にある者や機密の事務を取り扱う者などには、労働時間・休憩・休日に関する規定を適用しないと定めています。
+          自分が当たるかどうかはこの計算機では判断しません。最寄りの労働基準監督署・都道府県労働局に確かめてください。
+        </p>
+      </details>
+
+      <details>
+        <summary>会社の割増率が法律より高い場合は？</summary>
+        <p>
+          法律と政令の率は「以上」の最低限度です。就業規則でこれより高い率を決めている場合は、この計算機の結果より多くなります。
+        </p>
+      </details>
+
+      <details>
+        <summary>全角の数字で入力してもいいですか？</summary>
+        <p>はい。「２，０００」のような全角の数字も半角に直して計算します。</p>
+      </details>
+
+      <h2>出典</h2>
+      <ul>
+        <li><a href="https://laws.e-gov.go.jp/law/322AC0000000049" rel="noopener" target="_blank">e-Gov 法令検索 労働基準法 第32条・第35条・第37条・第41条・第116条</a>（令和8年7月17日施行の現行条文、令和8年10月20日確認）</li>
+        <li><a href="https://laws.e-gov.go.jp/law/406CO0000000005" rel="noopener" target="_blank">e-Gov 法令検索 労働基準法第三十七条第一項の時間外及び休日の割増賃金に係る率の最低限度を定める政令</a>（令和8年10月20日確認）</li>
+        <li><a href="https://laws.e-gov.go.jp/law/322M40000100023" rel="noopener" target="_blank">e-Gov 法令検索 労働基準法施行規則 第19条の2・第20条・第21条・第25条の2</a>（令和8年4月1日施行の現行条文、令和8年10月20日確認）</li>
+        <li><a href="https://www.mhlw.go.jp/content/000930914.pdf" rel="noopener" target="_blank">厚生労働省 リーフレット「月60時間を超える時間外労働の割増賃金率が引き上げられます」</a>（2022年4月）</li>
+        <li><a href="https://www.mhlw.go.jp/content/11200000/001159457.pdf" rel="noopener" target="_blank">厚生労働省 リーフレット「割増賃金の基礎となる賃金とは？」</a>（令和6年3月）</li>
+      </ul>
+
+      <AdSlot label="overtime-pay-result-ja" />
+    </main>
+    <SiteFooter />
+    <script>
+      import { overtimePay, formatYenFloor } from "../../../lib/jp/overtime-pay";
+      import { renderCard, downloadCard, shareCard } from "../../../lib/result-card";
+      import { track, trackCalculatorUse } from "../../../lib/track";
+
+      const reportUse = trackCalculatorUse("jp-overtime-pay");
+      const $ = (id: string) => document.getElementById(id)!;
+      const hourlyIn = $("ot-hourly") as HTMLInputElement;
+      const otIn = $("ot-overtime") as HTMLInputElement;
+      const holIn = $("ot-holiday") as HTMLInputElement;
+      const nightIn = $("ot-night") as HTMLInputElement;
+
+      /** 全角の数字・小数点・カンマも半角に直してから読む */
+      const toHalf = (s: string) =>
+        s.replace(/[０-９．，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+      const num = (el: HTMLInputElement) => {
+        const v = Number(toHalf(el.value).replace(/,/g, ""));
+        return Number.isFinite(v) && v > 0 ? v : 0;
+      };
+
+      let lastLines: [string, string][] = [];
+
+      function compute() {
+        const r = overtimePay({ hourly: num(hourlyIn), overtimeHours: num(otIn), holidayHours: num(holIn), nightHours: num(nightIn) });
+        const f = formatYenFloor;
+        const get = (k: string) => r.rows.find((x) => x.key === k)!.premium;
+        $("hero-value").textContent = f(r.premium);
+        $("ot-total").textContent = `時間外・休日の時間の通常の賃金 ${f(r.baseForExtraHours)} を足すと ${f(r.total)}`;
+        $("out-overtime").textContent = f(get("overtime"));
+        $("out-over60").textContent = f(get("over60"));
+        $("out-holiday").textContent = f(get("holiday"));
+        $("out-night").textContent = f(get("night"));
+        lastLines = [
+          ["1時間あたりの賃金", `${num(hourlyIn).toLocaleString("ja-JP")}円`],
+          ["割増賃金（割増分）", f(r.premium)],
+          ["通常の賃金を足すと", f(r.total)],
+        ];
+      }
+
+      for (const el of [otIn, holIn, nightIn]) el.addEventListener("input", compute);
+      hourlyIn.addEventListener("input", () => {
+        const v = num(hourlyIn);
+        reportUse(v);
+        compute();
+      });
+      hourlyIn.addEventListener("blur", () => {
+        const v = num(hourlyIn);
+        hourlyIn.value = v === 0 ? "" : v.toLocaleString("ja-JP", { maximumFractionDigits: 2 });
+      });
+
+      const buildCard = () => renderCard({ title: "残業代（割増賃金）の計算", lines: lastLines, footer: "jupocket.com" });
+      $("btn-download").addEventListener("click", () => {
+        track("save_result", { calculator: "jp-overtime-pay" });
+        downloadCard(buildCard(), "overtime-pay-result.png");
+      });
+      $("btn-share").addEventListener("click", async () => {
+        track("share_result", { calculator: "jp-overtime-pay" });
+        await shareCard(buildCard(), "残業代の計算結果 - jupocket.com");
+      });
+
+      compute();
+    </script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
