@@ -1,0 +1,216 @@
+---
+/**
+ * 秒・分・時間 変換 — 일본어판 초·분·시간 변환(/ja/tools/sec-convert/). 한국어판 /tools/sec-convert/ 와 계산(lib/sec-convert.ts)·
+ * 스크립트(scripts/sec-convert.ts)를 같이 쓰고, 문장은 일본어로 새로 썼다(번역 아님).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/jp-sec-convert-2026-10-20.csv):
+ *   秒 分 変換·計算式 / 分 時間 変換·表 / 何時間何分何秒 計算(10000秒·1日) / ミリ秒 変換 /
+ *   エクセル 関数·24時間以上 / 1年 何時間何分何秒(→ 주·월·년은 안 넣는 이유)
+ * 단위 값: 計量法 別表第一(時間 = 秒·分·時)·計量単位令 別表第一(分 = 秒の六十倍, 時 = 秒の三千六百倍) e-Gov API 원문
+ * 2026-10-20 확인. 日 은 計量法 計量単位에 없어 SI 브로슈어 표 8(1 d = 86 400 s, rates/sec-convert-2026.json)을 근거로 쓴다.
+ * 度·分·秒(角度·緯度経度) 축은 각도 단위라 이 도구가 하지 않는 계산이고, 何時間何分何秒 記号(″′ 등) 축은 원문이 없어 쓰지 않았다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toNanos, partsToNanos, convertAll, readableJa, clock, UNITS, UNIT_NAME_JA } from "../../../../lib/sec-convert";
+
+const title = "秒・分・時間 変換 — 秒を分に、分を時間に、何時間何分何秒かを計算";
+const description =
+  "秒・分・時間・日・ミリ秒をまとめて変換します。3725秒は何分か（62.083333分）、何時間何分何秒か（1時間2分5秒）が同時にわかり、時間・分・秒を入れると合計何秒かも計算できます。";
+
+const EX = "3725";
+const n0 = toNanos(EX, "s")!;
+const all0 = convertAll(n0);
+const p0 = partsToNanos("", "1", "30", "")!;
+const pAll0 = convertAll(p0);
+
+/** 本文の例 — 10000秒、1日、100分、1.5分 */
+const T1 = toNanos("10000", "s")!;
+const D1 = convertAll(toNanos("1", "d")!);
+const M100 = toNanos("100", "min")!;
+const M15 = convertAll(toNanos("1.5", "min")!);
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>秒・分・時間 変換</h1>
+      <p>
+        数字と単位を選ぶと、ミリ秒・秒・分・時間・日にまとめて変換し、何日何時間何分何秒かも表示します。1分 = 60秒、1時間 = 3,600秒、1日 = 86,400秒で計算します。入力するとすぐに結果が変わります。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="val">数値</label>
+          <input type="text" id="val" inputmode="decimal" autocomplete="off" value={EX} placeholder="例：3725" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">単位</label>
+          <select id="unit" data-seg>
+            {UNITS.map((u) => <option value={u} selected={u === "s"}>{UNIT_NAME_JA[u]}</option>)}
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">3,725秒は</p>
+          <p class="big" id="hero-value">{readableJa(n0)}</p>
+          <p class="hint" id="hero-sub">{all0.min}分 ・ 時:分:秒 {clock(n0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          {UNITS.map((u) => (
+            <div class="stat-chip">
+              <span class="label">{UNIT_NAME_JA[u]}</span>
+              <span class="value" id={`v-${u}`}>{all0[u]}</span>
+            </div>
+          ))}
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2 id="parts">日・時間・分・秒 → 合計何秒</h2>
+      <div class="calc-card" data-two>
+        <div class="sc-parts">
+          <div class="calc-input-wrap">
+            <label for="p-d">日</label>
+            <input type="text" id="p-d" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-h">時間</label>
+            <input type="text" id="p-h" inputmode="decimal" autocomplete="off" value="1" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-m">分</label>
+            <input type="text" id="p-m" inputmode="decimal" autocomplete="off" value="30" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-s">秒</label>
+            <input type="text" id="p-s" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+        </div>
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">合計</p>
+          <p class="big" id="p-value">{pAll0.s}秒</p>
+          <p class="hint" id="p-sub">{pAll0.min}分 ・ {pAll0.h}時間 ・ {readableJa(p0)}</p>
+        </div>
+        <p class="hint" id="p-err" role="alert"></p>
+      </div>
+
+      <h2>秒を分に変換する計算式</h2>
+      <p>
+        秒 ÷ 60 = 分です。3,725秒 ÷ 60 = {all0.min}分。分を秒にするときは逆に60を掛けます（{M15.min}分 × 60 = {M15.s}秒）。
+        小数の分は「分の半分」などの意味なので、1.5分は1分50秒ではなく<strong>1分30秒</strong>です。小数部分に60を掛けると秒になります（0.25分 = 15秒、0.1分 = 6秒）。
+      </p>
+
+      <h2>分を時間に変換する（分 時間 変換 表）</h2>
+      <p>分 ÷ 60 = 時間、時間 ÷ 24 = 日です。よく使う値をまとめると次のとおりです。</p>
+      <table>
+        <thead>
+          <tr><th>分</th><th>時間</th><th>時間と分</th></tr>
+        </thead>
+        <tbody>
+          {["15", "30", "45", "90", "100", "120", "150", "180", "480", "1440"].map((m) => {
+            const n = toNanos(m, "min")!;
+            return (
+              <tr>
+                <td>{Number(m).toLocaleString("ja-JP")}分</td>
+                <td>{convertAll(n).h}時間</td>
+                <td>{readableJa(n)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <p>時間の小数は小数第7位で四捨五入して6桁まで表示します（100分 = {convertAll(M100).h}時間）。</p>
+
+      <h2>何時間何分何秒かを計算する方法</h2>
+      <p>大きい単位から順に割って、商とあまりを出します。10,000秒なら次のとおりです。</p>
+      <ol>
+        <li>10,000 ÷ 3,600 = 2 あまり 2,800 → 2時間</li>
+        <li>2,800 ÷ 60 = 46 あまり 40 → 46分</li>
+        <li>残りの40秒 → <strong>{readableJa(T1)}</strong>（時:分:秒 {clock(T1)}）</li>
+      </ol>
+      <p>
+        1日は24時間 = {D1.min}分 = {D1.s}秒です。時:分:秒の表示は、1日を超えても時間をそのまま増やして書きます（1,440.25分 = 24:00:15）。
+      </p>
+
+      <h2>ミリ秒の変換</h2>
+      <p>
+        ミリ秒 ÷ 1,000 = 秒、ミリ秒 ÷ 60,000 = 分です。プログラムのタイマーやログの数値（例：90,000ミリ秒 = 90秒 = 1分30秒）を直すときは、単位で「ミリ秒」を選んでください。結果は小数第6位まで表示するので、1ミリ秒は0.001秒、分にすると0.000017分（四捨五入）になります。
+      </p>
+
+      <h2>エクセルで秒・分・時間を変換する関数</h2>
+      <ul>
+        <li><strong>秒 → 分</strong>：<code>=A1/60</code>、<strong>秒 → 時間</strong>：<code>=A1/3600</code>（A1に秒）</li>
+        <li><strong>分 → 時間</strong>：<code>=A1/60</code>、<strong>時間 → 分</strong>：<code>=A1*60</code></li>
+        <li><strong>何時間何分何秒で表示</strong>：<code>=A1/86400</code> を入れて、表示形式（ユーザー定義）を <code>[h]:mm:ss</code> にします。エクセルの時刻は1日 = 1 の数だからです。</li>
+        <li><strong>24時間以上</strong>：<code>h:mm:ss</code> のままだと24時間を超えた分が日付に繰り上がって見えなくなるので、<code>[h]</code> と角かっこで囲みます。</li>
+      </ul>
+
+      <details>
+        <summary>1年は何時間何分何秒ですか？週・月・年に変換できますか？</summary>
+        <p>
+          この変換機は週・月・年を入れていません。1か月は28〜31日、1年は365日か366日（うるう年）で長さが変わり、1つの数字に決められないからです。カレンダーで数える期間は<a href="/ja/tools/date-diff/">日数計算・日付計算</a>で計算できます。
+        </p>
+      </details>
+
+      <details>
+        <summary>1分 = 60秒、1時間 = 3,600秒はどこで決まっていますか？</summary>
+        <p>
+          計量法の別表第一で時間の計量単位は秒・分・時とされ、計量単位令の別表第一で分は「秒の六十倍」、時は「秒の三千六百倍」と定義されています。日は計量法の計量単位には入っていませんが、国際単位系（SI）の文書では 1日 = 24時間 = 86,400秒とされています。
+        </p>
+      </details>
+
+      <details>
+        <summary>1日が86,401秒になる日もありますか？</summary>
+        <p>
+          協定世界時（UTC）にうるう秒が入る日は、その1日が1秒長くなります。ただし時間の長さを変換するときの「1日 = 86,400秒」は決まった値なので、この変換機はいつも86,400秒で計算します。
+        </p>
+      </details>
+
+      <details>
+        <summary>角度の度・分・秒（緯度経度）も変換できますか？</summary>
+        <p>
+          できません。角度の分・秒（1度 = 60分 = 3,600秒）は名前が同じでも時間ではない別の単位です。この変換機は時間の長さだけを扱います。
+        </p>
+      </details>
+
+      <p>
+        何時間後は何時か・2つの時刻の間の経過時間は<a href="/ja/tools/time-calc/">時間計算</a>、秒の数字（エポック秒）を日時に直すのは<a href="/ja/tools/unix-time/">UNIX時間 変換</a>で計算できます。
+      </p>
+
+      <p>
+        出典：<a href="https://laws.e-gov.go.jp/law/404AC0000000051" rel="noopener">計量法（平成四年法律第五十一号）別表第一 — e-Gov法令検索</a>、<a href="https://laws.e-gov.go.jp/law/404CO0000000357" rel="noopener">計量単位令（平成四年政令第三百五十七号）別表第一 — e-Gov法令検索</a>、<a href="https://www.bipm.org/en/publications/si-brochure" rel="noopener">BIPM SI Brochure（Table 8）</a>（いずれも2026年10月20日確認）
+      </p>
+
+      <AdSlot label="sec-convert-result-ja" />
+    </main>
+    <SiteFooter />
+    <style>
+      .sc-parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 10px; }
+      @media (max-width: 560px) { .sc-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+    <script src="../../../../scripts/sec-convert.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
