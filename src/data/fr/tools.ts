@@ -53,4 +53,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/fr/tools/sec-convert/",
+    ko: "/tools/sec-convert/",
+    name: "Convertir secondes, minutes et heures",
+    blurb: "Secondes, minutes, heures, jours ou millisecondes d’un coup, heures décimales (centièmes) et h:mm:ss",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

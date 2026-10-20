@@ -1,0 +1,344 @@
+---
+/**
+ * Convertir secondes en minutes et heures — 프랑스어판 여섯 번째 도구(초·분·시간 변환). 한국어판 /tools/sec-convert/ 와
+ * 계산(lib/sec-convert.ts)·스크립트(scripts/sec-convert.ts 의 FR 사전)를 같이 쓰고, 프랑스어 입력 읽기·표기는 lib/fr/sec-convert.ts.
+ * 문장은 프랑스어로 새로 썼다(번역 아님). 조사표 프랑스 칸 '같음'(#91, SI 브로슈어 표 8).
+ *
+ * 소제목은 프랑스 구글 자동완성에서 왔다(keywords/fr-sec-convert-2026-10-21.csv, hl fr · gl fr):
+ *   convertir secondes en minutes·en heures minutes secondes / convertir minutes en heures·calcul·décimales·centièmes /
+ *   heures décimales (conversion·en minutes·en heure·tableau·excel) / 86400 secondes en heures·secondes en 24 heures /
+ *   convertir millisecondes en secondes·en heure minutes secondes·microsecondes / … excel
+ * 단위 값은 SI 브로슈어 표 8 뿐 — 프랑스 법 숫자 없음. 근무시간·초과근무·휴게 규칙은 허용 출처 원문을 열지 않아 쓰지 않는다.
+ * 숫자 표기는 fr-FR(천 단위 좁은 공백·소수 쉼표), 입력은 쉼표·점 둘 다 소수점으로 읽는다. 예시 숫자는 lib 함수로 계산.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toNanos, partsToNanos, convertAll, minSec, UNITS } from "../../../../lib/sec-convert";
+import {
+  UNIT_NAME_FR,
+  withUnitFr,
+  readableFr,
+  clockFr,
+  digitsFr as D,
+  partsSubFr,
+} from "../../../../lib/fr/sec-convert";
+
+const title = "Convertir secondes en minutes et heures — heures décimales et millisecondes";
+const description =
+  "Convertissez secondes, minutes, heures, jours ou millisecondes d’un coup, passez les minutes en heures décimales (centièmes) et copiez la formule Excel.";
+
+const EX = "5400";
+const n0 = toNanos(EX, "s")!;
+const all0 = convertAll(n0);
+const p0 = partsToNanos("", "2", "15", "")!;
+const pAll0 = convertAll(p0);
+
+/** 본문 예시 — 1 h·1,5 h, 270 s, 135 min, 8 h 30 → 17 h avec 1 h de pause, 100 000 s, 86 400 s, 90 000 ms */
+const H1 = convertAll(toNanos("1", "h")!);
+const H15 = convertAll(toNanos("1.5", "h")!);
+const S270 = toNanos("270", "s")!;
+const S270all = convertAll(S270);
+const M135 = toNanos("135", "min")!;
+const M135all = convertAll(M135);
+const SHIFT_MIN = String(17 * 60 - (8 * 60 + 30) - 60);
+const SHIFT = toNanos(SHIFT_MIN, "min")!;
+const SHIFTall = convertAll(SHIFT);
+const H775 = toNanos("7.75", "h")!;
+const D1 = convertAll(toNanos("1", "d")!);
+const S100k = toNanos("100000", "s")!;
+const S100kAll = convertAll(S100k);
+const MS90 = toNanos("90000", "ms")!;
+const MS90all = convertAll(MS90);
+const MS1 = convertAll(toNanos("1", "ms")!);
+---
+
+<html lang="fr-FR">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Convertir des secondes en minutes et en heures — et en jours, millisecondes, heures décimales</h1>
+      <p>
+        Tapez un nombre et choisissez son unité : le résultat s’affiche aussitôt en millisecondes, secondes, minutes, heures et
+        jours, avec la forme « X heures Y minutes Z secondes » et l’affichage h:mm:ss. Les rapports sont fixes : 1 minute =
+        60 secondes, 1 heure = {D(H1.s)} secondes, 1 jour = {D(D1.s)} secondes. Vous pouvez écrire 1,5 ou 1.5.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="val">Valeur</label>
+          <input type="text" id="val" inputmode="decimal" autocomplete="off" value={EX} placeholder="ex. 5400" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">Unité</label>
+          <select id="unit" data-seg>
+            {UNITS.map((u) => <option value={u} selected={u === "s"}>{UNIT_NAME_FR[u]}</option>)}
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{withUnitFr(all0.s, "s")} =</p>
+          <p class="big" id="hero-value">{readableFr(n0)}</p>
+          <p class="hint" id="hero-sub">{withUnitFr(all0.min, "min")} · h:mm:ss {clockFr(n0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          {UNITS.map((u) => (
+            <div class="stat-chip">
+              <span class="label">{UNIT_NAME_FR[u]}</span>
+              <span class="value" id={`v-${u}`}>{D(all0[u])}</span>
+            </div>
+          ))}
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Enregistrer en PNG</button>
+          <button id="btn-share" type="button" class="secondary">Partager</button>
+        </div>
+      </div>
+
+      <h2 id="parts">Heures, minutes et secondes → total en secondes, minutes et heures décimales</h2>
+      <p>
+        La durée est déjà découpée — une réunion, un trajet, une vidéo ? Remplissez seulement les cases utiles et laissez les
+        autres vides.
+      </p>
+      <div class="calc-card" data-two>
+        <div class="sc-parts">
+          <div class="calc-input-wrap">
+            <label for="p-d">Jours</label>
+            <input type="text" id="p-d" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-h">Heures</label>
+            <input type="text" id="p-h" inputmode="decimal" autocomplete="off" value="2" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-m">Minutes</label>
+            <input type="text" id="p-m" inputmode="decimal" autocomplete="off" value="15" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-s">Secondes</label>
+            <input type="text" id="p-s" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+        </div>
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">Total</p>
+          <p class="big" id="p-value">{withUnitFr(pAll0.s, "s")}</p>
+          <p class="hint" id="p-sub">{partsSubFr(pAll0.min, minSec(p0), pAll0.h, readableFr(p0))}</p>
+        </div>
+        <p class="hint" id="p-err" role="alert"></p>
+      </div>
+
+      <h2>Combien de secondes dans une heure ?</h2>
+      <p>
+        1 heure = 60 minutes et 1 minute = 60 secondes, donc 1 heure = 60 × 60 = <strong>{D(H1.s)} secondes</strong>. Une heure
+        et demie (tapez 1,5 avec l’unité Heures) = {D(H15.s)} secondes, soit {D(H15.min)} minutes. Une demi-heure = 1{" "}800
+        secondes, un quart d’heure = 900 secondes.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Heures</th><th>Minutes</th><th>Secondes</th></tr>
+        </thead>
+        <tbody>
+          {["0.25", "0.5", "1", "1.5", "2", "3", "8", "24"].map((h) => {
+            const a = convertAll(toNanos(h, "h")!);
+            return (
+              <tr>
+                <td>{D(h)}</td>
+                <td>{D(a.min)}</td>
+                <td>{D(a.s)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h2>Convertir des secondes en minutes : diviser ou multiplier ?</h2>
+      <p>
+        D’une petite unité vers une grande, on <strong>divise</strong> ; d’une grande vers une petite, on
+        <strong>multiplie</strong>.
+      </p>
+      <ul>
+        <li>Secondes en minutes : ÷ 60 · minutes en secondes : × 60</li>
+        <li>Secondes en heures : ÷ {D(H1.s)} · heures en secondes : × {D(H1.s)}</li>
+        <li>Minutes en heures : ÷ 60 · heures en minutes : × 60</li>
+      </ul>
+      <p>
+        Exemple : 270 secondes ÷ 60 = {D(S270all.min)} minutes, c’est-à-dire {readableFr(S270)}. Attention : {D(S270all.min)}
+        minutes, ce n’est <strong>pas</strong> 4 minutes 50 secondes — les chiffres après la virgule sont une fraction de minute.
+        On les multiplie par 60 pour retrouver les secondes : 0,5 × 60 = 30.
+      </p>
+
+      <h2>Secondes en heures, minutes, secondes</h2>
+      <p>On part de la plus grande unité et on garde le reste à chaque étape. Pour 100{" "}000 secondes :</p>
+      <ol>
+        <li>100{" "}000 ÷ {D(D1.s)} = 1 jour, reste 13{" "}600</li>
+        <li>13{" "}600 ÷ {D(H1.s)} = 3 heures, reste 2{" "}800</li>
+        <li>2{" "}800 ÷ 60 = 46 minutes, reste 40</li>
+        <li>Donc 100{" "}000 secondes = <strong>{readableFr(S100k)}</strong>, soit {withUnitFr(S100kAll.h, "h")}</li>
+      </ol>
+      <p>
+        Une journée de 24 heures compte {D(D1.min)} minutes et {D(D1.s)} secondes. L’affichage h:mm:ss continue après 24 heures :
+        100{" "}000 secondes s’affichent {clockFr(S100k)}.
+      </p>
+
+      <h2>Convertir des minutes en heures : le calcul</h2>
+      <p>
+        Heures = minutes ÷ 60. Une réunion de {D(M135all.min)} minutes = {D(M135all.h)} heures, soit {readableFr(M135)}. Pour
+        l’écrire en heures et minutes, on garde la partie entière de la division comme heures (135 ÷ 60 = 2) et le reste comme
+        minutes (135 − 120 = 15).
+      </p>
+
+      <h2>Heures décimales (centièmes) : tableau de conversion</h2>
+      <p>
+        Beaucoup de relevés d’heures et de logiciels de pointage demandent des heures décimales — on parle aussi d’heures en
+        centièmes : 7,5 et non 7 h 30. Exemple sur une journée :
+      </p>
+      <ol>
+        <li>Arrivée 8 h 30, départ 17 h — 8 heures 30 minutes sur place</li>
+        <li>Moins 1 heure de pause → {SHIFT_MIN} minutes</li>
+        <li>{SHIFT_MIN} ÷ 60 = <strong>{D(SHIFTall.h)} heures</strong></li>
+      </ol>
+      <table>
+        <thead>
+          <tr><th>Minutes</th><th>Heures décimales</th><th>Heures et minutes</th></tr>
+        </thead>
+        <tbody>
+          {["6", "10", "12", "15", "20", "30", "40", "45", "50", "90"].map((m) => {
+            const n = toNanos(m, "min")!;
+            return (
+              <tr>
+                <td>{m}</td>
+                <td>{D(convertAll(n).h)}</td>
+                <td>{readableFr(n)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <p>
+        Heures décimales en heures et minutes : on garde la partie entière, puis on multiplie le reste par 60. 7,75 heures =
+        7 heures + 0,75 × 60 = {readableFr(H775)}. Choisissez « Heures » plus haut et tapez 7,75 pour vérifier. Ce convertisseur
+        ne fait que changer d’unité : il n’arrondit pas les pointages et ne calcule ni heures supplémentaires ni temps de pause —
+        ces règles dépendent de votre contrat, de votre convention collective et du droit du travail.
+      </p>
+
+      <h2>Convertir des millisecondes en secondes</h2>
+      <p>
+        Millisecondes ÷ 1{" "}000 = secondes, ÷ 60{" "}000 = minutes, ÷ 3{" "}600{" "}000 = heures. Un chrono
+        de 90{" "}000 millisecondes = {D(MS90all.s)} secondes = {D(MS90all.min)} minutes, soit {readableFr(MS90)}. Les
+        résultats gardent six chiffres après la virgule : 1 milliseconde s’affiche {D(MS1.s)} seconde et s’arrondit à
+        {" "}{D(MS1.min)} minute. Pour des microsecondes, divisez d’abord par 1{" "}000 pour obtenir des millisecondes.
+      </p>
+
+      <h2>Formules Excel et Google Sheets</h2>
+      <ul>
+        <li><strong>Secondes en minutes</strong> : <code>=A1/60</code> · <strong>secondes en heures</strong> : <code>=A1/3600</code></li>
+        <li><strong>Minutes en heures décimales</strong> : <code>=A1/60</code> · <strong>heures en minutes</strong> : <code>=A1*60</code></li>
+        <li><strong>Millisecondes en secondes</strong> : <code>=A1/1000</code></li>
+        <li>
+          <strong>Secondes affichées en heures:minutes:secondes</strong> : <code>=A1/86400</code> puis un format de cellule
+          personnalisé <code>[h]:mm:ss</code> — le tableur range les durées en fractions de jour, d’où la division par 86400.
+        </li>
+        <li>
+          <strong>Arrivée–départ en heures décimales</strong> : arrivée en B1, départ en C1, <code>=(C1-B1)*24</code> donne des
+          heures décimales ; pour retirer une pause d’une heure, <code>=(C1-B1)*24-1</code>. Mettez le résultat au format Nombre.
+        </li>
+        <li>
+          Dans une version française, les fonctions à plusieurs arguments séparent ceux-ci par un point-virgule
+          (<code>;</code>) et les décimales s’écrivent avec une virgule.
+        </li>
+      </ul>
+
+      <h2>Python, JavaScript et SQL</h2>
+      <pre><code>{`# Python
+heures, reste = divmod(secondes, 3600)
+minutes, sec = divmod(reste, 60)
+
+// JavaScript
+const heures = Math.floor(secondes / 3600);
+const minutes = Math.floor((secondes % 3600) / 60);
+const sec = secondes % 60;
+
+-- MySQL (h:mm:ss)
+SELECT SEC_TO_TIME(5400);
+
+-- PostgreSQL (intervalle 01:30:00)
+SELECT 5400 * INTERVAL '1 second';`}</code></pre>
+      <p>
+        Vous partez de millisecondes ? Divisez d’abord par 1000. En virgule flottante, 1.1 × 60 peut donner 66.00000000000001 ;
+        ce convertisseur calcule en nanosecondes entières, ce genre de reste n’apparaît donc pas.
+      </p>
+
+      <details>
+        <summary>Pourquoi pas de semaines, de mois ou d’années ?</summary>
+        <p>
+          Une semaine fait toujours 7 jours, mais un mois compte de 28 à 31 jours et une année 365 ou 366 : le nombre de
+          secondes n’est pas fixe. Pour l’écart entre deux dates, utilisez le
+          <a href="/fr/tools/date-diff/">calcul du nombre de jours entre deux dates</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>D’où viennent 60 et 3 600 ?</summary>
+        <p>
+          Le Bureau international des poids et mesures (BIPM) range la minute, l’heure et le jour dans le tableau 8 de la
+          brochure sur le SI, parmi les unités en dehors du SI dont l’usage est accepté avec le SI : 1 min = 60 s,
+          1 h = 60 min = 3600 s, 1 d = 24 h = 86 400 s.
+        </p>
+      </details>
+
+      <details>
+        <summary>Virgule ou point pour les décimales ?</summary>
+        <p>
+          Les deux : 1,5 et 1.5 donnent le même résultat. Les espaces sont ignorés, vous pouvez donc écrire 86 400. En revanche,
+          un nombre qui mélange point et virgule (1.234,5) est refusé, tout comme les nombres négatifs — une durée ne peut pas
+          être inférieure à zéro.
+        </p>
+      </details>
+
+      <details>
+        <summary>Et les degrés, minutes et secondes d’angle ?</summary>
+        <p>
+          Ce n’est pas la même chose : les degrés, minutes et secondes des coordonnées GPS (1° = 60′ = 3600″) portent les mêmes
+          noms mais mesurent un angle, pas une durée.
+        </p>
+      </details>
+
+      <p>
+        Vous avez un timestamp ? Essayez le <a href="/fr/tools/unix-time/">convertisseur timestamp Unix</a>, ou le
+        <a href="/fr/tools/dday/">compte à rebours</a> pour une date à venir.
+      </p>
+
+      <p>
+        Source : <a href="https://www.bipm.org/en/publications/si-brochure" rel="noopener">BIPM, Le Système international d’unités
+        (brochure sur le SI), tableau 8 : unités en dehors du SI dont l’usage est accepté avec le SI</a> (consulté le 21 octobre
+        2026)
+      </p>
+
+      <AdSlot label="sec-convert-result-fr" />
+    </main>
+    <SiteFooter />
+    <style>
+      .sc-parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 10px; }
+      @media (max-width: 560px) { .sc-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      pre { overflow-x: auto; }
+    </style>
+    <script src="../../../../scripts/sec-convert.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
