@@ -5,6 +5,7 @@
  * 통화는 페이지 판의 currency·numberLocale(src/i18n/locales.ts)로 정한다 — 1 단위 반올림.
  * 인도네시아어판(/id/tools/compound/)은 ID 사전 — 통화는 같은 판 formatter(IDR, id-ID). 입력칸 천 단위 표기도
  * 판의 numberLocale 로 쓴다(ko·ja·en 은 쉼표 그대로, id 는 점 — 결과 'Rp 10.000.000' 과 맞춤).
+ * 프랑스어판(/fr/tools/compound/)은 FR 사전 — EUR·fr-FR('10 000 €'), 입력칸 금액은 쉼표 앞까지만 읽는다(readAmount).
  */
 import { compound, type Timing } from "../lib/compound";
 import { formatWon, formatYen, parseAmount } from "../lib/money";
@@ -120,9 +121,30 @@ const ZH_HANT: typeof KO = {
   share: "複利計算結果 - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT });
+/** Français — /fr/tools/compound/. 통화는 같은 판 formatter(EUR, fr-FR — '10 000 €') */
+const FR: typeof KO = {
+  money: enMoney,
+  spell: (y, r) => [y ? `${y} an${y > 1 ? "s" : ""}` : "", r ? `${r} mois` : ""].filter(Boolean).join(" et ") || "0 mois",
+  note: (months, monthlyRate, start) => `${months} mois · ${monthlyRate.replace(".", ",")} % par mois · versement en ${start ? "début" : "fin"} de mois`,
+  noTax: enMoney(0),
+  goalNone: "Aucun objectif",
+  goalNever: "Non atteint sur la durée",
+  goalAtStart: "Atteint dès le départ",
+  goalAt: (s) => `Au bout de ${s}`,
+  yearRow: (year, rest) => (rest === 0 ? `Année ${year}` : `Année ${year} (${rest} mois)`),
+  after: (s) => `Capital au bout de ${s}`,
+  paid: "Total versé",
+  gain: "Intérêts gagnés",
+  afterTax: "Après impôt",
+  title: "Résultat du calcul d’intérêts composés",
+  share: "Résultat du calcul d’intérêts composés - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT, fr: FR });
 /** 입력칸 천 단위 표기 — 판의 numberLocale(ko-KR·ja-JP·en-* 는 쉼표, id-ID 는 점). parseAmount 는 숫자만 읽어 어느 쪽이든 같다. */
 const formatInput = (v: number) => v.toLocaleString(EN_MONEY.numberLocale);
+/** 입력칸 금액 읽기 — 정수 단위. fr 은 쉼표가 소수점이라 붙여 넣은 "1 500,50" 을 150050 이 아니라 1500 으로(쉼표 뒤 버림). 다른 판은 parseAmount 그대로. */
+const readAmount = pickLang<(raw: string) => number>({ ko: parseAmount, fr: (raw) => parseAmount(raw.split(",")[0]) });
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const num = (el: HTMLInputElement, lo: number, hi: number) => clamp(Number(el.value) || 0, lo, hi);
@@ -137,10 +159,10 @@ function render() {
   const months = Math.min(n, 1200);
   const ratePct = num(rate, -50, 100);
   const t = timing.value as Timing;
-  const G = parseAmount(goal.value);
+  const G = readAmount(goal.value);
   const x = compound({
-    principal: parseAmount(principal.value),
-    monthly: parseAmount(monthly.value),
+    principal: readAmount(principal.value),
+    monthly: readAmount(monthly.value),
     ratePct,
     months,
     timing: t,
@@ -182,12 +204,12 @@ function render() {
 
 function onUserInput() {
   render();
-  reportUse(parseAmount(monthly.value) || parseAmount(principal.value));
+  reportUse(readAmount(monthly.value) || readAmount(principal.value));
 }
 
 for (const el of [principal, monthly, goal]) {
   el.addEventListener("input", () => {
-    const v = parseAmount(el.value);
+    const v = readAmount(el.value);
     el.value = v ? formatInput(v) : el.value.trim() === "" ? "" : "0";
     onUserInput();
   });
