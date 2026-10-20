@@ -1,0 +1,309 @@
+---
+/**
+ * Seconds to Minutes Converter — 싱가포르 영어판 여섯 번째 도구(초·분·시간 변환). 한국어판 /tools/sec-convert/ 와
+ * 계산(lib/sec-convert.ts)·스크립트(scripts/sec-convert.ts 의 EN 사전)를 같이 쓰고, 문장은 싱가포르 영어로 새로 썼다(번역 아님).
+ * 조사표 싱가포르 칸 '같음'(#91, SI 브로슈어 표 8).
+ *
+ * 소제목은 싱가포르 구글 자동완성에서 왔다(keywords/sg-sec-convert-2026-10-21.csv, hl en · gl sg):
+ *   seconds to minutes formula·chart·clock·timer / decimal hours meaning·for payroll·chart·worked calculator /
+ *   decimal hours to hours and minutes·to time / convert seconds to hours minutes seconds·to days /
+ *   minutes to hours to days / convert seconds to time in excel·hh mm ss in excel / … python /
+ *   overtime hours calculator singapore·how to count overtime pay in singapore
+ * 단위 값은 SI 브로슈어 표 8(1 min = 60 s, 1 h = 3600 s, 1 d = 86 400 s)뿐.
+ * MOM 원문(Hours of work, overtime and rest day, Last Updated 24 July 2025, 2026-10-21 확인)에서 쓴 것은
+ * 'Hourly basic rate of pay × 1.5 × number of hours worked overtime' 식과 44 hours a week 뿐 — 금액 계산은 하지 않고,
+ * 초과근무 '시간'을 소수 시간으로 바꾸는 단계만 보여 준다. 본문 예시 숫자는 전부 frontmatter 에서 lib 함수로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import {
+  toNanos,
+  partsToNanos,
+  convertAll,
+  readableEn,
+  withUnitEn,
+  clock,
+  minSec,
+  UNITS,
+  UNIT_NAME_EN,
+} from "../../../../lib/sec-convert";
+
+const title = "Seconds to Minutes Converter Singapore — Decimal Hours for Overtime, h:mm:ss";
+const description =
+  "Convert milliseconds, seconds, minutes, hours and days at once, turn overtime minutes into decimal hours as MOM's formula needs, and copy Excel and Python formulas.";
+
+const EX = "3600";
+const n0 = toNanos(EX, "s")!;
+const all0 = convertAll(n0);
+const p0 = partsToNanos("", "1", "45", "")!;
+const pAll0 = convertAll(p0);
+const pMs0 = minSec(p0);
+
+/** 본문 예시 — 150초, 1시간 45분, 44시간, 8.75시간, 100,000초, 90,500밀리초, 7,384초 */
+const S150 = toNanos("150", "s")!;
+const S150all = convertAll(S150);
+const OT = toNanos("105", "min")!;
+const OTall = convertAll(OT);
+const W44 = convertAll(toNanos("44", "h")!);
+const H875 = toNanos("8.75", "h")!;
+const H875all = convertAll(H875);
+const T1 = toNanos("100000", "s")!;
+const T1all = convertAll(T1);
+const D1 = convertAll(toNanos("1", "d")!);
+const MS = toNanos("90500", "ms")!;
+const MSall = convertAll(MS);
+const PY = toNanos("7384", "s")!;
+const WRAP = toNanos("26", "h")!;
+---
+
+<html lang="en-SG">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Seconds to Minutes Converter — Plus Decimal Hours for Overtime Claims</h1>
+      <p>
+        Type a number and pick its unit. The converter shows the same length of time in milliseconds, seconds, minutes, hours and
+        days, spells it out as hours, minutes and seconds, and gives an h:mm:ss clock reading. The factors never change: 60
+        seconds to a minute, 3,600 seconds to an hour and 86,400 seconds to a day.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="val">Amount</label>
+          <input type="text" id="val" inputmode="decimal" autocomplete="off" value={EX} placeholder="e.g. 3600" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">Unit</label>
+          <select id="unit" data-seg>
+            {UNITS.map((u) => <option value={u} selected={u === "s"}>{UNIT_NAME_EN[u]}</option>)}
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{withUnitEn(all0.s, "s")} is</p>
+          <p class="big" id="hero-value">{readableEn(n0)}</p>
+          <p class="hint" id="hero-sub">{withUnitEn(all0.min, "min")} · h:mm:ss {clock(n0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          {UNITS.map((u) => (
+            <div class="stat-chip">
+              <span class="label">{UNIT_NAME_EN[u]}</span>
+              <span class="value" id={`v-${u}`}>{all0[u]}</span>
+            </div>
+          ))}
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as PNG</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2 id="parts">Hours and minutes → decimal hours and seconds</h2>
+      <p>Fill in any of the boxes — for example the overtime you clocked — and get the total in one unit.</p>
+      <div class="calc-card" data-two>
+        <div class="sc-parts">
+          <div class="calc-input-wrap">
+            <label for="p-d">Days</label>
+            <input type="text" id="p-d" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-h">Hours</label>
+            <input type="text" id="p-h" inputmode="decimal" autocomplete="off" value="1" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-m">Minutes</label>
+            <input type="text" id="p-m" inputmode="decimal" autocomplete="off" value="45" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-s">Seconds</label>
+            <input type="text" id="p-s" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+        </div>
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">Total</p>
+          <p class="big" id="p-value">{withUnitEn(pAll0.s, "s")}</p>
+          <p class="hint" id="p-sub">
+            {withUnitEn(pAll0.min, "min")}{pMs0.seconds === "0" ? "" : ` (${pMs0.minutes.toLocaleString("en-SG")} min ${pMs0.seconds} sec)`} · {withUnitEn(pAll0.h, "h")} · {readableEn(p0)}
+          </p>
+        </div>
+        <p class="hint" id="p-err" role="alert"></p>
+      </div>
+
+      <h2>Seconds to minutes formula</h2>
+      <p>
+        Minutes = seconds ÷ 60. So 150 seconds ÷ 60 = {S150all.min} minutes, which on a clock or timer reads {clock(S150)} —
+        {" "}{readableEn(S150)}. Going the other way, minutes × 60 gives seconds, and hours × 3,600 gives seconds directly.
+      </p>
+      <p>
+        Watch the decimal: {S150all.min} minutes is not 2 minutes 50 seconds. The ".5" is half of a minute, so it is 30 seconds.
+        Multiply the decimal part by 60 whenever you need the seconds back.
+      </p>
+
+      <h2>What decimal hours mean, and why payroll uses them</h2>
+      <p>
+        Decimal hours put a length of time into one number of hours: 30 minutes is 0.5, 15 minutes is 0.25 and 45 minutes is 0.75.
+        Payroll and timesheet systems prefer this form because it can be multiplied straight by an hourly rate. To get it, divide
+        the minutes by 60 and add the result to the whole hours.
+      </p>
+
+      <h2>Overtime hours in Singapore: minutes to decimal hours</h2>
+      <p>
+        The Ministry of Manpower's page on hours of work sets out overtime pay for employees covered under Part 4 of the
+        Employment Act as <em>hourly basic rate of pay × 1.5 × number of hours worked overtime</em>, and puts normal contractual
+        hours at up to 44 hours a week. The "number of hours" in that formula is a decimal, so overtime clocked as 1 hour 45
+        minutes goes in as <strong>{OTall.h} hours</strong> ({OTall.min} minutes). A 44-hour week is {W44.min} minutes.
+      </p>
+      <p>
+        This page only converts the time. Whether you are covered, how your hourly basic rate is worked out and what your
+        employer pays are explained on MOM's page, linked at the bottom, which also has an overtime pay calculator.
+      </p>
+
+      <h2>Decimal hours chart</h2>
+      <p>Common minute values and the same time as decimal hours. Long decimals are cut at six places.</p>
+      <table>
+        <thead>
+          <tr><th>Minutes</th><th>Decimal hours</th><th>Hours and minutes</th></tr>
+        </thead>
+        <tbody>
+          {["5", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55", "105", "2640"].map((m) => {
+            const n = toNanos(m, "min")!;
+            return (
+              <tr>
+                <td>{Number(m).toLocaleString("en-SG")}</td>
+                <td>{convertAll(n).h}</td>
+                <td>{readableEn(n)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h2>Decimal hours to hours and minutes</h2>
+      <p>
+        Split the number at the point. The whole number is hours; the decimal part × 60 is minutes. 8.75 hours = 8 hours + 0.75
+        × 60 = <strong>{readableEn(H875)}</strong>, or {clock(H875)} as time ({H875all.min} minutes in total). Choose "Hours" in the
+        converter and type any decimal to read it off.
+      </p>
+
+      <h2>Convert seconds to hours, minutes and seconds (and days)</h2>
+      <p>Divide by the largest unit, keep the remainder and repeat. Taking 100,000 seconds:</p>
+      <ol>
+        <li>100,000 ÷ 86,400 = 1 day, remainder 13,600 seconds</li>
+        <li>13,600 ÷ 3,600 = 3 hours, remainder 2,800 seconds</li>
+        <li>2,800 ÷ 60 = 46 minutes, remainder 40 seconds</li>
+        <li>Result: <strong>{readableEn(T1)}</strong>, or {withUnitEn(T1all.d, "d")}</li>
+      </ol>
+      <p>
+        A day is 24 hours, {D1.min} minutes and {D1.s} seconds. Note that the h:mm:ss reading keeps counting hours past 24
+        instead of switching to days — 26 hours shows as {clock(WRAP)}.
+      </p>
+
+      <h2>Milliseconds to seconds and minutes</h2>
+      <p>
+        1,000 milliseconds make a second, so 90,500 ms ÷ 1,000 = {MSall.s} seconds, and ÷ 60 again = {MSall.min} minutes
+        ({readableEn(MS)}). Pick "Milliseconds" as the unit when a stopwatch app or a log gives you ms.
+      </p>
+
+      <h2>Convert seconds to time in Excel (hh:mm:ss)</h2>
+      <ul>
+        <li><strong>Seconds to minutes</strong>: <code>=A1/60</code> · <strong>seconds to hours</strong>: <code>=A1/3600</code></li>
+        <li>
+          <strong>Seconds shown as hh:mm:ss</strong>: <code>=A1/86400</code>, then format the cell as <code>[h]:mm:ss</code>.
+          Excel and Google Sheets count time in days, which is why you divide by 86,400.
+        </li>
+        <li>
+          <strong>A time such as 1:45 to decimal hours</strong>: <code>=A1*24</code> with the cell set to Number — 1:45 becomes
+          1.75. The square brackets in <code>[h]</code> stop a total above 24 hours from resetting to zero.
+        </li>
+        <li><strong>Decimal hours back to minutes</strong>: <code>=A1*60</code></li>
+      </ul>
+
+      <h2>Convert seconds to hours, minutes and seconds in Python</h2>
+      <pre><code>{`seconds = 7384
+hours, rest = divmod(seconds, 3600)
+minutes, secs = divmod(rest, 60)
+print(f"{hours}:{minutes:02d}:{secs:02d}")   # 2:03:04
+
+# or with the standard library
+from datetime import timedelta
+print(timedelta(seconds=7384))               # 2:03:04`}</code></pre>
+      <p>
+        7,384 seconds is {readableEn(PY)} — the same answer the converter gives. Internally the converter works in whole
+        nanoseconds, so results don't pick up floating-point leftovers such as 0.30000000000000004.
+      </p>
+
+      <details>
+        <summary>Can it convert seconds to months or years?</summary>
+        <p>
+          Not reliably. A month can be 28, 29, 30 or 31 days and a year 365 or 366, so neither has a fixed number of seconds.
+          Weeks are always 7 days if you need them. For time between two actual dates, use the
+          {" "}<a href="/en-sg/tools/date-diff/">date calculator</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Who decides that an hour is 3,600 seconds?</summary>
+        <p>
+          The SI Brochure from the International Bureau of Weights and Measures (BIPM) lists the minute, hour and day in Table 8
+          as units accepted for use with the SI, defined as 60 s, 3,600 s and 86,400 s.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does a leap second change the numbers?</summary>
+        <p>
+          A UTC day with a leap second inserted has one extra second on the clock, but the day as a unit of duration stays at
+          86,400 seconds, which is what this converter uses.
+        </p>
+      </details>
+
+      <details>
+        <summary>What can I type in the boxes?</summary>
+        <p>
+          Whole numbers or decimals with up to six places. Commas and spaces are ignored, so 2,640 works. Negative values are
+          rejected because a duration can't be below zero.
+        </p>
+      </details>
+
+      <p>
+        Have a 10- or 13-digit number from a system log? Read it as a date with the
+        {" "}<a href="/en-sg/tools/unix-time/">Unix timestamp converter</a>, or count down to a date with
+        {" "}<a href="/en-sg/tools/dday/">days until</a>.
+      </p>
+
+      <p>
+        Sources: <a href="https://www.bipm.org/en/publications/si-brochure" rel="noopener">BIPM, The International System of Units
+        (SI Brochure), Table 8: Non-SI units accepted for use with the SI</a> (checked 20 October 2026) ·
+        {" "}<a href="https://www.mom.gov.sg/employment-practices/hours-of-work-overtime-and-rest-days" rel="noopener">Ministry of
+        Manpower, Hours of work, overtime and rest day</a> (last updated 24 July 2025, checked 21 October 2026)
+      </p>
+
+      <AdSlot label="sec-convert-result-en-sg" />
+    </main>
+    <SiteFooter />
+    <style>
+      .sc-parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 10px; }
+      @media (max-width: 560px) { .sc-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      pre { overflow-x: auto; }
+    </style>
+    <script src="../../../../scripts/sec-convert.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
