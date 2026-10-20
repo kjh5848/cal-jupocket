@@ -1,0 +1,254 @@
+---
+/**
+ * Days between dates calculator — 싱가포르 영어판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/date-diff.ts 의 EN 사전 — 영어 판 공용, 날짜 표기는 <html lang="en-SG"> 로 'Tue, 20 October 2026'), 문장은 싱가포르 자동완성으로 새로 썼다(번역 아님).
+ * 그레고리력 산술이라 rates 와 상관없다(조사표 싱가포르 칸 '단위').
+ *
+ * 소제목은 싱가포르 구글 자동완성에서 왔다(keywords/sg-date-diff-2026-10-20.csv, hl en · gl sg):
+ *   date calculator singapore · sg / days between 2 dates calculator / add days to date calculator · online /
+ *   date calculator by months · by years and months / working days calculator singapore · mom · business days calculator singapore /
+ *   last working day calculator singapore / days between dates calculator excel · add days to date google sheets
+ * 계산기는 공휴일을 빼지 않는다(토·일만 뺀 weekdays). 공휴일은 MOM 원문(https://www.mom.gov.sg/employment-practices/public-holidays,
+ * 2026-10-20 확인)에서 읽힌 줄만 쓴다 — Deepavali 2026-11-08(일)·휴무일이 그날이면 다음 날 월요일 휴일. 전체 목록은 페이지가 스크립트로 그려
+ * 끝까지 읽지 못해 개수를 쓰지 않는다. 퇴직 통지 기간(notice) 규칙은 확인하지 않았으므로 날짜 더하기만 안내한다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 span()·shift() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span, shift, type Span } from "../../../../lib/date-calc";
+
+const title = "Date Calculator Singapore — Days Between 2 Dates & Working Days";
+const description =
+  "Singapore date calculator: count the days between two dates, add days, weeks or months to a date, and see Monday–Friday business days, with a MOM public holiday note.";
+
+/** 하루 번호 → 'Tue, 20 October 2026' (UTC 자정이라 timeZone UTC) */
+const labelSg = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("en-SG", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${v.toLocaleString("en-SG")} ${one}${v === 1 ? "" : "s"}`;
+const spanTextSg = (s: Span) => {
+  const parts: string[] = [];
+  if (s.years) parts.push(plural(s.years, "year"));
+  if (s.months) parts.push(plural(s.months, "month"));
+  if (s.restDays || parts.length === 0) parts.push(plural(s.restDays, "day"));
+  return parts.join(", ");
+};
+const d = (iso: string) => toDay(iso)!;
+
+const START = "2026-10-20";
+const END = "2026-12-31";
+const s0 = span(d(START), d(END), false);
+
+// 본문 예시
+const ex1 = span(d("2026-11-09"), d("2026-11-13"), false);
+const ex1i = span(d("2026-11-09"), d("2026-11-13"), true);
+const yr = span(d("2026-01-01"), d("2026-12-31"), true);
+const plus14 = shift(d(START), 14, "day");
+const plus100 = shift(d(START), 100, "day");
+const minus45 = shift(d(START), -45, "day");
+const plus3m = shift(d(START), 3, "month");
+const plus1y = shift(d(START), 1, "year");
+const aug31 = d("2026-08-31");
+const aug31plus1m = shift(aug31, 1, "month");
+const twoWeeks = span(d("2026-11-02"), d("2026-11-13"), true);
+const deepavaliMon = d("2026-11-09");
+const lastDay1m = shift(d(START), 1, "month");
+---
+
+<html lang="en-SG">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Date calculator: days between two dates</h1>
+      <p>
+        Pick two dates to see how far apart they are, or start from one date and move forward or back by days, weeks,
+        months or years. Dates are shown day first, and the result updates as you type.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">What do you want to work out?</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>Days between two dates</option>
+            <option value="shift">Add or subtract from a date</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">Start date</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">End date</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">Inclusive — count both the first and the last day</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">Start date</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">How many</label>
+            <input type="number" inputmode="numeric" id="amount" value="30" min="0" max="36500" data-step />
+            <select id="unit" aria-label="Unit">
+              <option value="day" selected>days</option>
+              <option value="week">weeks</option>
+              <option value="month">months</option>
+              <option value="year">years</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">Direction</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>Add (later date)</option>
+              <option value="before">Subtract (earlier date)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Days between</p>
+          <p class="big" id="hero-value">{plural(s0.days, "day")}</p>
+          <p class="hint" id="hero-sub">{spanTextSg(s0)} · {plural(s0.weeks, "week")}, {plural(s0.weekRest, "day")}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Weekdays (Mon–Fri)</span>
+            <span class="value" id="v1">{plural(s0.weekdays, "day")}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Dates</span>
+            <span class="value" id="v2">{labelSg(s0.from)} → {labelSg(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Days between 2 dates — counting the start day or not</h2>
+      <p>
+        The plain count is end date minus start date, so the start date itself isn't counted. From Monday 9 November to
+        Friday 13 November 2026 that's {plural(ex1.days, "day")}.
+      </p>
+      <p>
+        Turn on <strong>Inclusive</strong> when the first day should count too — a course, a booking counted in days, or
+        anything described as "from today". The same Monday-to-Friday stretch is then {plural(ex1i.days, "day")}, and the
+        whole of 2026, 1 January to 31 December, is {plural(yr.days, "day")}.
+      </p>
+      <p>
+        The page opens on today and 31 December, so the first number you see is how many days are left this year. Put the
+        dates in either order; if the end comes first, the two are swapped and a note appears under the answer.
+      </p>
+
+      <h2>Add days to a date calculator</h2>
+      <ul>
+        <li>
+          <strong>Days</strong> — 14 days after {labelSg(d(START))} is {labelSg(plus14)}; 100 days after is
+          {" "}{labelSg(plus100)}; 45 days before is {labelSg(minus45)}.
+        </li>
+        <li><strong>Weeks</strong> — counted as 7 days each.</li>
+        <li>
+          <strong>Months and years</strong> — the day of the month is kept and the month moves: three months after
+          {" "}{labelSg(d(START))} is {labelSg(plus3m)}, one year after is {labelSg(plus1y)}. When the target month has fewer
+          days, you land on its last day, so one month after {labelSg(aug31)} is {labelSg(aug31plus1m)}.
+        </li>
+      </ul>
+
+      <h2>Date calculator by years and months</h2>
+      <p>
+        Under the total, the same range is split into years, months and days (full calendar months first, the leftover
+        days after), and into weeks and days. For the opening range that reads {spanTextSg(s0)}, or
+        {" "}{plural(s0.weeks, "week")} and {plural(s0.weekRest, "day")}, against {plural(s0.days, "day")} in all.
+      </p>
+
+      <h2>Working days calculator Singapore — business days and public holidays</h2>
+      <p>
+        <strong>Weekdays</strong> counts each Monday to Friday in the range and follows the same inclusive setting as the
+        total. Monday 2 November to Friday 13 November 2026, inclusive, has {plural(twoWeeks.weekdays, "weekday")}.
+      </p>
+      <p>
+        <strong>Public holidays are not subtracted</strong>, and every Saturday and Sunday is left out. If you work on
+        Saturdays or your company has its own off days, adjust the count yourself. Singapore's public holidays are listed by
+        the Ministry of Manpower. One example from that list: Deepavali falls on Sunday 8 November 2026, and MOM notes that
+        {" "}{labelSg(deepavaliMon)} will be a public holiday if your rest day falls on 8 November. In that case the fortnight
+        above has one working day fewer.
+      </p>
+
+      <h2>Last working day calculator</h2>
+      <p>
+        To find a last day from a notice period, choose <strong>Add or subtract from a date</strong>, enter the date notice
+        starts and the length — for example, 1 month from {labelSg(d(START))} gives {labelSg(lastDay1m)}. This only adds the
+        period on the calendar; how notice is counted for your job depends on your contract and the rules that apply to it,
+        which this page doesn't decide.
+      </p>
+
+      <h2>Days between dates in Excel and Google Sheets</h2>
+      <p>Put the start date in A2 and the end date in B2:</p>
+      <ul>
+        <li><code>=B2-A2</code> — days between, start date not counted (format the cell as a number).</li>
+        <li><code>=B2-A2+1</code> — days between, both days counted.</li>
+        <li><code>=DATEDIF(A2,B2,"m")</code> — complete months (<code>"y"</code> for complete years).</li>
+        <li><code>=A2+14</code> or <code>=EDATE(A2,3)</code> — add 14 days, or add three months.</li>
+        <li>
+          <code>=NETWORKDAYS(A2,B2,H2:H20)</code> — Monday–Friday days between the dates, minus holidays you type into
+          H2:H20. It counts both ends, so compare it with the inclusive result here.
+        </li>
+      </ul>
+
+      <details>
+        <summary>Does it count leap years?</summary>
+        <p>
+          Yes. It follows the Gregorian calendar, so 29 February is counted in a leap year, and one year after 29 February
+          is 28 February in a normal year.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can it count hours between dates?</summary>
+        <p>
+          No — it works in whole days and weeks. Multiply the day count by 24 if you only need a rough number of hours.
+        </p>
+      </details>
+
+      <p class="hint">
+        Public holiday note from the Ministry of Manpower:
+        {" "}<a href="https://www.mom.gov.sg/employment-practices/public-holidays" rel="noopener">mom.gov.sg — Public holidays</a>
+        {" "}(checked 20 October 2026).
+      </p>
+
+      <AdSlot label="date-diff-result-en-sg" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

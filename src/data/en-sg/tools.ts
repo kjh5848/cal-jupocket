@@ -17,4 +17,13 @@ export const tools: LocaleTool[] = [
     icon: "percent",
     basis: "math",
   },
+  {
+    href: "/en-sg/tools/date-diff/",
+    ko: "/tools/date-diff/",
+    name: "Date Calculator",
+    blurb: "Days between two dates (inclusive or not), add days, weeks or months to a date, and Monday–Friday business days",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
