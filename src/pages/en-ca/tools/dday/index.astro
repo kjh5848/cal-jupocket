@@ -1,0 +1,262 @@
+---
+/**
+ * Days Until — 캐나다 영어판 네 번째 도구(디데이). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 EN 사전 — 날짜는 <html lang="en-CA"> 로 Intl 표기)를 같이 쓰고,
+ * 문장은 캐나다 영어로 새로 썼다(번역 아님). 조사표 캐나다 칸 '단위'. 고친 공유 파일 없음.
+ *
+ * 소제목은 캐나다 구글 자동완성에서 왔다(keywords/ca-dday-2026-10-21.csv, hl en · gl ca):
+ *   how many days until · how many days until christmas 2026 canada · christmas eve in canada / christmas break canada /
+ *   countdown calculator days hours minutes / days until halloween 2026 / birthday countdown calculator / how many days until school starts
+ * 프리셋 버튼은 공유 스크립트가 정한 네 개(100일·12/25·12/31·1/1) 그대로.
+ * 캐나다 사실은 canada.ca 원문만(확인 2026-10-21):
+ *   - CRA Public holidays https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html (page details 2026-01-06):
+ *     Remembrance Day Wed 2026-11-11 · Christmas Day Fri 2026-12-25 · Boxing Day Sat 2026-12-26,
+ *     "several provinces and territories have their own unique holidays". 2027 목록은 없음.
+ *   - Natural Resources Canada, Time zones in Canada(open.canada.ca, published 2026-04-17):
+ *     "starts on the second Sunday in March and ends on the first Sunday in November",
+ *     "the Yukon, Saskatchewan and parts of British Columbia, Quebec and Nunavut do not observe Daylight Saving Time",
+ *     "All time zone boundaries in Canada are regulated by the provinces and territories".
+ *     NRC 원 페이지(nrc.canada.ca)는 403 이라 못 읽음 — 검색 요약에 '2026-11-01 부터 일부 정보가 맞지 않게 된다'는 안내가
+ *     있다고 나와, 본문은 규칙만 인용하고 날짜를 단정하지 않으며 주·준주 정부에 확인하라고 적는다.
+ * 하루는 24시간으로 센다. 본문 숫자는 전부 아래 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, countdown, type Countdown } from "../../../../lib/date-calc";
+
+const title = "How Many Days Until Christmas 2026 in Canada? Countdown Calculator";
+const description =
+  "Count down to Christmas, Boxing Day, a birthday or any date in Canada — days left, plus a live timer in days, hours and minutes.";
+
+/** 하루 번호 → 'Wed, October 21, 2026' (UTC 자정이라 timeZone UTC) */
+const labelCa = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("en-CA", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${v.toLocaleString("en-CA")} ${one}${v === 1 ? "" : "s"}`;
+const left = (c: Countdown) => (c.side === 0 ? "Today" : c.side > 0 ? `${plural(c.days, "day")} to go` : `${plural(c.days, "day")} ago`);
+const d = (iso: string) => toDay(iso)!;
+
+const BASE = "2026-10-21";
+const TARGET = "2026-12-25";
+const base = d(BASE);
+const target = d(TARGET);
+const c0 = countdown(target, null, base, 0);
+const days0 = Math.floor(c0.seconds / 86_400);
+
+// 본문 예시 — 전부 BASE 에서 센다 (공휴일 날짜는 CRA Public holidays 2026)
+const halloween = d("2026-10-31");
+const remembrance = d("2026-11-11");
+const xmasEve = d("2026-12-24");
+const xmas = d("2026-12-25");
+const boxing = d("2026-12-26");
+const nye = d("2026-12-31");
+const ny = d("2027-01-01");
+const cHalloween = countdown(halloween, null, base, 0);
+const cRemembrance = countdown(remembrance, null, base, 0);
+const cXmasEve = countdown(xmasEve, null, base, 0);
+const cXmas = countdown(xmas, null, base, 0);
+const cBoxing = countdown(boxing, null, base, 0);
+const cNye = countdown(nye, null, base, 0);
+const cNy = countdown(ny, null, base, 0);
+const tomorrow = countdown(base + 1, null, base, 0);
+// 오후 6시 저녁 모임 — 기준일 오전 10시에 열었을 때
+const party = countdown(xmasEve, 18 * 3600, base, 10 * 3600);
+const partyD = Math.floor(party.seconds / 86_400);
+const partyH = Math.floor((party.seconds % 86_400) / 3600);
+const pastDay = d("2026-09-08");
+const past = countdown(pastDay, null, base, 0);
+---
+
+<html lang="en-CA">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>How Many Days Until…? Canada Countdown Calculator</h1>
+      <p>
+        Pick a date to see how many days are left and how much time remains. If your event starts at a set hour — a flight, an
+        exam or a family dinner — turn on “Count to a time” and the timer runs to that minute.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">Target date</label>
+          <input type="date" id="target" value={TARGET} />
+          <div class="ux-presets" role="group" aria-label="Common dates">
+            <button type="button" data-preset="plus100">100 days</button>
+            <button type="button" data-preset="xmas">Christmas Day</button>
+            <button type="button" data-preset="yearend">Dec. 31</button>
+            <button type="button" data-preset="newyear">New Year's Day</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">Count to a time</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">Target time</label>
+          <input type="time" id="time" value="18:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">Start date (usually today)</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Until {labelCa(target)}</p>
+          <p class="big" id="hero-value">{left(c0)}</p>
+          <p class="hint" id="hero-sub">Counting the start date as day 1, the target date is day {c0.countDays}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Time left</span>
+            <span class="value" id="v1">{plural(days0, "day")}, 0 hours, 0 minutes</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Counting day 1</span>
+            <span class="value" id="v2">Day {c0.countDays}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">Start date</span>
+            <span class="value" id="v3">{labelCa(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How many days until a date — is today included?</h2>
+      <p>
+        The days-to-go number is simply <strong>the target date minus today</strong>: today is left out and the target date is
+        counted. Tomorrow is therefore {left(tomorrow)}, the target date reads “Today” from morning to midnight, and any date
+        that's already gone by reads “days ago”.
+      </p>
+      <p>
+        When the first day should count as day 1 — a new job, a sobriety streak, the start of a training plan — use the
+        “Counting day 1” figure, which is always one higher. With {labelCa(base)} as day 1, {labelCa(target)} is day
+        {" "}{c0.countDays}.
+      </p>
+
+      <h2>How many days until Christmas 2026 in Canada</h2>
+      <p>Counting from {labelCa(base)}:</p>
+      <ul>
+        <li>Halloween ({labelCa(halloween)}): {left(cHalloween)}</li>
+        <li>Remembrance Day ({labelCa(remembrance)}): {left(cRemembrance)}</li>
+        <li>Christmas Eve ({labelCa(xmasEve)}): {left(cXmasEve)}</li>
+        <li>Christmas Day ({labelCa(xmas)}): {left(cXmas)}</li>
+        <li>Boxing Day ({labelCa(boxing)}): {left(cBoxing)}</li>
+        <li>New Year's Eve ({labelCa(nye)}): {left(cNye)}</li>
+        <li>New Year's Day 2027 ({labelCa(ny)}): {left(cNy)}</li>
+      </ul>
+      <p>
+        The Canada Revenue Agency's list of 2026 public holidays puts Christmas Day on Friday, December 25 and Boxing Day on
+        Saturday, December 26. It also notes that several provinces and territories have their own holidays, so the days off you get
+        depend on where you live and work. The page fills in today's date when you open it, so the counts above
+        update to the day you visit.
+      </p>
+
+      <h2>Countdown in days, hours and minutes</h2>
+      <ul>
+        <li>
+          <strong>Date only</strong> — the countdown runs to the end of the target date (midnight going into the next day).
+        </li>
+        <li>
+          <strong>With a time</strong> — it runs to that time instead. Once the time passes, even on the target date, the box
+          changes to “Time since”. Opened at 10 a.m. on {labelCa(base)}, a 6 p.m. Christmas Eve dinner is
+          {" "}{plural(partyD, "day")} and {plural(partyH, "hour")} away.
+        </li>
+        <li>
+          <strong>The timer ticks every second</strong> only while the start date is today. Pick a different start date and it
+          counts from midnight on that day.
+        </li>
+      </ul>
+
+      <h2>Daylight saving time and the hour that goes missing</h2>
+      <p>
+        Every day here is counted as exactly 24 hours. Natural Resources Canada's time zone summary says daylight saving time
+        starts on the second Sunday in March and ends on the first Sunday in November, and that the Yukon, Saskatchewan and parts
+        of British Columbia, Quebec and Nunavut don't observe it. Clock rules are set by each province and territory, so check
+        with yours if you need the countdown to the exact hour.
+      </p>
+      <ul>
+        <li>A countdown that crosses the November change has <strong>one hour more</strong> real time left than it shows.</li>
+        <li>A countdown that crosses the March change has <strong>one hour less</strong> real time left than it shows.</li>
+        <li>Where the clocks don't change, the timer is exact. The number of days is the same everywhere.</li>
+      </ul>
+
+      <h2>How many days until Christmas break?</h2>
+      <p>
+        Winter break dates are set by each province's school calendar or your school board, so they vary across Canada. Look up
+        your board's calendar, then enter the last day of classes as the target date. For a workplace closure, enter the first
+        day you're off.
+      </p>
+
+      <h2>Birthday countdown</h2>
+      <p>
+        Put your next birthday in as the target date. If this year's birthday has already passed, use next year's — otherwise
+        you'll see how many days ago it was. Turn on “Count to a time” to have the countdown end the minute the party starts.
+      </p>
+
+      <h2>Days until a date in Excel or Google Sheets</h2>
+      <p>
+        Spreadsheets store dates as numbers, so subtracting <code>TODAY()</code> from the target date gives the days left — for
+        example <code>=A1-TODAY()</code> with the target date in A1. If the answer appears as a date, change the cell format to
+        Number, and add 1 if you want today counted as day 1.
+      </p>
+
+      <details>
+        <summary>How do I count only working days until a date?</summary>
+        <p>
+          This countdown includes weekends. For Monday-to-Friday days, enter today and the target date in the
+          {" "}<a href="/en-ca/tools/date-diff/">Canadian days between dates calculator</a> — it counts weekdays but doesn't take
+          out statutory holidays, which differ by province.
+        </p>
+      </details>
+
+      <details>
+        <summary>What if I enter a date that has already passed?</summary>
+        <p>
+          The result says “days ago” and the timer switches to “Time since” — handy for how long it's been since a move or a
+          first day of school. From {labelCa(base)}, {labelCa(pastDay)} was {left(past)}.
+        </p>
+      </details>
+
+      <details>
+        <summary>Which time zone does the countdown use?</summary>
+        <p>
+          Your device's clock and date. Canada spans several time zones, so for a game, a livestream or a flight timed in another
+          zone, convert the start time to your local time before you enter it.
+        </p>
+      </details>
+
+      <p class="hint">
+        Sources: <a href="https://www.canada.ca/en/revenue-agency/services/tax/public-holidays.html">Canada Revenue Agency — Public
+        holidays</a> (2026 list) ·
+        <a href="https://open.canada.ca/data/en/dataset/cb2400fb-aee0-4b58-a88e-e6de32c43c16">Natural Resources Canada — Time
+        zones in Canada</a> (published April 17, 2026). Checked October 21, 2026.
+      </p>
+
+      <AdSlot label="dday-result-en-ca" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

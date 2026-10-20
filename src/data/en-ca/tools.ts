@@ -35,4 +35,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/en-ca/tools/dday/",
+    ko: "/tools/dday/",
+    name: "Days Until Countdown",
+    blurb: "How many days are left until Christmas, Boxing Day, a birthday or any date in Canada — with a live countdown in days, hours and minutes",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
