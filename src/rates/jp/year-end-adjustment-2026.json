@@ -1,17 +1,203 @@
 {
   "country": "JP",
   "draft": true,
-  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(일본어판이 열린 뒤). 일본 年末調整도 회사가 1년 원천징수 합계와 그해 낼 세금을 맞춰 차액을 돌려주거나 더 걷는 같은 흐름이지만, 給与所得控除後の金額을 전용 표로 구하고, 과세표준 1,000엔 미만 버림, 復興特別所得税 102.1% 를 곱해 100엔 미만 버림, 급여 2,000만엔 초과는 대상이 아님 — 계산 단계가 다르다. 세율표·控除 금액은 미확인(No.2662 본문만 읽음).",
-  "verifiedOn": "2026-10-17",
-  "sources": [{ "label": "国税庁 タックスアンサー No.2662 年末調整のしかた [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2662.htm" }],
+  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(notVerified 가 남음). 令和8年分 年末調整(2026년 12월) 기준. 일본 年末調整도 회사가 1년 원천징수 합계와 그해 낼 세금을 맞춰 차액을 還付·徴収하는 흐름이지만, 給与所得控除後の金額을 전용 표(所得税法 別表第五 + 措法29の4)로 구하고, 과세표준 1,000엔 미만 버림, 復興特別所得税 102.1% 를 곱해 100엔 미만 버림, 급여 2,000만엔 초과는 대상이 아님 — 계산 단계가 다르다(한국판과 짝 없음). 令和8年度税制改正(所得税の基礎控除の引上げ等)은 令和8年12月1日 施行·令和8年分부터 적용 — 基礎控除·給与所得控除 최저액(74万円, 令和8·9年分 措法 특례)·扶養親族 등 소득 요건(62万円)이 令和7年分과 다르다. 令和7年分 값을 쓰지 않는다. 令和9年分 이후 防衛特別所得税가 생기지만 No.2260 ※3 은 '防衛特別所得税及び復興特別所得税の合計税率に変更はありません' — 令和8年分 年末調整에는 해당 없음, 令和9年分 年末調整(2027-12) 전에 102.1% 표기·식을 다시 확인. 基礎控除(489万円以下 104万円 등)와 給与所得控除 최저 74万円은 令和8年分·令和9年分 한정(令和10年分 이후 값이 따로 있음) → 2027-12 年末調整 뒤, 令和10年分 전에 재확인.",
+  "verifiedOn": "2026-10-21",
+  "lawVersion": "国税庁 タックスアンサー [令和8年4月1日現在法令等] · 所得税法(昭和40年法律第33号) 令和8年12月1日 施行 版 別表第五 · 租税特別措置法 第29条の4(令和8年12月1日 施行 版) — e-Gov 法令API v2",
+  "sources": [
+    { "label": "国税庁 タックスアンサー No.2662 年末調整のしかた [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2662.htm" },
+    { "label": "国税庁 タックスアンサー No.2665 年末調整の対象となる人 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2665.htm" },
+    { "label": "国税庁 タックスアンサー No.2260 所得税の税率 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/2260.htm" },
+    { "label": "国税庁 タックスアンサー No.1410 給与所得控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1410.htm" },
+    { "label": "国税庁 タックスアンサー No.1411 所得金額調整控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1411.htm" },
+    { "label": "国税庁 タックスアンサー No.1199 基礎控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1199.htm" },
+    { "label": "国税庁 タックスアンサー No.1180 扶養控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1180.htm" },
+    { "label": "国税庁 タックスアンサー No.1177 特定親族特別控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1177.htm" },
+    { "label": "国税庁 タックスアンサー No.1191 配偶者控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1191.htm" },
+    { "label": "国税庁 タックスアンサー No.1195 配偶者特別控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1195.htm" },
+    { "label": "国税庁 タックスアンサー No.1160 障害者控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1160.htm" },
+    { "label": "国税庁 タックスアンサー No.1170 寡婦控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1170.htm" },
+    { "label": "国税庁 タックスアンサー No.1171 ひとり親控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1171.htm" },
+    { "label": "国税庁 タックスアンサー No.1175 勤労学生控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1175.htm" },
+    { "label": "国税庁 タックスアンサー No.1140 生命保険料控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1140.htm" },
+    { "label": "国税庁 タックスアンサー No.1145 地震保険料控除 [令和8年4月1日現在法令等]", "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1145.htm" },
+    { "label": "e-Gov 法令API 所得税法 令和8年12月1日 施行 版(340AC0000000033_20261201_508AC0000000012) 別表第五", "url": "https://laws.e-gov.go.jp/api/2/law_data/340AC0000000033_20261201_508AC0000000012" },
+    { "label": "e-Gov 法令API 租税特別措置法 令和8年12月1日 施行 版(332AC0000000026_20261201_508AC0000000012) 第29条の4", "url": "https://laws.e-gov.go.jp/api/2/law_data/332AC0000000026_20261201_508AC0000000012?elm=MainProvision-Article_29_4" }
+  ],
   "steps": [
-    "給与の合計額 → 「年末調整等のための給与所得控除後の給与等の金額の表」",
-    "− 扶養控除などの所得控除",
-    "1,000円未満切捨て → 所得税の税率",
-    "− 住宅借入金等特別控除(해당 시)",
-    "× 102.1% → 100円未満切捨て = 年税額",
-    "源泉徴収 합계 − 年税額 → 還付 또는 徴収"
+    "1 給与の合計額(1/1~12/31 支払確定) → 給与所得控除後の給与等の金額(下 employmentIncome) − 所得金額調整控除(해당 시)",
+    "2 − 扶養控除などの所得控除",
+    "3 1,000円未満切捨て → 所得税の税率(速算表)",
+    "4 − 住宅借入金等特別控除(해당 시)",
+    "5 × 102.1% → 100円未満切捨て = 年税額(年調年税額)",
+    "6 源泉徴収 합계 − 年税額 → 還付(多い場合) 또는 徴収(少ない場合)"
   ],
   "excludedPayOverYen": 20000000,
-  "notVerified": ["所得税の税率表(速算表)", "給与所得控除後の給与等の金額の表", "基礎控除·扶養控除 금액", "令和9年分 이후 防衛特別所得税 합산 방식"]
+  "excludedNote": "No.2665: 12月 年末調整 대상은 扶養控除等(異動)申告書를 낸 사람 중 1년 給与 총액 2,000万円 초과·災害減免法 徴収猶予 받은 사람 제외",
+  "surtax": { "numerator": 1021, "denominator": 1000, "rounding": "100円未満切捨て", "source": "No.2662 5" },
+  "taxableIncomeRounding": "1,000円未満切捨て(No.2662 3·No.2260)",
+  "incomeTaxBrackets": {
+    "label": "所得税の速算表(平成27年分以後) — 税額 = 課税所得 × 税率 − 控除額 (No.2260)",
+    "brackets": [
+      { "upToYen": 1949000, "rate": 0.05, "deductionYen": 0 },
+      { "upToYen": 3299000, "rate": 0.10, "deductionYen": 97500 },
+      { "upToYen": 6949000, "rate": 0.20, "deductionYen": 427500 },
+      { "upToYen": 8999000, "rate": 0.23, "deductionYen": 636000 },
+      { "upToYen": 17999000, "rate": 0.33, "deductionYen": 1536000 },
+      { "upToYen": 39999000, "rate": 0.40, "deductionYen": 2796000 },
+      { "upToYen": null, "rate": 0.45, "deductionYen": 4796000 }
+    ],
+    "example": { "source": "No.2260 具体例", "taxableYen": 7000000, "taxYen": 974000 }
+  },
+  "employmentIncome": {
+    "label": "令和8年分 年末調整の給与所得控除後の給与等の金額",
+    "below691000": "691,000円未満 → 0円(所得税法 別表第五)",
+    "special691000to2200000": {
+      "source": "租税特別措置法 第29条の4 第2項·第4項(令和8年·令和9年 한정, 年末調整도 別表第五 대신 이 규정)",
+      "rows": [
+        { "fromYen": 691000, "belowYen": 741000, "rule": "0円(ないものとする)" },
+        { "fromYen": 741000, "belowYen": 2191000, "rule": "給与 − 740,000円" },
+        { "fromYen": 2191000, "belowYen": 2193000, "fixedYen": 1451000 },
+        { "fromYen": 2193000, "belowYen": 2196000, "fixedYen": 1453000 },
+        { "fromYen": 2196000, "belowYen": 2200000, "fixedYen": 1456000 }
+      ]
+    },
+    "table2200000to6600000": {
+      "source": "所得税法 別表第五(令和8年12月1日 施行 版) — 4,000円 단위 1,100행 전부 대조",
+      "stepYen": 4000,
+      "rule": "그 給与가 속한 4,000円 구간의 하한(L)에서 L − 給与所得控除額(L) — 控除額은 No.1410 令和8年分 식: 360万円以下 L × 30% + 80,000円, 360万円超 L × 20% + 440,000円",
+      "checkedRows": 1100,
+      "spotChecks": [
+        { "fromYen": 2200000, "belowYen": 2204000, "valueYen": 1460000 },
+        { "fromYen": 2204000, "belowYen": 2208000, "valueYen": 1462800 },
+        { "fromYen": 6340000, "belowYen": 6344000, "valueYen": 4632000 },
+        { "fromYen": 6596000, "belowYen": 6600000, "valueYen": 4836800 }
+      ]
+    },
+    "from6600000": {
+      "source": "No.1410 計算方法(令和2年分以降 速算表)",
+      "brackets": [
+        { "fromYen": 6600000, "belowYen": 8500000, "rule": "給与 × 90% − 1,100,000円" },
+        { "fromYen": 8500000, "belowYen": null, "rule": "給与 − 1,950,000円" }
+      ]
+    },
+    "deductionTableR8": [
+      { "upToYen": 2200000, "deduction": "740,000円" },
+      { "upToYen": 3600000, "deduction": "収入 × 30% + 80,000円" },
+      { "upToYen": 6600000, "deduction": "収入 × 20% + 440,000円" },
+      { "upToYen": 8500000, "deduction": "収入 × 10% + 1,100,000円" },
+      { "upToYen": null, "deduction": "1,950,000円(上限)" }
+    ],
+    "deductionTableNote": "No.1410 令和8年分·令和9年分(注1: 令和8年12月1日 施行). 660万円未満은 위 표가 아니라 別表第五·措法29の4 로 구한다(注3)"
+  },
+  "incomeAdjustmentDeduction": {
+    "source": "No.1411 — 年末調整에서는 '子ども·特別障害者等を有する者等' 만",
+    "condition": "給与 収入 850万円 초과 + (본인 特別障害者 / 23歳未満 扶養親族 / 特別障害者인 同一生計配偶者·扶養親族)",
+    "formula": "(給与 収入(1,000万円 초과면 1,000万円) − 850万円) × 10%, 1円未満 切り上げ"
+  },
+  "basicDeduction": {
+    "source": "No.1199 표의 '令和8年分 令和9年分以後' 열(rowspan 풀어 읽음, 注1: 令和8年12月1日 施行). 令和10年分以後 열은 값이 다름",
+    "brackets": [
+      { "upToYen": 4890000, "deductionYen": 1040000 },
+      { "upToYen": 6550000, "deductionYen": 670000 },
+      { "upToYen": 23500000, "deductionYen": 620000 },
+      { "upToYen": 24000000, "deductionYen": 480000 },
+      { "upToYen": 24500000, "deductionYen": 320000 },
+      { "upToYen": 25000000, "deductionYen": 160000 },
+      { "upToYen": null, "deductionYen": 0 }
+    ],
+    "basis": "納税者本人の合計所得金額"
+  },
+  "dependentDeduction": {
+    "source": "No.1180",
+    "amountsYen": { "general": 380000, "specified19to22": 630000, "elderly70plus": 480000, "elderlyLivingTogether": 580000 },
+    "ageBasis": "その年12月31日現在 — 控除対象 16歳以上, 特定 19歳以上23歳未満, 老人 70歳以上",
+    "dependentIncomeLimitYen": 620000,
+    "dependentIncomeLimitNote": "令和8年分부터 62万円以下(令和8年12月1日 施行, No.1180 注). 본문의 '58万円·給与 123万円'은 令和7年分 값 — 令和8年分 給与 환산액은 원문에 없음"
+  },
+  "specifiedRelativeDeduction": {
+    "source": "No.1177 (注1 令和8年12月1日 施行, 令和8年分以後) — 19歳以上23歳未満, 控除対象扶養親族 아님, 合計所得 123万円以下(給与のみ 197万円以下)",
+    "brackets": [
+      { "overYen": 620000, "upToYen": 850000, "deductionYen": 630000 },
+      { "overYen": 850000, "upToYen": 900000, "deductionYen": 610000 },
+      { "overYen": 900000, "upToYen": 950000, "deductionYen": 510000 },
+      { "overYen": 950000, "upToYen": 1000000, "deductionYen": 410000 },
+      { "overYen": 1000000, "upToYen": 1050000, "deductionYen": 310000 },
+      { "overYen": 1050000, "upToYen": 1100000, "deductionYen": 210000 },
+      { "overYen": 1100000, "upToYen": 1150000, "deductionYen": 110000 },
+      { "overYen": 1150000, "upToYen": 1200000, "deductionYen": 60000 },
+      { "overYen": 1200000, "upToYen": 1230000, "deductionYen": 30000 }
+    ]
+  },
+  "spouseDeduction": {
+    "source": "No.1191 — 本人 合計所得 1,000万円 초과면 없음, 配偶者 合計所得 62万円以下(令和8年分, 給与のみ 136万円以下)",
+    "spouseIncomeLimitYen": 620000,
+    "brackets": [
+      { "taxpayerUpToYen": 9000000, "generalYen": 380000, "elderly70plusYen": 480000 },
+      { "taxpayerUpToYen": 9500000, "generalYen": 260000, "elderly70plusYen": 320000 },
+      { "taxpayerUpToYen": 10000000, "generalYen": 130000, "elderly70plusYen": 160000 }
+    ]
+  },
+  "spouseSpecialDeduction": {
+    "source": "No.1195 '令和8年分以降' 표 — 本人 合計所得 1,000万円以下, 配偶者 合計所得 62万円超 133万円以下",
+    "taxpayerColumnsUpToYen": [9000000, 9500000, 10000000],
+    "rows": [
+      { "spouseOverYen": 620000, "spouseUpToYen": 950000, "deductionYen": [380000, 260000, 130000] },
+      { "spouseOverYen": 950000, "spouseUpToYen": 1000000, "deductionYen": [360000, 240000, 120000] },
+      { "spouseOverYen": 1000000, "spouseUpToYen": 1050000, "deductionYen": [310000, 210000, 110000] },
+      { "spouseOverYen": 1050000, "spouseUpToYen": 1100000, "deductionYen": [260000, 180000, 90000] },
+      { "spouseOverYen": 1100000, "spouseUpToYen": 1150000, "deductionYen": [210000, 140000, 70000] },
+      { "spouseOverYen": 1150000, "spouseUpToYen": 1200000, "deductionYen": [160000, 110000, 60000] },
+      { "spouseOverYen": 1200000, "spouseUpToYen": 1250000, "deductionYen": [110000, 80000, 40000] },
+      { "spouseOverYen": 1250000, "spouseUpToYen": 1300000, "deductionYen": [60000, 40000, 20000] },
+      { "spouseOverYen": 1300000, "spouseUpToYen": 1330000, "deductionYen": [30000, 20000, 10000] }
+    ]
+  },
+  "personalDeductionsYen": {
+    "source": "No.1160·1170·1171·1175",
+    "disabled": 270000,
+    "speciallyDisabled": 400000,
+    "speciallyDisabledLivingTogether": 750000,
+    "widow": 270000,
+    "singleParent": 350000,
+    "workingStudent": 270000,
+    "workingStudentIncomeLimitYen": 890000,
+    "notes": "寡婦·ひとり親 本人 合計所得 500万円以下. ひとり親의 子 総所得金額等 62万円以下(令和8年分). 勤労学生 合計所得 89万円以下(令和8年分, 勤労 외 소득 10万円以下)"
+  },
+  "lifeInsuranceDeduction": {
+    "source": "No.1140",
+    "totalCapYen": 120000,
+    "newContract": [
+      { "upToYen": 20000, "rule": "全額" },
+      { "upToYen": 40000, "rule": "× 1/2 + 10,000円" },
+      { "upToYen": 80000, "rule": "× 1/4 + 20,000円" },
+      { "upToYen": null, "rule": "40,000円" }
+    ],
+    "newLifeWithUnder23DependentFromR8": [
+      { "upToYen": 30000, "rule": "全額" },
+      { "upToYen": 60000, "rule": "× 1/2 + 15,000円" },
+      { "upToYen": 120000, "rule": "× 1/4 + 30,000円" },
+      { "upToYen": null, "rule": "60,000円" }
+    ],
+    "oldContract": [
+      { "upToYen": 25000, "rule": "全額" },
+      { "upToYen": 50000, "rule": "× 1/2 + 12,500円" },
+      { "upToYen": 100000, "rule": "× 1/4 + 25,000円" },
+      { "upToYen": null, "rule": "50,000円" }
+    ],
+    "mixedNote": "新·旧 둘 다: 旧 60,000円 초과면 旧 계산(최고 50,000円, 令和8年以降 23歳未満 扶養親族 있고 新生命保険料를 내면 60,000円), 이하면 新+旧 합계(최고 40,000円, 같은 경우 60,000円). 個人年金은 최고 50,000円/40,000円"
+  },
+  "earthquakeInsuranceDeduction": {
+    "source": "No.1145",
+    "earthquake": "50,000円以下 全額, 초과 50,000円",
+    "oldLongTerm": "10,000円以下 全額, 20,000円以下 × 1/2 + 5,000円, 초과 15,000円",
+    "capYen": 50000
+  },
+  "notVerified": [
+    "令和8年度税制改正 Q&A(令和8年5月) PDF — 12月 1日 施行 전후 年末調整 적용 관계(12월 年末調整에 改正後 金額 전부 적용인지, 源泉徴収 月額表와의 정산) 원문 미확인",
+    "住宅借入金等特別控除 — 年末調整에서의 控除額 산정(申告書·証明書 금액, 所得税額 한도) 원문 미확인",
+    "社会保険料控除·小規模企業共済等掛金控除 — 支払額 전액 공제 원문(No.1130·No.1135) 이번 회차에 안 읽음",
+    "生命保険料控除 각 계산의 1円未満 端数 처리 원문 미확인",
+    "扶養親族·配偶者 소득 요건의 給与 환산액(令和8年分) — No.1180 본문은 令和7年分 給与 123万円만 적음"
+  ]
 }
