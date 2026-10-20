@@ -207,7 +207,60 @@ const FR: typeof KO = {
   now: (s: number, ms: number) => `Maintenant : ${s} secondes · ${ms} millisecondes`,
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, fr: FR });
+/** 번체 중국어판 — '3天4小時5分鐘前 / 後', 1초 안이면 '現在'. 끊는 규칙은 relativeText 와 같다 */
+function relativeTextZhHant(diffMs: number): string {
+  const a = Math.abs(diffMs);
+  if (a < 1000) return "現在";
+  let sec = Math.floor(a / 1000);
+  const d = Math.floor(sec / 86_400);
+  sec -= d * 86_400;
+  const h = Math.floor(sec / 3600);
+  const mi = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  const parts: string[] = [];
+  if (d) parts.push(`${d.toLocaleString("zh-Hant")}天`);
+  if (h) parts.push(`${h}小時`);
+  if (mi && d < 100) parts.push(`${mi}分鐘`);
+  if (!d && !h && (s || !mi)) parts.push(`${s}秒`);
+  return `${parts.join("")}${diffMs < 0 ? "前" : "後"}`;
+}
+
+/**
+ * 번체 중국어판(/zh-hk/tools/unix-time/ — 대만판 /zh-tw/ 도 같이 쓸 수 있게 중립 서면어) — 영어판처럼 UTC·이 기기
+ * 시간대만(香港·台灣 표준시 오프셋 숫자는 쓰지 않는다), 날짜는 <html lang> Intl 표기('2026年10月19日週一').
+ */
+const ZH_HANT: typeof KO = {
+  text: (p) => enText(p, EN_LANG),
+  homeOffset: deviceOffset,
+  rel: relativeTextZhHant,
+  utc: "UTC",
+  device: (o: string) => `裝置時區（${o}）`,
+  home: "裝置時區",
+  homeSub: (t: string) => `裝置時區：${t}`,
+  utcSub: (t: string) => `UTC ${t}`,
+  msWrote: "以毫秒表示。",
+  sWrote: "以秒表示。",
+  int32: "這個時刻超出有正負號32位元整數的最大秒數（2,147,483,647 = 2038-01-19 03:14:07 UTC），舊系統可能無法儲存。",
+  negative: "這是1970年以前的時刻，所以是負數，以每日86,400秒向前推算。",
+  lineSec: "Unix 時間戳（秒）",
+  lineMs: "毫秒",
+  err: {
+    empty: "請輸入時間戳",
+    format: "請只輸入數字（不接受 1e9 這類科學記數法）",
+    "ms-fraction": "毫秒只接受整數，有小數請把單位改為秒",
+    "too-precise": "秒最多到小數後三位（毫秒）",
+    range: "只轉換1900年1月1日至9999年12月30日（UTC）之間的數值",
+  },
+  unitName: (u: "s" | "ms") => (u === "s" ? "秒" : "毫秒"),
+  readAuto: (n: number, u: string) => `${n}位數，當作${u}。如不正確請選擇單位。`,
+  read: (u: string) => `當作${u}。`,
+  badDate: "請檢查日期和時間（毫秒為0–999）",
+  cardTitle: "Unix 時間戳轉換",
+  shareText: "Unix 時間戳轉換 - jupocket.com",
+  now: (s: number, ms: number) => `現在：${s} 秒 · ${ms} 毫秒`,
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, fr: FR, "zh-Hant": ZH_HANT });
 
 /** 그 순간의 시간대 오프셋(분). 이 기기 시간대는 서머타임이 있으면 순간마다 다르다 */
 function offsetAt(ms: number): number {
