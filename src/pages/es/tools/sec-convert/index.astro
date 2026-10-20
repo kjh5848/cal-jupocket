@@ -1,0 +1,411 @@
+---
+/**
+ * Convertir segundos a minutos y horas — 스페인판 여섯 번째 도구(초·분·시간 변환). 한국어판 /tools/sec-convert/ 와
+ * 계산(lib/sec-convert.ts)·스크립트(scripts/sec-convert.ts 의 ES 사전)를 같이 쓰고, 스페인어 입력 읽기·표기는 lib/es/sec-convert.ts.
+ * 문장은 스페인어로 새로 썼다(번역 아님). 조사표 스페인 칸 '같음'(#91).
+ *
+ * 단위 값의 근거는 허용 출처 BOE — Real Decreto 2032/2009 Anexo Tabla 6(min = 60 s, h = 3600 s, d = 86 400 s),
+ * 기호·띄어쓰기 Cap. III 2.6·2.7·3.5, 숫자 표기 2.8·2.9(https://www.boe.es/buscar/act.php?id=BOE-A-2010-927, 확인 2026-10-21).
+ * 소제목은 스페인 구글 자동완성(keywords/es-sec-convert-2026-10-21.csv, hl es · gl es, 76개):
+ *   convertir segundos a minutos (fórmula·online·3600·600) / segundos a horas minutos y segundos (ejercicios·10000·4000) /
+ *   convertir minutos a horas y minutos·decimales / horas decimales a sexagesimales·a minutos·tabla·sumar /
+ *   milisegundos a segundos (tabla·símbolo·abreviatura) / excel·google sheets·python·sql server / segundos a minutos y grados
+ * 쓰지 않은 것: Excel 현지화 함수 이름·구분자(허용 출처 밖), registro de jornada·horas extra 규칙(원문 안 엶).
+ * 예시 숫자는 전부 lib 함수로 계산.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toNanos, partsToNanos, convertAll, minSec, UNITS } from "../../../../lib/sec-convert";
+import {
+  UNIT_NAME_ES,
+  withUnitEs,
+  readableEs,
+  clockEs,
+  digitsEs as D,
+  partsSubEs,
+} from "../../../../lib/es/sec-convert";
+
+const title = "Convertir segundos a minutos y horas — horas decimales y milisegundos";
+const description =
+  "Pasa segundos a minutos, horas, días o milisegundos a la vez, de segundos a horas, minutos y segundos, y de horas decimales a sexagesimales, con fórmulas de Excel.";
+
+const EX = "5400";
+const n0 = toNanos(EX, "s")!;
+const all0 = convertAll(n0);
+const p0 = partsToNanos("", "2", "15", "")!;
+const pAll0 = convertAll(p0);
+
+const H1 = convertAll(toNanos("1", "h")!);
+const D1 = convertAll(toNanos("1", "d")!);
+const H15 = convertAll(toNanos("1.5", "h")!);
+const S270 = toNanos("270", "s")!;
+const S270all = convertAll(S270);
+const S10k = toNanos("10000", "s")!;
+const S10kAll = convertAll(S10k);
+const M135 = toNanos("135", "min")!;
+const M135all = convertAll(M135);
+const SHIFT_MIN = String(17 * 60 - (8 * 60 + 30) - 60);
+const SHIFTall = convertAll(toNanos(SHIFT_MIN, "min")!);
+const H775 = toNanos("7.75", "h")!;
+const SUM = toNanos("7.5", "h")! + toNanos("8.25", "h")! + toNanos("6.75", "h")!;
+const SUMall = convertAll(SUM);
+const MS90 = toNanos("90000", "ms")!;
+const MS90all = convertAll(MS90);
+const MS1 = convertAll(toNanos("1", "ms")!);
+---
+
+<html lang="es-ES">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Convertir segundos a minutos, horas y días — también milisegundos y horas decimales</h1>
+      <p>
+        Escribe una cantidad y elige su unidad: al momento ves el valor en milisegundos, segundos, minutos, horas y días, la
+        forma «X horas, Y minutos y Z segundos» y el formato h:mm:ss. Las equivalencias son fijas: 1 minuto = 60 segundos,
+        1 hora = {D(H1.s)} segundos y 1 día = {D(D1.s)} segundos. Puedes escribir los decimales con coma (1,5) o con punto (1.5).
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="val">Valor</label>
+          <input type="text" id="val" inputmode="decimal" autocomplete="off" value={EX} placeholder="p. ej. 5400" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">Unidad</label>
+          <select id="unit" data-seg>
+            {UNITS.map((u) => <option value={u} selected={u === "s"}>{UNIT_NAME_ES[u]}</option>)}
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{withUnitEs(all0.s, "s")} =</p>
+          <p class="big" id="hero-value">{readableEs(n0)}</p>
+          <p class="hint" id="hero-sub">{withUnitEs(all0.min, "min")} · h:mm:ss {clockEs(n0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          {UNITS.map((u) => (
+            <div class="stat-chip">
+              <span class="label">{UNIT_NAME_ES[u]}</span>
+              <span class="value" id={`v-${u}`}>{D(all0[u])}</span>
+            </div>
+          ))}
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Guardar como PNG</button>
+          <button id="btn-share" type="button" class="secondary">Compartir</button>
+        </div>
+      </div>
+
+      <h2 id="parts">Calculadora de horas, minutos y segundos a segundos</h2>
+      <p>
+        ¿Tienes la duración ya separada, como la de un vídeo, una clase o un trayecto? Rellena solo las casillas que necesites y
+        deja vacías las demás. Si pones 90 en minutos, cuenta como 1 hora y 30 minutos.
+      </p>
+      <div class="calc-card" data-two>
+        <div class="sc-parts">
+          <div class="calc-input-wrap">
+            <label for="p-d">Días</label>
+            <input type="text" id="p-d" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-h">Horas</label>
+            <input type="text" id="p-h" inputmode="decimal" autocomplete="off" value="2" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-m">Minutos</label>
+            <input type="text" id="p-m" inputmode="decimal" autocomplete="off" value="15" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-s">Segundos</label>
+            <input type="text" id="p-s" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+        </div>
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">Total</p>
+          <p class="big" id="p-value">{withUnitEs(pAll0.s, "s")}</p>
+          <p class="hint" id="p-sub">{partsSubEs(pAll0.min, minSec(p0), pAll0.h, readableEs(p0))}</p>
+        </div>
+        <p class="hint" id="p-err" role="alert"></p>
+      </div>
+
+      <h2>Convertir segundos a minutos: la fórmula</h2>
+      <p>
+        Minutos = segundos ÷ 60. Para ir al revés, minutos × 60 = segundos. La regla general: de una unidad pequeña a una
+        grande se <strong>divide</strong>; de una grande a una pequeña se <strong>multiplica</strong>.
+      </p>
+      <ul>
+        <li>Segundos a minutos: ÷ 60 · minutos a segundos: × 60</li>
+        <li>Segundos a horas: ÷ {D(H1.s)} · horas a segundos: × {D(H1.s)}</li>
+        <li>Minutos a horas: ÷ 60 · horas a minutos: × 60</li>
+        <li>Segundos a días: ÷ {D(D1.s)}</li>
+      </ul>
+      <table>
+        <thead>
+          <tr><th>Segundos</th><th>Minutos</th><th>Minutos y segundos</th></tr>
+        </thead>
+        <tbody>
+          {["20", "90", "120", "180", "300", "420", "600", "3600"].map((s) => {
+            const n = toNanos(s, "s")!;
+            return (
+              <tr>
+                <td>{D(s)}</td>
+                <td>{D(convertAll(n).min)}</td>
+                <td>{readableEs(n)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <p>
+        Cuidado con los decimales: 270 segundos ÷ 60 = {D(S270all.min)} minutos, que son {readableEs(S270)} y
+        <strong>no</strong> 4 minutos y 50 segundos. La parte decimal es una fracción de minuto; para pasarla a segundos se
+        multiplica por 60 (0,5 × 60 = 30).
+      </p>
+
+      <h2>Cuántos segundos tiene una hora</h2>
+      <p>
+        1 hora = 60 minutos y cada minuto tiene 60 segundos, así que 1 hora = 60 × 60 = <strong>{D(H1.s)} segundos</strong>.
+        Una hora y media (escribe 1,5 con la unidad Horas) son {D(H15.s)} segundos o {D(H15.min)} minutos. Un día de 24 horas
+        tiene {D(D1.min)} minutos y {D(D1.s)} segundos.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Horas</th><th>Minutos</th><th>Segundos</th></tr>
+        </thead>
+        <tbody>
+          {["0.25", "0.5", "1", "1.5", "2", "3", "8", "24"].map((h) => {
+            const a = convertAll(toNanos(h, "h")!);
+            return (
+              <tr>
+                <td>{D(h)}</td>
+                <td>{D(a.min)}</td>
+                <td>{D(a.s)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h2>Pasar de segundos a horas, minutos y segundos (con ejercicios)</h2>
+      <p>Se empieza por la unidad más grande y en cada paso se queda el resto. Con {D("10000")} segundos:</p>
+      <ol>
+        <li>{D("10000")} ÷ {D(H1.s)} = 2 horas, y sobran {D("10000")} − {D("7200")} = {D("2800")} segundos</li>
+        <li>{D("2800")} ÷ 60 = 46 minutos, y sobran {D("2800")} − {D("2760")} = 40 segundos</li>
+        <li>
+          Resultado: {D("10000")} segundos = <strong>{readableEs(S10k)}</strong>, en formato h:mm:ss {clockEs(S10k)}, o
+          {" "}{withUnitEs(S10kAll.h, "h")} en decimal
+        </li>
+      </ol>
+      <p>Para practicar, tapa la columna de la derecha y compruébalo luego con la calculadora:</p>
+      <table>
+        <thead>
+          <tr><th>Segundos</th><th>Horas, minutos y segundos</th><th>h:mm:ss</th></tr>
+        </thead>
+        <tbody>
+          {["4000", "5000", "6542", "12504", "100000"].map((s) => {
+            const n = toNanos(s, "s")!;
+            return (
+              <tr>
+                <td>{D(s)}</td>
+                <td>{readableEs(n)}</td>
+                <td>{clockEs(n)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <p>
+        Si la cantidad pasa de un día, el formato h:mm:ss sigue contando horas por encima de 24: {D("100000")} segundos se
+        muestran como {clockEs(toNanos("100000", "s")!)}.
+      </p>
+
+      <h2>Convertir minutos a horas y minutos</h2>
+      <p>
+        Horas = minutos ÷ 60. Una reunión de {D(M135all.min)} minutos dura {D(M135all.h)} horas, es decir,
+        {" "}{readableEs(M135)}. Para escribirlo en horas y minutos, la parte entera de la división son las horas (135 ÷ 60 = 2)
+        y lo que sobra son los minutos (135 − 120 = 15).
+      </p>
+
+      <h2>Horas decimales a sexagesimales (y al revés)</h2>
+      <p>
+        Muchas hojas de horas y programas de fichaje piden las horas en decimal: 7,5 en lugar de 7 h 30 min. El reloj, en
+        cambio, cuenta en base 60 (sexagesimal). Para pasar de horas y minutos a decimal se dividen los minutos entre 60; un
+        ejemplo de jornada:
+      </p>
+      <ol>
+        <li>Entrada a las 8:30 y salida a las 17:00 — 8 horas y 30 minutos</li>
+        <li>Menos 1 hora de pausa → {SHIFT_MIN} minutos</li>
+        <li>{SHIFT_MIN} ÷ 60 = <strong>{D(SHIFTall.h)} horas</strong></li>
+      </ol>
+      <table>
+        <thead>
+          <tr><th>Minutos</th><th>Horas decimales</th><th>Horas y minutos</th></tr>
+        </thead>
+        <tbody>
+          {["6", "10", "12", "15", "20", "30", "40", "45", "50", "90"].map((m) => {
+            const n = toNanos(m, "min")!;
+            return (
+              <tr>
+                <td>{m}</td>
+                <td>{D(convertAll(n).h)}</td>
+                <td>{readableEs(n)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <p>
+        De horas decimales a horas y minutos (sexagesimales): se deja la parte entera y el resto se multiplica por 60. 7,75 horas
+        = 7 horas + 0,75 × 60 = {readableEs(H775)}. Elige «Horas» arriba y escribe 7,75 para comprobarlo.
+      </p>
+      <p>
+        Las horas decimales se suman como cualquier número: 7,5 + 8,25 + 6,75 = {D(SUMall.h)} horas, que son
+        {" "}{readableEs(SUM)}. Con horas y minutos hay que llevar: 45 minutos + 30 minutos = 1 hora y 15 minutos. Esta
+        calculadora solo cambia de unidad: no redondea fichajes ni calcula horas extra o descansos, que dependen de tu contrato,
+        tu convenio colectivo y la normativa laboral.
+      </p>
+
+      <h2>Milisegundos a segundos: tabla y símbolo</h2>
+      <p>
+        Milisegundos ÷ 1000 = segundos, ÷ {D("60000")} = minutos y ÷ {D("3600000")} = horas. Un crono de {D("90000")}
+        milisegundos son {D(MS90all.s)} segundos o {D(MS90all.min)} minutos, es decir, {readableEs(MS90)}. Los resultados
+        guardan seis decimales: 1 milisegundo se muestra como {D(MS1.s)} segundos.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Milisegundos</th><th>Segundos</th></tr>
+        </thead>
+        <tbody>
+          {["1", "100", "200", "250", "300", "500", "1000", "10000"].map((ms) => (
+            <tr>
+              <td>{D(ms)} ms</td>
+              <td>{D(convertAll(toNanos(ms, "ms")!).s)} s</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        Los símbolos oficiales son <strong>ms</strong> (milisegundo: prefijo mili, m, que vale 10<sup>−3</sup>, delante de
+        {" "}s), <strong>s</strong> (segundo), <strong>min</strong> (minuto), <strong>h</strong> (hora) y <strong>d</strong>
+        {" "}(día). No son abreviaturas: se escriben sin punto, no cambian en plural y van separados del número por un espacio
+        — 5 min, no 5min ni 5 mins, y 30 s, no 30 seg. Con el tiempo sí se pueden combinar unidades, como 1 h 30 min. A min, h y d nunca se les añade un prefijo.
+      </p>
+
+      <h2>Fórmulas en Excel y Google Sheets</h2>
+      <ul>
+        <li><strong>Segundos a minutos</strong>: <code>=A1/60</code> · <strong>segundos a horas</strong>: <code>=A1/3600</code></li>
+        <li><strong>Minutos a horas decimales</strong>: <code>=A1/60</code> · <strong>horas a minutos</strong>: <code>=A1*60</code></li>
+        <li><strong>Milisegundos a segundos</strong>: <code>=A1/1000</code></li>
+        <li>
+          <strong>Segundos en formato horas:minutos:segundos</strong>: <code>=A1/86400</code> y después un formato de celda
+          personalizado <code>[h]:mm:ss</code>. La hoja de cálculo guarda las duraciones como fracciones de día, por eso se
+          divide entre 86400; los corchetes de [h] dejan pasar de 24 horas.
+        </li>
+        <li>
+          <strong>Horas sexagesimales a decimales</strong>: si A1 tiene una hora como 7:45, <code>=A1*24</code> con formato de
+          número da 7,75. <strong>De decimal a horas</strong>: <code>=A1/24</code> con formato <code>[h]:mm</code>.
+        </li>
+        <li>
+          <strong>Entrada y salida en horas decimales</strong>: entrada en B1, salida en C1, <code>=(C1-B1)*24</code>; para
+          quitar 1 hora de pausa, <code>=(C1-B1)*24-1</code>.
+        </li>
+      </ul>
+
+      <h2>Python, JavaScript y SQL Server</h2>
+      <pre><code>{`# Python
+horas, resto = divmod(segundos, 3600)
+minutos, seg = divmod(resto, 60)
+
+// JavaScript
+const horas = Math.floor(segundos / 3600);
+const minutos = Math.floor((segundos % 3600) / 60);
+const seg = segundos % 60;
+
+-- SQL Server (hh:mm:ss, menos de 24 horas)
+SELECT CONVERT(varchar(8), DATEADD(SECOND, 5400, 0), 108);
+
+-- MySQL
+SELECT SEC_TO_TIME(5400);`}</code></pre>
+      <p>
+        ¿Partes de milisegundos? Divide antes entre 1000. En coma flotante, 1.1 × 60 puede dar 66.00000000000001; esta
+        calculadora trabaja con nanosegundos enteros, así que ese resto no aparece.
+      </p>
+
+      <details>
+        <summary>¿Por qué no hay semanas, meses ni años?</summary>
+        <p>
+          Una semana siempre tiene 7 días, pero un mes tiene de 28 a 31 días y un año 365 o 366, así que no tienen un número
+          fijo de segundos. Para el tiempo entre dos fechas usa la calculadora de
+          {" "}<a href="/es/tools/date-diff/">días entre dos fechas</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>¿Coma o punto para los decimales?</summary>
+        <p>
+          Las dos sirven: 1,5 y 1.5 dan lo mismo, y los espacios se ignoran, así que puedes escribir 86 400. Un punto seguido de
+          tres cifras se lee como separador de miles, igual que en el resto de calculadoras de esta versión: 1.500 son mil
+          quinientos. Para una hora y media escribe 1,5. No se aceptan números negativos: una duración no puede ser menor que
+          cero.
+        </p>
+      </details>
+
+      <details>
+        <summary>¿Y los grados, minutos y segundos de un ángulo?</summary>
+        <p>
+          Comparten nombre pero miden otra cosa: los grados, minutos y segundos de las coordenadas (1° = 60′ = 3600″) son de
+          ángulo, no de tiempo. Las cuentas en base 60 son las mismas, pero esta calculadora solo trabaja con duraciones.
+        </p>
+      </details>
+
+      <details>
+        <summary>¿De dónde salen 60, 3600 y 86 400?</summary>
+        <p>
+          En España, las unidades legales de medida están en el Real Decreto 2032/2009. Su tabla 6 recoge el minuto, la hora y
+          el día entre las unidades que no son del SI pero están autorizadas: 1 min = 60 s, 1 h = 60 min = 3600 s y
+          1 d = 24 h = 86 400 s. Es la misma tabla que publica la Oficina Internacional de Pesas y Medidas (BIPM) en el folleto
+          del SI.
+        </p>
+      </details>
+
+      <p>
+        ¿Tienes un timestamp? Prueba a <a href="/es/tools/unix-time/">convertir un timestamp Unix a fecha</a>, o la
+        {" "}<a href="/es/tools/dday/">cuenta atrás</a> para una fecha concreta.
+      </p>
+
+      <p>
+        Fuente: <a href="https://www.boe.es/buscar/act.php?id=BOE-A-2010-927" rel="noopener">Real Decreto 2032/2009, de 30 de
+        diciembre, por el que se establecen las unidades legales de medida — Anexo, tabla 6 y capítulo III</a> (BOE, consultado
+        el 21 de octubre de 2026) · <a href="https://www.bipm.org/en/publications/si-brochure" rel="noopener">BIPM, folleto
+        del SI, tabla 8</a>
+      </p>
+
+      <AdSlot label="sec-convert-result-es" />
+    </main>
+    <SiteFooter />
+    <style>
+      .sc-parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 10px; }
+      @media (max-width: 560px) { .sc-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      pre { overflow-x: auto; }
+    </style>
+    <script src="../../../../scripts/sec-convert.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
