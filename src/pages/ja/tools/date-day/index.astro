@@ -1,0 +1,248 @@
+---
+/**
+ * 曜日計算 — 일본어판 날짜 요일. 한국어판 /tools/date-day/ 와 계산(lib/date-day.ts 의 dayInfo)·
+ * 스크립트(scripts/date-day.ts 의 JA 사전)를 같이 쓰고, 문장은 일본어로 새로 썼다(번역 아님). 조사표 일본 칸 '단위(검증됨: 윤년)'.
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/jp-date-day-2026-10-20.csv):
+ *   何曜日 調べる·確認 / 今日は何週目·何週目の◯曜日 / 年間通算日 とは·意味·エクセル·計算 /
+ *   曜日 計算方法·公式·簡単·中学受験·日数·エクセル 関数 / うるう年 計算方法·計算式·エクセル·グレゴリオ暦
+ * 윤년은 閏年ニ関スル件(明治三十一年勅令第九十号) 원문(e-Gov API, 2026-10-20) — lib/jp/leap-year.ts 와 테스트로 그레고리력 규칙과 같음을 고정.
+ * 祝日은 표시하지 않는다 — 国民の祝日に関する法律 원문을 확인하지 않았고, lib 의 공휴일 판정은 한국 목록이다.
+ * 和暦(令和) 표기도 넣지 않았다(元号 정령 미확인). 본문 숫자는 전부 frontmatter 에서 dayInfo() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay } from "../../../../lib/date-calc";
+import { dayInfo, type DayInfo } from "../../../../lib/date-day";
+import { WEEKDAYS_JA } from "../../../../lib/date-format-ja";
+import { isLeapByChokurei, kigenYear } from "../../../../lib/jp/leap-year";
+
+const title = "曜日計算 — 何曜日か調べる・今日は何週目・年間通算日・うるう年";
+const description =
+  "1900年から2100年までの日付が何曜日かをすぐ調べます。第何◯曜日、ISO週番号・年始からの週番号、年間通算日（1月1日から何日目）と残り日数、うるう年かどうかも表示します。";
+
+const day = (iso: string) => dayInfo(toDay(iso)!);
+const youbi = (d: DayInfo) => `${WEEKDAYS_JA[d.weekday]}曜日`;
+const label = (d: DayInfo) => `${d.year}年${d.month}月${d.date}日`;
+
+const BASE = "2026-10-20";
+const d0 = day(BASE);
+
+// 본문 예시 — 전부 dayInfo 로 센다
+const y2k = day("2000-01-01");
+const omisoka = day("2026-12-31");
+const gantan27 = day("2027-01-01");
+const isoEdge1 = day("2021-01-03");
+const isoEdge2 = day("2024-12-30");
+const feb29 = day("2028-02-29");
+const plus100 = dayInfo(toDay(BASE)! + 100);
+const leapRows = [2026, 2027, 2028, 2100].map((y) => ({ y, k: kigenYear(y), leap: isLeapByChokurei(y) }));
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>曜日計算 — 何曜日か調べる</h1>
+      <p>
+        日付を選ぶと、その日が何曜日かがすぐ出ます。あわせて「第何◯曜日」、週番号、1月1日から何日目か（年間通算日）、
+        その年がうるう年かどうかも表示します。1900年から2100年までの日付に対応しています。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="date">日付</label>
+          <input type="date" id="date" value={BASE} min="1900-01-01" max="2100-12-31" />
+          <div class="ux-presets" role="group" aria-label="日付を選ぶ">
+            <button type="button" data-preset="today">今日</button>
+            <button type="button" data-preset="tomorrow">明日</button>
+            <button type="button" data-preset="newyear">来年の元日</button>
+            <button type="button" data-preset="christmas">今年のクリスマス</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="start">週の始まり（年始からの週番号・月の第何週に使う）</label>
+          <select id="start" data-seg>
+            <option value="0" selected>日曜日</option>
+            <option value="1">月曜日</option>
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{label(d0)}</p>
+          <p class="big" id="hero-value">{youbi(d0)}</p>
+          <p class="hint" id="hero-sub">平日・{d0.month}月の第{d0.nth}{youbi(d0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">年間通算日</span>
+            <span class="value" id="v-doy">{d0.dayOfYear}日目 / {d0.daysInYear}日</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">今年の残り日数</span>
+            <span class="value" id="v-left">{d0.daysLeft}日</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO週番号</span>
+            <span class="value" id="v-iso">{d0.iso.year}年 第{d0.iso.week}週</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">年始からの週番号</span>
+            <span class="value" id="v-cal">第{d0.calWeek}週</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">月の第何週</span>
+            <span class="value" id="v-month">{d0.month}月の第{d0.monthWeek}週</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">うるう年</span>
+            <span class="value" id="v-leap">{d0.leap ? "うるう年（366日）" : "平年（365日）"}</span>
+          </div>
+        </div>
+        <p class="hint" id="note">
+          第{d0.quarter}四半期・ISO表記 {d0.isoText}・Unix時間（UTC 0時）{d0.unix}
+          祝日は表示していません。平日・週末は土曜日と日曜日だけで分けています。
+        </p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>何曜日か調べる — 過去の日付も未来の日付も</h2>
+      <p>1900年から2100年まで、すべてグレゴリオ暦（いまの暦）で数えます。たとえば次のとおりです。</p>
+      <ul>
+        <li>{label(y2k)}は{youbi(y2k)}でした。</li>
+        <li>今年の大晦日、{label(omisoka)}は{youbi(omisoka)}です。</li>
+        <li>来年の元日、{label(gantan27)}は{youbi(gantan27)}です。</li>
+        <li>生まれた日を入れると、自分が何曜日に生まれたかがわかります。</li>
+      </ul>
+
+      <h2>今日は何週目？ 第何◯曜日と週番号の違い</h2>
+      <p>「何週目」には数え方がいくつかあるので、この計算機は次の3つを並べて出します。</p>
+      <ul>
+        <li>
+          <strong>第何◯曜日</strong>（結果の大きい文字の下）— その月の中で同じ曜日が何回目か。1日〜7日が第1、8日〜14日が第2…と
+          7日ごとに数えます。{label(d0)}は{d0.month}月の第{d0.nth}{youbi(d0)}です。「今日は何週目の日曜日？」「第3火曜日は何日？」
+          という問いにはこちらを使います。
+        </li>
+        <li>
+          <strong>月の第何週</strong> — カレンダーの行で数える方法で、1日がある行が第1週です。週の始まり（日曜日・月曜日）で
+          変わるため、上で選べます。第何◯曜日とずれることがあるので、両方を表示しています。
+        </li>
+        <li>
+          <strong>ISO週番号</strong>（ISO 8601）— 月曜日始まりで、その年の最初の木曜日を含む週が第1週です。そのため年の
+          はじめと終わりは年がずれることがあります。{label(isoEdge1)}は{isoEdge1.iso.year}年の第{isoEdge1.iso.week}週、
+          {label(isoEdge2)}は{isoEdge2.iso.year}年の第{isoEdge2.iso.week}週です。1年は52週か53週になります。
+        </li>
+        <li>
+          <strong>年始からの週番号</strong> — 1月1日を含む週を第1週として、週が変わるたびに1つ増やす数え方です。
+          {label(d0)}は日曜日始まりで第{d0.calWeek}週です。
+        </li>
+      </ul>
+      <p>
+        エクセルでは <code>=ISOWEEKNUM(A1)</code> がISO週番号、<code>=WEEKNUM(A1,1)</code> が日曜日始まり、
+        <code>=WEEKNUM(A1,2)</code> が月曜日始まりの週番号です。会社や学校の「第◯週」がどれを指すかは、決めた側に確認してください。
+      </p>
+
+      <h2>年間通算日とは — 1月1日から何日目か</h2>
+      <p>
+        年間通算日は、1月1日を1日目として数えたその年の何日目かです。{label(d0)}は{d0.daysInYear}日のうち
+        {d0.dayOfYear}日目で、年末まで残り{d0.daysLeft}日です（12月31日は残り0日）。エクセルでは A1 の日付に対して
+        <code>=A1-DATE(YEAR(A1),1,0)</code> で同じ数が出ます。
+      </p>
+
+      <h2>曜日の計算方法 — 日数を7で割った余り</h2>
+      <p>
+        曜日は7日ごとにくり返すので、曜日がわかっている日から何日離れているかを数え、7で割った余りの分だけ曜日を進めれば
+        求められます。中学受験の「曜日の計算」もこの考え方です。
+      </p>
+      <ul>
+        <li>
+          {label(d0)}は{youbi(d0)}。100日後は 100 ÷ 7 = 14 余り 2 なので、曜日を2つ進めて
+          {label(plus100)}は{youbi(plus100)}です。
+        </li>
+        <li>同じ月日は、平年（365日 = 52週 + 1日）をまたぐと曜日が1つ、うるう年（366日）をまたぐと2つ進みます。</li>
+      </ul>
+      <p>
+        エクセルで曜日を出すには <code>=TEXT(A1,"aaaa")</code>（「火曜日」）や <code>=TEXT(A1,"aaa")</code>（「火」）、
+        数字で欲しいときは <code>=WEEKDAY(A1)</code>（日曜日 = 1 〜 土曜日 = 7）を使います。
+      </p>
+
+      <h2>うるう年の計算方法</h2>
+      <p>
+        日本のうるう年は「閏年ニ関スル件」（明治三十一年勅令第九十号）で決まっています。勅令は神武天皇即位紀元
+        （紀元年数 = 西暦 + 660）で書かれていて、紀元年数が4で割り切れる年をうるう年とし、ただし紀元年数から660を引いた数
+        （= 西暦）が100で割り切れ、その商が4で割り切れない年は平年とします。西暦に直すと、
+        <strong>4で割り切れる年はうるう年、ただし100で割り切れて400で割り切れない年は平年</strong>という
+        グレゴリオ暦の規則と同じです。
+      </p>
+      <table>
+        <thead>
+          <tr><th>西暦</th><th>紀元年数</th><th>判定</th></tr>
+        </thead>
+        <tbody>
+          {leapRows.map((r) => (
+            <tr><td>{r.y}年</td><td>{r.k}</td><td>{r.leap ? "うるう年" : "平年"}</td></tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        {label(feb29)}は{youbi(feb29)}です。エクセルで判定するなら
+        <code>=IF(OR(AND(MOD(A1,4)=0,MOD(A1,100)&lt;&gt;0),MOD(A1,400)=0),"うるう年","平年")</code>
+        （A1 に西暦）のように書けます。
+      </p>
+
+      <details>
+        <summary>祝日は表示されますか？</summary>
+        <p>
+          表示しません。「平日」「週末」は土曜日と日曜日だけで分けているので、祝日や振替休日が平日に当たっても「平日」と出ます。
+          休みの日は勤め先や学校のカレンダーで確認してください。
+        </p>
+      </details>
+
+      <details>
+        <summary>和暦（令和◯年）で入れられますか？</summary>
+        <p>西暦の日付だけに対応しています。和暦の日付は西暦に直してから入れてください。</p>
+      </details>
+
+      <details>
+        <summary>Unix時間がいつも0時なのはなぜですか？</summary>
+        <p>
+          結果の下のUnix時間は、その日のUTC 0時（日本時間では同じ日の午前9時）の秒数です。端末の時間帯で変わらないように
+          そうしています。時刻まで変換したいときは <a href="/ja/tools/unix-time/">Unix時間の変換</a> を使ってください。
+        </p>
+      </details>
+
+      <p>
+        2つの日付の間の日数や、何日後の日付は <a href="/ja/tools/date-diff/">日数計算・日付計算</a>、ある日まであと何日かは
+        <a href="/ja/tools/dday/">あと何日・カウントダウン</a> で計算できます。
+      </p>
+
+      <p>
+        出典：<a href="https://laws.e-gov.go.jp/law/131IO0000000090" rel="noopener">閏年ニ関スル件（明治三十一年勅令第九十号） — e-Gov法令検索</a>（2026年10月20日確認）
+      </p>
+
+      <AdSlot label="date-day-result-ja" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-day.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

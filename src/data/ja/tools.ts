@@ -100,6 +100,15 @@ export const tools: LocaleTool[] = [
     basis: "math",
   },
   {
+    href: "/ja/tools/date-day/",
+    ko: "/tools/date-day/",
+    name: "曜日計算",
+    blurb: "その日が何曜日か・第何◯曜日・週番号・年間通算日・うるう年かどうかを表示",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
+  {
     href: "/ja/consumption-tax/",
     name: "消費税計算（税抜・税込）",
     blurb: "税抜価格から税込価格、税込価格から税抜価格と消費税額を10％・8％で計算",
