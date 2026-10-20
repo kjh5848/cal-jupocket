@@ -1,0 +1,314 @@
+---
+/**
+ * Holiday Entitlement Calculator UK — 영국판 제도 도구(basis "law"). 한국어판 연차(/guide/annual-leave-calculator/)와 제도가 달라
+ * (근속 가산·1년 미만 월 1일 없음, 5.6주·28일 상한) 짝(hreflang)을 맺지 않는다(조사표 영국 칸 '제도').
+ * 계산은 lib/gb/holiday.ts(정수 계산), 화면은 lib/gb/holiday-ui.ts, 숫자는 rates/gb/holiday-entitlement-2026.json
+ * (GOV.UK Holiday entitlement updated_at 2026-10-16 · WTR 1998 reg 13·13A·14·15A·15B · WTR (NI) 2016 reg 15·16·17·19 — 2026-10-21 확인).
+ *
+ * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-holiday-entitlement-2026-10-21.csv, hl en · gl gb):
+ *   holiday entitlement calculator uk · pro rata · part time · in hours · starting mid year · when leaving a job · northern ireland /
+ *   holiday pay calculator 12.07 · irregular hours / annual leave calculator hours to days · for leavers
+ * 계산하지 않는 것(rates notCalculated): 휴가 급여 금액, 북아일랜드 irregular hours, irregular 근로자의 퇴사 보상·28일 시간 환산,
+ * leave year 중간 입사의 날짜 비례, 통지 기간, 누가 irregular-hours 근로자인지 판정.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { annualDays, annualHours, firstYearAccrued, leaving, irregularAccrued, fmt } from "../../../lib/gb/holiday";
+import "../../../styles/global.css";
+
+const title = "Holiday Entitlement Calculator UK — Statutory Annual Leave in Days and Hours";
+const description =
+  "Work out UK statutory holiday: 5.6 weeks capped at 28 days, part-time pro rata, first-year accrual, leave owed when leaving and 12.07% for irregular hours.";
+
+const five = annualDays(5);
+const three = annualDays(3);
+const four = annualDays(4);
+const six = annualDays(6);
+const h225 = annualHours(3, 22.5)!;
+const h375 = annualHours(5, 37.5)!;
+const fy1 = firstYearAccrued(5, 1);
+const fy3 = firstYearAccrued(5, 3);
+const fy4 = firstYearAccrued(5, 4);
+const fy3d = firstYearAccrued(3, 1);
+const lv = leaving(5, "2026-01-01", "2026-07-01", 10)!;
+const ir30 = irregularAccrued(30);
+const ir29 = irregularAccrued(29);
+const ir25 = irregularAccrued(25);
+---
+
+<html lang="en-GB">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Holiday Entitlement Calculator UK</h1>
+      <p>
+        Almost all workers in the UK are legally entitled to 5.6 weeks' paid holiday a year — 28 days for someone who works 5 days a
+        week. Type how many days a week you work to see your statutory minimum. Further down you can work out leave in your first year,
+        holiday left when you leave a job, and leave built up by irregular-hours workers. The calculator counts days and hours only; it
+        does not work out holiday pay.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="he-days">Days worked a week</label>
+          <input type="number" id="he-days" value="5" min="0" max="7" step="0.5" inputmode="decimal" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="he-hours">Hours worked a week (optional)</label>
+          <input type="number" id="he-hours" value="" min="0" step="0.5" inputmode="decimal" placeholder="e.g. 37.5" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="he-value">
+          <p class="label">Statutory paid holiday a year</p>
+          <p class="big" id="he-value">{fmt(five.days)} days</p>
+          <p class="hint" id="he-formula">5 days a week × 5.6 weeks = {fmt(five.days)} days</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">In weeks</span>
+            <span class="value" id="he-weeks">5.6 weeks</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">In hours</span>
+            <span class="value" id="he-in-hours">—</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How is holiday entitlement calculated in the UK?</h2>
+      <p>
+        The statutory minimum is 5.6 weeks of paid leave each leave year: 4 weeks under regulation 13 of the Working Time Regulations
+        1998 and another 1.6 weeks under regulation 13A. In days, multiply the days you work each week by 5.6. The total is capped at
+        28 days, so working more days a week does not take you past 28.
+      </p>
+      <ul>
+        <li>5 days a week: 5 × 5.6 = {fmt(five.days)} days</li>
+        <li>4 days a week: 4 × 5.6 = {fmt(four.days)} days</li>
+        <li>3 days a week: 3 × 5.6 = {fmt(three.days)} days (the example GOV.UK gives)</li>
+        <li>6 days a week: 6 × 5.6 = {fmt(six.uncapped)}, but the cap means {fmt(six.days)} days</li>
+      </ul>
+      <p>
+        An employer can include bank holidays in the 28 days — they do not have to be given on top. An employer can also offer more
+        leave than the legal minimum; this calculator only shows the statutory minimum, so check your contract for anything extra.
+      </p>
+
+      <h2>Part-time holiday entitlement (pro rata)</h2>
+      <p>
+        Part-time workers on regular hours for the whole year get the same 5.6 weeks, which comes to fewer than 28 days. That is what
+        "pro rata" holiday means here: the 5.6 weeks are measured in your own working weeks. If you work half days, enter them as halves
+        — 2.5 days a week gives {fmt(annualDays(2.5).days)} days.
+      </p>
+
+      <h2>Holiday entitlement in hours</h2>
+      <p>
+        If your employer counts leave in hours, 5.6 weeks of your usual weekly hours gives the same entitlement: 22.5 hours a week ×
+        5.6 = {fmt(h225)} hours, and 37.5 hours a week × 5.6 = {fmt(h375)} hours. Enter your weekly hours above to see this. The
+        calculator only converts to hours when you work 5 days a week or fewer — above that the 28-day cap applies, and turning 28 days
+        into hours depends on how long your working days are, which the regulations do not fix.
+      </p>
+
+      <h2 id="first-year">Holiday in your first year (starting mid-year)</h2>
+      <p>
+        In the first year of a job, regulation 15A says leave builds up at one-twelfth of the yearly amount on the first day of each
+        month. A fraction of a day that is not a half day is rounded up: below a half day becomes a half day, above it becomes a whole
+        day. GOV.UK's examples for a 5-day week: {fmt(fy1)} days for the first month (28 ÷ 12 = 2.33) and {fmt(fy3)} days after three
+        months (28 ÷ 12 × 3). After four months it is {fmt(fy4)} days, and a 3-day week earns {fmt(fy3d)} days in the first month.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="fy-days">Days worked a week</label>
+          <input type="number" id="fy-days" value="5" min="0" max="7" step="0.5" inputmode="decimal" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="fy-months">Months started in your first year (including this one)</label>
+          <input type="number" id="fy-months" value="3" min="1" max="12" step="1" inputmode="numeric" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="fy-taken">Days already taken</label>
+          <input type="number" id="fy-taken" value="0" min="0" step="0.5" inputmode="decimal" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">Leave built up so far</p>
+          <p class="big" id="fy-value">{fmt(fy3)} days</p>
+          <p class="hint" id="fy-formula">28 ÷ 12 × 3 = 7, rounded up to the next half day</p>
+        </div>
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">Left to take now</span>
+            <span class="value" id="fy-left">{fmt(fy3)} days</span>
+          </div>
+        </div>
+      </div>
+      <p>
+        GOV.UK adds that an employer can instead work out the first month "pro rata", by the number of days worked, in which case the
+        one-twelfth is not given from the first day. This calculator uses the one-twelfth method. Regulation 15A does not apply to
+        anyone whose job began on or before 25 October 2001.
+      </p>
+
+      <h2 id="leaving">Holiday entitlement when leaving a job</h2>
+      <p>
+        When you leave part way through a leave year, regulation 14 sets the untaken leave you must be paid for, unless your contract or
+        another agreement says otherwise: (A × B) − C, where A is your yearly statutory leave, B is the share of the leave year that has
+        passed before your leaving date, and C is the leave you have already taken that year. Payment in place of statutory leave is
+        only allowed when you leave, and GOV.UK says it is due even after a dismissal for gross misconduct.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="lv-days">Days worked a week</label>
+          <input type="number" id="lv-days" value="5" min="0" max="7" step="0.5" inputmode="decimal" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lv-start">First day of the leave year</label>
+          <input type="date" id="lv-start" value="2026-01-01" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lv-end">Leaving date</label>
+          <input type="date" id="lv-end" value="2026-07-01" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lv-taken">Days taken this leave year</label>
+          <input type="number" id="lv-taken" value="10" min="0" step="0.5" inputmode="decimal" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">Untaken statutory leave</p>
+          <p class="big" id="lv-value">{fmt(lv.owed)} days</p>
+          <p class="hint" id="lv-formula">({fmt(lv.a)} × {lv.elapsedDays}/{lv.yearDays}) − 10 = {fmt(lv.owed)}</p>
+        </div>
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">A — leave for the year</span>
+            <span class="value" id="lv-a">{fmt(lv.a)} days</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">B — leave year passed</span>
+            <span class="value" id="lv-b">{lv.elapsedDays} of {lv.yearDays} days ({fmt(lv.b * 100, 1)}%)</span>
+          </div>
+        </div>
+      </div>
+      <p>
+        For B, this page counts the days from the first day of the leave year up to the day before your leaving date, and divides by
+        the number of days in that leave year (366 if it includes 29 February). That is this page's setting — the regulation only says
+        "the proportion of the worker's leave year which expired before the termination date". The result is not rounded, because
+        regulation 14 has no rounding rule. If you have taken more than your share, GOV.UK says the employer must not take money from your
+        final pay unless that was agreed in writing beforehand.
+      </p>
+
+      <h2 id="irregular">Irregular hours and part-year workers: the 12.07% rule</h2>
+      <p>
+        In England, Scotland and Wales, irregular-hours and part-year workers build up leave at 12.07% of the hours they work in each pay
+        period, for leave years starting on or after 1 April 2024 (regulation 15B). The leave is added on the last day of the pay period,
+        and a part-hour under 30 minutes counts as nothing while 30 minutes or more counts as a whole hour. GOV.UK's example: 30 hours in
+        a weekly pay period × 12.07% = {fmt(ir30.raw, 3)}, so {ir30.hours} hours of leave. 29 hours gives {fmt(ir29.raw, 4)} →{" "}
+        {ir29.hours} hours, and 25 hours gives {fmt(ir25.raw, 4)} → {ir25.hours} hours.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="ir-hours">Hours worked in the pay period</label>
+          <input type="number" id="ir-hours" value="30" min="0" step="0.25" inputmode="decimal" />
+        </div>
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">Leave built up this pay period</p>
+          <p class="big" id="ir-value">{ir30.hours} hours</p>
+          <p class="hint" id="ir-formula">30 hours × 12.07% = 3.621 hours, rounded to the nearest hour</p>
+        </div>
+      </div>
+      <p>
+        GOV.UK describes irregular hours as work where the number of hours in a pay period often or always changes, and part-year work as
+        having periods of at least a week in a leave year without work or pay. A worker cannot build up more than 28 days in a leave year
+        this way. For leave years that began on or before 31 March 2024 the older rules apply instead. This calculator does not decide
+        whether you are an irregular-hours worker, and it does not cover Northern Ireland, whose 2016 regulations we did not find a 12.07%
+        rule in.
+      </p>
+
+      <h2>Northern Ireland</h2>
+      <p>
+        Northern Ireland has its own Working Time Regulations (Northern Ireland) 2016. The figures used in the first three calculators are
+        the same there: 4 weeks plus 1.6 weeks, a 28-day cap, one-twelfth a month in the first year with the same half-day rounding, and
+        the same (A × B) − C formula when leaving.
+      </p>
+
+      <h2>Carrying over leave</h2>
+      <p>
+        GOV.UK says a worker who gets 28 days can carry over at most 8 days to the next year, if the contract allows it. Leave missed
+        because of maternity, paternity or other family leave can be carried over. Leave missed through sickness can be carried over up to
+        20 of the 28 days for regular-hours workers, or up to 28 days for irregular-hours and part-year workers. In England, Scotland and
+        Wales, regulation 13 says sick-leave carry-over must be used within 18 months of the end of the leave year it came from.
+      </p>
+
+      <details>
+        <summary>Does this calculator work out holiday pay?</summary>
+        <p>
+          No. Workers are entitled to a week's pay for each week of statutory leave, and how a week's pay is worked out depends on the
+          working pattern — see the holiday pay section of GOV.UK's holiday entitlement guide.
+        </p>
+      </details>
+
+      <details>
+        <summary>Are bank holidays on top of 28 days?</summary>
+        <p>
+          Not by law. GOV.UK says bank or public holidays do not have to be given as paid leave, and an employer can count them as part of
+          statutory annual leave. Your contract may give them in addition.
+        </p>
+      </details>
+
+      <details>
+        <summary>When does my leave year start?</summary>
+        <p>
+          Your contract should say. If it does not, regulation 13 says the leave year starts on the day your job began (if you started
+          after 1 October 1998) and on each anniversary of that date.
+        </p>
+      </details>
+
+      <p>
+        Related: <a href="/en-gb/tools/date-diff/">date calculator</a> for counting days between two dates, and the
+        <a href="/en-gb/tools/sec-convert/">decimal hours converter</a> for timesheets.
+      </p>
+
+      <h2>Sources</h2>
+      <ul>
+        <li>
+          <a href="https://www.gov.uk/holiday-entitlement-rights" rel="noopener" target="_blank">GOV.UK — Holiday entitlement</a> (updated 16
+          October 2026, checked 21 October 2026)
+        </li>
+        <li>
+          <a href="https://www.legislation.gov.uk/uksi/1998/1833/contents" rel="noopener" target="_blank">The Working Time Regulations 1998</a>,
+          regulations 13, 13A, 14, 15A and 15B (checked 21 October 2026)
+        </li>
+        <li>
+          <a href="https://www.legislation.gov.uk/nisr/2016/49/contents" rel="noopener" target="_blank"
+            >The Working Time Regulations (Northern Ireland) 2016</a
+          >, regulations 15, 16, 17 and 19 (checked 21 October 2026)
+        </li>
+      </ul>
+
+      <AdSlot label="holiday-result-en-gb" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/gb/holiday-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

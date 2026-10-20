@@ -70,4 +70,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/en-gb/holiday-entitlement/",
+    name: "Holiday entitlement calculator",
+    blurb: "UK statutory annual leave: 5.6 weeks capped at 28 days, part-time and hours, first-year accrual, leaving a job and 12.07% irregular hours",
+    type: "labor",
+    icon: "calendar",
+    basis: "law",
+  },
 ];
