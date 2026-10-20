@@ -1,0 +1,379 @@
+---
+/**
+ * 退職金の税金（退職所得の源泉徴収税額）の計算 — 일본어판 제도 도구(basis "law"). 한국 퇴직소득세(환산급여 방식)와 계산 구조가 달라 짝을 맺지 않는다.
+ * 계산은 lib/jp/retirement-income.ts, 근거는 rates/jp/retirement-income-2026.json(国税庁 タックスアンサー No.1420·No.2732·
+ * 別紙 速算表·No.2735·No.2741 [令和8年4月1日現在法令等], 2026-10-21 확인).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/jp-retirement-income-2026-10-21.csv):
+ *   退職金 税金 計算方法·計算式 / 退職所得控除額 計算·早見表 / 退職所得 計算 税率·端数 / 退職金 税金 計算 役員 /
+ *   退職金 源泉徴収 ない(申告書) / 退職金 手取り / 退職所得控除 2回目·ideco / 退職所得 計算 エクセル
+ * 住民税(総務省 원문 미확인)·手取り 합계·같은 해 여러 종류(No.2741 調整計算)·前年以前 重複期間은 계산하지 않는다.
+ * '5年ルール·10年ルール·19年ルール' 같은 통칭은 원문에 없어 쓰지 않고 국세청 문장(前年以前4年内·9年内·19年内)만 인용한다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import {
+  BRACKETS,
+  retirementTax,
+  retirementDeduction,
+  retirementIncome,
+  floorThousand,
+  withholdingTax,
+  formatYen,
+} from "../../../lib/jp/retirement-income";
+import "../../../styles/global.css";
+
+const title = "退職金の税金計算 — 退職所得控除額・課税退職所得金額・源泉徴収税額（速算表）";
+const description =
+  "退職金の支給額と勤続年数から、退職所得控除額・課税退職所得金額・所得税と復興特別所得税の源泉徴収税額を計算します。役員（特定役員退職手当等）・勤続5年以下（短期退職手当等）・申告書を出さない場合の20.42%も国税庁タックスアンサーの式で計算します。";
+
+const y = formatYen;
+const man = (yen: number) => (yen / 10000).toLocaleString("ja-JP") + "万円";
+const ex1 = retirementTax({ payment: 8_000_000, years: 10, months: 2, category: "general", disability: false });
+const ex2 = retirementTax({ payment: 23_000_000, years: 29, months: 2, category: "general", disability: false });
+const deductionYears = [1, 2, 3, 5, 10, 15, 20, 25, 30, 35, 38, 40];
+const upTo = (u: number | null, i: number) =>
+  u === null ? `${man(BRACKETS[i - 1].upToYen!)}超` : i === 0 ? `${man(u)}以下` : `${man(BRACKETS[i - 1].upToYen!)}超 ${man(u)}以下`;
+// 役員 例: 支給 1,000万円・役員等勤続年数 4年3か月 → 5年 → 控除 200万円 → 課税 800万円
+const officer = retirementTax({ payment: 10_000_000, years: 4, months: 3, category: "specifiedOfficer", disability: false });
+const officerGeneral = retirementTax({ payment: 10_000_000, years: 4, months: 3, category: "general", disability: false });
+const short = retirementTax({ payment: 10_000_000, years: 4, months: 3, category: "shortTerm", disability: false });
+// No.2735 例: A社 400万円・9年 → B社 合算 580万円・10年
+const a2735 = withholdingTax(floorThousand(retirementIncome(4_000_000, retirementDeduction(9), "general")));
+const b2735 = withholdingTax(floorThousand(retirementIncome(5_800_000, retirementDeduction(10), "general")));
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>退職金の税金（退職所得の源泉徴収税額）の計算</h1>
+      <p>
+        退職金の支給額（源泉徴収される前の金額）と勤続期間を入れると、退職所得控除額・課税退職所得金額と、支払の際に源泉徴収される
+        所得税・復興特別所得税の額を計算します。式と数字は国税庁 タックスアンサー No.1420・No.2732・別紙「退職所得の源泉徴収税額の速算表」
+        （いずれも令和8年4月1日現在法令等、令和8年10月21日に確認）です。住民税は計算に入れていません。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="ri-pay">退職金の支給額（税引き前）</label>
+          <input type="text" inputmode="numeric" id="ri-pay" value="8,000,000" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ri-years">勤続期間（年）</label>
+          <input type="number" id="ri-years" inputmode="numeric" min="0" max="80" step="1" value="10" />
+          <span class="unit">年</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ri-months">勤続期間（か月・1年未満の端数）</label>
+          <input type="number" id="ri-months" inputmode="numeric" min="0" max="11" step="1" value="2" />
+          <span class="unit">か月</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ri-cat">退職手当等の区分</label>
+          <select id="ri-cat" data-seg>
+            <option value="general" selected>一般</option>
+            <option value="specifiedOfficer">特定役員</option>
+            <option value="shortTerm">短期</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ri-dis">障害者になったことが直接の原因で退職</label>
+          <select id="ri-dis" data-seg>
+            <option value="no" selected>いいえ</option>
+            <option value="yes">はい</option>
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label">源泉徴収税額（所得税・復興特別所得税）</p>
+          <p class="big" id="hero-value">{y(ex1.tax)}</p>
+          <p class="hint" id="ri-formula">（{man(ex1.taxable)} × 5% − 0円）× 102.1%・「退職所得の受給に関する申告書」を出した場合</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">勤続年数（1年未満は切り上げ）</span>
+            <span class="value" id="out-years">{ex1.serviceYears}年</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">退職所得控除額</span>
+            <span class="value" id="out-deduction">{y(ex1.deduction)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">課税退職所得金額（1,000円未満切り捨て）</span>
+            <span class="value" id="out-taxable">{y(ex1.taxable)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">申告書を出さない場合（支給額 × 20.42%）</span>
+            <span class="value" id="out-nodecl">{y(ex1.taxNoDeclaration)}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>退職金の税金の計算方法・計算式</h2>
+      <p>退職所得は、ほかの所得と分けて税額を計算します（No.1420）。源泉徴収される税額は次の 4 段階で出します（No.2732）。</p>
+      <ol>
+        <li>勤続年数を数える — 1 年に満たない端数は 1 年に切り上げます（10 年 2 か月 → 11 年）。</li>
+        <li>勤続年数から退職所得控除額を出す（下の表）。</li>
+        <li>課税退職所得金額 ＝（退職金の支給額 − 退職所得控除額）× 1/2 — 1,000 円未満の端数は切り捨てます。</li>
+        <li>速算表で税額 ＝（課税退職所得金額 × 税率 − 控除額）× 102.1% — 1 円未満の端数は切り捨てます。</li>
+      </ol>
+      <p>
+        No.2732 の例 1（支給額 {man(8_000_000)}・勤続期間 10 年 2 か月）は、勤続年数 {ex1.serviceYears} 年・退職所得控除額 {man(ex1.deduction)}・
+        課税退職所得金額 {man(ex1.taxable)} で、税額は {y(ex1.tax)} です。上の計算機の初期値はこの例です。
+        例 2（{man(23_000_000)}・29 年 2 か月）は、30 年・{man(ex2.deduction)}・{man(ex2.taxable)} で、
+        （{man(ex2.taxable)} × 20% − 427,500円）× 102.1% ＝ 380,322.5円 の 1 円未満を切り捨てて {y(ex2.tax)} です。
+      </p>
+
+      <h2>退職所得控除額の計算と早見表</h2>
+      <table>
+        <thead>
+          <tr><th>勤続年数（A）</th><th>退職所得控除額</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>20年以下</td><td>40万円 × A（80万円に満たない場合は80万円）</td></tr>
+          <tr><td>20年超</td><td>800万円 ＋ 70万円 ×（A − 20年）</td></tr>
+        </tbody>
+      </table>
+      <p>
+        障害者になったことが直接の原因で退職した場合は、上の額（80 万円未満なら 80 万円）に 100 万円を加えます（No.2732）。
+        上の式で計算した早見表です。
+      </p>
+      <table>
+        <thead>
+          <tr><th>勤続年数</th><th>退職所得控除額</th><th>障害者の退職</th></tr>
+        </thead>
+        <tbody>
+          {deductionYears.map((n) => (
+            <tr><td>{n}年</td><td>{man(retirementDeduction(n))}</td><td>{man(retirementDeduction(n, true))}</td></tr>
+          ))}
+        </tbody>
+      </table>
+      <p>支給額が退職所得控除額以下なら、課税退職所得金額は 0 円で、源泉徴収される所得税もありません。</p>
+
+      <h2>退職所得の税率 — 源泉徴収税額の速算表</h2>
+      <table>
+        <thead>
+          <tr><th>課税退職所得金額（A）</th><th>税率（B）</th><th>控除額（C）</th></tr>
+        </thead>
+        <tbody>
+          {BRACKETS.map((b, i) => (
+            <tr><td>{upTo(b.upToYen, i)}</td><td>{b.pct}%</td><td>{y(b.deductionYen)}</td></tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        税額 ＝（A × B − C）× 102.1% です。102.1% は所得税と復興特別所得税をまとめて計算するための率です。
+        国税庁の例では、課税退職所得金額が 700 万円なら（700万円 × 23% − 636,000円）× 102.1% ≒ {y(withholdingTax(7_000_000))} です。
+      </p>
+      <p>
+        令和 9 年以後は防衛特別所得税が加わりますが、No.1420 は、改正前と改正後で合計税率に変更はなく、源泉徴収税額の計算方法も変わらないと説明しています。
+      </p>
+
+      <h2>端数の処理 — 1,000円未満と1円未満</h2>
+      <ul>
+        <li>勤続年数: 1 年未満の端数は 1 年に切り上げ</li>
+        <li>課税退職所得金額: 1,000 円未満の端数は切り捨て</li>
+        <li>税額: 1 円未満の端数は切り捨て（申告書を出さない場合の 20.42% も同じ）</li>
+      </ul>
+
+      <h2>役員の退職金・勤続5年以下の退職金</h2>
+      <p>
+        <strong>特定役員退職手当等</strong>は、役員等として勤務した年数（役員等勤続年数）が 5 年以下の人が、その年数に対応して受け取る退職手当等です。
+        1/2 をかけず、（支給額 − 退職所得控除額）がそのまま課税退職所得金額になります（No.1420・No.2732）。
+        役員等は、法人の取締役・執行役・会計参与・監査役・理事・監事・清算人とこれら以外で法人の経営に従事している一定の者、国会議員・地方議会の議員、国家公務員・地方公務員です。
+      </p>
+      <p>
+        <strong>短期退職手当等</strong>は、役員等以外として勤務した期間で数えた勤続年数（役員等の期間があればそれも含めて数える）が 5 年以下で、
+        特定役員退職手当等に当たらないものです。（支給額 − 退職所得控除額）が 300 万円以下なら 1/2、300 万円を超えると
+        150万円 ＋｛支給額 −（300万円 ＋ 退職所得控除額）｝です（令和 4 年 1 月 1 日以後に支払うべきもの）。
+      </p>
+      <p>同じ支給額 {man(10_000_000)}・勤続期間 4 年 3 か月（5 年・控除 {man(officer.deduction)}）で比べると次のとおりです。</p>
+      <table>
+        <thead>
+          <tr><th>区分</th><th>課税退職所得金額</th><th>源泉徴収税額</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>一般</td><td>{y(officerGeneral.taxable)}</td><td>{y(officerGeneral.tax)}</td></tr>
+          <tr><td>短期</td><td>{y(short.taxable)}</td><td>{y(short.tax)}</td></tr>
+          <tr><td>特定役員</td><td>{y(officer.taxable)}</td><td>{y(officer.tax)}</td></tr>
+        </tbody>
+      </table>
+      <p>どの区分に当たるかはこの計算機では判断しません。上の「退職手当等の区分」で選んでください。</p>
+
+      <h2>「退職所得の受給に関する申告書」を出さないと20.42%</h2>
+      <p>
+        申告書を出していないと、支給額にそのまま 20.42% をかけた額が源泉徴収されます（例: {man(8_000_000)} × 20.42% ＝ {y(1_633_600)}）。
+        この場合は本人が確定申告をして、申告書を出した場合と同じ計算で精算します（No.1420・No.2732）。
+        申告書を出していれば、退職所得の金額に応じた税額が源泉徴収されるので、原則として確定申告は必要ありません。
+        ただし医療費控除や寄附金控除を受けるために確定申告をするときは、確定申告書に退職所得の金額を書く必要があります（No.1420）。
+      </p>
+
+      <h2>退職金の手取りは？</h2>
+      <p>
+        この計算機が出すのは所得税・復興特別所得税の源泉徴収税額です。<strong>住民税は計算に入れていません</strong>（この計算機では住民税の原文を
+        確認していないため）。支給額からこの税額を引いた額は手取りではなく、住民税などを引く前の額です。
+      </p>
+
+      <h2>エクセルで計算する式</h2>
+      <p>B1 に支給額、B2 に退職所得控除額、B3 に速算表の税率（20% なら 0.2）、B4 に控除額を入れた一般退職手当等の式の例です。</p>
+      <ul>
+        <li>課税退職所得金額: <code>=ROUNDDOWN(MAX(B1-B2,0)/2,-3)</code></li>
+        <li>税額: <code>=ROUNDDOWN((B5*B3-B4)*1.021,0)</code>（B5 は上の課税退職所得金額）</li>
+      </ul>
+
+      <details>
+        <summary>同じ年に2か所から退職金を受け取ったときは？</summary>
+        <p>
+          No.2735 は、後から支払う会社が前に受け取った退職手当等と合わせた額を収入金額とし、勤続年数は重なっていない期間も含めて数え、
+          速算表の税額から前の会社で源泉徴収された税額を引くと説明しています。例では、A 社 400 万円（9 年）で {y(a2735)}、
+          B 社で合わせて 580 万円（10 年）なら {y(b2735)} から {y(a2735)} を引いた {y(b2735 - a2735)} が B 社の源泉徴収税額です。
+          この計算機は 1 か所分だけを計算します。
+        </p>
+      </details>
+
+      <details>
+        <summary>前にも退職金を受け取っています（2回目の退職金）</summary>
+        <p>
+          No.2732 は、前年以前 4 年内に退職手当等を受け取っている場合（確定拠出年金法にもとづく老齢給付金の一時金が関わる場合は、条件により前年以前 9 年内・19 年内）に勤続期間が重なると、重複期間の年数（1 年未満切り捨て）で計算した控除額相当額を退職所得控除額から引くと定めています。
+          この計算機は重複期間の調整をしません。また、同じ年に一般・短期・特定役員のうち 2 種類以上を受け取る場合（No.2741）も計算しません。
+        </p>
+      </details>
+
+      <details>
+        <summary>iDeCo（確定拠出年金）の一時金も退職所得ですか？</summary>
+        <p>
+          No.1420 は、確定拠出年金法の企業型年金規約・個人型年金規約にもとづいて老齢給付金として支給される一時金も退職所得とみなされると説明しています。
+          控除額の重複の扱いは上の「2回目の退職金」のとおりで、この計算機は調整しません。
+        </p>
+      </details>
+
+      <details>
+        <summary>勤続期間に休職期間は入りますか？</summary>
+        <p>
+          No.2732 は、長期の欠勤や病気の休職期間は勤続期間に含め、日額表丙欄の適用を受けていた期間や他の支払者のもとで勤務するための休職期間は除くなどと
+          定めています。自分の勤続期間がどうなるかは会社か税務署に確かめ、その年数を入れてください。
+        </p>
+      </details>
+
+      <details>
+        <summary>亡くなった人の退職金にも所得税がかかりますか？</summary>
+        <p>
+          No.2732 は、死亡退職で支払う退職手当等で相続税の課税対象となるものは所得税の課税対象とならず、源泉徴収も必要ないと説明しています。
+        </p>
+      </details>
+
+      <details>
+        <summary>全角の数字で入力してもいいですか？</summary>
+        <p>はい。「８，０００，０００」のような全角の数字も半角に直して計算します。</p>
+      </details>
+
+      <h2>出典</h2>
+      <ul>
+        <li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1420.htm" rel="noopener" target="_blank">国税庁 タックスアンサー No.1420 退職金を受け取ったとき(退職所得)</a>（令和8年4月1日現在法令等、令和8年10月21日確認）</li>
+        <li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2732.htm" rel="noopener" target="_blank">国税庁 タックスアンサー No.2732 退職手当等に対する源泉徴収</a>（令和8年4月1日現在法令等、令和8年10月21日確認）</li>
+        <li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2732_besshi.htm" rel="noopener" target="_blank">国税庁 別紙 退職所得の源泉徴収税額の速算表</a>（令和8年4月1日現在法令等、令和8年10月21日確認）</li>
+        <li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2735.htm" rel="noopener" target="_blank">国税庁 タックスアンサー No.2735 同じ年に2か所以上から退職手当等が支払われるとき</a>（令和8年4月1日現在法令等）</li>
+        <li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2741.htm" rel="noopener" target="_blank">国税庁 タックスアンサー No.2741 同じ年に一般退職手当等のほか、短期退職手当等や特定役員退職手当等がある場合</a>（令和8年4月1日現在法令等）</li>
+      </ul>
+
+      <AdSlot label="retirement-income-tax-result-ja" />
+    </main>
+    <SiteFooter />
+    <script>
+      import { retirementTax, formatYen, type Category } from "../../../lib/jp/retirement-income";
+      import { renderCard, downloadCard, shareCard } from "../../../lib/result-card";
+      import { track, trackCalculatorUse } from "../../../lib/track";
+
+      const reportUse = trackCalculatorUse("jp-retirement-income-tax");
+      const $ = (id: string) => document.getElementById(id)!;
+      const payIn = $("ri-pay") as HTMLInputElement;
+      const yearsIn = $("ri-years") as HTMLInputElement;
+      const monthsIn = $("ri-months") as HTMLInputElement;
+      const catIn = $("ri-cat") as HTMLSelectElement;
+      const disIn = $("ri-dis") as HTMLSelectElement;
+
+      /** 全角の数字・カンマも半角に直してから読む */
+      const toHalf = (s: string) => s.replace(/[０-９，．]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+      const num = (el: HTMLInputElement) => {
+        const v = Number(toHalf(el.value).replace(/,/g, ""));
+        return Number.isFinite(v) && v > 0 ? v : 0;
+      };
+      const man = (yen: number) => (yen / 10000).toLocaleString("ja-JP") + "万円";
+
+      let lastLines: [string, string][] = [];
+
+      function compute() {
+        const r = retirementTax({
+          payment: num(payIn),
+          years: num(yearsIn),
+          months: num(monthsIn),
+          category: catIn.value as Category,
+          disability: disIn.value === "yes",
+        });
+        $("hero-value").textContent = formatYen(r.tax);
+        $("ri-formula").textContent = r.bracket
+          ? `（${man(r.taxable)} × ${r.bracket.pct}% − ${formatYen(r.bracket.deductionYen)}）× 102.1%・「退職所得の受給に関する申告書」を出した場合`
+          : "支給額が退職所得控除額以下なので、課税退職所得金額は 0 円です";
+        $("out-years").textContent = `${r.serviceYears}年`;
+        $("out-deduction").textContent = formatYen(r.deduction);
+        $("out-taxable").textContent = formatYen(r.taxable);
+        $("out-nodecl").textContent = formatYen(r.taxNoDeclaration);
+        lastLines = [
+          ["退職金の支給額", formatYen(num(payIn))],
+          ["勤続年数", `${r.serviceYears}年`],
+          ["退職所得控除額", formatYen(r.deduction)],
+          ["課税退職所得金額", formatYen(r.taxable)],
+          ["源泉徴収税額", formatYen(r.tax)],
+        ];
+      }
+
+      for (const el of [yearsIn, monthsIn]) el.addEventListener("input", compute);
+      for (const el of [catIn, disIn]) {
+        el.addEventListener("change", compute);
+        el.addEventListener("input", compute);
+      }
+      payIn.addEventListener("input", () => {
+        reportUse(num(payIn));
+        compute();
+      });
+      payIn.addEventListener("blur", () => {
+        const v = num(payIn);
+        payIn.value = v === 0 ? "" : Math.floor(v).toLocaleString("ja-JP");
+      });
+
+      const buildCard = () => renderCard({ title: "退職金の税金の計算", lines: lastLines, footer: "jupocket.com" });
+      $("btn-download").addEventListener("click", () => {
+        track("save_result", { calculator: "jp-retirement-income-tax" });
+        downloadCard(buildCard(), "retirement-income-tax-result.png");
+      });
+      $("btn-share").addEventListener("click", async () => {
+        track("share_result", { calculator: "jp-retirement-income-tax" });
+        await shareCard(buildCard(), "退職金の税金の計算結果 - jupocket.com");
+      });
+
+      compute();
+    </script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

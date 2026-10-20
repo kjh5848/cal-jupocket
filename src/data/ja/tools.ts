@@ -149,4 +149,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/ja/retirement-income-tax/",
+    name: "退職金の税金計算",
+    blurb: "支給額と勤続年数から退職所得控除額・課税退職所得金額・源泉徴収税額を速算表で計算（役員・勤続5年以下にも対応）",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];
