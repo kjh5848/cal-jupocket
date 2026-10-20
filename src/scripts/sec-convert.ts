@@ -1,4 +1,4 @@
-import { toNanos, partsToNanos, convertAll, readable, readableJa, clock, UNITS, UNIT_NAME, UNIT_NAME_JA, type Unit } from "../lib/sec-convert";
+import { toNanos, partsToNanos, convertAll, readable, readableJa, clock, minSec, UNITS, UNIT_NAME, UNIT_NAME_JA, type Unit } from "../lib/sec-convert";
 import { pickLang } from "../i18n/ui";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
@@ -25,7 +25,8 @@ const KO = {
   bad: "0 이상의 숫자만 넣어 주세요 (소수는 여섯째 자리까지, 정수는 15자리까지)",
   lineIn: "입력",
   lineReadable: "풀어 쓰면",
-  partsSub: (min: string, h: string, r: string) => `${min}분 · ${h}시간 · ${r}`,
+  partsSub: (min: string, ms: { minutes: bigint; seconds: string }, h: string, r: string) =>
+    `${min}분${ms.seconds === "0" ? "" : `(${ms.minutes.toLocaleString("ko-KR")}분 ${ms.seconds}초)`} · ${h}시간 · ${r}`,
   cardTitle: "초·분·시간 변환",
   shareText: "초·분·시간 변환 - jupocket.com",
 };
@@ -38,7 +39,8 @@ const JA: typeof KO = {
   bad: "0以上の数字を入れてください（小数は6桁まで、整数は15桁まで）",
   lineIn: "入力",
   lineReadable: "何時間何分何秒",
-  partsSub: (min: string, h: string, r: string) => `${min}分 ・ ${h}時間 ・ ${r}`,
+  partsSub: (min: string, ms: { minutes: bigint; seconds: string }, h: string, r: string) =>
+    `${min}分${ms.seconds === "0" ? "" : `（${ms.minutes.toLocaleString("ja-JP")}分${ms.seconds}秒）`} ・ ${h}時間 ・ ${r}`,
   cardTitle: "秒・分・時間 変換",
   shareText: "秒・分・時間 変換 - jupocket.com",
 };
@@ -84,7 +86,7 @@ function computeParts() {
   set("p-err", "");
   const all = convertAll(n);
   set("p-value", `${all.s}${S.unit.s}`);
-  set("p-sub", S.partsSub(all.min, all.h, S.readable(n)));
+  set("p-sub", S.partsSub(all.min, minSec(n), all.h, S.readable(n)));
 }
 
 valIn.addEventListener("input", () => {

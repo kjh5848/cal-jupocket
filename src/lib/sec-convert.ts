@@ -84,6 +84,12 @@ export function split(ns: bigint): Parts {
   return { days, hours, minutes, seconds: secInt.toString() + (frac ? "." + frac : ""), totalHours: days * 24n + hours };
 }
 
+/** 총 분 + 남은 초 — 277.2분 → { minutes: 277n, seconds: "12" }. 초는 split 과 같이 마이크로초 반올림 */
+export function minSec(ns: bigint): { minutes: bigint; seconds: string } {
+  const p = split(ns);
+  return { minutes: p.totalHours * 60n + p.minutes, seconds: p.seconds };
+}
+
 /** '1일 0시간 2분 5초' — 앞쪽 0 단위는 뺀다(0이면 '0초') */
 export function readable(ns: bigint): string {
   const p = split(ns);

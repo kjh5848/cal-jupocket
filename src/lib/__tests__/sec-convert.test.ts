@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseScaled, toNanos, partsToNanos, inUnit, convertAll, readable, readableJa, clock, split } from "../sec-convert";
+import { parseScaled, toNanos, partsToNanos, inUnit, convertAll, readable, readableJa, clock, split, minSec } from "../sec-convert";
 import rates from "../../rates/sec-convert-2026.json";
 
 const ns = (raw: string, u: Parameters<typeof toNanos>[1]) => toNanos(raw, u)!;
@@ -84,5 +84,24 @@ describe("일본어판 풀어 쓰기(readableJa)", () => {
     expect(readableJa(ns("10000", "s"))).toBe("2時間46分40秒");
     expect(readableJa(ns("59.5", "s"))).toBe("59.5秒");
     expect(readableJa(partsToNanos("", "", "90", "")!)).toBe("1時間30分0秒");
+  });
+});
+
+describe("총 분 + 남은 초(minSec) — roberin #88 대조", () => {
+  it("4:37:12 → 277분 12초(277.2분), 0:00:59 → 0분 59초(0.983333분), 100:59:59 → 6059분 59초", () => {
+    const a = partsToNanos("", "4", "37", "12")!;
+    expect(inUnit(a, "s")).toBe("16,632");
+    expect(inUnit(a, "min")).toBe("277.2");
+    expect(minSec(a)).toEqual({ minutes: 277n, seconds: "12" });
+    const b = partsToNanos("", "", "", "59")!;
+    expect(inUnit(b, "min")).toBe("0.983333");
+    expect(minSec(b)).toEqual({ minutes: 0n, seconds: "59" });
+    const c = partsToNanos("", "100", "59", "59")!;
+    expect(inUnit(c, "s")).toBe("363,599");
+    expect(inUnit(c, "min")).toBe("6,059.983333");
+    expect(minSec(c)).toEqual({ minutes: 6059n, seconds: "59" });
+  });
+  it("하루를 넘어도 분으로 이어 센다 — 1일 0시간 1분 30.5초 → 1441분 30.5초", () => {
+    expect(minSec(partsToNanos("1", "", "1", "30.5")!)).toEqual({ minutes: 1441n, seconds: "30.5" });
   });
 });
