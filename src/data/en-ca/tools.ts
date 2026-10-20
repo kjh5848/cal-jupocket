@@ -17,4 +17,13 @@ export const tools: LocaleTool[] = [
     icon: "percent",
     basis: "math",
   },
+  {
+    href: "/en-ca/tools/date-diff/",
+    ko: "/tools/date-diff/",
+    name: "Days Between Dates Calculator",
+    blurb: "Days between two dates (with or without the end date), add days, weeks or months to a date, and Monday–Friday business days",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

@@ -1,0 +1,248 @@
+---
+/**
+ * Days between dates calculator — 캐나다판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/date-diff.ts 의 EN 사전, 날짜 표기는 <html lang="en-CA"> 의 Intl 표기), 문장은 캐나다 영어로 새로 썼다(번역 아님).
+ * 그레고리력 산술이라 rates 와 상관없다(조사표 캐나다 칸 55·56행 '단위').
+ *
+ * 소제목은 캐나다 구글 자동완성에서 왔다(keywords/ca-date-diff-2026-10-20.csv, hl en · gl ca):
+ *   days between dates calculator · days between 2 dates / add days to date calculator · add 30 days · add days to today /
+ *   business days calculator canada · working days calculator ontario · bc / days between dates calculator excel
+ * 계산기는 공휴일을 빼지 않는다(토·일만 뺀 weekdays). 연방·주 공휴일 이름·개수는 허용 출처로 확인하지 않아 쓰지 않는다.
+ * 캐나다 날짜 표기 관습도 원문으로 확인하지 않아 본문에서 주장하지 않는다(표기는 브라우저 Intl en-CA 그대로).
+ * 시간 환산(일수 × 24)은 넣지 않는다 — 일광 절약 시간 전환일은 하루가 24시간이 아니다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 span()·shift() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span, shift, type Span } from "../../../../lib/date-calc";
+
+const title = "Days Between Dates Calculator Canada — Add Days, Business Days";
+const description =
+  "Date calculator for Canada: count the days between two dates, include or leave out the end date, add days, weeks or months to a date, and count business days.";
+
+/** 하루 번호 → 'Tue, October 20, 2026' (UTC 자정이라 timeZone UTC) */
+const labelCa = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("en-CA", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${v.toLocaleString("en-CA")} ${one}${v === 1 ? "" : "s"}`;
+const spanTextCa = (s: Span) => {
+  const parts: string[] = [];
+  if (s.years) parts.push(plural(s.years, "year"));
+  if (s.months) parts.push(plural(s.months, "month"));
+  if (s.restDays || parts.length === 0) parts.push(plural(s.restDays, "day"));
+  return parts.join(", ");
+};
+const d = (iso: string) => toDay(iso)!;
+
+const START = "2026-10-20";
+const END = "2026-12-31";
+const s0 = span(d(START), d(END), false);
+
+// 본문 예시
+const ex1 = span(d("2026-11-09"), d("2026-11-13"), false);
+const ex1i = span(d("2026-11-09"), d("2026-11-13"), true);
+const year27 = span(d("2027-01-01"), d("2027-12-31"), true);
+const plus30 = shift(d(START), 30, "day");
+const plus100 = shift(d(START), 100, "day");
+const minus45 = shift(d(START), -45, "day");
+const plus8w = shift(d(START), 8, "week");
+const plus3m = shift(d(START), 3, "month");
+const aug31 = d("2027-08-31");
+const aug31plus1m = shift(aug31, 1, "month");
+const twoWeeks = span(d("2026-11-02"), d("2026-11-13"), true);
+const quarter = span(d("2027-01-01"), d("2027-03-31"), true);
+---
+
+<html lang="en-CA">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Days between dates calculator</h1>
+      <p>
+        Find out how many days separate two dates, or which date falls a set number of days, weeks or months before or
+        after another one. The result updates as you type.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">What are you calculating?</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>Days between two dates</option>
+            <option value="shift">Add or subtract from a date</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">Start date</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">End date</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">Include the end date (count the first and last day)</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">Start date</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">How many</label>
+            <input type="number" inputmode="numeric" id="amount" value="30" min="0" max="36500" data-step />
+            <select id="unit" aria-label="Unit">
+              <option value="day" selected>days</option>
+              <option value="week">weeks</option>
+              <option value="month">months</option>
+              <option value="year">years</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">Direction</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>Add (later date)</option>
+              <option value="before">Subtract (earlier date)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Days between</p>
+          <p class="big" id="hero-value">{plural(s0.days, "day")}</p>
+          <p class="hint" id="hero-sub">{spanTextCa(s0)} · {plural(s0.weeks, "week")}, {plural(s0.weekRest, "day")}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Weekdays (Mon–Fri)</span>
+            <span class="value" id="v1">{plural(s0.weekdays, "day")}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Dates</span>
+            <span class="value" id="v2">{labelCa(s0.from)} → {labelCa(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Days between 2 dates — with or without the end date</h2>
+      <p>
+        The calculator subtracts the start date from the end date, so the first day is not counted on its own:
+        Monday, November 9 to Friday, November 13, 2026 is {plural(ex1.days, "day")}.
+      </p>
+      <p>
+        Tick <strong>Include the end date</strong> when both the first and the last day count — a vacation, a rental, a
+        course or anything described as "from … to … inclusive". The same week then comes to {plural(ex1i.days, "day")}, and
+        the whole of 2027, January 1 to December 31, comes to {plural(year27.days, "day")}.
+      </p>
+      <p>
+        The dates can go in either order. If the end date comes first, the calculator swaps them and tells you under the
+        result. When the page opens, the range runs from today to December 31, so you can see how many days are left in the
+        year.
+      </p>
+
+      <h2>Add days to a date or to today</h2>
+      <ul>
+        <li>
+          <strong>Days</strong> — add 30 days to {labelCa(d(START))} and you land on {labelCa(plus30)}; add 100 days and
+          you land on {labelCa(plus100)}. Going back 45 days gives {labelCa(minus45)}.
+        </li>
+        <li><strong>Weeks</strong> — each week is 7 days, so 8 weeks after {labelCa(d(START))} is {labelCa(plus8w)}.</li>
+        <li>
+          <strong>Months and years</strong> — the month moves and the day of the month stays put: 3 months after
+          {" "}{labelCa(d(START))} is {labelCa(plus3m)}. When the target month is shorter, you get its last day, so one
+          month after {labelCa(aug31)} is {labelCa(aug31plus1m)}.
+        </li>
+      </ul>
+      <p>
+        Under the total, the range is also shown as years, months and days (full calendar months first, then the leftover
+        days) and as weeks and days — for the opening range that's {spanTextCa(s0)}, or {plural(s0.weeks, "week")} and
+        {" "}{plural(s0.weekRest, "day")}.
+      </p>
+
+      <h2>Business days calculator for Canada — Ontario, BC and other provinces</h2>
+      <p>
+        The <strong>Weekdays</strong> figure counts every Monday to Friday in the range and follows the same "include the end
+        date" setting as the total. Monday, November 2 to Friday, November 13, 2026, end date included, is
+        {" "}{plural(twoWeeks.weekdays, "weekday")}; the first quarter of 2027, January 1 to March 31, has
+        {" "}{plural(quarter.weekdays, "weekday")}.
+      </p>
+      <p>
+        <strong>Statutory holidays are not subtracted.</strong> Which holidays apply depends on your province or territory and
+        on whether your workplace is federally or provincially regulated, so a single list wouldn't fit everyone. Take the
+        holidays that land on a weekday in your range — plus any days your employer is closed — off the weekday count to get
+        business days.
+      </p>
+
+      <h2>Days between dates in Excel or Google Sheets</h2>
+      <p>Put the start date in A2 and the end date in B2:</p>
+      <ul>
+        <li><code>=B2-A2</code> — days between, end date not included (format the cell as a number).</li>
+        <li><code>=B2-A2+1</code> — days between, end date included.</li>
+        <li><code>=DATEDIF(A2,B2,"m")</code> — full months between the dates (<code>"y"</code> for full years).</li>
+        <li><code>=A2+30</code> or <code>=EDATE(A2,3)</code> — add 30 days, or add 3 months.</li>
+        <li>
+          <code>=NETWORKDAYS(A2,B2,H2:H20)</code> — weekdays between the dates, minus the holidays you list in H2:H20.
+          NETWORKDAYS counts both the first and last day, so compare it with the "include the end date" result here.
+        </li>
+      </ul>
+
+      <details>
+        <summary>What's the difference between "days between" and "days from today"?</summary>
+        <p>
+          "Days between" measures the gap between two dates; "days from today" gives you a new date. Four days after
+          November 9 is November 13, and the gap from November 9 to 13 is {plural(ex1.days, "day")} — or
+          {" "}{plural(ex1i.days, "day")} with the end date included.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does it handle leap years?</summary>
+        <p>
+          Yes. It follows the Gregorian calendar, so February 29 is counted in leap years, and one year after February 29 is
+          February 28 in a regular year.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why are there no hours?</summary>
+        <p>
+          On the days clocks change for daylight saving time, a day is 23 or 25 hours long, so days × 24 can be off by an
+          hour. The calculator sticks to days and weeks.
+        </p>
+      </details>
+
+      <AdSlot label="date-diff-result-en-ca" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
