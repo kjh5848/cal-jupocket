@@ -1,0 +1,239 @@
+---
+/**
+ * Days Until — 싱가포르 영어판 네 번째 도구(디데이). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 EN 사전 — 날짜는 <html lang="en-SG"> 로 일·월 순)를 같이 쓰고,
+ * 문장은 싱가포르 영어로 새로 썼다(번역 아님). 조사표 싱가포르 칸 '단위'. 고친 공유 파일 없음.
+ *
+ * 소제목은 싱가포르 구글 자동완성에서 왔다(keywords/sg-dday-2026-10-21.csv, hl en · gl sg):
+ *   how many days until · days until christmas · how many days until christmas 2026 / countdown calculator days hours minutes /
+ *   how many days until 2027 / how many days until psle · o levels / days until halloween / birthday countdown calculator
+ * 프리셋 버튼은 공유 스크립트가 정한 네 개(100일·12/25·12/31·1/1) 그대로.
+ * 공휴일 날짜는 MOM 원문(https://www.mom.gov.sg/employment-practices/public-holidays, Last updated 19 June 2026,
+ * 2026-10-21 확인)에서 읽힌 것만 쓴다: Deepavali 2026-11-08(일, 쉬는 날이 그날이면 11-09 월요일),
+ * Christmas Day 2026-12-25(금). PSLE·O-Level 시험 날짜는 허용 출처에 없어 쓰지 않는다.
+ * 하루는 24시간으로 센다. 본문 숫자는 전부 아래 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, countdown, type Countdown } from "../../../../lib/date-calc";
+
+const title = "Days Until Christmas Singapore — Countdown to Deepavali, PSLE or Any Date";
+const description =
+  "How many days to go until Christmas, Deepavali, 2027, your PSLE or O-Level paper, or any date? A Singapore countdown in days, hours and minutes.";
+
+/** 하루 번호 → 'Wed, 21 October 2026' (UTC 자정이라 timeZone UTC) */
+const labelSg = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("en-SG", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${v.toLocaleString("en-SG")} ${one}${v === 1 ? "" : "s"}`;
+const left = (c: Countdown) => (c.side === 0 ? "Today" : c.side > 0 ? `${plural(c.days, "day")} to go` : `${plural(c.days, "day")} ago`);
+const d = (iso: string) => toDay(iso)!;
+
+const BASE = "2026-10-21";
+const TARGET = "2026-12-25";
+const base = d(BASE);
+const target = d(TARGET);
+const c0 = countdown(target, null, base, 0);
+const days0 = Math.floor(c0.seconds / 86_400);
+
+// 본문 예시 — 전부 BASE 에서 센다
+const halloween = d("2026-10-31");
+const deepavali = d("2026-11-08");
+const deepavaliMon = d("2026-11-09");
+const xmas = d("2026-12-25");
+const nye = d("2026-12-31");
+const ny = d("2027-01-01");
+const cHalloween = countdown(halloween, null, base, 0);
+const cDeepavali = countdown(deepavali, null, base, 0);
+const cXmas = countdown(xmas, null, base, 0);
+const cNye = countdown(nye, null, base, 0);
+const cNy = countdown(ny, null, base, 0);
+const tomorrow = countdown(base + 1, null, base, 0);
+// 오전 8시 시험 — 기준일 오후 8시에 열었을 때(다음 주 수요일 시험 예시)
+const examDay = d("2026-10-28");
+const exam = countdown(examDay, 8 * 3600, base, 20 * 3600);
+const examD = Math.floor(exam.seconds / 86_400);
+const examH = Math.floor((exam.seconds % 86_400) / 3600);
+const pastDay = d("2026-08-09");
+const past = countdown(pastDay, null, base, 0);
+---
+
+<html lang="en-SG">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>How Many Days to Go? Countdown Calculator</h1>
+      <p>
+        Choose a date to see how many days are left, and the days, hours and minutes still to go. Switch on “Count to a time”
+        when something starts at a fixed hour — an exam paper, a flight out of Changi or a dinner booking.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">Target date</label>
+          <input type="date" id="target" value={TARGET} />
+          <div class="ux-presets" role="group" aria-label="Common dates">
+            <button type="button" data-preset="plus100">100 days</button>
+            <button type="button" data-preset="xmas">Christmas Day</button>
+            <button type="button" data-preset="yearend">31 Dec</button>
+            <button type="button" data-preset="newyear">New Year's Day</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">Count to a time</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">Target time</label>
+          <input type="time" id="time" value="08:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">Start date (usually today)</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Until {labelSg(target)}</p>
+          <p class="big" id="hero-value">{left(c0)}</p>
+          <p class="hint" id="hero-sub">Counting the start date as day 1, the target date is day {c0.countDays}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Time left</span>
+            <span class="value" id="v1">{plural(days0, "day")}, 0 hours, 0 minutes</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Counting day 1</span>
+            <span class="value" id="v2">Day {c0.countDays}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">Start date</span>
+            <span class="value" id="v3">{labelSg(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How many days until a date — does today count?</h2>
+      <p>
+        “Days to go” is simply <strong>the target date minus today</strong>. Today is left out and the target date is counted, so
+        tomorrow shows {left(tomorrow)}. On the day itself the result reads “Today” until midnight, and any date that has passed
+        reads “days ago”.
+      </p>
+      <p>
+        Some countdowns start at day 1 instead — the first day of NS, a new job or a 30-day challenge. For those, read the
+        “Counting day 1” figure, which is always one more than the days to go. Counting {labelSg(base)} as day 1,
+        {" "}{labelSg(target)} is day {c0.countDays}.
+      </p>
+
+      <h2>How many days until Christmas 2026?</h2>
+      <p>Counting from {labelSg(base)}:</p>
+      <ul>
+        <li>Halloween ({labelSg(halloween)}): {left(cHalloween)}</li>
+        <li>Deepavali ({labelSg(deepavali)}): {left(cDeepavali)}</li>
+        <li>Christmas Day ({labelSg(xmas)}): {left(cXmas)}</li>
+        <li>New Year's Eve ({labelSg(nye)}): {left(cNye)}</li>
+        <li>New Year's Day 2027 ({labelSg(ny)}): {left(cNy)}</li>
+      </ul>
+      <p>
+        Deepavali and Christmas Day are on the Ministry of Manpower's 2026 public holiday list. Deepavali falls on a Sunday, and
+        MOM notes that {labelSg(deepavaliMon)} is a public holiday if your rest day falls on the Sunday. The other dates in the
+        list are just calendar dates. The calculator fills in today's date when the page opens, so your numbers always start from
+        the day you visit.
+      </p>
+
+      <h2>Countdown in days, hours and minutes</h2>
+      <ul>
+        <li>
+          <strong>Date only</strong> — counts down to the end of the target date (midnight, when the next day begins).
+        </li>
+        <li>
+          <strong>With a time</strong> — counts down to that exact time. Once the time has passed, even on the same day, the box
+          changes to “Time since”. Opened at 8pm on {labelSg(base)}, an 8am paper on {labelSg(examDay)} is
+          {" "}{plural(examD, "day")} and {plural(examH, "hour")} away.
+        </li>
+        <li>
+          <strong>Seconds tick live</strong> while the start date is today. Pick another start date and the countdown runs from
+          midnight on that day.
+        </li>
+      </ul>
+      <p>
+        Every day is counted as exactly 24 hours, using your phone's or computer's clock. For something happening in another
+        time zone — a flight landing overseas, a live stream abroad — convert the start time to Singapore time before you enter it.
+      </p>
+
+      <h2>How many days until PSLE or O-Levels?</h2>
+      <p>
+        Enter the date and start time of your first paper from your official exam timetable, then switch on “Count to a time”.
+        This page doesn't list exam dates — papers and timings differ by subject and year, so always take them from the timetable
+        you were given. “Save as image” makes a countdown card you can stick on your study wall or send to the class chat.
+      </p>
+
+      <h2>How many days until 2027?</h2>
+      <p>
+        Tap “New Year's Day” for 1 January next year, or “31 Dec” for the last day of this year. From {labelSg(base)} that's
+        {" "}{left(cNye)} to New Year's Eve and {left(cNy)} until 2027 begins.
+      </p>
+
+      <h2>Birthday countdown calculator</h2>
+      <p>
+        Put your next birthday in as the target date. If this year's birthday is already over, use next year's date — otherwise
+        the result shows how many days ago it was. Switch on “Count to a time” to end the countdown when the party starts.
+      </p>
+
+      <details>
+        <summary>How do I count only working days until a date?</summary>
+        <p>
+          This page counts every calendar day, weekends included. For Monday-to-Friday days, enter today and the target date in
+          the <a href="/en-sg/tools/date-diff/">date calculator</a> — it counts weekdays but doesn't take out public holidays.
+        </p>
+      </details>
+
+      <details>
+        <summary>What if the date has already passed?</summary>
+        <p>
+          You'll see “days ago”, and the time box changes to “Time since” — useful for how long it has been since a start date
+          or deadline. Counting from {labelSg(base)}, National Day on {labelSg(pastDay)} was {left(past)}.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I count down in weeks?</summary>
+        <p>
+          Divide the days by 7. {labelSg(target)} is {left(c0)} from {labelSg(base)}, which is
+          {" "}{plural(Math.floor(c0.days / 7), "week")} and {plural(c0.days % 7, "day")}.
+        </p>
+      </details>
+
+      <p class="hint">
+        Public holiday dates: Ministry of Manpower,
+        {" "}<a href="https://www.mom.gov.sg/employment-practices/public-holidays" rel="noopener">Public holidays</a>
+        {" "}(checked 21 October 2026).
+      </p>
+
+      <AdSlot label="dday-result-en-sg" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

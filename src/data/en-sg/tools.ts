@@ -35,4 +35,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/en-sg/tools/dday/",
+    ko: "/tools/dday/",
+    name: "Days Until Countdown",
+    blurb: "How many days to go until Christmas, Deepavali, 2027, an exam or any date — a live countdown in days, hours and minutes",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
