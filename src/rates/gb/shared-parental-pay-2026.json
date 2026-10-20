@@ -1,7 +1,6 @@
 {
   "country": "GB",
-  "draft": true,
-  "note": "초안 — 조사표 육아휴직 급여 행(/guide/parental-leave-pay-calculator/)의 영국 칸. 영국판 Statutory Shared Parental Pay(ShPP) 계산기용. 한국 육아휴직 급여(통상임금 × 지급률, 상·하한)와 구조가 다르다: 영국 ShPP 는 주 단위 정액 상한 £194.32 와 평균 주급(normal weekly earnings) 90% 중 낮은 쪽, 지급 주 수는 39주 − 엄마가 받은 SMP/MA 주 수 − 상대가 신청한 ShPP 주 수(부모 합산 최대 37주 — 출산 뒤 의무 휴가 2주 때문). 숫자는 GOV.UK 안내와 legislation.gov.uk 원문에서 읽은 것만. 과세연도 2026-27(2026-04-06 부터) — £194.32 는 Social Security Benefits Up-rating Order 2026(SI 2026/148) art 10(2)·1(3)(c) 로 2026-04-06 부터, 그 전 값 £187.18. NI 도 같은 £194.32(SR 2026/59, 2026-04-06). 다음 개정은 2027-04 Up-rating Order 예정(원문에 2027 값 없음 — 그 전에 다시 확인). 계산하지 않을 것(페이지 범위 후보): SMP 첫 6주 90%(상한 없음)·Maternity Allowance·고용주 enhanced pay·자격 판정(26주 근속·partner 66주 중 26주)·notice 8주·leave(50주) 일정 짜기.",
+  "note": "영국판 /en-gb/shared-parental-pay/ 가 쓴다(birth 부모만). 조사표 육아휴직 급여 행(/guide/parental-leave-pay-calculator/)의 영국 칸. 한국 육아휴직 급여(통상임금 × 지급률, 상·하한)와 구조가 달라 짝 없음. 페이지 범위: 주 지급액 min(£194.32, NWE × 90%)·하루치(1/7)·1p 올림(reg 40), 남은 ShPP 주 수 39 − SMP/MA − 상대 신청(reg 10, 일부 주는 한 주), NWE 도우미(reg 32(4)(5)). GB·NI 의 reg 10·32·40 이 같은 값(2026-10-21 본문 확인). 과세연도 2026-27(2026-04-06 부터) — £194.32 는 SI 2026/148 art 10(2)(NI SR 2026/59), 그 전 £187.18. 다음 개정은 2027-04 Up-rating Order 예정(원문에 2027 값 없음 — 2027-04-06 전에 다시 확인, 페이지는 그날 넘는 합계에 '아직 안 정해진 새 금액' 문구). 하루치는 반올림 전 90% 값의 1/7 을 올림 — 40(2)(b) 를 이 페이지가 그렇게 읽음.",
   "verifiedOn": "2026-10-21",
   "taxYear": "2026-27 (2026-04-06 ~ 2027-04-05)",
   "sources": [
@@ -16,6 +15,14 @@
     {
       "label": "같은 규정 reg 10 (지급 주 수 = 39주 − SMP/MA 주 수 − 상대가 신청한 ShPP 주 수)",
       "url": "https://www.legislation.gov.uk/uksi/2014/3051/regulation/10"
+    },
+    {
+      "label": "Statutory Shared Parental Pay (General) Regulations (Northern Ireland) 2015 reg 10 — GB reg 10 과 같은 39주 공식·일부 주 한 주(10(12))",
+      "url": "https://www.legislation.gov.uk/nisr/2015/94/regulation/10"
+    },
+    {
+      "label": "같은 NI 규정 reg 32 — GB reg 32 와 같은 NWE 계산(8주 relevant period, 월급 ÷ 개월(가장 가까운 정수) × 12 ÷ 52, 그 밖 ÷ 날 수 × 7)",
+      "url": "https://www.legislation.gov.uk/nisr/2015/94/regulation/32"
     },
     {
       "label": "같은 규정 reg 30 (26주 근속·relevant week 8주 NWE ≥ lower earnings limit)",
@@ -54,8 +61,17 @@
     "rule": "90% 주액, 또는 하루치(주액의 1/7)로 계산한 지급액에 1p 미만 끝수가 있으면 1p 단위로 올림",
     "source": "reg 40(2) 'rounded up to the nearest whole number of pence' (GB·NI 같은 문장)",
     "checks": [
-      { "nwePence": 30000, "weeklyPence": 27000, "note": "GOV.UK 예시 £300 의 90% = £270 (SMP 첫 6주 예시이지만 90% 산술 같음)" },
-      { "nwePence": 30000, "capApplies": true, "weeklyPence": 19432, "note": "GOV.UK 예시 — SPL 기간 £194.32" }
+      {
+        "nwePence": 30000,
+        "weeklyPence": 27000,
+        "note": "GOV.UK 예시 £300 의 90% = £270 (SMP 첫 6주 예시이지만 90% 산술 같음)"
+      },
+      {
+        "nwePence": 30000,
+        "capApplies": true,
+        "weeklyPence": 19432,
+        "note": "GOV.UK 예시 — SPL 기간 £194.32"
+      }
     ]
   },
   "weeks": {
@@ -63,20 +79,29 @@
     "sharedPayMaxTypical": 37,
     "leaveShareMax": 50,
     "rule": "ShPP 주 수 = 39 − (엄마가 받은 SMP/MA 주 수) − (상대가 신청한 ShPP 주 수)",
-    "example": "GOV.UK: 엄마가 SMP 22주 → ShPP 17주(39 − 22)·SPL 30주(52 − 22) 를 나눔",
-    "source": "reg 10(1) · GOV.UK 'up to 50 weeks of leave and up to 37 weeks of pay'"
+    "example": "GOV.UK: 엄마가 SMP 22주 → ShPP 17주(39 − 22)·SPL 30주(52 − 22) 를 나눔. 출산 뒤 의무 휴가 2주(공장 4주) 때문에 합산 pay 는 최대 37주(GOV.UK 'up to 37 weeks of pay') — 페이지는 SMP/MA 주 수 최소 2",
+    "source": "reg 10(1) · GOV.UK 'up to 50 weeks of leave and up to 37 weeks of pay'",
+    "partWeek": "일부 주는 한 주로 센다(reg 10(12)·NI 같음)"
   },
   "eligibilityEarnings": {
     "lowerEarningsLimitWeeklyPence": 12900,
     "lelTaxYear": "2026-27",
     "partnerTest": "66주 중 26주 근로 + 가장 많은 13주 합계 £390 이상(GOV.UK 문구)",
     "partnerTotalPence": 39000,
-    "source": "reg 30(1)(b) NWE ≥ LEL · Contributions Regs 2001 reg 10(a) £129 · GOV.UK 'must each earn on average at least £129 a week' · reg 29 + GOV.UK '£390 in total across any 13 of the 66 weeks'"
+    "source": "reg 30(1)(b) NWE ≥ LEL · Contributions Regs 2001 reg 10(a) £129 · GOV.UK 'must each earn on average at least £129 a week' · reg 29 + GOV.UK '£390 in total across any 13 of the 66 weeks'",
+    "lelExtent": "Contributions Regs 2001 reg 10 RestrictExtent E+W+S+N.I.(확인 2026-10-21)"
   },
-  "notVerified": [
-    "NI reg 10(39주 공식)·NI 근속/소득 조건 본문 — NI reg 40 만 읽음",
-    "NI 의 lower earnings limit 출처(Contributions Regs 2001 은 GB 규정, NI 대응 규정 안 읽음)",
-    "partner 조건의 £390 — reg 29 는 '35A(6A) 금액' 으로만 적어 1992 Act s.35A(6A) 값을 안 읽음, GOV.UK 문구만",
-    "지급 시점·HMRC 환급(reg 43~47)·과세(소득세·NI 대상 여부) — 안 읽음"
+  "nwe": {
+    "rule": "월급: relevant period 소득 ÷ 개월 수(가장 가까운 정수) × 12 ÷ 52 · 그 밖(정확한 주 수가 아니면): ÷ 날 수 × 7",
+    "rounding": "NWE 자체는 끝수 처리 규정 없음 — 반올림하지 않음",
+    "source": "reg 32(4)(5) · NI reg 32(4)(5)"
+  },
+  "notCalculated": [
+    "자격 판정 — 26주 근속·LEL £129(GOV.UK·Contributions Regs reg 10, 본문에 GOV.UK 문구로만)·partner 66주 중 26주·£390(reg 29 가 1992 Act s.35A(6A) 를 가리키는데 그 값을 안 읽음, 본문에 GOV.UK 문구로만)",
+    "NI 근속·소득 조건 본문(NI reg 29·30 안 읽음) — 페이지는 NI 에 대해 자격을 말하지 않음",
+    "입양·대리모(adoption) ShPP — 별도 규정 안 읽음, 페이지는 birth 부모만",
+    "SMP 첫 6주 90%(상한 없음)·Maternity Allowance·고용주 enhanced pay·SPL(leave) 일정·notice",
+    "지급 시점·HMRC 환급(reg 43~47)·과세(소득세·NI 대상 여부) — 안 읽음",
+    "2027-04-06 이후 주 지급액 — 원문 없음"
   ]
 }

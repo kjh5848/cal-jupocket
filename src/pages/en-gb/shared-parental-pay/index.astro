@@ -1,0 +1,271 @@
+---
+/**
+ * Shared Parental Pay Calculator UK — 영국판 제도 도구(basis "law"). 한국어판 육아휴직 급여(/guide/parental-leave-pay-calculator/)와
+ * 제도가 달라(통상임금 × 지급률 vs 주 정액 £194.32 와 90% 중 낮은 쪽) 짝(hreflang)을 맺지 않는다(조사표 영국 칸 '제도').
+ * 계산은 lib/gb/shared-parental-pay.ts(정수 펜스), 화면은 lib/gb/shared-parental-pay-ui.ts, 숫자는 rates/gb/shared-parental-pay-2026.json
+ * (GOV.UK Shared Parental Leave and Pay updated_at 2026-10-16 · SSPP (General) Regs 2014 reg 10·32·40 · NI 2015 reg 10·32·40 ·
+ * SI 2026/148 art 10(2) — 2026-10-21 확인). birth 부모만(입양·대리모 규정 안 읽음).
+ *
+ * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-shared-parental-pay-2026-10-21.csv, hl en · gl gb):
+ *   how much is shared parental pay / statutory shared parental pay 2026 · april 2026 · rate · eligibility /
+ *   shared parental pay calculator uk · enhanced · for employers / shared parental leave calculator gov.uk
+ * 계산하지 않는 것(rates notCalculated): 자격 판정(£129·£390·26주), 입양, SMP 첫 6주, enhanced pay, leave 일정, 과세, 2027-04 이후 금액.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { weeklyRate, nweWeekly, nweMonthly, weeksLeft } from "../../../lib/gb/shared-parental-pay";
+import { gbp } from "../../../lib/gb/vat";
+import "../../../styles/global.css";
+
+const title = "Shared Parental Pay Calculator UK — ShPP Weekly Rate 2026/27 and Weeks Left";
+const description =
+  "Work out UK Statutory Shared Parental Pay: £194.32 a week or 90% of average weekly earnings, the daily rate and ShPP weeks left after maternity pay.";
+
+const r300 = weeklyRate(nweWeekly(30000));
+const r150 = weeklyRate(nweWeekly(15000));
+const r12345 = weeklyRate(nweWeekly(12345));
+const cutoff = 21592; // £215.92 — 90% 가 £194.32 를 넘는 첫 금액(그 아래 £215.91 도 올림으로 £194.32)
+const m800 = weeklyRate(nweMonthly(160000, 2)!);
+const w22 = weeksLeft(22, 0);
+const w22p10 = weeksLeft(22, 10);
+---
+
+<html lang="en-GB">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Shared Parental Pay Calculator UK</h1>
+      <p>
+        Statutory Shared Parental Pay (ShPP) is paid at £194.32 a week or 90% of your average weekly earnings, whichever is lower. Type
+        your average weekly earnings to see your weekly and daily ShPP, then work out how many weeks of ShPP are left once maternity pay
+        has been taken. This page covers birth parents. It does not check whether you are eligible, and it does not cover adoption or
+        surrogacy.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="sp-nwe">Average weekly earnings before tax (£)</label>
+          <input type="text" inputmode="decimal" id="sp-nwe" value="300.00" autocomplete="off" data-ui="off" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="sp-value">
+          <p class="label">Statutory Shared Parental Pay</p>
+          <p class="big" id="sp-value">{gbp(r300.weekly)} a week</p>
+          <p class="hint" id="sp-formula">90% of £300.00 is £270.00, so the £194.32 maximum applies</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">Daily rate (one-seventh)</span>
+            <span class="value" id="sp-daily">{gbp(r300.daily)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Rule used</span>
+            <span class="value" id="sp-rule">£194.32 flat rate</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How much is Shared Parental Pay in 2026?</h2>
+      <p>
+        From 6 April 2026 the weekly rate of ShPP is the smaller of £194.32 and 90% of your normal weekly earnings (regulation 40 of the
+        Statutory Shared Parental Pay (General) Regulations 2014). The £194.32 figure was set by the Social Security Benefits Up-rating
+        Order 2026; before 6 April 2026 it was £187.18. When the 90% amount, or a daily amount, includes a fraction of a penny, it is
+        rounded up to the next penny.
+      </p>
+      <ul>
+        <li>£300 a week: 90% is £270, which is more than £194.32, so ShPP is {gbp(r300.weekly)} — the example GOV.UK gives</li>
+        <li>£150 a week: 90% is {gbp(r150.weekly)}, which is below £194.32, so ShPP is {gbp(r150.weekly)}</li>
+        <li>£123.45 a week: 90% is £111.105, rounded up to {gbp(r12345.weekly)}</li>
+        <li>From {gbp(cutoff)} a week upwards, 90% is above £194.32, so everyone earning that or more gets the flat {gbp(19432)}</li>
+      </ul>
+      <p>
+        The rate goes up each April when the government uprates benefits. A rate for April 2027 has not been published, so totals in this
+        calculator that run past 5 April 2027 may change.
+      </p>
+
+      <h2>Daily rate</h2>
+      <p>
+        ShPP can be paid for part of a week at a daily rate of one-seventh of the weekly rate. At the flat rate that is £194.32 ÷ 7 =
+        {" "}{gbp(r300.daily)} exactly. Below the flat rate, this page takes one-seventh of the 90% figure before it is rounded and rounds
+        that up to the penny — for £150 a week, £135 ÷ 7 = £19.285…, so {gbp(r150.daily)}. That is how this page reads regulation 40(2);
+        your employer's payroll may differ by a penny.
+      </p>
+
+      <h2 id="average-weekly-earnings">How average weekly earnings are worked out</h2>
+      <p>
+        Your normal weekly earnings are your gross earnings over a "relevant period" of about 8 weeks, ending with the last normal payday
+        before the qualifying date (regulation 32). If you are paid monthly, divide the earnings in that period by the number of calendar
+        months (rounded to the nearest whole number), multiply by 12 and divide by 52. Otherwise, if the period is not a whole number of
+        weeks, divide by the number of days in it and multiply by 7. Your employer works out the exact period from your paydays.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="nw-earn">Gross earnings in the relevant period (£)</label>
+          <input type="text" inputmode="decimal" id="nw-earn" value="1,600.00" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="nw-freq">How are you paid?</label>
+          <select id="nw-freq" data-seg>
+            <option value="monthly" selected>Monthly</option>
+            <option value="days">Weekly or other</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label id="nw-count-label" for="nw-count">Calendar months in the period</label>
+          <input type="number" id="nw-count" value="2" min="1" step="1" inputmode="numeric" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">Normal weekly earnings</p>
+          <p class="big" id="nw-value">£184.61… a week</p>
+          <p class="hint" id="nw-formula">£1,600.00 ÷ 2 × 12 ÷ 52</p>
+        </div>
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">Weekly ShPP from this</span>
+            <span class="value" id="nw-shpp">{gbp(m800.weekly)}</span>
+          </div>
+        </div>
+      </div>
+      <p>
+        Earnings of £800 a month for two months work out at £184.61… a week; 90% of that is £166.153…, so ShPP is {gbp(m800.weekly)}. The
+        weekly figure itself is not rounded. Copy it into the first calculator if you want the daily rate and totals.
+      </p>
+
+      <h2 id="weeks-left">How many weeks of ShPP are left?</h2>
+      <p>
+        You and your partner can share up to 50 weeks of leave and up to 37 weeks of pay. Under regulation 10, the weeks of ShPP available
+        are 39 weeks less the weeks of Statutory Maternity Pay or Maternity Allowance paid to the mother, and less the weeks of ShPP the
+        other parent has given notice to claim. Part of a week counts as a whole week. GOV.UK's example: a mother who has taken 22 weeks of
+        maternity pay can share {w22.weeks} weeks of ShPP (39 − 22) with her partner.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="wk-smp">Weeks of maternity pay or Maternity Allowance taken</label>
+          <input type="number" id="wk-smp" value="22" min="2" max="39" step="1" inputmode="numeric" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="wk-partner">Weeks of ShPP the other parent is claiming</label>
+          <input type="number" id="wk-partner" value="0" min="0" max="37" step="1" inputmode="numeric" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">ShPP weeks left for you</p>
+          <p class="big" id="wk-value">{w22.weeks} weeks</p>
+          <p class="hint" id="wk-formula">39 − 22 − 0 = {w22.weeks}</p>
+        </div>
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">Total at the weekly rate above</span>
+            <span class="value" id="wk-total">{gbp(w22.weeks * r300.weekly)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Worked out as</span>
+            <span class="value" id="wk-total-formula">{w22.weeks} × {gbp(r300.weekly)}</span>
+          </div>
+        </div>
+      </div>
+      <p>
+        The mother cannot return to work in the first 2 weeks after the birth (4 weeks for factory work), which is why GOV.UK says up to 37
+        weeks of pay can be shared. This calculator counts maternity pay as at least 2 weeks. If the other parent claims 10 of the
+        {" "}{w22.weeks} weeks, {w22p10.weeks} are left. The total uses today's weekly rate for every week; weeks paid on or after 6 April
+        2027 will be at a rate that has not been set yet.
+      </p>
+
+      <h2>Northern Ireland</h2>
+      <p>
+        Northern Ireland has its own Statutory Shared Parental Pay (General) Regulations (Northern Ireland) 2015. Regulations 10, 32 and 40
+        there give the same 39-week formula, the same way of working out weekly earnings and the same £194.32 or 90% rate with the same
+        rounding, so the three calculators above apply there too.
+      </p>
+
+      <h2>Statutory Shared Parental Pay eligibility</h2>
+      <p>
+        This page does not check eligibility. In outline,
+        <a href="https://www.gov.uk/shared-parental-leave-and-pay/eligibility-for-birth-parents" rel="noopener" target="_blank"
+          >GOV.UK says</a
+        > the parent claiming ShPP must have worked for the same employer for at least 26 weeks by the end of the 15th week before the due
+        date and earn on average at least £129 a week, and the other parent must also meet work and earnings tests. Use GOV.UK's
+        Shared Parental Leave and Pay planning tool to check your own case.
+      </p>
+
+      <details>
+        <summary>Is enhanced shared parental pay included?</summary>
+        <p>
+          No. Some employers pay more than the statutory amount under the contract. This calculator only shows statutory ShPP — check your
+          employer's policy for anything extra.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does ShPP start at 90% for the first 6 weeks like maternity pay?</summary>
+        <p>
+          No. GOV.UK says ShPP is the same as Statutory Maternity Pay except that during the first 6 weeks SMP is paid at 90% of whatever
+          you earn, with no maximum. ShPP is always the lower of £194.32 and 90%.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I work out leave as well as pay?</summary>
+        <p>
+          This page counts weeks of pay only. GOV.UK's example says a mother who has taken 22 weeks of maternity leave can share 30 weeks of
+          Shared Parental Leave, and leave must be booked with at least 8 weeks' notice.
+        </p>
+      </details>
+
+      <p>
+        Related: <a href="/en-gb/holiday-entitlement/">holiday entitlement calculator</a> and the
+        <a href="/en-gb/tools/date-diff/">date calculator</a> for counting weeks between dates.
+      </p>
+
+      <h2>Sources</h2>
+      <ul>
+        <li>
+          <a href="https://www.gov.uk/shared-parental-leave-and-pay" rel="noopener" target="_blank">GOV.UK — Shared Parental Leave and Pay</a>
+          (updated 16 October 2026, checked 21 October 2026)
+        </li>
+        <li>
+          <a href="https://www.legislation.gov.uk/uksi/2014/3051/contents" rel="noopener" target="_blank"
+            >The Statutory Shared Parental Pay (General) Regulations 2014</a
+          >, regulations 10, 32 and 40 (checked 21 October 2026)
+        </li>
+        <li>
+          <a href="https://www.legislation.gov.uk/uksi/2026/148/article/10/made" rel="noopener" target="_blank"
+            >The Social Security Benefits Up-rating Order 2026</a
+          >, article 10 (checked 21 October 2026)
+        </li>
+        <li>
+          <a href="https://www.legislation.gov.uk/nisr/2015/94/contents" rel="noopener" target="_blank"
+            >The Statutory Shared Parental Pay (General) Regulations (Northern Ireland) 2015</a
+          >, regulations 10, 32 and 40 (checked 21 October 2026)
+        </li>
+      </ul>
+
+      <AdSlot label="shpp-result-en-gb" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/gb/shared-parental-pay-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

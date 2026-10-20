@@ -78,4 +78,12 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "law",
   },
+  {
+    href: "/en-gb/shared-parental-pay/",
+    name: "Shared Parental Pay calculator",
+    blurb: "UK Statutory Shared Parental Pay: £194.32 a week or 90% of average weekly earnings, the daily rate and ShPP weeks left",
+    type: "labor",
+    icon: "calculator",
+    basis: "law",
+  },
 ];
