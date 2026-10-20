@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { toDay, span, shift } from "../date-calc";
-import { labelEs, spanTextEs, weekTextEs, ddayEs, daysEs, pluralEs } from "../es/date-format";
+import { toDay, span, shift, countdown } from "../date-calc";
+import { labelEs, spanTextEs, weekTextEs, ddayEs, daysEs, pluralEs, durationTextEs } from "../es/date-format";
 
 const d = (iso: string) => toDay(iso)!;
 
@@ -42,5 +42,23 @@ describe("스페인판 날짜 표기", () => {
     expect(ddayEs(10, 10)).toBe("hoy");
     expect(ddayEs(22, 10)).toBe("dentro de 12 días");
     expect(ddayEs(9, 10)).toBe("hace 1 día");
+  });
+
+  it("durationTextEs — 단수·복수, 하루 미만은 초까지", () => {
+    expect(durationTextEs(0)).toBe("0 horas, 0 minutos y 0 segundos");
+    expect(durationTextEs(3600 + 60 + 1)).toBe("1 hora, 1 minuto y 1 segundo");
+    expect(durationTextEs(86_400 + 2 * 3600 + 5 * 60)).toBe("1 día, 2 horas y 5 minutos");
+    expect(durationTextEs(-90)).toBe("0 horas, 1 minuto y 30 segundos");
+  });
+
+  it("손계산 디데이 — 21/10/2026 → Navidad 25/12/2026 은 65일, 25일 끝(26일 0시)까지 66일", () => {
+    const base = d("2026-10-21");
+    const xmas = d("2026-12-25");
+    expect(ddayEs(xmas, base)).toBe("dentro de 65 días");
+    const c = countdown(xmas, null, base, 0);
+    expect(c.countDays).toBe(66);
+    expect(durationTextEs(c.seconds)).toBe("66 días, 0 horas y 0 minutos");
+    // 기준일 15:00 에 열고 25일 09:00 까지 → 64일 18시간
+    expect(durationTextEs(countdown(xmas, 9 * 3600, base, 15 * 3600).seconds)).toBe("64 días, 18 horas y 0 minutos");
   });
 });

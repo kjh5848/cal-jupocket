@@ -1,0 +1,206 @@
+---
+/**
+ * ¿Cuántos días faltan? — 스페인판 네 번째 도구(디데이). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 ES 사전)를 같이 쓰고, 문장은 스페인 자동완성으로 새로 썼다(번역 아님). 조사표 스페인 칸 '단위'.
+ *
+ * 소제목은 스페인 구글 자동완성에서 왔다(keywords/es-dday-2026-10-21.csv, hl es · gl es):
+ *   cuantos dias faltan · dias que faltan para una fecha · contador de dias desde una fecha /
+ *   cuenta atras dias horas minutos segundos · contador de dias y horas / dias que faltan para navidad 2026 · halloween ·
+ *   año nuevo · terminar el año / contador de dias naturales · laborables · habiles españa / cuenta atras dias excel
+ * 'D-12' 는 스페인에서 쓰지 않아 'dentro de 100 días' 로 낸다. 프리셋은 스크립트에 이미 있는 네 개(100일·25/12·31/12·1/1)만.
+ * Domingo de Ramos·Mundial·GTA 6 날짜는 허용 출처(AEAT·BOE·Seguridad Social·Hacienda) 밖이라 쓰지 않는다.
+ * festivos 를 빼지 않으므로 'días hábiles' 라 부르지 않고 /es/tools/date-diff/(de lunes a viernes)로 보낸다.
+ * 하루는 24시간으로 센다 — 서머타임(cambio de hora) 전환 날짜는 원문을 확인하지 않아 쓰지 않는다.
+ * Excel 함수 이름(HOY)은 Microsoft 원문(허용 출처 밖)으로 확인하지 않았다(date-diff 의 SIFECHA 와 같은 처리).
+ * 본문 숫자는 전부 아래 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, fromDay, countdown } from "../../../../lib/date-calc";
+import { labelEs, ddayEs, durationTextEs, daysEs, pluralEs } from "../../../../lib/es/date-format";
+import { formatNumberEs } from "../../../../lib/es/number";
+
+const title = "¿Cuántos días faltan? Cuenta atrás de días, horas y minutos";
+const description =
+  "Cuántos días faltan para una fecha: cuenta atrás en días, horas, minutos y segundos. Navidad 2026, fin de año, Año Nuevo 2027 o una cita a una hora concreta.";
+
+const d = (iso: string) => toDay(iso)!;
+const left = (t: number, b: number) => ddayEs(t, b);
+
+const BASE = "2026-10-21";
+const base = d(BASE);
+const target = base + 100;
+const c0 = countdown(target, null, base, 0);
+
+// 본문 예시 — 전부 BASE 에서 센다
+const halloween = d("2026-10-31");
+const xmas = d("2026-12-25");
+const nye = d("2026-12-31");
+const ny = d("2027-01-01");
+const cXmas = countdown(xmas, null, base, 0);
+// 오전 9시 시작 — 기준일 오후 3시(15:00)에 열었을 때
+const exam = countdown(xmas, 9 * 3600, base, 15 * 3600);
+const examD = Math.floor(exam.seconds / 86_400);
+const examH = Math.floor((exam.seconds % 86_400) / 3600);
+const pastDay = d("2026-09-01");
+---
+
+<html lang="es-ES">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>¿Cuántos días faltan? Cuenta atrás</h1>
+      <p>
+        Elige una fecha y verás cuántos días faltan y el tiempo que queda, segundo a segundo. Si la cita es a una hora concreta
+        —un examen, un vuelo, una entrega—, activa «Hasta una hora».
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">Fecha objetivo</label>
+          <input type="date" id="target" value={fromDay(target)} />
+          <div class="ux-presets" role="group" aria-label="Fechas habituales">
+            <button type="button" data-preset="plus100">Dentro de 100 días</button>
+            <button type="button" data-preset="xmas">Navidad</button>
+            <button type="button" data-preset="yearend">31 de diciembre</button>
+            <button type="button" data-preset="newyear">Año Nuevo</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">Hasta una hora</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">Hora objetivo</label>
+          <input type="time" id="time" value="09:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">Fecha de partida (normalmente hoy)</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Hasta el {labelEs(target)}</p>
+          <p class="big" id="hero-value">{left(target, base)}</p>
+          <p class="hint" id="hero-sub">Contando la fecha de partida como día 1, la fecha objetivo es el día {formatNumberEs(c0.countDays)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Tiempo que falta</span>
+            <span class="value" id="v1">{durationTextEs(c0.seconds)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Contando el día 1</span>
+            <span class="value" id="v2">Día {formatNumberEs(c0.countDays)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">Fecha de partida</span>
+            <span class="value" id="v3">{labelEs(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Guardar imagen</button>
+          <button id="btn-share" type="button" class="secondary">Compartir</button>
+        </div>
+      </div>
+
+      <h2>Cuántos días faltan para una fecha: ¿se cuenta hoy?</h2>
+      <p>
+        El número grande es <strong>fecha objetivo − hoy</strong>: hoy no cuenta y la fecha objetivo sí. Mañana sale como
+        «{left(base + 1, base)}», la propia fecha objetivo muestra «hoy» durante todo el día y una fecha que ya pasó aparece
+        como «hace … días».
+      </p>
+      <p>
+        Si quieres que el primer día sea el día 1 —el primer día en un trabajo nuevo, sin fumar o con tu pareja—, mira la casilla
+        «Contando el día 1», que siempre da uno más. Contando el {labelEs(base)} como día 1, el {labelEs(target)} es el día
+        {" "}{formatNumberEs(c0.countDays)}.
+      </p>
+
+      <h2>Cuenta atrás en días, horas, minutos y segundos</h2>
+      <ul>
+        <li>
+          <strong>Solo fecha</strong> — la cuenta llega hasta el final de la fecha objetivo (medianoche, al empezar el día
+          siguiente).
+        </li>
+        <li>
+          <strong>Fecha y hora</strong> — la cuenta llega hasta esa hora. En cuanto pasa, aunque sea el mismo día, la casilla
+          cambia a «Tiempo transcurrido». Si abres la página el {labelEs(base)} a las 15:00, una cita el {labelEs(xmas)} a las
+          9:00 está a {daysEs(examD)} y {pluralEs(examH, "hora", "horas")}.
+        </li>
+        <li>
+          <strong>El tiempo que falta corre cada segundo</strong> — solo cuando la fecha de partida es hoy. Con otra fecha de
+          partida, la cuenta empieza a medianoche de ese día.
+        </li>
+        <li>
+          <strong>Cambio de hora</strong> — cada día cuenta 24 horas justas. Si entre hoy y la fecha objetivo hay un cambio al
+          horario de verano o de invierno, el número de horas puede variar en una. El número de días no cambia.
+        </li>
+      </ul>
+
+      <h2>Días que faltan para Navidad 2026, Halloween y Año Nuevo</h2>
+      <p>Los botones de arriba rellenan las fechas más buscadas. Contando desde el {labelEs(base)}:</p>
+      <ul>
+        <li>Halloween ({labelEs(halloween)}): {left(halloween, base)}</li>
+        <li>Navidad ({labelEs(xmas)}): {left(xmas, base)}, o {durationTextEs(cXmas.seconds)} hasta que termine el día 25</li>
+        <li>Para terminar el año ({labelEs(nye)}): {left(nye, base)}</li>
+        <li>Año Nuevo 2027 ({labelEs(ny)}): {left(ny, base)}</li>
+      </ul>
+      <p>La página pone la fecha de hoy al abrirse, así que los números siempre se cuentan desde el día de tu visita.</p>
+
+      <h2>Días naturales, laborables y hábiles</h2>
+      <p>
+        Esta cuenta atrás cuenta <strong>días naturales</strong>: todos los días del calendario, fines de semana y festivos
+        incluidos. Para contar solo de lunes a viernes entre hoy y la fecha objetivo, usa
+        {" "}<a href="/es/tools/date-diff/">calcular días entre dos fechas</a>. Ninguna de las dos herramientas resta festivos,
+        que cambian según la comunidad autónoma y el municipio, así que el resultado no son días hábiles a efectos de plazos
+        oficiales.
+      </p>
+
+      <h2>Cuenta atrás de días en Excel</h2>
+      <p>
+        Excel guarda las fechas como números, así que basta con restar la fecha de hoy a la fecha objetivo, por ejemplo
+        {" "}<code>=A1-HOY()</code> con la fecha objetivo en A1. Si el resultado aparece como una fecha, cambia el formato de la
+        celda a Número. Suma 1 si quieres contar hoy como día 1.
+      </p>
+
+      <details>
+        <summary>¿Qué pasa si la fecha ya ha pasado?</summary>
+        <p>
+          El resultado muestra «hace … días» y la casilla pasa a «Tiempo transcurrido», útil para saber cuánto hace que venció
+          algo. Desde el {labelEs(base)}, el {labelEs(pastDay)} fue {left(pastDay, base)}.
+        </p>
+      </details>
+
+      <details>
+        <summary>¿Y si el evento es en otra zona horaria?</summary>
+        <p>
+          La cuenta atrás usa el reloj y la fecha de tu dispositivo. Para un concierto, un estreno o un vuelo fijado en otra zona
+          horaria, pasa primero la hora de inicio a tu propia hora
+          y después escríbela.
+        </p>
+      </details>
+
+      <AdSlot label="dday-result-es" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

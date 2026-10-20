@@ -49,3 +49,18 @@ export function ddayEs(target: number, today: number): string {
   if (d === 0) return "hoy";
   return d > 0 ? `dentro de ${daysEs(d)}` : `hace ${daysEs(-d)}`;
 }
+
+/**
+ * 디데이 남은 시간 — '64 días, 3 horas y 5 minutos' · 하루 미만이면 '3 horas, 5 minutos y 9 segundos'.
+ * 숫자는 formatNumberEs(다섯 자리부터 공백), 1만 단수.
+ */
+export function durationTextEs(sec: number): string {
+  const s = Math.abs(Math.trunc(sec));
+  const day = Math.floor(s / 86_400);
+  const h = Math.floor((s % 86_400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const hours = pluralEs(h, "hora", "horas");
+  const mins = pluralEs(m, "minuto", "minutos");
+  if (day > 0) return `${daysEs(day)}, ${hours} y ${mins}`;
+  return `${hours}, ${mins} y ${pluralEs(s % 60, "segundo", "segundos")}`;
+}

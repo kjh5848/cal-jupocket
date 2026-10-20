@@ -35,4 +35,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/es/tools/dday/",
+    ko: "/tools/dday/",
+    name: "Cuenta atrás: cuántos días faltan",
+    blurb: "Cuántos días faltan para una fecha — cuenta atrás en directo en días, horas y minutos, o contando hoy como día 1",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
