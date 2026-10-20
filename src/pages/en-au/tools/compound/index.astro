@@ -1,0 +1,240 @@
+---
+/**
+ * Compound interest calculator — 호주판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 EN 사전, 통화는 판의 AUD), 문장은 호주 영어로 새로 썼다(번역 아님). 복리 산술이라 rates 와 상관없다(조사표 호주 칸 '같음').
+ *
+ * 소제목은 호주 구글 자동완성에서 왔다(keywords/au-compound-2026-10-20.csv, hl en · gl au):
+ *   compound interest calculator australia monthly · savings calculator australia / daily compound interest calculator australia /
+ *   compound interest calculator with inflation / superannuation compound interest calculator australia / compound interest calculator excel
+ * 세율 기본값은 0% — 한국어판 15.4% 는 한국 원천징수라 쓰지 않는다. 호주 쪽 사실은 Moneysmart(ASIC) 원문에서 확인한 것만:
+ *   복리 설명·공식·$10,000 3% 월복리 예시(https://moneysmart.gov.au/saving/compound-interest, Last updated 10 September 2026),
+ *   이자는 세금 신고에 넣는 소득이고 세금은 marginal tax rate 에 따름 · 슈퍼는 따로(https://moneysmart.gov.au/how-to-invest/investing-and-tax,
+ *   Last updated 2 October 2026). 둘 다 확인 2026-10-20. 세율 숫자는 적지 않는다(ato.gov.au 403).
+ * 일복리 ↔ 월복리 환산은 산술이다. 본문 숫자는 전부 아래 frontmatter 에서 compound() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import "../../../../styles/global.css";
+
+const title = "Compound Interest Calculator Australia — Monthly Savings, Daily Rates, Inflation";
+const description =
+  "Australian compound interest calculator in dollars: a starting balance plus monthly deposits, interest earned, daily vs monthly compounding, inflation and Excel FV.";
+
+const base = { principal: 5_000, monthly: 300, ratePct: 4.5, months: 120, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const real3 = compound({ ...base, timing: "start", inflationPct: 3 });
+/** Moneysmart 예시와 같은 조건: $10,000, 연 3%, 월복리, 적립 없음 */
+const ms = [5, 10, 20].map((y) => ({ y, r: compound({ principal: 10_000, monthly: 0, ratePct: 3, months: y * 12, taxPct: 0, inflationPct: 0, timing: "start" }) }));
+/** 연 4.5% 를 매일 복리로 돌릴 때와 같은 결과를 내는 월복리 연 이율 */
+const monthlyForDaily = 12 * (Math.pow(1 + 0.045 / 365, 365 / 12) - 1) * 100;
+const exDaily = compound({ ...base, ratePct: Number(monthlyForDaily.toFixed(3)), timing: "start" });
+const aud = (x: number) =>
+  Math.round(x).toLocaleString("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+---
+
+<html lang="en-AU">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Compound Interest Calculator</h1>
+      <p>
+        Enter a starting balance, how much you add each month and an interest rate per annum. The calculator adds interest every
+        month and shows where you end up, how much of that is your own deposits and how much is interest. The rate, tax and
+        inflation figures are assumptions you choose — the result is not a forecast for any real account, fund or super balance.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">Starting balance ($)</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value="5,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">Monthly deposit ($)</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="300" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">Interest rate or return p.a.</label>
+          <input type="number" id="cp-rate" value="4.5" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">Term</label>
+          <input type="number" id="cp-period" value="10" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="Time unit">
+            <option value="years" selected>years</option>
+            <option value="months">months</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">Deposit timing</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>Start of each month</option>
+            <option value="end">End of each month</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">Tax on the interest (assumption)</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">Inflation p.a.</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">Savings goal ($, optional)</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder="e.g. 50,000" autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="Deposits|Interest"
+          data-dock="cp-hero"
+        >
+          <p class="label">Ending balance (before tax)</p>
+          <p class="big" id="cp-hero">{aud(ex.balance)}</p>
+          <p class="meta" id="cp-note">120 months · 0.375% a month · deposits at the start of each month</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total deposits</span><span class="value" id="cp-paid">{aud(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">Interest earned</span><span class="value" id="cp-gain2">{aud(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">Tax (assumed)</span><span class="value" id="cp-tax-v">$0</span></div>
+          <div class="stat-chip"><span class="label">After tax</span><span class="value" id="cp-after">{aud(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">In today's dollars</span><span class="value" id="cp-real">{aud(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">Goal reached</span><span class="value" id="cp-goal-v">No goal set</span></div>
+        </div>
+
+        <details>
+          <summary>Year-by-year deposits, interest and balance</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Period</th><th>Deposits that year</th><th>Interest that year</th><th>Balance</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">Year {r.year}</th><td>{aud(r.paid)}</td><td>{aud(r.gain)}</td><td>{aud(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">The starting balance is not counted in "Deposits that year"; it only shows up in the balance.</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Compound interest with monthly deposits: the maths</h2>
+      <ul>
+        <li><strong>Monthly rate</strong> — r = rate p.a. ÷ 12. At 4.5% p.a. that is 0.375% a month.</li>
+        <li><strong>Deposit at the start of the month</strong> — the new money earns that month's interest: balance = (balance + deposit) × (1 + r).</li>
+        <li><strong>Deposit at the end of the month</strong> — interest is added first, then the deposit: balance = balance × (1 + r) + deposit. The final deposit earns nothing, so the total comes out a little lower.</li>
+        <li><strong>Formula</strong> — after n months, FV = P(1 + r)<sup>n</sup> + PMT × [(1 + r)<sup>n</sup> − 1] ÷ r, with the PMT part multiplied by (1 + r) once more for start-of-month deposits. P is the starting balance and PMT the monthly deposit.</li>
+        <li><strong>Tax</strong> — if the ending balance is above your total deposits, the tax rate you enter is taken once from that gain. A loss is not taxed.</li>
+      </ul>
+      <p>
+        Example: {aud(base.principal)} to start and {aud(base.monthly)} a month at 4.5% p.a. for 10 years. You deposit
+        {" "}{aud(ex.paid)} and finish with {aud(ex.balance)}, of which {aud(ex.gain)} is interest. With deposits at the end of each
+        month instead, the balance is {aud(exEnd.balance)}.
+      </p>
+      <p>
+        As a check against Moneysmart's own example — $10,000 at 3% compounded monthly, no extra deposits — set the monthly deposit
+        to $0: the calculator gives {ms.map((m, i) => <>{i ? (i === ms.length - 1 ? " and " : ", ") : ""}{aud(m.r.balance)} after {m.y} years</>)},
+        the same figures Moneysmart shows.
+      </p>
+
+      <h2>Savings calculator: monthly deposits vs a lump sum</h2>
+      <p>
+        Money in the account on day one compounds for the whole term, while each monthly deposit has less time left to grow. In the
+        example the {aud(base.principal)} starting balance alone would grow to {aud(lump.balance)} in 10 years. Set the monthly
+        deposit to $0 to see a lump sum only, or the starting balance to $0 to see regular saving only.
+      </p>
+
+      <h2>Daily compound interest vs monthly</h2>
+      <p>
+        This calculator compounds once a month. If your rate is compounded daily, the same rate p.a. grows slightly faster. To get
+        the daily result here, convert the rate first: monthly-equivalent rate = 12 × [(1 + rate ÷ 365)<sup>365/12</sup> − 1].
+        For 4.5% p.a. compounded daily that is about {monthlyForDaily.toFixed(3)}%; entering it lifts the example to
+        {" "}{aud(exDaily.balance)} from {aud(ex.balance)}. Check your account's terms for how often interest is actually
+        calculated and paid.
+      </p>
+
+      <h2>Compound interest calculator with inflation</h2>
+      <p>
+        "In today's dollars" divides the after-tax balance by (1 + inflation)<sup>years</sup>. At 3% inflation the example's
+        {" "}{aud(ex.balance)} is worth about {aud(real3.real)} in today's money. Leave inflation at 0% for the plain dollar figure.
+      </p>
+
+      <h2>Compound interest formula in Excel</h2>
+      <p>
+        Excel's FV function gives the same answer. For start-of-month deposits use
+        <code>=FV(4.5%/12, 120, -300, -5000, 1)</code>; for end-of-month deposits change the final 1 to 0. The deposit and the
+        starting balance are negative because they are money going out. Google Sheets takes the same formula.
+      </p>
+
+      <details>
+        <summary>Can I use it as a superannuation compound interest calculator?</summary>
+        <p>
+          Only as a rough illustration of growth at an assumed return. Super has its own tax rules for contributions, earnings and
+          withdrawals, and balances also move with fees and with investment returns that go up and down. This
+          calculator models none of that — for super, use Moneysmart's
+          {" "}<a href="https://moneysmart.gov.au/how-to-invest/investing-and-tax" rel="noopener" target="_blank">Investing and tax</a>
+          {" "}guide and your fund's own tools.
+        </p>
+      </details>
+
+      <details>
+        <summary>Do I pay tax on savings interest in Australia?</summary>
+        <p>
+          Moneysmart says interest from savings accounts and term deposits is investment income you include in your tax return, and
+          the tax depends on your circumstances and marginal tax rate. Because that differs from person to person, the calculator
+          leaves the tax rate at 0% — enter your own assumption if you want an after-tax figure
+          (<a href="https://moneysmart.gov.au/how-to-invest/investing-and-tax" rel="noopener" target="_blank">Moneysmart: Investing and tax</a>,
+          checked 20 October 2026).
+        </p>
+      </details>
+
+      <details>
+        <summary>Is this the same as simple interest on a term deposit?</summary>
+        <p>
+          No. Simple interest is worked out on the starting amount only, while compound interest also earns on interest already
+          added. Moneysmart notes that some term deposits use simple interest, so for those the figure here will be higher than what
+          the deposit pays (<a href="https://moneysmart.gov.au/saving/compound-interest" rel="noopener" target="_blank">Moneysmart: Compound interest</a>,
+          checked 20 October 2026).
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I enter cents or a $ sign?</summary>
+        <p>
+          Amounts are whole dollars. A typed $ sign and commas are ignored, but a decimal point is not read as cents — enter 1500
+          rather than 1,500.50.
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-en-au" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
