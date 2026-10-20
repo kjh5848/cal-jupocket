@@ -1,0 +1,240 @@
+---
+/**
+ * Calculadora de interés compuesto — 스페인판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 ES 사전), 문장은 스페인 자동완성으로 새로 썼다(번역 아님).
+ * 복리 산술이라 rates 와 상관없다(조사표 스페인 칸 '같음').
+ *
+ * 금액 표기는 src/lib/es/money.ts euroEs('10 000 euros' — 숫자는 RD 2032/2009 Anexo III 2.8·2.9, BOE-A-2010-927,
+ * € 기호 위치는 원문 미확인이라 'euros' 말만), 소수는 쉼표(decimalEs).
+ *
+ * 소제목은 스페인 구글 자동완성에서 왔다(keywords/es-compound-2026-10-21.csv, hl es · gl es, 48개):
+ *   calcular interés compuesto con aportaciones · interés compuesto calculadora mensual · por meses /
+ *   interés compuesto fórmula · ejemplo / calcular interes compuesto diario · anual /
+ *   calculadora interés compuesto fondos indexados · sp500 / calcular interes compuesto plazo fijo /
+ *   calculadora interés compuesto excel
+ * 안 다룬 것: argentina·chile(다른 나라), bbva·revolut·trade republic·santander·ing·la caixa·moneychimp(상표),
+ * javi linares·omar·invertir desde cero(인물·채널), forex·préstamo(도구가 다루지 않음).
+ * 세율 기본값 0% — 한국 15.4%는 쓰지 않고, 스페인 저축소득 세율(base del ahorro)은 이번 회차에 AEAT 원문으로
+ * 확인하지 않아 숫자를 적지 않는다. Excel 함수 이름 VF(구분자 ;)는 허용 출처 밖(Microsoft)이라 확인하지 않았다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 compound() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import { euroEs, decimalEs } from "../../../../lib/es/money";
+import { formatNumberEs } from "../../../../lib/es/number";
+import "../../../../styles/global.css";
+
+const title = "Calculadora de interés compuesto con aportaciones mensuales — fórmula, ejemplo y Excel";
+const description =
+  "Calcula el interés compuesto con capital inicial, aportación mensual y rentabilidad anual. Intereses ganados, valor tras impuestos e inflación y tabla por años.";
+
+const base = { principal: 10_000, monthly: 200, ratePct: 5, months: 240, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const real2 = compound({ ...base, timing: "start", inflationPct: 2 });
+/** 같은 연 5%를 매일(365) 복리로 돌렸을 때 일시금 — 월 복리와 차이 보기 */
+const lumpDaily = base.principal * Math.pow(1 + base.ratePct / 100 / 365, 365 * 20);
+/** 같은 연 5%를 1년에 한 번만 복리 — 'anual' 비교 */
+const lumpYearly = base.principal * Math.pow(1 + base.ratePct / 100, 20);
+const eur = euroEs;
+const monthlyRate = decimalEs((base.ratePct / 12).toFixed(4));
+---
+
+<html lang="es-ES">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Calculadora de interés compuesto con aportaciones mensuales</h1>
+      <p>
+        Escribe un capital inicial, lo que aportas cada mes y una rentabilidad anual. La calculadora suma los intereses al capital
+        cada mes y te muestra el capital final, cuánto sale de tus aportaciones y cuánto de los intereses. La rentabilidad, el
+        impuesto y la inflación son supuestos que eliges tú: el resultado no predice lo que dará una inversión real.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">Capital inicial (euros)</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value={formatNumberEs(10_000)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">Aportación mensual (euros)</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="200" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">Rentabilidad anual</label>
+          <input type="number" id="cp-rate" value="5" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">Plazo</label>
+          <input type="number" id="cp-period" value="20" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="Unidad del plazo">
+            <option value="years" selected>años</option>
+            <option value="months">meses</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">¿Cuándo aportas?</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>A principio de mes</option>
+            <option value="end">A final de mes</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">Impuesto sobre la ganancia (supuesto)</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">Inflación anual</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">Objetivo de ahorro (euros, opcional)</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder={`p. ej. ${formatNumberEs(100_000)}`} autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="Aportaciones|Intereses"
+          data-dock="cp-hero"
+        >
+          <p class="label">Capital final (antes de impuestos)</p>
+          <p class="big" id="cp-hero">{eur(ex.balance)}</p>
+          <p class="meta" id="cp-note">{base.months} meses · {monthlyRate}% al mes · aportación a principio de mes</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total aportado</span><span class="value" id="cp-paid">{eur(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">Intereses ganados</span><span class="value" id="cp-gain2">{eur(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">Impuesto (supuesto)</span><span class="value" id="cp-tax-v">{eur(0)}</span></div>
+          <div class="stat-chip"><span class="label">Tras impuestos</span><span class="value" id="cp-after">{eur(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">En euros de hoy</span><span class="value" id="cp-real">{eur(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">Objetivo alcanzado</span><span class="value" id="cp-goal-v">Sin objetivo</span></div>
+        </div>
+
+        <details>
+          <summary>Tabla por años: aportaciones, intereses y capital</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Periodo</th><th>Aportado en el año</th><th>Intereses del año</th><th>Capital</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">Año {r.year}</th><td>{eur(r.paid)}</td><td>{eur(r.gain)}</td><td>{eur(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">El capital inicial no cuenta en «Aportado en el año»; solo forma parte del capital.</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Guardar imagen</button>
+          <button id="btn-share" type="button" class="secondary">Compartir</button>
+        </div>
+      </div>
+
+      <h2>Fórmula del interés compuesto con aportaciones mensuales</h2>
+      <ul>
+        <li><strong>Interés mensual</strong> — r = rentabilidad anual ÷ 12. Con un {base.ratePct}% anual sale aproximadamente un {monthlyRate}% al mes.</li>
+        <li><strong>Aportación a principio de mes</strong> — lo que aportas ya genera los intereses de ese mes: capital = (capital + aportación) × (1 + r).</li>
+        <li><strong>Aportación a final de mes</strong> — primero se suman los intereses y después la aportación: capital = capital × (1 + r) + aportación. La última aportación no genera nada, así que el total queda algo más bajo.</li>
+        <li><strong>Fórmula cerrada</strong> — tras n meses, VF = C × (1 + r)<sup>n</sup> + A × [(1 + r)<sup>n</sup> − 1] ÷ r, donde C es el capital inicial y A la aportación mensual. Si aportas a principio de mes, la parte de A se multiplica una vez más por (1 + r).</li>
+        <li><strong>Impuesto</strong> — si el capital final supera lo que has aportado, el porcentaje que escribas se aplica una sola vez a esa ganancia. Una pérdida no paga impuesto.</li>
+      </ul>
+
+      <h2>Ejemplo de interés compuesto</h2>
+      <p>
+        {eur(base.principal)} al empezar, {eur(base.monthly)} al mes y un {base.ratePct}% anual durante 20 años: aportas
+        {eur(ex.paid)} en total y terminas con {eur(ex.balance)}, de los que {eur(ex.gain)} son intereses. Si aportas a final de
+        mes, el mismo plan da {eur(exEnd.balance)}.
+      </p>
+      <p>
+        Sin aportaciones mensuales, los {eur(base.principal)} iniciales se convertirían en {eur(lump.balance)} en 20 años. Pon la
+        aportación mensual a 0 para ver una inversión única, o el capital inicial a 0 para ver solo el efecto de las aportaciones.
+      </p>
+
+      <h2>Interés compuesto mensual, diario o anual</h2>
+      <p>
+        La calculadora capitaliza una vez al mes, al mismo ritmo que las aportaciones. Con la misma rentabilidad anual, cambiar la
+        frecuencia mueve poco el resultado: {eur(base.principal)} al {base.ratePct}% durante 20 años dan {eur(lumpYearly)} si los
+        intereses se suman una vez al año, {eur(lump.balance)} si se suman cada mes y {eur(lumpDaily)} si se suman cada día.
+        Pesa mucho más la rentabilidad que supones que la frecuencia.
+      </p>
+
+      <h2>Interés compuesto e inflación</h2>
+      <p>
+        La casilla «En euros de hoy» divide el capital tras impuestos entre (1 + inflación)<sup>años</sup>. Con una inflación del 2%
+        anual, los {eur(ex.balance)} del ejemplo equivalen a unos {eur(real2.real)} de poder adquisitivo actual. Deja la inflación en
+        0% para ver la cantidad nominal.
+      </p>
+
+      <h2>Interés compuesto con fondos indexados o el S&amp;P 500</h2>
+      <p>
+        Puedes usar la calculadora con un fondo indexado como supuesto: una rentabilidad media constante todos los años. En bolsa la
+        rentabilidad cambia de un año a otro, y la misma media puede acabar en un capital final distinto según el orden de los años
+        buenos y malos. La calculadora no tiene en cuenta comisiones, cambio de divisa ni retiradas.
+      </p>
+
+      <h2>¿Hay interés compuesto en un plazo fijo?</h2>
+      <p>
+        Solo si los intereses se quedan dentro y vuelven a generar intereses. Si el depósito te ingresa los intereses en otra cuenta,
+        o al vencimiento sin renovar, el capital no crece sobre sí mismo y el cálculo es de interés simple. Para comparar, pon la
+        aportación mensual a 0, el tipo del depósito como rentabilidad y su plazo en meses.
+      </p>
+
+      <h2>Calcular el interés compuesto en Excel</h2>
+      <p>
+        En un Excel en español, la función VF da el mismo resultado. Con aportación a principio de mes:
+        <code>=VF(5%/12;240;-200;-10000;1)</code>; con aportación a final de mes, cambia el último 1 por 0. La aportación y el capital
+        inicial van en negativo porque es dinero que sale de tu bolsillo. En LibreOffice Calc la función también se llama VF.
+      </p>
+
+      <details>
+        <summary>¿Qué porcentaje de impuesto escribo?</summary>
+        <p>
+          El valor por defecto es 0%. Cómo tributan las ganancias depende del producto (depósito, fondo de inversión, acciones…) y de
+          tu situación, así que la calculadora no elige un tipo por ti: escribe el supuesto que quieras comparar. Las normas oficiales
+          están en la
+          <a href="https://sede.agenciatributaria.gob.es" rel="noopener" target="_blank">sede de la Agencia Tributaria</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>¿Puedo escribir céntimos?</summary>
+        <p>
+          Las cantidades van en euros enteros. Los espacios y los puntos de miles se ignoran (1.500 se lee como 1500); lo que va
+          detrás de una coma no se lee: escribe 1500 en lugar de 1500,50.
+        </p>
+      </details>
+
+      <details>
+        <summary>¿Y con una rentabilidad del 0% o negativa?</summary>
+        <p>
+          Con un 0% recuperas exactamente lo que has aportado. Una rentabilidad negativa da intereses negativos y ningún impuesto.
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-es" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

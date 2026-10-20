@@ -26,4 +26,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/es/tools/compound/",
+    ko: "/tools/compound/",
+    name: "Calculadora de interés compuesto",
+    blurb: "Capital inicial y aportación mensual: capital final, intereses, inflación y tabla por años",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];
