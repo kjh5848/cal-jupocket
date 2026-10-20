@@ -2131,3 +2131,52 @@ details[open] summary {
   color: var(--muted);
   font-size: 0.875rem;
 }
+
+/* 중국어판(/zh-tw/ · /zh-hk/ · /zh-cn/) — 일본어판과 같은 이유로 글자 단위 줄바꿈, 금칙은 strict */
+:lang(zh) body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "PingFang TC", "PingFang SC", "Noto Sans TC", "Noto Sans SC",
+    "Microsoft JhengHei", "Microsoft YaHei", "Segoe UI", sans-serif;
+  word-break: normal;
+  line-break: strict;
+}
+/* 라틴 문자판(영어·독일어·프랑스어·스페인어·인도네시아어)은 단어 단위 줄바꿈이 기본이라 keep-all 을 풀 이유가 없다 */
+
+/* 언어판이 여럿일 때 헤더의 접히는 목록 */
+.lang-menu {
+  position: relative;
+  font-size: 0.875rem;
+}
+.lang-menu summary {
+  cursor: pointer;
+  color: var(--muted);
+  list-style: none;
+}
+.lang-menu summary::-webkit-details-marker {
+  display: none;
+}
+.lang-menu summary::after {
+  content: " ▾";
+}
+.lang-menu ul {
+  position: absolute;
+  right: 0;
+  z-index: 60;
+  margin: 0.4rem 0 0;
+  padding: 0.35rem;
+  min-width: 11rem;
+  list-style: none;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: 0 8px 24px -8px rgb(16 24 40 / 0.25), 0 0 0 1px var(--rule);
+}
+.lang-menu li a {
+  display: block;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  color: var(--text);
+}
+.lang-menu li a:hover {
+  background: var(--surface-2);
+}

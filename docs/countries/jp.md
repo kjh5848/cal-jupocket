@@ -1,6 +1,20 @@
-# 일본어판 진행 기록
+# 일본 판 진행 기록
 
-일본어판 루틴(`docs/superpowers/plans/2026-10-19-ja-routine.md`)이 회차마다 한 줄. 상태: 진행 중 · 발행 · 보강 · 판정 · 보류(이유).
+나라판 루틴(`docs/superpowers/plans/2026-10-20-country-routine.md`)이 회차마다 한 줄. 상태: 진행 중 · 발행 · 보강 · 판정 · 보류(이유).
+
+## 설정
+
+| 항목 | 값 |
+|---|---|
+| 나라 코드 | `jp` (작업 폴더 `../cal-wt/jp`, rates `src/rates/jp/`, lib `src/lib/jp/`, 테스트 `src/lib/__tests__/jp-*.test.ts`) |
+| 판 | `ja` — 주소 `/ja/`, 도구 목록 `src/data/ja/tools.ts` |
+| 페이지 언어 | Japanese — `<html lang="ja">` |
+| 조사표 칸 | 일본 |
+| 자동완성 | `--hl ja --gl jp` |
+| 허용 출처 | nta.go.jp(国税庁) · laws.e-gov.go.jp · mhlw.go.jp(厚生労働省) · nenkin.go.jp(日本年金機構) · soumu.go.jp(総務省) · 그 기관이 정하는 값에 한해 jfc.go.jp · boj.or.jp |
+| 주의 | — |
+
+## 기록
 
 | 날짜 | 도구 | 조사표 판정 | 상태 | 주소 | 메모 |
 |---|---|---|---|---|---|

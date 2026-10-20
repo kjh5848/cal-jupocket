@@ -3,32 +3,15 @@
  * 도감 번호는 한국어 캡션·링크허브가 가리키는 번호라 일본어판에 옮기지 않고,
  * 일본어판에는 일본 제도로 검증된 도구만 들어오기 때문이다.
  *
- * 새 일본어 페이지를 만들면: 여기 한 줄 + (계산이 같은 한국어판이 있으면) src/i18n/alternates.ts 에 짝.
- * basis 는 그 도구가 무엇에 근거하는지 — "math" 는 산술(나라 무관), "jp-law" 는 일본 원문으로 검증한 제도.
+ * 새 일본어 페이지를 만들면 여기 한 줄. 계산이 같은 한국어판이 있으면 `ko` 에 그 주소 → hreflang 짝.
+ * basis 는 "math"(산술, 나라 무관) 또는 "law"(일본 원문으로 검증한 제도). 형식은 src/i18n/registry.ts.
  */
-export interface JaTool {
-  href: string;
-  name: string;
-  blurb: string;
-  type: "money" | "date" | "unit" | "tax" | "labor" | "pension" | "life";
-  icon: string;
-  basis: "math" | "jp-law";
-}
+import type { LocaleTool } from "../../i18n/registry";
 
-/** 분류 이름(일본어). 색은 한국어판 도감 색과 같다(src/data/tool-types.ts) */
-export const JA_TYPE_LABEL: Record<JaTool["type"], string> = {
-  money: "お金・金融",
-  date: "日付・時間",
-  unit: "単位・換算",
-  tax: "税金",
-  labor: "給与・労働",
-  pension: "年金・保険",
-  life: "くらし",
-};
-
-export const jaTools: JaTool[] = [
+export const tools: LocaleTool[] = [
   {
     href: "/ja/tools/percent/",
+    ko: "/tools/percent/",
     name: "パーセント計算",
     blurb: "何％か・割引後の価格・増減率・元の値をすぐ計算",
     type: "unit",
@@ -37,6 +20,7 @@ export const jaTools: JaTool[] = [
   },
   {
     href: "/ja/tools/date-diff/",
+    ko: "/tools/date-diff/",
     name: "日数計算・日付計算",
     blurb: "2つの日付の間は何日か・何日後は何月何日か・土日を除く平日",
     type: "date",
@@ -45,6 +29,7 @@ export const jaTools: JaTool[] = [
   },
   {
     href: "/ja/tools/compound/",
+    ko: "/tools/compound/",
     name: "積立の複利計算",
     blurb: "初期投資と毎月の積立を年利回りで運用すると何年後にいくらになるか",
     type: "money",
@@ -53,6 +38,7 @@ export const jaTools: JaTool[] = [
   },
   {
     href: "/ja/tools/dday/",
+    ko: "/tools/dday/",
     name: "あと何日・カウントダウン",
     blurb: "目標の日付まであと何日か・残り何時間か・今日を1日目と数えた日数",
     type: "date",
@@ -61,6 +47,7 @@ export const jaTools: JaTool[] = [
   },
   {
     href: "/ja/tools/age/",
+    ko: "/tools/age/",
     name: "年齢計算・満年齢",
     blurb: "生年月日から満年齢・数え年・月齢・小学校と中学校の学年を計算",
     type: "date",
@@ -69,6 +56,7 @@ export const jaTools: JaTool[] = [
   },
   {
     href: "/ja/tools/birthday-dday/",
+    ko: "/tools/birthday-dday/",
     name: "誕生日まであと何日",
     blurb: "次の誕生日まであと何日・何時間か、何曜日か、次の誕生日で何歳になるか",
     type: "date",
@@ -77,6 +65,7 @@ export const jaTools: JaTool[] = [
   },
   {
     href: "/ja/tools/unix-time/",
+    ko: "/tools/unix-time/",
     name: "UNIX時間 変換",
     blurb: "エポック秒・ミリ秒（13桁）を日本時間とUTCの日時に、日時をUNIX時間に変換",
     type: "date",
@@ -85,6 +74,7 @@ export const jaTools: JaTool[] = [
   },
   {
     href: "/ja/tools/time-calc/",
+    ko: "/tools/time-calc/",
     name: "時間計算",
     blurb: "何時間後・何分後は何時か、2つの時刻の間の経過時間を何時間何分で計算",
     type: "date",
@@ -93,6 +83,7 @@ export const jaTools: JaTool[] = [
   },
   {
     href: "/ja/tools/service-period/",
+    ko: "/tools/service-period/",
     name: "勤続年数 計算",
     blurb: "入社日から終了日まで何年何か月何日か、在籍日数・何年目かを民法の数え方で計算",
     type: "date",
@@ -105,7 +96,7 @@ export const jaTools: JaTool[] = [
     blurb: "税抜価格から税込価格、税込価格から税抜価格と消費税額を10％・8％で計算",
     type: "tax",
     icon: "calculator",
-    basis: "jp-law",
+    basis: "law",
   },
   {
     href: "/ja/national-pension/",
@@ -113,7 +104,7 @@ export const jaTools: JaTool[] = [
     blurb: "令和8年度の月額・前納（2年・1年・6カ月・早割）の割引額・付加年金がいくら増えるかを計算",
     type: "pension",
     icon: "calculator",
-    basis: "jp-law",
+    basis: "law",
   },
   {
     href: "/ja/hourly-wage-base/",
@@ -121,6 +112,6 @@ export const jaTools: JaTool[] = [
     blurb: "月給・日給から割増賃金（残業代）の基礎となる1時間あたりの賃金と月平均所定労働時間を計算",
     type: "labor",
     icon: "calculator",
-    basis: "jp-law",
+    basis: "law",
   },
 ];

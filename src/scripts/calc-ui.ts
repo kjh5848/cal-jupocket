@@ -12,7 +12,7 @@
  *   .result-hero[data-dock="<값 id>"]  폰에서 결과가 화면 밖이면 아래 고정 띠
  *   .calc-card[data-two]               900px 이상 입력 왼쪽 · 결과 오른쪽
  */
-import { ui, pageLocale } from "../i18n/ui";
+import { ui, pageLocale, formatMoney } from "../i18n/ui";
 import { readWon, shares } from "../lib/calc-ui";
 
 const num = (s: string | null | undefined) => Number(String(s ?? "").replace(/[^\d.-]/g, "")) || 0;
@@ -31,7 +31,7 @@ const T = ui(pageLocale());
 /** 금액 단위 — 원 칸이면 원, 円 칸이면 円 으로 읽어 준다(만·억 / 万·億 은 같은 네 자리 단위) */
 const MONEY_UNIT: Record<string, string> = { "원": "원", "円": "円" };
 // 마크업에 data-won 을 직접 쓴 칸(값 "")은 페이지 언어로 정한다 — 일본어판이면 円
-const moneyUnit = (input: HTMLInputElement) => input.dataset.won || (T.htmlLang === "ja" ? "円" : "원");
+const moneyUnit = (input: HTMLInputElement) => input.dataset.won || T.wonUnit || "원";
 
 /**
  * 표시가 없는 계산기에도 기본 틀을 입힌다 — 원 단위 금액 칸 · 사람 수·기간 칸 · 선택지 2~3개 ·
@@ -197,7 +197,7 @@ function enhance(card: HTMLElement) {
     new IntersectionObserver(([e]) => dock!.classList.toggle("on", !e.isIntersecting && e.boundingClientRect.top > 0)).observe(hero);
   }
   const paintResults = () => {
-    for (const s of subs) s.el.querySelector("b")!.textContent = s.chips.reduce((a, c) => a + num(c.querySelector(".value")?.textContent), 0).toLocaleString(T.numberLocale) + (T.htmlLang === "ja" ? "円" : "원");
+    for (const s of subs) s.el.querySelector("b")!.textContent = formatMoney(T.locale, s.chips.reduce((a, c) => a + num(c.querySelector(".value")?.textContent), 0));
     if (bar && legend) {
       const vals = groups.map((g) => g.reduce((a, id) => a + num(document.getElementById(id)?.textContent), 0));
       const pct = shares(vals);

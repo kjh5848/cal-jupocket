@@ -1,3 +1,5 @@
+> **2026-10-20부터 이 문서 대신 `2026-10-20-country-routine.md`(나라 코드 `jp`)를 따른다.** 일본 설정은 `docs/countries/jp.md` 머리에 있다. 아래는 처음 일본어판 루틴의 기록으로 남긴다. 바뀐 점: 조사표는 읽기만 하고(기록은 jp.md), 짝은 `src/data/ja/tools.ts` 의 `ko` 칸, 작업은 `../cal-wt/jp` 폴더에서.
+
 # 일본어판 루틴 — 조사표 일본 칸 → 원문 확인 → /ja/ 페이지
 
 > **For agentic workers:** 한 번 돌 때(1회차) 할 일을 적은 반복 절차다. 회차마다 처음부터 읽고 `docs/country-matrix.md` 의 **일본** 칸과 `docs/countries/jp.md` 를 기준으로 이어 간다. 한국 도구 루틴(`2026-10-16-tool-routine.md`, 매시 :13)과 같은 저장소 폴더에서 돌아서 **잠금을 같이 쓴다**.
