@@ -17,4 +17,13 @@ export const tools: LocaleTool[] = [
     icon: "percent",
     basis: "math",
   },
+  {
+    href: "/zh-hk/tools/date-diff/",
+    ko: "/tools/date-diff/",
+    name: "日數計算機",
+    blurb: "計算兩個日期相隔幾多天（可連首尾計）、某日期加減幾天或幾個月，以及星期一至五的平日數",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

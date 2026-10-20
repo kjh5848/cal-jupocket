@@ -1,0 +1,231 @@
+---
+/**
+ * 日數計算機 — 홍콩 繁體中文판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/date-diff.ts 의 ZH_HANT 사전 — 대만판·홍콩판 공용, 날짜 표기는 <html lang="zh-Hant-HK"> 로 '2026年10月21日週三'),
+ * 문장은 홍콩 구글 자동완성으로 새로 썼다(번역 아님). 그레고리력 산술이라 rates 와 상관없다(조사표 홍콩 칸 '단위').
+ *
+ * 소제목은 홍콩 구글 자동완성에서 왔다(keywords/hk-date-diff-2026-10-21.csv, hl zh-HK · gl hk):
+ *   日數計算機 · 計日子 · 計日子器 / 日期計算器 天數計算 · 相隔日數 / 日期計算幾個月 · 幾年 · 年月日 /
+ *   工作天計算 香港 · 工作天計算2026 / 計日子 excel · 日數計算 excel · 日期計算幾個月excel
+ * 대만 쪽 결과(司法院·國定假日·台灣)와 bno 計日子(이민 체류일 — 규칙 미확인)는 뺐다.
+ * 계산기는 공휴일을 빼지 않는다(토·일만 뺀 平日). 공휴일 예시는 gov.hk「2026年公眾假期」(https://www.gov.hk/tc/about/abouthk/holiday/2026.htm,
+ * 2026-10-21 확인)에서 읽은 줄만 쓴다. 勞工假期·토요일 근무 관습은 labour.gov.hk 를 열지 않아 쓰지 않는다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 span()·shift() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span, shift, type Span } from "../../../../lib/date-calc";
+
+const title = "日數計算機（香港）— 計日子、相隔日數、加減日期及工作天";
+const description =
+  "香港日數計算機：計算兩個日期相隔多少天、某日期加減幾天幾個月後是哪天，並列出星期一至五的平日數，附政府公眾假期說明。";
+
+/** 하루 번호 → '2026年10月21日週三' (UTC 자정이라 timeZone UTC) — scripts/date-diff.ts ZH_HANT(대만 루틴이 넣음, 8c89eab)와 같은 식 */
+const labelZh = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("zh-Hant-HK", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const n = (v: number) => v.toLocaleString("zh-Hant-HK");
+const daysZh = (v: number) => `${n(v)}天`;
+const spanTextZh = (s: Span) => {
+  const parts: string[] = [];
+  if (s.years) parts.push(`${n(s.years)}年`);
+  if (s.months) parts.push(`${n(s.months)}個月`);
+  if (s.restDays || parts.length === 0) parts.push(daysZh(s.restDays));
+  return parts.join("");
+};
+const d = (iso: string) => toDay(iso)!;
+
+const START = "2026-10-21";
+const END = "2026-12-31";
+const s0 = span(d(START), d(END), false);
+
+// 본문 예시
+const ex1 = span(d("2026-11-02"), d("2026-11-06"), false);
+const ex1i = span(d("2026-11-02"), d("2026-11-06"), true);
+const yr = span(d("2026-01-01"), d("2026-12-31"), true);
+const plus7 = shift(d(START), 7, "day");
+const plus100 = shift(d(START), 100, "day");
+const minus30 = shift(d(START), -30, "day");
+const plus3m = shift(d(START), 3, "month");
+const plus1y = shift(d(START), 1, "year");
+const aug31 = d("2026-08-31");
+const aug31plus1m = shift(aug31, 1, "month");
+const xmasWeek = span(d("2026-12-21"), d("2026-12-25"), true);
+const easterWeek = span(d("2026-04-06"), d("2026-04-10"), true);
+---
+
+<html lang="zh-Hant-HK">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>日數計算機：計日子、計相隔日數</h1>
+      <p>
+        揀兩個日期，即時知道相隔幾多天；或者由一個日期開始，向前或向後加減若干天、週、個月或年，看看是哪一天。輸入後結果會自動更新。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">想計甚麼？</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>兩個日期相隔天數</option>
+            <option value="shift">由某日期加減</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">開始日期</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">結束日期</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">首尾兩天都計算</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">起始日期</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">數量</label>
+            <input type="number" inputmode="numeric" id="amount" value="30" min="0" max="36500" data-step />
+            <select id="unit" aria-label="單位">
+              <option value="day" selected>天</option>
+              <option value="week">週</option>
+              <option value="month">個月</option>
+              <option value="year">年</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">方向</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>加（之後）</option>
+              <option value="before">減（之前）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">兩個日期相差</p>
+          <p class="big" id="hero-value">{daysZh(s0.days)}</p>
+          <p class="hint" id="hero-sub">{spanTextZh(s0)} · {n(s0.weeks)}週{n(s0.weekRest)}天</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">平日（週一到週五）</span>
+            <span class="value" id="v1">{daysZh(s0.weekdays)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">期間</span>
+            <span class="value" id="v2">{labelZh(s0.from)} → {labelZh(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">儲存為圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2>計日子：相隔日數計唔計第一天？</h2>
+      <p>
+        一般的相隔日數是「結束日期減開始日期」，開始那天本身不計。由 2026 年 11 月 2 日（星期一）到 11 月 6 日（星期五），相隔
+        {" "}{daysZh(ex1.days)}。
+      </p>
+      <p>
+        如果第一天也要算進去，例如課程、租期或「由今日起計」的期限，請剔選<strong>首尾兩天都計算</strong>。同一段星期一至五就變成
+        {" "}{daysZh(ex1i.days)}；整個 2026 年（1 月 1 日至 12 月 31 日）連首尾計共 {daysZh(yr.days)}。
+      </p>
+      <p>
+        頁面打開時預設為今天至 12 月 31 日，所以第一個數字就是今年還剩幾多天。兩個日期的先後次序不拘；如結束日期較早，會自動對調再計，並在結果下方註明。
+      </p>
+
+      <h2>日期計算器：某日期加減幾天是哪一天</h2>
+      <ul>
+        <li>
+          <strong>天</strong> — {labelZh(d(START))} 之後 7 天是 {labelZh(plus7)}；100 天後是 {labelZh(plus100)}；30 天前是
+          {" "}{labelZh(minus30)}。
+        </li>
+        <li><strong>週</strong> — 每週按 7 天計。</li>
+        <li>
+          <strong>個月及年</strong> — 保留同一個「日」，只移動月份：{labelZh(d(START))} 之後 3 個月是 {labelZh(plus3m)}，1 年後是
+          {" "}{labelZh(plus1y)}。如目標月份沒有那一天，就取該月最後一天，所以 {labelZh(aug31)} 之後 1 個月是 {labelZh(aug31plus1m)}。
+        </li>
+      </ul>
+
+      <h2>日期計算幾個月、幾年：以年月日顯示</h2>
+      <p>
+        總天數下面，會把同一段日子拆成「年、個月、天」（先數完整的曆月，餘下的才算天），以及「週、天」。以預設的日期為例，即
+        {" "}{spanTextZh(s0)}，或 {n(s0.weeks)}週{n(s0.weekRest)}天，合共 {daysZh(s0.days)}。
+      </p>
+
+      <h2>工作天計算（香港）：平日與公眾假期</h2>
+      <p>
+        <strong>平日</strong>是期間內星期一至五的天數，跟總天數一樣按「首尾兩天都計算」的設定。2026 年 12 月 21 日（星期一）至 12 月 25 日（星期五），連首尾計有
+        {" "}{daysZh(xmasWeek.weekdays)}平日。
+      </p>
+      <p>
+        計算機<strong>不會扣除公眾假期</strong>，只除去星期六和星期日。如你星期六也要上班，或公司另有休息日，請自行調整。根據政府公布的 2026 年公眾假期，12 月 25 日（星期五）是聖誕節，所以上面那一週扣除後少一天。另一個例子：清明節翌日 4 月 6 日（星期一）和復活節星期一翌日 4 月 7 日（星期二）都是公眾假期，4 月 6 日至 10 日這一週的
+        {" "}{daysZh(easterWeek.weekdays)}平日中，有兩天是假期。
+      </p>
+
+      <h2>用 Excel 計日子</h2>
+      <p>把開始日期放在 A2、結束日期放在 B2：</p>
+      <ul>
+        <li><code>=B2-A2</code> — 相隔天數，不計開始那天（儲存格格式設為數字）。</li>
+        <li><code>=B2-A2+1</code> — 相隔天數，首尾兩天都計。</li>
+        <li><code>=DATEDIF(A2,B2,"m")</code> — 相隔幾個完整月（改成 <code>"y"</code> 就是完整年數）。</li>
+        <li><code>=A2+30</code> 或 <code>=EDATE(A2,3)</code> — 加 30 天，或加 3 個月。</li>
+        <li>
+          <code>=NETWORKDAYS(A2,B2,H2:H20)</code> — 兩個日期之間星期一至五的天數，再減去你在 H2:H20 輸入的假期。它首尾兩天都計，所以要跟這裡「首尾兩天都計算」的結果比較。
+        </li>
+      </ul>
+
+      <details>
+        <summary>會計算閏年嗎？</summary>
+        <p>會。計算按公曆（格里曆），閏年的 2 月 29 日會計算在內；2 月 29 日之後 1 年，在平年是 2 月 28 日。</p>
+      </details>
+
+      <details>
+        <summary>可以計相隔幾多小時嗎？</summary>
+        <p>不可以，這裡只計整天和整週。如只需要大概的小時數，可以把天數乘以 24。</p>
+      </details>
+
+      <p class="hint">
+        公眾假期資料來源：
+        <a href="https://www.gov.hk/tc/about/abouthk/holiday/2026.htm" rel="noopener">香港政府一站通 — 2026年公眾假期</a>
+        （2026 年 10 月 21 日查閱）。
+      </p>
+
+      <AdSlot label="date-diff-result-zh-hk" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
