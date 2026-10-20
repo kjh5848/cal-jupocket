@@ -1,14 +1,14 @@
 ---
 /**
  * 時間戳轉換器 — 홍콩판 유닉스 타임스탬프 변환(/zh-hk/tools/unix-time/). 한국어판 /tools/unix-time/ 와
- * 계산(lib/unix-time.ts)·스크립트(scripts/unix-time.ts 의 ZH_HANT 사전 — 대만판과 공용, 대만 루틴이 넣음)를
+ * 계산(lib/unix-time.ts)·스크립트(scripts/unix-time.ts 의 ZH_HANT 사전 — 홍콩 회차가 main 잠금 안에서 넣음, 대만판도 쓸 수 있게 중립 서면어)를
  * 같이 쓰고, 문장은 홍콩 書面語로 새로 썼다(번역 아님, 대만판 문장도 옮기지 않음). 날짜 표기는
- * <html lang="zh-Hant-HK"> 의 Intl('2026年10月19日週一'). 조사표 홍콩 칸 '같음'(POSIX 4.19). 고친 공유 파일 없음.
+ * <html lang="zh-Hant-HK"> 의 Intl('2026年10月19日週一'). 조사표 홍콩 칸 '같음'(POSIX 4.19). 공유 파일은 scripts/unix-time.ts 의 ZH_HANT 사전 하나만 더함.
  *
  * 소제목은 홍콩 구글 자동완성에서 왔다(keywords/hk-unix-time-2026-10-21.csv, hl zh-HK · gl hk):
  *   時間戳轉換器·線上 timestamp 轉換·時間 戳 在線 轉換 / epoch time hk·epoch 是什麼時間 / timestamp 轉換 毫秒 /
  *   utc timestamp 轉換 / timestamp 轉換 公式·excel / timestamp 轉換 python·java·sql·linux
- * 시간대는 UTC 와 '這部裝置的時區'만 — 香港時間 오프셋 숫자는 허용 출처 원문으로 이번에 확인하지 않아 쓰지 않는다.
+ * 시간대는 UTC 와 '裝置時區'만 — 香港時間 오프셋 숫자는 허용 출처 원문으로 이번에 확인하지 않아 쓰지 않는다.
  * 본문 예시 숫자는 전부 아래 frontmatter 에서 lib 함수로 계산한다.
  */
 import BaseHead from "../../../../components/BaseHead.astro";
@@ -59,7 +59,7 @@ const num = (v: number) => v.toLocaleString(LANG);
           <label for="zone">時區</label>
           <select id="zone" data-seg>
             <option value="utc" selected>UTC</option>
-            <option value="device">這部裝置的時區</option>
+            <option value="device">裝置時區</option>
           </select>
           <p class="hint" id="zone-hint">日期欄和結果按這個時區顯示，時間戳本身不會改變。</p>
         </div>
@@ -162,7 +162,7 @@ const num = (v: number) => v.toLocaleString(LANG);
 
       <h2>UTC timestamp 轉換與香港時間</h2>
       <p>
-        時間戳本身沒有時區：同一個數字，在香港、倫敦或紐約都是同一個時刻，只是在當地時鐘上讀出來不同。選 <strong>這部裝置的時區</strong>，
+        時間戳本身沒有時區：同一個數字，在香港、倫敦或紐約都是同一個時刻，只是在當地時鐘上讀出來不同。選 <strong>裝置時區</strong>，
         轉換器就按你手機或電腦設定的時區顯示（裝置設為香港，就是香港時間），並在結果旁列出與 UTC 相差多少。想看其他地方的時間，
         可先把裝置時區改成那個地方再回來。夏令時間等規則由裝置的時區設定處理，同一個城市在不同日子的時差可能不同。
       </p>
@@ -218,7 +218,7 @@ const num = (v: number) => v.toLocaleString(LANG);
       <details>
         <summary>為甚麼結果差了幾個鐘頭？</summary>
         <p>
-          通常是 UTC 和本地時間搞混了：想看香港時間卻按 UTC 讀，或者相反。在 <strong>UTC</strong> 和 <strong>這部裝置的時區</strong>
+          通常是 UTC 和本地時間搞混了：想看香港時間卻按 UTC 讀，或者相反。在 <strong>UTC</strong> 和 <strong>裝置時區</strong>
           之間切換比較一下。如果年份變成1970年或很遠的將來，就是單位差了 {num(1000)} 倍，請自己選秒或毫秒。
         </p>
       </details>
