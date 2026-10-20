@@ -1,0 +1,101 @@
+{
+  "country": "GB",
+  "draft": true,
+  "note": "조사표 취득세(/acquisition-tax/) 행의 영국 칸 — 잉글랜드·북아일랜드 Stamp Duty Land Tax(SDLT) 주거용 요율 초안. 영국판 페이지는 아직 없음. 한국 취득세(가액 전체에 한 세율)와 달리 집값을 구간으로 쪼개 구간마다 세율을 곱해 더한다(marginal). 과세연도(4/6~4/5)가 아니라 거래의 effective date(보통 completion) 기준 — 아래 표는 effective date 2025-04-01 이후 거래(SDLT (Temporary Relief) Act 2023 s.1 의 완화 기간이 2022-09-23~2025-03-31 로 끝남). 스코틀랜드(LBTT)·웨일스(LTT, 2018-04-01 이후 완료분)는 다른 세금이라 이번 회차 범위 밖 — 페이지에 잉글랜드·북아일랜드 한정이라고 밝힐 것. 숫자는 GOV.UK 안내(Stamp Duty Land Tax 가이드 content API updated_at 2026-09-30 · Higher rates 안내 updated_at 2026-09-30 · HMRC 매뉴얼 SDLTM00050)와 Finance Act 2003(legislation.gov.uk, 'up to date … on or before 19/20 October 2026')에서 읽은 것만. 거주 여부·추가 주택 여부·생애최초 해당 여부는 판정하지 말고 사용자가 고르게 할 것(판정 규칙이 길고 배우자·공동 구매자·신탁에 따라 달라짐).",
+  "verifiedOn": "2026-10-21",
+  "effectiveFrom": "2025-04-01",
+  "region": "England and Northern Ireland",
+  "sources": [
+    {
+      "label": "GOV.UK — Stamp Duty Land Tax (Overview · Residential property rates · Reliefs and exemptions · Shared ownership property), content API updated_at 2026-09-30",
+      "url": "https://www.gov.uk/stamp-duty-land-tax/residential-property-rates"
+    },
+    {
+      "label": "GOV.UK — Higher rates of Stamp Duty Land Tax (The higher rates from 1 April 2025 · SDLT rates for non-UK residents), updated_at 2026-09-30",
+      "url": "https://www.gov.uk/guidance/stamp-duty-land-tax-buying-an-additional-residential-property"
+    },
+    {
+      "label": "HMRC SDLT Manual SDLTM00050 — Rates of tax (marginal rate system, round down to the nearest pound), updated_at 2026-09-30",
+      "url": "https://www.gov.uk/hmrc-internal-manuals/stamp-duty-land-tax-manual/sdltm00050"
+    },
+    {
+      "label": "Finance Act 2003 s.55(1B) Table A (residential), up to date to 19 October 2026",
+      "url": "https://www.legislation.gov.uk/ukpga/2003/14/section/55"
+    },
+    {
+      "label": "Finance Act 2003 Sch 4ZA para 1(2) Table A (higher rates, FA 2025 s.51 로 대체) · para 3 Condition A~D (£40,000)",
+      "url": "https://www.legislation.gov.uk/ukpga/2003/14/schedule/4ZA"
+    },
+    {
+      "label": "Finance Act 2003 Sch 6ZA (first-time buyers relief) para 1(3)·1(7)·4",
+      "url": "https://www.legislation.gov.uk/ukpga/2003/14/schedule/6ZA"
+    },
+    {
+      "label": "Finance Act 2003 s.75ZA (non-resident +2%) · Sch 9A para 2·4 (non-resident transaction, de minimis £40,000, 183일)",
+      "url": "https://www.legislation.gov.uk/ukpga/2003/14/section/75ZA"
+    },
+    {
+      "label": "SDLT (Temporary Relief) Act 2023 s.1 (완화 기간 2022-09-23~2025-03-31)",
+      "url": "https://www.legislation.gov.uk/ukpga/2023/2/section/1"
+    }
+  ],
+  "standard": {
+    "bands": [
+      { "upTo": 125000, "rate": 0 },
+      { "upTo": 250000, "rate": 0.02 },
+      { "upTo": 925000, "rate": 0.05 },
+      { "upTo": 1500000, "rate": 0.1 },
+      { "upTo": null, "rate": 0.12 }
+    ],
+    "source": "FA 2003 s.55(1B) Table A: 'So much as does not exceed £125,000 0% … The remainder (if any) 12%' · GOV.UK Rates for a single property 같은 표('Up to £125,000 Zero … the portion above £1.5 million 12%')"
+  },
+  "higherRates": {
+    "bands": [
+      { "upTo": 125000, "rate": 0.05 },
+      { "upTo": 250000, "rate": 0.07 },
+      { "upTo": 925000, "rate": 0.1 },
+      { "upTo": 1500000, "rate": 0.15 },
+      { "upTo": null, "rate": 0.17 }
+    ],
+    "minConsideration": 40000,
+    "source": "FA 2003 Sch 4ZA para 1(2) Table A(5/7/10/15/17%, FA 2025 s.51 로 대체) · para 3(2) Condition A 'chargeable consideration … is £40,000 or more' · para 3(4) 다른 주택(시가 £40,000 이상) 보유 · para 3(5) 주 거주지 교체가 아님 · GOV.UK 'The higher rates from 1 April 2025' 같은 표. 표준 요율에 5%p 씩 더한 값"
+  },
+  "firstTimeBuyer": {
+    "bands": [
+      { "upTo": 300000, "rate": 0 },
+      { "upTo": 500000, "rate": 0.05 }
+    ],
+    "maxConsideration": 500000,
+    "notWithHigherRates": true,
+    "source": "FA 2003 Sch 6ZA para 4 Table A('does not exceed £300,000 0% · Any remainder (so far as not exceeding £500,000) 5%') · para 1(3) relevant consideration £500,000 이하 · para 1(4) 모든 구매자가 first-time buyer 이고 주 거주 목적 · para 1(7) higher rates 거래면 청구 불가 · GOV.UK 'If the price is over £500,000, you cannot claim the relief' — 그 경우 표준 요율"
+  },
+  "nonResidentSurcharge": {
+    "addToEachRate": 0.02,
+    "appliesTo": ["standard", "higherRates", "firstTimeBuyer"],
+    "minConsideration": 40000,
+    "source": "FA 2003 s.75ZA(1) 'as if 2% were added to each rate' · (2)(a) s.55(1B) Table A · (b) Sch 4ZA Table A · (e) Sch 6ZA Table A · Sch 9A para 2(3)(a) de minimis £40,000(rent 없는 경우) · GOV.UK 'The 2% surcharge applies on top of all other residential rates of SDLT including the higher rates'",
+    "residenceTest": "GOV.UK 단순 문구: 구매 전 12개월 중 183일 이상 영국에 있지 않으면 'not a UK resident'. 법(Sch 9A para 4)은 effective date 앞 364일부터 뒤 365일까지 사이의 연속 365일 중 183일 — 나중에 거주가 되면 환급(GOV.UK Refunds). 페이지는 판정하지 않고 사용자가 고르게 할 것"
+  },
+  "rounding": {
+    "rule": "구간별 금액을 더한 뒤 파운드 미만 버림",
+    "source": "HMRC SDLTM00050 'The amount calculated is round down to the nearest pound'"
+  },
+  "examples": [
+    { "case": "standard", "price": 295000, "tax": 4750, "source": "GOV.UK Residential property rates 'In April 2025 you buy a house for £295,000 … total SDLT = £4,750'" },
+    { "case": "firstTimeBuyer", "price": 500000, "tax": 10000, "source": "GOV.UK 'first-time buyer … £500,000 … total SDLT = £10,000'" },
+    { "case": "higherRates", "price": 300000, "tax": 20000, "source": "GOV.UK Higher rates '1 April 2025 … additional residential property for £300,000 … Total SDLT = £20,000'" },
+    { "case": "standard", "price": 280000, "tax": 4000, "source": "GOV.UK Shared ownership — market value election £280,000 → £4,000" },
+    { "case": "standard", "price": 260000, "tax": 3000, "source": "GOV.UK Shared ownership — 'if you've paid £260,000 in total so far, the total SDLT due is £3,000'" }
+  ],
+  "notVerified": [],
+  "notCalculated": [
+    "비주거·혼합 용도(s.55 Table B 0/2/5%, £150,000) — 이번 범위는 주거용만",
+    "새 리스의 임대료 NPV 과세(주거 £125,000 넘는 부분 1%, 비주거 1%/2%) — NPV 계산은 HMRC 계산기 몫",
+    "linked transactions(s.55(1C)) · 6채 이상 한 거래(비주거 요율) · 법인 17%(Sch 4A) · 법인·신탁의 higher rates",
+    "shared ownership 단계 납부·80% 초과 지분 추가 — GOV.UK 예시 숫자만 표준 요율 검산에 씀",
+    "higher rates 환급(3년 안 이전 주거지 매각)·비거주 surcharge 환급 — 절차 안내만",
+    "면제(£40,000 미만 freehold·이혼·유증·무상 이전) 판정 — 본문 안내 문구로만",
+    "스코틀랜드 LBTT·웨일스 LTT — 이번 회차 범위 밖(법령은 legislation.gov.uk 에 있어 열 수는 있음)"
+  ],
+  "nextRound": "남은 미확인 없음 — 다음 회차는 원문을 다시 확인하고 draft 를 지워 /en-gb/stamp-duty/ 로 낼 수 있음(주거용 단일 거래, 요율 셋 표준·추가 주택·생애최초 중 고르기 ± 비거주 2%, 생애최초는 £500,000 넘으면 표준으로, higher rates 와 동시 선택 불가, £40,000 미만이면 higher rates·surcharge 안 붙음, 끝수 파운드 버림). title·description 은 en-au 판 stamp duty 와 겹치지 않게 UK·SDLT·England 를 넣을 것"
+}
