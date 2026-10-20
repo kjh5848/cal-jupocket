@@ -1,0 +1,240 @@
+---
+/**
+ * Day of the Week — 미국 영어판 다섯 번째 도구(날짜 요일). 한국어판 /tools/date-day/ 와 계산(lib/date-day.ts 의 dayInfo)·
+ * 스크립트(scripts/date-day.ts 의 EN 사전)를 같이 쓰고, 문장은 영어로 새로 썼다(번역 아님). 조사표 미국 칸 '단위'.
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-date-day-2026-10-20.csv):
+ *   what day of the week is today·was 9/11·was june 6 1944 / what day of the week is christmas 2026·halloween /
+ *   what week number is it (today·in 2026) / day of the year calculator (2026·excel) / is it a leap year 2026·2027·2028 /
+ *   day of the week calculator formula·excel
+ * 공휴일은 표시하지 않는다 — lib 의 공휴일 판정은 한국 목록이고, 미국 연방 공휴일 원문(5 U.S.C. 6103)은 확인하지 않았다.
+ * 윤년 규칙만 원문 확인(USNO, rates/date-day-2026.json). 본문 숫자는 전부 아래 frontmatter 에서 dayInfo() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay } from "../../../../lib/date-calc";
+import { dayInfo, isLeap, WEEKDAY_EN, type DayInfo } from "../../../../lib/date-day";
+
+const title = "What Day of the Week Is It? Day of the Week Calculator — Week Number and Day of the Year";
+const description =
+  "See what day of the week any date from 1900 to 2100 falls on, plus its ISO and calendar week number, day of the year and whether it's a leap year.";
+
+/** 'October 20, 2026' (UTC 자정이라 timeZone UTC) */
+const labelEn = (d: DayInfo) =>
+  new Date(Date.UTC(d.year, d.month - 1, d.date)).toLocaleDateString("en-US", { timeZone: "UTC", year: "numeric", month: "long", day: "numeric" });
+const monthEn = (d: DayInfo) => new Date(Date.UTC(d.year, d.month - 1, 1)).toLocaleDateString("en-US", { timeZone: "UTC", month: "long" });
+const ordEn = (v: number) => `${v}${v === 1 ? "st" : v === 2 ? "nd" : v === 3 ? "rd" : "th"}`;
+const day = (iso: string) => dayInfo(toDay(iso)!);
+const wd = (d: DayInfo) => WEEKDAY_EN[d.weekday];
+
+const BASE = "2026-10-20";
+const d0 = day(BASE);
+
+// 본문 예시 — 전부 dayInfo 로 센다
+const nine11 = day("2001-09-11");
+const dday44 = day("1944-06-06");
+const xmas = day("2026-12-25");
+const halloween = day("2026-10-31");
+const ny27 = day("2027-01-01");
+const isoEdge1 = day("2021-01-03");
+const isoEdge2 = day("2024-12-30");
+const feb29 = day("2028-02-29");
+const plus100 = dayInfo(toDay(BASE)! + 100);
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>What Day of the Week Is It? Day of the Week Calculator</h1>
+      <p>
+        Pick a date and see the day of the week right away, along with its week number, its day number of the year and
+        whether the year is a leap year. Any date from 1900 to 2100 works.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="date">Date</label>
+          <input type="date" id="date" value={BASE} min="1900-01-01" max="2100-12-31" />
+          <div class="ux-presets" role="group" aria-label="Pick a date">
+            <button type="button" data-preset="today">Today</button>
+            <button type="button" data-preset="tomorrow">Tomorrow</button>
+            <button type="button" data-preset="newyear">Next New Year's Day</button>
+            <button type="button" data-preset="christmas">Christmas this year</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="start">Week starts on (for calendar week and week of the month)</label>
+          <select id="start" data-seg>
+            <option value="0" selected>Sunday</option>
+            <option value="1">Monday</option>
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{labelEn(d0)}</p>
+          <p class="big" id="hero-value">{wd(d0)}</p>
+          <p class="hint" id="hero-sub">Weekday · {ordEn(d0.nth)} {wd(d0)} of {monthEn(d0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">Day of the year</span>
+            <span class="value" id="v-doy">Day {d0.dayOfYear} of {d0.daysInYear}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Days left in the year</span>
+            <span class="value" id="v-left">{d0.daysLeft} days</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO week</span>
+            <span class="value" id="v-iso">Week {d0.iso.week}, {d0.iso.year}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Calendar week</span>
+            <span class="value" id="v-cal">Week {d0.calWeek}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Week of the month</span>
+            <span class="value" id="v-month">Week {d0.monthWeek} of {monthEn(d0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Leap year</span>
+            <span class="value" id="v-leap">{d0.leap ? "Leap year (366 days)" : "Common year (365 days)"}</span>
+          </div>
+        </div>
+        <p class="hint" id="note">
+          Q{d0.quarter} · ISO {d0.isoText} · Unix time (00:00 UTC) {d0.unix} Holidays aren't marked — weekday or weekend is
+          based on Saturday and Sunday only.
+        </p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>What day of the week was it? Looking up past dates</h2>
+      <p>
+        The calculator uses the Gregorian calendar for every year from 1900 to 2100, so it works for history questions as
+        well as upcoming plans:
+      </p>
+      <ul>
+        <li>{labelEn(nine11)} was a {wd(nine11)}.</li>
+        <li>D-Day, {labelEn(dday44)}, was a {wd(dday44)}.</li>
+        <li>Your birthday — enter the date you were born to see the day of the week you arrived.</li>
+      </ul>
+
+      <h2>What day of the week is Christmas 2026?</h2>
+      <ul>
+        <li>Halloween, {labelEn(halloween)}: {wd(halloween)}</li>
+        <li>Christmas Day, {labelEn(xmas)}: {wd(xmas)}</li>
+        <li>New Year's Day, {labelEn(ny27)}: {wd(ny27)}</li>
+      </ul>
+      <p>
+        The “Christmas this year” and “Next New Year's Day” buttons fill these in for whatever year it is when you open the
+        page.
+      </p>
+
+      <h2>What week number is it? ISO weeks vs. calendar weeks</h2>
+      <p>There's more than one way to number the weeks of a year, so the calculator shows both:</p>
+      <ul>
+        <li>
+          <strong>ISO week</strong> (ISO 8601) — weeks start on Monday, and week 1 is the week with the year's first Thursday
+          in it. That means early January can belong to the previous year and late December to the next:
+          {" "}{labelEn(isoEdge1)} is in week {isoEdge1.iso.week} of {isoEdge1.iso.year}, and {labelEn(isoEdge2)} is in week
+          {" "}{isoEdge2.iso.week} of {isoEdge2.iso.year}. A year has 52 or 53 ISO weeks.
+        </li>
+        <li>
+          <strong>Calendar week</strong> — the week containing January 1 is week 1, and the count goes up each time the week
+          starts again. Pick Sunday or Monday above to match your calendar. On {labelEn(d0)} it's week {d0.calWeek} with
+          weeks starting on Sunday.
+        </li>
+        <li>
+          <strong>Week of the month</strong> — the row of the month's calendar the date sits in, where the row with the 1st
+          is week 1. This is different from “the 3rd Tuesday”, which counts only Tuesdays (days 1–7 are the 1st, 8–14 the
+          2nd, and so on), so both are shown.
+        </li>
+      </ul>
+      <p>
+        In Excel or Google Sheets, <code>=ISOWEEKNUM(A1)</code> gives the ISO week, <code>=WEEKNUM(A1,1)</code> the calendar
+        week starting on Sunday and <code>=WEEKNUM(A1,2)</code> starting on Monday. If a schedule at work or school says
+        “week 12”, check which of these it means.
+      </p>
+
+      <h2>Day of the year calculator</h2>
+      <p>
+        January 1 is day 1. {labelEn(d0)} is day {d0.dayOfYear} of {d0.daysInYear}, with {d0.daysLeft} days left in the year
+        (December 31 shows 0 days left). In a spreadsheet, <code>=A1-DATE(YEAR(A1),1,0)</code> returns the same day number
+        for a date in A1.
+      </p>
+
+      <h2>Is it a leap year? 2026, 2027 and 2028</h2>
+      <p>
+        A year is a leap year if it divides evenly by 4 — except century years, which must also divide evenly by 400. So
+        2000 was a leap year and 1900 and 2100 are not. A leap year has a February 29 and 366 days.
+      </p>
+      <ul>
+        <li>2026: {isLeap(2026) ? "leap year" : "not a leap year"}</li>
+        <li>2027: {isLeap(2027) ? "leap year" : "not a leap year"}</li>
+        <li>2028: {isLeap(2028) ? "leap year" : "not a leap year"} — {labelEn(feb29)} falls on a {wd(feb29)}</li>
+      </ul>
+
+      <details>
+        <summary>Can I work out the day of the week by hand?</summary>
+        <p>
+          Start from a date whose weekday you know, count the days between, divide by 7 and move forward by the remainder.
+          {" "}{labelEn(d0)} is a {wd(d0)}; 100 days later, 100 ÷ 7 leaves a remainder of 2, so {labelEn(plus100)} is a
+          {" "}{wd(plus100)}. Across a new year, the same date moves one weekday later after a common year and two after a
+          leap year.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does it show federal holidays?</summary>
+        <p>
+          No. “Weekday” and “Weekend” are based on Saturday and Sunday only, so a holiday that falls on a weekday still shows
+          as a weekday. Check your employer's or your state's holiday calendar for days off.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why is the Unix time always at midnight?</summary>
+        <p>
+          The note under the result gives the Unix timestamp for 00:00 UTC on that date, so it doesn't change with your
+          device's time zone. Times within the day aren't included.
+        </p>
+      </details>
+
+      <p class="hint">
+        Leap year rule: <a href="https://aa.usno.navy.mil/faq/leap_years" rel="noopener" target="_blank">U.S. Naval Observatory — Leap Years</a>
+        (checked October 19, 2026).
+      </p>
+
+      <p>
+        To count the days between two dates or find a date a number of days away, use the
+        {" "}<a href="/en-us/tools/date-diff/">Date Calculator</a>. For how many days are left until an event, use the
+        {" "}<a href="/en-us/tools/dday/">Days Until Countdown</a>.
+      </p>
+
+      <AdSlot label="date-day-result-en-us" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-day.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

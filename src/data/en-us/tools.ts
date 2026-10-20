@@ -44,4 +44,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-us/tools/date-day/",
+    ko: "/tools/date-day/",
+    name: "Day of the Week Calculator",
+    blurb: "What day of the week any date falls on, plus its ISO and calendar week number, day of the year and leap year",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
