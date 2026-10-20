@@ -1,0 +1,215 @@
+---
+/**
+ * Days Until — 미국 영어판 네 번째 도구(디데이). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 EN 사전)를 같이 쓰고, 문장은 영어로 새로 썼다(번역 아님). 조사표 미국 칸 '단위'.
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-dday-2026-10-20.csv):
+ *   how many days until · days until / countdown calculator days hours minutes / days until christmas·halloween 2026 /
+ *   days left until the end of the year · days until 2027 / birthday countdown calculator
+ * 'D-12' 표기는 미국에서 쓰지 않아 '100 days to go' 로 낸다. 프리셋은 한국어판과 같은 네 개(100일·12/25·12/31·1/1)만 —
+ * Thanksgiving 같은 요일 규칙 공휴일은 원문(5 U.S.C. 6103)을 확인하지 않아 넣지 않는다.
+ * 하루는 24시간으로 센다. 서머타임 전환 규칙 원문을 확인하지 않아 전환 날짜는 쓰지 않고, 시간이 어긋날 수 있다는 동작 고지만 둔다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, countdown, type Countdown } from "../../../../lib/date-calc";
+
+const title = "How Many Days Until? Countdown Calculator — Days, Hours and Minutes";
+const description =
+  "See how many days are left until any date, with a live countdown in days, hours and minutes. Set a time for exams and deadlines, or count today as day 1.";
+
+/** 하루 번호 → 'Tue, October 20, 2026' (UTC 자정이라 timeZone UTC) */
+const labelEn = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("en-US", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${v.toLocaleString("en-US")} ${one}${v === 1 ? "" : "s"}`;
+const left = (c: Countdown) => (c.side === 0 ? "Today" : c.side > 0 ? `${plural(c.days, "day")} to go` : `${plural(c.days, "day")} ago`);
+const d = (iso: string) => toDay(iso)!;
+
+const BASE = "2026-10-20";
+const TARGET = "2027-01-28";
+const base = d(BASE);
+const target = d(TARGET);
+const c0 = countdown(target, null, base, 0);
+const days0 = Math.floor(c0.seconds / 86_400);
+
+// 본문 예시 — 전부 BASE 에서 센다
+const halloween = d("2026-10-31");
+const xmas = d("2026-12-25");
+const nye = d("2026-12-31");
+const ny = d("2027-01-01");
+const cHalloween = countdown(halloween, null, base, 0);
+const cXmas = countdown(xmas, null, base, 0);
+const cNye = countdown(nye, null, base, 0);
+const cNy = countdown(ny, null, base, 0);
+const tomorrow = countdown(base + 1, null, base, 0);
+// 오전 9시 시작 — 기준일 오후 3시(15:00)에 열었을 때
+const exam = countdown(xmas, 9 * 3600, base, 15 * 3600);
+const examD = Math.floor(exam.seconds / 86_400);
+const examH = Math.floor((exam.seconds % 86_400) / 3600);
+const pastDay = d("2026-09-01");
+const past = countdown(pastDay, null, base, 0);
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>How Many Days Until…? Countdown Calculator</h1>
+      <p>
+        Pick a date and the countdown shows how many days are left and how much time remains. For an exam, a flight or a
+        deadline with a set start time, turn on “Count to a time”.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">Target date</label>
+          <input type="date" id="target" value={TARGET} />
+          <div class="ux-presets" role="group" aria-label="Common dates">
+            <button type="button" data-preset="plus100">100 days</button>
+            <button type="button" data-preset="xmas">Christmas</button>
+            <button type="button" data-preset="yearend">Dec 31</button>
+            <button type="button" data-preset="newyear">New Year's Day</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">Count to a time</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">Target time</label>
+          <input type="time" id="time" value="09:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">Start date (usually today)</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Until {labelEn(target)}</p>
+          <p class="big" id="hero-value">{left(c0)}</p>
+          <p class="hint" id="hero-sub">Counting the start date as day 1, the target date is day {c0.countDays}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Time left</span>
+            <span class="value" id="v1">{plural(days0, "day")}, 0 hours, 0 minutes</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Counting day 1</span>
+            <span class="value" id="v2">Day {c0.countDays}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">Start date</span>
+            <span class="value" id="v3">{labelEn(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How many days until a date — is today counted?</h2>
+      <p>
+        “Days to go” here is <strong>target date − today</strong>. Today isn't counted; the target date is. So tomorrow is
+        {" "}{left(tomorrow)}, the target date itself shows “Today” all day, and a date that has passed shows “days ago”.
+      </p>
+      <p>
+        If you want to count the first day as day 1 — the day you started a new job, quit smoking or started dating — use the
+        “Counting day 1” number instead. It's always one more than the days to go. Counting {labelEn(base)} as day 1,
+        {" "}{labelEn(target)} is day {c0.countDays}.
+      </p>
+
+      <h2>Countdown in days, hours and minutes</h2>
+      <ul>
+        <li>
+          <strong>Date only</strong> — counts to the moment the target date ends (midnight at the start of the next day).
+        </li>
+        <li>
+          <strong>With a time</strong> — counts to that time. Once the time passes, even on the target date, the box switches to
+          “Time since”. Opened at 3:00 PM on {labelEn(base)}, a 9:00 AM start on {labelEn(xmas)} is {plural(examD, "day")} and
+          {" "}{plural(examH, "hour")} away.
+        </li>
+        <li>
+          <strong>The time left ticks every second</strong> — only while the start date is today. Set another start date and it
+          counts from midnight on that day.
+        </li>
+        <li>
+          <strong>Daylight saving time</strong> — every day is counted as exactly 24 hours, so if the clocks change between now
+          and the target date, the hours can be off by one. The number of days isn't affected.
+        </li>
+      </ul>
+
+      <h2>Days until Halloween, Christmas and the end of 2026</h2>
+      <p>The buttons above fill in the common dates. Counting from {labelEn(base)}:</p>
+      <ul>
+        <li>Halloween ({labelEn(halloween)}): {left(cHalloween)}</li>
+        <li>Christmas ({labelEn(xmas)}): {left(cXmas)}</li>
+        <li>The last day of the year ({labelEn(nye)}): {left(cNye)}</li>
+        <li>New Year's Day 2027 ({labelEn(ny)}): {left(cNy)}</li>
+      </ul>
+      <p>The page fills in today's date when you open it, so the numbers are always counted from the day you visit.</p>
+
+      <h2>Birthday countdown</h2>
+      <p>
+        Enter your next birthday as the target date. If this year's birthday has already passed, use next year's date —
+        otherwise the calculator shows how many days ago it was. Turn on “Count to a time” if you want the countdown to end at
+        the minute a party starts.
+      </p>
+
+      <h2>Days until a date in Excel or Google Sheets</h2>
+      <p>
+        Both store dates as numbers, so subtracting <code>TODAY()</code> from the target date gives the days left — for example
+        {" "}<code>=A1-TODAY()</code> with the target date in A1. If the result shows up as a date, change the cell format to
+        Number. Add 1 if you want to count today as day 1.
+      </p>
+
+      <details>
+        <summary>How do I count only weekdays until a date?</summary>
+        <p>
+          This page counts every calendar day, weekends included. For Monday-to-Friday days, put today and the target date
+          into the <a href="/en-us/tools/date-diff/">Date Calculator</a> — it counts weekdays (holidays aren't removed).
+        </p>
+      </details>
+
+      <details>
+        <summary>What happens if I enter a date that has passed?</summary>
+        <p>
+          It shows “days ago” and the time box changes to “Time since” — handy for how long it's been since a deadline or a
+          start date. Counting from {labelEn(base)}, {labelEn(pastDay)} was {left(past)}.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does it work for an event in another time zone?</summary>
+        <p>
+          The countdown uses your device's clock and date. For a concert, a launch or a flight set in another time zone,
+          convert the start time to your own time zone before you enter it.
+        </p>
+      </details>
+
+      <AdSlot label="dday-result-en-us" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
