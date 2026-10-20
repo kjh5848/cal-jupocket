@@ -1,0 +1,231 @@
+---
+/**
+ * 複利計算機 — 대만판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 ZH_HANT 사전 — 홍콩판과 공용, 금액은 판의 TWD·zh-TW 표기 '$1,234,567'),
+ * 문장은 대만 번체로 새로 썼다(번역 아님). 복리 산술이라 rates 와 상관없다(조사표 대만 칸 '같음').
+ *
+ * 소제목은 대만 구글 자동완성에서 왔다(keywords/tw-compound-2026-10-21.csv, hl zh-TW · gl tw):
+ *   定期定額 複利計算·公式·試算 / 定期定額+單筆投入 複利計算機 / 單利 複利公式 / 複利計算 excel·複利公式excel /
+ *   複利計算機 每年投入·每月投入 / 複利計算機怎麼按 / 複利計算機 股息再投入
+ * 세율 기본값은 0% — 한국어판 15.4% 는 한국 원천징수라 쓰지 않고, 대만 이자·배당 과세 숫자는 허용 출처로 확인하지 않아 적지 않는다.
+ * 상품 이름(0050 등 ETF·은행)은 쓰지 않는다. 계산기는 월 복리만 하므로 '每年投入'은 ÷ 12 근사라고만 적는다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 compound() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import "../../../../styles/global.css";
+
+const title = "台灣複利計算機 — 定期定額＋單筆投入、複利公式、Excel 試算";
+const description =
+  "台灣複利計算機：單筆投入加上每月定期定額，以假設年報酬率按月複利，算出期末金額、累積收益、稅後與扣除通膨後的價值，附逐年表與 Excel FV 公式。";
+
+const base = { principal: 100_000, monthly: 5_000, ratePct: 6, months: 240, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const onlyMonthly = compound({ ...base, principal: 0, timing: "start" });
+const real2 = compound({ ...base, timing: "start", inflationPct: 2 });
+/** 單利：本金 × (1 + 年利率 × 年數) — 복리와 비교용 */
+const simple = base.principal * (1 + (base.ratePct / 100) * (base.months / 12));
+const ntd = (x: number) =>
+  Math.round(x).toLocaleString("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+const monthlyRate = (base.ratePct / 12).toFixed(4);
+---
+
+<html lang="zh-Hant-TW">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>複利計算機（定期定額＋單筆投入）</h1>
+      <p>
+        輸入一開始投入的金額、每個月固定投入的金額和假設的年報酬率，計算機會每個月把收益滾進本金，算出期末會有多少錢，其中多少是自己投入的本金、多少是複利收益。
+        年報酬率、稅率和通膨率都只是你設定的假設，不代表任何投資實際會有的表現。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">單筆投入（元）</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value="100,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">每月投入（元）</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="5,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">假設年報酬率</label>
+          <input type="number" id="cp-rate" value="6" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">投入期間</label>
+          <input type="number" id="cp-period" value="20" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="期間單位">
+            <option value="years" selected>年</option>
+            <option value="months">個月</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">每月投入時間</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>月初投入</option>
+            <option value="end">月底投入</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">收益稅率（假設）</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">年通膨率</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">目標金額（元，可不填）</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder="例如 3,000,000" autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="投入本金|複利收益"
+          data-dock="cp-hero"
+        >
+          <p class="label">期末金額（稅前）</p>
+          <p class="big" id="cp-hero">{ntd(ex.balance)}</p>
+          <p class="meta" id="cp-note">240個月 · 月利率 {monthlyRate}% · 每月月初投入</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">投入本金</span><span class="value" id="cp-paid">{ntd(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">複利收益</span><span class="value" id="cp-gain2">{ntd(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">稅金（假設）</span><span class="value" id="cp-tax-v">{ntd(0)}</span></div>
+          <div class="stat-chip"><span class="label">稅後金額</span><span class="value" id="cp-after">{ntd(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">換算成現在的價值</span><span class="value" id="cp-real">{ntd(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">達成目標</span><span class="value" id="cp-goal-v">未設定目標</span></div>
+        </div>
+
+        <details>
+          <summary>逐年投入、收益與餘額</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>期間</th><th>當年投入</th><th>當年收益</th><th>餘額</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">第{r.year}年</th><td>{ntd(r.paid)}</td><td>{ntd(r.gain)}</td><td>{ntd(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">「當年投入」不含一開始的單筆投入，單筆投入只算在餘額裡。</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">存成圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2>定期定額複利公式</h2>
+      <ul>
+        <li><strong>月利率</strong> — r = 年報酬率 ÷ 12。年報酬率 6% 時，月利率約 {monthlyRate}%。</li>
+        <li><strong>月初投入</strong> — 當月新投入的錢也會算到當月收益：餘額 =（餘額 ＋ 每月投入）×（1 ＋ r）。</li>
+        <li><strong>月底投入</strong> — 先算當月收益再存入：餘額 = 餘額 ×（1 ＋ r）＋ 每月投入。最後一筆沒有收益，所以結果略少。</li>
+        <li><strong>一次算完的公式</strong> — n 個月後 FV = P（1 ＋ r）<sup>n</sup> ＋ PMT × [（1 ＋ r）<sup>n</sup> − 1] ÷ r，月初投入時 PMT 那一項再乘一次（1 ＋ r）。P 是單筆投入，PMT 是每月投入。</li>
+        <li><strong>稅金</strong> — 期末金額高於投入本金時，才把你填的稅率乘在這段收益上一次；虧損不算稅。</li>
+      </ul>
+      <p>
+        例子：一開始投入 {ntd(base.principal)}，每月月初定期定額 {ntd(base.monthly)}，假設年報酬率 6%，投入 20 年。
+        總共投入 {ntd(ex.paid)}，期末約 {ntd(ex.balance)}，其中 {ntd(ex.gain)} 是複利收益。同樣的條件改成月底投入，期末約 {ntd(exEnd.balance)}。
+      </p>
+
+      <h2>單筆投入和定期定額一起算</h2>
+      <p>
+        第一天就投入的錢可以滾完整段期間，每個月後來才加進去的錢，能複利的時間越來越短。
+        上面的例子裡，只看一開始的 {ntd(base.principal)}，20 年後會變成約 {ntd(lump.balance)}；只看每月 {ntd(base.monthly)} 的定期定額，20 年後約 {ntd(onlyMonthly.balance)}。
+        兩者相加就是期末金額。想只算單筆，把每月投入填 0；只算定期定額，把單筆投入填 0。
+      </p>
+
+      <h2>單利和複利公式差在哪裡</h2>
+      <p>
+        單利只對本金計息：本利和 = 本金 ×（1 ＋ 年利率 × 年數）。複利則把每期的收益加進本金，下一期連收益一起計息：本利和 = 本金 ×（1 ＋ 每期利率）<sup>期數</sup>。
+        以 {ntd(base.principal)}、年利率 6%、20 年來看，單利是 {ntd(simple)}，按月複利是 {ntd(lump.balance)}。時間越長，兩者差距越大。
+      </p>
+
+      <h2>扣除通膨後還剩多少</h2>
+      <p>
+        「換算成現在的價值」是把稅後金額除以（1 ＋ 年通膨率）<sup>年數</sup>。假設每年通膨 2%，例子裡的 {ntd(ex.balance)} 大約等於現在的 {ntd(real2.real)}。
+        通膨率填 0% 就只看帳面金額。
+      </p>
+
+      <h2>複利計算 Excel 公式</h2>
+      <p>
+        Excel 或 Google 試算表的 FV 函數可以算出同樣的結果。月初投入用
+        <code>=FV(6%/12, 240, -5000, -100000, 1)</code>，月底投入把最後的 1 改成 0。每月投入和單筆投入填負數，是因為那是付出去的錢。
+        Mac 的 Numbers 也有同名的 FV 函數。
+      </p>
+
+      <h2>每年投入一次怎麼算</h2>
+      <p>
+        這個計算機固定按月投入、按月複利。如果你是一年投入一次，可以把一年的金額除以 12 填進「每月投入」當成近似值，
+        但實際一次投入整年的金額，結果會和按月分開投入略有不同。
+      </p>
+
+      <details>
+        <summary>複利計算機怎麼按？</summary>
+        <p>
+          一般計算機沒有次方鍵時，可以把（1 ＋ 月利率）連乘月數次。例如月利率 0.5%，就是 1.005 乘 240 次。
+          用這個頁面不必自己按：填好單筆投入、每月投入、年報酬率和期間，結果會立刻更新。
+        </p>
+      </details>
+
+      <details>
+        <summary>股息再投入可以用這個算嗎？</summary>
+        <p>
+          可以把「股息再投入後的總報酬率」當成假設年報酬率填進去，計算機會把收益每月滾回本金。
+          它不會另外計算配息日期、手續費或股價漲跌，結果只是依照固定報酬率推估。
+        </p>
+      </details>
+
+      <details>
+        <summary>稅率要填多少？</summary>
+        <p>
+          預設是 0%。利息、股利等收益的課稅方式依所得種類和個人情況而不同，這個計算機不替你決定稅率，只把你填的假設稅率乘在收益上。
+          實際規定請查看財政部的
+          <a href="https://www.etax.nat.gov.tw/" rel="noopener" target="_blank">財政部稅務入口網</a>。
+        </p>
+      </details>
+
+      <details>
+        <summary>年報酬率是 0% 或負數會怎樣？</summary>
+        <p>
+          0% 時期末金額就等於投入本金。負報酬時收益顯示為負數，也不算稅。實際投資每年報酬有高有低，即使平均報酬相同，期末金額也可能不同。
+        </p>
+      </details>
+
+      <details>
+        <summary>金額可以輸入小數嗎？</summary>
+        <p>金額以「元」為單位。輸入的逗號和 $ 符號會被忽略，但小數點也會被忽略，後面的數字會接在前面，請只輸入整數金額。</p>
+      </details>
+
+      <AdSlot label="compound-result-zh-tw" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

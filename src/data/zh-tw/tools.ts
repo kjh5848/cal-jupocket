@@ -26,4 +26,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/zh-tw/tools/compound/",
+    ko: "/tools/compound/",
+    name: "複利計算機",
+    blurb: "單筆投入加每月定期定額，按假設年報酬率每月複利，算出期末金額、稅後與扣除通膨後的價值",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];
