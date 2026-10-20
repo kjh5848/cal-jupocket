@@ -1,0 +1,267 @@
+---
+/**
+ * Date calculator — 영국판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/date-diff.ts 의 EN 사전, 날짜 표기는 <html lang="en-GB"> 로 '20 October 2026'), 문장은 영국 영어로 새로 썼다(번역 아님).
+ * 그레고리력 산술이라 rates 와 상관없다(조사표 영국 칸 '단위').
+ *
+ * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-date-diff-2026-10-20.csv, hl en · gl gb):
+ *   days between dates calculator uk · inclusive / date calculator add days · from today / date calculator in months · weeks /
+ *   date calculator working days · days between dates working days / days between dates excel
+ * 계산기는 bank holiday 를 빼지 않는다(토·일만 뺀 weekdays). 본문의 bank holiday 날짜는 GOV.UK 공식 목록
+ * https://www.gov.uk/bank-holidays (bank-holidays.json, 확인 2026-10-20)에서 읽은 2026년 값만 쓴다.
+ * 시간 환산(일수 × 24)은 넣지 않는다 — 시계를 바꾸는 날은 하루가 24시간이 아니다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 span()·shift()·weekday() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span, shift, weekday, type Span } from "../../../../lib/date-calc";
+
+const title = "Days Between Dates Calculator UK — Add or Subtract Days From a Date";
+const description =
+  "UK date calculator: count the days between two dates (inclusive or not), add or subtract days, weeks or months, and see weekdays left after bank holidays.";
+
+/** 하루 번호 → 'Tue, 20 October 2026' (UTC 자정이라 timeZone UTC) */
+const labelGb = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("en-GB", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${v.toLocaleString("en-GB")} ${one}${v === 1 ? "" : "s"}`;
+const spanTextGb = (s: Span) => {
+  const parts: string[] = [];
+  if (s.years) parts.push(plural(s.years, "year"));
+  if (s.months) parts.push(plural(s.months, "month"));
+  if (s.restDays || parts.length === 0) parts.push(plural(s.restDays, "day"));
+  return parts.join(", ");
+};
+const d = (iso: string) => toDay(iso)!;
+
+const START = "2026-10-20";
+const END = "2026-12-31";
+const s0 = span(d(START), d(END), false);
+
+// 본문 예시
+const ex1 = span(d("2026-10-01"), d("2026-10-03"), false);
+const ex1i = span(d("2026-10-01"), d("2026-10-03"), true);
+const year1 = span(d("2026-01-01"), d("2026-12-31"), true);
+const plus100 = shift(d(START), 100, "day");
+const minus90 = shift(d(START), -90, "day");
+const plus6w = shift(d(START), 6, "week");
+const jan31 = d("2027-01-31");
+const jan31plus1m = shift(jan31, 1, "month");
+const week = span(d("2026-10-19"), d("2026-10-23"), false);
+const weekI = span(d("2026-10-19"), d("2026-10-23"), true);
+
+// 2026년 bank holiday — GOV.UK bank-holidays.json(확인 2026-10-20). 연간 개수와 10월 이후 날짜만 쓴다.
+const BH_LATE_2026 = {
+  ewni: ["2026-12-25", "2026-12-28"],
+  sc: ["2026-11-30", "2026-12-25", "2026-12-28"],
+};
+const BH_COUNT_2026 = { ew: 8, sc: 10, ni: 10 };
+/** 시작일 다음 날 ~ 종료일(계산기 기본 셈) 안에서 월~금에 걸린 bank holiday 수 */
+const onWeekdays = (list: string[]) =>
+  list.map(d).filter((x) => x > d(START) && x <= d(END) && weekday(x) >= 1 && weekday(x) <= 5).length;
+const workEwNi = s0.weekdays - onWeekdays(BH_LATE_2026.ewni);
+const workSc = s0.weekdays - onWeekdays(BH_LATE_2026.sc);
+---
+
+<html lang="en-GB">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Date calculator</h1>
+      <p>
+        Count the days between two dates, or move a date forwards or backwards. Dates are shown day first, the UK way,
+        and the result updates as soon as you change anything.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">What do you want to work out?</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>Days between two dates</option>
+            <option value="shift">Add or subtract from a date</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">Start date</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">End date</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">Inclusive — count both the first and the last day</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">Start date</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">How many</label>
+            <input type="number" inputmode="numeric" id="amount" value="100" min="0" max="36500" data-step />
+            <select id="unit" aria-label="Unit">
+              <option value="day" selected>days</option>
+              <option value="week">weeks</option>
+              <option value="month">months</option>
+              <option value="year">years</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">Direction</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>Add (later date)</option>
+              <option value="before">Subtract (earlier date)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Days between</p>
+          <p class="big" id="hero-value">{plural(s0.days, "day")}</p>
+          <p class="hint" id="hero-sub">{spanTextGb(s0)} · {plural(s0.weeks, "week")}, {plural(s0.weekRest, "day")}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Weekdays (Mon–Fri)</span>
+            <span class="value" id="v1">{plural(s0.weekdays, "day")}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Dates</span>
+            <span class="value" id="v2">{labelGb(s0.from)} → {labelGb(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Days between two dates — inclusive or not</h2>
+      <p>
+        The default answer is the end date minus the start date, so the first day isn't counted:
+        1 October to 3 October is {plural(ex1.days, "day")}.
+      </p>
+      <p>
+        Tick <strong>Inclusive</strong> when both ends should count — a holiday, a course, a notice period counted in days
+        rather than nights. 1 October to 3 October then becomes {plural(ex1i.days, "day")}, and 1 January to 31 December
+        is {spanTextGb(year1)}.
+      </p>
+      <p>
+        If the end date comes before the start date, the two are swapped and counted anyway, with a note under the result.
+        When you open the page the start date is today and the end date is 31 December, so you can see straight away how many
+        days are left this year.
+      </p>
+
+      <h2>Add or subtract days from a date</h2>
+      <ul>
+        <li>
+          <strong>Days from today</strong> — the start date plus a number of days. 100 days after {labelGb(d(START))}{" "}
+          is {labelGb(plus100)}; 90 days before it is {labelGb(minus90)}.
+        </li>
+        <li><strong>Weeks</strong> — weeks × 7 days. Six weeks after {labelGb(d(START))} is {labelGb(plus6w)}.</li>
+        <li>
+          <strong>Months and years</strong> — the month moves and the day of the month stays put. If that day doesn't exist
+          in the new month, the last day of the month is used: one month after {labelGb(jan31)} is {labelGb(jan31plus1m)}{" "}
+          (29 February in a leap year).
+        </li>
+      </ul>
+
+      <h2>Date calculator in months and weeks</h2>
+      <p>
+        Under the total, the gap is split into years, months and days — whole calendar months first, leftover days after —
+        and into weeks and days. That's why the default range shows {spanTextGb(s0)}, or {plural(s0.weeks, "week")} and
+        {" "}{plural(s0.weekRest, "day")}, next to {plural(s0.days, "day")}.
+      </p>
+
+      <h2>Working days between dates in the UK</h2>
+      <p>
+        The <strong>Weekdays</strong> figure counts Mondays to Fridays in the range, the same way as the total. Monday
+        19 October to Friday 23 October 2026 gives {plural(week.weekdays, "weekday")}, or {plural(weekI.weekdays, "weekday")}{" "}
+        inclusive.
+      </p>
+      <p>
+        <strong>Bank holidays are not taken off</strong>, because they aren't the same across the UK. GOV.UK lists
+        {" "}{BH_COUNT_2026.ew} bank holidays in 2026 for England and Wales, {BH_COUNT_2026.sc} for Scotland and
+        {" "}{BH_COUNT_2026.ni} for Northern Ireland.
+      </p>
+      <p>
+        For example, from {labelGb(d(START))} to {labelGb(d(END))} there are {plural(s0.weekdays, "weekday")}. Christmas Day
+        (Friday 25 December) and the Boxing Day substitute day (Monday 28 December) fall on weekdays, leaving
+        {" "}{plural(workEwNi, "working day")} in England, Wales and Northern Ireland. Scotland also has St Andrew's Day
+        (Monday 30 November), leaving {plural(workSc, "working day")}. Your employer's own closure days aren't included either.
+      </p>
+
+      <h2>Days between dates in Excel</h2>
+      <p>The same counts work in Excel and Google Sheets with the start date in A2 and the end date in B2:</p>
+      <ul>
+        <li><code>=B2-A2</code> — days between, not inclusive (format the cell as a number).</li>
+        <li><code>=B2-A2+1</code> — days between, inclusive.</li>
+        <li><code>=DATEDIF(A2,B2,"m")</code> — whole months between the two dates (<code>"y"</code> for years).</li>
+        <li><code>=A2+100</code> or <code>=EDATE(A2,1)</code> — 100 days later, or one month later.</li>
+        <li>
+          <code>=NETWORKDAYS(A2,B2,H2:H20)</code> — weekdays between, minus the bank holidays you type into H2:H20.
+          NETWORKDAYS counts both the start and the end date, so compare it with this calculator's inclusive result.
+        </li>
+      </ul>
+
+      <details>
+        <summary>What's the difference between "days between" and "days from today"?</summary>
+        <p>
+          "Days between" is the length of a range; "days from today" gives you a date. Two days after 1 October is 3 October,
+          and the range 1 October – 3 October is {plural(ex1.days, "day")} long, or {plural(ex1i.days, "day")} inclusive.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does it handle leap years?</summary>
+        <p>
+          Yes. Dates follow the Gregorian calendar, so 29 February is counted in leap years, and adding a year to
+          29 February lands on 28 February in a common year.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why is there no hours result?</summary>
+        <p>
+          Multiplying days by 24 is an hour out on the days the clocks go forward or back, so this page shows days and weeks only.
+        </p>
+      </details>
+
+      <p class="hint">
+        Bank holiday dates: <a href="https://www.gov.uk/bank-holidays" rel="noopener">UK bank holidays — GOV.UK</a>
+        (checked 20 October 2026).
+      </p>
+
+      <AdSlot label="date-diff-result-en-gb" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
