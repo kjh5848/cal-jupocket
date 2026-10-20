@@ -1,0 +1,237 @@
+---
+/**
+ * 時間戳記轉換 — 대만판 유닉스 타임스탬프 변환(/zh-tw/tools/unix-time/). 한국어판 /tools/unix-time/ 와
+ * 계산(lib/unix-time.ts)·스크립트(scripts/unix-time.ts 의 ZH_HANT 사전 — 홍콩판과 공용)를 같이 쓰고,
+ * 문장은 대만 번체로 새로 썼다(번역 아님). 날짜 표기는 <html lang="zh-Hant-TW"> 의 Intl('2026年10月19日週一').
+ * 조사표 대만 칸 '같음'(POSIX 4.19 — 타임스탬프는 UTC 기준이라 나라와 무관).
+ *
+ * 소제목은 대만 구글 자동완성에서 왔다(keywords/tw-unix-time-2026-10-21.csv, hl zh-TW · gl tw):
+ *   時間戳轉換·時間戳轉時間·timestamp 轉換器·線上 timestamp 轉換 / unix timestamp 是什麼·時間戳記 意思·英文 /
+ *   unix time now / timestamp 轉換 毫秒·時間戳 毫秒 / utc timestamp 轉換 / timestamp 轉換 excel·公式 /
+ *   timestamp 轉換 python·java·sql·linux / unix timestamp discord
+ * 시간대는 UTC 와 '이 기기 시간대'만 — 대만 표준시 오프셋 숫자는 허용 출처 원문으로 이번에 확인하지 않아 쓰지 않는다.
+ * 본문 예시 숫자는 전부 아래 frontmatter 에서 lib 함수로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { INT32_MAX, toParts, enText, isoText, secondsText, dateValue, timeValue } from "../../../../lib/unix-time";
+
+const LANG = "zh-Hant-TW";
+const title = "台灣時間戳記轉換 — Unix Timestamp 秒、毫秒轉日期時間";
+const description =
+  "台灣時間戳記轉換工具：貼上10位數秒或13位數毫秒的 Unix timestamp，馬上換成 UTC 或這台裝置時區的日期時間，也能把日期轉回時間戳。";
+
+/** 처음 보이는 예 — 2026-10-19 03:34:56 UTC */
+const BASE_MS = 1_792_380_896_000;
+const p0 = toParts(BASE_MS, 0);
+const BASE_S = secondsText(BASE_MS);
+const zero = enText(toParts(0, 0), LANG);
+const minus1 = enText(toParts(-1000, 0), LANG);
+const y2038 = enText(toParts(INT32_MAX * 1000, 0), LANG);
+const wrap = enText(toParts(-(INT32_MAX + 1) * 1000, 0), LANG);
+const num = (v: number) => v.toLocaleString(LANG);
+---
+
+<html lang="zh-Hant-TW">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>時間戳記轉換 — Unix Timestamp 與日期時間互轉</h1>
+      <p>
+        日誌、資料庫欄位或 API 回傳裡常會出現像 {BASE_S} 這樣的一串數字。在下面貼上時間戳記，就會顯示對應的日期時間；反過來輸入日期時間，也會算出時間戳記。改任何一邊，另一邊會跟著更新，可以選 UTC 或這台裝置的時區來看。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="zone">時區</label>
+          <select id="zone" data-seg>
+            <option value="utc" selected>UTC</option>
+            <option value="device">這台裝置的時區</option>
+          </select>
+          <p class="hint" id="zone-hint">日期欄位和結果會用這個時區顯示，時間戳記本身不會變。</p>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="ts">時間戳記（Unix timestamp）</label>
+          <input type="text" id="ts" inputmode="decimal" autocomplete="off" spellcheck="false" value={BASE_S} placeholder="例：1704067200" />
+          <p class="hint" id="ts-hint">10位數當作秒，13位數當作毫秒。</p>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">單位</label>
+          <select id="unit" data-seg>
+            <option value="auto" selected>自動判斷</option>
+            <option value="s">秒</option>
+            <option value="ms">毫秒</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="date">日期</label>
+          <input type="date" id="date" value={dateValue(p0)} min="1900-01-01" max="9999-12-30" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="time">時間（24小時制，時:分:秒）</label>
+          <input type="time" id="time" step="1" value={timeValue(p0)} />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="msec">毫秒（0～999）</label>
+          <input type="number" id="msec" inputmode="numeric" min="0" max="999" step="1" value="0" />
+        </div>
+
+        <div class="actions">
+          <button id="btn-now" type="button" class="secondary">現在時間</button>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">UTC</p>
+          <p class="big" id="hero-value">{enText(p0, LANG)}</p>
+          <p class="hint" id="hero-sub"></p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">秒（s）</span>
+            <span class="value mono" id="v-sec">{BASE_S}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">毫秒（ms）</span>
+            <span class="value mono" id="v-ms">{BASE_MS}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601（UTC）</span>
+            <span class="value mono" id="v-iso">{isoText(BASE_MS, 0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601（所選時區）</span>
+            <span class="value mono" id="v-iso-local">{isoText(BASE_MS, 0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">和現在相差</span>
+            <span class="value" id="v-rel">—</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+        <p class="meta" id="now-line">現在：—</p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">存成圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2>Unix timestamp 是什麼？</h2>
+      <p>
+        Unix 時間戳記是從 <strong>1970年1月1日 00:00:00 UTC</strong> 起算經過的秒數，英文叫 Unix timestamp 或 epoch time。POSIX 標準（IEEE Std 1003.1）把每一天都算成剛好 {num(86_400)} 秒，不計閏秒。所以 0 是 UTC {zero}，−1,000 毫秒是 UTC {minus1}。
+      </p>
+
+      <h2>現在的時間戳記</h2>
+      <p>
+        計算機下方的「現在」那一行每秒更新，同時列出目前的秒數和毫秒數。按<strong>現在時間</strong>，就會把這一刻放進轉換欄位。數字取自這台裝置的時鐘，裝置時間不準，結果也會跟著不準。
+      </p>
+
+      <h2>時間戳記是秒還是毫秒？</h2>
+      <ul>
+        <li>
+          <strong>10位數，例如 {BASE_S}</strong>：秒。2001年9月到2286年11月之間的時間戳記都是10位數。
+        </li>
+        <li>
+          <strong>13位數，例如 {BASE_MS}</strong>：毫秒。JavaScript 的 <code>Date.now()</code>、Java 的 <code>System.currentTimeMillis()</code> 給的就是這種，除以 {num(1000)} 就是秒。
+        </li>
+        <li>
+          <strong>「自動判斷」怎麼看</strong>：有小數點就當作秒；整數11位數以下當作秒，12位數以上當作毫秒。逗號和空白會略過。判斷錯了，請自己選單位。
+        </li>
+      </ul>
+
+      <h2>UTC 時間戳記轉成當地時間</h2>
+      <p>
+        時間戳記本身沒有時區，同一個數字在台北、東京或倫敦都是同一個瞬間，只是牆上時鐘顯示的時間不同。選<strong>這台裝置的時區</strong>，就會用手機或電腦設定的時區來顯示，結果旁邊也會標出和 UTC 相差多少。要看別的時區，可以先把裝置的時區改掉再回來。
+      </p>
+
+      <h2>用 Excel 公式轉換時間戳記</h2>
+      <p>試算表把1天當作1來算日期，所以把秒數除以 {num(86_400)}，再加上1970年1月1日就行了。假設 A1 是秒數：</p>
+      <ul>
+        <li>轉成 UTC 日期時間：<code>=A1/86400+DATE(1970,1,1)</code></li>
+        <li>13位數毫秒：<code>=A1/86400000+DATE(1970,1,1)</code></li>
+        <li>轉成當地時間：<code>=A1/86400+DATE(1970,1,1)+(時差/24)</code>，時差填上面轉換結果標出的 UTC 時差（小時，正負號照抄）</li>
+        <li>UTC 日期時間轉回時間戳記：<code>=(A1-DATE(1970,1,1))*86400</code></li>
+      </ul>
+      <p>
+        儲存格只顯示一長串小數的話，把格式設成 <code>yyyy-mm-dd hh:mm:ss</code> 這類日期時間格式即可。Google 試算表也能用同樣的公式。
+      </p>
+
+      <h2>Python、Java、SQL、Linux 的時間戳記轉換</h2>
+      <ul>
+        <li><strong>Python</strong>：<code>datetime.fromtimestamp({BASE_S}, tz=timezone.utc)</code>（先 <code>from datetime import datetime, timezone</code>）</li>
+        <li><strong>pandas</strong>：<code>pd.to_datetime({BASE_S}, unit="s")</code>，毫秒用 <code>unit="ms"</code></li>
+        <li><strong>Java</strong>：<code>Instant.ofEpochSecond({BASE_S})</code>，毫秒用 <code>Instant.ofEpochMilli({BASE_MS}L)</code></li>
+        <li><strong>JavaScript</strong>：<code>new Date({BASE_S} * 1000)</code>，秒要先乘以 {num(1000)}</li>
+        <li><strong>MySQL</strong>：<code>SELECT FROM_UNIXTIME({BASE_S});</code>，反過來用 <code>UNIX_TIMESTAMP()</code></li>
+        <li><strong>PostgreSQL</strong>：<code>SELECT to_timestamp({BASE_S});</code></li>
+        <li><strong>Linux／macOS 終端機</strong>：<code>date +%s</code> 印出現在的時間戳記，GNU <code>date -d @{BASE_S}</code> 轉成日期</li>
+      </ul>
+      <p>想核對結果，把同一個數字貼到上面的轉換欄位比一比。</p>
+
+      <h2>Discord 時間戳記</h2>
+      <p>
+        在 Discord 訊息裡寫 <code>&lt;t:{BASE_S}:F&gt;</code>，每個人看到的都是自己時區的時間，約不同地方的朋友開團很方便。最後的字母決定顯示方式：<code>t</code>／<code>T</code> 是短、長時間，<code>d</code>／<code>D</code> 是短、長日期，<code>f</code>／<code>F</code> 是日期加時間，<code>R</code> 是相對時間（例如「2小時後」）。這裡要填秒，不是毫秒。
+      </p>
+
+      <h2>2038年問題</h2>
+      <p>
+        有號32位元整數最大是 2,147,483,647，換成時間戳記是 UTC {y2038}。再過1秒，還用有號32位元整數存時間的程式就會溢位變成負數，讀成 UTC {wrap}。超過這個時間點時，轉換結果下方會出現提示。
+      </p>
+
+      <details>
+        <summary>1970年以前的日期可以轉嗎？</summary>
+        <p>
+          可以，會變成負數。−1 是紀元前1秒，也就是 UTC 1969年12月31日的最後1秒。POSIX 只定義了1970年以後的算法，這個工具和多數程式語言一樣，每天 {num(86_400)} 秒往回算。可轉換的範圍是1900年1月1日到9999年。
+        </p>
+      </details>
+
+      <details>
+        <summary>小數、微秒、奈秒的時間戳記呢？</summary>
+        <p>
+          像 1792380896.789 這種有小數點的值，會當作秒，最多到小數第3位（毫秒）。16位數的微秒和19位數的奈秒不能直接輸入，請先除以 {num(1000)} 或 {num(1_000_000)} 換成毫秒。
+        </p>
+      </details>
+
+      <details>
+        <summary>為什麼轉出來的時間差了幾個小時？</summary>
+        <p>
+          幾乎都是 UTC 和當地時間弄混了：該看當地時間卻用 UTC 讀，或反過來。切換 <strong>UTC</strong> 和<strong>這台裝置的時區</strong>比較看看。年份變成1970年或很遠的未來，就是單位差了 {num(1000)} 倍，請自己選秒或毫秒。
+        </p>
+      </details>
+
+      <p>
+        要算的是天數不是秒數？可以用<a href="/zh-tw/tools/date-diff/">日期計算機</a>算兩個日期相差幾天，或用<a href="/zh-tw/tools/dday/">倒數日計算機</a>看距離目標日還有幾天。
+      </p>
+
+      <p>
+        資料來源：<a href="https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html" rel="noopener">The Open Group Base Specifications Issue 8（IEEE Std 1003.1-2024）4.19 Seconds Since the Epoch</a>（2026年10月21日確認）
+      </p>
+
+      <AdSlot label="unix-time-result-zh-tw" />
+    </main>
+    <SiteFooter />
+    <style>
+      .mono { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+      #hero-value { overflow-wrap: anywhere; }
+    </style>
+    <script src="../../../../scripts/unix-time.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
