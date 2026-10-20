@@ -2,6 +2,8 @@ import { toDay, fromDay, countdown, durationText, timeToSec, label, shift, type 
 import { labelJa, ddayJa, durationTextJa } from "../lib/date-format-ja";
 import { labelDe, ddayDe, durationTextDe, intDe } from "../lib/de/date-format";
 import { labelFr, ddayFr, durationTextFr, nFr } from "../lib/fr/date-format";
+import { labelEs, ddayEs, durationTextEs } from "../lib/es/date-format";
+import { formatNumberEs } from "../lib/es/number";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pickLang } from "../i18n/ui";
@@ -267,7 +269,37 @@ const ID: typeof KO = {
   shareText: "Hasil hitung mundur hari - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE, "zh-Hant": ZH_HANT, fr: FR, id: ID });
+/**
+ * 스페인판(/es/tools/dday/). 'D-12' 대신 'dentro de 12 días' · 'hoy' · 'hace 5 días'(ddayEs).
+ * 날짜는 'miércoles, 21 de octubre de 2026'(labelEs), 숫자는 es/number(다섯 자리부터 공백).
+ */
+const ES: typeof KO = {
+  title: "Cuenta atrás",
+  needDate: "Introduce una fecha",
+  until: (when: string) => `Hasta el ${when}`,
+  hero: (_c: Countdown, target: number, base: number) => ddayEs(target, base),
+  sub: (c: Countdown) =>
+    c.side === 0
+      ? "La fecha objetivo es el mismo día que la fecha de partida"
+      : c.side > 0
+        ? `Contando la fecha de partida como día 1, la fecha objetivo es el día ${formatNumberEs(c.countDays)}`
+        : `Contando la fecha objetivo como día 1, la fecha de partida es el día ${formatNumberEs(c.countDays)}`,
+  left: "Tiempo que falta",
+  passed: "Tiempo transcurrido",
+  countLabel: "Contando el día 1",
+  count: (c: Countdown) => `Día ${formatNumberEs(c.countDays)}`,
+  baseLabel: "Fecha de partida",
+  ddayLabel: "Cuenta atrás",
+  label: labelEs,
+  duration: durationTextEs,
+  noteNoTime:
+    "Sin hora, la cuenta llega hasta el final de la fecha objetivo (medianoche). Cada día cuenta como 24 horas: si hay un cambio de hora por medio, las horas pueden variar en una.",
+  noteNotToday: "La fecha de partida no es hoy: el tiempo que falta se cuenta desde la medianoche de ese día.",
+  notePastTime: "La fecha objetivo es hoy, pero la hora objetivo ya ha pasado.",
+  shareText: "Cuenta atrás - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE, "zh-Hant": ZH_HANT, fr: FR, id: ID, es: ES });
 
 let lastLines: [string, string][] = [];
 let lastTitle = S.title;
