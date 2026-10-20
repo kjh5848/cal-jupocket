@@ -1,0 +1,196 @@
+---
+/**
+ * 12 to 24 Hour Time Converter — 미국 영어판 여덟 번째 산술 도구(12·24시간제 변환). 한국어판 /tools/time-12-24/ 와
+ * 계산(lib/time-12-24.ts)·스크립트(scripts/time-12-24.ts 의 EN 사전)를 같이 쓰고, 문장은 영어로 새로 썼다(번역 아님).
+ * 조사표 미국 칸 '단위'(#154): 셈은 같고, NIST 가 12 a.m.·12 p.m. 은 모호하니 noon·midnight 으로 쓰라고 안내
+ * (https://www.nist.gov/pml/time-and-frequency-division/times-day-faqs, 2026-10-21) — 그래서 결과에 noon·midnight 을 함께 보인다.
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-time-12-24-2026-10-21.csv):
+ *   12 hour to 24 hour conversion·chart·format / 24 hour to 12 hour converter 21 00 / military time converter to normal time·
+ *   hours and minutes / what is 12am in military time·in 24 hour time / 12pm noon or midnight.
+ * 'what is 12am est in pst' 같은 시간대 묶음은 넣지 않는다 — 시간대 오프셋·서머타임은 원문 미확인(지난 회차들과 같음).
+ * 'military time' 은 미국에서 24시간제를 부르는 이름으로만 쓰고, 읽는 법('fifteen forty hours')·2400 같은 군 규칙은 원문이 없어 쓰지 않는다.
+ * 법 숫자 없음. 본문 예시는 전부 frontmatter 에서 lib 함수로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { parseTime, text24, textEn, boundaryEn, hourTable } from "../../../../lib/time-12-24";
+
+const title = "12 to 24 Hour Time Converter — Military Time, Noon and Midnight";
+const description =
+  "Convert 3:40 PM to 15:40 or 21:00 to 9:00 PM and back. See 12 AM (midnight) and 12 PM (noon) clearly, plus a 0 to 23 hour military time chart.";
+
+const EX = "15:40";
+const m0 = parseTime(EX)!.min;
+const noColon = (m: number) => text24(m).replace(":", "");
+const dotted = (m: number) => textEn(m).replace("AM", "a.m.").replace("PM", "p.m.");
+const tagged = (m: number) => {
+  const b = boundaryEn(m);
+  return b ? `${textEn(m)} (${b})` : textEn(m);
+};
+
+/** 24시간제 표 — 0시 ~ 23시, 12시간제 쪽은 '12:00 AM (midnight)' 처럼 경계 이름을 붙인다 */
+const table = hourTable().map(([h24], i) => [h24, tagged(i * 60)] as [string, string]);
+
+/** 본문 예시 */
+const at = (s: string) => parseTime(s)!.min;
+const E2100 = at("21:00");
+const E0930 = at("9:30 AM");
+const E1230a = at("12:30 AM");
+const E1230p = at("12:30 PM");
+const E1805 = at("18:05");
+const E1540 = at("1540");
+const E0005 = at("00:05");
+const E2359 = at("23:59");
+
+const PRESETS: [string, string][] = [
+  ["Midnight", "midnight"],
+  ["Noon", "noon"],
+  ["3:40 PM", "3:40 PM"],
+  ["23:59", "23:59"],
+];
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>12 to 24 Hour Time Converter (Military Time)</h1>
+      <p>
+        Type a time either way — 3:40 PM, 15:40 or 1540 — and get the other format right away. For PM times add 12 to the hour; for
+        24-hour times from 13:00 to 23:59 subtract 12 and add PM. The two times with a 12 in them are the ones to watch: 00:00 is
+        12:00 AM (midnight) and 12:00 is 12:00 PM (noon).
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="t-in">Time (12-hour with AM/PM, or 24-hour)</label>
+          <input type="text" id="t-in" autocomplete="off" value={EX} placeholder="e.g. 3:40 PM · 15:40 · 1540 · noon" />
+        </div>
+        <div class="t-presets">
+          {PRESETS.map(([label, v]) => <button type="button" class="secondary" data-t={v}>{label}</button>)}
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{EX} =</p>
+          <p class="big" id="hero-value">{textEn(m0)}</p>
+          <p class="hint" id="hero-sub">{noColon(m0)} · {dotted(m0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip"><span class="label">24-hour</span><span class="value" id="v-24">{text24(m0)}</span></div>
+          <div class="stat-chip"><span class="label">12-hour</span><span class="value" id="v-12">{tagged(m0)}</span></div>
+          <div class="stat-chip"><span class="label">4-digit</span><span class="value" id="v-say">{noColon(m0)}</span></div>
+          <div class="stat-chip"><span class="label">a.m./p.m.</span><span class="value" id="v-en">{dotted(m0)}</span></div>
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save PNG</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>12 hour to 24 hour conversion chart</h2>
+      <p>Every hour of the day on the 24-hour clock (often called military time in the US) next to its 12-hour AM/PM time.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>24-hour</th><th>12-hour</th><th>24-hour</th><th>12-hour</th></tr></thead>
+          <tbody>
+            {table.slice(0, 12).map((r, i) => (
+              <tr><td>{r[0]}</td><td>{r[1]}</td><td>{table[i + 12][0]}</td><td>{table[i + 12][1]}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>How to convert 12-hour time to 24-hour format</h2>
+      <ul>
+        <li>
+          <strong>PM: add 12 to the hour</strong> — 3:40 PM is 3 + 12 = 15, so 15:40. The minutes never change.
+        </li>
+        <li>
+          <strong>AM: keep the hour</strong> — 9:30 AM is {text24(E0930)}. Hours below 10 get a leading zero in 24-hour format.
+        </li>
+        <li>
+          <strong>12 AM and 12 PM are the exceptions</strong> — 12:30 AM is just after midnight, {text24(E1230a)}; 12:30 PM is just
+          after noon, {text24(E1230p)}. For 12 AM subtract 12 instead of adding it, and leave 12 PM as it is.
+        </li>
+      </ul>
+
+      <h2>24 hour to 12 hour converter: 21:00 and other examples</h2>
+      <ul>
+        <li><strong>13:00 to 23:59: subtract 12 and add PM</strong> — 21:00 is {textEn(E2100)}, 18:05 is {textEn(E1805)}, 23:59 is {textEn(E2359)}.</li>
+        <li><strong>01:00 to 11:59: add AM</strong> — drop the leading zero if you like: 09:30 is {textEn(E0930)}.</li>
+        <li><strong>00:00 to 00:59: the hour becomes 12 AM</strong> — 00:05 is {textEn(E0005)}.</li>
+        <li><strong>12:00 to 12:59: keep it, add PM</strong> — 12:30 is {textEn(E1230p)}.</li>
+      </ul>
+
+      <h2>Military time converter to normal time</h2>
+      <p>
+        "Military time" is the everyday US name for the 24-hour clock, and it is often written as four digits without the colon.
+        This converter reads that too: 1540 is {textEn(E1540)}, and the 4-digit box in the result shows any time that way. It only
+        changes how a time is written — it doesn't switch time zones, and it works in hours and minutes (no seconds).
+      </p>
+
+      <details>
+        <summary>What is 12 AM in military time — and is 12 PM noon or midnight?</summary>
+        <p>
+          On a digital clock 12:00 AM is midnight at the start of the day, {text24(0)} in 24-hour time, and 12:00 PM is noon, {text24(720)}.
+          That is what this converter uses. The National Institute of Standards and Technology (NIST) points out that noon is neither
+          before nor after noon, so it calls 12 a.m. and 12 p.m. ambiguous and suggests writing 12 noon and 12 midnight instead. That
+          is why the result always adds "(noon)" or "(midnight)" next to those two times. You can also type noon or midnight into the box.
+        </p>
+      </details>
+
+      <details>
+        <summary>Is midnight the start or the end of a day? Why can't I enter 24:00?</summary>
+        <p>
+          This converter treats midnight as the start of a day, 00:00, so 24:00 isn't accepted — enter 00:00 and move the date forward
+          one day. NIST notes that some 24-hour usage writes 0000 for midnight at the start of a date and 2400 for the end of it, and for
+          deadlines it suggests avoiding the question altogether with 11:59 p.m. or 12:01 a.m.
+        </p>
+      </details>
+
+      <details>
+        <summary>AM, PM, a.m. or p.m. — which should I write?</summary>
+        <p>
+          They mean the same thing (before and after noon). Phones and clocks usually show AM/PM; NIST writes them lowercase with
+          periods, a.m./p.m. The converter accepts either, with or without the space and periods, and shows both styles in the result.
+        </p>
+      </details>
+
+      <p>
+        To turn seconds or minutes into hours, use the <a href="/en-us/tools/sec-convert/">seconds to minutes converter</a>.
+        For how many days until a date, try the <a href="/en-us/tools/dday/">days until countdown</a>.
+      </p>
+
+      <p>
+        Source: <a href="https://www.nist.gov/pml/time-and-frequency-division/times-day-faqs" rel="noopener">NIST Time and Frequency
+        Division, Times of Day FAQs</a> (checked October 21, 2026)
+      </p>
+
+      <AdSlot label="time-12-24-result-en-us" />
+    </main>
+    <SiteFooter />
+    <style>
+      .t-presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+    </style>
+    <script src="../../../../scripts/time-12-24.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

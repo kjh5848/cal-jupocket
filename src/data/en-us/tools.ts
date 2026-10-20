@@ -72,6 +72,15 @@ export const tools: LocaleTool[] = [
     basis: "math",
   },
   {
+    href: "/en-us/tools/time-12-24/",
+    ko: "/tools/time-12-24/",
+    name: "12 to 24 Hour Time Converter",
+    blurb: "3:40 PM to 15:40 and back, military time without the colon, and which one is 12 AM midnight or 12 PM noon",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
+  {
     href: "/en-us/fica-tax/",
     name: "FICA Tax Calculator",
     blurb: "2026 Social Security 6.2% up to $184,500, Medicare 1.45% and Additional Medicare 0.9% withheld from a paycheck, plus the employer share",
