@@ -1,0 +1,217 @@
+---
+/**
+ * Kalkulator Persen — 인도네시아어판 첫 도구. 한국어판 /tools/percent/ 와 계산(lib/percent.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/percent.ts 의 ID 사전), 문장은 인도네시아 자동완성으로 새로 썼다(번역 아님). 산술이라 나라 제도·rates 와 상관없다(조사표 인도네시아 칸 '같음').
+ *
+ * 소제목은 인도네시아 구글 자동완성에서 왔다(keywords/id-percent-2026-10-20.csv, hl id · gl id):
+ *   rumus persentase · cara menghitung persen / cara menghitung persen diskon·dari harga / persentase kenaikan dan penurunan /
+ *   persentase keuntungan dari modal·rumus persentase untung·rugi / persentase kehadiran siswa·sakit izin alpa / rumus persentase excel·spreadsheet
+ * bunga pinjaman·saham·PPN 같은 요율 숫자는 쓰지 않는다(rates 로 검증한 값이 아니고 이 도구의 계산이 아니다).
+ * parseNumber 는 쉼표를 지우고 점을 소수점으로 읽는다(ko-KR 고정) — 인도네시아 표기 관습(원문 미확인)과 다를 수 있어
+ * 입력 방법을 h1 바로 아래에 계산기 동작 그대로 적고, 본문 예시는 정수만 쓴다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+
+const title = "Kalkulator Persen — Cara Menghitung Persen, Diskon, Kenaikan & Untung";
+const description =
+  "Hitung persen dari sebuah angka, persentase kenaikan atau penurunan, harga setelah diskon, dan persentase untung dari modal. Lengkap dengan rumus Excel.";
+---
+
+<html lang="id-ID">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Kalkulator Persen</h1>
+      <p>
+        Pilih apa yang ingin dihitung, lalu masukkan dua angka. Hasil dibulatkan sampai dua angka di belakang tanda
+        desimal.
+      </p>
+      <p>
+        <strong>Cara mengetik angka:</strong> tulis tanpa titik ribuan dan tanpa Rp (ketik 150000, bukan 150.000), dan
+        pakai titik untuk desimal (12.5). Kalkulator ini membaca koma sebagai pemisah ribuan, jadi 12,5 akan terbaca 125.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">Mau menghitung apa?</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>B itu berapa persen dari A?</option>
+            <option value="of">Berapa B% dari A?</option>
+            <option value="change">Persentase kenaikan/penurunan dari A ke B</option>
+            <option value="adjust">A ditambah atau dikurangi B%</option>
+            <option value="original">Nilai awal sebelum berubah B%</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">Naik atau turun</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>Turun (diskon)</option>
+            <option value="up">Naik (kenaikan harga)</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">Nilai total A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">Nilai bagian B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B adalah sekian persen dari A</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Nilai total A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Nilai bagian B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Simpan sebagai gambar</button>
+          <button id="btn-share" type="button" class="secondary">Bagikan</button>
+        </div>
+      </div>
+
+      <h2>Rumus persentase: cara menghitung persen</h2>
+      <p>
+        Persentase = bagian ÷ total × 100. Kalau 45 dari 250 orang memilih jawaban yang sama, persentasenya
+        45 ÷ 250 × 100 = 18%.
+      </p>
+      <p>
+        Kebalikannya, B% dari A = A × B ÷ 100. Jadi 18% dari 250 adalah 250 × 18 ÷ 100 = 45. Trik cepat tanpa
+        kalkulator: 10% cukup dibagi 10 (10% dari 460 = 46), 5% adalah setengahnya (23), dan 50% adalah setengah dari
+        angkanya (230).
+      </p>
+
+      <h2>Cara menghitung persen diskon dari harga</h2>
+      <p>
+        Harga setelah diskon = harga awal × (100 − diskon) ÷ 100. Potongannya = harga awal × diskon ÷ 100.
+      </p>
+      <ul>
+        <li>
+          Baju seharga 150 ribu diskon 20%: potongannya 150 × 20 ÷ 100 = 30 ribu, jadi yang dibayar 120 ribu. Di
+          kalkulator, pilih "A ditambah atau dikurangi B%", ketik 150000 di A dan 20 di B.
+        </li>
+        <li>
+          Mencari persen diskon dari dua harga: dari 80 ribu menjadi 60 ribu adalah (60 − 80) ÷ 80 × 100 = −25%,
+          artinya diskon 25%.
+        </li>
+        <li>
+          Diskon bertingkat (misalnya 50% + 20%) tidak dijumlahkan. Sisa harganya 50% × 80% = 40% dari harga awal, jadi
+          totalnya diskon 60%, bukan 70%.
+        </li>
+      </ul>
+
+      <h2>Cara menghitung persentase kenaikan dan penurunan</h2>
+      <p>
+        Persentase perubahan = (nilai akhir − nilai awal) ÷ nilai awal × 100. Hasil positif berarti naik, hasil negatif
+        berarti turun.
+      </p>
+      <ul>
+        <li><strong>Naik dari 40 ke 50</strong> — (50 − 40) ÷ 40 × 100 = +25%.</li>
+        <li><strong>Turun dari 50 ke 40</strong> — (40 − 50) ÷ 50 × 100 = −20%.</li>
+      </ul>
+      <p>
+        Selisihnya sama-sama 10, tetapi persennya berbeda karena selalu dibandingkan dengan angka awal. Di kalkulator,
+        pilih "Persentase kenaikan/penurunan dari A ke B" dan isi angka awal di A.
+      </p>
+
+      <h2>Rumus persentase keuntungan dari modal (untung dan rugi)</h2>
+      <p>
+        Persentase untung = (harga jual − modal) ÷ modal × 100. Rumus yang sama dipakai untuk rugi; hasilnya saja yang
+        negatif.
+      </p>
+      <ul>
+        <li>Modal 200 ribu, dijual 250 ribu: (250 − 200) ÷ 200 × 100 = untung 25%.</li>
+        <li>Modal 250 ribu, dijual 200 ribu: (200 − 250) ÷ 250 × 100 = rugi 20%.</li>
+      </ul>
+      <p>
+        Ingin untung sekian persen? Pakai "A ditambah atau dikurangi B%" dengan pilihan Naik: modal 200000 ditambah 30%
+        menjadi harga jual 260000.
+      </p>
+
+      <h2>Cara menghitung persentase kehadiran siswa</h2>
+      <p>
+        Persentase kehadiran = jumlah hari hadir ÷ jumlah hari efektif × 100. Siswa yang hadir 18 hari dari 20 hari
+        efektif dalam sebulan punya kehadiran 18 ÷ 20 × 100 = 90%.
+      </p>
+      <p>
+        Persentase sakit, izin, dan alpa dihitung dengan cara yang sama: jumlah harinya ÷ hari efektif × 100. Contoh:
+        1 hari sakit dan 1 hari alpa dari 20 hari efektif masing-masing 5%. Di kalkulator, pilih "B itu berapa persen
+        dari A?", isi hari efektif di A dan hari hadir di B. Batas minimal kehadiran mengikuti ketentuan sekolah
+        masing-masing.
+      </p>
+
+      <h2>Rumus persentase di Excel dan spreadsheet</h2>
+      <p>Isi nilai awal di A2 dan nilai akhir di B2:</p>
+      <ul>
+        <li>Persentase kenaikan/penurunan: <code>=(B2-A2)/A2</code>, lalu ubah format sel menjadi persen (%).</li>
+        <li>B2 sebagai persen dari A2: <code>=B2/A2</code>, format persen.</li>
+        <li>B2% dari A2, jika B2 berisi angka biasa seperti 18: <code>=A2*B2/100</code>.</li>
+        <li>Harga setelah diskon B2%: <code>=A2*(100-B2)/100</code>.</li>
+      </ul>
+      <p>
+        Jika B2 sudah berformat persen, Excel menyimpan 18% sebagai 18 per 100 — hapus bagian <code>/100</code> dan
+        ganti <code>100-B2</code> dengan <code>1-B2</code>. Rumus yang sama bisa dipakai di Google Spreadsheet.
+      </p>
+
+      <details>
+        <summary>Kenapa naik 10% lalu turun 10% tidak kembali ke angka awal?</summary>
+        <p>
+          Penurunan 10% dihitung dari angka yang sudah lebih besar. 200 naik 10% menjadi 220, lalu 220 turun 10% menjadi
+          198. Untuk kembali dari 220 ke 200 dibutuhkan penurunan sekitar 9.09% — cek dengan pilihan "Nilai awal sebelum
+          berubah B%".
+        </p>
+      </details>
+
+      <details>
+        <summary>Apa beda persen dan poin persentase?</summary>
+        <p>
+          Jika suatu angka naik dari 2% ke 3%, kenaikannya <strong>1 poin persentase</strong>, tetapi angka itu sendiri
+          naik (3 − 2) ÷ 2 × 100 = <strong>50%</strong>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Bagaimana mencari harga awal sebelum diskon?</summary>
+        <p>
+          Bagi harga setelah diskon dengan sisa persennya. Barang yang dibayar 120 ribu setelah diskon 20% harga awalnya
+          120 ÷ 80 × 100 = 150 ribu. Pilih "Nilai awal sebelum berubah B%", lalu ketik 120000 di A dan 20 di B.
+        </p>
+      </details>
+
+      <AdSlot label="percent-result-id" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

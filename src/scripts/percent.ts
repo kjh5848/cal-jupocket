@@ -19,6 +19,7 @@ const bIn = $("b") as HTMLInputElement;
 /**
  * 화면 문구 — 한국어판(/tools/percent/)·일본어판(/ja/tools/percent/)·영어판(/en-us/tools/percent/ 등)이 같은 계산을 쓴다.
  * 계산은 산술이라 나라와 상관없고, 말만 다르다. 일본어판은 歩合(割·分·厘)을 같이 보인다.
+ * 인도네시아어판(/id/tools/percent/)은 ID 사전.
  * 영어 사전(EN)은 영어 다섯 판이 같이 쓰므로 통화 기호 등 한 나라 표기를 넣지 않는다.
  * 번체 사전(ZH_HANT)은 대만판·홍콩판이 같이 쓰므로 한 곳에만 쓰는 말(打折 등)·통화 기호를 넣지 않는다.
  * 독일어판(/de/tools/percent/)은 숫자 읽기·쓰기도 다르다 — 소수 쉼표(12,5), 천 단위 공백(아래 NUM).
@@ -237,7 +238,42 @@ const FR: typeof KO = {
   share: "Résultat du calcul de pourcentage - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE, fr: FR });
+const ID: typeof KO = {
+  labels: {
+    ratio: { a: "Nilai total A", b: "Nilai bagian B", pct: false },
+    of: { a: "Nilai total A", b: "Persen B", pct: true },
+    change: { a: "Nilai awal A", b: "Nilai akhir B", pct: false },
+    adjust: { a: "Nilai awal A", b: "Persen B", pct: true },
+    original: { a: "Nilai setelah berubah A", b: "Persen perubahan B", pct: true },
+  },
+  title: "Hasil kalkulator persen",
+  nan: "Masukkan angka",
+  ratioZero: "A tidak boleh 0",
+  divZero: "Tidak bisa dibagi 0",
+  ratioHero: "B adalah sekian persen dari A",
+  a: "Nilai total A",
+  b: "Nilai bagian B",
+  ofHero: (a, b) => `${b}% dari ${a}`,
+  whole: "Nilai total A",
+  rate: "Persen B",
+  changeZero: "Nilai awal A tidak boleh 0",
+  changeZeroHint: "Perubahan dari 0 tidak bisa dinyatakan dalam persen",
+  diff: "Selisih",
+  up: "Persentase kenaikan",
+  down: "Persentase penurunan",
+  beforeAfter: "Awal → akhir",
+  adjHero: (b, up) => (up ? `Setelah naik ${b}%` : `Setelah diskon ${b}%`),
+  adjAmount: (up) => (up ? "Tambahan" : "Potongan (hemat)"),
+  first: "Nilai awal A",
+  origNone: "Dari harga setelah diskon 100%, harga awal tidak bisa diketahui",
+  origHero: "Nilai awal",
+  origAmount: (up) => (up ? "Tambahan dari kenaikan" : "Potongan"),
+  changed: "Nilai setelah berubah A",
+  wari: (_p) => "",
+  share: "Hasil kalkulator persen - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE, fr: FR, id: ID });
 /** 숫자 읽기·쓰기 — 독일어판·프랑스어판만 소수 쉼표, 나머지 판은 지금 그대로 */
 const NUM = pickLang({ ko: { parse: parseNumber, fmt: formatNumber }, de: { parse: parseNumberDe, fmt: formatNumberDe }, fr: { parse: parseNumberFr, fmt: formatNumberFr } });
 
