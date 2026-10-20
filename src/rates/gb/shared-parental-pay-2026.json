@@ -1,0 +1,82 @@
+{
+  "country": "GB",
+  "draft": true,
+  "note": "초안 — 조사표 육아휴직 급여 행(/guide/parental-leave-pay-calculator/)의 영국 칸. 영국판 Statutory Shared Parental Pay(ShPP) 계산기용. 한국 육아휴직 급여(통상임금 × 지급률, 상·하한)와 구조가 다르다: 영국 ShPP 는 주 단위 정액 상한 £194.32 와 평균 주급(normal weekly earnings) 90% 중 낮은 쪽, 지급 주 수는 39주 − 엄마가 받은 SMP/MA 주 수 − 상대가 신청한 ShPP 주 수(부모 합산 최대 37주 — 출산 뒤 의무 휴가 2주 때문). 숫자는 GOV.UK 안내와 legislation.gov.uk 원문에서 읽은 것만. 과세연도 2026-27(2026-04-06 부터) — £194.32 는 Social Security Benefits Up-rating Order 2026(SI 2026/148) art 10(2)·1(3)(c) 로 2026-04-06 부터, 그 전 값 £187.18. NI 도 같은 £194.32(SR 2026/59, 2026-04-06). 다음 개정은 2027-04 Up-rating Order 예정(원문에 2027 값 없음 — 그 전에 다시 확인). 계산하지 않을 것(페이지 범위 후보): SMP 첫 6주 90%(상한 없음)·Maternity Allowance·고용주 enhanced pay·자격 판정(26주 근속·partner 66주 중 26주)·notice 8주·leave(50주) 일정 짜기.",
+  "verifiedOn": "2026-10-21",
+  "taxYear": "2026-27 (2026-04-06 ~ 2027-04-05)",
+  "sources": [
+    {
+      "label": "GOV.UK — Shared Parental Leave and Pay (How it works · Eligibility · What you'll get), content API updated_at 2026-10-16",
+      "url": "https://www.gov.uk/shared-parental-leave-and-pay/what-youll-get"
+    },
+    {
+      "label": "Statutory Shared Parental Pay (General) Regulations 2014 reg 40 (주 지급액 £194.32 와 NWE 90% 중 작은 쪽, 끝수 올림), legislation.gov.uk 수정일 2026-05-06",
+      "url": "https://www.legislation.gov.uk/uksi/2014/3051/regulation/40"
+    },
+    {
+      "label": "같은 규정 reg 10 (지급 주 수 = 39주 − SMP/MA 주 수 − 상대가 신청한 ShPP 주 수)",
+      "url": "https://www.legislation.gov.uk/uksi/2014/3051/regulation/10"
+    },
+    {
+      "label": "같은 규정 reg 30 (26주 근속·relevant week 8주 NWE ≥ lower earnings limit)",
+      "url": "https://www.legislation.gov.uk/uksi/2014/3051/regulation/30"
+    },
+    {
+      "label": "같은 규정 reg 32 (normal weekly earnings 계산 — 8주 relevant period, 월급이면 ÷ 개월 × 12 ÷ 52, 그 밖은 ÷ 날 수 × 7)",
+      "url": "https://www.legislation.gov.uk/uksi/2014/3051/regulation/32"
+    },
+    {
+      "label": "같은 규정 reg 29 (partner 조건 — 66주 중 26주 근로, 가장 많은 13주 평균 ≥ MA threshold)",
+      "url": "https://www.legislation.gov.uk/uksi/2014/3051/regulation/29"
+    },
+    {
+      "label": "Social Security Benefits Up-rating Order 2026 (SI 2026/148) art 1(3)(c)·10(2) — £187.18 → £194.32, 2026-04-06 시행",
+      "url": "https://www.legislation.gov.uk/uksi/2026/148/article/10/made"
+    },
+    {
+      "label": "Social Security (Contributions) Regulations 2001 reg 10(a) — 2026-04-06 부터 과세연도 lower earnings limit £129 (SI 2026/231 로 개정), 수정일 2026-07-20",
+      "url": "https://www.legislation.gov.uk/uksi/2001/1004/regulation/10"
+    },
+    {
+      "label": "Statutory Shared Parental Pay (General) Regulations (Northern Ireland) 2015 reg 40 — £194.32(SR 2026/59, 2026-04-06), 끝수 올림 같은 문장, 수정일 2026-05-08",
+      "url": "https://www.legislation.gov.uk/nisr/2015/94/regulation/40"
+    }
+  ],
+  "weeklyRate": {
+    "flatCapPence": 19432,
+    "percentOfNwe": 90,
+    "rule": "min(£194.32, NWE × 90%)",
+    "effectiveFrom": "2026-04-06",
+    "previousPence": 18718,
+    "source": "reg 40(1)(a)(b) · SI 2026/148 art 10(2) · GOV.UK 'ShPP is paid at the rate of £194.32 a week or 90% of your average weekly earnings, whichever is lower'"
+  },
+  "rounding": {
+    "rule": "90% 주액, 또는 하루치(주액의 1/7)로 계산한 지급액에 1p 미만 끝수가 있으면 1p 단위로 올림",
+    "source": "reg 40(2) 'rounded up to the nearest whole number of pence' (GB·NI 같은 문장)",
+    "checks": [
+      { "nwePence": 30000, "weeklyPence": 27000, "note": "GOV.UK 예시 £300 의 90% = £270 (SMP 첫 6주 예시이지만 90% 산술 같음)" },
+      { "nwePence": 30000, "capApplies": true, "weeklyPence": 19432, "note": "GOV.UK 예시 — SPL 기간 £194.32" }
+    ]
+  },
+  "weeks": {
+    "payMax": 39,
+    "sharedPayMaxTypical": 37,
+    "leaveShareMax": 50,
+    "rule": "ShPP 주 수 = 39 − (엄마가 받은 SMP/MA 주 수) − (상대가 신청한 ShPP 주 수)",
+    "example": "GOV.UK: 엄마가 SMP 22주 → ShPP 17주(39 − 22)·SPL 30주(52 − 22) 를 나눔",
+    "source": "reg 10(1) · GOV.UK 'up to 50 weeks of leave and up to 37 weeks of pay'"
+  },
+  "eligibilityEarnings": {
+    "lowerEarningsLimitWeeklyPence": 12900,
+    "lelTaxYear": "2026-27",
+    "partnerTest": "66주 중 26주 근로 + 가장 많은 13주 합계 £390 이상(GOV.UK 문구)",
+    "partnerTotalPence": 39000,
+    "source": "reg 30(1)(b) NWE ≥ LEL · Contributions Regs 2001 reg 10(a) £129 · GOV.UK 'must each earn on average at least £129 a week' · reg 29 + GOV.UK '£390 in total across any 13 of the 66 weeks'"
+  },
+  "notVerified": [
+    "NI reg 10(39주 공식)·NI 근속/소득 조건 본문 — NI reg 40 만 읽음",
+    "NI 의 lower earnings limit 출처(Contributions Regs 2001 은 GB 규정, NI 대응 규정 안 읽음)",
+    "partner 조건의 £390 — reg 29 는 '35A(6A) 금액' 으로만 적어 1992 Act s.35A(6A) 값을 안 읽음, GOV.UK 문구만",
+    "지급 시점·HMRC 환급(reg 43~47)·과세(소득세·NI 대상 여부) — 안 읽음"
+  ]
+}
