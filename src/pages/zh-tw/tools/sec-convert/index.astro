@@ -1,7 +1,7 @@
 ---
 /**
  * 時間換算器 — 대만판 초·분·시간 변환(/zh-tw/tools/sec-convert/). 한국어판 /tools/sec-convert/ 와
- * 계산(lib/sec-convert.ts)·스크립트(scripts/sec-convert.ts 의 ZH_HANT 사전 — 표기는 lib/tw/sec-convert.ts)를 같이 쓰고,
+ * 계산(lib/sec-convert.ts)·스크립트(scripts/sec-convert.ts 의 ZH_HANT 사전 — 홍콩판과 공용, 표기는 lib/hk/sec-convert.ts)를 같이 쓰고,
  * 문장은 대만 번체로 새로 썼다(번역 아님). 조사표 대만 칸 '같음'(#91, SI 브로슈어 표 8).
  *
  * 소제목은 대만 구글 자동완성에서 왔다(keywords/tw-sec-convert-2026-10-21.csv, hl zh-TW · gl tw):
@@ -21,7 +21,7 @@ import SiteHeader from "../../../../components/SiteHeader.astro";
 import SiteFooter from "../../../../components/SiteFooter.astro";
 import "../../../../styles/global.css";
 import { toNanos, partsToNanos, convertAll, clock, minSec, UNITS } from "../../../../lib/sec-convert";
-import { UNIT_NAME_ZH_HANT as U, withUnitZhHant as w, readableZhHant as r } from "../../../../lib/tw/sec-convert";
+import { UNIT_NAME_ZH_HANT as U, withUnitZhHant as w, readableZhHant as r } from "../../../../lib/hk/sec-convert";
 
 const title = "時間換算器（台灣）— 秒換算分鐘、分鐘換算小時、秒轉時分秒";
 const description =
@@ -126,7 +126,7 @@ const num = (s: string) => Number(s).toLocaleString("zh-TW");
           <p class="label">合計</p>
           <p class="big" id="p-value">{w(pAll0.s, "s")}</p>
           <p class="hint" id="p-sub">
-            {w(pAll0.min, "min")}{pMs0.seconds === "0" ? "" : `（${pMs0.minutes.toLocaleString("zh-Hant")}分鐘${pMs0.seconds}秒）`} · {w(pAll0.h, "h")} · {r(p0)}
+            {w(pAll0.min, "min")}{pMs0.seconds === "0" ? "" : `（${pMs0.minutes.toLocaleString("en-US")}分${pMs0.seconds}秒）`} · {w(pAll0.h, "h")} · {r(p0)}
           </p>
         </div>
         <p class="hint" id="p-err" role="alert"></p>

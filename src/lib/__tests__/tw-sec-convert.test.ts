@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { toNanos, convertAll, clock } from "../sec-convert";
-import { readableZhHant, withUnitZhHant, UNIT_NAME_ZH_HANT } from "../tw/sec-convert";
+import { readableZhHant, withUnitZhHant, UNIT_NAME_ZH_HANT } from "../hk/sec-convert";
 
 describe("tw sec-convert 번체 표기", () => {
   it("1小時 = 3,600秒, 1天 = 86,400秒 (SI 표 8)", () => {
