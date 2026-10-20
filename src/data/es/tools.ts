@@ -44,4 +44,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/es/tools/unix-time/",
+    ko: "/tools/unix-time/",
+    name: "Convertir timestamp Unix a fecha",
+    blurb: "Timestamp Unix en segundos o milisegundos a fecha y hora (UTC o tu zona horaria), y una fecha a timestamp",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
