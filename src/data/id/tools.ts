@@ -35,4 +35,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/id/tools/dday/",
+    ko: "/tools/dday/",
+    name: "Hitung Mundur Hari",
+    blurb: "Berapa hari lagi menuju tanggal tujuan — sisa hari, jam, dan menit, juga hari ke berapa dari tanggal awal",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

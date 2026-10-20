@@ -1,0 +1,234 @@
+---
+/**
+ * Hitung Mundur Hari — 인도네시아어판 네 번째 도구(디데이). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 ID 사전 — 날짜는 <html lang="id-ID"> 의 Intl 로 'Rabu, 21 Oktober 2026')를 같이 쓰고,
+ * 문장은 인도네시아 자동완성으로 새로 썼다(번역 아님). 조사표 인도네시아 칸 '단위'(#78 — 그레고리력 날짜 차이).
+ *
+ * 소제목은 인도네시아 구글 자동완성에서 왔다(keywords/id-dday-2026-10-21.csv, hl id · gl id):
+ *   berapa hari lagi · hitung mundur hari / hitung mundur hari natal 2026 · berapa hari lagi 2027 /
+ *   berapa hari lagi puasa · lebaran · idul adha · ramadhan / berapa hari lagi 17 agustus / countdown hari h /
+ *   menghitung hari menuju pernikahan / rumus countdown hari di spreadsheet
+ * 프리셋 버튼은 공유 스크립트가 정한 네 개(100일·12/25·12/31·1/1) 그대로.
+ * 조사표 칸이 공휴일·표준시·서머타임을 원문 미확인으로 남겨서: 공휴일·puasa·Lebaran 날짜는 쓰지 않고(사용자가 공식 발표 날짜를 넣게),
+ * 25 Desember·17 Agustus 는 달력 날짜로만 세고 '휴일'이라 말하지 않는다. 시각 표기(00.00 등)도 쓰지 않는다.
+ * 하루는 24시간으로 센다. 본문 숫자는 전부 아래 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, countdown, type Countdown } from "../../../../lib/date-calc";
+
+const title = "Berapa Hari Lagi? Hitung Mundur Hari ke Natal, 2027, atau Tanggal Apa Saja";
+const description =
+  "Hitung mundur berapa hari lagi menuju Natal, tahun baru 2027, pernikahan, puasa, atau tanggal pilihan Anda — sisa hari, jam, dan menit.";
+
+/** 하루 번호 → 'Rabu, 21 Oktober 2026' (UTC 자정이라 timeZone UTC) — scripts/dday.ts 의 ID 사전과 같은 꼴 */
+const labelId = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("id-ID", { timeZone: "UTC", weekday: "long", year: "numeric", month: "long", day: "numeric" });
+const n = (v: number) => v.toLocaleString("id-ID");
+const left = (c: Countdown) => (c.side === 0 ? "Hari ini" : c.side > 0 ? `${n(c.days)} hari lagi` : `${n(c.days)} hari yang lalu`);
+const d = (iso: string) => toDay(iso)!;
+
+const BASE = "2026-10-21";
+const TARGET = "2026-12-25";
+const base = d(BASE);
+const target = d(TARGET);
+const c0 = countdown(target, null, base, 0);
+const days0 = Math.floor(c0.seconds / 86_400);
+
+// 본문 예시 — 전부 BASE 에서 센다
+const xmas = d("2026-12-25");
+const nye = d("2026-12-31");
+const ny = d("2027-01-01");
+const aug17 = d("2027-08-17");
+const cXmas = countdown(xmas, null, base, 0);
+const cNye = countdown(nye, null, base, 0);
+const cNy = countdown(ny, null, base, 0);
+const cAug17 = countdown(aug17, null, base, 0);
+const tomorrow = countdown(base + 1, null, base, 0);
+const plus100 = base + 100;
+// akad nikah pukul 9 pagi — dibuka pukul 8 malam di tanggal awal
+const weddingDay = d("2027-02-14");
+const wedding = countdown(weddingDay, 9 * 3600, base, 20 * 3600);
+const wedD = Math.floor(wedding.seconds / 86_400);
+const wedH = Math.floor((wedding.seconds % 86_400) / 3600);
+const pastDay = d("2026-08-17");
+const past = countdown(pastDay, null, base, 0);
+---
+
+<html lang="id-ID">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Berapa Hari Lagi? Kalkulator Hitung Mundur Hari</h1>
+      <p>
+        Pilih tanggal tujuan, lalu lihat berapa hari lagi beserta sisa hari, jam, dan menitnya. Nyalakan “Hitung sampai jam
+        tertentu” kalau acaranya punya jam mulai — akad nikah, keberangkatan pesawat, atau ujian.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">Tanggal tujuan</label>
+          <input type="date" id="target" value={TARGET} />
+          <div class="ux-presets" role="group" aria-label="Tanggal yang sering dicari">
+            <button type="button" data-preset="plus100">100 hari</button>
+            <button type="button" data-preset="xmas">Natal 25 Des</button>
+            <button type="button" data-preset="yearend">31 Desember</button>
+            <button type="button" data-preset="newyear">1 Januari</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">Hitung sampai jam tertentu</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">Jam tujuan</label>
+          <input type="time" id="time" value="08:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">Tanggal awal (biasanya hari ini)</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Menuju {labelId(target)}</p>
+          <p class="big" id="hero-value">{left(c0)}</p>
+          <p class="hint" id="hero-sub">Jika tanggal awal dihitung hari ke-1, tanggal tujuan adalah hari ke-{n(c0.countDays)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Sisa waktu</span>
+            <span class="value" id="v1">{n(days0)} hari 0 jam 0 menit</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Dihitung dari hari ke-1</span>
+            <span class="value" id="v2">Hari ke-{n(c0.countDays)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">Tanggal awal</span>
+            <span class="value" id="v3">{labelId(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Simpan sebagai gambar</button>
+          <button id="btn-share" type="button" class="secondary">Bagikan</button>
+        </div>
+      </div>
+
+      <h2>Cara menghitung berapa hari lagi — hari ini ikut dihitung?</h2>
+      <p>
+        “Berapa hari lagi” cukup dihitung dengan <strong>tanggal tujuan dikurangi hari ini</strong>. Hari ini tidak ikut, tanggal
+        tujuan ikut, jadi besok tampil sebagai {left(tomorrow)}. Pada hari H hasilnya “Hari ini” sampai tengah malam, dan
+        tanggal yang sudah lewat tampil sebagai “hari yang lalu”.
+      </p>
+      <p>
+        Ada juga hitungan yang dimulai dari hari ke-1 — hari pertama kerja, tantangan 30 hari, atau hari pertama sekolah. Untuk
+        itu lihat angka “Dihitung dari hari ke-1”, yang selalu satu lebih besar dari sisa hari. Jika {labelId(base)} dihitung
+        hari ke-1, maka {labelId(target)} adalah hari ke-{n(c0.countDays)}.
+      </p>
+
+      <h2>Hitung mundur hari Natal 2026 dan tahun baru 2027</h2>
+      <p>Dihitung dari {labelId(base)}:</p>
+      <ul>
+        <li>Natal ({labelId(xmas)}): {left(cXmas)}</li>
+        <li>Malam tahun baru ({labelId(nye)}): {left(cNye)}</li>
+        <li>Tahun baru 2027 ({labelId(ny)}): {left(cNy)}</li>
+        <li>17 Agustus 2027 ({labelId(aug17)}): {left(cAug17)}</li>
+        <li>100 hari dari tanggal awal: {labelId(plus100)}</li>
+      </ul>
+      <p>
+        Ini hitungan tanggal kalender saja. Kalkulator mengisi tanggal hari ini saat halaman dibuka, jadi hasil Anda selalu
+        dihitung dari hari Anda berkunjung. Tombol “Natal 25 Des”, “31 Desember”, dan “1 Januari” langsung mengisi tanggal
+        terdekat dari tanggal awal.
+      </p>
+
+      <h2>Berapa hari lagi puasa, Lebaran, atau Idul Adha?</h2>
+      <p>
+        Awal Ramadan, Idul Fitri, dan Idul Adha mengikuti kalender Hijriah, sehingga tanggal Masehinya bergeser setiap tahun.
+        Halaman ini sengaja tidak mencantumkan tanggalnya. Ambil tanggal dari pengumuman resmi pemerintah, masukkan sebagai
+        tanggal tujuan, dan hasilnya langsung menunjukkan berapa hari lagi. Jika tanggal resmi berubah, cukup ganti tanggal
+        tujuannya.
+      </p>
+
+      <h2>Countdown hari H dalam hari, jam, dan menit</h2>
+      <ul>
+        <li>
+          <strong>Tanggal saja</strong> — menghitung mundur sampai tanggal tujuan berakhir (tengah malam, saat hari berikutnya
+          dimulai).
+        </li>
+        <li>
+          <strong>Dengan jam</strong> — menghitung mundur sampai jam yang dipilih. Setelah jam itu lewat, meski masih di hari
+          yang sama, kotaknya berubah menjadi “Sudah berlalu”.
+        </li>
+        <li>
+          <strong>Detik berjalan langsung</strong> selama tanggal awal adalah hari ini. Jika tanggal awal diganti, hitungan
+          dimulai dari tengah malam pada tanggal itu.
+        </li>
+      </ul>
+      <p>
+        Satu hari selalu dihitung 24 jam menurut jam ponsel atau komputer Anda. Untuk acara di zona waktu lain — misalnya
+        pesawat yang mendarat di kota dengan zona waktu berbeda — ubah dulu jam acaranya ke zona waktu perangkat Anda.
+      </p>
+
+      <h2>Menghitung hari menuju pernikahan</h2>
+      <p>
+        Masukkan tanggal akad atau resepsi sebagai tanggal tujuan, lalu nyalakan “Hitung sampai jam tertentu”. Contohnya, dibuka
+        jam 8 malam pada {labelId(base)}, akad nikah jam 9 pagi pada {labelId(weddingDay)} masih {n(wedD)} hari {n(wedH)} jam lagi.
+        “Simpan sebagai gambar” membuat kartu hitung mundur yang bisa dikirim ke grup keluarga atau dipasang di status.
+      </p>
+
+      <h2>Rumus countdown hari di spreadsheet atau Excel</h2>
+      <p>
+        Tulis tanggal tujuan di sel A2, lalu di sel lain ketik <code>=A2-TODAY()</code>. Hasilnya jumlah hari dari hari ini ke
+        tanggal tujuan — sama dengan angka “hari lagi” di kalkulator ini. Ubah format sel hasilnya menjadi angka jika yang muncul
+        malah tanggal. Hasil negatif berarti tanggalnya sudah lewat.
+      </p>
+
+      <details>
+        <summary>Bagaimana menghitung hari kerja saja sampai suatu tanggal?</summary>
+        <p>
+          Halaman ini menghitung semua hari kalender, termasuk Sabtu dan Minggu. Untuk hari Senin–Jumat, masukkan tanggal hari
+          ini dan tanggal tujuan di <a href="/id/tools/date-diff/">kalkulator tanggal</a> — hari libur nasional dan cuti bersama
+          tidak dikurangi di sana.
+        </p>
+      </details>
+
+      <details>
+        <summary>Bagaimana jika tanggalnya sudah lewat?</summary>
+        <p>
+          Hasilnya tampil sebagai “hari yang lalu”, dan kotak waktu berubah menjadi “Sudah berlalu” — berguna untuk menghitung
+          sudah berapa lama sejak suatu tanggal. Dihitung dari {labelId(base)}, tanggal {labelId(pastDay)} adalah {left(past)}.
+        </p>
+      </details>
+
+      <details>
+        <summary>Berapa minggu lagi?</summary>
+        <p>
+          Bagi jumlah harinya dengan 7. {labelId(target)} adalah {left(c0)} dari {labelId(base)}, atau
+          {" "}{n(Math.floor(c0.days / 7))} minggu {n(c0.days % 7)} hari.
+        </p>
+      </details>
+
+      <AdSlot label="dday-result-id" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

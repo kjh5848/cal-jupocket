@@ -224,7 +224,50 @@ const FR: typeof KO = {
   shareText: "Compte à rebours - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE, "zh-Hant": ZH_HANT, fr: FR });
+/**
+ * 인도네시아어판(/id/tools/dday/). 'D-12' 대신 '12 hari lagi' · 'Hari ini' · '5 hari yang lalu'(인도네시아어는 복수형 없음).
+ * 날짜는 id-ID Intl 표기('Rabu, 21 Oktober 2026'), timeZone "UTC". 시각 표기(00.00 등)는 원문 미확인이라 'tengah malam' 으로만 쓴다.
+ */
+const labelIdDay = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("id-ID", { timeZone: "UTC", weekday: "long", year: "numeric", month: "long", day: "numeric" });
+const durationTextId = (sec: number) => {
+  const s = Math.abs(Math.trunc(sec));
+  const day = Math.floor(s / 86_400);
+  const h = Math.floor((s % 86_400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (day > 0) return `${n(day, "id-ID")} hari ${h} jam ${m} menit`;
+  return `${h} jam ${m} menit ${s % 60} detik`;
+};
+const ddayId = (c: Countdown) =>
+  c.side === 0 ? "Hari ini" : c.side > 0 ? `${n(c.days, "id-ID")} hari lagi` : `${n(c.days, "id-ID")} hari yang lalu`;
+
+const ID: typeof KO = {
+  title: "Hitung mundur hari",
+  needDate: "Masukkan tanggal",
+  until: (when: string) => `Menuju ${when}`,
+  hero: (c: Countdown) => ddayId(c),
+  sub: (c: Countdown) =>
+    c.side === 0
+      ? "Tanggal tujuan sama dengan tanggal awal"
+      : c.side > 0
+        ? `Jika tanggal awal dihitung hari ke-1, tanggal tujuan adalah hari ke-${n(c.countDays, "id-ID")}`
+        : `Jika tanggal tujuan dihitung hari ke-1, tanggal awal adalah hari ke-${n(c.countDays, "id-ID")}`,
+  left: "Sisa waktu",
+  passed: "Sudah berlalu",
+  countLabel: "Dihitung dari hari ke-1",
+  count: (c: Countdown) => `Hari ke-${n(c.countDays, "id-ID")}`,
+  baseLabel: "Tanggal awal",
+  ddayLabel: "Hitung mundur",
+  label: labelIdDay,
+  duration: durationTextId,
+  noteNoTime:
+    "Tanpa jam, hitungan berjalan sampai tanggal tujuan berakhir (tengah malam). Satu hari dihitung 24 jam menurut jam perangkat ini.",
+  noteNotToday: "Tanggal awal bukan hari ini, jadi sisa waktu dihitung dari tengah malam pada tanggal awal.",
+  notePastTime: "Tanggal tujuan adalah hari ini, tetapi jam tujuannya sudah lewat.",
+  shareText: "Hasil hitung mundur hari - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE, "zh-Hant": ZH_HANT, fr: FR, id: ID });
 
 let lastLines: [string, string][] = [];
 let lastTitle = S.title;
