@@ -17,4 +17,13 @@ export const tools: LocaleTool[] = [
     icon: "percent",
     basis: "math",
   },
+  {
+    href: "/de/tools/date-diff/",
+    ko: "/tools/date-diff/",
+    name: "Tagerechner",
+    blurb: "Tage zwischen zwei Daten, Datum plus Tage, Wochen und Montag bis Freitag",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

@@ -1,0 +1,262 @@
+---
+/**
+ * Tagerechner — 독일어판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/date-diff.ts 의 DE 사전, 날짜·숫자 표기는 lib/de/date-format.ts), 문장은 독일 자동완성으로 새로 썼다(번역 아님).
+ * 그레고리력 산술이라 rates 와 상관없다(조사표 독일 칸 '단위').
+ *
+ * 소제목은 독일 구글 자동완성에서 왔다(keywords/de-date-diff-2026-10-21.csv, hl de · gl de):
+ *   tage zwischen zwei daten berechnen · tagerechner von bis / datum plus 30·90·100 tage · tagerechner ab datum /
+ *   wochen zwischen zwei daten berechnen / arbeitstage berechnen bayern · nrw · zeitraum / tage zwischen zwei daten excel · ohne wochenende
+ * 법 근거는 gesetze-im-internet.de 의 BGB 원문(확인 2026-10-21): § 187(첫날 빼고 세기), § 188 Abs. 3(없는 날은 그 달 말일),
+ * § 193(마지막 날이 토·일·공휴일이면 다음 Werktag — 계산기는 이 밀기를 하지 않음을 밝힌다).
+ * 공휴일은 빼지 않는다(월~금만 센 수) — 연방·주별 공휴일 목록을 허용 출처로 확인하지 않았다. 시간 환산(일수 × 24)도 넣지 않는다(서머타임 전환일).
+ * 본문 숫자는 전부 아래 frontmatter 에서 span()·shift() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span, shift } from "../../../../lib/date-calc";
+import { labelDe, shortDe, countDe, spanTextDe, weeksTextDe } from "../../../../lib/de/date-format";
+
+const title = "Tagerechner — Tage zwischen zwei Daten berechnen, Datum plus Tage";
+const description =
+  "Tage zwischen zwei Daten zählen, mit oder ohne Anfangstag, ein Datum plus 30, 90 oder 100 Tage rechnen, Wochen und Arbeitstage Mo–Fr — mit Excel-Formeln.";
+
+const d = (iso: string) => toDay(iso)!;
+
+const START = "2026-10-21";
+const END = "2026-12-31";
+const s0 = span(d(START), d(END), false);
+
+// 본문 예시
+const ex1 = span(d("2026-11-02"), d("2026-11-06"), false);
+const ex1i = span(d("2026-11-02"), d("2026-11-06"), true);
+const year27 = span(d("2027-01-01"), d("2027-12-31"), true);
+const plus30 = shift(d(START), 30, "day");
+const plus90 = shift(d(START), 90, "day");
+const plus100 = shift(d(START), 100, "day");
+const minus14 = shift(d(START), -14, "day");
+const plus2w = shift(d(START), 2, "week");
+const plus6m = shift(d(START), 6, "month");
+const jan31 = d("2027-01-31");
+const jan31plus1m = shift(jan31, 1, "month");
+const wk = span(d("2026-11-02"), d("2026-12-18"), true);
+const twoWeeks = span(d("2026-11-02"), d("2026-11-13"), true);
+---
+
+<html lang="de-DE">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Tagerechner</h1>
+      <p>
+        Wie viele Tage liegen zwischen zwei Daten, und welches Datum ist in 30 Tagen? Start- und Enddatum eingeben — das
+        Ergebnis steht sofort darunter, zusammen mit Wochen, Monaten und den Tagen von Montag bis Freitag.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">Was möchten Sie berechnen?</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>Tage zwischen zwei Daten</option>
+            <option value="shift">Datum plus oder minus Tage</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">Startdatum</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">Enddatum</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">Anfangs- und Endtag mitzählen</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">Ausgangsdatum</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">Anzahl</label>
+            <input type="number" inputmode="numeric" id="amount" value="30" min="0" max="36500" data-step />
+            <select id="unit" aria-label="Einheit">
+              <option value="day" selected>Tage</option>
+              <option value="week">Wochen</option>
+              <option value="month">Monate</option>
+              <option value="year">Jahre</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">Richtung</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>Plus (später)</option>
+              <option value="before">Minus (früher)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Tage zwischen den Daten</p>
+          <p class="big" id="hero-value">{countDe(s0.days, "day")}</p>
+          <p class="hint" id="hero-sub">{spanTextDe(s0)} · {weeksTextDe(s0.weeks, s0.weekRest)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Montag bis Freitag</span>
+            <span class="value" id="v1">{countDe(s0.weekdays, "day")}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Zeitraum</span>
+            <span class="value" id="v2">{shortDe(s0.from)} → {shortDe(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Als Bild speichern</button>
+          <button id="btn-share" type="button" class="secondary">Teilen</button>
+        </div>
+      </div>
+
+      <h2>Tage zwischen zwei Daten berechnen — mit oder ohne Anfangstag</h2>
+      <p>
+        Der Rechner zieht das Startdatum vom Enddatum ab; der erste Tag zählt also nicht mit. Von {labelDe(d("2026-11-02"))}
+        bis {labelDe(d("2026-11-06"))} sind es so {countDe(ex1.days, "day")}. Das entspricht der Regel für Fristen in § 187
+        Abs. 1 BGB: Beginnt eine Frist mit einem Ereignis, wird der Tag des Ereignisses nicht mitgerechnet.
+      </p>
+      <p>
+        Setzen Sie den Haken bei <strong>Anfangs- und Endtag mitzählen</strong>, wenn beide Tage dazugehören — etwa bei
+        Urlaub, einer Buchung oder einem Kurs „von bis“. Dieselbe Woche ergibt dann {countDe(ex1i.days, "day")}, und das
+        ganze Jahr 2027 vom 1. Januar bis 31. Dezember {countDe(year27.days, "day")}. Auch § 187 Abs. 2 BGB kennt diesen
+        Fall: Zählt der Beginn eines Tages, wird dieser Tag mitgerechnet.
+      </p>
+      <p>
+        Die Reihenfolge der Daten ist egal — liegt das Enddatum vor dem Startdatum, tauscht der Rechner beide und weist unter
+        dem Ergebnis darauf hin. Beim Öffnen steht heute als Start und der 31. Dezember als Ende; so sehen Sie, wie viele Tage
+        das Jahr noch hat.
+      </p>
+
+      <h2>Datum plus Tage: 30, 90 oder 100 Tage ab heute</h2>
+      <ul>
+        <li>
+          <strong>Tage</strong> — 30 Tage nach {labelDe(d(START))} ist {labelDe(plus30)}, 90 Tage danach
+          {" "}{labelDe(plus90)} und 100 Tage danach {labelDe(plus100)}. 14 Tage zurück landen Sie bei {labelDe(minus14)}.
+        </li>
+        <li><strong>Wochen</strong> — Wochen × 7 Tage: zwei Wochen nach dem {shortDe(d(START))} ist der {shortDe(plus2w)}.</li>
+        <li>
+          <strong>Monate und Jahre</strong> — der Monat wechselt, die Tageszahl bleibt: sechs Monate nach dem
+          {" "}{shortDe(d(START))} ist der {shortDe(plus6m)}.
+        </li>
+      </ul>
+
+      <h2>Wochen zwischen zwei Daten berechnen</h2>
+      <p>
+        Unter der Gesamtzahl steht der Zeitraum zweimal aufgeteilt: in Jahre, Monate und Tage (erst volle Kalendermonate, dann
+        die übrigen Tage) und in Wochen und Tage. Für den Zeitraum beim Öffnen sind das {spanTextDe(s0)} oder
+        {" "}{weeksTextDe(s0.weeks, s0.weekRest)} — zusammen {countDe(s0.days, "day")}.
+      </p>
+
+      <h2>Fristen nach Wochen und Monaten — was § 188 BGB sagt</h2>
+      <p>
+        Eine Frist nach Wochen oder Monaten endet nach § 188 Abs. 2 BGB an dem Tag, der seiner Benennung oder Zahl nach dem
+        Anfangstag entspricht. Gibt es diesen Tag im letzten Monat nicht, endet sie nach § 188 Abs. 3 BGB mit dem letzten Tag
+        dieses Monats. Genauso rechnet der Rechner bei Monaten und Jahren: Ein Monat nach {labelDe(jan31)} ist
+        {" "}{labelDe(jan31plus1m)}.
+      </p>
+      <p>
+        Fällt der letzte Tag einer Frist auf einen Samstag, Sonntag oder einen am Ort staatlich anerkannten allgemeinen
+        Feiertag, tritt nach § 193 BGB der nächste Werktag an seine Stelle. Diese Verschiebung macht der Rechner
+        <strong>nicht</strong> — er zeigt das Kalenderdatum und den Wochentag, den Rest prüfen Sie selbst. Für eine konkrete
+        Frist ist der Gesetzestext maßgeblich, nicht dieser Rechner.
+      </p>
+
+      <h2>Arbeitstage berechnen — in Bayern, NRW und anderswo</h2>
+      <p>
+        Die Zahl <strong>Montag bis Freitag</strong> zählt alle Tage von Montag bis Freitag im Zeitraum, mit derselben
+        Einstellung für den Anfangstag wie die Gesamtzahl. Vom 2. November bis 18. Dezember 2026, beide Tage mitgezählt, sind
+        das {countDe(wk.weekdays, "day")}; zwei volle Wochen vom 2. bis 13. November ergeben {countDe(twoWeeks.weekdays, "day")}.
+      </p>
+      <p>
+        <strong>Feiertage zieht der Rechner nicht ab.</strong> Welche Feiertage gelten, hängt vom Ort ab — § 193 BGB spricht
+        ausdrücklich vom „am Erklärungs- oder Leistungsort staatlich anerkannten allgemeinen Feiertag“. Ziehen Sie die
+        Feiertage Ihres Bundeslandes, die auf Montag bis Freitag fallen, und freie Tage im Betrieb selbst ab.
+      </p>
+
+      <h2>Tage zwischen zwei Daten in Excel</h2>
+      <p>Steht das Startdatum in A2 und das Enddatum in B2, liefert Excel in deutscher Sprache dasselbe so:</p>
+      <ul>
+        <li><code>=B2-A2</code> — Tage dazwischen, ohne Anfangstag (Zelle als Zahl formatieren).</li>
+        <li><code>=B2-A2+1</code> — Tage mit Anfangs- und Endtag.</li>
+        <li><code>=DATEDIF(A2;B2;"m")</code> — volle Monate dazwischen (<code>"y"</code> für volle Jahre).</li>
+        <li><code>=A2+30</code> oder <code>=EDATUM(A2;6)</code> — Datum plus 30 Tage bzw. plus sechs Monate.</li>
+        <li>
+          <code>=NETTOARBEITSTAGE(A2;B2;H2:H20)</code> — Tage von Montag bis Freitag ohne Wochenende, abzüglich der Feiertage,
+          die Sie in H2:H20 eintragen. Die Funktion zählt Anfangs- und Endtag mit; vergleichen Sie sie also mit der Einstellung
+          „mitzählen“ hier.
+        </li>
+      </ul>
+
+      <details>
+        <summary>Ist „Tage zwischen“ dasselbe wie „in wie vielen Tagen“?</summary>
+        <p>
+          Nicht ganz. „Tage zwischen“ misst einen Abstand, „Datum plus Tage“ liefert ein Datum. Vier Tage nach dem 2. November
+          ist der 6. November; der Abstand vom 2. bis 6. November beträgt {countDe(ex1.days, "day")}, mit beiden Tagen
+          {" "}{countDe(ex1i.days, "day")}.
+        </p>
+      </details>
+
+      <details>
+        <summary>Werden Schaltjahre berücksichtigt?</summary>
+        <p>
+          Ja. Der Rechner nutzt den gregorianischen Kalender: Der 29. Februar zählt im Schaltjahr mit, und ein Jahr nach dem
+          29. Februar ist in einem Gemeinjahr der 28. Februar.
+        </p>
+      </details>
+
+      <details>
+        <summary>Warum zeigt der Rechner keine Stunden?</summary>
+        <p>
+          An den Tagen der Zeitumstellung hat ein Tag 23 oder 25 Stunden; Tage × 24 läge dann um eine Stunde daneben. Deshalb
+          bleibt die Seite bei Tagen, Wochen und Monaten.
+        </p>
+      </details>
+
+      <p class="hint">
+        Quellen: Bürgerliches Gesetzbuch,
+        <a href="https://www.gesetze-im-internet.de/bgb/__187.html" rel="noopener">§ 187</a>,
+        <a href="https://www.gesetze-im-internet.de/bgb/__188.html" rel="noopener">§ 188</a> und
+        <a href="https://www.gesetze-im-internet.de/bgb/__193.html" rel="noopener">§ 193</a> (gesetze-im-internet.de, abgerufen am 21.10.2026).
+      </p>
+
+      <AdSlot label="date-diff-result-de" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
