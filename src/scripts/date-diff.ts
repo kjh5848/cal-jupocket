@@ -1,5 +1,6 @@
 import { toDay, span, spanText, label, shift, shiftBusiness, dday, holidayRange, type Unit, type Span } from "../lib/date-calc";
 import { labelJa, spanTextJa, ddayJa } from "../lib/date-format-ja";
+import { labelDe, shortDe, countDe, spanTextDe, weeksTextDe, relDe, type UnitDe } from "../lib/de/date-format";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pickLang } from "../i18n/ui";
@@ -178,7 +179,39 @@ const ZH_HANT: typeof KO = {
   shareText: "日期計算結果 - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT });
+/**
+ * 독일어판(/de/tools/date-diff/). 표기는 lib/de/date-format.ts — 긴 날짜 'Dienstag, 20. Oktober 2026', 칩은 '20.10.2026'(BGB 원문 꼴).
+ * 업무일(공휴일 빼기)·시간 환산은 넣지 않는다 — 독일 공휴일은 곳마다 다르고(§ 193 BGB) 서머타임 전환일이 있다.
+ * 월·년 더하기에서 없는 날을 말일로 맞추는 것은 § 188 Abs. 3 BGB 와 같다.
+ */
+const DE: typeof KO = {
+  spanTitle: "Tagerechner — Tage zwischen zwei Daten",
+  shiftTitle: "Tagerechner — Datum plus oder minus",
+  needDates: "Bitte beide Daten eingeben",
+  needBase: "Bitte ein Ausgangsdatum eingeben",
+  needInt: "Bitte eine ganze Zahl ab 0 eingeben",
+  swapped: "Das Enddatum lag vor dem Startdatum — die beiden Daten wurden getauscht.",
+  spanLabel: (incl: boolean) => (incl ? "Tage mit Anfangs- und Endtag" : "Tage zwischen den Daten"),
+  days: (v: number) => countDe(v, "day"),
+  spanSub: (s: Span) => `${spanTextDe(s)} · ${weeksTextDe(s.weeks, s.weekRest)}`,
+  spanChips: (s: Span): [string, string][] => [
+    ["Montag bis Freitag", countDe(s.weekdays, "day")],
+    ["Zeitraum", `${shortDe(s.from)} → ${shortDe(s.to)}`],
+  ],
+  spanNotes: () => [],
+  unitName: (u: Unit) => u,
+  shiftWhat: (amount: number, unitName: string, after: boolean) => `${countDe(amount, unitName as UnitDe)} ${after ? "später" : "früher"}`,
+  bizOut: "",
+  label: labelDe,
+  todaySub: (target: number, today: number) => `Von heute aus: ${relDe(target, today)}`,
+  baseChip: "Ausgangsdatum",
+  betweenChip: "Abstand",
+  between: (s: Span) => `${countDe(s.days, "day")} (${spanTextDe(s)})`,
+  monthEnd: "Gibt es den Tag im Zielmonat nicht (31., 29. Februar), gilt der letzte Tag des Monats — wie in § 188 Abs. 3 BGB.",
+  shareText: "Tagerechner-Ergebnis - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE });
 
 /** 이 기기 기준 오늘(지역 날짜) */
 function todayDay(): number {
