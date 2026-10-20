@@ -1,0 +1,279 @@
+---
+/**
+ * 時間換算器 — 대만판 초·분·시간 변환(/zh-tw/tools/sec-convert/). 한국어판 /tools/sec-convert/ 와
+ * 계산(lib/sec-convert.ts)·스크립트(scripts/sec-convert.ts 의 ZH_HANT 사전 — 표기는 lib/tw/sec-convert.ts)를 같이 쓰고,
+ * 문장은 대만 번체로 새로 썼다(번역 아님). 조사표 대만 칸 '같음'(#91, SI 브로슈어 표 8).
+ *
+ * 소제목은 대만 구글 자동완성에서 왔다(keywords/tw-sec-convert-2026-10-21.csv, hl zh-TW · gl tw):
+ *   秒換算分鐘·秒 換算 成 分鐘·分鐘 換算 秒 數 / 分鐘換算小時公式·小時換算分鐘公式 / 時間換算表 /
+ *   時間換算小數點 / 秒轉時分秒·秒 數 轉 時 分 秒 / 毫秒換算秒·毫秒 換算 成 秒 / excel 秒轉時分秒·分鐘換算小時excel·
+ *   時間換算小時 excel / 時間換算 utc·時差(→ 時間戳記轉換 링크만) / 時間換算器·計算機
+ * 단위 값은 SI 브로슈어 표 8(1 min = 60 s, 1 h = 3600 s, 1 d = 86 400 s)뿐. 時辰·時差 오프셋·勞基法 工時 숫자는
+ * 허용 출처로 이번에 확인하지 않아 쓰지 않는다. 본문 예시 숫자는 전부 frontmatter 에서 lib 함수로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toNanos, partsToNanos, convertAll, clock, minSec, UNITS } from "../../../../lib/sec-convert";
+import { UNIT_NAME_ZH_HANT as U, withUnitZhHant as w, readableZhHant as r } from "../../../../lib/tw/sec-convert";
+
+const title = "時間換算器（台灣）— 秒換算分鐘、分鐘換算小時、秒轉時分秒";
+const description =
+  "輸入毫秒、秒、分鐘、小時或天，一次換算成其他單位、幾小時幾分幾秒與時:分:秒，附換算公式、時間換算表、小數點小時與 Excel 秒轉時分秒的寫法。";
+
+const EX = "3600";
+const n0 = toNanos(EX, "s")!;
+const all0 = convertAll(n0);
+const p0 = partsToNanos("", "1", "45", "")!;
+const pAll0 = convertAll(p0);
+const pMs0 = minSec(p0);
+
+/** 본문 예시 — 150초, 135분, 2.4시간, 100,000초, 90,500밀리초, 7,384초, 26시간 */
+const S150 = toNanos("150", "s")!;
+const S150all = convertAll(S150);
+const M135 = toNanos("135", "min")!;
+const M135all = convertAll(M135);
+const H24 = toNanos("2.4", "h")!;
+const H24all = convertAll(H24);
+const T1 = toNanos("100000", "s")!;
+const T1all = convertAll(T1);
+const D1 = convertAll(toNanos("1", "d")!);
+const MS = toNanos("90500", "ms")!;
+const MSall = convertAll(MS);
+const PY = toNanos("7384", "s")!;
+const WRAP = toNanos("26", "h")!;
+const num = (s: string) => Number(s).toLocaleString("zh-TW");
+---
+
+<html lang="zh-Hant-TW">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>時間換算器：秒、分鐘、小時、天一次換算</h1>
+      <p>
+        輸入數字、選好單位，就會同時列出毫秒、秒、分鐘、小時、天的數值，並寫成「幾小時幾分鐘幾秒」和「時:分:秒」。換算的比例是固定的：1 分鐘 =
+        60 秒、1 小時 = 3,600 秒、1 天 = 86,400 秒。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="val">數值</label>
+          <input type="text" id="val" inputmode="decimal" autocomplete="off" value={EX} placeholder="例如 3600" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">單位</label>
+          <select id="unit" data-seg>
+            {UNITS.map((u) => <option value={u} selected={u === "s"}>{U[u]}</option>)}
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{w(all0.s, "s")}等於</p>
+          <p class="big" id="hero-value">{r(n0)}</p>
+          <p class="hint" id="hero-sub">{w(all0.min, "min")} · 時:分:秒 {clock(n0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          {UNITS.map((u) => (
+            <div class="stat-chip">
+              <span class="label">{U[u]}</span>
+              <span class="value" id={`v-${u}`}>{all0[u]}</span>
+            </div>
+          ))}
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">存成圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2 id="parts">幾小時幾分鐘 → 換成總秒數、總分鐘</h2>
+      <p>天、小時、分鐘、秒只填需要的格子，空白當作 0。例如 1 小時 45 分鐘，一次換成總秒數、總分鐘和小數點小時。</p>
+      <div class="calc-card" data-two>
+        <div class="sc-parts">
+          <div class="calc-input-wrap">
+            <label for="p-d">天</label>
+            <input type="text" id="p-d" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-h">小時</label>
+            <input type="text" id="p-h" inputmode="decimal" autocomplete="off" value="1" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-m">分鐘</label>
+            <input type="text" id="p-m" inputmode="decimal" autocomplete="off" value="45" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-s">秒</label>
+            <input type="text" id="p-s" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+        </div>
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">合計</p>
+          <p class="big" id="p-value">{w(pAll0.s, "s")}</p>
+          <p class="hint" id="p-sub">
+            {w(pAll0.min, "min")}{pMs0.seconds === "0" ? "" : `（${pMs0.minutes.toLocaleString("zh-Hant")}分鐘${pMs0.seconds}秒）`} · {w(pAll0.h, "h")} · {r(p0)}
+          </p>
+        </div>
+        <p class="hint" id="p-err" role="alert"></p>
+      </div>
+
+      <h2>秒換算分鐘：公式是 ÷ 60</h2>
+      <p>
+        分鐘 = 秒 ÷ 60。150 秒 ÷ 60 = {S150all.min} 分鐘，寫成時:分:秒是 {clock(S150)}，也就是{r(S150)}。反過來，分鐘 × 60 = 秒，小時 × 3,600 =
+        秒。
+      </p>
+      <p>
+        要注意小數點：{S150all.min} 分鐘不是 2 分 50 秒。小數 .5 是半分鐘，也就是 30 秒。想把小數部分還原成秒，就再乘以 60。
+      </p>
+
+      <h2>分鐘換算小時、小時換算分鐘的公式</h2>
+      <ul>
+        <li><strong>分鐘換算小時</strong>：小時 = 分鐘 ÷ 60。135 分鐘 ÷ 60 = {M135all.h} 小時（{r(M135)}）。</li>
+        <li><strong>小時換算分鐘</strong>：分鐘 = 小時 × 60。{H24all.h} 小時 × 60 = {H24all.min} 分鐘。</li>
+        <li><strong>天換算小時</strong>：1 天 = 24 小時 = {D1.min} 分鐘 = {D1.s} 秒。</li>
+      </ul>
+
+      <h2>時間換算小數點：2.4 小時是幾小時幾分？</h2>
+      <p>
+        把小數點前後拆開：整數是小時，小數部分 × 60 是分鐘。2.4 小時 = 2 小時 + 0.4 × 60 分鐘 = <strong>{r(H24)}</strong>，時:分:秒是
+        {" "}{clock(H24)}。很多人會把 2.4 小時誤看成 2 小時 40 分鐘，其實 40 分鐘是 {convertAll(toNanos("40", "min")!).h} 小時。
+      </p>
+      <p>
+        工時表、加班單常用小數點小時記錄時間，因為可以直接乘以時薪。把分鐘換成小數點小時，就是分鐘 ÷ 60，再加上整數小時。這裡只換算時間長度，
+        工資怎麼算請以勞動部公告與勞動契約為準。
+      </p>
+
+      <h2>時間換算表</h2>
+      <p>常用的分鐘數換成小數點小時與幾小時幾分鐘。除不盡的小數取到小數第六位。</p>
+      <table>
+        <thead>
+          <tr><th>分鐘</th><th>小數點小時</th><th>幾小時幾分鐘</th><th>秒</th></tr>
+        </thead>
+        <tbody>
+          {["5", "10", "15", "20", "25", "30", "40", "45", "50", "90", "135", "480", "1440"].map((m) => {
+            const n = toNanos(m, "min")!;
+            const a = convertAll(n);
+            return (
+              <tr>
+                <td>{num(m)}</td>
+                <td>{a.h}</td>
+                <td>{r(n)}</td>
+                <td>{a.s}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h2>秒轉時分秒的算法</h2>
+      <p>從最大的單位開始除，留下餘數再往下除。以 100,000 秒為例：</p>
+      <ol>
+        <li>100,000 ÷ 86,400 = 1 天，餘 13,600 秒</li>
+        <li>13,600 ÷ 3,600 = 3 小時，餘 2,800 秒</li>
+        <li>2,800 ÷ 60 = 46 分鐘，餘 40 秒</li>
+        <li>結果：<strong>{r(T1)}</strong>，也等於 {w(T1all.d, "d")}</li>
+      </ol>
+      <p>時:分:秒的寫法會讓小時一直往上加，不會進位成天，例如 26 小時顯示為 {clock(WRAP)}。</p>
+
+      <h2>毫秒換算秒</h2>
+      <p>
+        1 秒 = 1,000 毫秒，所以 90,500 毫秒 ÷ 1,000 = {MSall.s} 秒，再 ÷ 60 = {MSall.min} 分鐘（{r(MS)}）。碼表 app 或程式記錄給的是毫秒時，單位選「毫秒」即可。
+      </p>
+      <p>
+        如果手上是 13 位數的毫秒數字，想知道它代表哪一天幾點，那是時間戳記，不是時間長度，請改用
+        {" "}<a href="/zh-tw/tools/unix-time/">時間戳記轉換</a>（也能看 UTC 時間）。
+      </p>
+
+      <h2>Excel 秒轉時分秒、分鐘換算小時</h2>
+      <ul>
+        <li><strong>秒換算分鐘</strong>：<code>=A1/60</code> · <strong>秒換算小時</strong>：<code>=A1/3600</code></li>
+        <li>
+          <strong>秒轉時分秒</strong>：<code>=A1/86400</code>，再把儲存格格式設成自訂 <code>[h]:mm:ss</code>。Excel 和 Google 試算表以「天」為時間單位，所以要除以
+          86,400。
+        </li>
+        <li>
+          <strong>時間（例如 1:45）換算小數點小時</strong>：<code>=A1*24</code>，儲存格格式改成數值，1:45 會變成 1.75。<code>[h]</code> 的中括號讓超過 24
+          小時的合計不會歸零。
+        </li>
+        <li><strong>小時換算分鐘</strong>：<code>=A1*60</code></li>
+      </ul>
+
+      <h2>Python 秒轉時分秒</h2>
+      <pre><code>{`seconds = 7384
+hours, rest = divmod(seconds, 3600)
+minutes, secs = divmod(rest, 60)
+print(f"{hours}:{minutes:02d}:{secs:02d}")   # 2:03:04
+
+# 或用標準函式庫
+from datetime import timedelta
+print(timedelta(seconds=7384))               # 2:03:04`}</code></pre>
+      <p>
+        7,384 秒是{r(PY)}，和上面的換算器結果相同。換算器內部以整數奈秒計算，不會出現 0.30000000000000004 這種浮點數誤差。
+      </p>
+
+      <details>
+        <summary>可以把秒換算成月或年嗎？</summary>
+        <p>
+          沒辦法準確換算。一個月有 28、29、30 或 31 天，一年有 365 或 366 天，秒數都不固定。一週固定是 7 天。如果要算兩個實際日期之間的天數，請用
+          {" "}<a href="/zh-tw/tools/date-diff/">日期計算機</a>。
+        </p>
+      </details>
+
+      <details>
+        <summary>1 小時 = 3,600 秒是誰規定的？</summary>
+        <p>
+          國際度量衡局（BIPM）出版的《國際單位制（SI）手冊》表 8 把分、小時、天列為可與 SI 並用的單位，分別定義為 60 秒、3,600 秒和 86,400 秒。
+        </p>
+      </details>
+
+      <details>
+        <summary>閏秒會改變換算結果嗎？</summary>
+        <p>
+          插入閏秒的那一天在時鐘上多一秒，但「天」作為時間長度的單位仍是 86,400 秒，這個換算器就是用這個值。
+        </p>
+      </details>
+
+      <details>
+        <summary>格子裡可以輸入什麼？</summary>
+        <p>
+          整數或小數（小數點後最多六位）。逗號和空白會被忽略，所以 1,440 也可以。時間長度不會小於 0，所以不接受負數。
+        </p>
+      </details>
+
+      <p>
+        要倒數到某一天，可以用 <a href="/zh-tw/tools/dday/">倒數日計算機</a>。
+      </p>
+
+      <p>
+        資料來源：<a href="https://www.bipm.org/en/publications/si-brochure" rel="noopener">BIPM, The International System of Units (SI
+        Brochure), Table 8</a>（2026 年 10 月 20 日確認）
+      </p>
+
+      <AdSlot label="sec-convert-result-zh-tw" />
+    </main>
+    <SiteFooter />
+    <style>
+      .sc-parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 10px; }
+      @media (max-width: 560px) { .sc-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      pre { overflow-x: auto; }
+    </style>
+    <script src="../../../../scripts/sec-convert.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
