@@ -1,0 +1,216 @@
+---
+/**
+ * Calculadora de porcentajes — 스페인판 첫 도구. 한국어판 /tools/percent/ 와 계산(lib/percent.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/percent.ts 의 ES 사전), 문장은 스페인 자동완성으로 새로 썼다(번역 아님). 산술이라 나라 제도·rates 와 상관없다(조사표 스페인 칸 '같음').
+ *
+ * 숫자 표기는 소수점 쉼표·천 단위 공백(src/lib/es/number.ts — RD 2032/2009 Anexo III 2.8·2.9, BOE-A-2010-927, 확인 2026-10-20).
+ * 본문 예시도 같은 표기로 쓴다.
+ *
+ * 소제목은 스페인 구글 자동완성에서 왔다(keywords/es-percent-2026-10-20.csv, hl es · gl es):
+ *   porcentaje de un número fórmula·respecto a otro·sobre otro / calculadora de porcentajes regla de 3 /
+ *   calcular porcentaje de aumento o disminución·entre dos cantidades·sabiendo cantidad inicial y final /
+ *   porcentaje de descuento entre dos cantidades / calcular porcentaje de ganancia de un producto /
+ *   calculadora de porcentajes de notas / calcular porcentaje en excel
+ * IRPF·salario mínimo·alquiler 같은 제도 숫자는 쓰지 않는다(자동완성에 있지만 rates 로 검증한 값이 아니고 이 도구의 계산이 아니다).
+ * 통화 기호 위치는 원문 확인 전이라 예시는 숫자와 'euros' 라는 말만 쓴다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+
+const title = "Calculadora de porcentajes — aumento, disminución, descuento y regla de 3";
+const description =
+  "Calcula el porcentaje de un número, el porcentaje de aumento o disminución entre dos cantidades o el precio con descuento. Con fórmulas, regla de tres y Excel.";
+---
+
+<html lang="es-ES">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Calculadora de porcentajes</h1>
+      <p>
+        Elige qué quieres calcular y escribe dos números. Los decimales van con coma (12,5) y el resultado se redondea a
+        dos decimales.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">¿Qué quieres calcular?</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>¿Qué porcentaje es B de A?</option>
+            <option value="of">¿Cuánto es el B% de A?</option>
+            <option value="change">% de aumento o disminución de A a B</option>
+            <option value="adjust">A más o menos un B%</option>
+            <option value="original">Valor original antes de un cambio del B%</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">Subida o bajada</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>Bajada (descuento)</option>
+            <option value="up">Subida (incremento)</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">Cantidad total A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">Parte B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B es este porcentaje de A</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Cantidad total A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Parte B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Guardar como imagen</button>
+          <button id="btn-share" type="button" class="secondary">Compartir</button>
+        </div>
+      </div>
+
+      <h2>Porcentaje de un número: la fórmula</h2>
+      <p>
+        El B% de A = A × B ÷ 100. Así, el 18% de 250 es 250 × 18 ÷ 100 = 45. Para la pregunta contraria —qué porcentaje
+        es un número respecto a otro— se divide la parte entre el total y se multiplica por 100: 45 ÷ 250 × 100 = 18%.
+      </p>
+      <p>
+        Sin calculadora ayuda partir del 10% y del 1%: el 10% de 460 es 46 (se corre la coma un lugar) y el 1% es 4,6.
+        El 5% es la mitad del 10%, 23. Con eso, el 16% de 460 = 46 + 23 + 4,6 = 73,6.
+      </p>
+
+      <h2>Calcular porcentajes con regla de tres</h2>
+      <p>La regla de tres simple directa resuelve los mismos casos colocando los datos en dos filas:</p>
+      <ul>
+        <li>250 es el 100%; 45 es el x%. Entonces x = 45 × 100 ÷ 250 = 18.</li>
+        <li>250 es el 100%; el 18% es x. Entonces x = 250 × 18 ÷ 100 = 45.</li>
+      </ul>
+      <p>
+        Siempre se multiplica en cruz y se divide por el dato que queda solo. La calculadora hace exactamente esa
+        operación en las dos primeras opciones.
+      </p>
+
+      <h2>Porcentaje de aumento o disminución entre dos cantidades</h2>
+      <p>
+        Sabiendo la cantidad inicial y la final: porcentaje de cambio = (final − inicial) ÷ inicial × 100. Si sale
+        positivo es un aumento; si sale negativo, una disminución.
+      </p>
+      <ul>
+        <li><strong>De 40 a 50</strong>: (50 − 40) ÷ 40 × 100 = +25%.</li>
+        <li><strong>De 50 a 40</strong>: (40 − 50) ÷ 50 × 100 = −20%.</li>
+      </ul>
+      <p>
+        La diferencia es 10 en los dos casos, pero el porcentaje cambia porque siempre se mide respecto a la cantidad
+        de partida. En la calculadora, elige «% de aumento o disminución de A a B» y pon la cantidad inicial en A.
+      </p>
+
+      <h2>Porcentaje de descuento entre dos cantidades</h2>
+      <p>
+        Con el precio antes y después de la rebaja, el descuento es (precio original − precio final) ÷ precio original
+        × 100. Si algo costaba 80 euros y ahora cuesta 60, el descuento es 20 ÷ 80 × 100 = 25%.
+      </p>
+      <p>
+        Al revés, un 15% de descuento sobre 120 euros deja el precio en 120 × 0,85 = 102 y ahorras 18. Dos
+        descuentos seguidos se multiplican, no se suman: un 30% y luego otro 10% dejan 0,7 × 0,9 = 0,63 del precio,
+        es decir, un 37% de descuento total, no un 40%.
+      </p>
+
+      <h2>Calcular el porcentaje de ganancia de un producto</h2>
+      <p>
+        Si compras a un precio de coste y vendes más caro, el margen sobre el coste es (venta − coste) ÷ coste × 100.
+        Comprado a 40 y vendido a 50: 10 ÷ 40 × 100 = 25% sobre el coste. Si lo que se quiere es el margen sobre el
+        precio de venta, se divide entre la venta: 10 ÷ 50 × 100 = 20%. Son dos cifras distintas para la misma
+        operación, así que conviene decir siempre sobre qué base se calcula.
+      </p>
+
+      <h2>Calculadora de porcentajes de notas</h2>
+      <p>
+        Porcentaje de una nota = puntos obtenidos ÷ puntos totales × 100. Con 68 puntos de 80 tienes 68 ÷ 80 × 100 =
+        85%. Para varios exámenes con distinto total, suma primero todos los puntos obtenidos y todos los totales y
+        divide una sola vez: hacer la media de los porcentajes de cada examen da un resultado distinto.
+      </p>
+
+      <h2>Calcular porcentaje en Excel</h2>
+      <p>Con el valor inicial en A2 y el final en B2:</p>
+      <ul>
+        <li>Porcentaje de aumento o disminución: <code>=(B2-A2)/A2</code> y formato de celda de porcentaje.</li>
+        <li>Qué porcentaje es B2 de A2: <code>=B2/A2</code>, con formato de porcentaje.</li>
+        <li>El B2% de A2, si B2 contiene un número como 18: <code>=A2*B2/100</code>.</li>
+        <li>Precio con un descuento del B2%: <code>=A2*(1-B2/100)</code>.</li>
+      </ul>
+      <p>
+        Si B2 ya tiene formato de porcentaje, el 18% se guarda como 0,18 y hay que quitar el <code>/100</code>. Google
+        Sheets acepta las mismas fórmulas.
+      </p>
+
+      <details>
+        <summary>¿Por qué subir un 10% y luego bajar un 10% no devuelve el número inicial?</summary>
+        <p>
+          Porque la bajada se aplica sobre una cantidad mayor. 200 más un 10% son 220, y 220 menos un 10% son 198.
+          Para volver de 220 a 200 hace falta una bajada del 9,09%; compruébalo con «Valor original antes de un cambio
+          del B%».
+        </p>
+      </details>
+
+      <details>
+        <summary>¿Qué diferencia hay entre porcentaje y puntos porcentuales?</summary>
+        <p>
+          Si un tipo pasa del 2% al 3%, ha subido <strong>1 punto porcentual</strong>, pero eso es un aumento del
+          (3 − 2) ÷ 2 × 100 = <strong>50%</strong> sobre el propio tipo.
+        </p>
+      </details>
+
+      <details>
+        <summary>¿Cómo escribo los decimales y los miles?</summary>
+        <p>
+          Escribe los decimales con coma: 12,5. Los miles se pueden escribir sin separador (1500), con espacio
+          (1 500) o con punto (1.500). Un punto seguido de un número que no tiene tres cifras se lee como decimal, así
+          que 12.5 también vale 12,5. El signo % y los espacios se ignoran. La coma decimal y la separación de miles
+          con espacio siguen el Real Decreto 2032/2009 sobre unidades legales de medida.
+        </p>
+      </details>
+
+      <p>
+        Fuente de la notación numérica:
+        <a href="https://www.boe.es/buscar/act.php?id=BOE-A-2010-927" rel="noopener">Real Decreto 2032/2009, de 30 de
+        diciembre, por el que se establecen las unidades legales de medida (BOE), anexo, capítulo III, 2.8 y 2.9</a>.
+      </p>
+
+      <AdSlot label="percent-result-es" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
