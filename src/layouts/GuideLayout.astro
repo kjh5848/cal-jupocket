@@ -26,6 +26,7 @@ import ArticleMeta from "../components/ArticleMeta.astro";
 import ShareButtons from "../components/ShareButtons.astro";
 import Toc from "../components/Toc.astro";
 import { ogPathFor } from "../lib/og-pages";
+import { ORG_ID } from "../data/org";
 import "../styles/global.css";
 
 interface Props {
@@ -63,8 +64,9 @@ const jsonLd = {
   mainEntityOfPage: { "@type": "WebPage", "@id": `${siteUrl}${path}` },
   dateModified: updated,
   image: new URL(ogPathFor(path), Astro.site).href,
-  author: { "@type": "Organization", name: "주포켓", url: siteUrl },
-  publisher: { "@type": "Organization", name: "주포켓", url: siteUrl },
+  // 운영자는 홈의 Organization(@id) 하나 — 숫자 확인 원칙은 그쪽 publishingPrinciples(/about/)
+  author: { "@type": "Organization", "@id": ORG_ID(siteUrl), name: "주포켓", url: siteUrl },
+  publisher: { "@type": "Organization", "@id": ORG_ID(siteUrl), name: "주포켓", url: siteUrl },
   isAccessibleForFree: true,
   citation: [
     { "@type": "Organization", name: "국세청", url: "https://www.nts.go.kr/" },

@@ -26,9 +26,12 @@ describe("브랜드", () => {
     expect(read("public/favicon.svg")).toMatch(/id="bp-base"/);
   });
   it("홈 구조화 데이터 — 발행 주체 로고는 3D 주머니 PNG 512, 설명은 도구 모음 문구(Task 9)", () => {
+    // Organization 은 src/data/org.ts 한 곳(2026-10-20 GEO — 홈·글·소개가 같은 @id 를 쓴다)
     const s = read("src/pages/index.astro");
-    expect(s).toContain('"@id": `${siteUrl}/#org`');
-    expect(s).toContain("logo: `${siteUrl}/icon-512.png`");
+    const org = read("src/data/org.ts");
+    expect(s).toContain("organization(siteUrl)");
+    expect(org).toContain("`${siteUrl}/#org`");
+    expect(org).toContain("logo: `${siteUrl}/icon-512.png`");
     const desc = s.match(/const description =\s*"([^"]+)";/)?.[1] ?? "";
     expect(desc).toContain("도구");
     const png = readFileSync("public/icon-512.png");

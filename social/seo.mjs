@@ -740,4 +740,40 @@ if (!propId) {
     }
     console.log("");
   }
+
+  /*
+   * AI 답변에서 온 사람 — ChatGPT·Perplexity·Gemini·Copilot·Claude 가 우리 글을 인용하고 그 링크를
+   * 눌렀을 때 sessionSource 에 그 서비스 주소가 찍힌다(2026-10-20 GEO 작업). 위 표는 상위 25줄만이라
+   * 적은 숫자는 묻히므로 따로 거른다. 0 이면 "아직 인용되지 않았다"는 기준선이다.
+   */
+  const AI_SOURCES = "chatgpt|openai|perplexity|gemini|bard|copilot|bing\.com/chat|claude|anthropic|you\.com|phind";
+  const ai = await api(`${GA4_API}/properties/${propId}:runReport`, token, {
+    dateRanges: [{ startDate: gaStartDate, endDate: gaEndDate }],
+    dimensions: [{ name: "sessionSource" }, { name: "landingPage" }],
+    metrics: [{ name: "sessions" }],
+    dimensionFilter: {
+      filter: { fieldName: "sessionSource", stringFilter: { matchType: "FULL_REGEXP", value: `.*(${AI_SOURCES}).*`, caseSensitive: false } },
+    },
+    orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+    limit: 50,
+  });
+  if (!ai.ok) {
+    console.error(`✖ GA4 AI 유입 실패 (${ai.status}) ${JSON.stringify(ai.json).slice(0, 300)}
+`);
+  } else {
+    const rows = (ai.json.rows ?? []).map((r) => ({
+      source: r.dimensionValues[0].value,
+      page: r.dimensionValues[1].value,
+      sessions: Number(r.metricValues[0].value),
+    }));
+    console.log(`GA4 AI 답변 유입 — 세션 합계 ${rows.reduce((a, r) => a + r.sessions, 0)}`);
+    if (rows.length) {
+      console.log(table(rows, [
+        { label: "출처", get: (r) => r.source },
+        { label: "방문 페이지", get: (r) => r.page },
+        { label: "세션", get: (r) => r.sessions },
+      ]));
+    } else console.log("  아직 없음 — 이번 값이 기준선이다.");
+    console.log("");
+  }
 }

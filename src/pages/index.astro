@@ -6,6 +6,7 @@
  * 계산기 CTA). 계산기·글·색·아이콘은 전부 data/clusters.ts 한 곳에서
  * 가져오므로, 글을 추가하면 홈도 자동으로 갱신된다.
  */
+import { organization } from "../data/org";
 import BaseHead from "../components/BaseHead.astro";
 import AdSlot from "../components/AdSlot.astro";
 import ClarityHead from "../components/ClarityHead.astro";
@@ -78,18 +79,7 @@ const jsonLd = [
     description,
     publisher: { "@id": `${siteUrl}/#org` },
   },
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": `${siteUrl}/#org`,
-    name: "주포켓",
-    url: `${siteUrl}/`,
-    logo: `${siteUrl}/icon-512.png`,
-    sameAs: [
-      "https://www.instagram.com/jupocket.money/",
-      "https://www.threads.com/@jupocket.money",
-    ],
-  },
+  { "@context": "https://schema.org", ...organization(siteUrl) },
 ];
 ---
 
