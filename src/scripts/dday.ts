@@ -150,7 +150,50 @@ const DE: typeof KO = {
   shareText: "Countdown-Ergebnis - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE });
+/**
+ * 번체판(/zh-tw/·/zh-hk/ 공용). 'D-12' 대신 '還有12天' · '就是今天' · '已過3天'. 날짜는 페이지 lang(zh-Hant-TW·zh-Hant-HK)의
+ * Intl 표기('2026年12月25日週五'), timeZone "UTC" 필수(하루 번호가 UTC 자정). 두 판이 같이 쓰므로 한쪽에만 쓰는 말은 넣지 않는다.
+ * 서머타임 문구는 넣지 않고 '하루 = 24시간' 만 적는다(그 나라 원문 미확인).
+ */
+const zhLang = document.documentElement.lang || "zh-Hant-TW";
+const labelZh = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString(zhLang, { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const durationTextZh = (sec: number) => {
+  const s = Math.abs(Math.trunc(sec));
+  const day = Math.floor(s / 86_400);
+  const h = Math.floor((s % 86_400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (day > 0) return `${n(day, zhLang)}天${h}小時${m}分`;
+  return `${h}小時${m}分${s % 60}秒`;
+};
+const ddayZh = (c: Countdown) => (c.side === 0 ? "就是今天" : c.side > 0 ? `還有${n(c.days, zhLang)}天` : `已過${n(c.days, zhLang)}天`);
+
+const ZH_HANT: typeof KO = {
+  title: "倒數日",
+  needDate: "請輸入日期",
+  until: (when: string) => `距離${when}`,
+  hero: (c: Countdown) => ddayZh(c),
+  sub: (c: Countdown) =>
+    c.side === 0
+      ? "目標日和基準日是同一天"
+      : c.side > 0
+        ? `把基準日算作第1天，目標日是第${n(c.countDays, zhLang)}天`
+        : `把目標日算作第1天，基準日是第${n(c.countDays, zhLang)}天`,
+  left: "剩餘時間",
+  passed: "已過時間",
+  countLabel: "從第1天算起",
+  count: (c: Countdown) => `第${n(c.countDays, zhLang)}天`,
+  baseLabel: "基準日",
+  ddayLabel: "倒數日",
+  label: labelZh,
+  duration: durationTextZh,
+  noteNoTime: "沒有輸入時間時，會倒數到目標日結束的那一刻（隔天0點）。每天一律以24小時計算。",
+  noteNotToday: "基準日不是今天，所以剩餘時間從基準日的0點開始算。",
+  notePastTime: "目標日就是今天，但目標時間已經過了。",
+  shareText: "倒數日計算結果 - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE, "zh-Hant": ZH_HANT });
 
 let lastLines: [string, string][] = [];
 let lastTitle = S.title;
