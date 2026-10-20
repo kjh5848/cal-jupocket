@@ -1,0 +1,395 @@
+---
+/**
+ * 育児休業給付金の計算 — 일본어판 제도 도구(basis "law"). 한국 육아휴직 급여(월 통상임금 × 지급률, 월 상·하한)와 계산 구조가
+ * 달라(休業開始時賃金日額 × 日数 × 율, 상·하한은 日額에) 짝을 맺지 않는다.
+ * 계산은 lib/jp/childcare-leave-benefit.ts, 근거는 rates/jp/childcare-leave-benefit-2026.json(厚生労働省 パンフレット
+ * 2026(令和8)年8月1日改訂版·Q&A～育児休業等給付～·雇用保険法 第17条·第61条の7·8·10, 2026-10-21 확인).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/jp-childcare-leave-benefit-2026-10-21.csv):
+ *   育児休業給付金 計算式·計算方法 6ヶ月·計算ツール / 上限 2026年·上限額 令和8年·上限 日額·月額 /
+ *   計算 賞与·残業代·11日以上 / 出生後休業支援給付金 計算方法·対象期間 / 出生時育児休業 給付金 計算
+ * 상·하한은 令和9年7月31日까지 값 — 2027-08-01 改定 전에 다시 확인한다.
+ * 계산하지 않는 것: 出生時 日数를 180日에 通算하는 것, 日給者 最低保障, 수급 자격 판정, 支給単位期間의 달력 날짜.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import {
+  childcareBenefit,
+  periodBenefit,
+  supportBenefit,
+  formatYen,
+  DAILY_UPPER,
+  DAILY_LOWER,
+} from "../../../lib/jp/childcare-leave-benefit";
+import "../../../styles/global.css";
+
+const title = "育児休業給付金の計算 — 上限額（令和8年8月〜）・67%と50%・出生後休業支援給付金";
+const description =
+  "育児休業前6か月の賃金から休業開始時賃金日額を出し、育児休業給付金（67%・181日目から50%）、出生時育児休業給付金、出生後休業支援給付金（13%）を計算します。令和8年8月1日からの上限額16,540円・下限額3,203円、休業中の賃金による減額も厚生労働省の式で反映します。";
+
+const y = formatYen;
+const ex = childcareBenefit({
+  sixMonthTotal: 1_800_000,
+  leaveMonths: 12,
+  leaveExtraDays: 0,
+  wagePerPeriod: 0,
+  birthLeaveDays: 0,
+  supportDays: 0,
+});
+const monthlyRows = [150_000, 200_000, 250_000, 300_000, 350_000, 400_000, 450_000, 500_000, 600_000];
+const upperMonthly = DAILY_UPPER * 30;
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>育児休業給付金の計算（出生時育児休業給付金・出生後休業支援給付金）</h1>
+      <p>
+        育児休業を始める前 6 か月の賃金と休業する期間を入れると、雇用保険の育児休業給付金・出生時育児休業給付金（産後パパ育休）・
+        出生後休業支援給付金の額を計算します。式と上限額・下限額は厚生労働省のパンフレット「育児休業等給付の内容と支給申請手続」
+        2026（令和 8）年 8 月 1 日改訂版と「Q&amp;A～育児休業等給付～」、雇用保険法の条文（令和 8 年 10 月 21 日に確認）です。
+        上限額・下限額は<strong>令和 9 年 7 月 31 日までの額</strong>です。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cb-mode">賃金の入れ方</label>
+          <select id="cb-mode" data-seg>
+            <option value="month" selected>1か月あたり（×6）</option>
+            <option value="total">6か月の合計</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cb-wage" id="cb-wage-label">休業開始前の賃金（1か月あたり・総支給額）</label>
+          <input type="text" inputmode="numeric" id="cb-wage" value="300,000" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cb-months">育児休業の期間（支給単位期間の数）</label>
+          <input type="number" id="cb-months" inputmode="numeric" min="0" max="24" step="1" value="12" />
+          <span class="unit">か月</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cb-extra">最後の端数の日数（0〜29）</label>
+          <input type="number" id="cb-extra" inputmode="numeric" min="0" max="29" step="1" value="0" />
+          <span class="unit">日</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cb-paid">育児休業中に支払われる賃金（1か月あたり）</label>
+          <input type="text" inputmode="numeric" id="cb-paid" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cb-birth">産後パパ育休（出生時育児休業）の日数（最大28日）</label>
+          <input type="number" id="cb-birth" inputmode="numeric" min="0" max="28" step="1" value="0" />
+          <span class="unit">日</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cb-support">出生後休業支援給付金の対象期間内の休業日数（最大28日・対象外なら0）</label>
+          <input type="number" id="cb-support" inputmode="numeric" min="0" max="28" step="1" value="0" />
+          <span class="unit">日</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label">給付金の合計</p>
+          <p class="big" id="hero-value">{y(ex.total)}</p>
+          <p class="hint" id="cb-formula">休業開始時賃金日額 {y(ex.daily.applied)} × 30日 × 67% ＝ 1か月 {y(ex.perMonthFirst)}（7か月目から 50% で {y(ex.perMonthAfter)}）</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">休業開始時賃金日額</span>
+            <span class="value" id="out-daily">{y(ex.daily.applied)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">育児休業給付金（1か月・67%）</span>
+            <span class="value" id="out-first">{y(ex.perMonthFirst)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">育児休業給付金（1か月・50%）</span>
+            <span class="value" id="out-after">{y(ex.perMonthAfter)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">育児休業給付金の合計</span>
+            <span class="value" id="out-childcare">{y(ex.childcareTotal)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">出生時育児休業給付金</span>
+            <span class="value" id="out-birth">{y(ex.birthTime)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">出生後休業支援給付金</span>
+            <span class="value" id="out-support">{y(ex.support)}</span>
+          </div>
+        </div>
+        <p class="hint" id="cb-note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>育児休業給付金の計算式</h2>
+      <p>パンフレットと Q&amp;A が示す式は次のとおりです。</p>
+      <ul>
+        <li><strong>育児休業給付金</strong> ＝ 休業開始時賃金日額 × 支給日数 × 67%（育児休業の開始から 181 日目以降は 50%）</li>
+        <li><strong>出生時育児休業給付金</strong> ＝ 休業開始時賃金日額 × 休業期間の日数（28 日が上限）× 67%</li>
+        <li><strong>出生後休業支援給付金</strong> ＝ 休業開始時賃金日額 × 対象期間内の休業日数（28 日が上限）× 13%</li>
+      </ul>
+      <p>
+        支給額の 1 円未満は切り捨てます（国等の債権債務等の金額の端数計算に関する法律 第 2 条）。
+        パンフレットの例では、休業開始時賃金日額 10,000 円（賃金月額 300,000 円）なら、育児休業給付金は
+        10,000円 × 30日 × 67% ＝ {y(periodBenefit(10_000, 30, 67))}、出生後休業支援給付金は 10,000円 × 28日 × 13% ＝ {y(supportBenefit(10_000, 28))} です。
+        上の計算機の初期値（月 30 万円・12 か月）では、67% の 6 か月と 50% の 6 か月で育児休業給付金の合計は {y(ex.childcareTotal)} です。
+      </p>
+
+      <h2>休業開始時賃金日額 — 6ヶ月の賃金 ÷ 180</h2>
+      <p>
+        休業開始時賃金日額は、原則として育児休業を始める前 6 か月の総支給額（保険料などが引かれる前の額）を 180 で割った額です（雇用保険法 第 17 条・Q&amp;A Q4）。
+        小数点以下は切り捨てます（雇用保険業務取扱要領 50615・59524）。産前産後休業をした人は、原則としてその開始前の 6 か月で数えます。
+      </p>
+      <ul>
+        <li><strong>賞与は入れない</strong> — 3 か月を超える期間ごとに支払われる賃金（賞与）と臨時に支払われる賃金は除きます。</li>
+        <li><strong>総支給額で数える</strong> — 手取りではなく、保険料などが控除される前の額です（Q&amp;A Q4）。</li>
+        <li><strong>11日以上の月で数える</strong> — 賃金支払基礎日数が 11 日以上ある月（完全な賃金月）の 6 か月で数えます。そうした月が足りないときは、賃金の支払の基礎となった時間数が 80 時間以上の月で数えます（パンフレット）。</li>
+      </ul>
+      <p>この計算機は、入れた賃金をそのまま 6 か月分として扱います。どの月を数えるかの判断はしません。</p>
+
+      <h2>育児休業給付金の上限額・下限額（令和8年8月1日〜令和9年7月31日）</h2>
+      <p>
+        上限・下限は休業開始時賃金日額にかかります。日額の上限は {y(DAILY_UPPER)}、下限は {y(DAILY_LOWER)} です。
+        この額は毎年 8 月 1 日に見直されます。支給日数 30 日・28 日の支給上限額と支給下限額は次のとおりです（パンフレット）。
+      </p>
+      <table>
+        <thead>
+          <tr><th>給付</th><th>支給上限額</th><th>支給下限額</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>育児休業給付金 67%（30日）</td><td>{y(periodBenefit(DAILY_UPPER, 30, 67))}</td><td>{y(periodBenefit(DAILY_LOWER, 30, 67))}</td></tr>
+          <tr><td>育児休業給付金 50%（30日）</td><td>{y(periodBenefit(DAILY_UPPER, 30, 50))}</td><td>{y(periodBenefit(DAILY_LOWER, 30, 50))}</td></tr>
+          <tr><td>出生時育児休業給付金 67%（28日）</td><td>{y(periodBenefit(DAILY_UPPER, 28, 67))}</td><td>—</td></tr>
+          <tr><td>出生後休業支援給付金 13%（28日）</td><td>{y(supportBenefit(DAILY_UPPER, 28))}</td><td>{y(supportBenefit(DAILY_LOWER, 28))}</td></tr>
+        </tbody>
+      </table>
+      <p>
+        日額の上限 {y(DAILY_UPPER)} × 30 日 ＝ {y(upperMonthly)} なので、休業前の月収がおおむねこの額を超えると、それ以上は給付金が増えません。
+        下限額は休業中に賃金が支払われなかった場合の額で、賃金が支払われるとこれを下回ることがあります。
+      </p>
+
+      <h2>月収別の早見表（1か月・30日）</h2>
+      <p>6 か月とも同じ月収で、休業中の賃金がない場合を上の式で計算した表です。</p>
+      <table>
+        <thead>
+          <tr><th>休業前の月収</th><th>賃金日額</th><th>67%（1〜6か月目）</th><th>50%（7か月目から）</th></tr>
+        </thead>
+        <tbody>
+          {monthlyRows.map((m) => {
+            const r = childcareBenefit({ sixMonthTotal: m * 6, leaveMonths: 0, leaveExtraDays: 0, wagePerPeriod: 0, birthLeaveDays: 0, supportDays: 0 });
+            return (
+              <tr><td>{y(m)}</td><td>{y(r.daily.applied)}</td><td>{y(r.perMonthFirst)}</td><td>{y(r.perMonthAfter)}</td></tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h2>67%と50% — 181日目から</h2>
+      <p>
+        育児休業給付金は、休業開始日から 1 か月ごとに区切った「支給単位期間」ごとに支給されます。支給日数は原則 30 日で、休業終了日を含む最後の期間はその日までの日数です（雇用保険法 第 61 条の 7）。
+        育児休業の開始から 180 日目までは 67%、181 日目以降は 50% です。30 日の期間が 6 つで 180 日なので、この計算機は 7 つ目の期間から 50% にします。
+      </p>
+      <p>
+        出生時育児休業給付金が支給された日数は、この 180 日に通算されます（パンフレット）。<strong>この計算機は通算しません</strong>。
+        産後パパ育休のあとに育児休業をする人は、67% の期間が短くなる分だけ実際の額は少なくなります。
+      </p>
+
+      <h2>育児休業中に賃金が支払われたとき（80%）</h2>
+      <table>
+        <thead>
+          <tr><th>支払われた賃金の額</th><th>育児休業給付金</th><th>出生後休業支援給付金</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>賃金日額 × 日数の 13%（181 日目以降は 30%）以下</td><td>減額なし</td><td>減額なし</td></tr>
+          <tr><td>13%（30%）超〜80% 未満</td><td>賃金日額 × 日数 × 80% − 賃金</td><td>減額なし</td></tr>
+          <tr><td>80% 以上</td><td>支給されない</td><td>支給されない</td></tr>
+        </tbody>
+      </table>
+      <p>
+        パンフレットの例: 賃金日額 10,000 円で支給単位期間に 120,000 円が支払われると、10,000円 × 30日 × 80% ＝ 240,000円 から 120,000 円を引いた
+        {y(periodBenefit(10_000, 30, 67, 120_000))} が育児休業給付金です。出生時育児休業給付金も同じ 80% の扱いです（産後パパ育休 14 日・賃金 30,000 円なら
+        {y(periodBenefit(10_000, 14, 67, 30_000))}）。この計算機の「育児休業中に支払われる賃金」は育児休業給付金だけに使い、産後パパ育休は賃金なしで計算します。
+      </p>
+
+      <h2>出生後休業支援給付金の計算方法と対象期間</h2>
+      <p>
+        出生後休業支援給付金は 2025 年 4 月 1 日にできた給付で、育児休業給付（67%）と合わせて 80% になるように 13% を上乗せします（Q40）。
+        Q40 の例では、賃金日額 10,000 円の人が産後パパ育休を 28 日取ると、出生時育児休業給付金 {y(periodBenefit(10_000, 28, 67))} と
+        出生後休業支援給付金 {y(supportBenefit(10_000, 28))} で合計 {y(periodBenefit(10_000, 28, 67) + supportBenefit(10_000, 28))} です。
+      </p>
+      <ul>
+        <li><strong>対象期間</strong> — 子の出生日（出産予定日前に生まれたときは出産予定日）から 8 週間を経過する日の翌日まで。産後休業をした人は 16 週間を経過する日の翌日まで（雇用保険法 第 61 条の 10 第 7 項）。</li>
+        <li><strong>14 日以上</strong> — 被保険者が対象期間内に育児休業給付の対象となる休業を通算 14 日以上していること。</li>
+        <li><strong>配偶者も 14 日以上</strong> — 配偶者も子の出生日から 8 週間を経過する日の翌日までに通算 14 日以上休業していること。ただし配偶者がいない、配偶者が雇用される労働者でない（自営業など）、配偶者が産後休業をしている、などの場合はこの要件がいりません（同条第 2 項・施行規則 第 101 条の 37・第 101 条の 38）。</li>
+      </ul>
+      <p>
+        支給日数は 28 日が上限です。休業中の賃金では減額されませんが、育児休業給付が支給されない（0 円になる）場合は出生後休業支援給付金も支給されません（Q41）。
+        自分が対象になるかどうかはこの計算機では判断しません。対象になる日数を入れてください。
+      </p>
+
+      <h2>育児休業給付金に税金はかかる？</h2>
+      <p>
+        育児休業等給付は非課税です（パンフレット・Q&amp;A Q100）。Q40 は、育児休業中は申し出により健康保険・厚生年金保険料が免除されること、
+        給与が支払われない場合は雇用保険料の負担がないことと合わせると、賃金日額の 80% は「手取り10割相当」の額になると説明しています。
+      </p>
+
+      <details>
+        <summary>育児休業給付金を受け取れる条件は？</summary>
+        <p>
+          Q&amp;A は、雇用保険の被保険者が原則 1 歳未満の子を養育するために育児休業をすること、育児休業を開始した日前 2 年間に
+          賃金支払基礎日数が 11 日以上ある（ない場合は就業した時間数が 80 時間以上の）月が 12 か月以上あること、
+          1 支給単位期間中の就業日数が 10 日（10 日を超える場合は 80 時間）以下であることなどを挙げています。
+          支給は原則として子が 1 歳になるまでで、パパ・ママ育休プラスなら 1 歳 2 か月、保育所に入れないなどの場合は 1 歳 6 か月・2 歳まで延びます。
+        </p>
+      </details>
+
+      <details>
+        <summary>「支給単位期間」と月の日数が合いません</summary>
+        <p>
+          支給単位期間は休業開始日から 1 か月ごとの期間で、暦の日数にかかわらず支給日数は 30 日です（最後の期間だけはその日までの日数）。
+          この計算機は「期間の数」と「最後の端数の日数」を入れる形にしています。休業の何日目が何月何日かは計算しません。
+        </p>
+      </details>
+
+      <details>
+        <summary>日給・時間給の人は？</summary>
+        <p>
+          雇用保険法 第 17 条第 2 項は、日給・時間給・出来高払などの場合に、6 か月の賃金総額を労働日数で割った額の 70% を下回らないようにする扱いを定めています。
+          この計算機はこの扱いを計算しません。
+        </p>
+      </details>
+
+      <details>
+        <summary>全角の数字で入力してもいいですか？</summary>
+        <p>はい。「３００，０００」のような全角の数字も半角に直して計算します。</p>
+      </details>
+
+      <h2>出典</h2>
+      <ul>
+        <li><a href="https://www.mhlw.go.jp/content/11600000/001461102.pdf" rel="noopener" target="_blank">厚生労働省 パンフレット 育児休業等給付の内容と支給申請手続 2026（令和8）年8月1日改訂版</a>（令和8年10月21日確認）</li>
+        <li><a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000158500.html" rel="noopener" target="_blank">厚生労働省 Q&amp;A～育児休業等給付～</a>（Q4・Q40・Q41・Q100 ほか、令和8年10月21日確認）</li>
+        <li><a href="https://laws.e-gov.go.jp/law/349AC0000000116" rel="noopener" target="_blank">e-Gov 法令検索 雇用保険法</a>（第17条・第61条の7・第61条の8・第61条の10）</li>
+        <li><a href="https://laws.e-gov.go.jp/law/350M50002000003" rel="noopener" target="_blank">e-Gov 法令検索 雇用保険法施行規則</a>（第101条の37・第101条の38）</li>
+        <li><a href="https://laws.e-gov.go.jp/law/325AC0000000061" rel="noopener" target="_blank">e-Gov 法令検索 国等の債権債務等の金額の端数計算に関する法律</a>（第2条）</li>
+        <li><a href="https://www.mhlw.go.jp/content/001731148.pdf" rel="noopener" target="_blank">厚生労働省 雇用保険業務取扱要領 育児休業給付（R8.8）</a>（59524）</li>
+      </ul>
+
+      <AdSlot label="childcare-leave-benefit-result-ja" />
+    </main>
+    <SiteFooter />
+    <script>
+      import { childcareBenefit, formatYen, DAILY_UPPER, DAILY_LOWER } from "../../../lib/jp/childcare-leave-benefit";
+      import { renderCard, downloadCard, shareCard } from "../../../lib/result-card";
+      import { track, trackCalculatorUse } from "../../../lib/track";
+
+      const reportUse = trackCalculatorUse("jp-childcare-leave-benefit");
+      const $ = (id: string) => document.getElementById(id)!;
+      const modeIn = $("cb-mode") as HTMLSelectElement;
+      const wageIn = $("cb-wage") as HTMLInputElement;
+      const monthsIn = $("cb-months") as HTMLInputElement;
+      const extraIn = $("cb-extra") as HTMLInputElement;
+      const paidIn = $("cb-paid") as HTMLInputElement;
+      const birthIn = $("cb-birth") as HTMLInputElement;
+      const supportIn = $("cb-support") as HTMLInputElement;
+
+      /** 全角の数字・カンマも半角に直してから読む */
+      const toHalf = (s: string) => s.replace(/[０-９，．]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+      const num = (el: HTMLInputElement) => {
+        const v = Number(toHalf(el.value).replace(/,/g, ""));
+        return Number.isFinite(v) && v > 0 ? v : 0;
+      };
+
+      let lastLines: [string, string][] = [];
+
+      function compute() {
+        const wage = num(wageIn);
+        const total6 = modeIn.value === "month" ? wage * 6 : wage;
+        $("cb-wage-label").textContent =
+          modeIn.value === "month" ? "休業開始前の賃金（1か月あたり・総支給額）" : "休業開始前6か月の賃金の合計（総支給額）";
+        const r = childcareBenefit({
+          sixMonthTotal: total6,
+          leaveMonths: num(monthsIn),
+          leaveExtraDays: num(extraIn),
+          wagePerPeriod: num(paidIn),
+          birthLeaveDays: num(birthIn),
+          supportDays: num(supportIn),
+        });
+        const d = formatYen(r.daily.applied);
+        $("hero-value").textContent = formatYen(r.total);
+        $("cb-formula").textContent = `休業開始時賃金日額 ${d} × 30日 × 67% ＝ 1か月 ${formatYen(r.perMonthFirst)}（7か月目から 50% で ${formatYen(r.perMonthAfter)}）`;
+        $("out-daily").textContent = d;
+        $("out-first").textContent = formatYen(r.perMonthFirst);
+        $("out-after").textContent = formatYen(r.perMonthAfter);
+        $("out-childcare").textContent = formatYen(r.childcareTotal);
+        $("out-birth").textContent = formatYen(r.birthTime);
+        $("out-support").textContent = formatYen(r.support);
+        const notes: string[] = [];
+        if (r.daily.limit === "upper")
+          notes.push(`6か月の合計 ÷ 180 ＝ ${formatYen(r.daily.raw)} が上限を超えるので、上限額 ${formatYen(DAILY_UPPER)} で計算しています。`);
+        if (r.daily.limit === "lower")
+          notes.push(`6か月の合計 ÷ 180 ＝ ${formatYen(r.daily.raw)} が下限に満たないので、下限額 ${formatYen(DAILY_LOWER)} で計算しています。`);
+        if (num(birthIn) > 0)
+          notes.push("産後パパ育休の日数は 67% の 180 日に通算されますが、この計算機は通算していません。");
+        $("cb-note").textContent = notes.join(" ");
+        lastLines = [
+          ["休業開始時賃金日額", d],
+          ["育児休業給付金（1か月・67%）", formatYen(r.perMonthFirst)],
+          ["育児休業給付金の合計", formatYen(r.childcareTotal)],
+          ["出生時育児休業給付金", formatYen(r.birthTime)],
+          ["出生後休業支援給付金", formatYen(r.support)],
+          ["合計", formatYen(r.total)],
+        ];
+      }
+
+      for (const el of [monthsIn, extraIn, birthIn, supportIn, paidIn]) el.addEventListener("input", compute);
+      modeIn.addEventListener("change", compute);
+      modeIn.addEventListener("input", compute);
+      wageIn.addEventListener("input", () => {
+        reportUse(num(wageIn));
+        compute();
+      });
+      for (const el of [wageIn, paidIn]) {
+        el.addEventListener("blur", () => {
+          const v = num(el);
+          el.value = v === 0 ? (el === paidIn ? "0" : "") : Math.floor(v).toLocaleString("ja-JP");
+        });
+      }
+
+      const buildCard = () => renderCard({ title: "育児休業給付金の計算", lines: lastLines, footer: "jupocket.com" });
+      $("btn-download").addEventListener("click", () => {
+        track("save_result", { calculator: "jp-childcare-leave-benefit" });
+        downloadCard(buildCard(), "childcare-leave-benefit-result.png");
+      });
+      $("btn-share").addEventListener("click", async () => {
+        track("share_result", { calculator: "jp-childcare-leave-benefit" });
+        await shareCard(buildCard(), "育児休業給付金の計算結果 - jupocket.com");
+      });
+
+      compute();
+    </script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

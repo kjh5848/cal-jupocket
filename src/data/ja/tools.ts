@@ -157,4 +157,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/ja/childcare-leave-benefit/",
+    name: "育児休業給付金の計算",
+    blurb: "休業前6か月の賃金から育児休業給付金（67%・50%）・出生時育児休業給付金・出生後休業支援給付金を令和8年8月からの上限額で計算",
+    type: "labor",
+    icon: "calculator",
+    basis: "law",
+  },
 ];
