@@ -1,0 +1,303 @@
+---
+/**
+ * Seconds to Minutes Converter — 호주 영어판 여섯 번째 도구(초·분·시간 변환). 한국어판 /tools/sec-convert/ 와
+ * 계산(lib/sec-convert.ts)·스크립트(scripts/sec-convert.ts 의 EN 사전)를 같이 쓰고, 문장은 호주 영어로 새로 썼다(번역 아님).
+ * 조사표 호주 칸 '같음'(#91, SI 브로슈어 표 8) · #88 '시간 → 분/초'(#parts)도 같은 페이지.
+ *
+ * 소제목은 호주 구글 자동완성에서 왔다(keywords/au-sec-convert-2026-10-21.csv, hl en · gl au):
+ *   seconds to minutes formula·how to convert / decimal hours meaning·chart·for payroll·worked calculator /
+ *   decimal hours to hours and minutes·to time / convert seconds to days hours minutes seconds /
+ *   milliseconds to seconds to minutes / … excel formula·google sheets / … python·javascript·sql
+ * 단위 값은 SI 브로슈어 표 8(1 min = 60 s, 1 h = 3600 s, 1 d = 86 400 s)뿐 — 법 숫자 없음.
+ * 호주 급여·타임시트 반올림 규칙(Fair Work)은 허용 출처를 열지 않아 쓰지 않는다. 본문 예시 숫자는 전부 frontmatter 에서 lib 함수로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import {
+  toNanos,
+  partsToNanos,
+  convertAll,
+  readableEn,
+  withUnitEn,
+  clock,
+  minSec,
+  UNITS,
+  UNIT_NAME_EN,
+} from "../../../../lib/sec-convert";
+
+const title = "Seconds to Minutes Converter Australia — Decimal Hours, h:mm:ss and Days";
+const description =
+  "Convert seconds, minutes, hours, days or milliseconds in one go, read decimal hours as hours and minutes for timesheets, and get Excel, SQL and Python formulas.";
+
+const EX = "5400";
+const n0 = toNanos(EX, "s")!;
+const all0 = convertAll(n0);
+const p0 = partsToNanos("", "2", "15", "")!;
+const pAll0 = convertAll(p0);
+const pMs0 = minSec(p0);
+
+/** 본문 예시 — 5,400초, 7.6시간, 38시간, 200,000초, 125,000밀리초, 2.25분 */
+const S5400 = convertAll(n0);
+const H76 = toNanos("7.6", "h")!;
+const H76all = convertAll(H76);
+const H38 = toNanos("38", "h")!;
+const H38all = convertAll(H38);
+const T2 = toNanos("200000", "s")!;
+const T2all = convertAll(T2);
+const D1 = convertAll(toNanos("1", "d")!);
+const M225 = convertAll(toNanos("2.25", "min")!);
+const MS125 = toNanos("125000", "ms")!;
+const MS125all = convertAll(MS125);
+const SQL_EX = toNanos("3725", "s")!;
+const WRAP = toNanos("30", "h")!;
+---
+
+<html lang="en-AU">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Seconds to Minutes Converter — and Decimal Hours for Your Timesheet</h1>
+      <p>
+        Enter a number, choose what it is (milliseconds, seconds, minutes, hours or days), and every other unit appears straight
+        away, along with an "X hours Y minutes Z seconds" reading and an h:mm:ss clock. The maths is fixed: 1 minute is 60 seconds,
+        1 hour is 3,600 seconds and 1 day is 86,400 seconds.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="val">Amount</label>
+          <input type="text" id="val" inputmode="decimal" autocomplete="off" value={EX} placeholder="e.g. 5400" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">Unit</label>
+          <select id="unit" data-seg>
+            {UNITS.map((u) => <option value={u} selected={u === "s"}>{UNIT_NAME_EN[u]}</option>)}
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">{withUnitEn(all0.s, "s")} is</p>
+          <p class="big" id="hero-value">{readableEn(n0)}</p>
+          <p class="hint" id="hero-sub">{withUnitEn(all0.min, "min")} · h:mm:ss {clock(n0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          {UNITS.map((u) => (
+            <div class="stat-chip">
+              <span class="label">{UNIT_NAME_EN[u]}</span>
+              <span class="value" id={`v-${u}`}>{all0[u]}</span>
+            </div>
+          ))}
+        </div>
+        <p class="hint" id="err" role="alert"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as PNG</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2 id="parts">Days, hours, minutes and seconds → one total</h2>
+      <div class="calc-card" data-two>
+        <div class="sc-parts">
+          <div class="calc-input-wrap">
+            <label for="p-d">Days</label>
+            <input type="text" id="p-d" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-h">Hours</label>
+            <input type="text" id="p-h" inputmode="decimal" autocomplete="off" value="2" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-m">Minutes</label>
+            <input type="text" id="p-m" inputmode="decimal" autocomplete="off" value="15" placeholder="0" />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="p-s">Seconds</label>
+            <input type="text" id="p-s" inputmode="decimal" autocomplete="off" placeholder="0" />
+          </div>
+        </div>
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label">Total</p>
+          <p class="big" id="p-value">{withUnitEn(pAll0.s, "s")}</p>
+          <p class="hint" id="p-sub">
+            {withUnitEn(pAll0.min, "min")}{pMs0.seconds === "0" ? "" : ` (${pMs0.minutes.toLocaleString("en-AU")} min ${pMs0.seconds} sec)`} · {withUnitEn(pAll0.h, "h")} · {readableEn(p0)}
+          </p>
+        </div>
+        <p class="hint" id="p-err" role="alert"></p>
+      </div>
+
+      <h2>How to convert seconds to minutes</h2>
+      <p>
+        Divide the seconds by 60. 5,400 seconds ÷ 60 = {S5400.min} minutes, and {S5400.min} ÷ 60 = {S5400.h} hours. To go back,
+        multiply: {M225.min} minutes × 60 = {M225.s} seconds.
+      </p>
+      <p>
+        A decimal minute is not "minutes and seconds". 2.25 minutes means 2 minutes plus a quarter of a minute — 2 minutes 15
+        seconds — not 2 minutes 25 seconds. Multiply the part after the point by 60 to get the seconds.
+      </p>
+
+      <h2>What decimal hours mean</h2>
+      <p>
+        Decimal hours write time as a single number of hours, so half an hour is 0.5 and 45 minutes is 0.75. Timesheet and payroll
+        software often asks for hours this way because a decimal can be multiplied by an hourly rate directly, while 7:36 cannot.
+        The conversion is just minutes ÷ 60. How your employer rounds the hours on a timesheet is a workplace or award question,
+        not a unit one, so this page doesn't apply any rounding of that kind.
+      </p>
+
+      <h2>Decimal hours chart</h2>
+      <p>Minutes on the left, the same time as decimal hours in the middle. Decimals are cut at six places.</p>
+      <table>
+        <thead>
+          <tr><th>Minutes</th><th>Decimal hours</th><th>Hours and minutes</th></tr>
+        </thead>
+        <tbody>
+          {["6", "12", "15", "18", "24", "30", "36", "42", "45", "48", "54", "456"].map((m) => {
+            const n = toNanos(m, "min")!;
+            return (
+              <tr>
+                <td>{Number(m).toLocaleString("en-AU")}</td>
+                <td>{convertAll(n).h}</td>
+                <td>{readableEn(n)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h2>Decimal hours to hours and minutes</h2>
+      <p>
+        Keep the whole number as hours and multiply the decimal part by 60 for the minutes. 7.6 hours = 7 hours + 0.6 × 60 =
+        {" "}<strong>{readableEn(H76)}</strong> ({H76all.min} minutes, or {clock(H76)} on a clock). A week of 38 hours is
+        {" "}{H38all.min} minutes. Pick "Hours" in the converter above and type the decimal to check any figure.
+      </p>
+
+      <h2>Convert seconds to days, hours, minutes and seconds</h2>
+      <p>Take out the biggest unit first and pass the remainder down. For 200,000 seconds:</p>
+      <ol>
+        <li>200,000 ÷ 86,400 = 2, remainder 27,200 → 2 days</li>
+        <li>27,200 ÷ 3,600 = 7, remainder 1,600 → 7 hours</li>
+        <li>1,600 ÷ 60 = 26, remainder 40 → 26 minutes</li>
+        <li>40 seconds left → <strong>{readableEn(T2)}</strong> ({withUnitEn(T2all.d, "d")})</li>
+      </ol>
+      <p>
+        One day is 24 hours, {D1.min} minutes or {D1.s} seconds. The h:mm:ss clock doesn't roll over into days — 30 hours shows as
+        {" "}{clock(WRAP)}.
+      </p>
+
+      <h2>Milliseconds to seconds to minutes</h2>
+      <p>
+        Divide milliseconds by 1,000 for seconds, then by 60 for minutes (or by 60,000 in one step). A stopwatch reading of
+        125,000 ms is {MS125all.s} seconds, {MS125all.min} minutes, or {readableEn(MS125)}. Choose "Milliseconds" as the unit to
+        convert one.
+      </p>
+
+      <h2>Excel and Google Sheets formulas</h2>
+      <ul>
+        <li><strong>Seconds to minutes</strong>: <code>=A1/60</code> · <strong>seconds to hours</strong>: <code>=A1/3600</code></li>
+        <li><strong>Minutes to decimal hours</strong>: <code>=A1/60</code> · <strong>decimal hours to minutes</strong>: <code>=A1*60</code></li>
+        <li>
+          <strong>Seconds as h:mm:ss</strong>: <code>=A1/86400</code> with the custom number format <code>[h]:mm:ss</code> — a
+          spreadsheet stores time as a fraction of a day.
+        </li>
+        <li>
+          <strong>A time like 7:36 to decimal hours</strong>: <code>=A1*24</code> with the cell formatted as Number. Without the
+          brackets in <code>[h]</code>, totals over 24 hours wrap back to zero.
+        </li>
+      </ul>
+
+      <h2>In Python, JavaScript and SQL</h2>
+      <pre><code>{`# Python
+h, rem = divmod(seconds, 3600)
+m, s = divmod(rem, 60)
+
+// JavaScript
+const h = Math.floor(seconds / 3600);
+const m = Math.floor((seconds % 3600) / 60);
+const s = seconds % 60;
+
+-- MySQL
+SELECT SEC_TO_TIME(3725);
+
+-- PostgreSQL
+SELECT make_interval(secs => 3725);`}</code></pre>
+      <p>
+        Both SQL lines return 3,725 seconds as {readableEn(SQL_EX)}. This converter counts in whole nanoseconds
+        internally, so you won't see floating-point tails like 66.00000000000001.
+      </p>
+
+      <details>
+        <summary>Why doesn't it go up to weeks, months or years?</summary>
+        <p>
+          A week is always 7 days, but months run from 28 to 31 days and years have 365 or 366, so they have no single number of
+          seconds. For calendar time between two dates, use the <a href="/en-au/tools/date-diff/">days between dates calculator</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Where do 60 and 3,600 seconds come from?</summary>
+        <p>
+          Table 8 of the SI Brochure, published by the International Bureau of Weights and Measures (BIPM), lists the minute, hour
+          and day as units accepted for use with the SI: 1 min = 60 s, 1 h = 3,600 s and 1 d = 86,400 s.
+        </p>
+      </details>
+
+      <details>
+        <summary>What about leap seconds?</summary>
+        <p>
+          A day with a leap second added to UTC runs one second long, but as a unit of duration a day is fixed at 86,400 seconds,
+          and that is the value used here.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I type 1,440.5 with a comma?</summary>
+        <p>
+          Yes — commas and spaces are ignored and up to six decimal places are read. Negative numbers aren't accepted, because a
+          length of time can't be less than zero.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does it handle minutes and seconds of latitude and longitude?</summary>
+        <p>
+          No. Angle minutes and seconds (1 degree = 60 minutes = 3,600 seconds) share the names but measure angles, not time.
+        </p>
+      </details>
+
+      <p>
+        Got a 10- or 13-digit number from a log? The <a href="/en-au/tools/unix-time/">epoch time converter</a> turns it into a
+        date. To count down to a date, try <a href="/en-au/tools/dday/">days until</a>.
+      </p>
+
+      <p>
+        Source: <a href="https://www.bipm.org/en/publications/si-brochure" rel="noopener">BIPM, The International System of Units (SI
+        Brochure), Table 8: Non-SI units accepted for use with the SI</a> (checked 20 October 2026)
+      </p>
+
+      <AdSlot label="sec-convert-result-en-au" />
+    </main>
+    <SiteFooter />
+    <style>
+      .sc-parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 10px; }
+      @media (max-width: 560px) { .sc-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      pre { overflow-x: auto; }
+    </style>
+    <script src="../../../../scripts/sec-convert.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
