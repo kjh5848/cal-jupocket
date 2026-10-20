@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseTime, text24, text12, spoken, textEn, boundary, hourTable, NOON } from "../time-12-24";
+import { parseTime, text24, text12, spoken, textEn, boundary, boundaryEn, hourTable, NOON } from "../time-12-24";
 import rates from "../../rates/time-12-24-2026.json";
 
 const min = (raw: string) => parseTime(raw)?.min ?? null;
@@ -89,5 +89,30 @@ describe("표기", () => {
     expect(t.length).toBe(24);
     expect(t[13]).toEqual(["13:00", "오후 1:00"]);
     expect(t[0]).toEqual(["00:00", "오전 12:00"]);
+  });
+});
+
+describe("영어판 — noon·midnight (NIST times-day FAQ 가 권하는 표기)", () => {
+  it.each([
+    ["noon", 720],
+    ["12 noon", 720],
+    ["12:00 noon", 720],
+    ["Noon", 720],
+    ["midnight", 0],
+    ["12 midnight", 0],
+    ["12:00 Midnight", 0],
+  ])("%s → %i분", (raw, want) => {
+    expect(min(raw as string)).toBe(want);
+    expect(parseTime(raw as string)!.from).toBe("12");
+  });
+  it("3 noon · 12:30 noon 은 못 읽음", () => {
+    expect(parseTime("3 noon")).toBeNull();
+    expect(parseTime("12:30 noon")).toBeNull();
+  });
+  it("boundaryEn — 0 은 midnight, 720 은 noon, 나머지 빈 문자열", () => {
+    expect(boundaryEn(0)).toBe("midnight");
+    expect(boundaryEn(720)).toBe("noon");
+    expect(boundaryEn(940)).toBe("");
+    expect(boundary(940)).toBe("");
   });
 });

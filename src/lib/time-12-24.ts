@@ -9,7 +9,7 @@
  * 갈리지 않는다 — 12:00 을 오후로 쓰는 것은 관례이고, 그래서 결과에 '정오'·'자정' 을 함께 보인다.
  *
  * 정한 규칙(테스트로 고정):
- * - 한 칸에 아무 표기나 넣는다. 오전·오후·AM·PM·정오·자정이 있으면 12시간제로, 없으면 24시간제로 읽는다.
+ * - 한 칸에 아무 표기나 넣는다. 오전·오후·AM·PM·정오·자정(영어 noon·midnight)이 있으면 12시간제로, 없으면 24시간제로 읽는다.
  * - 12시간제 시는 1~12, 그리고 '오전 0시'·'오후 0시'(0시를 그대로 쓰는 표기)를 받는다. '오후 13:00' 은 오류.
  * - 24시간제 시는 0~23. 24:00 은 받지 않는다 — 다음 날 00:00(자정)으로 넣는다.
  * - 밤·낮·새벽·저녁 같은 말은 받지 않는다 — '밤 1시' 가 01시인지 13시인지 정한 원문이 없다(자정 = 밤 열두 시만 사전에 있음).
@@ -51,6 +51,9 @@ export function parseTime(raw: string): Parsed | null {
   if (s === "") return null;
   if (s === "정오" || s === "낮12시") return { min: NOON, from: "12" };
   if (s === "자정" || s === "밤12시") return { min: 0, from: "12" };
+  // 영어판 — 'noon' · '12 noon' · '12:00 noon' · 'midnight' · '12 midnight'(NIST 가 권하는 표기)
+  if (/^(12(:00)?)?noon$/.test(s)) return { min: NOON, from: "12" };
+  if (/^(12(:00)?)?midnight$/.test(s)) return { min: 0, from: "12" };
 
   let pm: boolean | null = null;
   const pre = /^(오전|오후|am|pm)/.exec(s);
@@ -105,6 +108,11 @@ export function textEn(min: number): string {
 /** 경계 이름 — 0:00 은 자정, 12:00 은 정오, 나머지는 빈 문자열 */
 export function boundary(min: number): "자정" | "정오" | "" {
   return min === 0 ? "자정" : min === NOON ? "정오" : "";
+}
+
+/** 영어 경계 이름 — 0:00 은 midnight, 12:00 은 noon, 나머지는 빈 문자열 */
+export function boundaryEn(min: number): "midnight" | "noon" | "" {
+  return min === 0 ? "midnight" : min === NOON ? "noon" : "";
 }
 
 /** 0시 ~ 23시 표 — [24시간제, 12시간제] 24행 */
