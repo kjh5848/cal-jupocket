@@ -1,0 +1,247 @@
+---
+/**
+ * Calcul d'intérêts composés — 프랑스어판 세 번째 도구. 한국어판 /tools/compound/ 와 계산(lib/compound.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/compound.ts 의 FR 사전, 통화는 판의 EUR·fr-FR '10 000 €'), 문장은 프랑스 자동완성으로 새로 썼다(번역 아님).
+ * 복리 산술이라 rates 와 상관없다(조사표 프랑스 칸 '같음').
+ *
+ * 소제목은 프랑스 구글 자동완성에서 왔다(keywords/fr-compound-2026-10-21.csv, hl fr · gl fr):
+ *   calcul intérêts composés avec versements mensuels · calculatrice intérêt composé mensuel / intérêts composés formule · exemple /
+ *   calcul intérêts composés journalier · quotidiennement / calcul intérêts composés livret a / … excel / bourse · pea
+ * 안 다룬 것: retraits mensuels·sur prêt(도구가 못 함), finary·bricks(상표).
+ * 세율 기본값 0 % — 한국 15.4 % 는 쓰지 않고, 프랑스 세율(PFU 등)은 이번 회차에 impots.gouv.fr 원문으로 확인하지 않아 숫자를 적지 않는다.
+ * Livret A 절의 숫자(1,7 %·quinzaine·31 décembre 자본화·비과세·plafond 22 950 €)는
+ * service-public.gouv.fr F2365(Vérifié le 01 août 2026, 금리 기간 2026-08-01 ~ 2027-01-31)에서 읽었다.
+ * Excel 함수 이름 VC(구분자 ;)는 허용 출처 밖(Microsoft)이라 확인하지 않았다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 compound() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { compound } from "../../../../lib/compound";
+import "../../../../styles/global.css";
+
+const title = "Calcul d’intérêts composés avec versements mensuels — formule, inflation, Excel";
+const description =
+  "Simulateur d’intérêts composés : capital de départ, versement mensuel et taux annuel. Intérêts gagnés, valeur après impôt et inflation, tableau par année.";
+
+const base = { principal: 10_000, monthly: 200, ratePct: 5, months: 240, taxPct: 0, inflationPct: 0 };
+const ex = compound({ ...base, timing: "start" });
+const exEnd = compound({ ...base, timing: "end" });
+const lump = compound({ ...base, monthly: 0, timing: "start" });
+const real2 = compound({ ...base, timing: "start", inflationPct: 2 });
+/** 같은 연 5 %를 매일(365) 복리로 돌렸을 때 일시금 — 월 복리와 차이 보기 */
+const lumpDaily = base.principal * Math.pow(1 + base.ratePct / 100 / 365, 365 * 20);
+const eur = (x: number) =>
+  Math.round(x).toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+const monthlyRate = (base.ratePct / 12).toFixed(4).replace(".", ",");
+---
+
+<html lang="fr-FR">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Calcul d’intérêts composés avec versements mensuels</h1>
+      <p>
+        Indiquez un capital de départ, la somme que vous ajoutez chaque mois et un rendement annuel. Le simulateur capitalise les
+        intérêts tous les mois et affiche le capital final, la part qui vient de vos versements et celle qui vient des intérêts.
+        Le taux, l’impôt et l’inflation sont des hypothèses que vous choisissez : le résultat ne prédit pas ce que rapportera un
+        placement réel.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="cp-principal">Capital de départ (€)</label>
+          <input type="text" inputmode="numeric" id="cp-principal" value={(10_000).toLocaleString("fr-FR")} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-monthly">Versement mensuel (€)</label>
+          <input type="text" inputmode="numeric" id="cp-monthly" value="200" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-rate">Taux de rendement annuel</label>
+          <input type="number" id="cp-rate" value="5" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-period">Durée</label>
+          <input type="number" id="cp-period" value="20" min="1" max="600" step="1" data-step />
+          <select id="cp-unit" aria-label="Unité de durée">
+            <option value="years" selected>ans</option>
+            <option value="months">mois</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-timing">Date du versement</label>
+          <select id="cp-timing" data-seg>
+            <option value="start" selected>En début de mois</option>
+            <option value="end">En fin de mois</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-tax">Impôt sur les gains (hypothèse)</label>
+          <input type="number" id="cp-tax" value="0" min="0" max="100" step="0.001" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-infl">Inflation annuelle</label>
+          <input type="number" id="cp-infl" value="0" min="-20" max="50" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="cp-goal">Objectif d’épargne (€, facultatif)</label>
+          <input type="text" inputmode="numeric" id="cp-goal" value="" placeholder={`ex. ${(100_000).toLocaleString("fr-FR")}`} autocomplete="off" />
+        </div>
+
+        <div
+          class="result-hero"
+          aria-live="polite"
+          aria-atomic="true"
+          data-bar="cp-paid|cp-gain2"
+          data-bar-labels="Versements|Intérêts"
+          data-dock="cp-hero"
+        >
+          <p class="label">Capital final (avant impôt)</p>
+          <p class="big" id="cp-hero">{eur(ex.balance)}</p>
+          <p class="meta" id="cp-note">{base.months} mois · {monthlyRate} % par mois · versement en début de mois</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total versé</span><span class="value" id="cp-paid">{eur(ex.paid)}</span></div>
+          <div class="stat-chip"><span class="label">Intérêts gagnés</span><span class="value" id="cp-gain2">{eur(ex.gain)}</span></div>
+          <div class="stat-chip"><span class="label">Impôt (hypothèse)</span><span class="value" id="cp-tax-v">{eur(0)}</span></div>
+          <div class="stat-chip"><span class="label">Après impôt</span><span class="value" id="cp-after">{eur(ex.afterTax)}</span></div>
+          <div class="stat-chip"><span class="label">En euros d’aujourd’hui</span><span class="value" id="cp-real">{eur(ex.real)}</span></div>
+          <div class="stat-chip"><span class="label">Objectif atteint</span><span class="value" id="cp-goal-v">Aucun objectif</span></div>
+        </div>
+
+        <details>
+          <summary>Tableau par année : versements, intérêts et capital</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Période</th><th>Versé dans l’année</th><th>Intérêts de l’année</th><th>Capital</th></tr></thead>
+              <tbody id="cp-rows">
+                {ex.years.map((r) => <tr><th scope="row">Année {r.year}</th><td>{eur(r.paid)}</td><td>{eur(r.gain)}</td><td>{eur(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">Le capital de départ n’est pas compté dans « Versé dans l’année » ; il fait seulement partie du capital.</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Enregistrer l’image</button>
+          <button id="btn-share" type="button" class="secondary">Partager</button>
+        </div>
+      </div>
+
+      <h2>Formule des intérêts composés avec versement mensuel</h2>
+      <ul>
+        <li><strong>Taux mensuel</strong> — r = taux annuel ÷ 12. À {base.ratePct} % par an, cela fait environ {monthlyRate} % par mois.</li>
+        <li><strong>Versement en début de mois</strong> — la somme versée rapporte déjà les intérêts du mois : capital = (capital + versement) × (1 + r).</li>
+        <li><strong>Versement en fin de mois</strong> — les intérêts sont ajoutés d’abord, puis le versement : capital = capital × (1 + r) + versement. Le dernier versement ne rapporte rien, le total est donc un peu plus bas.</li>
+        <li><strong>Formule fermée</strong> — après n mois, VF = C × (1 + r)<sup>n</sup> + V × [(1 + r)<sup>n</sup> − 1] ÷ r, où C est le capital de départ et V le versement mensuel. Pour un versement en début de mois, la partie V est multipliée une fois de plus par (1 + r).</li>
+        <li><strong>Impôt</strong> — si le capital final dépasse ce que vous avez versé, le taux saisi s’applique une seule fois à ce gain. Une perte n’est pas imposée.</li>
+      </ul>
+
+      <h2>Exemple de calcul d’intérêts composés</h2>
+      <p>
+        {eur(base.principal)} au départ, {eur(base.monthly)} par mois, {base.ratePct} % par an pendant 20 ans : vous versez
+        {eur(ex.paid)} au total et vous finissez avec {eur(ex.balance)}, dont {eur(ex.gain)} d’intérêts. Avec un versement en fin de
+        mois, le même plan donne {eur(exEnd.balance)}.
+      </p>
+      <p>
+        Sans aucun versement mensuel, les {eur(base.principal)} de départ deviendraient {eur(lump.balance)} en 20 ans. Mettez le
+        versement mensuel à 0 pour voir un placement unique, ou le capital de départ à 0 pour ne voir que l’effet des versements.
+      </p>
+
+      <h2>Intérêts composés et inflation</h2>
+      <p>
+        La case « En euros d’aujourd’hui » divise le capital après impôt par (1 + inflation)<sup>années</sup>. Avec 2 % d’inflation
+        par an, les {eur(ex.balance)} de l’exemple valent environ {eur(real2.real)} en pouvoir d’achat actuel. Laissez l’inflation à
+        0 % pour voir le montant nominal.
+      </p>
+
+      <h2>Intérêts composés journaliers ou mensuels</h2>
+      <p>
+        Le simulateur capitalise une fois par mois, au même rythme que les versements. Capitaliser chaque jour au même taux annuel
+        change peu de chose : les {eur(base.principal)} placés à {base.ratePct} % pendant 20 ans donnent {eur(lump.balance)} avec une
+        capitalisation mensuelle et {eur(lumpDaily)} avec une capitalisation quotidienne. Le taux supposé pèse bien plus que la
+        fréquence.
+      </p>
+
+      <h2>Calcul des intérêts du Livret A : ce qui change</h2>
+      <p>
+        Le Livret A ne fonctionne pas comme ce simulateur. D’après
+        <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F2365" rel="noopener" target="_blank">Service-Public.fr (fiche F2365, vérifiée le 1er août 2026)</a> :
+      </p>
+      <ul>
+        <li>le taux est de 1,7 % par an pour la période du 1er août 2026 au 31 janvier 2027 ;</li>
+        <li>les intérêts sont calculés par quinzaines entières (à partir du 1er ou du 16 du mois) ;</li>
+        <li>les intérêts de l’année s’ajoutent au capital une seule fois, au 31 décembre, et non chaque mois ;</li>
+        <li>le plafond des versements est de 22 950 € pour un particulier ;</li>
+        <li>les intérêts sont exonérés d’impôt sur le revenu et de prélèvements sociaux.</li>
+      </ul>
+      <p>
+        Le résultat d’ici, qui capitalise chaque mois et ne connaît pas de plafond, sera donc un peu plus élevé que ce que
+        versera réellement la banque. Il donne un ordre de grandeur, pas le montant exact.
+      </p>
+
+      <h2>Formule des intérêts composés dans Excel</h2>
+      <p>
+        Dans un Excel en français, la fonction VC donne le même résultat. Pour un versement en début de mois :
+        <code>=VC(5%/12;240;-200;-10000;1)</code> ; pour un versement en fin de mois, remplacez le dernier 1 par 0. Le versement et
+        le capital de départ sont saisis en négatif parce que c’est de l’argent qui sort de votre poche. Dans LibreOffice Calc, la
+        fonction s’appelle aussi VC.
+      </p>
+
+      <details>
+        <summary>Quel taux d’impôt saisir ?</summary>
+        <p>
+          La valeur par défaut est 0 %. L’imposition des gains dépend du placement (livret réglementé, compte-titres, PEA,
+          assurance-vie…), donc le simulateur ne choisit pas de taux à votre place : saisissez l’hypothèse qui correspond à votre
+          situation. Pour le Livret A, les intérêts sont exonérés (voir plus haut). Les règles officielles sont détaillées sur
+          <a href="https://www.impots.gouv.fr" rel="noopener" target="_blank">impots.gouv.fr</a>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Peut-on simuler un placement en bourse ou un PEA ?</summary>
+        <p>
+          Oui, comme hypothèse : un rendement moyen constant chaque année. En bourse, le rendement varie d’une année sur l’autre,
+          et une même moyenne peut aboutir à un capital final différent. Le simulateur ne tient compte ni des frais ni des
+          retraits.
+        </p>
+      </details>
+
+      <details>
+        <summary>Peut-on saisir des centimes ?</summary>
+        <p>
+          Les montants sont en euros entiers. Les espaces et le signe € sont ignorés ; ce qui suit une virgule n’est pas lu :
+          saisissez 1500 plutôt que 1 500,50.
+        </p>
+      </details>
+
+      <details>
+        <summary>Et avec un taux à 0 % ou négatif ?</summary>
+        <p>
+          À 0 %, vous retrouvez exactement ce que vous avez versé. Un taux négatif donne des intérêts négatifs et aucun impôt.
+        </p>
+      </details>
+
+      <AdSlot label="compound-result-fr" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/compound.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

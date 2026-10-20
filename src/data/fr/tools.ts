@@ -26,4 +26,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/fr/tools/compound/",
+    ko: "/tools/compound/",
+    name: "Calcul d’intérêts composés",
+    blurb: "Capital de départ et versement mensuel à un taux supposé — intérêts gagnés, après impôt et inflation, année par année",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];
