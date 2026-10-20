@@ -17,4 +17,13 @@ export const tools: LocaleTool[] = [
     icon: "percent",
     basis: "math",
   },
+  {
+    href: "/id/tools/date-diff/",
+    ko: "/tools/date-diff/",
+    name: "Kalkulator Tanggal",
+    blurb: "Jumlah hari antara dua tanggal, tambah atau mundurkan tanggal, dan hari Senin–Jumat dalam sebuah rentang",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

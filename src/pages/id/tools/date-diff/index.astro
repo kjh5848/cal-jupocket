@@ -1,0 +1,246 @@
+---
+/**
+ * Kalkulator Tanggal — 인도네시아어판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/date-diff.ts 의 ID 사전, 날짜 표기는 <html lang="id-ID"> 의 Intl 로 'Rabu, 21 Oktober 2026'),
+ * 문장은 인도네시아 자동완성으로 새로 썼다(번역 아님). 그레고리력 산술이라 rates 와 상관없다(조사표 인도네시아 칸 '단위' — #76·#75).
+ *
+ * 소제목은 인도네시아 구글 자동완성에서 왔다(keywords/id-date-diff-2026-10-21.csv, hl id · gl id):
+ *   kalkulator tanggal - hitung hari antara tanggal · hitung hari dari tanggal ke tanggal / hitung tanggal mundur /
+ *   menghitung selisih tanggal dalam bulan / menghitung jumlah hari kerja · hari kerja dalam sebulan /
+ *   menghitung jumlah hari antara 2 tanggal di excel · menghitung selisih tanggal di spreadsheet
+ * 조사표 칸이 공휴일·주말 관습·날짜 표기 관습을 원문 미확인으로 남겨서: 공휴일은 빼지 않고 날짜도 쓰지 않으며,
+ * 평일 칩은 'Senin–Jumat' 산술로만 설명하고 인도네시아 근무 주(5일·6일)를 말하지 않는다. 시간 환산도 넣지 않는다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 span()·shift() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span, shift, type Span } from "../../../../lib/date-calc";
+
+const title = "Kalkulator Tanggal — Hitung Hari dari Tanggal ke Tanggal & Hari Kerja";
+const description =
+  "Hitung jumlah hari antara dua tanggal, tambah atau mundurkan tanggal sekian hari, minggu, bulan, atau tahun, dan hitung hari kerja Senin–Jumat.";
+
+/** 하루 번호 → 'Rabu, 21 Oktober 2026' (UTC 자정이라 timeZone UTC) — scripts/date-diff.ts 의 ID 사전과 같은 꼴 */
+const labelId = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("id-ID", { timeZone: "UTC", weekday: "long", year: "numeric", month: "long", day: "numeric" });
+const n = (v: number) => v.toLocaleString("id-ID");
+const spanTextId = (s: Span) => {
+  const parts: string[] = [];
+  if (s.years) parts.push(`${n(s.years)} tahun`);
+  if (s.months) parts.push(`${n(s.months)} bulan`);
+  if (s.restDays || parts.length === 0) parts.push(`${n(s.restDays)} hari`);
+  return parts.join(" ");
+};
+const d = (iso: string) => toDay(iso)!;
+
+const START = "2026-10-21";
+const END = "2026-12-31";
+const s0 = span(d(START), d(END), false);
+
+// 본문 예시
+const ex1 = span(d("2026-11-09"), d("2026-11-13"), false);
+const ex1i = span(d("2026-11-09"), d("2026-11-13"), true);
+const yr = span(d("2026-01-01"), d("2026-12-31"), true);
+const plus30 = shift(d(START), 30, "day");
+const plus100 = shift(d(START), 100, "day");
+const minus40 = shift(d(START), -40, "day");
+const minus3m = shift(d(START), -3, "month");
+const plus6m = shift(d(START), 6, "month");
+const aug31 = d("2026-08-31");
+const aug31plus1m = shift(aug31, 1, "month");
+const longSpan = span(d("2024-02-15"), d(START), false);
+const nov = span(d("2026-11-01"), d("2026-11-30"), true);
+---
+
+<html lang="id-ID">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Kalkulator Tanggal: Hitung Hari antara Dua Tanggal</h1>
+      <p>
+        Masukkan dua tanggal untuk melihat selisihnya dalam hari, atau mulai dari satu tanggal lalu maju atau mundur sekian
+        hari, minggu, bulan, atau tahun. Hasilnya langsung berubah begitu tanggal diganti.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">Apa yang ingin dihitung?</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>Jumlah hari antara dua tanggal</option>
+            <option value="shift">Tambah atau kurangi tanggal</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">Tanggal awal</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">Tanggal akhir</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">Hitung juga hari pertama (tanggal awal dan akhir ikut dihitung)</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">Tanggal awal</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">Berapa</label>
+            <input type="number" inputmode="numeric" id="amount" value="30" min="0" max="36500" data-step />
+            <select id="unit" aria-label="Satuan">
+              <option value="day" selected>hari</option>
+              <option value="week">minggu</option>
+              <option value="month">bulan</option>
+              <option value="year">tahun</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">Arah</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>Maju (tanggal sesudahnya)</option>
+              <option value="before">Mundur (tanggal sebelumnya)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Selisih dua tanggal</p>
+          <p class="big" id="hero-value">{n(s0.days)} hari</p>
+          <p class="hint" id="hero-sub">{spanTextId(s0)} · {n(s0.weeks)} minggu {n(s0.weekRest)} hari</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Hari Senin–Jumat</span>
+            <span class="value" id="v1">{n(s0.weekdays)} hari</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Periode</span>
+            <span class="value" id="v2">{labelId(s0.from)} → {labelId(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Simpan sebagai gambar</button>
+          <button id="btn-share" type="button" class="secondary">Bagikan</button>
+        </div>
+      </div>
+
+      <h2>Hitung hari dari tanggal ke tanggal</h2>
+      <p>
+        Hitungan dasarnya adalah tanggal akhir dikurangi tanggal awal, jadi tanggal awal sendiri tidak ikut dihitung. Dari
+        {" "}{labelId(ex1.from)} sampai {labelId(ex1.to)} hasilnya {n(ex1.days)} hari.
+      </p>
+      <p>
+        Centang <strong>Hitung juga hari pertama</strong> bila hari pertama harus masuk hitungan, misalnya lama sebuah
+        kegiatan yang disebut "mulai hari ini". Rentang Senin sampai Jumat tadi menjadi {n(ex1i.days)} hari, dan satu tahun
+        penuh 2026, dari 1 Januari sampai 31 Desember, menjadi {n(yr.days)} hari.
+      </p>
+      <p>
+        Saat dibuka, kalkulator memakai tanggal hari ini dan 31 Desember, jadi angka pertama yang terlihat adalah sisa hari
+        tahun ini. Urutan tanggal boleh terbalik; bila tanggal akhir lebih dulu, keduanya ditukar dan ada catatan di bawah
+        hasil.
+      </p>
+
+      <h2>Menghitung selisih tanggal dalam bulan dan tahun</h2>
+      <p>
+        Di bawah jumlah hari, rentang yang sama dipecah menjadi tahun, bulan, dan hari (bulan kalender penuh lebih dulu, sisa
+        harinya sesudahnya), serta menjadi minggu dan hari. Contoh: dari {labelId(longSpan.from)} sampai
+        {" "}{labelId(longSpan.to)} ada {n(longSpan.days)} hari, atau {spanTextId(longSpan)}, atau {n(longSpan.weeks)} minggu
+        {" "}{n(longSpan.weekRest)} hari.
+      </p>
+
+      <h2>Tambah tanggal dan hitung tanggal mundur</h2>
+      <p>Pilih <strong>Tambah atau kurangi tanggal</strong>, isi tanggal awal dan jumlahnya, lalu pilih maju atau mundur.</p>
+      <ul>
+        <li>
+          <strong>Hari</strong> — 30 hari setelah {labelId(d(START))} adalah {labelId(plus30)}; 100 hari setelahnya
+          {" "}{labelId(plus100)}; 40 hari sebelumnya {labelId(minus40)}.
+        </li>
+        <li><strong>Minggu</strong> — dihitung 7 hari per minggu.</li>
+        <li>
+          <strong>Bulan dan tahun</strong> — tanggalnya tetap, bulannya yang bergeser: 6 bulan setelah
+          {" "}{labelId(d(START))} adalah {labelId(plus6m)}, 3 bulan sebelumnya {labelId(minus3m)}. Bila bulan tujuan
+          lebih pendek, hasilnya jatuh di hari terakhir bulan itu, sehingga 1 bulan setelah {labelId(aug31)} adalah
+          {" "}{labelId(aug31plus1m)}.
+        </li>
+      </ul>
+
+      <h2>Menghitung jumlah hari kerja (Senin–Jumat)</h2>
+      <p>
+        Kotak <strong>Hari Senin–Jumat</strong> menghitung setiap hari Senin sampai Jumat di dalam rentang, mengikuti pilihan
+        "hitung juga hari pertama" yang sama dengan total. Contoh hari kerja dalam sebulan: 1–30 November 2026 (hari
+        pertama ikut dihitung) berisi {n(nov.days)} hari, {n(nov.weekdays)} di antaranya Senin–Jumat.
+      </p>
+      <p>
+        <strong>Hari libur nasional dan cuti bersama tidak dikurangi</strong>, dan setiap Sabtu serta Minggu tidak
+        dihitung. Bila Anda juga bekerja hari Sabtu, atau ada hari libur di rentang itu, sesuaikan sendiri angkanya.
+      </p>
+
+      <h2>Menghitung jumlah hari antara 2 tanggal di Excel dan spreadsheet</h2>
+      <p>Taruh tanggal awal di A2 dan tanggal akhir di B2:</p>
+      <ul>
+        <li><code>=B2-A2</code> — selisih hari, tanggal awal tidak dihitung (format sel sebagai angka).</li>
+        <li><code>=B2-A2+1</code> — selisih hari, kedua tanggal ikut dihitung.</li>
+        <li><code>=DATEDIF(A2,B2,"m")</code> — jumlah bulan penuh (<code>"y"</code> untuk tahun penuh).</li>
+        <li><code>=A2+30</code> atau <code>=EDATE(A2,3)</code> — tambah 30 hari, atau tambah 3 bulan.</li>
+        <li>
+          <code>=NETWORKDAYS(A2,B2,H2:H20)</code> — hari Senin–Jumat di antara dua tanggal, dikurangi tanggal libur yang
+          Anda ketik di H2:H20. Rumus ini menghitung kedua ujung, jadi bandingkan dengan hasil "hitung juga hari pertama" di
+          sini.
+        </li>
+      </ul>
+      <p>
+        Bila Excel atau Google Sheets Anda memakai titik koma sebagai pemisah argumen, ganti koma di rumus dengan
+        {" "}<code>;</code>, misalnya <code>=DATEDIF(A2;B2;"m")</code>.
+      </p>
+
+      <details>
+        <summary>Apakah tahun kabisat ikut dihitung?</summary>
+        <p>
+          Ya. Kalkulator mengikuti kalender Masehi (Gregorian), jadi 29 Februari dihitung pada tahun kabisat, dan 1 tahun
+          setelah 29 Februari adalah 28 Februari pada tahun biasa.
+        </p>
+      </details>
+
+      <details>
+        <summary>Bisakah menghitung jam di antara dua tanggal?</summary>
+        <p>
+          Tidak — kalkulator ini bekerja dalam hari dan minggu penuh. Kalikan jumlah hari dengan 24 bila Anda hanya perlu
+          perkiraan jumlah jam.
+        </p>
+      </details>
+
+      <AdSlot label="date-diff-result-id" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
