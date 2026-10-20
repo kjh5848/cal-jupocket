@@ -1,0 +1,327 @@
+---
+/**
+ * Unix-Timestamp-Rechner — 독일어판 다섯 번째 도구(유닉스 타임스탬프 변환). 한국어판 /tools/unix-time/ 와
+ * 계산(lib/unix-time.ts)·스크립트(scripts/unix-time.ts 의 DE 사전, 표기는 lib/de/unix-time.ts — 'Montag, 19. Oktober 2026, 03:34:56')를
+ * 같이 쓰고, 문장은 독일 자동완성으로 새로 썼다(번역 아님). 조사표 독일 칸 '같음'(POSIX 4.19).
+ *
+ * 소제목은 독일 구글 자동완성에서 왔다(keywords/de-unix-time-2026-10-21.csv, hl de · gl de):
+ *   unix timestamp umrechnen·online·rechner / timestamp in datum umwandeln · datum in unix timestamp umwandeln /
+ *   unix timestamp now / unix timestamp milliseconds / unix timestamp to utc / unix timestamp umrechnen excel·formel /
+ *   sql·mysql·ms sql·php·javascript timestamp in datum umwandeln · unix zeit umrechnen c / unix timestamp discord /
+ *   unix timestamp ende·overflow
+ *   abap·sap·access 축은 버림(이 계산기와 다른 시스템 고유 형식).
+ * 시간대는 UTC 와 '이 기기 시간대'만(스크립트 그대로). 독일 법정 시간은 본문에만 — § 4 EinhZeitG: MEZ = UTC + 1 Stunde,
+ * MESZ = UTC + 2 Stunden(https://www.gesetze-im-internet.de/me_einhg/__4.html), 전환은 § 2 SoZV(https://www.gesetze-im-internet.de/sozv/__2.html),
+ * SoZV § 1 은 2002년부터라 그 앞 해는 규칙을 적지 않는다(확인 2026-10-21).
+ * 본문 예시 숫자는 전부 아래 frontmatter 에서 lib 함수로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { INT32_MAX, toParts, isoText, secondsText, dateValue, timeValue } from "../../../../lib/unix-time";
+import { toDay, weekday } from "../../../../lib/date-calc";
+import { deText } from "../../../../lib/de/unix-time";
+import { intDe, shortDe } from "../../../../lib/de/date-format";
+
+const title = "Unix Timestamp umrechnen — Unix-Zeit in Datum und Datum in Timestamp (UTC, MEZ/MESZ)";
+const description =
+  "Unix-Timestamp online umrechnen: 10-stellige Sekunden oder 13-stellige Millisekunden in Datum und Uhrzeit (UTC oder Ihre Zeitzone) — und ein Datum zurück in Unix-Zeit.";
+
+/** 처음 보이는 예 — 2026-10-19 03:34:56 UTC */
+const BASE_MS = 1_792_380_896_000;
+const p0 = toParts(BASE_MS, 0);
+const BASE_S = secondsText(BASE_MS);
+const zero = deText(toParts(0, 0));
+const minus1 = deText(toParts(-1000, 0));
+const y2038 = deText(toParts(INT32_MAX * 1000, 0));
+const wrap = deText(toParts(-(INT32_MAX + 1) * 1000, 0));
+
+/** § 4 EinhZeitG: MEZ = UTC + 1 Stunde, MESZ = UTC + 2 Stunden */
+const MEZ = 60;
+const MESZ = 120;
+/** 그 해·달의 마지막 일요일(일 번호) — § 2 SoZV */
+const d = (iso: string) => toDay(iso)!;
+const lastSunday = (y: number, m: number) => {
+  const last = d(`${m === 12 ? y + 1 : y}-${String(m === 12 ? 1 : m + 1).padStart(2, "0")}-01`) - 1;
+  return last - weekday(last);
+};
+const dayMs = (n: number) => n * 86_400_000;
+/** 2026: 10월 마지막 일요일 3 Uhr MESZ = 1 Uhr UTC, 2027: 3월 마지막 일요일 2 Uhr MEZ = 1 Uhr UTC */
+const endDay = lastSunday(2026, 10);
+const startDay = lastSunday(2027, 3);
+const endMs = dayMs(endDay) + 3_600_000;
+const startMs = dayMs(startDay) + 3_600_000;
+const endS = secondsText(endMs);
+const startS = secondsText(startMs);
+const baseMesz = deText(toParts(BASE_MS, MESZ));
+/** 겨울 예 — 2027-01-01 00:00:00 UTC */
+const WINTER_MS = Date.UTC(2027, 0, 1);
+const winterS = secondsText(WINTER_MS);
+const winterMez = deText(toParts(WINTER_MS, MEZ));
+/** 쉼표를 소수점으로 쓴 실수 — 쉼표가 빠져 11자리 초가 된다 */
+const commaS = `${BASE_S}5`;
+const commaYear = toParts(Number(commaS) * 1000, 0).y;
+---
+
+<html lang="de-DE">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Unix-Timestamp-Rechner: Unix-Zeit in Datum umrechnen und zurück</h1>
+      <p>
+        In einer Logdatei, einer Datenbank oder einer API-Antwort steht eine Zahl wie {BASE_S} — und Sie wollen wissen, welcher
+        Zeitpunkt das ist. Geben Sie den Timestamp unten ein, um Datum und Uhrzeit zu sehen, oder tragen Sie ein Datum mit Uhrzeit
+        ein, um den Unix-Timestamp zu bekommen. Ändern Sie eine Seite, rechnet die andere sofort mit — in UTC oder in der
+        Zeitzone Ihres Geräts.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="zone">Zeitzone</label>
+          <select id="zone" data-seg>
+            <option value="utc" selected>UTC</option>
+            <option value="device">Ihre Zeitzone</option>
+          </select>
+          <p class="hint" id="zone-hint">Datumsfelder und Ergebnis gelten in dieser Zeitzone. Der Timestamp selbst ändert sich nicht.</p>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="ts">Unix-Timestamp</label>
+          <input type="text" id="ts" inputmode="decimal" autocomplete="off" spellcheck="false" value={BASE_S} placeholder="z. B. 1704067200" />
+          <p class="hint" id="ts-hint">10 Stellen werden als Sekunden gelesen, 13 Stellen als Millisekunden. Nachkommastellen mit Punkt.</p>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">Einheit</label>
+          <select id="unit" data-seg>
+            <option value="auto" selected>Automatisch</option>
+            <option value="s">Sekunden</option>
+            <option value="ms">Millisekunden</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="date">Datum</label>
+          <input type="date" id="date" value={dateValue(p0)} min="1900-01-01" max="9999-12-30" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="time">Uhrzeit (24 Stunden, hh:mm:ss)</label>
+          <input type="time" id="time" step="1" value={timeValue(p0)} />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="msec">Millisekunden (0–999)</label>
+          <input type="number" id="msec" inputmode="numeric" min="0" max="999" step="1" value="0" />
+        </div>
+
+        <div class="actions">
+          <button id="btn-now" type="button" class="secondary">Jetzt</button>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">UTC</p>
+          <p class="big" id="hero-value">{deText(p0)}</p>
+          <p class="hint" id="hero-sub"></p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">Sekunden (s)</span>
+            <span class="value mono" id="v-sec">{BASE_S}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Millisekunden (ms)</span>
+            <span class="value mono" id="v-ms">{BASE_MS}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601 (UTC)</span>
+            <span class="value mono" id="v-iso">{isoText(BASE_MS, 0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601 (gewählte Zeitzone)</span>
+            <span class="value mono" id="v-iso-local">{isoText(BASE_MS, 0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Abstand zu jetzt</span>
+            <span class="value" id="v-rel">—</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+        <p class="meta" id="now-line">Jetzt: —</p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Als Bild speichern</button>
+          <button id="btn-share" type="button" class="secondary">Teilen</button>
+        </div>
+      </div>
+
+      <h2>Was ein Unix-Timestamp zählt</h2>
+      <p>
+        Die Unix-Zeit (auch Epoch-Zeit) zählt die <strong>Sekunden seit dem 1. Januar 1970, 00:00:00 Uhr UTC</strong>. Der
+        POSIX-Standard (IEEE Std 1003.1) legt fest, dass jeder Tag genau {intDe(86_400)} Sekunden hat; Schaltsekunden werden
+        nicht mitgezählt. Der Timestamp 0 ist daher {zero} UTC, und −{intDe(1000)} Millisekunden sind {minus1} UTC.
+      </p>
+
+      <h2>Aktueller Unix-Timestamp (now)</h2>
+      <p>
+        Unter dem Rechner läuft die Zeile „Jetzt“ jede Sekunde weiter — mit dem aktuellen Timestamp in Sekunden und
+        Millisekunden. Mit <strong>Jetzt</strong> übernehmen Sie den aktuellen Zeitpunkt in den Rechner. Beide Werte kommen von der
+        Uhr Ihres Geräts; geht diese falsch, sind auch die Werte falsch.
+      </p>
+
+      <h2>Sekunden oder Millisekunden?</h2>
+      <ul>
+        <li>
+          <strong>10 Stellen wie {BASE_S}</strong> — Sekunden. Alle Zeitpunkte von September 2001 bis November 2286 haben als
+          Sekunden-Timestamp 10 Stellen.
+        </li>
+        <li>
+          <strong>13 Stellen wie {BASE_MS}</strong> — Millisekunden. So liefern es <code>Date.now()</code> in JavaScript und
+          {" "}<code>System.currentTimeMillis()</code> in Java. Geteilt durch {intDe(1000)} ergibt das Sekunden.
+        </li>
+        <li>
+          <strong>Was „Automatisch“ macht</strong> — ein Wert mit Dezimalpunkt gilt als Sekunden; eine ganze Zahl mit höchstens 11
+          Stellen ist Sekunden, ab 12 Stellen Millisekunden. Rät der Rechner falsch, stellen Sie die Einheit von Hand ein.
+        </li>
+        <li>
+          <strong>Komma oder Punkt?</strong> — Nachkommastellen schreiben Sie hier mit <strong>Punkt</strong>, wie in
+          Programmiersprachen: {BASE_S}.789. Ein Komma wird wie ein Leerzeichen übersprungen: Aus {BASE_S},5 würde die 11-stellige Zahl
+          {" "}{commaS}, gelesen als Sekunden — ein Zeitpunkt im Jahr {commaYear}.
+        </li>
+      </ul>
+
+      <h2>Unix-Zeit in deutsche Zeit (MEZ und MESZ) umrechnen</h2>
+      <p>
+        Ein Timestamp hat keine Zeitzone: Dieselbe Zahl ist überall auf der Welt derselbe Augenblick. Anders ist nur, was die Uhr
+        vor Ort dazu anzeigt. In Deutschland ist die gesetzliche Zeit die mitteleuropäische Zeit (MEZ) — die koordinierte Weltzeit
+        (UTC) <strong>plus eine Stunde</strong>. Während der Sommerzeit gilt die mitteleuropäische Sommerzeit (MESZ) —
+        <strong> UTC plus zwei Stunden</strong> (§ 4 Einheiten- und Zeitgesetz).
+      </p>
+      <p>
+        Die Sommerzeit beginnt am letzten Sonntag im März um 2 Uhr MEZ (die Uhr springt auf 3 Uhr) und endet am letzten Sonntag im
+        Oktober um 3 Uhr MESZ (die Uhr springt zurück auf 2 Uhr) — so steht es seit 2002 in § 2 der Sommerzeitverordnung. Beide
+        Umstellungen liegen damit um 1 Uhr UTC. Als Timestamp:
+      </p>
+      <ul>
+        <li>Ende der Sommerzeit am {shortDe(endDay)}: <code>{endS}</code></li>
+        <li>Beginn der Sommerzeit am {shortDe(startDay)}: <code>{startS}</code></li>
+      </ul>
+      <p>
+        Beispiele: {BASE_S} ist {deText(p0)} UTC, in Deutschland also {baseMesz} MESZ. {winterS} ist {deText(toParts(WINTER_MS, 0))}
+        {" "}UTC und in Deutschland {winterMez} MEZ. Wählen Sie oben <strong>Ihre Zeitzone</strong>, rechnet der Rechner mit den
+        Zeitzonenregeln Ihres Geräts — auf einem Gerät in Deutschland also mit MEZ und MESZ — und zeigt den Abstand zu UTC im
+        ISO-Feld (+01:00 oder +02:00). Die Stunde von 2 bis 3 Uhr, die es Ende Oktober zweimal gibt (2A und 2B), ist als Datum
+        mehrdeutig; nehmen Sie für solche Zeitpunkte besser UTC.
+      </p>
+
+      <h2>Unix-Timestamp in Excel umrechnen (Formel)</h2>
+      <p>
+        Excel zählt Datumswerte in Tagen, ein Tag ist 1. Teilen Sie die Sekunden also durch {intDe(86_400)} und addieren Sie das
+        Datum 1. Januar 1970. Steht in Zelle A1 ein Timestamp in Sekunden:
+      </p>
+      <ul>
+        <li>Datum und Uhrzeit in UTC: <code>=A1/86400+DATUM(1970;1;1)</code></li>
+        <li>Aus 13-stelligen Millisekunden: <code>=A1/86400000+DATUM(1970;1;1)</code></li>
+        <li>In MEZ: <code>=A1/86400+DATUM(1970;1;1)+1/24</code>, in MESZ: <code>=A1/86400+DATUM(1970;1;1)+2/24</code></li>
+        <li>Datum und Uhrzeit (UTC) zurück in einen Timestamp: <code>=(A1-DATUM(1970;1;1))*86400</code></li>
+      </ul>
+      <p>
+        Zeigt die Zelle nur eine lange Dezimalzahl, geben Sie ihr das Zahlenformat <code>TT.MM.JJJJ hh:mm:ss</code>. Excel weiß
+        nicht, ob ein Datum im Sommer liegt — welcher Zuschlag gilt (+1/24 oder +2/24), entscheiden Sie selbst nach den Regeln
+        oben.
+      </p>
+
+      <h2>Timestamp in Datum umwandeln: SQL, PHP, JavaScript, Python und C</h2>
+      <ul>
+        <li><strong>MySQL</strong>: <code>SELECT FROM_UNIXTIME({BASE_S});</code> — zurück mit <code>UNIX_TIMESTAMP('2026-10-19 03:34:56')</code></li>
+        <li><strong>MS SQL Server</strong>: <code>SELECT DATEADD(second, {BASE_S}, '1970-01-01');</code></li>
+        <li><strong>PostgreSQL</strong>: <code>SELECT to_timestamp({BASE_S});</code></li>
+        <li><strong>PHP</strong>: <code>date('d.m.Y H:i:s', {BASE_S})</code> — zurück mit <code>strtotime('2026-10-19 03:34:56 UTC')</code></li>
+        <li><strong>JavaScript</strong>: <code>new Date({BASE_S} * 1000)</code> — Sekunden erst mal {intDe(1000)}; ein Datum wird mit <code>Math.floor(datum.getTime() / 1000)</code> zum Timestamp</li>
+        <li><strong>Python</strong>: <code>datetime.fromtimestamp({BASE_S}, tz=timezone.utc)</code> (mit <code>from datetime import datetime, timezone</code>)</li>
+        <li><strong>C</strong>: <code>time_t t = {BASE_S}; gmtime(&amp;t);</code> für UTC, <code>localtime(&amp;t)</code> für die Ortszeit</li>
+        <li><strong>Linux / macOS</strong>: <code>date +%s</code> gibt den aktuellen Timestamp aus, GNU <code>date -d @{BASE_S}</code> macht daraus ein Datum</li>
+      </ul>
+      <p>
+        PHP und <code>localtime</code> rechnen mit der Zeitzone des Servers oder Rechners. Zum Prüfen setzen Sie dieselbe Zahl oben
+        ein und vergleichen.
+      </p>
+
+      <h2>Unix-Timestamp in Discord</h2>
+      <p>
+        Schreiben Sie <code>&lt;t:{BASE_S}:F&gt;</code> in eine Discord-Nachricht, sieht jeder Leser diesen Zeitpunkt in seiner
+        eigenen Zeitzone. Der Buchstabe am Ende bestimmt die Form: <code>t</code>/<code>T</code> kurze und lange Uhrzeit,
+        {" "}<code>d</code>/<code>D</code> kurzes und langes Datum, <code>f</code>/<code>F</code> Datum mit Uhrzeit und
+        {" "}<code>R</code> relativ („in 2 Stunden“). Discord erwartet Sekunden, keine Millisekunden.
+      </p>
+
+      <h2>Das Ende des Unix-Timestamps: das Jahr 2038</h2>
+      <p>
+        Eine vorzeichenbehaftete 32-Bit-Zahl reicht höchstens bis {intDe(INT32_MAX)} — als Unix-Timestamp ist das {y2038} UTC.
+        Eine Sekunde später läuft Software, die die Zeit noch in einer solchen Zahl speichert, über (Overflow): Sie springt auf
+        einen negativen Wert und liest {wrap} UTC. Der Rechner zeigt bei jedem späteren Zeitpunkt einen Hinweis unter dem Ergebnis.
+      </p>
+
+      <details>
+        <summary>Geht das auch für Daten vor 1970?</summary>
+        <p>
+          Ja — sie werden negativ. −1 ist eine Sekunde vor der Epoche, also die letzte Sekunde des 31. Dezember 1969 in UTC. POSIX
+          beschreibt die Formel erst ab 1970; dieser Rechner zählt wie die meisten Programmiersprachen mit {intDe(86_400)} Sekunden
+          pro Tag rückwärts weiter. Der Bereich reicht vom 1. Januar 1900 bis ins Jahr 9999.
+        </p>
+      </details>
+
+      <details>
+        <summary>Was ist mit Mikrosekunden und Nanosekunden?</summary>
+        <p>
+          Ein Wert mit Dezimalpunkt wie {BASE_S}.789 gilt als Sekunden mit bis zu drei Nachkommastellen (Millisekunden).
+          Timestamps in Mikrosekunden (16 Stellen) und Nanosekunden (19 Stellen) nimmt der Rechner nicht an — teilen Sie sie
+          vorher durch {intDe(1000)} oder {intDe(1_000_000)}, dann haben Sie Millisekunden.
+        </p>
+      </details>
+
+      <details>
+        <summary>Warum liegt mein Ergebnis eine oder zwei Stunden daneben?</summary>
+        <p>
+          Fast immer ist es UTC gegen Ortszeit: Die Zahl wurde als UTC gelesen, gemeint war deutsche Zeit — oder umgekehrt. Im
+          Winter beträgt der Unterschied eine Stunde, im Sommer zwei. Wechseln Sie oben zwischen <strong>UTC</strong> und
+          {" "}<strong>Ihre Zeitzone</strong>. Kommt das Jahr 1970 oder ein Jahr weit in der Zukunft heraus, stimmt die Einheit um
+          den Faktor {intDe(1000)} nicht — stellen Sie Sekunden oder Millisekunden von Hand ein.
+        </p>
+      </details>
+
+      <p>
+        Tage statt Sekunden zählen? Dafür gibt es den <a href="/de/tools/date-diff/">Tagerechner</a> und für ein Datum, das bald
+        kommt, den <a href="/de/tools/dday/">Countdown-Rechner</a>.
+      </p>
+
+      <p class="hint">
+        Quellen: <a href="https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html" rel="noopener">The Open Group
+        Base Specifications Issue 8 (IEEE Std 1003.1-2024), 4.19 Seconds Since the Epoch</a> ·
+        {" "}<a href="https://www.gesetze-im-internet.de/me_einhg/__4.html">§ 4 Einheiten- und Zeitgesetz (EinhZeitG)</a> ·
+        {" "}<a href="https://www.gesetze-im-internet.de/sozv/__2.html">§ 2 Sommerzeitverordnung (SoZV)</a> auf
+        gesetze-im-internet.de. Abgerufen am 21.10.2026.
+      </p>
+
+      <AdSlot label="unix-time-result-de" />
+    </main>
+    <SiteFooter />
+    <style>
+      .mono { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+      #hero-value { overflow-wrap: anywhere; }
+    </style>
+    <script src="../../../../scripts/unix-time.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
