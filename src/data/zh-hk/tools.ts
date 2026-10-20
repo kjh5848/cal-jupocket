@@ -44,4 +44,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/zh-hk/tools/unix-time/",
+    ko: "/tools/unix-time/",
+    name: "時間戳轉換器",
+    blurb: "把10位數秒或13位數毫秒的 Unix timestamp 轉成 UTC 或裝置時區的日期時間，亦可由日期轉回時間戳",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
