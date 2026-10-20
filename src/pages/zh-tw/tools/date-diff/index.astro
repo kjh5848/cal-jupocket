@@ -1,0 +1,243 @@
+---
+/**
+ * 日期計算機 — 대만판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/date-diff.ts 의 ZH_HANT 사전 — 홍콩판과 공용, 날짜 표기는 <html lang="zh-Hant-TW"> 로 '2026年10月20日週二'),
+ * 문장은 대만 번체로 새로 썼다(번역 아님). 그레고리력 산술이라 rates 와 상관없다(조사표 대만 칸 '단위').
+ *
+ * 소제목은 대만 구글 자동완성에서 왔다(keywords/tw-date-diff-2026-10-20.csv, hl zh-TW · gl tw):
+ *   天數計算·日期計算天數·日期相減天數 / 幾天後是幾月幾號·日期計算幾天後 / 日期計算幾年幾個月·日期相減 月數 /
+ *   工作天數計算·日期計算 工作天 / 日期相減 excel·excel 日期相減算天數·天數計算函數
+ * 계산기는 공휴일(國定假日)을 빼지 않는다(토·일만 뺀 週一到週五). 공휴일 목록은 허용 출처로 확인하지 않아 이름·개수를 쓰지 않는다.
+ * 시간 환산은 넣지 않는다(공용 사전이 홍콩판과 같고, 시간대·서머타임 원문을 확인하지 않음).
+ * 民國 연도 = 西元 − 1911 은 표기 산술이라 본문에 둔다(설정의 주의).
+ * 본문 숫자는 전부 아래 frontmatter 에서 span()·shift() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span, shift, type Span } from "../../../../lib/date-calc";
+
+const title = "台灣日期計算機 — 天數計算、幾天後是幾月幾號、工作天數";
+const description =
+  "台灣日期計算機：算兩個日期相差幾天（可含頭尾）、某天加減幾天幾週幾個月後是幾月幾號，並列出週一到週五的工作天數與民國年對照。";
+
+const LOC = "zh-Hant-TW";
+/** 하루 번호 → '2026年10月20日週二' (UTC 자정이라 timeZone UTC — 스크립트도 <html lang> 으로 같은 표기) */
+const labelTw = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString(LOC, { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const num = (v: number) => v.toLocaleString(LOC);
+const spanTextTw = (s: Span) => {
+  const parts: string[] = [];
+  if (s.years) parts.push(`${num(s.years)}年`);
+  if (s.months) parts.push(`${num(s.months)}個月`);
+  if (s.restDays || parts.length === 0) parts.push(`${num(s.restDays)}天`);
+  return parts.join("");
+};
+const d = (iso: string) => toDay(iso)!;
+
+const START = "2026-10-20";
+const END = "2026-12-31";
+const s0 = span(d(START), d(END), false);
+
+// 본문 예시
+const ex1 = span(d("2026-11-02"), d("2026-11-06"), false);
+const ex1i = span(d("2026-11-02"), d("2026-11-06"), true);
+const year2027 = span(d("2027-01-01"), d("2027-12-31"), true);
+const plus30 = shift(d(START), 30, "day");
+const plus100 = shift(d(START), 100, "day");
+const minus60 = shift(d(START), -60, "day");
+const plus4w = shift(d(START), 4, "week");
+const plus6m = shift(d(START), 6, "month");
+const jan31 = d("2027-01-31");
+const jan31plus1m = shift(jan31, 1, "month");
+const ym = span(d("2024-03-15"), d("2026-10-20"), false);
+const twoWeeks = span(d("2026-10-19"), d("2026-10-30"), true);
+const ROC = 2026 - 1911;
+---
+
+<html lang="zh-Hant-TW">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>日期計算機</h1>
+      <p>
+        輸入兩個日期，算出中間相差幾天；或輸入一個日期，算出幾天、幾週、幾個月後（或前）是幾月幾號。邊輸入邊更新結果，不必按計算。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">要算什麼？</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>兩個日期相差幾天</option>
+            <option value="shift">某天加減幾天</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">開始日期</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">結束日期</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">含頭尾 — 第一天和最後一天都算進去</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">基準日期</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">加減多少</label>
+            <input type="number" inputmode="numeric" id="amount" value="30" min="0" max="36500" data-step />
+            <select id="unit" aria-label="單位">
+              <option value="day" selected>天</option>
+              <option value="week">週</option>
+              <option value="month">個月</option>
+              <option value="year">年</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">方向</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>往後（之後）</option>
+              <option value="before">往前（之前）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">兩個日期相差</p>
+          <p class="big" id="hero-value">{num(s0.days)}天</p>
+          <p class="hint" id="hero-sub">{spanTextTw(s0)} · {num(s0.weeks)}週{num(s0.weekRest)}天</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">平日（週一到週五）</span>
+            <span class="value" id="v1">{num(s0.weekdays)}天</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">期間</span>
+            <span class="value" id="v2">{labelTw(s0.from)} → {labelTw(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">存成圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2>天數計算：兩個日期相差幾天，要不要含頭尾</h2>
+      <p>
+        預設是「結束日期減開始日期」，第一天不算：2026年11月2日（週一）到11月6日（週五）相差{num(ex1.days)}天。
+      </p>
+      <p>
+        勾選<strong>含頭尾</strong>，第一天和最後一天都算，同一週就變成{num(ex1i.days)}天。請假天數、住宿、課程期間、「從今天起算」這類說法，通常要含頭尾；
+        要算「還有幾天到」，就不含頭尾。2027年1月1日到12月31日含頭尾是{num(year2027.days)}天。
+      </p>
+      <p>
+        日期先後填反也沒關係，計算機會自動對調並在結果下方註明。打開頁面時開始日期是今天、結束日期是今年12月31日，可以直接看今年還剩幾天。
+      </p>
+
+      <h2>幾天後是幾月幾號：日期加減天數、週數、月數</h2>
+      <ul>
+        <li>
+          <strong>幾天後、幾天前</strong> — {labelTw(d(START))}的30天後是{labelTw(plus30)}，100天後是{labelTw(plus100)}，60天前是{labelTw(minus60)}。
+        </li>
+        <li><strong>幾週後</strong> — 週數 × 7天。{labelTw(d(START))}的4週後是{labelTw(plus4w)}。</li>
+        <li>
+          <strong>幾個月後、幾年後</strong> — 月份往後推，日子不變：{labelTw(d(START))}的6個月後是{labelTw(plus6m)}。
+          如果那個月沒有這一天，就取那個月的最後一天，所以{labelTw(jan31)}的1個月後是{labelTw(jan31plus1m)}。
+        </li>
+      </ul>
+
+      <h2>日期計算幾年幾個月</h2>
+      <p>
+        結果下方會把天數拆成兩種寫法：先算滿幾年、幾個月，剩下的再算天數；以及幾週又幾天。
+        例如2024年3月15日到2026年10月20日相差{num(ym.days)}天，也就是{spanTextTw(ym)}，或{num(ym.weeks)}週{num(ym.weekRest)}天。
+        算年資、租約、保固期這類「幾年幾個月」時，看這一行就好。
+      </p>
+
+      <h2>工作天數計算：週一到週五</h2>
+      <p>
+        <strong>平日</strong>欄位是期間內所有週一到週五的天數，跟上面的含頭尾設定一致。
+        2026年10月19日（週一）到10月30日（週五）含頭尾，兩週共有{num(twoWeeks.weekdays)}個平日。
+      </p>
+      <p>
+        <strong>國定假日沒有扣掉。</strong>放假日和補班日每年由政府公告，日期不固定，這裡不自動扣除。
+        請把期間內落在平日的放假日（以及公司另外休的日子）從平日天數扣掉，若有週六補班再加回去，就是實際的工作天數。
+      </p>
+
+      <h2>民國年和西元年怎麼換</h2>
+      <p>
+        台灣的公文、帳單和各種表單常用民國紀年：民國年 = 西元年 − 1911，所以2026年是民國{num(ROC)}年。
+        計算機的日期欄位用西元，如果手上的日期寫成民國，先加上1911再輸入，例如民國{num(ROC)}年12月31日就是2026年12月31日。
+      </p>
+
+      <h2>Excel 日期相減算天數的公式</h2>
+      <p>開始日期在 A2、結束日期在 B2 時，Excel 或 Google 試算表可以這樣算：</p>
+      <ul>
+        <li><code>=B2-A2</code> — 相差天數，不含頭尾（儲存格格式設成數值）。</li>
+        <li><code>=B2-A2+1</code> — 相差天數，含頭尾。</li>
+        <li><code>=DATEDIF(A2,B2,"m")</code> — 相差幾個整月（改成 <code>"y"</code> 是幾個整年）。</li>
+        <li><code>=A2+30</code> 或 <code>=EDATE(A2,6)</code> — 加30天，或加6個月。</li>
+        <li>
+          <code>=NETWORKDAYS(A2,B2,H2:H20)</code> — 兩個日期之間的平日，再扣掉你在 H2:H20 列出的放假日。
+          NETWORKDAYS 頭尾都算，要跟這裡的「含頭尾」結果比較。
+        </li>
+      </ul>
+
+      <details>
+        <summary>「相差幾天」和「幾天後」一樣嗎？</summary>
+        <p>
+          不一樣。「相差幾天」量的是距離，「幾天後」給的是日期。11月2日的4天後是11月6日，而11月2日到6日相差{num(ex1.days)}天，含頭尾是{num(ex1i.days)}天。
+        </p>
+      </details>
+
+      <details>
+        <summary>有算到閏年嗎？</summary>
+        <p>
+          有。計算機用西元（格里曆），閏年的2月29日會算進去；2月29日的1年後，在平年是2月28日。
+        </p>
+      </details>
+
+      <details>
+        <summary>為什麼不顯示小時？</summary>
+        <p>
+          這個頁面只算日期，不處理時區和時刻，所以結果只給天數、週數和幾年幾個月。
+        </p>
+      </details>
+
+      <AdSlot label="date-diff-result-zh-tw" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

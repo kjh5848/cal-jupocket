@@ -17,4 +17,13 @@ export const tools: LocaleTool[] = [
     icon: "percent",
     basis: "math",
   },
+  {
+    href: "/zh-tw/tools/date-diff/",
+    ko: "/tools/date-diff/",
+    name: "日期計算機",
+    blurb: "算兩個日期相差幾天、幾天後是幾月幾號，以及週一到週五的平日天數",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
