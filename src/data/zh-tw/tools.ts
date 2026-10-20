@@ -35,4 +35,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/zh-tw/tools/dday/",
+    ko: "/tools/dday/",
+    name: "倒數日計算機",
+    blurb: "距離目標日還有幾天、剩下幾天幾小時，以及把今天算作第1天時是第幾天",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

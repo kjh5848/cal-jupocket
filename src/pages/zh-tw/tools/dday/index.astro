@@ -1,0 +1,197 @@
+---
+/**
+ * 倒數日計算 — 대만판 디데이(/zh-tw/tools/dday/). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 ZH_HANT 사전 — 홍콩판과 공용)를 같이 쓰고, 문장은 대만 번체로 새로 썼다(번역 아님).
+ * 날짜 표기는 <html lang="zh-Hant-TW"> 의 Intl('2026年12月25日週五'). 그레고리력 날짜 차이라 rates 와 상관없다(조사표 대만 칸 '단위').
+ *
+ * 소제목은 대만 구글 자동완성에서 왔다(keywords/tw-dday-2026-10-21.csv, hl zh-TW · gl tw):
+ *   倒數日計算·倒數日期計算·還有幾天計算 / 倒數計時日期 / 還有幾天聖誕節·還有幾天跨年·距離1/1還有幾天 /
+ *   excel 計算 倒數 天數 / 倒數日 英文·還有幾天 英文
+ * 過年·中秋節(농력)·開學·會考 날짜는 허용 출처로 확인하지 않아 날짜를 적지 않는다 — 직접 넣으라고만 쓴다.
+ * 하루 = 24시간으로 센다. 본문 숫자는 전부 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, fromDay, countdown, type Countdown } from "../../../../lib/date-calc";
+
+const title = "台灣倒數日計算機 — 距離目標日還有幾天、倒數計時到幾點";
+const description =
+  "台灣倒數日計算機：選一個日期，馬上算出從今天起還有幾天、剩下幾天幾小時，也能倒數到考試或截止的時間，並列出把今天算作第1天時是第幾天。";
+
+const LOC = "zh-Hant-TW";
+/** 하루 번호 → '2026年10月21日週三' (UTC 자정이라 timeZone UTC — 스크립트도 <html lang> 으로 같은 표기) */
+const labelTw = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString(LOC, { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const num = (v: number) => v.toLocaleString(LOC);
+const ddayTw = (c: Countdown) => (c.side === 0 ? "就是今天" : c.side > 0 ? `還有${num(c.days)}天` : `已過${num(c.days)}天`);
+const durTw = (sec: number) => {
+  const s = Math.abs(Math.trunc(sec));
+  const day = Math.floor(s / 86_400);
+  const h = Math.floor((s % 86_400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  return day > 0 ? `${num(day)}天${h}小時${m}分` : `${h}小時${m}分${s % 60}秒`;
+};
+
+const BASE = "2026-10-21";
+const base = toDay(BASE)!;
+const target = base + 100;
+const TARGET = fromDay(target);
+const c0 = countdown(target, null, base, 0);
+const xmas = toDay("2026-12-25")!;
+const yearEnd = toDay("2026-12-31")!;
+const newYear = toDay("2027-01-01")!;
+const dXmas = countdown(xmas, null, base, 0);
+const dYearEnd = countdown(yearEnd, null, base, 0);
+const dNewYear = countdown(newYear, null, base, 0);
+/** 9 點考試 — 基準日 0 點起算 */
+const exam = countdown(target, 9 * 3600, base, 0);
+---
+
+<html lang="zh-Hant-TW">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>倒數日計算機 — 距離目標日還有幾天</h1>
+      <p>
+        選好目標日期，就會馬上顯示還有幾天、剩下多少時間。考試開始、報名截止這類有固定時間的日子，請打開「倒數到指定時間」。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">目標日期</label>
+          <input type="date" id="target" value={TARGET} />
+          <div class="ux-presets" role="group" aria-label="常用日期">
+            <button type="button" data-preset="plus100">100天後</button>
+            <button type="button" data-preset="xmas">聖誕節</button>
+            <button type="button" data-preset="yearend">跨年夜</button>
+            <button type="button" data-preset="newyear">元旦</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">倒數到指定時間</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">目標時間</label>
+          <input type="time" id="time" value="09:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">基準日（通常是今天）</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">距離{labelTw(target)}</p>
+          <p class="big" id="hero-value">{ddayTw(c0)}</p>
+          <p class="hint" id="hero-sub">把基準日算作第1天，目標日是第{num(c0.countDays)}天</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">剩餘時間</span>
+            <span class="value" id="v1">{durTw(c0.seconds)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">從第1天算起</span>
+            <span class="value" id="v2">第{num(c0.countDays)}天</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">基準日</span>
+            <span class="value" id="v3">{labelTw(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">存成圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2>倒數日怎麼算？今天算不算一天</h2>
+      <p>
+        這個計算機的「還有幾天」是<strong>目標日 − 今天</strong>的天數：今天不算，目標日算。目標日是明天就是「還有1天」，到了目標日當天不論幾點都是「就是今天」，過了一天則顯示「已過1天」。
+      </p>
+      <p>
+        如果想把<strong>今天當成第1天</strong>來數，例如交往紀念日、到職日、開始戒菸的日子，請看「從第1天算起」的數字，會比「還有幾天」多 1。
+        以{labelTw(base)}為第1天，{labelTw(target)}是第{num(c0.countDays)}天。
+      </p>
+
+      <h2>倒數計時到幾點幾分</h2>
+      <ul>
+        <li>
+          <strong>只選日期</strong> — 倒數到目標日結束的那一刻（隔天0點）。從{labelTw(base)}0點算起，到{labelTw(target)}結束還剩{durTw(c0.seconds)}。
+        </li>
+        <li>
+          <strong>加上時間</strong> — 倒數到那個時間為止。同樣從{labelTw(base)}0點算起，倒數到{labelTw(target)}早上9點是{durTw(exam.seconds)}。目標日當天一過了指定時間，就會改成顯示「已過時間」。
+        </li>
+        <li>
+          <strong>剩餘時間每秒更新</strong> — 只有基準日是今天時才會跳動。基準日改成其他日子時，從那天的0點開始算。
+        </li>
+      </ul>
+
+      <h2>還有幾天聖誕節、跨年？</h2>
+      <p>
+        用上面的按鈕可以直接帶入日期。從{labelTw(base)}算起，聖誕節（{labelTw(xmas)}）{ddayTw(dXmas)}，
+        跨年夜（{labelTw(yearEnd)}）{ddayTw(dYearEnd)}，元旦（{labelTw(newYear)}）{ddayTw(dNewYear)}。
+        打開頁面時會自動把當天當作基準日，所以不論哪天打開，都是從那天開始算。
+      </p>
+      <p>
+        過年、中秋節這類按農曆的節日，以及開學、會考、學測這種每年日期不同的日子，請先查好當年的日期，再選進目標日期。
+      </p>
+
+      <h2>用 Excel 計算倒數天數</h2>
+      <p>
+        Excel 和 Google 試算表都把日期當成數字，所以用目標日的儲存格減掉 <code>TODAY()</code> 就是剩下的天數（例如 <code>=A1-TODAY()</code>）。
+        如果結果顯示成日期，把儲存格格式改成「通用格式」或「數值」即可。想把今天算作第1天，再加 1。
+      </p>
+
+      <details>
+        <summary>只想算週一到週五，還有幾個工作天？</summary>
+        <p>
+          這一頁的天數包含週六、週日。要扣掉週末，請到<a href="/zh-tw/tools/date-diff/">日期計算機</a>，開始日期選今天、結束日期選目標日，就會列出週一到週五的天數（國定假日沒有扣除）。
+        </p>
+      </details>
+
+      <details>
+        <summary>選了已經過去的日期會怎樣？</summary>
+        <p>
+          會顯示「已過幾天」，剩餘時間欄也會改成已過時間。想知道截止日過了幾天、某件事開始了多久，可以直接這樣用。
+        </p>
+      </details>
+
+      <details>
+        <summary>倒數日的英文怎麼說？</summary>
+        <p>
+          倒數計時是 countdown，「還有10天」常寫成「10 days left」或「10 days to go」，可以拿來做倒數牌或貼文。
+        </p>
+      </details>
+
+      <details>
+        <summary>國外的活動也算得準嗎？</summary>
+        <p>
+          計算機用的是你手機或電腦的日期和時鐘。國外演唱會、班機這類以當地時間公布的時刻，請先換算成你所在地的時間再輸入。每天一律以24小時計算。
+        </p>
+      </details>
+
+      <AdSlot label="dday-result-zh-tw" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
