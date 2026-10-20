@@ -6,6 +6,9 @@
  * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-percent-2026-10-20.csv):
  *   percentage calculator formula / percent off price·coupon / percent change between two numbers·formula /
  *   percent change vs percent difference / percentage increase formula excel·google sheets / percentage calculator for grades
+ * #155 bp ↔ %p 는 같은 페이지 #bp 절(scripts/percent-bp.ts 의 EN 사전). 소제목은 keywords/us-bp-2026-10-21.csv —
+ *   basis points to percentage / how much is 25 basis points / 25 basis points on 1 million / bps to decimal /
+ *   basis point calculator between two percentages / bps to percentage excel. 정의는 SEC Investor.gov 용어집. 지금 금리·모기지 points 는 안 씀.
  * 판매세(sales tax)·팁 같은 미국 숫자는 쓰지 않는다 — 주·도시마다 다르고 이 도구의 계산이 아니다.
  */
 import BaseHead from "../../../../components/BaseHead.astro";
@@ -17,10 +20,19 @@ import AdSenseHead from "../../../../components/AdSenseHead.astro";
 import SiteHeader from "../../../../components/SiteHeader.astro";
 import SiteFooter from "../../../../components/SiteFooter.astro";
 import "../../../../styles/global.css";
+import { rateShift } from "../../../../lib/percent";
 
-const title = "Percentage Calculator — Percent of a Number, Percent Change & Percent Off";
+// bp 절 예시 — 숫자는 전부 rateShift() 로 계산(지금 금리가 아니라 예시 값).
+const fmt = (x: number) => Number(x.toPrecision(15)).toLocaleString("en-US", { maximumFractionDigits: 6 });
+const usd = (v: number) => v.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const ex = { base: "3.5", r: rateShift(3.5, 25) };
+const million = rateShift(3.5, 25, 1_000_000);
+const downR = rateShift(4.25, -50);
+const down = { from: 4.25, to: downR.after, bps: -50 };
+
+const title = "Percentage Calculator — Percent of a Number, Percent Change, Percent Off & Basis Points";
 const description =
-  "Find what percent B is of A, X% of a number, percent change between two numbers, and prices after or before a percent off. With formulas and Excel examples.";
+  "Find what percent B is of A, X% of a number, percent change, prices before or after a percent off, and basis points to percent, with Excel formulas.";
 ---
 
 <html lang="en-US">
@@ -134,6 +146,92 @@ const description =
         If a cell is already formatted as a percentage, 15% is stored as 0.15, so leave out the <code>/100</code>.
       </p>
 
+      <h2 id="bp">Basis points to percentage — how much is 25 basis points?</h2>
+      <p>
+        A basis point (bp, plural bps) is one hundredth of a percentage point: 1 bp = 0.01%, 25 bps = 0.25%,
+        100 bps = 1%. Enter basis points or percentage points, whichever you have. Add a rate and a loan or
+        account balance to see the new rate and the yearly difference in interest.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="bp-in">Basis points</label>
+          <input type="text" inputmode="decimal" id="bp-in" value="25" autocomplete="off" />
+          <span class="unit">bps</span>
+          <div class="bp-presets" role="group" aria-label="Common basis point moves">
+            <button type="button" data-bp="-25">−25</button>
+            <button type="button" data-bp="25">25</button>
+            <button type="button" data-bp="50">50</button>
+            <button type="button" data-bp="100">100</button>
+          </div>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="bp-pp">Percentage points</label>
+          <input type="text" inputmode="decimal" id="bp-pp" value="0.25" autocomplete="off" />
+          <span class="unit">%</span>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="bp-base">Rate before the change (optional)</label>
+          <input type="text" inputmode="decimal" id="bp-base" value={ex.base} autocomplete="off" />
+          <span class="unit">%</span>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="bp-principal">Loan or balance (optional)</label>
+          <input type="text" inputmode="decimal" id="bp-principal" value="" placeholder="e.g. 300,000" autocomplete="off" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="label" id="bp-hero">+25 bps is</p>
+          <p class="big" id="bp-value">+0.25%</p>
+          <p class="hint" id="bp-formula">25 ÷ 100 = 0.25 percentage points</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">New rate</span>
+            <span class="value" id="bp-after">{ex.base}% → {fmt(ex.r.after)}%</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Percent change in the rate</span>
+            <span class="value" id="bp-rel">+{fmt(ex.r.relative ?? 0)}%</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Yearly interest difference (simple)</span>
+            <span class="value" id="bp-year">Enter a loan or balance</span>
+          </div>
+        </div>
+      </div>
+
+      <h2>Basis point formulas</h2>
+      <ul>
+        <li><strong>Basis points to percent</strong> — bps ÷ 100. 65 bps is 0.65%.</li>
+        <li><strong>Basis points to decimal</strong> — bps ÷ 10,000. 25 bps is 0.0025.</li>
+        <li><strong>Basis points between two rates</strong> — (new rate − old rate) × 100. A move from {fmt(down.from)}% to {fmt(down.to)}% is {fmt(down.bps)} bps.</li>
+        <li><strong>Interest on a balance</strong> — balance × bps ÷ 10,000 per year. 25 bps on $1,000,000 is {usd(million.yearly ?? 0)} a year, about {usd((million.yearly ?? 0) / 12)} a month.</li>
+      </ul>
+      <p>
+        The yearly figure is simple interest on the full balance. On a loan you pay down every month the balance
+        shrinks, so the real difference is smaller. A rate going from {ex.base}% to {fmt(ex.r.after)}% is up
+        25 bps, or 0.25 percentage points, but as a percent change it is up {fmt(ex.r.relative ?? 0)}% — see the
+        percent vs. percentage point question below.
+      </p>
+
+      <h2>Basis points in Excel and Google Sheets</h2>
+      <p>With the old rate in A1 and the new rate in B1:</p>
+      <ul>
+        <li>Cells formatted as percentages (3.5% is stored as 0.035): <code>=(B1-A1)*10000</code> gives the change in bps.</li>
+        <li>Rates typed as plain numbers like 3.5: <code>=(B1-A1)*100</code>.</li>
+        <li>Basis points in A1 to a percentage cell: <code>=A1/10000</code>, then format as a percentage.</li>
+      </ul>
+      <p>
+        The definition of a basis point follows the SEC's Investor.gov glossary entry
+        <a href="https://www.investor.gov/introduction-investing/investing-basics/glossary/basis-point" rel="noopener">Basis Point</a>
+        ("one one-hundredth (.01) of a percentage point"). The rates on this page are examples, not current rates.
+      </p>
+
       <details>
         <summary>Why doesn't a 20% increase followed by a 20% decrease get me back where I started?</summary>
         <p>
@@ -171,7 +269,11 @@ const description =
     </main>
     <SiteFooter />
     <script src="../../../../scripts/percent.ts"></script>
+    <script src="../../../../scripts/percent-bp.ts"></script>
     <TrackLinks />
     <script src="../../../../scripts/calc-ui.ts"></script>
+    <style>
+      .bp-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    </style>
   </body>
 </html>
