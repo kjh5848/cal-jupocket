@@ -35,4 +35,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/en-au/tools/dday/",
+    ko: "/tools/dday/",
+    name: "Days Until Countdown",
+    blurb: "How many days are left until Christmas, 2027, a birthday or any date — a live countdown in days, hours and minutes",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

@@ -1,0 +1,230 @@
+---
+/**
+ * Days Until — 호주 영어판 네 번째 도구(디데이). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 EN 사전 — 날짜는 <html lang="en-AU"> 로 일·월 순)를 같이 쓰고,
+ * 문장은 호주 영어로 새로 썼다(번역 아님). 조사표 호주 칸 '단위'. 고친 공유 파일 없음.
+ *
+ * 소제목은 호주 구글 자동완성에서 왔다(keywords/au-dday-2026-10-21.csv, hl en · gl au):
+ *   how many days until · days until christmas 2026 australia · christmas eve / countdown calculator days hours minutes /
+ *   how many days until 2027 / days until halloween / birthday countdown calculator / date countdown calculator
+ * 프리셋 버튼은 공유 스크립트가 정한 네 개(100일·12/25·12/31·1/1) 그대로.
+ * 호주 공휴일(대체 공휴일 포함)·일광 절약 시간 날짜는 쓰지 않는다 — 주·준주마다 다르고 허용 출처
+ * (fairwork.gov.au/employment-conditions/public-holidays)가 2026-10-21 에도 응답 시간 초과라 확인 못 함.
+ * 하루는 24시간으로 센다 — 시계를 바꾸는 날을 끼면 실제 남은 시간이 1시간 다르다고만 적는다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, countdown, type Countdown } from "../../../../lib/date-calc";
+
+const title = "Days Until Christmas Australia — Countdown Calculator for Any Date";
+const description =
+  "How many days until Christmas, 2027, a birthday or any date? An Australian countdown in days, hours and minutes, counting today or not.";
+
+/** 하루 번호 → 'Wed, 21 October 2026' (UTC 자정이라 timeZone UTC) */
+const labelAu = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("en-AU", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${v.toLocaleString("en-AU")} ${one}${v === 1 ? "" : "s"}`;
+const left = (c: Countdown) => (c.side === 0 ? "Today" : c.side > 0 ? `${plural(c.days, "day")} to go` : `${plural(c.days, "day")} ago`);
+const d = (iso: string) => toDay(iso)!;
+
+const BASE = "2026-10-21";
+const TARGET = "2026-12-25";
+const base = d(BASE);
+const target = d(TARGET);
+const c0 = countdown(target, null, base, 0);
+const days0 = Math.floor(c0.seconds / 86_400);
+
+// 본문 예시 — 전부 BASE 에서 센다
+const halloween = d("2026-10-31");
+const xmasEve = d("2026-12-24");
+const xmas = d("2026-12-25");
+const boxing = d("2026-12-26");
+const nye = d("2026-12-31");
+const ny = d("2027-01-01");
+const cHalloween = countdown(halloween, null, base, 0);
+const cXmasEve = countdown(xmasEve, null, base, 0);
+const cXmas = countdown(xmas, null, base, 0);
+const cBoxing = countdown(boxing, null, base, 0);
+const cNye = countdown(nye, null, base, 0);
+const cNy = countdown(ny, null, base, 0);
+const tomorrow = countdown(base + 1, null, base, 0);
+// 오후 6시 시작 — 기준일 오전 10시에 열었을 때(크리스마스 이브 저녁)
+const eve = countdown(xmasEve, 18 * 3600, base, 10 * 3600);
+const eveD = Math.floor(eve.seconds / 86_400);
+const eveH = Math.floor((eve.seconds % 86_400) / 3600);
+const pastDay = d("2026-07-01");
+const past = countdown(pastDay, null, base, 0);
+---
+
+<html lang="en-AU">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>How Many Days Until…? Countdown Calculator</h1>
+      <p>
+        Pick a date and see how many days are left, plus the days, hours and minutes still to go. Turn on “Count to a time” for
+        anything that starts at a set time — a flight, an exam or Christmas Eve dinner.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">Target date</label>
+          <input type="date" id="target" value={TARGET} />
+          <div class="ux-presets" role="group" aria-label="Common dates">
+            <button type="button" data-preset="plus100">100 days</button>
+            <button type="button" data-preset="xmas">Christmas Day</button>
+            <button type="button" data-preset="yearend">31 Dec</button>
+            <button type="button" data-preset="newyear">New Year's Day</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">Count to a time</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">Target time</label>
+          <input type="time" id="time" value="18:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">Start date (usually today)</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Until {labelAu(target)}</p>
+          <p class="big" id="hero-value">{left(c0)}</p>
+          <p class="hint" id="hero-sub">Counting the start date as day 1, the target date is day {c0.countDays}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Time left</span>
+            <span class="value" id="v1">{plural(days0, "day")}, 0 hours, 0 minutes</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Counting day 1</span>
+            <span class="value" id="v2">Day {c0.countDays}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">Start date</span>
+            <span class="value" id="v3">{labelAu(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How many days until a date — is today included?</h2>
+      <p>
+        “Days to go” is <strong>the target date minus today</strong>: today isn't counted, the target date is. Tomorrow is
+        {" "}{left(tomorrow)}, the target date reads “Today” from midnight to midnight, and a date that has already passed reads
+        “days ago”.
+      </p>
+      <p>
+        If you want the first day to be day 1 — a new job, a fitness challenge, a sobriety streak — use the “Counting day 1”
+        figure. It's always one more than the days to go: counting {labelAu(base)} as day 1, {labelAu(target)} is day
+        {" "}{c0.countDays}.
+      </p>
+
+      <h2>Days until Christmas 2026 in Australia</h2>
+      <p>Counting from {labelAu(base)}:</p>
+      <ul>
+        <li>Halloween ({labelAu(halloween)}): {left(cHalloween)}</li>
+        <li>Christmas Eve ({labelAu(xmasEve)}): {left(cXmasEve)}</li>
+        <li>Christmas Day ({labelAu(xmas)}): {left(cXmas)}</li>
+        <li>Boxing Day ({labelAu(boxing)}): {left(cBoxing)}</li>
+        <li>New Year's Eve ({labelAu(nye)}): {left(cNye)}</li>
+        <li>New Year's Day 2027 ({labelAu(ny)}): {left(cNy)}</li>
+      </ul>
+      <p>
+        These are calendar dates, not public holiday dates. When Christmas or Boxing Day falls on a weekend, any extra day off is
+        set by each state and territory, so check your own state's list before counting down to a long weekend. The page fills in
+        today's date when it opens, so the numbers above always start from the day you visit.
+      </p>
+
+      <h2>Countdown in days, hours and minutes</h2>
+      <ul>
+        <li>
+          <strong>Date only</strong> — counts down to the end of the target date (midnight as the next day starts).
+        </li>
+        <li>
+          <strong>With a time</strong> — counts down to that exact time. Once it has passed, even on the day itself, the box
+          switches to “Time since”. Opened at 10am on {labelAu(base)}, a 6pm start on {labelAu(xmasEve)} is
+          {" "}{plural(eveD, "day")} and {plural(eveH, "hour")} away.
+        </li>
+        <li>
+          <strong>Seconds tick live</strong> while the start date is today. Choose a different start date and the countdown runs
+          from midnight on that day instead.
+        </li>
+      </ul>
+
+      <h2>Daylight saving and time zones</h2>
+      <p>
+        The calculator treats every day as exactly 24 hours and uses your device's clock. If your state or territory moves its
+        clocks for daylight saving, a countdown that runs across the changeover is out by one hour — the number of days stays the
+        same. For an event in another state or overseas, convert the start time to your local time before you enter it.
+      </p>
+
+      <h2>How many days until 2027?</h2>
+      <p>
+        Tap “New Year's Day” for 1 January next year, or “31 Dec” for the last day of this one. From {labelAu(base)} that's
+        {" "}{left(cNye)} until New Year's Eve and {left(cNy)} until 2027 starts.
+      </p>
+
+      <h2>Birthday countdown calculator</h2>
+      <p>
+        Enter your next birthday as the target date. If this year's birthday has already been, use next year's date — otherwise
+        you'll see how many days ago it was. Turn on “Count to a time” to finish the countdown when the party starts.
+      </p>
+
+      <details>
+        <summary>How do I count only working days until a date?</summary>
+        <p>
+          This page counts every calendar day, weekends included. For Monday-to-Friday days, put today and the target date into
+          the <a href="/en-au/tools/date-diff/">days between dates calculator</a> — it counts weekdays but doesn't take out public
+          holidays, because those differ between states.
+        </p>
+      </details>
+
+      <details>
+        <summary>What if I enter a date that has already passed?</summary>
+        <p>
+          It shows “days ago” and the time box changes to “Time since” — handy for how long it's been since a start date or a
+          deadline. Counting from {labelAu(base)}, {labelAu(pastDay)} was {left(past)}.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I count down in weeks?</summary>
+        <p>
+          Divide the days by 7. {labelAu(target)} is {left(c0)} from {labelAu(base)}, which is
+          {" "}{plural(Math.floor(c0.days / 7), "week")} and {plural(c0.days % 7, "day")}.
+        </p>
+      </details>
+
+      <AdSlot label="dday-result-en-au" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
