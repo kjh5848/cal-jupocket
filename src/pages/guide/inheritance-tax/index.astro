@@ -64,7 +64,7 @@ const childBreakEven = (() => {
   return null;
 })();
 
-const ANSWER = `상속세 면제한도는 배우자와 자녀가 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: true, children: 2 }))}, 자녀만 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: false, children: 2 }))}입니다. 일괄공제 ${formatMan(r.lumpSum.amount)}과 배우자공제 최소 ${formatMan(r.spouse.minimum)}이 그 경계를 만듭니다(상속세 및 증여세법 제19조·제21조). 이 금액까지는 상속세가 0원입니다.`;
+const ANSWER = `상속세 면제한도는 배우자와 자녀가 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: true, children: 2 }))}, 자녀만 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: false, children: 2 }))}입니다. 일괄공제 ${formatMan(r.lumpSum.amount)}과 배우자공제 최소 ${formatMan(r.spouse.minimum)}이 그 경계를 만듭니다(상속세 및 증여세법 제19조·제21조). 이 금액까지는 상속세가 0원입니다(${r.verifiedOn} 원문 확인).`;
 const QA = [
   { q: "상속세 면제한도, 우리 집은 얼마인가요?", a: `가족 구성으로 정해집니다. 배우자와 자녀가 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: true, children: 2 }))}, 자녀 없이 배우자와 부모가 상속하면 ${formatMan(taxFreeCeiling({ hasSpouse: true, children: 0, parents: 2 }))}, 배우자 혼자 상속하면 일괄공제를 못 써서 ${formatMan(taxFreeCeiling({ hasSpouse: true, children: 0, parents: 0 }))}(제21조 제2항), 자녀만 있으면 ${formatMan(taxFreeCeiling({ hasSpouse: false, children: 2 }))}입니다. 법에 '면제한도'라는 항목은 없고 상속공제 합계가 그 역할을 합니다.` },
   { q: "배우자가 있고 없고로 얼마나 달라지나요?", a: `배우자가 있으면 실제로 받은 금액이 없거나 5억원 미만이어도 배우자공제 ${formatMan(r.spouse.minimum)}을 받습니다(제19조 제4항). 실제 상속분이 더 크면 그 금액을 공제하되 법정상속분 기준 한도와 30억원 중 작은 금액이 상한입니다(제1항).` },
