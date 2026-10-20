@@ -17,4 +17,13 @@ export const tools: LocaleTool[] = [
     icon: "percent",
     basis: "math",
   },
+  {
+    href: "/es/tools/date-diff/",
+    ko: "/tools/date-diff/",
+    name: "Calcular días entre dos fechas",
+    blurb: "Días entre dos fechas (con o sin el último día), sumar o restar días, semanas o meses y días de lunes a viernes",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

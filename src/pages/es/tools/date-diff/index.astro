@@ -1,0 +1,254 @@
+---
+/**
+ * Calcular días entre dos fechas — 스페인판 두 번째 도구. 한국어판 /tools/date-diff/ 와 계산(lib/date-calc.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/date-diff.ts 의 ES 사전, 표기는 src/lib/es/date-format.ts — 'martes, 20 de octubre de 2026'),
+ * 문장은 스페인 구글 자동완성으로 새로 썼다(번역 아님). 그레고리력 산술이라 rates 와 상관없다(조사표 스페인 칸 '단위').
+ *
+ * 소제목은 keywords/es-date-diff-2026-10-21.csv(hl es · gl es)의 스페인 쪽 말에서 왔다(중남미·SQL·JS 말은 버림):
+ *   calcular días entre dos fechas · online · días corridos / sumar días a una fecha · restar días /
+ *   calculadora de fechas en años, meses y días · por semanas / días hábiles entre dos fechas españa · sin fines de semana /
+ *   calcular días entre fechas excel · google sheets
+ *
+ * 계산기는 festivos 를 빼지 않는다(월~금만 센 'de lunes a viernes'). 'días hábiles' 라는 말을 결과에 붙이지 않는다 —
+ * Ley 39/2015 art. 30.2 에서 hábiles 는 토·일과 festivos 를 함께 뺀 날이다(BOE-A-2015-10565, 확인 2026-10-21).
+ * 같은 조 30.4(달로 정한 기간은 같은 날에 끝나고, 그 날이 없으면 그 달 말일)는 이 계산기의 개월 더하기와 같다.
+ * 30.5(마지막 날이 inhábil 이면 다음 hábil 로)·30.7(국가·자치주·지방 달력)은 계산하지 않는다고 본문에 적는다.
+ * 행정 기한 계산기처럼 쓰지 않는다. 시간 환산(일수 × 24)은 넣지 않는다 — 서머타임 전환일은 하루가 24시간이 아니다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 span()·shift() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, span, shift } from "../../../../lib/date-calc";
+import { labelEs, spanTextEs, weekTextEs, daysEs } from "../../../../lib/es/date-format";
+
+const title = "Calcular días entre dos fechas — calculadora de fechas online";
+const description =
+  "Calcula los días entre dos fechas (contando o no el último día), suma o resta días, semanas o meses a una fecha y cuenta los días de lunes a viernes. Con fórmulas de Excel.";
+
+const d = (iso: string) => toDay(iso)!;
+
+const START = "2026-10-21";
+const END = "2026-12-31";
+const s0 = span(d(START), d(END), false);
+
+// 본문 예시
+const ex1 = span(d("2026-11-02"), d("2026-11-06"), false);
+const ex1i = span(d("2026-11-02"), d("2026-11-06"), true);
+const year = span(d("2026-01-01"), d("2026-12-31"), true);
+const plus30 = shift(d(START), 30, "day");
+const plus90 = shift(d(START), 90, "day");
+const minus60 = shift(d(START), -60, "day");
+const plus4w = shift(d(START), 4, "week");
+const plus6m = shift(d(START), 6, "month");
+const jan31 = d("2027-01-31");
+const jan31plus1m = shift(jan31, 1, "month");
+const twoWeeks = span(d("2026-10-19"), d("2026-10-30"), true);
+const longSpan = span(d("2025-03-15"), d("2026-10-21"), false);
+---
+
+<html lang="es-ES">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Calcular días entre dos fechas</h1>
+      <p>
+        Cuenta los días que hay entre dos fechas o averigua qué fecha cae dentro de unos días, semanas o meses. El resultado
+        cambia mientras escribes.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">¿Qué quieres calcular?</label>
+          <select id="mode" data-seg>
+            <option value="span" selected>Días entre dos fechas</option>
+            <option value="shift">Sumar o restar a una fecha</option>
+          </select>
+        </div>
+
+        <div id="span-fields">
+          <div class="calc-input-wrap">
+            <label for="start">Fecha de inicio</label>
+            <input type="date" id="start" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="end">Fecha final</label>
+            <input type="date" id="end" value={END} />
+          </div>
+          <div class="calc-input-wrap toggle-row">
+            <label for="inclusive">Contar también el último día</label>
+            <input type="checkbox" id="inclusive" />
+          </div>
+        </div>
+
+        <div id="shift-fields" hidden>
+          <div class="calc-input-wrap">
+            <label for="base">Fecha de partida</label>
+            <input type="date" id="base" value={START} />
+          </div>
+          <div class="calc-input-wrap">
+            <label for="amount">Cantidad</label>
+            <input type="number" inputmode="numeric" id="amount" value="30" min="0" max="36500" data-step />
+            <select id="unit" aria-label="Unidad">
+              <option value="day" selected>días</option>
+              <option value="week">semanas</option>
+              <option value="month">meses</option>
+              <option value="year">años</option>
+            </select>
+          </div>
+          <div class="calc-input-wrap">
+            <label for="dir">Operación</label>
+            <select id="dir" data-seg>
+              <option value="after" selected>Sumar (fecha posterior)</option>
+              <option value="before">Restar (fecha anterior)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Días entre las dos fechas</p>
+          <p class="big" id="hero-value">{daysEs(s0.days)}</p>
+          <p class="hint" id="hero-sub">{spanTextEs(s0)} · {weekTextEs(s0)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">De lunes a viernes</span>
+            <span class="value" id="v1">{daysEs(s0.weekdays)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Fechas</span>
+            <span class="value" id="v2">{labelEs(s0.from)} → {labelEs(s0.to)}</span>
+          </div>
+          <div class="stat-chip" hidden>
+            <span class="label" id="l3"></span>
+            <span class="value" id="v3"></span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Guardar como imagen</button>
+          <button id="btn-share" type="button" class="secondary">Compartir</button>
+        </div>
+      </div>
+
+      <h2>Calcular días entre dos fechas online — días corridos</h2>
+      <p>
+        La calculadora resta la fecha de inicio a la fecha final, así que el primer día no se cuenta: del lunes 2 al viernes
+        6 de noviembre de 2026 hay {daysEs(ex1.days)}. Son días naturales seguidos (días corridos), con sábados, domingos y
+        festivos incluidos.
+      </p>
+      <p>
+        Marca <strong>Contar también el último día</strong> cuando entran los dos extremos, como en unas vacaciones, una
+        reserva o un curso «del 2 al 6, ambos incluidos». La misma semana da entonces {daysEs(ex1i.days)}. El año 2026
+        completo, del 1 de enero al 31 de diciembre contando los dos días, tiene {daysEs(year.days)}.
+      </p>
+      <p>
+        Puedes poner las fechas en cualquier orden: si la final es anterior a la de inicio, la calculadora las intercambia y lo
+        avisa debajo del resultado. Al abrir la página, la fecha de inicio es hoy y la final el 31 de diciembre, para ver
+        cuántos días quedan del año.
+      </p>
+
+      <h2>Sumar o restar días a una fecha</h2>
+      <ul>
+        <li>
+          <strong>Días</strong> — 30 días después del {labelEs(d(START))} es el {labelEs(plus30)}; 90 días después, el
+          {" "}{labelEs(plus90)}; y 60 días antes, el {labelEs(minus60)}.
+        </li>
+        <li><strong>Semanas</strong> — cada semana son 7 días. Cuatro semanas después del {labelEs(d(START))} es el {labelEs(plus4w)}.</li>
+        <li>
+          <strong>Meses y años</strong> — cambia el mes y se mantiene el día: seis meses después del {labelEs(d(START))} es el
+          {" "}{labelEs(plus6m)}. Si ese día no existe en el mes de llegada, se toma el último día del mes: un mes después del
+          {" "}{labelEs(jan31)} es el {labelEs(jan31plus1m)}.
+        </li>
+      </ul>
+
+      <h2>Calculadora de fechas en años, meses y días y por semanas</h2>
+      <p>
+        Debajo del total, el periodo se desglosa de dos maneras: en años, meses y días (primero los meses completos del
+        calendario y luego los días que sobran) y en semanas y días. Del 15 de marzo de 2025 al 21 de octubre de 2026 hay
+        {" "}{daysEs(longSpan.days)}, que son {spanTextEs(longSpan)}, o {weekTextEs(longSpan)}.
+      </p>
+
+      <h2>Días hábiles entre dos fechas en España</h2>
+      <p>
+        La cifra <strong>De lunes a viernes</strong> cuenta los días entre semana del periodo, sin sábados ni domingos, con el
+        mismo criterio de contar o no el último día. Del lunes 19 al viernes 30 de octubre de 2026, ambos incluidos, salen
+        {" "}{daysEs(twoWeeks.weekdays)}.
+      </p>
+      <p>
+        <strong>Los festivos no se restan</strong>, por eso esa cifra no se llama «días hábiles». En los procedimientos
+        administrativos, la Ley 39/2015 (artículo 30.2) dice que los plazos señalados por días son hábiles y excluye del
+        cómputo los sábados, los domingos y los declarados festivos. El calendario de días inhábiles lo fijan la
+        Administración General del Estado y cada comunidad autónoma, y el autonómico incluye los de las entidades locales
+        (artículo 30.7), así que cambia según dónde estés. Para llegar a los días hábiles, resta a la cifra de lunes a viernes
+        los festivos de tu comunidad y de tu municipio que caigan entre semana.
+      </p>
+      <p>
+        La misma ley fija que un plazo en meses termina el mismo día del mes de vencimiento y, si ese día no existe, el último
+        día del mes (artículo 30.4), que es como suma meses esta calculadora. Lo que no hace es pasar al siguiente día hábil
+        cuando el último día es inhábil (artículo 30.5), ni empezar a contar desde el día siguiente a una notificación: es una
+        calculadora de fechas, no un cómputo de plazos.
+      </p>
+
+      <h2>Calcular días entre fechas en Excel</h2>
+      <p>
+        Con la fecha de inicio en A2 y la final en B2, en Excel en español (las funciones se separan con punto y coma):
+      </p>
+      <ul>
+        <li><code>=B2-A2</code> — días entre las dos fechas, sin contar el último (da formato de número a la celda).</li>
+        <li><code>=B2-A2+1</code> — contando también el último día.</li>
+        <li><code>=SIFECHA(A2;B2;"m")</code> — meses completos entre las fechas (<code>"y"</code> para años completos).</li>
+        <li><code>=A2+30</code> o <code>=FECHA.MES(A2;6)</code> — sumar 30 días, o sumar seis meses.</li>
+        <li>
+          <code>=DIAS.LAB(A2;B2;H2:H20)</code> — días de lunes a viernes, quitando los festivos que pongas en H2:H20. Cuenta
+          los dos extremos, así que compáralo con el resultado de aquí con el último día incluido.
+        </li>
+      </ul>
+      <p>
+        En Excel en inglés y en Google Sheets con nombres en inglés, las mismas funciones son DATEDIF, EDATE y NETWORKDAYS.
+      </p>
+
+      <details>
+        <summary>¿Por qué no sale el resultado en horas?</summary>
+        <p>
+          El día en que cambia la hora (horario de verano) dura 23 o 25 horas, así que multiplicar los días por 24 fallaría en
+          una hora. La calculadora se queda en días y semanas.
+        </p>
+      </details>
+
+      <details>
+        <summary>¿Tiene en cuenta los años bisiestos?</summary>
+        <p>
+          Sí. Usa el calendario gregoriano, así que el 29 de febrero cuenta en los años bisiestos, y un año después de un 29 de
+          febrero es el 28 de febrero de un año normal.
+        </p>
+      </details>
+
+      <p class="hint">
+        Fuente: Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas, artículo
+        30, <a href="https://www.boe.es/buscar/act.php?id=BOE-A-2015-10565" rel="noopener">BOE-A-2015-10565</a> (consultado el
+        21 de octubre de 2026).
+      </p>
+
+      <AdSlot label="date-diff-result-es" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/date-diff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
