@@ -211,7 +211,52 @@ const DE: typeof KO = {
   shareText: "Tagerechner-Ergebnis - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE });
+/**
+ * 인도네시아어판(/id/tools/date-diff/). 날짜는 id-ID Intl 표기('Rabu, 21 Oktober 2026'), timeZone "UTC" 필수.
+ * 업무일(공휴일 빼기)·시간 환산은 넣지 않는다 — 인도네시아 공휴일·cuti bersama 를 원문으로 확인하지 않았다. 복수형 없음.
+ */
+const labelId = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("id-ID", { timeZone: "UTC", weekday: "long", year: "numeric", month: "long", day: "numeric" });
+const dayId = (v: number) => `${n(v, "id-ID")} hari`;
+const spanTextId = (s: Span) => {
+  const parts: string[] = [];
+  if (s.years) parts.push(`${n(s.years, "id-ID")} tahun`);
+  if (s.months) parts.push(`${n(s.months, "id-ID")} bulan`);
+  if (s.restDays || parts.length === 0) parts.push(dayId(s.restDays));
+  return parts.join(" ");
+};
+
+const ID: typeof KO = {
+  spanTitle: "Kalkulator tanggal — selisih dua tanggal",
+  shiftTitle: "Kalkulator tanggal — tambah atau kurangi tanggal",
+  needDates: "Masukkan kedua tanggal",
+  needBase: "Masukkan tanggal awal",
+  needInt: "Masukkan bilangan bulat, 0 atau lebih",
+  swapped: "Tanggal akhir lebih dulu dari tanggal awal, jadi kedua tanggal ditukar.",
+  spanLabel: (incl: boolean) => (incl ? "Selisih dua tanggal (hari pertama ikut dihitung)" : "Selisih dua tanggal"),
+  days: dayId,
+  spanSub: (s: Span) => `${spanTextId(s)} · ${n(s.weeks, "id-ID")} minggu ${dayId(s.weekRest)}`,
+  spanChips: (s: Span): [string, string][] => [
+    ["Hari Senin–Jumat", dayId(s.weekdays)],
+    ["Periode", `${labelId(s.from)} → ${labelId(s.to)}`],
+  ],
+  spanNotes: () => [],
+  unitName: (u: Unit) => ({ day: "hari", week: "minggu", month: "bulan", year: "tahun" })[u],
+  shiftWhat: (amount: number, unitName: string, after: boolean) => `${n(amount, "id-ID")} ${unitName} ${after ? "sesudahnya" : "sebelumnya"}`,
+  bizOut: "",
+  label: labelId,
+  todaySub: (target: number, today: number) => {
+    const d = target - today;
+    return d === 0 ? "Hari ini" : d > 0 ? `${dayId(d)} lagi dari hari ini` : `${dayId(-d)} yang lalu`;
+  },
+  baseChip: "Tanggal awal",
+  betweenChip: "Selisih",
+  between: (s: Span) => `${dayId(s.days)} (${spanTextId(s)})`,
+  monthEnd: "Bila tanggal itu tidak ada di bulan tujuan (tanggal 31, 29 Februari), dipakai hari terakhir bulan itu.",
+  shareText: "Hasil kalkulator tanggal - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, "zh-Hant": ZH_HANT, de: DE, id: ID });
 
 /** 이 기기 기준 오늘(지역 날짜) */
 function todayDay(): number {
