@@ -3,6 +3,7 @@ import { dayInfo, WEEKDAY_EN, type DayInfo, type WeekStart } from "../lib/date-d
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pickLang } from "../i18n/ui";
+import { WEEKDAYS_JA } from "../lib/date-format-ja";
 
 /** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
 const reportUse = trackCalculatorUse("date-day");
@@ -19,8 +20,8 @@ function today(): number {
 }
 
 /**
- * 화면 문구 — 한국어판(/tools/date-day/)과 영어판(/en-us/tools/date-day/ — 영어 다섯 판 공용)이 같은 계산(dayInfo)을 쓴다.
- * lib 의 공휴일 판정은 한국 관공서 공휴일 목록이라 영어판은 holiday 를 쓰지 않고 토·일만 본다.
+ * 화면 문구 — 한국어판(/tools/date-day/)·일본어판(/ja/tools/date-day/)·영어판(/en-us/tools/date-day/ — 영어 다섯 판 공용)이
+ * 같은 계산(dayInfo)을 쓴다. lib 의 공휴일 판정은 한국 관공서 공휴일 목록이라 일본어·영어판은 holiday 를 쓰지 않고 토·일만 본다.
  */
 const KO = {
   title: "날짜 요일",
@@ -92,7 +93,44 @@ const EN: typeof KO = {
   shareText: "Day of the week result - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, en: EN });
+/**
+ * 일본어판. 날짜는 '2026年10月20日', 요일은 '火曜日', 몇째 요일은 '第3火曜日', 주차는 '第43週'.
+ * 공휴일(祝日)은 표시하지 않는다(国民の祝日に関する法律 원문 미확인) — 平日·週末는 토·일만으로 가른다.
+ */
+const ja = (v: number) => v.toLocaleString("ja-JP");
+const youbiJa = (d: DayInfo) => `${WEEKDAYS_JA[d.weekday]}曜日`;
+
+const JA: typeof KO = {
+  title: "曜日計算",
+  needDate: "日付を入れてください",
+  outOfRange: "1900年から2100年までの日付を入れてください。",
+  head: (d: DayInfo) => `${d.year}年${d.month}月${d.date}日`,
+  today: (head: string) => `${head}・今日`,
+  dayName: youbiJa,
+  kind: (d: DayInfo) => (d.weekend ? "週末" : "平日"),
+  sub: (d: DayInfo, kind: string) => `${kind}・${d.month}月の第${d.nth}${youbiJa(d)}`,
+  doy: (d: DayInfo) => `${d.dayOfYear}日目 / ${d.daysInYear}日`,
+  left: (d: DayInfo) => `${ja(d.daysLeft)}日`,
+  iso: (d: DayInfo) => `${d.iso.year}年 第${d.iso.week}週`,
+  cal: (d: DayInfo) => `第${d.calWeek}週`,
+  month: (d: DayInfo) => `${d.month}月の第${d.monthWeek}週`,
+  leap: (d: DayInfo) => (d.leap ? "うるう年（366日）" : "平年（365日）"),
+  notes: (d: DayInfo) => {
+    const notes = [`第${d.quarter}四半期・ISO表記 ${d.isoText}・Unix時間（UTC 0時）${d.unix}`];
+    if (d.iso.year !== d.year) notes.push(`ISO週番号では${d.iso.year}年の週になります。`);
+    notes.push("祝日は表示していません。平日・週末は土曜日と日曜日だけで分けています。");
+    return notes;
+  },
+  lines: (d: DayInfo, dayName: string, kind: string): [string, string][] => [
+    ["曜日", `${dayName}・${kind}`],
+    ["年間通算日", `${d.dayOfYear}日目・残り${ja(d.daysLeft)}日`],
+    ["週番号", `ISO ${d.iso.year}-W${String(d.iso.week).padStart(2, "0")}・${d.month}月の第${d.monthWeek}週`],
+    ["うるう年", d.leap ? "うるう年" : "平年"],
+  ],
+  shareText: "曜日計算の結果 - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN });
 
 let lastLines: [string, string][] = [];
 let lastTitle = S.title;
