@@ -55,6 +55,14 @@ describe("언어는 주소로 정한다", () => {
       expect(JSON.stringify(UI[l]), l).not.toMatch(/[가-힣]/);
     }
   });
+  it("판 홈의 title·description 이 판마다 다르다(같은 언어 판끼리도)", () => {
+    for (const k of ["homeTitle", "homeDescription"] as const) {
+      const v = LOCALES.filter((l) => l !== "ko").map((l) => UI[l][k]);
+      expect(new Set(v).size, k).toBe(v.length);
+    }
+    // seo.test.ts 의 160자 상한 — 아직 안 열린 판 홈도 미리 막는다
+    for (const l of LOCALES) expect(UI[l].homeDescription.length, l).toBeLessThanOrEqual(160);
+  });
   it("금액 표기 — 원·円 은 뒤에 단위, 나머지는 그 나라 통화 형식", () => {
     expect(formatMoney("ko", 1234567)).toBe("1,234,567원");
     expect(formatMoney("ja", 1234567)).toBe("1,234,567円");

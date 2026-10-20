@@ -229,7 +229,7 @@ const WORDS: Record<Lang, Words> = {
     typeLabel: { tax: "Impôts", labor: "Salaire & travail", pension: "Retraite & assurance", home: "Logement & auto", inherit: "Succession & donation", money: "Argent & finance", date: "Dates & heures", media: "Photos & documents", text: "Texte & dev", unit: "Unités", health: "Santé & sport", life: "Vie courante" },
     homeTitle: "jupocket — des calculateurs du quotidien",
     homeDescription:
-      "Calculateurs de pourcentage, de dates et d’argent réunis au même endroit. Les outils fiscaux ne sont ajoutés qu’après vérification des chiffres auprès des sources officielles.",
+      "Calculateurs de pourcentage, de dates et d’argent. Les outils fiscaux n’arrivent qu’après vérification des chiffres auprès des sources officielles.",
     homeH1: "Que voulez-vous calculer ?",
     homeLede:
       "Des calculs du quotidien, prêts à l’emploi. Les outils fiscaux et de paie arrivent un par un, chacun vérifié d’abord auprès de la source officielle.",
@@ -379,15 +379,18 @@ const WORDS: Record<Lang, Words> = {
   },
 };
 
-/** 나라마다 다른 말 — 언어 이름과, 공식 기관 이름이 들어간 면책 문구 */
+/**
+ * 나라마다 다른 말 — 언어 이름, 공식 기관 이름이 들어간 면책 문구, 그리고 같은 언어를 쓰는 판끼리 겹치면 안 되는
+ * 홈 title·description(검색엔진이 같은 제목을 중복으로 본다 — seo.test.ts 가 막는다, 2026-10-20 영국 회차가 찾음).
+ */
 const OVERRIDES: Partial<Record<Locale, Partial<Words>>> = {
-  "en-us": { langName: "English (US)", footerNote: "Results are estimates for reference only and have no legal effect. Check exact amounts with the IRS, your state agency or a qualified tax professional." },
-  "en-gb": { langName: "English (UK)", footerNote: "Results are estimates for reference only and have no legal effect. Check exact amounts with HMRC (GOV.UK) or a qualified tax adviser." },
-  "en-ca": { langName: "English (Canada)", footerNote: "Results are estimates for reference only and have no legal effect. Check exact amounts with the Canada Revenue Agency or a qualified tax professional." },
-  "en-au": { langName: "English (Australia)", footerNote: "Results are estimates for reference only and have no legal effect. Check exact amounts with the Australian Taxation Office or a registered tax agent." },
-  "en-sg": { langName: "English (Singapore)", footerNote: "Results are estimates for reference only and have no legal effect. Check exact amounts with IRAS or a qualified tax professional." },
-  "zh-tw": { langName: "繁體中文（台灣）", footerNote: "計算結果僅供參考，不具法律效力。確切金額請向財政部或稅務專業人士確認。" },
-  "zh-hk": { langName: "繁體中文（香港）", footerNote: "計算結果僅供參考，不具法律效力。確切金額請向稅務局或專業人士確認。" },
+  "en-us": { langName: "English (US)", homeTitle: "jupocket US — everyday calculators for the United States", homeDescription: "Percentage, date and money calculators for the US. Tax and payroll tools are added only after checking their figures against the IRS.", footerNote: "Results are estimates for reference only and have no legal effect. Check exact amounts with the IRS, your state agency or a qualified tax professional." },
+  "en-gb": { langName: "English (UK)", homeTitle: "jupocket UK — everyday calculators for the United Kingdom", homeDescription: "Percentage, date and money calculators for the UK. Tax and pay tools are added only after checking their figures against GOV.UK and HMRC.", footerNote: "Results are estimates for reference only and have no legal effect. Check exact amounts with HMRC (GOV.UK) or a qualified tax adviser." },
+  "en-ca": { langName: "English (Canada)", homeTitle: "jupocket Canada — everyday calculators for Canada", homeDescription: "Percentage, date and money calculators for Canada. Tax and payroll tools are added only after checking their figures against the CRA.", footerNote: "Results are estimates for reference only and have no legal effect. Check exact amounts with the Canada Revenue Agency or a qualified tax professional." },
+  "en-au": { langName: "English (Australia)", homeTitle: "jupocket Australia — everyday calculators for Australia", homeDescription: "Percentage, date and money calculators for Australia. Tax and pay tools are added only after checking their figures against the ATO.", footerNote: "Results are estimates for reference only and have no legal effect. Check exact amounts with the Australian Taxation Office or a registered tax agent." },
+  "en-sg": { langName: "English (Singapore)", homeTitle: "jupocket Singapore — everyday calculators for Singapore", homeDescription: "Percentage, date and money calculators for Singapore. Tax and CPF tools are added only after checking their figures against IRAS and CPF.", footerNote: "Results are estimates for reference only and have no legal effect. Check exact amounts with IRAS or a qualified tax professional." },
+  "zh-tw": { langName: "繁體中文（台灣）", homeTitle: "jupocket 台灣 — 日常計算工具", homeDescription: "百分比、日期、金額等計算工具。稅務與薪資工具會先以財政部等官方資料核對數字後再陸續加入。", footerNote: "計算結果僅供參考，不具法律效力。確切金額請向財政部或稅務專業人士確認。" },
+  "zh-hk": { langName: "繁體中文（香港）", homeTitle: "jupocket 香港 — 日常計算工具", homeDescription: "百分比、日期、金額等計算工具。稅務與強積金工具會先以稅務局等官方資料核對數字後再陸續加入。", footerNote: "計算結果僅供參考，不具法律效力。確切金額請向稅務局或專業人士確認。" },
 };
 
 export type UiStrings = Words & {

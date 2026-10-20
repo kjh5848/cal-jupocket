@@ -71,6 +71,7 @@
 - [ ] 페이지는 `<html lang="<설정 htmlLang>">`, BaseHead·SiteHeader·SiteFooter 그대로(언어는 주소로 자동). 계산기 마크업은 data-* 계약(`2026-10-16-jupocket-rebrand.md` Task 7).
 - [ ] 판의 첫 도구면 `src/pages/<판>/index.astro`(`<LocaleHome locale="<판>" />`)도 만든다.
 - [ ] 금액은 계산 함수로. 본문 끝에 원문 출처 링크.
+- [ ] **title·description 은 사이트 전체에서 유일해야 한다**(`seo.test.ts`). 같은 언어를 쓰는 다른 판(en-us·en-gb·en-ca·en-au·en-sg, zh-tw·zh-hk)에 같은 도구가 이미 있으면 제목·설명에 나라 이름이나 그 나라 표현(UK·VAT·GST·HMRC…)을 넣어 갈라 쓴다.
 
 ### 5. 검사 → 커밋 → 올리기
 - [ ] `git status --short` 의 모든 파일이 '내 파일' 안인지 확인. 아니면 그 파일을 되돌리고(`git checkout -- <파일>`) 기록.
