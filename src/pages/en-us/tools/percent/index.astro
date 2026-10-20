@@ -1,0 +1,177 @@
+---
+/**
+ * Percentage Calculator — 미국 영어판 첫 도구. 한국어판 /tools/percent/ 와 계산(lib/percent.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/percent.ts 의 EN 사전), 문장은 영어로 새로 썼다(번역 아님). 산술이라 나라 제도·rates 와 상관없다(조사표 미국 칸 '같음').
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-percent-2026-10-20.csv):
+ *   percentage calculator formula / percent off price·coupon / percent change between two numbers·formula /
+ *   percent change vs percent difference / percentage increase formula excel·google sheets / percentage calculator for grades
+ * 판매세(sales tax)·팁 같은 미국 숫자는 쓰지 않는다 — 주·도시마다 다르고 이 도구의 계산이 아니다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+
+const title = "Percentage Calculator — Percent of a Number, Percent Change & Percent Off";
+const description =
+  "Find what percent B is of A, X% of a number, percent change between two numbers, and prices after or before a percent off. With formulas and Excel examples.";
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Percentage Calculator</h1>
+      <p>
+        Pick what you want to find, then enter two numbers. Results are rounded to two decimal places.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">What do you want to find?</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>B is what % of A?</option>
+            <option value="of">What is B% of A?</option>
+            <option value="change">% change from A to B</option>
+            <option value="adjust">A plus or minus B%</option>
+            <option value="original">Original value before a B% change</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">Increase or decrease</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>Decrease (percent off)</option>
+            <option value="up">Increase (markup)</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">Whole value A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">Part value B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B is this percent of A</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Whole value A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Part value B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Percentage formulas</h2>
+      <ul>
+        <li><strong>What percent B is of A</strong> — part ÷ whole × 100. If you got 45 out of 50 questions right, 45 ÷ 50 × 100 = 90%.</li>
+        <li><strong>B% of A</strong> — A × B ÷ 100. 15% of 80 is 80 × 15 ÷ 100 = 12.</li>
+        <li><strong>Percent change</strong> — (new − old) ÷ old × 100. From 250 to 300 is (300 − 250) ÷ 250 × 100 = +20%.</li>
+        <li><strong>Original value</strong> — if a price is 40 after 20% off, the original was 40 ÷ 0.8 = 50. Not 40 × 1.2 = 48.</li>
+      </ul>
+
+      <h2>How to calculate percent off a price</h2>
+      <p>
+        The sale price is the original price × (1 − the discount). 30% off 50 is 50 × 0.7 = 35, and you save 15.
+        On a phone calculator, typing <kbd>50</kbd> <kbd>×</kbd> <kbd>0.7</kbd> is the fastest way — you don't need to
+        work out the discount first.
+      </p>
+      <p>
+        Two discounts don't add up. 20% off and then another 10% off is 0.8 × 0.9 = 0.72 of the price, which is 28% off,
+        not 30%. Run "A plus or minus B%" twice to check.
+      </p>
+
+      <h2>Percent change between two numbers</h2>
+      <p>
+        Percent change compares the new number with the old one, so the old number goes on the bottom.
+        From 80 to 100 is +25%, but from 100 back to 80 is −20%. The direction matters.
+      </p>
+      <p>
+        <strong>Percent difference</strong> is a different formula. It compares two numbers with no "before" and "after",
+        so it divides by their average: |A − B| ÷ ((A + B) ÷ 2) × 100. For 80 and 100 that is 20 ÷ 90 × 100 = 22.22%.
+        This calculator does percent change, not percent difference.
+      </p>
+
+      <h2>Percentage formulas in Excel and Google Sheets</h2>
+      <p>With the old value in A1 and the new value in B1:</p>
+      <ul>
+        <li>What percent B1 is of A1: <code>=B1/A1</code>, then format the cell as a percentage.</li>
+        <li>Percent change: <code>=(B1-A1)/A1</code>, formatted as a percentage.</li>
+        <li>B1% of A1, with B1 typed as a plain number like 15: <code>=A1*B1/100</code>.</li>
+        <li>Price after B1% off: <code>=A1*(1-B1/100)</code>.</li>
+      </ul>
+      <p>
+        If a cell is already formatted as a percentage, 15% is stored as 0.15, so leave out the <code>/100</code>.
+      </p>
+
+      <details>
+        <summary>Why doesn't a 20% increase followed by a 20% decrease get me back where I started?</summary>
+        <p>
+          The second step starts from a bigger number. 100 up 20% is 120, and 120 down 20% is 120 × 0.8 = 96.
+          To get from 120 back to 100 you need a 16.67% decrease. Check it with "Original value".
+        </p>
+      </details>
+
+      <details>
+        <summary>What if the old value is negative?</summary>
+        <p>
+          This calculator divides by the absolute value of the old number, so a move upward always reads as a plus.
+          A loss going from −100 to −50 is (−50 − (−100)) ÷ 100 × 100 = +50%. If the old value is 0 there is nothing
+          to divide by, so only the difference is shown.
+        </p>
+      </details>
+
+      <details>
+        <summary>What is the difference between a percent and a percentage point?</summary>
+        <p>
+          If a rate goes from 3% to 4%, it rose by <strong>1 percentage point</strong>, and by
+          (4 − 3) ÷ 3 × 100 = <strong>33.33%</strong> as a percent change. Subtracting two percentages gives
+          points; dividing that by the old rate gives the percent change.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I type a dollar sign or commas?</summary>
+        <p>
+          Commas and the % sign are fine — 1,200 and 15% both work. Leave out currency signs like $ and type the number only.
+        </p>
+      </details>
+
+      <AdSlot label="percent-result-en-us" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
