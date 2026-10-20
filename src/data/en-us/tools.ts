@@ -17,4 +17,13 @@ export const tools: LocaleTool[] = [
     icon: "percent",
     basis: "math",
   },
+  {
+    href: "/en-us/tools/date-diff/",
+    ko: "/tools/date-diff/",
+    name: "Date Calculator",
+    blurb: "Days between two dates, days from today, add or subtract weeks and months, weekdays only",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];
