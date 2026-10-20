@@ -77,7 +77,7 @@
 - [ ] `git status --short` 의 모든 파일이 '내 파일' 안인지 확인. 아니면 그 파일을 되돌리고(`git checkout -- <파일>`) 기록.
 - [ ] `npm run build` → `set -o pipefail; npx vitest run > out.txt; echo $?` 가 0 일 때만 커밋(`<code>: <도구> <판> 페이지` 또는 `docs: <code> <주제> 판정`).
 - [ ] 올리기(최대 3번): `git push origin HEAD:main` → 거절되면 `git fetch origin && git rebase origin/main` → 빌드·테스트 다시 → 다시 push. rebase 충돌이면 `git rebase --abort` 후 그 회차를 `보류(충돌)` 로 기록하고 끝낸다(다음 회차가 새 main 에서 다시 한다).
-- [ ] 페이지를 냈으면 라이브 주소(`https://jupocket.com/<판>/…`) 200 확인(배포에 몇 분 걸린다 — 최대 10분 간격 확인).
+- [ ] 페이지를 냈으면 라이브 주소(`https://jupocket.com/<판>/…`) 200 확인(배포에 몇 분 걸린다 — 최대 10분 간격 확인). 200 이면 `node social/indexnow.mjs <그 주소>` 로 Bing·네이버 등에 알린다(목록 `social/indexnow-sent.json` 은 커밋하지 않는다).
 
 ### 6. 기록
 - [ ] `docs/countries/<code>.md` 행 상태(발행·보강·판정·보류(이유)) + 근거 주소·자동완성 CSV·확인일. 이 기록 커밋도 같은 push 에 묶는다.
