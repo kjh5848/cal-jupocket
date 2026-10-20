@@ -8,6 +8,8 @@
  * 프랑스어판(/fr/tools/compound/)은 FR 사전 — EUR·fr-FR('10 000 €'), 입력칸 금액은 쉼표 앞까지만 읽는다(readAmount).
  * 독일어판(/de/tools/compound/)은 DE 사전 — 금액은 lib/de/money euroDe('10 000 Euro', 법령 원문 꼴, Intl 안 씀),
  * 입력칸 천 단위는 intDe(공백), 금액은 fr 과 같이 쉼표 앞까지만 읽는다.
+ * 스페인어판(/es/tools/compound/)은 ES 사전 — 금액은 lib/es/money euroEs('10 000 euros', RD 2032/2009 숫자 표기, € 기호 안 씀),
+ * 입력칸 천 단위는 formatNumberEs(다섯 자리부터 공백), 금액은 fr·de 와 같이 쉼표 앞까지만 읽는다(1.500 의 점은 parseAmount 가 버림).
  */
 import { compound, type Timing } from "../lib/compound";
 import { formatWon, formatYen, parseAmount } from "../lib/money";
@@ -17,6 +19,8 @@ import { pageLocale, pickLang } from "../i18n/ui";
 import { meta } from "../i18n/locales";
 import { euroDe, decimalDe } from "../lib/de/money";
 import { intDe } from "../lib/de/date-format";
+import { euroEs, decimalEs } from "../lib/es/money";
+import { formatNumberEs } from "../lib/es/number";
 
 const reportUse = trackCalculatorUse("compound");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -164,12 +168,32 @@ const DE: typeof KO = {
   share: "Ergebnis Zinseszinsrechner - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT, fr: FR, de: DE });
+/** Español — /es/tools/compound/. 금액은 euroEs('10 000 euros'), 비율은 소수 쉼표(퍼센트 페이지와 같이 '%' 붙여 씀) */
+const ES: typeof KO = {
+  money: euroEs,
+  spell: (y, r) =>
+    [y ? `${y} ${y === 1 ? "año" : "años"}` : "", r ? `${r} ${r === 1 ? "mes" : "meses"}` : ""].filter(Boolean).join(" y ") || "0 meses",
+  note: (months, monthlyRate, start) => `${months} meses · ${decimalEs(monthlyRate)}% al mes · aportación a ${start ? "principio" : "final"} de mes`,
+  noTax: euroEs(0),
+  goalNone: "Sin objetivo",
+  goalNever: "No se alcanza en este plazo",
+  goalAtStart: "Alcanzado desde el principio",
+  goalAt: (s) => `A los ${s}`,
+  yearRow: (year, rest) => (rest === 0 ? `Año ${year}` : `Año ${year} (${rest} ${rest === 1 ? "mes" : "meses"})`),
+  after: (s) => `Capital a los ${s}`,
+  paid: "Total aportado",
+  gain: "Intereses ganados",
+  afterTax: "Tras impuestos",
+  title: "Resultado de la calculadora de interés compuesto",
+  share: "Resultado de la calculadora de interés compuesto - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT, fr: FR, de: DE, es: ES });
 /** 입력칸 천 단위 표기 — 판의 numberLocale(ko-KR·ja-JP·en-* 는 쉼표, id-ID 는 점). parseAmount 는 숫자만 읽어 어느 쪽이든 같다. */
-const formatInput = pickLang<(v: number) => string>({ ko: (v) => v.toLocaleString(EN_MONEY.numberLocale), de: intDe });
+const formatInput = pickLang<(v: number) => string>({ ko: (v) => v.toLocaleString(EN_MONEY.numberLocale), de: intDe, es: formatNumberEs });
 /** 입력칸 금액 읽기 — 정수 단위. fr 은 쉼표가 소수점이라 붙여 넣은 "1 500,50" 을 150050 이 아니라 1500 으로(쉼표 뒤 버림). 다른 판은 parseAmount 그대로. */
 const cutAtComma = (raw: string) => parseAmount(raw.split(",")[0]);
-const readAmount = pickLang<(raw: string) => number>({ ko: parseAmount, fr: cutAtComma, de: cutAtComma });
+const readAmount = pickLang<(raw: string) => number>({ ko: parseAmount, fr: cutAtComma, de: cutAtComma, es: cutAtComma });
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const num = (el: HTMLInputElement, lo: number, hi: number) => clamp(Number(el.value) || 0, lo, hi);
