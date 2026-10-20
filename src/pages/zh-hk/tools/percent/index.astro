@@ -1,0 +1,201 @@
+---
+/**
+ * 百分比計算機 — 홍콩 繁體中文판 첫 도구. 한국어판 /tools/percent/ 와 계산(lib/percent.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/percent.ts 의 ZH_HANT 사전 — 대만 루틴이 넣은 繁體 판 공용), 문장은 홍콩 자동완성으로 새로 썼다(번역 아님). 산술이라 나라 제도·rates 와 상관없다(조사표 홍콩 칸 '같음').
+ *
+ * 소제목은 홍콩 구글 자동완성에서 왔다(keywords/hk-percent-2026-10-20.csv, hl zh-HK · gl hk):
+ *   百分比計算公式·計算方法 / 升幅 百分比計算·增長率 計算公式 / 折扣 計算 公式·原價·方法 /
+ *   利潤·盈利 百分比 公式 / 誤差·差異 百分比 公式 / 百分比 公式 excel·google 試算表 / 百分比 點 計
+ * 「八折 = 原價 × 0.8」 같은 折 표기는 말뜻(산술)이라 본문 설명에만 쓰고 공유 사전에는 넣지 않았다.
+ * 통화 기호 관습은 원문 확인 전이라 예시는 숫자만. 세율·強積金 같은 홍콩 제도 숫자는 쓰지 않는다.
+ * title·description 에 香港을 넣어 나중에 생길 대만판(zh-tw)과 갈리게 했다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+
+const title = "百分比計算機（香港）— 百分比公式、升幅及折扣計算";
+const description =
+  "香港適用的百分比計算機：輸入兩個數字，即計一個數的百分之幾、升幅或跌幅，以及打折後的價錢。附利潤及誤差百分比公式、Excel 寫法。";
+---
+
+<html lang="zh-Hant-HK">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>百分比計算機</h1>
+      <p>先揀想計的項目，再輸入兩個數字。結果計到小數點後兩個位。</p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mode">想計甚麼？</label>
+          <select id="mode" data-seg>
+            <option value="ratio" selected>B 佔 A 的百分之幾？</option>
+            <option value="of">A 的 B% 是多少？</option>
+            <option value="change">由 A 到 B 的升幅／跌幅</option>
+            <option value="adjust">A 加或減 B%</option>
+            <option value="original">變動 B% 之前的原來數值</option>
+          </select>
+        </div>
+
+        <div class="field" id="dir-row" hidden>
+          <label for="dir">增加或減少</label>
+          <select id="dir" data-seg>
+            <option value="down" selected>減少（折扣）</option>
+            <option value="up">增加（加價）</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="a-label" for="a">全部的數 A</label>
+          <input type="text" inputmode="decimal" id="a" value="200" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label id="b-label" for="b">部分的數 B</label>
+          <input type="text" inputmode="decimal" id="b" value="50" autocomplete="off" />
+          <span class="unit" id="b-unit" hidden>%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">B 佔 A 的</p>
+          <p class="big" id="hero-value">25%</p>
+          <p class="hint" id="formula">50 ÷ 200 × 100</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">全部的數 A</span>
+            <span class="value" id="v1">200</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">部分的數 B</span>
+            <span class="value" id="v2">50</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">儲存為圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2>百分比計算公式</h2>
+      <p>
+        A 的 B% = A × B ÷ 100。例如 250 的 18% 是 250 × 18 ÷ 100 = 45。反過來，想知道一個數佔另一個數的百分之幾，就用
+        部分 ÷ 全部 × 100：45 ÷ 250 × 100 = 18%。
+      </p>
+      <p>心算時可以先找 10% 和 1%，再拼出其他百分比：</p>
+      <ul>
+        <li><strong>10%</strong> — 小數點向左移一個位。460 的 10% 是 46。</li>
+        <li><strong>1%</strong> — 小數點向左移兩個位。460 的 1% 是 4.6。</li>
+        <li><strong>5%</strong> — 10% 的一半，即 23。</li>
+        <li><strong>17%</strong> = 10% + 5% + 1% + 1% = 46 + 23 + 4.6 + 4.6 = 78.2。</li>
+      </ul>
+
+      <h2>升幅百分比計算（增長率計算公式）</h2>
+      <p>升幅（增長率）=（新數值 − 原來數值）÷ 原來數值 × 100。答案是正數代表上升，負數代表下跌。</p>
+      <ul>
+        <li><strong>由 40 升到 50</strong> —（50 − 40）÷ 40 × 100 = +25%。</li>
+        <li><strong>由 50 跌到 40</strong> —（40 − 50）÷ 50 × 100 = −20%。</li>
+      </ul>
+      <p>
+        兩次相差都是 10，百分比卻不同，因為升跌一定以「原來的數」作基準。在上面揀「由 A 到 B 的升幅／跌幅」，把原來的數放在 A。
+      </p>
+
+      <h2>折扣計算公式：打折後價錢與原價</h2>
+      <p>
+        「八折」即付原價的八成，折後價 = 原價 × 0.8，等於減 20%；「八五折」是原價 × 0.85，等於減 15%。
+        換成百分比來說：折後價 = 原價 ×（1 − 折扣% ÷ 100），慳到的金額 = 原價 × 折扣% ÷ 100。
+      </p>
+      <ul>
+        <li>原價 120 打八五折：120 × 0.85 = 102，慳 18。</li>
+        <li>
+          由折後價計返原價：折後 102、八五折，原價 = 102 ÷ 0.85 = 120。在上面揀「變動 B% 之前的原來數值」，選「減少」，B 填 15。
+        </li>
+        <li>由兩個價錢計折扣：由 80 減到 60，（60 − 80）÷ 80 × 100 = −25%，即減 25%，也就是七五折。</li>
+      </ul>
+      <p>連續兩次折扣要相乘，不是相加。七折再打九折是 0.7 × 0.9 = 0.63，即六三折（減 37%），不是六折。</p>
+
+      <h2>利潤百分比公式（盈利百分比）</h2>
+      <p>利潤 = 售價 − 成本。利潤百分比要先講清楚以哪個數作基準：</p>
+      <ul>
+        <li><strong>以成本計</strong>：利潤 ÷ 成本 × 100。成本 80、售價 100，利潤 20，即 20 ÷ 80 × 100 = 25%。</li>
+        <li><strong>以售價計</strong>：利潤 ÷ 售價 × 100。同一個例子是 20 ÷ 100 × 100 = 20%。</li>
+      </ul>
+      <p>
+        同一宗交易兩種計法答案不同，引用數字時要寫明基準。以成本計的利潤百分比，就是上面「由 A 到 B 的升幅」（A 填成本、B 填售價）。
+      </p>
+
+      <h2>誤差百分比公式與差異百分比公式</h2>
+      <ul>
+        <li>
+          <strong>誤差百分比</strong> = |量度值 − 真實值| ÷ 真實值 × 100。量度到 9.6、真實值 9.8：0.2 ÷ 9.8 × 100 ≈ 2.04%。
+        </li>
+        <li>
+          <strong>差異百分比</strong>不分先後，用兩個數的平均作基準：|A − B| ÷（(A + B) ÷ 2）× 100。40 和 50 的差異百分比是
+          10 ÷ 45 × 100 ≈ 22.22%。這個計算機計的是升跌幅，不是差異百分比。
+        </li>
+      </ul>
+
+      <h2>百分比公式 Excel／Google 試算表寫法</h2>
+      <p>原來數值放 A2，新數值放 B2：</p>
+      <ul>
+        <li>升幅或跌幅：<code>=(B2-A2)/A2</code>，再把儲存格格式設為百分比。</li>
+        <li>B2 佔 A2 的百分比：<code>=B2/A2</code>，格式設為百分比。</li>
+        <li>A2 的 B2%（B2 填普通數字，例如 18）：<code>=A2*B2/100</code>。</li>
+        <li>打 B2% 折扣後的價錢：<code>=A2*(1-B2/100)</code>。</li>
+      </ul>
+      <p>
+        如果 B2 本身已設成百分比格式，18% 會以 0.18 儲存，公式就不用再 <code>/100</code>。Google 試算表用同樣的公式。
+      </p>
+
+      <details>
+        <summary>百分比和百分點點計？</summary>
+        <p>
+          利率由 2% 升到 3%，是升了 <strong>1 個百分點</strong>；但以利率本身來說，是（3 − 2）÷ 2 × 100 =
+          <strong>50%</strong> 的升幅。
+        </p>
+      </details>
+
+      <details>
+        <summary>為甚麼先加 10% 再減 10%，會比原來少？</summary>
+        <p>
+          因為減 10% 是以較大的數作基準。200 加 10% 是 220，220 減 10% 是 198。由 220 回到 200 要減 9.09%，可以用「變動 B%
+          之前的原來數值」驗算。
+        </p>
+      </details>
+
+      <details>
+        <summary>分數點樣換成百分比？</summary>
+        <p>
+          得分 ÷ 滿分 × 100。80 分滿分得 68 分：68 ÷ 80 × 100 = 85%。在上面揀「B 佔 A 的百分之幾？」，A 填滿分、B 填得分。
+          幾份卷要合計時，先把得分和滿分各自加起來再除，不要把每份卷的百分比直接平均。
+        </p>
+      </details>
+
+      <details>
+        <summary>可以輸入逗號或貨幣符號嗎？</summary>
+        <p>可以輸入逗號和 % 號，例如 1,500 或 18%。貨幣符號請不要輸入，只填數字。</p>
+      </details>
+
+      <AdSlot label="percent-result-zh-hk" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/percent.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
