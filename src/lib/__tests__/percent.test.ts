@@ -1,6 +1,6 @@
 /** 퍼센트 계산기 — 경계값과 반올림(부동소수 오차) 고정. 법 숫자 없음, 손으로 셈한 값. */
 import { describe, it, expect } from "vitest";
-import { round2, parseNumber, formatNumber, parseNumberDe, formatNumberDe, ratio, percentOf, change, adjust, original, toWari } from "../percent";
+import { round2, parseNumber, formatNumber, parseNumberDe, formatNumberDe, ratio, percentOf, change, adjust, original, toWari, bpToPct, pctToBp, rateShift, formatFine } from "../percent";
 
 describe("round2", () => {
   it("부동소수로 .xx4999… 가 된 반 올림 값을 올린다", () => {
@@ -139,5 +139,38 @@ describe("일본어판 — 전각 입력 · 歩合(割·分·厘)", () => {
     expect(toWari(0)).toBeNull();
     expect(toWari(120)).toBeNull();
     expect(toWari(33.33)).toBeNull();
+  });
+});
+
+describe("bp ↔ %p (#155, 1bp = 0.01%p — SEC Investor.gov 용어집)", () => {
+  it("bp → %p", () => {
+    expect(bpToPct(25)).toBe(0.25);
+    expect(bpToPct(1)).toBe(0.01);
+    expect(bpToPct(12.5)).toBe(0.125);
+    expect(bpToPct(-25)).toBe(-0.25);
+    expect(bpToPct(800)).toBe(8); // 용어집 예: 8% = 800bp
+    expect(bpToPct(0.5)).toBe(0.005);
+  });
+  it("%p → bp", () => {
+    expect(pctToBp(0.25)).toBe(25);
+    expect(pctToBp(0.375)).toBe(37.5);
+    expect(pctToBp(0.07)).toBe(7); // 0.07 × 100 = 7.000000000000001 을 끊는다
+    expect(pctToBp(8)).toBe(800);
+  });
+  it("금리 이동 — roberin 대조와 같은 입력", () => {
+    expect(rateShift(3.5, 25, 100_000_000)).toEqual({ after: 3.75, relative: 7.14, yearly: 250_000 });
+    expect(rateShift(4, -25, 300_000_000)).toEqual({ after: 3.75, relative: -6.25, yearly: -750_000 });
+    expect(rateShift(0.5, 1, 10_000_000)).toEqual({ after: 0.51, relative: 2, yearly: 1_000 });
+    expect(rateShift(3, 12.5, 150_000_000)).toEqual({ after: 3.125, relative: 4.17, yearly: 187_500 });
+  });
+  it("처음 금리 0 이면 상대 변화율 없음, 원금 없으면 이자 차이 없음, 원 미만 반올림", () => {
+    expect(rateShift(0, 25)).toEqual({ after: 0.25, relative: null, yearly: null });
+    expect(rateShift(3, 1, 12_345)).toEqual({ after: 3.01, relative: 0.33, yearly: 1 }); // 1.2345원
+    expect(rateShift(3, -1, 15_000)).toEqual({ after: 2.99, relative: -0.33, yearly: -2 }); // −1.5원 → −2
+  });
+  it("표기", () => {
+    expect(formatFine(0.125)).toBe("0.125");
+    expect(formatFine(37.5)).toBe("37.5");
+    expect(formatFine(250000)).toBe("250,000");
   });
 });

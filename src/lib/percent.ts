@@ -112,3 +112,40 @@ export function toWari(p: number): string | null {
   const rin = t % 10;
   return `${wari ? `${wari}割` : ""}${bu ? `${bu}分` : ""}${rin ? `${rin}厘` : ""}`;
 }
+
+/**
+ * bp(베이시스 포인트) ↔ %p — 1bp 는 1%p 의 100분의 1(0.01%p), 100bp = 1%p.
+ * 미국 SEC Investor.gov 용어집 'Basis Point': one one-hundredth (.01) of a percentage point
+ * (https://www.investor.gov/introduction-investing/investing-basics/glossary/basis-point, 확인 2026-10-21).
+ * 12.5bp 같은 값이 0.12500000000000001 로 남지 않게 15자리로 끊는다. 반올림은 하지 않는다(0.005%p 도 그대로).
+ */
+export function bpToPct(bp: number): number {
+  return Number((bp / 100).toPrecision(15));
+}
+
+/** %p → bp — 0.25%p = 25bp. */
+export function pctToBp(p: number): number {
+  return Number((p * 100).toPrecision(15));
+}
+
+/**
+ * 금리 base% 를 bp 만큼 움직이면 — 바뀐 금리(%), 처음 금리 대비 상대 변화율(%, 소수 둘째 자리,
+ * 처음 금리가 0 이면 null), 원금이 있으면 1년 단순이자 차이(원금 × bp ÷ 10,000, 원 단위 반올림).
+ * 원금이 갚아 가며 줄어드는 대출은 실제 차이가 이보다 작다 — 화면에 적는다.
+ */
+export function rateShift(base: number, bp: number, principal?: number): { after: number; relative: number | null; yearly: number | null } {
+  const after = Number((base + bp / 100).toPrecision(15));
+  const relative = base === 0 ? null : round2((bp / 100 / Math.abs(base)) * 100);
+  let yearly: number | null = null;
+  if (principal !== undefined && Number.isFinite(principal)) {
+    const raw = Number(((principal * bp) / 10000).toPrecision(15));
+    const r = Math.sign(raw) * Math.round(Math.abs(raw));
+    yearly = r === 0 ? 0 : r;
+  }
+  return { after, relative, yearly };
+}
+
+/** bp·%p·금리 표기 — 소수 여섯째 자리까지(bp 는 작은 값이라 둘째 자리 반올림을 쓰지 않는다), 끝 0 은 지움. */
+export function formatFine(x: number): string {
+  return Number(x.toPrecision(15)).toLocaleString("ko-KR", { maximumFractionDigits: 6 });
+}
