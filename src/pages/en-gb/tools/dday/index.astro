@@ -1,0 +1,264 @@
+---
+/**
+ * Days Until — 영국 영어판 네 번째 도구(디데이). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 EN 사전 — 날짜는 <html lang="en-GB"> 로 'Tue, 20 October 2026')를 같이 쓰고,
+ * 문장은 영국 영어로 새로 썼다(번역 아님). 조사표 영국 칸 '단위'. 고친 공유 파일 없음.
+ *
+ * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-dday-2026-10-20.csv, hl en · gl gb):
+ *   how many days until · days until christmas 2026 uk · christmas eve / countdown calculator days hours minutes /
+ *   days left until the end of the year · 2027 / birthday countdown calculator / how many days until school starts
+ * 프리셋 버튼은 공유 스크립트가 정한 네 개(100일·12/25·12/31·1/1) 그대로.
+ * 영국 숫자는 GOV.UK 에서 읽은 것만(확인 2026-10-20):
+ *   - 시계 바꾸기 https://www.gov.uk/when-do-the-clocks-change (Last updated 24 November 2025):
+ *     2026-10-25 오전 2시에 1시간 뒤로, 2027-03-28 오전 1시에 1시간 앞으로.
+ *   - bank holidays https://www.gov.uk/bank-holidays.json: 2026-12-25 Christmas Day, 2026-12-28 Boxing Day(notes "Substitute day"),
+ *     2027-01-01 New Year's Day — 세 지역 모두.
+ * 하루는 24시간으로 센다 — 10/25 를 끼는 카운트다운은 실제 남은 시간이 화면보다 1시간 길다(본문에 그렇게 적음).
+ * 본문 숫자는 전부 아래 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, countdown, type Countdown } from "../../../../lib/date-calc";
+
+const title = "Days Until Countdown UK — How Many Days Left Until Christmas or Any Date";
+const description =
+  "Count the days left until any date in the UK, with a live countdown in days, hours and minutes. Christmas, Boxing Day, birthdays and deadlines.";
+
+/** 하루 번호 → 'Tue, 20 October 2026' (UTC 자정이라 timeZone UTC) */
+const labelGb = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("en-GB", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${v.toLocaleString("en-GB")} ${one}${v === 1 ? "" : "s"}`;
+const left = (c: Countdown) => (c.side === 0 ? "Today" : c.side > 0 ? `${plural(c.days, "day")} to go` : `${plural(c.days, "day")} ago`);
+const d = (iso: string) => toDay(iso)!;
+
+const BASE = "2026-10-20";
+const TARGET = "2027-01-28";
+const base = d(BASE);
+const target = d(TARGET);
+const c0 = countdown(target, null, base, 0);
+const days0 = Math.floor(c0.seconds / 86_400);
+
+// 본문 예시 — 전부 BASE 에서 센다
+const halloween = d("2026-10-31");
+const xmasEve = d("2026-12-24");
+const xmas = d("2026-12-25");
+const boxing = d("2026-12-28"); // GOV.UK bank-holidays.json — Boxing Day, notes "Substitute day"
+const nye = d("2026-12-31");
+const ny = d("2027-01-01");
+const clocksBack = d("2026-10-25"); // GOV.UK — clocks go back 1 hour at 2am
+const clocksForward = d("2027-03-28"); // GOV.UK — clocks go forward 1 hour at 1am
+const cHalloween = countdown(halloween, null, base, 0);
+const cXmasEve = countdown(xmasEve, null, base, 0);
+const cXmas = countdown(xmas, null, base, 0);
+const cBoxing = countdown(boxing, null, base, 0);
+const cNye = countdown(nye, null, base, 0);
+const cNy = countdown(ny, null, base, 0);
+const tomorrow = countdown(base + 1, null, base, 0);
+// 오전 9시 시작 — 기준일 오후 3시(15:00)에 열었을 때
+const exam = countdown(xmas, 9 * 3600, base, 15 * 3600);
+const examD = Math.floor(exam.seconds / 86_400);
+const examH = Math.floor((exam.seconds % 86_400) / 3600);
+const pastDay = d("2026-09-01");
+const past = countdown(pastDay, null, base, 0);
+---
+
+<html lang="en-GB">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>How Many Days Until…? UK Countdown Calculator</h1>
+      <p>
+        Choose a date and the countdown shows how many days are left and how much time remains. For an exam, a flight or a
+        deadline that starts at a set time, switch on “Count to a time”.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">Target date</label>
+          <input type="date" id="target" value={TARGET} />
+          <div class="ux-presets" role="group" aria-label="Common dates">
+            <button type="button" data-preset="plus100">100 days</button>
+            <button type="button" data-preset="xmas">Christmas Day</button>
+            <button type="button" data-preset="yearend">31 Dec</button>
+            <button type="button" data-preset="newyear">New Year's Day</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">Count to a time</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">Target time</label>
+          <input type="time" id="time" value="09:00" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">Start date (usually today)</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">Until {labelGb(target)}</p>
+          <p class="big" id="hero-value">{left(c0)}</p>
+          <p class="hint" id="hero-sub">Counting the start date as day 1, the target date is day {c0.countDays}</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">Time left</span>
+            <span class="value" id="v1">{plural(days0, "day")}, 0 hours, 0 minutes</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">Counting day 1</span>
+            <span class="value" id="v2">Day {c0.countDays}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">Start date</span>
+            <span class="value" id="v3">{labelGb(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How many days until a date — does today count?</h2>
+      <p>
+        “Days to go” is <strong>the target date minus today</strong>. Today isn't included; the target date is. So tomorrow is
+        {" "}{left(tomorrow)}, the target date itself reads “Today” all day long, and a date that has gone by reads “days ago”.
+      </p>
+      <p>
+        To count the first day as day 1 — your first day in a new job, the day you gave up smoking or an anniversary — read the
+        “Counting day 1” figure instead. It's always one more than the days to go. Counting {labelGb(base)} as day 1,
+        {" "}{labelGb(target)} is day {c0.countDays}.
+      </p>
+
+      <h2>Days until Christmas 2026 in the UK</h2>
+      <p>Counting from {labelGb(base)}:</p>
+      <ul>
+        <li>Halloween ({labelGb(halloween)}): {left(cHalloween)}</li>
+        <li>Christmas Eve ({labelGb(xmasEve)}): {left(cXmasEve)}</li>
+        <li>Christmas Day ({labelGb(xmas)}): {left(cXmas)}</li>
+        <li>Boxing Day bank holiday ({labelGb(boxing)}): {left(cBoxing)}</li>
+        <li>New Year's Eve ({labelGb(nye)}): {left(cNye)}</li>
+        <li>New Year's Day 2027 ({labelGb(ny)}): {left(cNy)}</li>
+      </ul>
+      <p>
+        Boxing Day falls on a Saturday in 2026, so GOV.UK lists the bank holiday as a substitute day on Monday 28 December in
+        England and Wales, Scotland and Northern Ireland. Christmas Eve and New Year's Eve aren't bank holidays. The page fills in
+        today's date when you open it, so the figures are always counted from the day you visit.
+      </p>
+
+      <h2>Countdown in days, hours and minutes</h2>
+      <ul>
+        <li>
+          <strong>Date only</strong> — counts to the moment the target date ends (midnight at the start of the next day).
+        </li>
+        <li>
+          <strong>With a time</strong> — counts to that time. Once the time has passed, even on the target date itself, the box
+          switches to “Time since”. Opened at 3pm on {labelGb(base)}, a 9am start on {labelGb(xmas)} shows as
+          {" "}{plural(examD, "day")} and {plural(examH, "hour")} away.
+        </li>
+        <li>
+          <strong>The time left ticks every second</strong> — but only while the start date is today. Choose another start date and
+          it counts from midnight on that day.
+        </li>
+      </ul>
+
+      <h2>When the clocks change (BST and GMT)</h2>
+      <p>
+        The calculator treats every day as exactly 24 hours. In the UK the clocks go back 1 hour at 2am on{" "}
+        {labelGb(clocksBack)} and forward 1 hour at 1am on {labelGb(clocksForward)}, according to GOV.UK.
+      </p>
+      <ul>
+        <li>
+          A countdown that crosses {labelGb(clocksBack)} has <strong>one hour more</strong> real time left than it shows — so the
+          Christmas morning example above is really {plural(examD, "day")} and {plural(examH + 1, "hour")} away.
+        </li>
+        <li>
+          A countdown that crosses {labelGb(clocksForward)} has <strong>one hour less</strong> real time left than it shows.
+        </li>
+        <li>The number of days isn't affected either way.</li>
+      </ul>
+
+      <h2>Days left until the end of the year</h2>
+      <p>
+        Tap “31 Dec” for the last day of this year, or “New Year's Day” for the first day of the next. From {labelGb(base)} that's
+        {" "}{left(cNye)} until New Year's Eve and {left(cNy)} until 2027 begins.
+      </p>
+
+      <h2>Birthday countdown</h2>
+      <p>
+        Enter your next birthday as the target date. If this year's birthday has already been, use next year's date — otherwise
+        the calculator shows how many days ago it was. Switch on “Count to a time” if you want the countdown to end at the minute
+        the party starts.
+      </p>
+
+      <h2>Days until a date in Excel or Google Sheets</h2>
+      <p>
+        Both store dates as numbers, so taking <code>TODAY()</code> away from the target date gives the days left — for example
+        {" "}<code>=A1-TODAY()</code> with the target date in A1. If the answer shows as a date, change the cell format to Number.
+        Add 1 if you want to count today as day 1.
+      </p>
+
+      <details>
+        <summary>How many days until school starts or breaks up?</summary>
+        <p>
+          Term dates are set by your local council or the school itself, so they differ across the country. Find yours through{" "}
+          <a href="https://www.gov.uk/school-term-holiday-dates">GOV.UK's school term and holiday dates</a> page, then enter the
+          first day of term as the target date.
+        </p>
+      </details>
+
+      <details>
+        <summary>How do I count only working days until a date?</summary>
+        <p>
+          This page counts every calendar day, weekends included. For Monday-to-Friday days, put today and the target date into
+          the <a href="/en-gb/tools/date-diff/">UK date calculator</a> — it counts weekdays (bank holidays aren't taken off).
+        </p>
+      </details>
+
+      <details>
+        <summary>What happens if I enter a date that has passed?</summary>
+        <p>
+          It shows “days ago” and the time box changes to “Time since” — useful for how long it's been since a deadline or a start
+          date. Counting from {labelGb(base)}, {labelGb(pastDay)} was {left(past)}.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does it work for an event in another time zone?</summary>
+        <p>
+          The countdown uses your device's clock and date. For a concert, a launch or a flight set in another time zone, convert
+          the start time to UK time before you enter it.
+        </p>
+      </details>
+
+      <p class="hint">
+        Sources: <a href="https://www.gov.uk/when-do-the-clocks-change">GOV.UK — When do the clocks change?</a> (last updated
+        24 November 2025) · <a href="https://www.gov.uk/bank-holidays">GOV.UK — UK bank holidays</a>. Checked 20 October 2026.
+      </p>
+
+      <AdSlot label="dday-result-en-gb" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
