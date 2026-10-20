@@ -177,3 +177,34 @@ export function relativeTextJa(diffMs: number): string {
   if (!d && !h && (s || !mi)) t += `${s}秒`;
   return `${t}${diffMs < 0 ? "前" : "後"}`;
 }
+
+/**
+ * 영어판(/en-us/tools/unix-time/ 등) — 'Tue, Oct 20, 2026 12:34:56'. 날짜 순서는 페이지 언어(lang)를 따른다
+ * (en-US 'Oct 20, 2026', en-GB '20 Oct 2026'). 시각은 나라와 관계없이 24시간 HH:MM:SS(.mmm).
+ */
+export function enText(p: Parts, lang = "en-US"): string {
+  const date = new Date(Date.UTC(p.y, p.mo - 1, p.d)).toLocaleDateString(lang, {
+    timeZone: "UTC", weekday: "short", year: "numeric", month: "short", day: "numeric",
+  });
+  const frac = p.ms ? `.${p3(p.ms)}` : "";
+  return `${date} ${p2(p.h)}:${p2(p.mi)}:${p2(p.s)}${frac}`;
+}
+
+/** 영어판 — '3 days 4 hours 5 minutes ago / from now', 1초 안이면 'now'. 끊는 규칙은 relativeText 와 같다 */
+export function relativeTextEn(diffMs: number): string {
+  const a = Math.abs(diffMs);
+  if (a < 1000) return "now";
+  let sec = Math.floor(a / 1000);
+  const d = Math.floor(sec / 86_400);
+  sec -= d * 86_400;
+  const h = Math.floor(sec / 3600);
+  const mi = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  const unit = (n: number, w: string) => `${n.toLocaleString("en-US")} ${w}${n === 1 ? "" : "s"}`;
+  const parts: string[] = [];
+  if (d) parts.push(unit(d, "day"));
+  if (h) parts.push(unit(h, "hour"));
+  if (mi && d < 100) parts.push(unit(mi, "minute"));
+  if (!d && !h && (s || !mi)) parts.push(unit(s, "second"));
+  return `${parts.join(" ")} ${diffMs < 0 ? "ago" : "from now"}`;
+}

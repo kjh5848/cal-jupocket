@@ -8,7 +8,7 @@ import { toDay } from "../date-calc";
 import {
   KST, INT32_MAX, MIN_MS, MAX_MS,
   parseTimestamp, toParts, koText, isoText, secondsText, floorSeconds, fromParts, relativeText, dateValue, timeValue,
-  jaText, relativeTextJa,
+  jaText, relativeTextJa, enText, relativeTextEn,
 } from "../unix-time";
 
 const ok = (raw: string, unit?: "auto" | "s" | "ms") => {
@@ -145,5 +145,24 @@ describe("일본어판 표기 (/ja/tools/unix-time/)", () => {
     expect(relativeTextJa(90_000)).toBe("1分30秒後");
     expect(relativeTextJa(-(3 * 86_400 + 4 * 3600 + 5 * 60) * 1000)).toBe("3日4時間5分前");
     expect(relativeTextJa(400 * 86_400_000)).toBe("400日後");
+  });
+});
+
+describe("영어판 표기 (/en-us/tools/unix-time/)", () => {
+  it("UTC 와 페이지 언어 순서 — en-US 'Mon, Oct 19, 2026', en-GB 'Mon, 19 Oct 2026'", () => {
+    expect(enText(toParts(1_792_380_896_000, 0))).toBe("Mon, Oct 19, 2026 03:34:56");
+    expect(enText(toParts(0, 0))).toBe("Thu, Jan 1, 1970 00:00:00");
+    expect(enText(toParts(-1, 0))).toBe("Wed, Dec 31, 1969 23:59:59.999");
+    expect(enText(toParts(INT32_MAX * 1000, 0))).toBe("Tue, Jan 19, 2038 03:14:07");
+    expect(enText(toParts(MIN_MS, 0))).toBe("Mon, Jan 1, 1900 00:00:00");
+    expect(enText(toParts(0, 0), "en-GB")).toBe("Thu, 1 Jan 1970 00:00:00");
+  });
+  it("ago · from now 와 단위", () => {
+    expect(relativeTextEn(500)).toBe("now");
+    expect(relativeTextEn(-45_000)).toBe("45 seconds ago");
+    expect(relativeTextEn(-1_000)).toBe("1 second ago");
+    expect(relativeTextEn(90_000)).toBe("1 minute 30 seconds from now");
+    expect(relativeTextEn(-(3 * 86_400 + 4 * 3600 + 5 * 60) * 1000)).toBe("3 days 4 hours 5 minutes ago");
+    expect(relativeTextEn(1_400 * 86_400_000)).toBe("1,400 days from now");
   });
 });
