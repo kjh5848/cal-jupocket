@@ -9,6 +9,12 @@
  * 서머타임 없는 벽시계 산술 — 일본 표준시 東経135度(明治十九年勅令第五十一号, e-Gov API 원문 2026-10-20 재확인,
  * docs/country-matrix.md #82 행). 午前·午後 12시간제 표기는 0시·12시 관습 원문을 확인하지 않아 넣지 않았다.
  * アルコール·授乳 축은 건강 정보라, 時差 축은 이 도구가 하지 않는 계산이라 쓰지 않았다.
+ *
+ * 休憩 칸(#89 시간 간격, 2026-10-20 추가): 자동완성 keywords/jp-time-calc-break-2026-10-20.csv —
+ *   休憩時間 計算·計算方法·計算式 / 勤務時間 休憩時間 計算 / 実働時間 計算·合計 / エクセル 勤務時間 計算 休憩時間 / 時給 休憩時間 計算.
+ * 労働基準法 第34条(6時間·8時間を超える場合)·第32条(休憩時間を除き) e-Gov API 원문 2026-10-20 확인
+ * (322AC0000000049_20260717_508AC0000000060). 조문 문장만 인용하고 拘束時間에서 필요한 休憩를 판정하지 않는다.
+ * 15分単位(끝수 처리)·休憩中の賃金 축은 원문을 열지 않아 쓰지 않았다.
  */
 import BaseHead from "../../../../components/BaseHead.astro";
 import AdSlot from "../../../../components/AdSlot.astro";
@@ -19,16 +25,21 @@ import AdSenseHead from "../../../../components/AdSenseHead.astro";
 import SiteHeader from "../../../../components/SiteHeader.astro";
 import SiteFooter from "../../../../components/SiteFooter.astro";
 import "../../../../styles/global.css";
-import { parseAt, shiftAt, atTextJa, dayShiftTextJa, splitTextJa, between, hoursText } from "../../../../lib/time-calc";
+import { parseAt, shiftAt, atTextJa, dayShiftTextJa, splitTextJa, between, hoursText, netMinutes } from "../../../../lib/time-calc";
 
-const title = "時間計算 — 何時間後は何時？経過時間・時間の足し算と引き算";
+const title = "時間計算 — 何時間後は何時？経過時間・休憩を引いた実働時間・時間の足し算と引き算";
 const description =
-  "開始の日付と時刻に日・時間・分を足したり引いたりすると、何月何日の何時になるかがすぐわかります。2つの時刻の間の経過時間を、何時間何分・合計の時間・合計の分で計算。日付や月末をまたいでも、24時間を超えても正しく数えます。";
+  "開始の日付と時刻に日・時間・分を足したり引いたりすると、何月何日の何時になるかがすぐわかります。2つの時刻の間の経過時間を、何時間何分・合計の時間・合計の分で計算。休憩時間を入れると引いた実働時間も出ます。日付や月末をまたいでも、24時間を超えても正しく数えます。";
 
-/** 最初に表示する例 — 2026-10-19 09:30 + 2時間45分、09:00〜18:00 */
+/** 最初に表示する例 — 2026-10-19 09:30 + 2時間45分、09:00〜18:00 休憩60分 */
 const S0 = parseAt("2026-10-19", "09:30")!;
 const E0 = shiftAt(S0, 165, 1)!;
 const B0 = between(parseAt("2026-10-19", "09:00")!, parseAt("2026-10-19", "18:00")!);
+const BRK0 = 60;
+const BN0 = netMinutes(B0.total, BRK0)!;
+/** 休憩の例 — 夜勤 22:00〜翌 06:30 休憩30分 */
+const NW = between(parseAt("2026-10-19", "22:00")!, parseAt("2026-10-20", "06:30")!);
+const NWN = netMinutes(NW.total, 30)!;
 
 /** 本文の例 — 日付またぎ 22:30 + 10時間、夜勤 22:30〜翌 06:15、100分、30時間90分 */
 const N0 = parseAt("2026-10-19", "22:30")!;
@@ -49,7 +60,7 @@ const OVER = 30 * 60 + 90;
     <main>
       <h1>時間計算（何時間後・経過時間）</h1>
       <p>
-        開始の時刻にかかる時間を足すと、終わる日付と時刻が出ます。引き算にすると、何時に始めればよいかがわかります。下の欄では、2つの時刻の間が何時間何分かを数えます。入力するとすぐに結果が変わります。
+        開始の時刻にかかる時間を足すと、終わる日付と時刻が出ます。引き算にすると、何時に始めればよいかがわかります。下の欄では、2つの時刻の間が何時間何分か、休憩時間を引くと何時間かを数えます。入力するとすぐに結果が変わります。
       </p>
 
       <div class="calc-card" data-two>
@@ -122,7 +133,7 @@ const OVER = 30 * 60 + 90;
 
       <h2 id="between">2つの時刻の間の経過時間</h2>
       <p>
-        開始と終了の日付・時刻を入れると、その間が何日何時間何分か、合計で何時間・何分かが出ます。夜をまたぐときは、終了の日付を翌日にしてください。
+        開始と終了の日付・時刻を入れると、その間が何日何時間何分か、合計で何時間・何分かが出ます。昼休みなど休んだ時間を休憩の欄に分で入れると、引いた時間（実働時間）を数えます。夜をまたぐときは、終了の日付を翌日にしてください。
       </p>
 
       <div class="calc-card" data-two>
@@ -142,29 +153,62 @@ const OVER = 30 * 60 + 90;
           <label for="b-etime">終了の時刻</label>
           <input type="time" id="b-etime" value="18:00" />
         </div>
+        <div class="calc-input-wrap">
+          <label for="b-break">休憩時間（引く時間）</label>
+          <input type="number" id="b-break" inputmode="numeric" min="0" step="5" value={BRK0} data-step />
+          <span class="unit">分</span>
+        </div>
 
         <div class="result-hero" aria-live="polite" aria-atomic="true">
-          <p class="label" id="b-label">経過時間</p>
-          <p class="big" id="b-hero">{splitTextJa(B0.total)}</p>
+          <p class="label" id="b-label">休憩{splitTextJa(BRK0)}を引いた時間</p>
+          <p class="big" id="b-hero">{splitTextJa(BN0)}</p>
           <p class="hint" id="b-sub">開始から終了まで</p>
         </div>
 
         <div class="stat-row" data-receipt>
           <div class="stat-chip">
             <span class="label">合計の時間</span>
-            <span class="value" id="b-hours">{hoursText(B0.total)}時間</span>
+            <span class="value" id="b-hours">{hoursText(BN0)}時間</span>
           </div>
           <div class="stat-chip">
             <span class="label">合計の分</span>
-            <span class="value" id="b-mins">{B0.total.toLocaleString("ja-JP")}分</span>
+            <span class="value" id="b-mins">{BN0.toLocaleString("ja-JP")}分</span>
           </div>
           <div class="stat-chip">
             <span class="label">時:分</span>
-            <span class="value" id="b-hm">{Math.floor(B0.total / 60)}:{String(B0.total % 60).padStart(2, "0")}</span>
+            <span class="value" id="b-hm">{Math.floor(BN0 / 60)}:{String(BN0 % 60).padStart(2, "0")}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">休憩を含む全体</span>
+            <span class="value" id="b-gross">{splitTextJa(B0.total)}</span>
           </div>
         </div>
         <p class="hint" id="b-note"></p>
       </div>
+
+      <h2 id="break">休憩時間を引いた実働時間の計算方法</h2>
+      <p>
+        実働時間（休憩を除いて実際に働いた時間）の計算式は「終了 − 開始 − 休憩」です。上の欄で 09:00〜18:00 に休憩60分を入れると、{splitTextJa(B0.total)} − {splitTextJa(BRK0)} = <strong>{splitTextJa(BN0)}</strong>（{BN0.toLocaleString("ja-JP")}分）になります。
+      </p>
+      <ol>
+        <li>開始と終了を分に直す：9時 = 540分、18時 = 1,080分</li>
+        <li>終了 − 開始：1,080 − 540 = 540分（9時間）</li>
+        <li>休憩を引く：540 − 60 = 480分 → 480 ÷ 60 = <strong>8時間</strong></li>
+      </ol>
+      <p>
+        夜勤のように日付をまたぐときは、終了の日付を翌日にします。22:00〜翌日 06:30 は {splitTextJa(NW.total)}、休憩30分を引くと {splitTextJa(NWN)}（{NWN.toLocaleString("ja-JP")}分）です。休憩を何回かに分けて取ったときは、合計の分を入れてください（例：45分 + 15分 = 60分）。休憩が開始〜終了の間より長いときは計算せずにお知らせします。
+      </p>
+      <p>
+        この計算機は1分単位で数え、入れた休憩の分をそのまま引くだけです。15分単位などで切り上げ・切り捨てはしません。1日の実働時間を何日分か足したいときは、上の計算機の「かかる時間」に時間と分を入れて足していくか、合計の分をメモして足してください。
+      </p>
+
+      <h2>労働基準法の休憩時間（6時間・8時間を超えるとき）</h2>
+      <p>
+        労働基準法 第34条 第1項は「使用者は、労働時間が六時間を超える場合においては少くとも四十五分、八時間を超える場合においては少くとも一時間の休憩時間を労働時間の途中に与えなければならない。」と定めています。同条は、休憩を一斉に与えること（労使協定がある場合を除く）と、自由に利用させることも定めています。
+      </p>
+      <p>
+        条文の「労働時間」は休憩を除いた時間です（第32条は1日について「休憩時間を除き」8時間と書いています）。条文は「超える場合」なので、労働時間がちょうど6時間なら「六時間を超える場合」に当たらず、ちょうど8時間なら「八時間を超える場合」ではなく「六時間を超える場合」に当たります。この計算機は休憩が足りているかどうかの判断はせず、入れた分を引いた時間を出すだけです。個別の勤務の扱いは、勤務先や労働基準監督署に確認してください。
+      </p>
 
       <h2>何時間後は何時？日付をまたぐときも</h2>
       <p>
@@ -201,6 +245,7 @@ const OVER = 30 * 60 + 90;
         <li><strong>経過時間</strong>：<code>=B1-A1</code>（B1に終了、A1に開始）。日付をまたぐときは日付つきの日時で入れるか、<code>=MOD(B1-A1,1)</code></li>
         <li><strong>24時間以上の合計</strong>：表示形式（ユーザー定義）を <code>[h]:mm</code> にします。<code>h:mm</code> のままだと24時間を超えた分が日付に繰り上がって見えなくなります。</li>
         <li><strong>小数の時間にする</strong>：<code>=(B1-A1)*24</code>（エクセルの時刻は1日 = 1 の数なので24を掛けます）</li>
+        <li><strong>休憩を引いた実働時間</strong>：C1に休憩の分（例 60）を数字で入れて <code>=B1-A1-TIME(0,C1,0)</code>。小数の時間なら <code>=(B1-A1)*24-C1/60</code>。C1 を <code>1:00</code> のような時刻で入れたときは <code>=B1-A1-C1</code> です。</li>
       </ul>
 
       <h2>「時刻」と「時間」のちがい</h2>
@@ -212,6 +257,13 @@ const OVER = 30 * 60 + 90;
         <summary>サマータイムは考えていますか？</summary>
         <p>
           いいえ。この計算機はサマータイム（夏時刻）のない時計として、1日 = 24時間で計算します。日本の標準時は東経135度の子午線の時刻（UTC+9）と定められています。サマータイムを使う国で時計を切り替える日をまたぐと、実際に流れた時間と1時間ずれることがあります。
+        </p>
+      </details>
+
+      <details>
+        <summary>時給と実働時間から1日の金額を出すには？</summary>
+        <p>
+          時給 × 合計の時間（小数）で計算できます。たとえば実働 {splitTextJa(BN0)}、時給1,200円なら 1,200 × {hoursText(BN0)} = 9,600円です。7時間45分なら 7.75時間として掛けます。残業や深夜の割増分は<a href="/ja/overtime-pay/">残業代（割増賃金）の計算</a>で計算できます。
         </p>
       </details>
 
@@ -234,7 +286,8 @@ const OVER = 30 * 60 + 90;
       </p>
 
       <p>
-        出典：<a href="https://laws.e-gov.go.jp/law/119IO0000000051" rel="noopener">本初子午線経度計算方及標準時ノ件（明治十九年勅令第五十一号） — e-Gov法令検索</a>（2026年10月20日確認）
+        出典：<a href="https://laws.e-gov.go.jp/law/119IO0000000051" rel="noopener">本初子午線経度計算方及標準時ノ件（明治十九年勅令第五十一号） — e-Gov法令検索</a>（2026年10月20日確認）<br />
+        <a href="https://laws.e-gov.go.jp/law/322AC0000000049" rel="noopener">労働基準法（昭和二十二年法律第四十九号）第32条・第34条 — e-Gov法令検索</a>（令和8年7月17日施行の現行法、2026年10月20日確認）
       </p>
 
       <AdSlot label="time-calc-result-ja" />
