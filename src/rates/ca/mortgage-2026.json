@@ -1,12 +1,29 @@
 {
   "country": "CA",
   "draft": true,
-  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(캐나다 영어판 홈이 열린 뒤). 고정금리 주택담보대출 월 납입액은 '연 이자율 ÷ 2 를 반년 복리'로 환산한 월 이율로 계산하면 FCAC 예시 숫자가 전부 재현된다(월 복리로는 안 맞음). 다만 '반년 복리로 계산한다'는 문장 자체는 정부 원문에서 못 봤다 — Interest Act s.6 은 '연 또는 반년 단위, 선이자 아님' 표기만 요구한다. 변동금리의 복리 주기·보험료율 표(CMHC 등 보험사 사이트, 허용 출처 밖)는 미확인.",
-  "verifiedOn": "2026-10-20",
+  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(미확인이 남아 있음). 고정금리 주택담보대출 월 납입액은 '연 이자율 ÷ 2 를 반년 복리'로 환산한 월 이율로 계산하면 FCAC 예시 숫자가 전부 재현된다(월 복리로는 안 맞음). 다만 '반년 복리로 계산한다'는 문장 자체는 정부 원문에서 못 봤다 — Interest Act s.6 은 '연 또는 반년 단위, 선이자 아님' 표기만 요구한다. 변동금리의 복리 주기·보험료율 표(CMHC 등 보험사 사이트, 허용 출처 밖)는 미확인.",
+  "verifiedOn": "2026-10-21",
   "sources": [
-    { "label": "Interest Act (R.S.C. 1985, c. I-15) — current to 2026-09-30, last amended 2008-06-18", "url": "https://laws-lois.justice.gc.ca/eng/acts/I-15/page-1.html" },
-    { "label": "FCAC — How much you need for a down payment", "url": "https://www.canada.ca/en/financial-consumer-agency/services/mortgages/down-payment.html" },
-    { "label": "FCAC — Mortgage terms and amortization", "url": "https://www.canada.ca/en/financial-consumer-agency/services/mortgages/mortgage-terms-amortization.html" }
+    {
+      "label": "Interest Act (R.S.C. 1985, c. I-15) — current to 2026-09-30, last amended 2008-06-18",
+      "url": "https://laws-lois.justice.gc.ca/eng/acts/I-15/page-1.html"
+    },
+    {
+      "label": "FCAC — How much you need for a down payment",
+      "url": "https://www.canada.ca/en/financial-consumer-agency/services/mortgages/down-payment.html"
+    },
+    {
+      "label": "FCAC — Mortgage terms and amortization",
+      "url": "https://www.canada.ca/en/financial-consumer-agency/services/mortgages/mortgage-terms-amortization.html"
+    },
+    {
+      "label": "FCAC — Choosing a mortgage that is right for you (Page details 2025-10-15) — payment frequency",
+      "url": "https://www.canada.ca/en/financial-consumer-agency/services/mortgages/choose-mortgage.html"
+    },
+    {
+      "label": "Eligible Mortgage Loan Regulations (SOR/2012-281) — current to 2026-09-30, last amended 2025-02-27",
+      "url": "https://laws-lois.justice.gc.ca/eng/regulations/SOR-2012-281/FullText.html"
+    }
   ],
   "interestAct": {
     "defaultRateWhenNoneFixed": 0.05,
@@ -22,50 +39,182 @@
     "payment": "원금 × 월 이율 ÷ (1 − (1 + 월 이율)^−개월 수)",
     "status": "FCAC 예시로 재현 확인(아래 checks) — 규칙 문장은 원문 미확인",
     "checks": [
-      { "principal": 300000, "rate": 0.025, "months": 300, "monthly": 1343.9, "interest25y": 103169.61 },
-      { "principal": 300000, "rate": 0.029, "months": 300, "monthly": 1404.39, "interest25y": 121316.44 },
-      { "principal": 300000, "rate": 0.034, "months": 300, "monthly": 1482.02, "interest25y": 144606.01 },
-      { "principal": 300000, "rate": 0.038, "months": 300, "monthly": 1545.7, "interest25y": 163711.17 },
-      { "principal": 300000, "rate": 0.04, "months": 300, "monthly": 1578.06, "interest25y": 173418.18, "sourceTypo": "FCAC 그림 2 텍스트판은 월 $1,587.06 으로 적었지만 같은 줄의 25년 이자 $173,418.18 과 그림 3 의 $1,578 은 1,578.06 과 맞음 — 자리 뒤바뀜 오타로 봄" },
-      { "principal": 300000, "rate": 0.045, "months": 300, "monthly": 1660.42, "interest25y": 198125.66 },
-      { "principal": 300000, "rate": 0.048, "months": 300, "monthly": 1710.82, "interest25y": 213245.0 },
-      { "principal": 300000, "rate": 0.05, "months": 300, "monthly": 1744.81, "interest25y": 223444.49 },
-      { "principal": 300000, "rate": 0.052, "months": 300, "monthly": 1779.13, "interest25y": 233738.23 },
-      { "principal": 300000, "rate": 0.04, "months": 120, "monthlyRounded": 3033, "totalInterestRounded": 63919 },
-      { "principal": 300000, "rate": 0.04, "months": 180, "monthlyRounded": 2214, "totalInterestRounded": 98541 },
-      { "principal": 300000, "rate": 0.04, "months": 240, "monthlyRounded": 1813, "totalInterestRounded": 135057 },
-      { "principal": 320000, "rate": 0.04, "months": 300, "downPayment": 80000, "totalCostRounded": 584979 },
-      { "principal": 395200, "rate": 0.04, "months": 300, "downPayment": 20000, "totalCostRounded": 643649 },
-      { "principal": 371160, "rate": 0.04, "months": 300, "downPayment": 40000, "totalCostRounded": 625712 }
+      {
+        "principal": 300000,
+        "rate": 0.025,
+        "months": 300,
+        "monthly": 1343.9,
+        "interest25y": 103169.61
+      },
+      {
+        "principal": 300000,
+        "rate": 0.029,
+        "months": 300,
+        "monthly": 1404.39,
+        "interest25y": 121316.44
+      },
+      {
+        "principal": 300000,
+        "rate": 0.034,
+        "months": 300,
+        "monthly": 1482.02,
+        "interest25y": 144606.01
+      },
+      {
+        "principal": 300000,
+        "rate": 0.038,
+        "months": 300,
+        "monthly": 1545.7,
+        "interest25y": 163711.17
+      },
+      {
+        "principal": 300000,
+        "rate": 0.04,
+        "months": 300,
+        "monthly": 1578.06,
+        "interest25y": 173418.18,
+        "sourceTypo": "FCAC 그림 2 텍스트판은 월 $1,587.06 으로 적었지만 같은 줄의 25년 이자 $173,418.18 과 그림 3 의 $1,578 은 1,578.06 과 맞음 — 자리 뒤바뀜 오타로 봄"
+      },
+      {
+        "principal": 300000,
+        "rate": 0.045,
+        "months": 300,
+        "monthly": 1660.42,
+        "interest25y": 198125.66
+      },
+      {
+        "principal": 300000,
+        "rate": 0.048,
+        "months": 300,
+        "monthly": 1710.82,
+        "interest25y": 213245
+      },
+      {
+        "principal": 300000,
+        "rate": 0.05,
+        "months": 300,
+        "monthly": 1744.81,
+        "interest25y": 223444.49
+      },
+      {
+        "principal": 300000,
+        "rate": 0.052,
+        "months": 300,
+        "monthly": 1779.13,
+        "interest25y": 233738.23
+      },
+      {
+        "principal": 300000,
+        "rate": 0.04,
+        "months": 120,
+        "monthlyRounded": 3033,
+        "totalInterestRounded": 63919
+      },
+      {
+        "principal": 300000,
+        "rate": 0.04,
+        "months": 180,
+        "monthlyRounded": 2214,
+        "totalInterestRounded": 98541
+      },
+      {
+        "principal": 300000,
+        "rate": 0.04,
+        "months": 240,
+        "monthlyRounded": 1813,
+        "totalInterestRounded": 135057
+      },
+      {
+        "principal": 320000,
+        "rate": 0.04,
+        "months": 300,
+        "downPayment": 80000,
+        "totalCostRounded": 584979
+      },
+      {
+        "principal": 395200,
+        "rate": 0.04,
+        "months": 300,
+        "downPayment": 20000,
+        "totalCostRounded": 643649
+      },
+      {
+        "principal": 371160,
+        "rate": 0.04,
+        "months": 300,
+        "downPayment": 40000,
+        "totalCostRounded": 625712
+      }
     ]
   },
   "minimumDownPayment": {
-    "upTo500k": { "limit": 500000, "rate": 0.05 },
+    "upTo500k": {
+      "limit": 500000,
+      "rate": 0.05
+    },
     "500kTo1_5m": "첫 $500,000 의 5% + $500,000 넘는 부분의 10%",
-    "over1_5m": { "from": 1500000, "rate": 0.2 },
+    "over1_5m": {
+      "from": 1500000,
+      "rate": 0.2
+    },
     "examples": [
-      { "price": 400000, "minimum": 20000 },
-      { "price": 600000, "minimum": 35000 }
+      {
+        "price": 400000,
+        "minimum": 20000
+      },
+      {
+        "price": 600000,
+        "minimum": 35000
+      }
     ],
-    "boundaryNote": "표가 '$500,000 to $1.5 million'·'$1.5 million or more' 로 적어 정확히 $1,500,000 인 경우 어느 줄인지 원문이 겹침 — 미확인"
+    "boundaryNote": "해소(2026-10-21): Eligible Mortgage Loan Regulations s.5(1)(d) 가 고비율(계약금 20% 미만) 보험 대출은 담보 주택 가치가 'less than $1,500,000' 이어야 한다고 정함 — 정확히 $1,500,000 이면 보험 불가라 20% 줄. s.5(1)(a) 대출 상한(가치 $500,000 이하면 95%, 넘으면 $475,000 + $500,000 초과분의 90%)이 FCAC 표(5% / 5%+10%)와 같음",
+    "exactly1_5m": {
+      "price": 1500000,
+      "rate": 0.2,
+      "basis": "SOR/2012-281 s.5(1)(d) 'less than $1,500,000'"
+    }
   },
   "mortgageLoanInsurance": {
     "requiredBelowDownPayment": 0.2,
     "unavailableFromPrice": 1000000,
-    "premiumRange": [0.006, 0.045],
-    "provincialSalesTaxOnPremium": ["ON", "MB", "QC"],
-    "note": "보험료는 대출에 더할 수 있고 같은 이율로 이자가 붙음. 주 판매세는 대출에 못 더하고 따로 냄. 계약금 비율별 보험료율 표는 보험사(CMHC·Sagen·Canada Guaranty) 사이트에만 있어 허용 출처 밖 — 미확인"
+    "premiumRange": [
+      0.006,
+      0.045
+    ],
+    "provincialSalesTaxOnPremium": [
+      "ON",
+      "MB",
+      "QC"
+    ],
+    "note": "보험료는 대출에 더할 수 있고 같은 이율로 이자가 붙음. 주 판매세는 대출에 못 더하고 따로 냄. 계약금 비율별 보험료율 표는 보험사(CMHC·Sagen·Canada Guaranty) 사이트에만 있어 허용 출처 밖 — 미확인",
+    "highRatioPriceLimitExclusive": 1500000,
+    "lowRatioPriceLimitExclusive": 1000000,
+    "priceCapNote": "FCAC down-payment 페이지(Page details 2025-10-15)는 보험 불가 조건으로 'the purchase price of the home is $1 million or more' 를 적었지만, 규정(현행 2026-09-30)은 고비율 s.5(1)(d) less than $1,500,000 · 저비율 s.6(1)(h) less than $1,000,000 — 원문끼리 어긋나 규정을 따름. unavailableFromPrice(1,000,000)는 FCAC 문장 그대로 남긴 값이라 계산에 쓰지 않는다"
   },
   "maxAmortizationInsured": {
     "years": 25,
     "firstTimeBuyerOrNewBuild": 30,
-    "note": "계약금 20% 미만일 때. 20% 넘으면 대출 기관이 정함"
+    "note": "계약금 20% 미만일 때. 20% 넘으면 대출 기관이 정함",
+    "regulation": "SOR/2012-281 s.5(1)(c) 25년 이하 · s.5(1.1) 첫 집 구매자가 있거나 신축이면 30년 이하(확인 2026-10-21)"
   },
   "notVerified": [
-    "고정금리 반년 복리 규칙을 정부 원문 문장으로 확인(지금은 FCAC 예시 재현만)",
+    "고정금리 반년 복리 규칙을 정부 원문 문장으로 확인(지금은 FCAC 예시 재현만 — FCAC interest-on-mortgages(2024-02-23)·choose-mortgage(2025-10-15)에 복리 문장 없음, 2026-10-21)",
     "변동금리 대출의 복리 주기",
-    "보험료율 표(계약금 비율별)",
-    "격주·주 단위 납입(accelerated 포함) 환산 규칙",
-    "최소 계약금 표에서 정확히 $1,500,000 인 경우"
-  ]
+    "보험료율 표(계약금 비율별 — 보험사 사이트, 허용 출처 밖)",
+    "2주·주 단위 납입 때 이자 계산 방식(나누는 식은 확인, 잔액·복리 처리는 원문 없음)"
+  ],
+  "paymentFrequency": {
+    "source": "FCAC choose-mortgage (Page details 2025-10-15)",
+    "verifiedOn": "2026-10-21",
+    "rules": {
+      "monthly": "1 payment per month",
+      "semiMonthly": "monthly payment ÷ 2 (2 payments per month)",
+      "biweekly": "monthly payment × 12 ÷ 26",
+      "weekly": "monthly payment × 12 ÷ 52",
+      "acceleratedBiweekly": "monthly payment ÷ 2 (1 payment every 2 weeks)",
+      "acceleratedWeekly": "monthly payment ÷ 4 (1 payment per week)"
+    },
+    "quote": "Accelerated payments allow you to make the equivalent of one extra monthly payment each year.",
+    "note": "FCAC 는 월 납입액에서 나누는 식만 적었다 — 2주·주 단위 납입 때 이자를 어떻게 셈하는지(잔액·복리 환산)는 원문에 없어 미확인. 상환 기간 단축 숫자는 계산하지 않는다"
+  }
 }
