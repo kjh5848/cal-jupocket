@@ -1,0 +1,309 @@
+---
+/**
+ * Minimum Wage Calculator — 미국 영어판 제도 도구(basis "law"). 한국어판 최저임금(월 209시간·주휴수당)과
+ * 제도가 달라 짝(hreflang)을 맺지 않는다(조사표 17행 미국 칸 '제도').
+ * 계산은 lib/us/minimum-wage.ts, 화면은 lib/us/minimum-wage-ui.ts, 숫자는 rates/us/minimum-wage-2026.json
+ * (DOL Minimum Wage · Fact Sheet #15·#23 · 29 CFR 531·778 · 29 U.S.C. 203(m)(2)·206·207·218 — 2026-10-21 확인).
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-minimum-wage-2026-10-21.csv · us-minimum-wage-page-2026-10-21.csv):
+ *   salary to hourly calculator·formula·with overtime / 7.25 an hour is how much a year·month·week·biweekly /
+ *   federal minimum wage 2026·last increase / minimum wage overtime rate / federal minimum wage for tipped employees /
+ *   youth minimum wage / minimum wage calculator for employers
+ * 쓰지 않는 것(주의 원칙·원문 미확인): 주(州)·시 최저임금 금액, 연방 최저임금 연도별 이력, 면제 근로자(white-collar exemption)
+ * 급여 기준, 연방 계약직(EO 14026) 최저임금, tipped 초과근무 계산, 세후 금액(7.25 an hour after taxes).
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import {
+  FEDERAL_MIN,
+  YOUTH_MIN,
+  YOUTH_UNDER_AGE,
+  YOUTH_DAYS,
+  TIPPED_CASH_MIN,
+  MAX_TIP_CREDIT,
+  TIPS_PER_MONTH,
+  OT_HOURS,
+  OT_MULT,
+  checkPay,
+  payFromHourly,
+  weeklyFloor,
+  checkTipped,
+} from "../../../lib/us/minimum-wage";
+import { usd, usd0 } from "../../../lib/us/fica";
+import "../../../styles/global.css";
+
+const title = "Minimum Wage Calculator — Salary to Hourly vs the $7.25 Federal Minimum (FLSA)";
+const description =
+  "Convert a weekly, biweekly, monthly or yearly salary to an hourly rate the FLSA way and check it against the $7.25 federal minimum wage with overtime.";
+
+const defPay = 30_000;
+const defHours = 40;
+const first = checkPay(defPay, "yearly", defHours);
+const full = payFromHourly(FEDERAL_MIN);
+const m1560 = checkPay(1560, "monthly", 40);
+const w375 = checkPay(375, "weekly", 40);
+const ot45 = checkPay(17_000, "yearly", 45);
+const floor45 = weeklyFloor(45);
+const otRate = `$${(FEDERAL_MIN * OT_MULT).toFixed(3)}`;
+const youthWeek = weeklyFloor(40, YOUTH_MIN);
+const tip = checkTipped(TIPPED_CASH_MIN, 150, 40);
+const tipDef = checkTipped(TIPPED_CASH_MIN, 200, 30);
+const fmtH = (h: number) => `${h}`;
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Minimum Wage Calculator: Salary to Hourly vs {usd(FEDERAL_MIN)}</h1>
+      <p>
+        The federal minimum wage under the Fair Labor Standards Act (FLSA) is {usd(FEDERAL_MIN)} an hour, and hours over
+        {fmtH(OT_HOURS)} in a workweek must be paid at least one and a half times the regular rate. Enter your pay, how often it is
+        paid and the hours you work in a week. The calculator turns the pay into an hourly rate the way the U.S. Department of Labor
+        rules do it and compares it with what the federal minimum, plus overtime, would pay for the same hours.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="mw-pay">Pay ($)</label>
+          <input type="text" inputmode="decimal" id="mw-pay" value="30,000" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="mw-period">Paid</label>
+          <select id="mw-period" data-ui="off">
+            <option value="hourly">Per hour</option>
+            <option value="weekly">Weekly</option>
+            <option value="biweekly">Biweekly (every two weeks)</option>
+            <option value="semimonthly">Semimonthly (twice a month)</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly" selected>Yearly (annual salary)</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="mw-hours">Hours worked per week</label>
+          <input type="text" inputmode="decimal" id="mw-hours" value="40" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="mw-min">Compare with</label>
+          <select id="mw-min" data-ui="off">
+            <option value="federal" selected>Federal minimum wage ({usd(FEDERAL_MIN)})</option>
+            <option value="youth">Youth minimum wage ({usd(YOUTH_MIN)}, under {YOUTH_UNDER_AGE}, first {YOUTH_DAYS} days)</option>
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value" data-bar="out-weekly,out-floor,out-margin">
+          <p class="label">Hourly rate</p>
+          <p class="big" id="hero-value">{usd(first.hourly)}</p>
+          <p class="hint" id="mw-hint">At or above the federal minimum of {usd(FEDERAL_MIN)} an hour — {usd(first.margin)} a week to spare.</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">Pay per workweek</span>
+            <span class="value" id="out-weekly">{usd(first.weekly)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Minimum for these hours</span>
+            <span class="value" id="out-floor">{usd(first.floor)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Overtime hours</span>
+            <span class="value" id="out-ot">None</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Above (or −below) the minimum, per week</span>
+            <span class="value" id="out-margin">{usd(first.margin)}</span>
+          </div>
+        </div>
+
+        <h3>Tipped employees</h3>
+        <div class="calc-input-wrap">
+          <label for="tp-cash">Cash wage per hour ($)</label>
+          <input type="text" inputmode="decimal" id="tp-cash" value="2.13" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="tp-tips">Tips received this week ($)</label>
+          <input type="text" inputmode="decimal" id="tp-tips" value="200" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="tp-hours">Hours worked this week (up to 40)</label>
+          <input type="text" inputmode="decimal" id="tp-hours" value="30" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="stat-row">
+          <div class="stat-chip">
+            <span class="label">Tip credit per hour</span>
+            <span class="value" id="out-credit">{usd(tipDef.tipCredit)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">{usd(FEDERAL_MIN)} × hours</span>
+            <span class="value" id="out-required">{usd(tipDef.required)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Cash wage + tips</span>
+            <span class="value" id="out-received">{usd(tipDef.received)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Employer must add</span>
+            <span class="value" id="out-makeup">{usd(tipDef.makeUp)}</span>
+          </div>
+        </div>
+        <p class="hint" id="tp-hint" aria-live="polite"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Federal minimum wage in 2026</h2>
+      <p>
+        The federal minimum wage is {usd(FEDERAL_MIN)} an hour. The Department of Labor lists it as effective July 24, 2009, and the
+        amount in 29 U.S.C. 206(a)(1) is still {usd(FEDERAL_MIN)} in the current U.S. Code. Many states and cities set a higher
+        minimum. Under 29 U.S.C. 218(a) the federal law never excuses paying less than a higher state or local minimum, and the DOL
+        says employers must comply with both — so where you work may require more than this calculator checks. State amounts are not
+        included here.
+      </p>
+
+      <h2>Salary to hourly: the formula the FLSA uses</h2>
+      <p>
+        The Department of Labor's overtime rules (29 CFR 778.113) find the hourly "regular rate" of a salaried employee by turning the
+        salary into a weekly amount and dividing it by the hours the salary is meant to pay for:
+      </p>
+      <ul>
+        <li><strong>Weekly salary:</strong> weekly pay ÷ hours per week.</li>
+        <li><strong>Monthly salary:</strong> monthly pay × 12 ÷ 52 = weekly pay, then ÷ hours.</li>
+        <li><strong>Semimonthly salary:</strong> pay × 24 ÷ 52 = weekly pay, then ÷ hours.</li>
+        <li><strong>Biweekly and yearly pay:</strong> biweekly ÷ 2, yearly ÷ 52 — the same arithmetic, since a year is 52 workweeks.</li>
+      </ul>
+      <p>
+        The rule's own examples: a monthly salary of {usd0(1560)} for 40-hour weeks is {usd0(1560)} × 12 ÷ 52 = {usd0(m1560.weekly)} a
+        week, or {usd(m1560.hourly)} an hour; a weekly salary of {usd0(375)} for 40 hours works out to {usd(w375.hourly)}.
+      </p>
+
+      <h2>$7.25 an hour is how much a year, a month and a week?</h2>
+      <p>At {usd(FEDERAL_MIN)} an hour and 40 hours a week, 52 weeks a year:</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Pay period</th>
+              <th scope="col">Federal minimum, 40 hours a week</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Week</th><td>{usd(full.weekly)}</td></tr>
+            <tr><th scope="row">Two weeks (biweekly)</th><td>{usd(full.biweekly)}</td></tr>
+            <tr><th scope="row">Half month (semimonthly)</th><td>{usd(full.semimonthly)}</td></tr>
+            <tr><th scope="row">Month</th><td>{usd(full.monthly)}</td></tr>
+            <tr><th scope="row">Year</th><td>{usd(full.yearly)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        These are gross amounts before taxes. A month here is 52 ÷ 12 weeks, so it is an average; a calendar month with more workdays
+        pays more for an hourly worker.
+      </p>
+
+      <h2>Minimum wage overtime rate</h2>
+      <p>
+        For hours over {fmtH(OT_HOURS)} in one workweek, the FLSA requires at least {OT_MULT} times the regular rate, and the regular rate
+        can never be lower than the minimum wage. At the federal minimum that is {usd(FEDERAL_MIN)} × {OT_MULT} = {otRate} an hour.
+        A workweek is a fixed 168-hour period, and hours cannot be averaged over two or more weeks.
+      </p>
+      <p>
+        So a salary has to cover more than {usd(FEDERAL_MIN)} × hours once a week goes past 40. For 45 hours the federal floor is
+        {usd(FEDERAL_MIN)} × 40 + {otRate} × 5 = {usd(floor45)} a week ({usd(Math.round(floor45 * 52 * 100) / 100)} a year). A salary of
+        {usd0(17_000)} a year is {usd(ot45.weekly)} a week — {usd(ot45.hourly)} an hour over 45 hours, which looks fine, but it is
+        {usd(-ot45.margin)} a week short of the minimum with overtime. That is what the calculator's "minimum for these hours" shows.
+      </p>
+      <p>
+        Some salaried jobs are exempt from minimum wage and overtime. Whether a job is exempt depends on its duties and salary under
+        separate rules that this calculator does not check.
+      </p>
+
+      <h2>Federal minimum wage for tipped employees</h2>
+      <p>
+        A tipped employee is one who customarily and regularly receives more than {usd0(TIPS_PER_MONTH)} a month in tips. The employer
+        may pay a cash wage as low as {usd(TIPPED_CASH_MIN)} an hour and count tips toward the rest — a "tip credit" of up to
+        {usd(MAX_TIP_CREDIT)} an hour ({usd(FEDERAL_MIN)} − {usd(TIPPED_CASH_MIN)}). If the cash wage plus tips does not reach
+        {usd(FEDERAL_MIN)} an hour, the employer must make up the difference.
+      </p>
+      <p>
+        Example: {usd(TIPPED_CASH_MIN)} an hour for 40 hours is {usd(TIPPED_CASH_MIN * 40)}. With {usd0(150)} in tips the week totals
+        {usd(tip.received)}, but {usd(FEDERAL_MIN)} × 40 is {usd(tip.required)}, so the employer owes another {usd(tip.makeUp)}. The
+        tipped part of the calculator does this for one week of up to 40 hours; overtime for tipped employees is not calculated.
+      </p>
+
+      <h2>Youth minimum wage</h2>
+      <p>
+        Under 29 U.S.C. 206(g), an employer may pay a newly hired employee under {YOUTH_UNDER_AGE} at least {usd(YOUTH_MIN)} an hour
+        during the first {YOUTH_DAYS} consecutive calendar days with that employer — {usd(youthWeek)} for a 40-hour week. After 90 days,
+        or once the employee turns {YOUTH_UNDER_AGE}, the regular minimum applies. The law also bars employers from cutting other
+        employees' hours, wages or benefits, or replacing them, to hire at the youth wage. Choose "Youth minimum wage" in the
+        calculator to compare against {usd(YOUTH_MIN)}.
+      </p>
+
+      <details>
+        <summary>Is the federal minimum wage going up in 2026?</summary>
+        <p>
+          Not in the law as it stands: the U.S. Code current through Public Law 119-120 still sets {usd(FEDERAL_MIN)}, and the DOL page
+          checked on October 21, 2026, gives the same amount. Your state or city minimum may change on its own schedule.
+        </p>
+      </details>
+
+      <details>
+        <summary>What hours should I enter for a salaried job?</summary>
+        <p>
+          The hours you actually work in a typical workweek. The FLSA rate depends on the hours the salary pays for, so the same salary is
+          a lower hourly rate in a 50-hour week than in a 40-hour week.
+        </p>
+      </details>
+
+      <details>
+        <summary>What if I enter an hourly rate and more than 40 hours?</summary>
+        <p>
+          The weekly pay then includes overtime at {OT_MULT} times your rate for the hours over 40, and it is compared with the minimum
+          wage plus overtime for the same hours.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does this show pay after taxes?</summary>
+        <p>No. Minimum wage is a gross amount. For the Social Security and Medicare taxes withheld from a paycheck, see the <a href="/en-us/fica-tax/">FICA tax calculator</a>.</p>
+      </details>
+
+      <details>
+        <summary>Can I enter cents or a dollar sign?</summary>
+        <p>Yes. A $ sign and commas are ignored, and cents are kept (for example 1,256.67).</p>
+      </details>
+
+      <h2>Sources</h2>
+      <ul>
+        <li><a href="https://www.dol.gov/agencies/whd/minimum-wage" rel="noopener" target="_blank">U.S. Department of Labor, Minimum Wage</a></li>
+        <li><a href="https://www.dol.gov/agencies/whd/fact-sheets/15-tipped-employees-flsa" rel="noopener" target="_blank">DOL Fact Sheet #15: Tipped Employees Under the FLSA</a></li>
+        <li><a href="https://www.dol.gov/agencies/whd/fact-sheets/23-flsa-overtime-pay" rel="noopener" target="_blank">DOL Fact Sheet #23: Overtime Pay Requirements of the FLSA</a></li>
+        <li><a href="https://www.ecfr.gov/current/title-29/section-778.113" rel="noopener" target="_blank">29 CFR 778.113, Salaried employees — general</a> and <a href="https://www.ecfr.gov/current/title-29/subtitle-B/chapter-V/subchapter-B/part-531" rel="noopener" target="_blank">29 CFR part 531</a></li>
+        <li><a href="https://uscode.house.gov/" rel="noopener" target="_blank">29 U.S.C. 203(m)(2), 206, 207 and 218</a> (Office of the Law Revision Counsel, current through Pub. L. 119-120)</li>
+      </ul>
+      <p>Federal amounts checked on October 21, 2026. This is a calculator, not legal advice.</p>
+
+      <AdSlot label="minimum-wage-result-en-us" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/us/minimum-wage-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

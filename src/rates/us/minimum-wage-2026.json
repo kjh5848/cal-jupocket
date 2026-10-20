@@ -1,9 +1,8 @@
 {
   "country": "US",
   "year": 2026,
-  "draft": true,
   "verifiedOn": "2026-10-21",
-  "status": "초안 — 숫자 전부 원문 확인(notVerified 비움, 2026-10-21). 다음 회차가 2순위로 페이지를 만들 때 draft 를 지운다. 연방(FLSA) 숫자만, 주(州) 최저임금은 다루지 않음(us.md 주의)",
+  "status": "검증됨 — 숫자 전부 원문 확인(notVerified 비움, 2026-10-21). /en-us/minimum-wage/ 가 씀(lib/us/minimum-wage.ts). 연방(FLSA) 숫자만, 주(州) 최저임금은 다루지 않음(us.md 주의)",
   "sources": [
     {
       "label": "U.S. DOL Wage and Hour Division — Minimum Wage",

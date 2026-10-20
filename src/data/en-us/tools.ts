@@ -88,4 +88,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/en-us/minimum-wage/",
+    name: "Minimum Wage Calculator",
+    blurb: "Weekly, biweekly, monthly or yearly salary to an hourly rate the FLSA way, checked against $7.25 plus overtime, tipped and youth wages",
+    type: "labor",
+    icon: "calculator",
+    basis: "law",
+  },
 ];
