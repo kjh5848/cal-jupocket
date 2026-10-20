@@ -2,7 +2,7 @@ import { toDay, fromDay, countdown, durationText, timeToSec, label, shift, type 
 import { labelJa, ddayJa, durationTextJa } from "../lib/date-format-ja";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
-import { pageLocale } from "../i18n/ui";
+import { pickLang } from "../i18n/ui";
 
 /** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
 const reportUse = trackCalculatorUse("dday");
@@ -74,7 +74,52 @@ const JA: typeof KO = {
   shareText: "あと何日の計算結果 - jupocket.com",
 };
 
-const S = pageLocale() === "ja" ? JA : KO;
+/**
+ * 영어판(/en-us/tools/dday/ — 영어 다섯 판 공용). 'D-12' 는 영어권에서 안 써서 '100 days to go' · 'Today' · '5 days ago' 로 낸다.
+ * 날짜는 페이지 lang 의 Intl 표기(timeZone "UTC" — 하루 번호가 UTC 자정이라). 하루는 24시간으로 세서
+ * 서머타임 전환일을 끼면 남은 시간이 맞지 않을 수 있다 — 고치지 않고 noteNoTime 에 그렇게 적는다(전환 규칙 원문 미확인).
+ */
+const enLang = document.documentElement.lang || "en-US";
+const labelEn = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString(enLang, { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const plural = (v: number, one: string) => `${n(v, enLang)} ${one}${v === 1 ? "" : "s"}`;
+const durationTextEn = (sec: number) => {
+  const s = Math.abs(Math.trunc(sec));
+  const day = Math.floor(s / 86_400);
+  const h = Math.floor((s % 86_400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (day > 0) return `${plural(day, "day")}, ${plural(h, "hour")}, ${plural(m, "minute")}`;
+  return `${plural(h, "hour")}, ${plural(m, "minute")}, ${plural(s % 60, "second")}`;
+};
+const ddayEn = (c: Countdown) => (c.side === 0 ? "Today" : c.side > 0 ? `${plural(c.days, "day")} to go` : `${plural(c.days, "day")} ago`);
+
+const EN: typeof KO = {
+  title: "Days until",
+  needDate: "Enter a date",
+  until: (when: string) => `Until ${when}`,
+  hero: (c: Countdown) => ddayEn(c),
+  sub: (c: Countdown) =>
+    c.side === 0
+      ? "The target date is the same day as the start date"
+      : c.side > 0
+        ? `Counting the start date as day 1, the target date is day ${n(c.countDays, enLang)}`
+        : `Counting the target date as day 1, the start date is day ${n(c.countDays, enLang)}`,
+  left: "Time left",
+  passed: "Time since",
+  countLabel: "Counting day 1",
+  count: (c: Countdown) => `Day ${n(c.countDays, enLang)}`,
+  baseLabel: "Start date",
+  ddayLabel: "Countdown",
+  label: labelEn,
+  duration: durationTextEn,
+  noteNoTime:
+    "With no time set, it counts to the moment the target date ends (midnight). Every day is counted as 24 hours, so if the clocks change for daylight saving time before then, the hours can be off by one.",
+  noteNotToday: "The start date isn't today, so the time left is counted from midnight on the start date.",
+  notePastTime: "The target date is today, but the target time has already passed.",
+  shareText: "Days until countdown - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN });
 
 let lastLines: [string, string][] = [];
 let lastTitle = S.title;
