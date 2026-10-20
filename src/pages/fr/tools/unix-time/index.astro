@@ -1,0 +1,276 @@
+---
+/**
+ * Convertisseur timestamp Unix — 프랑스어판 다섯 번째 도구(유닉스 타임스탬프 변환). 한국어판 /tools/unix-time/ 와
+ * 계산(lib/unix-time.ts)·스크립트(scripts/unix-time.ts 의 FR 사전 — 날짜·상대 시간 표기는 lib/fr/unix-time.ts)를
+ * 같이 쓰고, 문장은 프랑스 자동완성으로 새로 썼다(번역 아님). 조사표 프랑스 칸 '같음'(POSIX 4.19).
+ *
+ * 소제목은 프랑스 구글 자동완성에서 왔다(keywords/fr-unix-time-2026-10-21.csv, hl fr · gl fr):
+ *   convertir timestamp unix en date · timestamp en date · date en timestamp / timestamp unix now · date timestamp now /
+ *   timestamp unix milliseconds · ms / timestamp unix utc · convert timestamp to utc / convertir timestamp en date excel ·
+ *   convertir date en timestamp excel / timestamp date python · js · java · php · mysql · postgresql · sql · bash · linux /
+ *   timestamp unix discord · date timestamp discord
+ * 시간대는 UTC 와 '이 기기 시간대'만 — 프랑스 법정 시각(heure légale)·서머타임 전환 규칙은 허용 출처 원문으로 이번에
+ * 확인하지 않아 오프셋 숫자·전환 날짜를 쓰지 않는다. Excel 함수 이름(DATE, 구분자 ;)은 Microsoft 원문(허용 출처 밖)으로
+ * 확인하지 않았다. 본문 예시 숫자는 전부 아래 frontmatter 에서 lib 함수로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { INT32_MAX, toParts, isoText, secondsText, dateValue, timeValue } from "../../../../lib/unix-time";
+import { frText } from "../../../../lib/fr/unix-time";
+import { nFr } from "../../../../lib/fr/date-format";
+
+const title = "Convertir un timestamp Unix en date (et une date en timestamp) — UTC ou heure locale";
+const description =
+  "Collez un timestamp Unix à 10 chiffres ou en millisecondes (13 chiffres) pour lire la date en UTC ou à l’heure de votre appareil, ou convertissez une date en timestamp.";
+
+/** 처음 보이는 예 — 2026-10-19 03:34:56 UTC */
+const BASE_MS = 1_792_380_896_000;
+const p0 = toParts(BASE_MS, 0);
+const BASE_S = secondsText(BASE_MS);
+const zero = frText(toParts(0, 0));
+const minus1 = frText(toParts(-1000, 0));
+const y2038 = frText(toParts(INT32_MAX * 1000, 0));
+const wrap = frText(toParts(-(INT32_MAX + 1) * 1000, 0));
+const DAY = nFr(86_400);
+---
+
+<html lang="fr-FR">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Convertisseur timestamp Unix : timestamp en date et date en timestamp</h1>
+      <p>
+        Un fichier de logs, une colonne de base de données ou la réponse d’une API vous donne un nombre comme {BASE_S}, et il faut
+        savoir à quel moment il correspond. Saisissez-le ci-dessous pour lire la date et l’heure, ou saisissez une date et une
+        heure pour obtenir le timestamp. Les deux côtés se mettent à jour ensemble, en UTC ou dans le fuseau horaire de votre
+        appareil.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="zone">Fuseau horaire</label>
+          <select id="zone" data-seg>
+            <option value="utc" selected>UTC</option>
+            <option value="device">Mon fuseau horaire</option>
+          </select>
+          <p class="hint" id="zone-hint">Les champs de date et le résultat suivent ce fuseau. Le timestamp, lui, ne change pas.</p>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="ts">Timestamp Unix</label>
+          <input type="text" id="ts" inputmode="decimal" autocomplete="off" spellcheck="false" value={BASE_S} placeholder="ex. 1704067200" />
+          <p class="hint" id="ts-hint">10 chiffres = secondes, 13 chiffres = millisecondes.</p>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="unit">Unité</label>
+          <select id="unit" data-seg>
+            <option value="auto" selected>Auto</option>
+            <option value="s">Secondes</option>
+            <option value="ms">Millisecondes</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="date">Date</label>
+          <input type="date" id="date" value={dateValue(p0)} min="1900-01-01" max="9999-12-30" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="time">Heure (sur 24 h, hh:mm:ss)</label>
+          <input type="time" id="time" step="1" value={timeValue(p0)} />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="msec">Millisecondes (0 à 999)</label>
+          <input type="number" id="msec" inputmode="numeric" min="0" max="999" step="1" value="0" />
+        </div>
+
+        <div class="actions">
+          <button id="btn-now" type="button" class="secondary">Maintenant</button>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">UTC</p>
+          <p class="big" id="hero-value">{frText(p0)}</p>
+          <p class="hint" id="hero-sub"></p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">Secondes (s)</span>
+            <span class="value mono" id="v-sec">{BASE_S}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Millisecondes (ms)</span>
+            <span class="value mono" id="v-ms">{BASE_MS}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601 (UTC)</span>
+            <span class="value mono" id="v-iso">{isoText(BASE_MS, 0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ISO 8601 (fuseau choisi)</span>
+            <span class="value mono" id="v-iso-local">{isoText(BASE_MS, 0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Par rapport à maintenant</span>
+            <span class="value" id="v-rel">—</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+        <p class="meta" id="now-line">Maintenant : —</p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Enregistrer en image</button>
+          <button id="btn-share" type="button" class="secondary">Partager</button>
+        </div>
+      </div>
+
+      <h2>Ce que compte un timestamp Unix</h2>
+      <p>
+        Le temps Unix (ou « epoch ») est un compteur de <strong>secondes écoulées depuis le 1er janvier 1970 à 00:00:00 UTC</strong>.
+        La norme POSIX (IEEE Std 1003.1) le définit de façon que chaque jour dure exactement {DAY} secondes, sans tenir compte des
+        secondes intercalaires. Le timestamp 0 correspond donc au {zero} UTC, et −1 000 millisecondes au {minus1} UTC.
+      </p>
+
+      <h2>Timestamp Unix maintenant</h2>
+      <p>
+        Sous le convertisseur, la ligne « Maintenant » avance chaque seconde avec le timestamp actuel en secondes et en
+        millisecondes. Le bouton <strong>Maintenant</strong> place l’instant présent dans le convertisseur. Les deux valeurs viennent
+        de l’horloge de votre appareil : si elle retarde ou avance, elles aussi.
+      </p>
+
+      <h2>Secondes ou millisecondes ?</h2>
+      <ul>
+        <li>
+          <strong>10 chiffres, comme {BASE_S}</strong> : des secondes. Tous les timestamps de septembre 2001 à novembre 2286 ont
+          10 chiffres.
+        </li>
+        <li>
+          <strong>13 chiffres, comme {BASE_MS}</strong> : des millisecondes. C’est ce que renvoient <code>Date.now()</code> en
+          JavaScript et <code>System.currentTimeMillis()</code> en Java. Divisez par 1 000 pour revenir aux secondes.
+        </li>
+        <li>
+          <strong>Ce que fait « Auto »</strong> : un nombre avec un point décimal est lu en secondes ; un entier de 11 chiffres ou
+          moins est lu en secondes, à partir de 12 chiffres en millisecondes. Les espaces et les virgules servant de séparateurs
+          de milliers sont ignorés — le séparateur décimal attendu est le point, comme dans le code. Si « Auto » se trompe,
+          choisissez l’unité vous-même.
+        </li>
+      </ul>
+
+      <h2>Timestamp Unix en UTC ou à l’heure de Paris</h2>
+      <p>
+        Un timestamp n’a pas de fuseau horaire : le même nombre désigne le même instant à Paris, à Montréal ou à Tokyo. Seule
+        change la façon dont cet instant s’affiche sur une horloge locale. Avec <strong>Mon fuseau horaire</strong>, le convertisseur
+        utilise le fuseau réglé sur votre téléphone ou votre ordinateur — l’heure de Paris si l’appareil est réglé sur la France —
+        et affiche l’écart avec l’UTC à côté du résultat. Le passage à l’heure d’été et à l’heure d’hiver est appliqué par les
+        règles de fuseau de votre appareil : c’est pourquoi une date de janvier et une date de juillet n’affichent pas le même écart.
+        Pour voir un autre fuseau, changez celui de l’appareil puis revenez sur la page.
+      </p>
+
+      <h2>Convertir un timestamp en date dans Excel</h2>
+      <p>
+        Un tableur compte les dates en jours (un jour = 1). Il suffit donc de diviser les secondes par {DAY} et d’ajouter la date
+        du 1er janvier 1970. Si la cellule A1 contient un timestamp en secondes (Excel en français, séparateur <code>;</code>) :
+      </p>
+      <ul>
+        <li>Date et heure en UTC : <code>=A1/86400+DATE(1970;1;1)</code></li>
+        <li>À partir de millisecondes (13 chiffres) : <code>=A1/86400000+DATE(1970;1;1)</code></li>
+        <li>À l’heure locale : <code>=A1/86400+DATE(1970;1;1)+(décalage/24)</code>, où décalage est l’écart avec l’UTC en heures que le convertisseur affiche pour cette date (avec son signe)</li>
+        <li>Convertir une date UTC en timestamp : <code>=(A1-DATE(1970;1;1))*86400</code></li>
+      </ul>
+      <p>
+        Si la cellule n’affiche qu’un long nombre décimal, appliquez-lui un format de date, par exemple
+        {" "}<code>jj/mm/aaaa hh:mm:ss</code>. Dans Google Sheets, les mêmes formules fonctionnent ; le séparateur dépend des
+        paramètres régionaux du fichier.
+      </p>
+
+      <h2>Timestamp en date en Python, JavaScript, Java, PHP, SQL et Bash</h2>
+      <ul>
+        <li><strong>Python</strong> : <code>datetime.fromtimestamp({BASE_S}, tz=timezone.utc)</code> (avec <code>from datetime import datetime, timezone</code>)</li>
+        <li><strong>pandas</strong> : <code>pd.to_datetime({BASE_S}, unit="s")</code>, ou <code>unit="ms"</code> pour des millisecondes</li>
+        <li><strong>JavaScript</strong> : <code>new Date({BASE_S} * 1000)</code> — multipliez d’abord les secondes par 1 000</li>
+        <li><strong>Java</strong> : <code>Instant.ofEpochSecond({BASE_S}L)</code>, ou <code>Instant.ofEpochMilli(…)</code> pour des millisecondes</li>
+        <li><strong>PHP</strong> : <code>date('Y-m-d H:i:s', {BASE_S})</code> (fuseau de PHP), <code>time()</code> pour le timestamp actuel</li>
+        <li><strong>MySQL</strong> : <code>SELECT FROM_UNIXTIME({BASE_S});</code> et, dans l’autre sens, <code>UNIX_TIMESTAMP('2026-10-19 03:34:56')</code> (lu dans le fuseau de la session)</li>
+        <li><strong>PostgreSQL</strong> : <code>SELECT to_timestamp({BASE_S});</code></li>
+        <li><strong>Bash (Linux, macOS)</strong> : <code>date +%s</code> affiche le timestamp actuel ; avec GNU <code>date -d @{BASE_S}</code> on obtient la date</li>
+      </ul>
+      <p>Pour vérifier, collez le même nombre dans le convertisseur ci-dessus et comparez.</p>
+
+      <h2>Timestamp Unix sur Discord</h2>
+      <p>
+        Écrivez <code>&lt;t:{BASE_S}:F&gt;</code> dans un message Discord : chaque lecteur voit cet instant dans son propre fuseau
+        horaire, pratique quand un événement réunit des joueurs à Paris et à Montréal. La lettre finale choisit le style :
+        {" "}<code>t</code>/<code>T</code> pour l’heure courte ou longue, <code>d</code>/<code>D</code> pour la date courte ou
+        longue, <code>f</code>/<code>F</code> pour la date et l’heure, <code>R</code> pour le relatif (« dans 2 heures »). Discord
+        attend des secondes, pas des millisecondes.
+      </p>
+
+      <h2>Pourquoi 2038 pose problème</h2>
+      <p>
+        Un entier signé sur 32 bits s’arrête à 2 147 483 647, soit le {y2038} UTC en temps Unix. Une seconde plus tard, un logiciel
+        qui stocke encore l’heure dans un entier signé de 32 bits déborde vers une valeur négative et lit le {wrap} UTC. Le
+        convertisseur le signale par une note sous le résultat pour toute date au-delà.
+      </p>
+
+      <details>
+        <summary>Peut-on convertir une date avant 1970 ?</summary>
+        <p>
+          Oui, le timestamp est alors négatif. −1 est la seconde qui précède l’epoch, la dernière du 31 décembre 1969 en UTC. POSIX
+          ne donne la formule qu’à partir de 1970, mais ce convertisseur, comme la plupart des langages, continue de compter à
+          rebours à raison de {DAY} secondes par jour. La plage va du 1er janvier 1900 à l’an 9999.
+        </p>
+      </details>
+
+      <details>
+        <summary>Décimales, microsecondes et nanosecondes ?</summary>
+        <p>
+          Un nombre avec un point décimal, comme 1792380896.789, est lu en secondes avec au plus trois décimales (les
+          millisecondes). Les timestamps en microsecondes (16 chiffres) et en nanosecondes (19 chiffres) ne sont pas acceptés :
+          divisez-les d’abord par 1 000 ou par 1 000 000 pour obtenir des millisecondes.
+        </p>
+      </details>
+
+      <details>
+        <summary>Pourquoi mon résultat est décalé de quelques heures ?</summary>
+        <p>
+          Presque toujours à cause de l’UTC et de l’heure locale : le nombre a été lu en UTC alors que vous pensiez à l’heure de
+          Paris, ou l’inverse. Basculez entre <strong>UTC</strong> et <strong>Mon fuseau horaire</strong> pour comparer. Si l’année
+          sort en 1970 ou très loin dans le futur, l’unité est fausse d’un facteur 1 000 : choisissez secondes ou millisecondes à la
+          main.
+        </p>
+      </details>
+
+      <p>
+        Vous comptez en jours plutôt qu’en secondes ? Essayez le <a href="/fr/tools/date-diff/">calcul du nombre de jours entre
+        deux dates</a>, ou le <a href="/fr/tools/dday/">compte à rebours</a> pour une date à venir.
+      </p>
+
+      <p>
+        Source : <a href="https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html" rel="noopener">The Open Group Base Specifications Issue 8 (IEEE Std 1003.1-2024), 4.19 Seconds Since the Epoch</a> (consulté le 21 octobre 2026)
+      </p>
+
+      <AdSlot label="unix-time-result-fr" />
+    </main>
+    <SiteFooter />
+    <style>
+      .mono { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+      #hero-value { overflow-wrap: anywhere; }
+    </style>
+    <script src="../../../../scripts/unix-time.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
