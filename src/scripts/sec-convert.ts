@@ -32,6 +32,16 @@ import {
   digitsDe,
   partsSubDe,
 } from "../lib/de/sec-convert";
+import {
+  UNIT_NAME_ES,
+  withUnitEs,
+  readableEs,
+  readInputEs,
+  digitsEs,
+  partsSubEs,
+  heroLabelEs,
+  heroSubEs,
+} from "../lib/es/sec-convert";
 import { pickLang } from "../i18n/ui";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
@@ -158,10 +168,25 @@ const DE: typeof KO = {
   shareText: "Sekunden in Minuten umrechnen - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT, fr: FR, de: DE });
-/** 입력 읽기·숫자 칸 표기 — 프랑스어·독일어판만 쉼표 소수를 읽고 그 나라 꼴로 쓴다. 다른 판은 그대로. */
-const readIn = pickLang<(raw: string) => string>({ ko: (raw) => raw, fr: readInputFr, de: readInputDe });
-const num = pickLang<(s: string) => string>({ ko: (s) => s, fr: digitsFr, de: digitsDe });
+/** 스페인어판(/es/tools/sec-convert/) — 소수 쉼표·다섯 자리 이상만 공백 묶음, 1만 단수. 표기는 lib/es/sec-convert.ts. */
+const ES: typeof KO = {
+  unit: UNIT_NAME_ES,
+  withUnit: withUnitEs,
+  readable: readableEs,
+  heroLabel: heroLabelEs,
+  heroSub: heroSubEs,
+  bad: "Escribe un número igual o mayor que 0 (decimales con coma o punto, hasta 6 decimales y 15 cifras enteras)",
+  lineIn: "Valor",
+  lineReadable: "Horas, minutos y segundos",
+  partsSub: partsSubEs,
+  cardTitle: "Convertir segundos a minutos y horas",
+  shareText: "Convertir segundos a minutos y horas - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, id: ID, "zh-Hant": ZH_HANT, fr: FR, de: DE, es: ES });
+/** 입력 읽기·숫자 칸 표기 — 프랑스어·독일어·스페인어판만 쉼표 소수를 읽고 그 나라 꼴로 쓴다. 다른 판은 그대로. */
+const readIn = pickLang<(raw: string) => string>({ ko: (raw) => raw, fr: readInputFr, de: readInputDe, es: readInputEs });
+const num = pickLang<(s: string) => string>({ ko: (s) => s, fr: digitsFr, de: digitsDe, es: digitsEs });
 
 let lastLines: [string, string][] = [];
 
