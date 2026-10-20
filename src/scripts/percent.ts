@@ -1,7 +1,7 @@
 import { parseNumber, formatNumber, ratio, percentOf, change, adjust, original, toWari } from "../lib/percent";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
-import { pageLocale } from "../i18n/ui";
+import { pickLang } from "../i18n/ui";
 
 /** 계산기를 실제로 썼는지 — 한 방문에 한 번만 보고한다. */
 const reportUse = trackCalculatorUse("percent");
@@ -16,8 +16,9 @@ const aIn = $("a") as HTMLInputElement;
 const bIn = $("b") as HTMLInputElement;
 
 /**
- * 화면 문구 — 한국어판(/tools/percent/)과 일본어판(/ja/tools/percent/)이 같은 계산을 쓴다.
+ * 화면 문구 — 한국어판(/tools/percent/)·일본어판(/ja/tools/percent/)·영어판(/en-us/tools/percent/ 등)이 같은 계산을 쓴다.
  * 계산은 산술이라 나라와 상관없고, 말만 다르다. 일본어판은 歩合(割·分·厘)을 같이 보인다.
+ * 영어 사전(EN)은 영어 다섯 판이 같이 쓰므로 통화 기호 등 한 나라 표기를 넣지 않는다.
  */
 const KO = {
   labels: {
@@ -92,7 +93,42 @@ const JA: typeof KO = {
   share: "パーセント計算の結果 - jupocket.com",
 };
 
-const S = pageLocale() === "ja" ? JA : KO;
+const EN: typeof KO = {
+  labels: {
+    ratio: { a: "Whole value A", b: "Part value B", pct: false },
+    of: { a: "Whole value A", b: "Percent B", pct: true },
+    change: { a: "Old value A", b: "New value B", pct: false },
+    adjust: { a: "Starting value A", b: "Percent B", pct: true },
+    original: { a: "Value after the change A", b: "Percent changed B", pct: true },
+  },
+  title: "Percentage calculator result",
+  nan: "Enter a number",
+  ratioZero: "A can't be 0",
+  divZero: "You can't divide by 0",
+  ratioHero: "B is this percent of A",
+  a: "Whole value A",
+  b: "Part value B",
+  ofHero: (a, b) => `${b}% of ${a}`,
+  whole: "Whole value A",
+  rate: "Percent B",
+  changeZero: "The old value A can't be 0",
+  changeZeroHint: "A change that starts from 0 can't be shown as a percent",
+  diff: "Difference",
+  up: "Percent increase",
+  down: "Percent decrease",
+  beforeAfter: "Old → new",
+  adjHero: (b, up) => (up ? `After a ${b}% increase` : `After ${b}% off`),
+  adjAmount: (up) => (up ? "Amount added" : "Amount off (you save)"),
+  first: "Starting value A",
+  origNone: "After 100% off, the original value can't be found",
+  origHero: "Original value",
+  origAmount: (up) => (up ? "Amount added by the increase" : "Amount taken off"),
+  changed: "Value after the change A",
+  wari: (_p) => "",
+  share: "Percentage calculator result - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN });
 
 let lastTitle = "";
 let lastLines: [string, string][] = [];
