@@ -35,4 +35,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/zh-hk/tools/dday/",
+    ko: "/tools/dday/",
+    name: "倒數日子計算器",
+    blurb: "距離聖誕節、農曆新年、DSE 開考或任何日子還有幾多日，以日、小時、分鐘倒數",
+    type: "date",
+    icon: "calendar",
+    basis: "math",
+  },
 ];

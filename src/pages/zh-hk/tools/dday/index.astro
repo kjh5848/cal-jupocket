@@ -1,0 +1,211 @@
+---
+/**
+ * 倒數日子計算器 — 홍콩 繁體中文판 네 번째 도구(디데이). 한국어판 /tools/dday/ 와 계산(lib/date-calc.ts 의 countdown)·
+ * 스크립트(scripts/dday.ts 의 ZH_HANT 사전 — 대만판·홍콩판 공용, 날짜는 <html lang="zh-Hant-HK"> 로 '2026年12月25日週五')를
+ * 같이 쓰고, 문장은 홍콩 구글 자동완성으로 새로 썼다(번역 아님). 조사표 홍콩 칸 '단위'. 고친 공유 파일 없음.
+ *
+ * 소제목은 홍콩 구글 자동완성에서 왔다(keywords/hk-dday-2026-10-21.csv, hl zh-HK · gl hk):
+ *   倒數日子 · 倒數日子 計算 · 倒數日子器 / 距離聖誕節還有多少日 · 距離聖誕還有多少天 / 倒數計時器 · 倒數計時日期 /
+ *   dse 倒數 · dse 倒數 幾多 日 · dse 倒數 2027 / 倒數日子 app · iphone 倒數日子
+ * 분 단위 타이머(倒數計時3分鐘·5分鐘·10分鐘)·음악·다운로드 쪽은 이 도구가 아니라 뺐다.
+ * 공휴일 날짜는 gov.hk「2026年公眾假期」(https://www.gov.hk/tc/about/abouthk/holiday/2026.htm)·
+ * 「2027年公眾假期」(https://www.gov.hk/tc/about/abouthk/holiday/2027.htm), 2026-10-21 확인)에서 읽은 줄만 쓴다:
+ * 國慶日 2026-10-01(四) · 聖誕節 2026-12-25(五) · 一月一日 2027-01-01(五) · 農曆年初一 2027-02-06(六).
+ * DSE 시험 날짜는 허용 출처에 없어 쓰지 않는다. 하루는 24시간으로 센다. 본문 숫자는 전부 아래 frontmatter 에서 countdown() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { toDay, countdown, type Countdown } from "../../../../lib/date-calc";
+
+const title = "倒數日子計算器（香港）— 距離聖誕節、農曆新年、DSE 還有幾多日";
+const description =
+  "香港倒數日子計算器：揀一個日期，即時知道距離聖誕節、農曆新年、DSE 開考或任何日子還有幾多日，並以日、小時、分鐘倒數，可儲存為圖片。";
+
+/** 하루 번호 → '2026年12月25日週五' (UTC 자정이라 timeZone UTC) — scripts/dday.ts ZH_HANT(대만 루틴이 넣음, 94a97fd)와 같은 식 */
+const labelZh = (d: number) =>
+  new Date(d * 86_400_000).toLocaleDateString("zh-Hant-HK", { timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric" });
+const n = (v: number) => v.toLocaleString("zh-Hant-HK");
+const left = (c: Countdown) => (c.side === 0 ? "就是今天" : c.side > 0 ? `還有${n(c.days)}天` : `已過${n(c.days)}天`);
+const d = (iso: string) => toDay(iso)!;
+
+const BASE = "2026-10-21";
+const TARGET = "2026-12-25";
+const base = d(BASE);
+const target = d(TARGET);
+const c0 = countdown(target, null, base, 0);
+const days0 = Math.floor(c0.seconds / 86_400);
+
+// 본문 예시 — 전부 BASE 에서 센다
+const xmas = d("2026-12-25");
+const nye = d("2026-12-31");
+const ny = d("2027-01-01");
+const cny = d("2027-02-06");
+const cXmas = countdown(xmas, null, base, 0);
+const cNye = countdown(nye, null, base, 0);
+const cNy = countdown(ny, null, base, 0);
+const cCny = countdown(cny, null, base, 0);
+const tomorrow = countdown(base + 1, null, base, 0);
+// 오전 8시 30분 시험 — 기준일 저녁 8시에 열었을 때(다음 週三 시험 예시)
+const examDay = d("2026-10-28");
+const exam = countdown(examDay, 8 * 3600 + 30 * 60, base, 20 * 3600);
+const examD = Math.floor(exam.seconds / 86_400);
+const examH = Math.floor((exam.seconds % 86_400) / 3600);
+const examM = Math.floor((exam.seconds % 3600) / 60);
+const pastDay = d("2026-10-01");
+const past = countdown(pastDay, null, base, 0);
+---
+
+<html lang="zh-Hant-HK">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>倒數日子計算器：距離某一天還有幾多日</h1>
+      <p>
+        揀一個目標日期，即時看到還有幾多天，以及剩下的日、小時和分鐘。如果事情在指定時間開始，例如考試開考、航班起飛或者飯局，可以開啟「倒數到指定時間」。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="target">目標日期</label>
+          <input type="date" id="target" value={TARGET} />
+          <div class="ux-presets" role="group" aria-label="常用日期">
+            <button type="button" data-preset="plus100">100天後</button>
+            <button type="button" data-preset="xmas">聖誕節</button>
+            <button type="button" data-preset="yearend">12月31日</button>
+            <button type="button" data-preset="newyear">1月1日</button>
+          </div>
+        </div>
+        <div class="calc-input-wrap toggle-row">
+          <label for="use-time">倒數到指定時間</label>
+          <input type="checkbox" id="use-time" />
+        </div>
+        <div class="calc-input-wrap" id="time-wrap" hidden>
+          <label for="time">目標時間</label>
+          <input type="time" id="time" value="08:30" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="base">基準日期（通常是今天）</label>
+          <input type="date" id="base" value={BASE} />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">距離{labelZh(target)}</p>
+          <p class="big" id="hero-value">{left(c0)}</p>
+          <p class="hint" id="hero-sub">把基準日算作第1天，目標日是第{n(c0.countDays)}天</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label" id="l1">剩餘時間</span>
+            <span class="value" id="v1">{n(days0)}天0小時0分</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l2">從第1天算起</span>
+            <span class="value" id="v2">第{n(c0.countDays)}天</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l3">基準日</span>
+            <span class="value" id="v3">{labelZh(base)}</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">儲存為圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2>倒數日子點計？今天計唔計在內</h2>
+      <p>
+        「還有幾多天」就是<strong>目標日期減今天</strong>：今天不計，目標日期計，所以明天會顯示「{left(tomorrow)}」。到了當天會顯示「就是今天」，直到午夜；日期過了就顯示「已過幾多天」。
+      </p>
+      <p>
+        有些倒數習慣由第 1 天開始數，例如返新工第一天或 30 天挑戰。這時看「從第1天算起」一格，它永遠比剩餘天數多一天。以{labelZh(base)}為第 1 天，
+        {labelZh(target)}是第 {n(c0.countDays)} 天。
+      </p>
+
+      <h2>距離聖誕節還有多少日？（2026）</h2>
+      <p>由{labelZh(base)}起計：</p>
+      <ul>
+        <li>聖誕節（{labelZh(xmas)}）：{left(cXmas)}</li>
+        <li>除夕（{labelZh(nye)}）：{left(cNye)}</li>
+        <li>2027 年 1 月 1 日（{labelZh(ny)}）：{left(cNy)}</li>
+        <li>2027 年農曆年初一（{labelZh(cny)}）：{left(cCny)}</li>
+      </ul>
+      <p>
+        根據政府公布的公眾假期，2026 年聖誕節是 12 月 25 日（星期五），2027 年的一月一日是星期五、農曆年初一是 2 月 6 日（星期六）。除夕只是日曆上的日子，並非公眾假期。打開本頁時計算機會自動填上今天的日期，所以結果總是由你瀏覽的那天開始計。
+      </p>
+
+      <h2>倒數計時器：以日、小時、分鐘倒數</h2>
+      <ul>
+        <li><strong>只揀日期</strong>：倒數到目標日期結束的一刻（即翌日零時）。</li>
+        <li>
+          <strong>加上時間</strong>：倒數到那一刻。時間一過，即使仍是同一天，格子也會變成「已過時間」。例如在{labelZh(base)}晚上 8 時打開，{labelZh(examDay)}上午 8 時 30 分開考的試，還有
+          {" "}{n(examD)}天{n(examH)}小時{n(examM)}分。
+        </li>
+        <li><strong>秒數即時跳動</strong>：基準日期是今天時才會每秒更新；改用其他基準日期，就由那天零時起計。</li>
+      </ul>
+      <p>
+        每天一律按 24 小時計算，時間以你手機或電腦的時鐘為準。如果事情在其他時區發生，例如外地航班降落或海外直播，請先換算成香港時間再輸入。
+      </p>
+
+      <h2>DSE 倒數：距離開考還有幾多日</h2>
+      <p>
+        在目標日期輸入你第一科的考試日期，開啟「倒數到指定時間」再輸入開考時間即可。本頁沒有列出考試日期，因為每年各科的日期和時間都不同，請以官方公布的考試時間表為準。按「儲存為圖片」可以做一張倒數卡，放在溫習桌前或傳到同學群組。
+      </p>
+
+      <h2>倒數日子 app 以外的選擇</h2>
+      <p>
+        本頁在 iPhone、Android 手機或電腦的瀏覽器都可以直接用，不用下載 app。想每天看看還有幾多日，可以把本頁加入書籤，或者用「儲存為圖片」把結果存在相簿裡。生日倒數也一樣：今年生日已經過了的話，請輸入明年的日期，否則結果會顯示已過幾多天。
+      </p>
+
+      <details>
+        <summary>可以只計工作天嗎？</summary>
+        <p>
+          本頁計算所有日子，包括星期六日。如要計星期一至五的平日，請在<a href="/zh-hk/tools/date-diff/">日數計算機</a>輸入今天和目標日期；它會除去星期六日，但不會扣除公眾假期。
+        </p>
+      </details>
+
+      <details>
+        <summary>日期已經過了會怎樣？</summary>
+        <p>
+          會顯示「已過幾多天」，時間格子也會變成「已過時間」，可以用來計某件事開始了多久。由{labelZh(base)}起計，2026 年國慶日（{labelZh(pastDay)}）{left(past)}。
+        </p>
+      </details>
+
+      <details>
+        <summary>可以用星期倒數嗎？</summary>
+        <p>
+          把天數除以 7。{labelZh(target)}距離{labelZh(base)}{left(c0)}，即 {n(Math.floor(c0.days / 7))} 週 {n(c0.days % 7)} 天。
+        </p>
+      </details>
+
+      <p class="hint">
+        公眾假期資料來源：香港政府一站通
+        <a href="https://www.gov.hk/tc/about/abouthk/holiday/2026.htm" rel="noopener">2026年公眾假期</a>、
+        <a href="https://www.gov.hk/tc/about/abouthk/holiday/2027.htm" rel="noopener">2027年公眾假期</a>
+        （2026 年 10 月 21 日查閱）。
+      </p>
+
+      <AdSlot label="dday-result-zh-hk" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/dday.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
