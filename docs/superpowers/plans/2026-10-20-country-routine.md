@@ -8,7 +8,9 @@
 
 루틴 여러 개가 한 폴더(`cal`)와 잠금 하나를 같이 쓰면 한 시간에 하나만 돈다. 그래서 나라 루틴은 **자기 git worktree** `../cal-wt/<code>`(= `C:\Users\kjh58\Desktop\김주혁\workspace\cal-wt\<code>`)에서 일하고, 끝에 `origin/main` 위로 올려 push 한다. 한국 도구 루틴은 지금처럼 `cal` 에서 돈다.
 
-동시에 돌아도 충돌하지 않도록 **나라 루틴이 고칠 수 있는 파일을 정해 둔다**(아래 '내 파일'). 조사표는 **읽기만** 한다 — 같은 줄의 다른 칸을 여러 나라가 고치면 반드시 충돌한다. 조사표는 한국 루틴이 쓴다.
+동시에 돌아도 충돌하지 않도록 **나라 루틴이 고칠 수 있는 파일을 정해 둔다**(아래 '내 파일').
+
+**올리기는 한 줄로 선다(2026-10-20).** 13개가 각자 rebase·테스트·push 하다가 같은 공유 파일에서 충돌했고(독일·프랑스·스페인·인도네시아), 홍콩 회차는 커밋을 올리지도 기록하지도 못하고 끝났다. 그래서 모든 루틴은 `node scripts/country/ship.mjs <code>` 로만 올린다 — 공용 잠금 `main`(`cal-wt/.locks/main`)을 잡고 rebase → 내 파일 검사 → 전체 빌드·테스트 → push 를 한 번에 하고 잠금을 푼다. 공유 산술 스크립트는 **고치기 전에** 같은 잠금을 잡는다. 멈춘 회차가 남긴 것은 `node scripts/country/audit.mjs --fix` 가 `wip/<code>-<시각>` 브랜치로 보관한다(**git stash 는 쓰지 않는다** — 모든 작업 폴더가 stash 하나를 같이 써서 남의 것을 꺼낼 수 있다). 조사표는 **읽기만** 한다 — 같은 줄의 다른 칸을 여러 나라가 고치면 반드시 충돌한다. 조사표는 한국 루틴이 쓴다.
 
 ## 나라판 기초 (이미 있음 — 회차에서 고치지 않는다)
 
@@ -24,7 +26,8 @@
 
 - `src/pages/<판>/**` · `src/data/<판>/**` · `src/rates/<code>/**` · `src/lib/<code>/**` · `src/lib/__tests__/<code>-*.test.ts`
 - `docs/countries/<code>.md` · `keywords/<code>-*` (일본은 예전 이름 `keywords/ja-*` 도)
-- **공유 산술 도구에 내 언어 문구를 넣을 때만**: 그 도구의 `src/scripts/<tool>.ts`(사전 하나 더하기·`pickLang` 으로 바꾸기)와 그 lib·테스트. 이 경우 커밋을 따로 하나로 만들고, rebase 충돌이 나면 되돌리고 `보류(공유 파일 충돌 — 다음 회차 재시도)`.
+- **공유 산술 도구에 내 언어 문구를 넣을 때만**: 그 도구의 `src/scripts/<tool>.ts`(사전 하나 더하기·`pickLang` 으로 바꾸기)와 그 lib·테스트. **고치기 전에** `node scripts/country/lock.mjs acquire main <code>` 로 잠금을 잡고 → `git fetch origin && git rebase origin/main` → 고치고 커밋 → `ship <code> --shared`(같은 주인의 잠금을 이어 쓰고 끝나면 푼다). 잠금을 40분 안에 못 잡으면 공유 파일이 필요 없는 다른 도구로 넘어가거나 `보류(잠금 대기)`.
+- 이 목록은 `scripts/country/paths.mjs` 가 기계로 검사한다(ship 이 막는다).
 - 그 밖(`src/i18n/**`·`src/components/**`·`src/styles/**`·한국어판 페이지·한국 rates·링크허브·조사표)은 고치지 않는다. 기초가 모자라면 `docs/countries/<code>.md` 에 `기초 필요: <무엇>` 으로 남기고 끝낸다 — 사람이 기초를 고친다.
 
 ## 지켜야 할 것 (매 회차)
@@ -42,7 +45,8 @@
 ### 0. 작업 폴더 · 잠금
 - [ ] `W=C:/Users/kjh58/Desktop/김주혁/workspace/cal-wt/<code>`. 없으면 만든다: `git -C C:/Users/kjh58/Desktop/김주혁/workspace/cal fetch origin` → `git -C …/cal worktree add --detach "$W" origin/main` → `cd "$W" && npm ci`. (`node_modules` 를 다른 폴더와 공유하지 않는다 — 동시에 빌드하면 캐시가 섞인다.)
 - [ ] `$W/.routine-lock` 이 있으면 "잠금 중: <첫 줄>" 만 남기고 끝낸다. 수정 시각이 90분보다 오래됐으면 멈춘 회차로 보고 지운다.
-- [ ] `$W` 에 변경이 남아 있으면(지난 회차가 멈춘 것) 지우지 말고 `git stash push -u -m "멈춘 회차 <날짜>"` 로 치우고 `docs/countries/<code>.md` 에 기록한다.
+- [ ] `$W` 에 변경·안 올린 커밋이 남아 있으면(지난 회차가 멈춘 것) `node scripts/country/audit.mjs --fix` — `wip/<code>-<시각>` 브랜치로 보관하고 폴더를 origin/main 으로 되돌린다. **git stash 금지.**
+- [ ] 내 보관 브랜치(`git branch --list 'wip/<code>-*'`)가 있으면 **이번 회차는 그것부터**: 새 origin/main 위에 `git cherry-pick <커밋들>` → 기록 행 갱신 → 5단계로 올린다. 올라가면 `git branch -D <브랜치>`. cherry-pick 충돌이면 `git cherry-pick --abort` 하고 그 커밋의 의도대로 새 main 위에서 다시 만든다(공유 파일이면 잠금부터).
 - [ ] `.routine-lock` 을 만들고(`<code> 루틴 <시각>`), 끝날 때 성공·실패와 관계없이 지운다.
 - [ ] `git fetch origin && git checkout --detach origin/main`. `node_modules` 가 `package-lock.json` 보다 오래됐으면 `npm ci`.
 
@@ -75,10 +79,25 @@
 
 ### 5. 검사 → 커밋 → 올리기
 - [ ] `git status --short` 의 모든 파일이 '내 파일' 안인지 확인. 아니면 그 파일을 되돌리고(`git checkout -- <파일>`) 기록.
-- [ ] `npm run build` → `set -o pipefail; npx vitest run > out.txt; echo $?` 가 0 일 때만 커밋(`<code>: <도구> <판> 페이지` 또는 `docs: <code> <주제> 판정`).
-- [ ] 올리기(최대 3번): `git push origin HEAD:main` → 거절되면 `git fetch origin && git rebase origin/main` → 빌드·테스트 다시 → 다시 push. rebase 충돌이면 `git rebase --abort` 후 그 회차를 `보류(충돌)` 로 기록하고 끝낸다(다음 회차가 새 main 에서 다시 한다).
-- [ ] 페이지를 냈으면 라이브 주소(`https://jupocket.com/<판>/…`) 200 확인(배포에 몇 분 걸린다 — 최대 10분 간격 확인). 200 이면 `node social/indexnow.mjs <그 주소>` 로 Bing·네이버 등에 알린다(목록 `social/indexnow-sent.json` 은 커밋하지 않는다).
+- [ ] 내 테스트만 먼저: `set -o pipefail; npx vitest run src/lib/__tests__/i18n.test.ts src/lib/__tests__/<code>-* > out.txt; echo $?`(전체 빌드·테스트는 ship 이 잠금 안에서 한 번 돈다 — 13개가 동시에 전체를 돌리면 PC 가 멈춘다).
+- [ ] 6단계 기록 행까지 써서 커밋한다(`<code>: <도구> <판> 페이지` · `docs: <code> <주제> 판정`). 커밋 안 한 변경이 남으면 ship 이 거부한다.
+- [ ] 올리기: `node scripts/country/ship.mjs <code> --live <새 페이지 주소…>`(공유 파일을 고쳤으면 `--shared`). 종료 코드:
+  - `0` 올라감 — `--live` 주소가 200 이 되면 IndexNow 까지 알렸다(로그 `out-ship.txt`)
+  - `2` rebase 충돌 · `5` 잠금을 40분 못 잡음 · `6` push 실패 → 커밋을 `git branch wip/<code>-<시각>` 로 보관하고 끝(다음 회차가 0단계에서 집는다)
+  - `3` 빌드·테스트 실패 → `out-ship.txt` 를 보고 고쳐 다시(두 번까지), 안 되면 커밋을 되돌리고 `보류(테스트)`
+  - `4` 내 파일 밖을 고침 → 그 파일을 되돌리고 다시 · `7` 커밋 안 한 변경 → 커밋하고 다시
+- [ ] 라이브 주소가 200 이 안 됐으면(배포 지연) 다음 회차가 확인한다 — 기록 행 메모에 '라이브 확인 전'.
 
 ### 6. 기록
-- [ ] `docs/countries/<code>.md` 행 상태(발행·보강·판정·보류(이유)) + 근거 주소·자동완성 CSV·확인일. 이 기록 커밋도 같은 push 에 묶는다.
+- [ ] `docs/countries/<code>.md` 행 상태(발행·보강·판정·보류(이유)) + 근거 주소·자동완성 CSV·확인일. **ship 전에** 커밋해 같은 push 에 묶는다(5단계).
 - [ ] 회차 요약 3줄.
+
+## 배차 루틴 (2026-10-20 — 나라별 예약 12개를 대신한다)
+
+앱의 예약 실행은 동시에 몇 개만 돌고 나머지 시각을 건너뛴다(13개를 걸어 두니 4개 안팎만 돌았다). 그래서 예약은 **배차 루틴 하나**(`jupocket-country-dispatch`)만 두고, 그 회차가 안에서 나라별 하위 에이전트 12개(jp·us·gb·ca·au·sg·de·fr·es·tw·hk·id — 중국 제외)를 **동시에** 띄워 각자 위 '한 회차'를 돌게 한다.
+
+1. 배차 잠금 `cal-wt/.dispatch-lock`(90분 넘으면 지움) — 배차 회차끼리 겹치지 않게.
+2. 배차 전용 작업 폴더 `cal-wt/_dispatch`(없으면 `worktree add --detach … origin/main`)를 origin/main 으로 맞추고 거기서 `node scripts/country/audit.mjs --fix`.
+3. 12개 에이전트를 한 메시지에 동시에 띄운다(각자 자기 나라 코드로 이 문서의 '한 회차'). 모두 끝날 때까지 기다린다.
+4. 다시 `audit.mjs --fix` → 결과(나라별 한 줄)를 `cal-wt/dispatch-log.md` 에 덧붙인다(저장소 밖).
+5. 잠금을 풀고 끝.

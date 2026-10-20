@@ -79,7 +79,7 @@
 ### 7. 검사·배포
 - [ ] `npm run og` → `npm run build` → `set -o pipefail; npx vitest run > out.txt; echo $?` 0.
 - [ ] dev 에서 계산기 직접 입력(폰 390 폭·다크 포함)으로 값 확인.
-- [ ] 커밋 `content:`/`tool:` → push → 라이브 페이지·OG 200 확인.
+- [ ] 커밋 `content:`/`tool:` → **`node scripts/country/ship.mjs kr --live <새 주소…>`** 로 올린다(공용 잠금 안에서 rebase·전체 빌드·테스트·push·라이브 200·IndexNow — 나라판 루틴 12개와 한 줄로 선다, `2026-10-20-country-routine.md`). 종료 코드 2(충돌)·5(잠금 대기)·6(push 실패)이면 커밋을 `wip/kr-<시각>` 브랜치로 보관하고 기록, 3(빌드·테스트 실패)이면 고쳐 다시.
 - [ ] 라이브 200 뒤 `npm run indexnow` — 사이트맵에서 아직 안 알린 새 주소를 Bing·네이버에 알린다(구글과 별개의 길, ChatGPT 검색은 Bing 색인을 쓴다).
 
 ### 8. 기록

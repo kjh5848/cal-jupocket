@@ -33,3 +33,8 @@ scripts/weekly-report.log
 
 # 루틴 테스트 출력(npx vitest run > out.txt)
 out.txt
+
+# 루틴 올리기 로그 · IndexNow·색인 점검 결과(로컬 상태 — 커밋하지 않는다)
+out-ship.txt
+social/indexnow-sent.json
+social/index-status.json
