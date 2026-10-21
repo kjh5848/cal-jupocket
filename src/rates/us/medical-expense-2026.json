@@ -1,9 +1,8 @@
 {
   "country": "US",
   "year": 2026,
-  "draft": true,
   "verifiedOn": "2026-10-21",
-  "status": "초안 — 페이지에서 쓰지 않는다(다음 회차가 2순위로 /en-us/ 페이지를 만들며 draft 를 지움). 연방 Schedule A 의료비 항목별 공제만, 주(州) 소득세 의료비 공제는 다루지 않음(us.md 주의). 숫자 전부 원문 확인(notVerified 비움, 2026-10-21)",
+  "status": "검증됨 — /en-us/medical-expense-deduction/ 가 쓴다. 연방 Schedule A 의료비 항목별 공제만, 주(州) 소득세 의료비 공제는 다루지 않음(us.md 주의). 숫자 전부 원문 확인(2026-10-21)",
   "sources": [
     {
       "label": "IRS Topic no. 502, Medical and dental expenses (Page Last Reviewed or Updated: 09-Oct-2026)",
@@ -48,10 +47,10 @@
       "quote": "For taxable years beginning in 2026 … MFJ and Surviving Spouses $32,200 · Heads of Households $24,150 · Unmarried $16,100 · MFS $16,100 … aged or blind $1,650 … increased to $2,050 if … unmarried and not a surviving spouse … LTC: 40 or less $500 · >40 ≤50 $930 · >50 ≤60 $1,860 · >60 ≤70 $4,960 · >70 $6,200"
     },
     {
-      "label": "IRS Publication 501 (2025) Table 6·Table 8 — For use in preparing 2025 Returns (Page Last Reviewed or Updated: 30-Apr-2026)",
+      "label": "IRS Publication 501 (2025) Table 6·Table 7·Table 8·Persons not eligible for the standard deduction — For use in preparing 2025 Returns (Page Last Reviewed or Updated: 30-Apr-2026)",
       "url": "https://www.irs.gov/publications/p501",
       "checkedOn": "2026-10-21",
-      "quote": "Table 6 [2025]: Single or Married filing separately $15,750 · Married filing jointly or Qualifying surviving spouse 31,500 · Head of household 23,625 … If born before January 2, 1961, or blind, multiply $2,000 ($1,600 if married) by the number in the box above."
+      "quote": "Table 6 [2025]: Single or Married filing separately $15,750 · Married filing jointly or Qualifying surviving spouse 31,500 · Head of household 23,625 … If born before January 2, 1961, or blind, multiply $2,000 ($1,600 if married) by the number in the box above. … Table 7 [2025, boxes = born before January 2, 1961 / blind, you and spouse]: Single 1 $17,750 2 19,750 · Married filing jointly 1 $33,100 2 34,700 3 36,300 4 37,900 · Qualifying surviving spouse 1 $33,100 2 34,700 · Married filing separately** 1 $17,350 2 18,950 3 20,550 4 22,150 · Head of household 1 $25,625 2 27,625 (** spouse boxes for MFS only if the spouse had no income, isn’t filing a return, and can’t be claimed as a dependent) … Your standard deduction is zero … if: Your filing status is married filing separately, and your spouse itemizes deductions on their return"
     }
   ],
   "floor": {
@@ -62,42 +61,162 @@
   "mileage": {
     "unit": "USD per mile",
     "byPeriod": [
-      { "period": "2025", "rate": 0.21, "source": "IR-2024-312 · Pub 502 (2025)" },
-      { "period": "2026-01-01..2026-06-30", "rate": 0.205, "source": "IR-2025-128" },
-      { "period": "2026-07-01..2026-12-31", "rate": 0.235, "source": "IR-2026-29" }
+      {
+        "period": "2025",
+        "rate": 0.21,
+        "source": "IR-2024-312 · Pub 502 (2025)"
+      },
+      {
+        "period": "2026-01-01..2026-06-30",
+        "rate": 0.205,
+        "source": "IR-2025-128"
+      },
+      {
+        "period": "2026-07-01..2026-12-31",
+        "rate": 0.235,
+        "source": "IR-2026-29"
+      }
     ],
     "rule": "실제 기름값·오일 대신 표준 단가 × 마일 가능, 주차비·통행료는 어느 방식이든 더함. 감가상각·보험·수리는 안 됨(Pub 502). 2026 은 한 해에 단가가 둘 — 7월 1일 전후 마일을 나눠 곱해야 함"
   },
   "lodgingPerNightPerPerson": 50,
   "longTermCarePremiumLimit": {
-    "rule": "qualified LTC 보험료는 사람마다(each person) 그해 말 나이 구간 한도까지만 의료비에 넣음",
     "2025": [
-      { "ageTo": 40, "limit": 480 },
-      { "ageFrom": 41, "ageTo": 50, "limit": 900 },
-      { "ageFrom": 51, "ageTo": 60, "limit": 1800 },
-      { "ageFrom": 61, "ageTo": 70, "limit": 4810 },
-      { "ageFrom": 71, "limit": 6020 }
+      {
+        "ageTo": 40,
+        "limit": 480
+      },
+      {
+        "ageFrom": 41,
+        "ageTo": 50,
+        "limit": 900
+      },
+      {
+        "ageFrom": 51,
+        "ageTo": 60,
+        "limit": 1800
+      },
+      {
+        "ageFrom": 61,
+        "ageTo": 70,
+        "limit": 4810
+      },
+      {
+        "ageFrom": 71,
+        "limit": 6020
+      }
     ],
     "2026": [
-      { "ageTo": 40, "limit": 500 },
-      { "ageFrom": 41, "ageTo": 50, "limit": 930 },
-      { "ageFrom": 51, "ageTo": 60, "limit": 1860 },
-      { "ageFrom": 61, "ageTo": 70, "limit": 4960 },
-      { "ageFrom": 71, "limit": 6200 }
-    ]
+      {
+        "ageTo": 40,
+        "limit": 500
+      },
+      {
+        "ageFrom": 41,
+        "ageTo": 50,
+        "limit": 930
+      },
+      {
+        "ageFrom": 51,
+        "ageTo": 60,
+        "limit": 1860
+      },
+      {
+        "ageFrom": 61,
+        "ageTo": 70,
+        "limit": 4960
+      },
+      {
+        "ageFrom": 71,
+        "limit": 6200
+      }
+    ],
+    "rule": "qualified LTC 보험료는 사람마다(each person) 그해 말 나이 구간 한도까지만 의료비에 넣음"
   },
   "standardDeduction": {
+    "2025": {
+      "single": 15750,
+      "marriedFilingSeparately": 15750,
+      "marriedFilingJointly": 31500,
+      "qualifyingSurvivingSpouse": 31500,
+      "headOfHousehold": 23625,
+      "agedOrBlindAdditional": {
+        "unmarried": 2000,
+        "married": 1600
+      }
+    },
+    "2026": {
+      "single": 16100,
+      "marriedFilingSeparately": 16100,
+      "marriedFilingJointly": 32200,
+      "qualifyingSurvivingSpouse": 32200,
+      "headOfHousehold": 24150,
+      "agedOrBlindAdditional": {
+        "unmarried": 2050,
+        "married": 1650
+      }
+    },
     "rule": "의료비 공제는 항목별 공제 합계가 표준공제보다 클 때만 의미가 있음(Schedule A 지침 General Instructions 'take the larger of your itemized deductions or your standard deduction'). 페이지는 비교만 보여주고 다른 항목(SALT·모기지 이자·기부)은 사용자가 넣게",
-    "2025": { "single": 15750, "marriedFilingSeparately": 15750, "marriedFilingJointly": 31500, "qualifyingSurvivingSpouse": 31500, "headOfHousehold": 23625, "agedOrBlindAdditional": { "unmarried": 2000, "married": 1600 } },
-    "2026": { "single": 16100, "marriedFilingSeparately": 16100, "marriedFilingJointly": 32200, "qualifyingSurvivingSpouse": 32200, "headOfHousehold": 24150, "agedOrBlindAdditional": { "unmarried": 2050, "married": 1650 } }
+    "agedOrBlindMapping": "박스 하나당 추가액: Single·HOH = unmarried, MFJ·MFS·QSS = married. 2025 은 Pub 501 Table 7(QSS 1박스 $33,100 = 31,500 + 1,600 → married 단가)로, 2026 은 Rev. Proc. 2025-32 §3.14 '$2,050 if unmarried and not a surviving spouse' 로 확인. 박스 최대: Single·HOH·QSS 2, MFJ·MFS 4(MFS 배우자 박스는 Table 7 ** 조건일 때만)",
+    "maxBoxes": {
+      "single": 2,
+      "headOfHousehold": 2,
+      "qualifyingSurvivingSpouse": 2,
+      "marriedFilingJointly": 4,
+      "marriedFilingSeparately": 4
+    },
+    "mfsSpouseItemizes": "MFS 이고 배우자가 항목별 공제를 하면 표준공제 0(Pub 501 Persons not eligible for the standard deduction)"
   },
   "examples": [
-    { "from": "Pub 502 (2025) Car expenses Example", "miles": 2800, "rate": 0.21, "tollsParking": 100, "actualGasOil": 430, "standardTotal": 688, "actualTotal": 530, "note": "2,800 × 0.21 = 588 + 100 = 688 > 530 이라 688 을 넣음" },
-    { "from": "Pub 502 (2025) Premium tax credit Example 1", "premiums": 8700, "allowedPTC": 3600, "line1Premiums": 5100 },
-    { "from": "Pub 502 (2025) Premium tax credit Example 2", "premiums": 8700, "allowedPTC": 4900, "line1Premiums": 3800 },
-    { "from": "Pub 502 (2025) Nursing services", "weeklyPay": 300, "householdShare": 0.1, "includible": 270 },
-    { "from": "손계산(원문 예시 아님 — Schedule A line 1–4 식)", "agi": 60000, "expenses": 7000, "line3": 4500, "line4": 2500 },
-    { "from": "손계산(원문 예시 아님)", "agi": 80000, "expenses": 5000, "line3": 6000, "line4": 0 }
+    {
+      "from": "Pub 502 (2025) Car expenses Example",
+      "miles": 2800,
+      "rate": 0.21,
+      "tollsParking": 100,
+      "actualGasOil": 430,
+      "standardTotal": 688,
+      "actualTotal": 530,
+      "note": "2,800 × 0.21 = 588 + 100 = 688 > 530 이라 688 을 넣음"
+    },
+    {
+      "from": "Pub 502 (2025) Premium tax credit Example 1",
+      "premiums": 8700,
+      "allowedPTC": 3600,
+      "line1Premiums": 5100
+    },
+    {
+      "from": "Pub 502 (2025) Premium tax credit Example 2",
+      "premiums": 8700,
+      "allowedPTC": 4900,
+      "line1Premiums": 3800
+    },
+    {
+      "from": "Pub 502 (2025) Nursing services",
+      "weeklyPay": 300,
+      "householdShare": 0.1,
+      "includible": 270
+    },
+    {
+      "from": "손계산(원문 예시 아님 — Schedule A line 1–4 식)",
+      "agi": 60000,
+      "expenses": 7000,
+      "line3": 4500,
+      "line4": 2500
+    },
+    {
+      "from": "손계산(원문 예시 아님)",
+      "agi": 80000,
+      "expenses": 5000,
+      "line3": 6000,
+      "line4": 0
+    },
+    {
+      "from": "Pub 501 (2025) Table 7 · Examples 2·3",
+      "mfjOneBlind": 33100,
+      "mfjBothOver65": 34700,
+      "singleOneBox": 17750,
+      "mfsFourBoxes": 22150
+    }
   ],
   "notVerified": [],
   "note": "공제액(소득에서 빼는 금액)까지만 계산한다 — '아낀 세금'은 한계세율·신고 유형·다른 공제가 필요해 계산하지 않음(세율표 안 씀). 한국 의료비 세액공제(총급여 3% 초과분 × 15%, 한도)와 1:1 대응이 아님: 미국은 AGI 7.5% 초과분 전액을 소득공제, 공제율·상한 없음, 항목별 공제를 고를 때만. HSA·FSA 로 낸 의료비는 이미 세금 혜택을 받아 넣지 못함(Pub 502·969, 자세한 규칙은 이 파일 밖). self-employed health insurance deduction(Form 7206)은 Schedule 1 조정 항목이라 이 계산 밖 — 남은 보험료만 line 1. 주 소득세 의료비 공제는 주마다 달라 다루지 않음. 1040 금액 반올림(whole dollars) 규칙은 1040 지침을 안 읽어 쓰지 않음 — 페이지는 센트까지 계산. Pub 502·Pub 501 은 2025 판(2025 신고용)이라 2025 숫자에 2026 을 붙이지 않았음 — 2026 숫자는 Rev. Proc. 2025-32·mileage 표에서만. Pub 502 (2026) 이 나오면(2027 초) 다시 대조"

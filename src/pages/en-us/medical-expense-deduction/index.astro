@@ -1,0 +1,362 @@
+---
+/**
+ * Medical Expense Deduction Calculator — 미국 영어판 제도 도구(basis "law"). 한국 의료비 세액공제(총급여 3% 초과분 × 15%)와
+ * 제도가 달라 짝(hreflang)을 맺지 않는다(조사표 24행 미국 칸 '제도').
+ * 계산은 lib/us/medical-expense.ts, 화면은 lib/us/medical-expense-ui.ts, 숫자는 rates/us/medical-expense-2026.json
+ * (Topic 502 · 26 U.S.C. 213 · Schedule A 2025 · Pub 502 (2025) · standard mileage rates · Rev. Proc. 2025-32 · Pub 501 (2025) — 2026-10-21 확인).
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-medical-expense-2026-10-21.csv):
+ *   medical expense deduction calculator·threshold·limit·2025·2026 / 7.5 agi medical expenses calculator /
+ *   medical expense deduction 2026 over 65 / medical mileage rate 2026 irs / long term care premium deduction 2026·maximum /
+ *   medical expenses tax deductible examples·self employed / medical expense deduction for assisted living
+ * 쓰지 않는 것(원문 미확인·주의 원칙): 아낀 세금(세율표), 주(州) 소득세 의료비 공제, 1040 금액 반올림, HSA·FSA 세부 규칙,
+ * assisted living·요양원 비용의 구체 판정, Form 7206 계산, 65세 이상 enhanced deduction 금액.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import {
+  AGI_PERCENT,
+  LODGING_PER_NIGHT,
+  MILEAGE,
+  LTC_LIMITS,
+  agiFloor,
+  medicalDeduction,
+  mileageAmount,
+  standardDeduction,
+  computeMedical,
+} from "../../../lib/us/medical-expense";
+import { usd, usd0 } from "../../../lib/us/fica";
+import "../../../styles/global.css";
+
+const title = "Medical Expense Deduction Calculator — 7.5% of AGI on Schedule A (IRS 2025 & 2026)";
+const description =
+  "Work out the IRS medical expense deduction: costs above 7.5% of AGI on Schedule A, with 2026 medical mileage, long-term care limits and the standard deduction.";
+
+const pct = `${AGI_PERCENT}%`;
+const cpm = (r: number) => `${Math.round(r * 1000) / 10}¢`;
+const first = computeMedical({ year: 2026, status: "single", agi: 60_000, expenses: 7000 });
+const ex80 = { floor: agiFloor(80_000), ded: medicalDeduction(80_000, 5000) };
+const car2025 = mileageAmount(2025, 2800, 100);
+const car2026 = mileageAmount(2026, 1000, 0, 1000);
+const both = computeMedical({
+  year: 2026,
+  status: "marriedFilingJointly",
+  agi: 90_000,
+  expenses: 9000,
+  miles: 500,
+  milesLate: 500,
+  tollsParking: 30,
+  ltc: [[68, 5000]],
+  otherItemized: 25_000,
+});
+const ageBand = (b: { ageFrom?: number; ageTo?: number }) =>
+  b.ageFrom === undefined ? `${b.ageTo} or under` : b.ageTo === undefined ? `${b.ageFrom} or over` : `${b.ageFrom}–${b.ageTo}`;
+const SD_ROWS: [string, "single" | "marriedFilingJointly" | "marriedFilingSeparately" | "headOfHousehold" | "qualifyingSurvivingSpouse"][] = [
+  ["Single", "single"],
+  ["Married filing jointly", "marriedFilingJointly"],
+  ["Married filing separately", "marriedFilingSeparately"],
+  ["Head of household", "headOfHousehold"],
+  ["Qualifying surviving spouse", "qualifyingSurvivingSpouse"],
+];
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Medical Expense Deduction Calculator</h1>
+      <p>
+        If you itemize on Schedule A (Form 1040), you can deduct the medical and dental expenses you paid for yourself, your spouse
+        and your dependents — but only the part that is more than {pct} of your adjusted gross income (AGI), and only costs that
+        insurance or anyone else did not pay back. Enter your AGI and your expenses. The calculator follows Schedule A lines 1 to 4
+        and then puts the result next to the standard deduction for the same year, so you can see whether itemizing is larger.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="md-year">Tax year</label>
+          <select id="md-year" data-ui="off">
+            <option value="2026" selected>2026</option>
+            <option value="2025">2025</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-status">Filing status</label>
+          <select id="md-status" data-ui="off">
+            <option value="single" selected>Single</option>
+            <option value="marriedFilingJointly">Married filing jointly</option>
+            <option value="marriedFilingSeparately">Married filing separately</option>
+            <option value="headOfHousehold">Head of household</option>
+            <option value="qualifyingSurvivingSpouse">Qualifying surviving spouse</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-agi">Adjusted gross income, AGI ($) — Form 1040 line 11b</label>
+          <input type="text" inputmode="decimal" id="md-agi" value="60,000" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-exp">Medical and dental expenses you paid, after reimbursements ($)</label>
+          <input type="text" inputmode="decimal" id="md-exp" value="7,000" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-miles" id="md-miles-label">Medical miles, Jan 1 – Jun 30, 2026 ({cpm(MILEAGE[2026].firstHalf)} a mile)</label>
+          <input type="text" inputmode="decimal" id="md-miles" value="" placeholder="0" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap" id="md-miles2-wrap">
+          <label for="md-miles2">Medical miles, Jul 1 – Dec 31, 2026 ({cpm(MILEAGE[2026].secondHalf)} a mile)</label>
+          <input type="text" inputmode="decimal" id="md-miles2" value="" placeholder="0" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-tolls">Parking fees and tolls for medical trips ($)</label>
+          <input type="text" inputmode="decimal" id="md-tolls" value="" placeholder="0" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-age1">Long-term care insurance, person 1: age at year-end</label>
+          <input type="text" inputmode="numeric" id="md-age1" value="" placeholder="e.g. 62" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-prem1">Person 1: qualified LTC premiums paid ($)</label>
+          <input type="text" inputmode="decimal" id="md-prem1" value="" placeholder="0" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-age2">Person 2: age at year-end</label>
+          <input type="text" inputmode="numeric" id="md-age2" value="" placeholder="e.g. 60" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-prem2">Person 2: qualified LTC premiums paid ($)</label>
+          <input type="text" inputmode="decimal" id="md-prem2" value="" placeholder="0" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-other">Your other itemized deductions — taxes, mortgage interest, gifts ($)</label>
+          <input type="text" inputmode="decimal" id="md-other" value="" placeholder="0" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="md-boxes">Age 65 or older / blind boxes (you and spouse)</label>
+          <select id="md-boxes" data-ui="off">
+            <option value="0" selected>None</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3 (joint or separate returns)</option>
+            <option value="4">4 (joint or separate returns)</option>
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value" data-bar="out-line1,out-floor,out-standard">
+          <p class="label">Medical expense deduction (Schedule A line 4)</p>
+          <p class="big" id="hero-value">{usd(first.deduction)}</p>
+          <p class="hint" id="md-hint">The 2026 standard deduction ({usd(first.standard)}) is larger than these itemized deductions by {usd(-first.difference)}, so the medical deduction would not lower taxable income unless you itemize anyway.</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">Medical expenses (line 1)</span>
+            <span class="value" id="out-line1">{usd(first.line1)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">{pct} of AGI (line 3)</span>
+            <span class="value" id="out-floor">{usd(first.floor)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Itemized total</span>
+            <span class="value" id="out-itemized">{usd(first.itemizedTotal)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Standard deduction</span>
+            <span class="value" id="out-standard">{usd(first.standard)}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How the 7.5% of AGI threshold works</h2>
+      <p>Schedule A does it in four lines:</p>
+      <ol>
+        <li><strong>Line 1:</strong> medical and dental expenses, after subtracting anything insurance or others paid back.</li>
+        <li><strong>Line 2:</strong> your AGI from Form 1040, line 11b.</li>
+        <li><strong>Line 3:</strong> line 2 × {pct} (0.075).</li>
+        <li><strong>Line 4:</strong> line 1 − line 3. If line 3 is larger, the deduction is zero.</li>
+      </ol>
+      <p>
+        With an AGI of {usd0(60_000)}, the threshold is {usd0(agiFloor(60_000))}. Medical bills of {usd0(7000)} give a deduction of
+        {usd0(medicalDeduction(60_000, 7000))}. With an AGI of {usd0(80_000)}, the threshold is {usd0(ex80.floor)}, so {usd0(5000)} of
+        bills gives {usd0(ex80.ded)}. The deduction lowers taxable income; it is not a credit, and this page does not estimate the tax
+        it saves, which depends on your tax bracket and the rest of your return.
+      </p>
+
+      <h2>Medical expense deduction for 2025 and 2026</h2>
+      <p>
+        The {pct} floor is written into the tax code at 26 U.S.C. 213(a), with no end date in the current text. The 2026 Schedule A has
+        not been released yet, so for 2026 the calculator relies on the statute together with the 2026 amounts the IRS has already
+        published (medical mileage, long-term care limits and the standard deduction). For 2025 returns it uses the 2025 Schedule A,
+        Publication 502 and Publication 501.
+      </p>
+
+      <h2>Itemize or take the standard deduction?</h2>
+      <p>
+        You use whichever is larger: your itemized deductions or your standard deduction. A medical deduction only helps if the medical
+        amount plus your other itemized deductions — state and local taxes, mortgage interest, gifts to charity — is more than the
+        standard deduction. Enter those other deductions in the calculator to compare.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Filing status</th>
+              <th scope="col">2025 standard deduction</th>
+              <th scope="col">2026 standard deduction</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SD_ROWS.map(([name, key]) => (
+              <tr><th scope="row">{name}</th><td>{usd0(standardDeduction(2025, key))}</td><td>{usd0(standardDeduction(2026, key))}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        If you are married filing separately and your spouse itemizes, your standard deduction is zero, so you would itemize too.
+      </p>
+
+      <h2>Medical expense deduction over 65</h2>
+      <p>
+        The {pct} threshold is the same at any age. What changes at 65 is the standard deduction: each box for being born before
+        January 2, 1961 (for 2025), or for being blind adds {usd0(standardDeduction(2025, "single", 1) - standardDeduction(2025, "single"))}
+        if you are single or head of household and {usd0(standardDeduction(2025, "marriedFilingJointly", 1) - standardDeduction(2025, "marriedFilingJointly"))}
+        if you are married or a qualifying surviving spouse. For 2026 the amounts are
+        {usd0(standardDeduction(2026, "single", 1) - standardDeduction(2026, "single"))} and
+        {usd0(standardDeduction(2026, "marriedFilingJointly", 1) - standardDeduction(2026, "marriedFilingJointly"))}. A married couple
+        filing jointly, both 65 or older, had a 2025 standard deduction of {usd0(standardDeduction(2025, "marriedFilingJointly", 2))},
+        so their medical and other itemized deductions need to pass that to matter. Choose the number of boxes in the calculator.
+        Publication 501 also describes a separate enhanced deduction for seniors; it is not part of this comparison.
+      </p>
+
+      <h2>Medical mileage rate for 2026</h2>
+      <p>
+        For car trips to get medical care you can use the IRS standard medical mileage rate instead of actual gas and oil, and add
+        parking fees and tolls either way. Depreciation, insurance and general repairs are not included.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th scope="col">Period</th><th scope="col">Medical mileage rate</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">2025</th><td>{cpm(MILEAGE[2025])} a mile</td></tr>
+            <tr><th scope="row">Jan 1 – Jun 30, 2026</th><td>{cpm(MILEAGE[2026].firstHalf)} a mile</td></tr>
+            <tr><th scope="row">Jul 1 – Dec 31, 2026</th><td>{cpm(MILEAGE[2026].secondHalf)} a mile</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The rate changed in the middle of 2026, so split your 2026 miles at July 1: 1,000 miles in each half is
+        {usd(1000 * MILEAGE[2026].firstHalf)} + {usd(1000 * MILEAGE[2026].secondHalf)} = {usd(car2026)}. Publication 502's own 2025 example:
+        2,800 miles × {cpm(MILEAGE[2025])} = {usd0(2800 * MILEAGE[2025])}, plus {usd0(100)} of parking and tolls, is {usd0(car2025)} —
+        more than the {usd0(530)} the same driver spent on gas, oil, parking and tolls, so {usd0(car2025)} goes on the return.
+      </p>
+      <p>
+        Lodging away from home for medical care is capped at {usd0(LODGING_PER_NIGHT)} a night for each person; Publication 502 lists
+        the conditions for counting it.
+      </p>
+
+      <h2>Long-term care premium deduction limits for 2026</h2>
+      <p>
+        Premiums for a qualified long-term care insurance contract count as medical expenses only up to a limit set by age at the end
+        of the year. The limit applies to each person separately.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th scope="col">Age at year-end</th><th scope="col">2025 limit</th><th scope="col">2026 limit</th></tr>
+          </thead>
+          <tbody>
+            {LTC_LIMITS[2026].map((b, i) => (
+              <tr><th scope="row">{ageBand(b)}</th><td>{usd0(LTC_LIMITS[2025][i].limit)}</td><td>{usd0(b.limit)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Example (2026, married filing jointly): AGI {usd0(90_000)}, {usd0(9000)} of medical bills, 500 miles in each half of the year
+        plus {usd0(30)} of parking, and {usd0(5000)} of LTC premiums for a 68-year-old (limited to {usd0(both.ltc)}). Line 1 is
+        {usd(both.line1)}, the {pct} floor is {usd(both.floor)}, and the medical deduction is {usd(both.deduction)}. With
+        {usd0(25_000)} of other itemized deductions the total is {usd(both.itemizedTotal)}, {usd(both.difference)} more than the
+        {usd0(both.standard)} standard deduction.
+      </p>
+
+      <h2>What counts, and what doesn't</h2>
+      <ul>
+        <li>Only expenses not paid back by insurance or anyone else. Reduce line 1 by reimbursements.</li>
+        <li>Medicines count only if they are prescribed drugs or insulin.</li>
+        <li>
+          Insurance premiums paid through a pretax reduction of your pay don't count — they were never taxed. Expenses paid from an
+          HSA or FSA have also already had a tax benefit.
+        </li>
+        <li>
+          Marketplace premiums: subtract the premium tax credit you are allowed. Publication 502's examples: {usd0(8700)} of premiums
+          with a {usd0(3600)} credit leaves {usd0(5100)}; with a {usd0(4900)} credit, {usd0(3800)}.
+        </li>
+        <li>
+          Self-employed: health insurance premiums taken as the self-employed health insurance deduction are not counted again here —
+          only the rest goes on line 1.
+        </li>
+      </ul>
+
+      <details>
+        <summary>Is the medical expense deduction 7.5% or 10% of AGI?</summary>
+        <p>{pct}. 26 U.S.C. 213(a), IRS Topic 502 and Schedule A all use {pct} of AGI, and the current statute has no end date for it.</p>
+      </details>
+
+      <details>
+        <summary>Is this the deduction or the tax I save?</summary>
+        <p>
+          The deduction — the amount subtracted from income on Schedule A. The tax it saves depends on your bracket and the rest of your
+          return, so it is not calculated here.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I enter cents or a dollar sign?</summary>
+        <p>Yes. A $ sign and commas are ignored, and cents are kept. The calculator does not round to whole dollars the way a return may.</p>
+      </details>
+
+      <details>
+        <summary>Does this include my state income tax?</summary>
+        <p>No. It covers the federal Schedule A only; state rules for medical expenses differ.</p>
+      </details>
+
+      <h2>Sources</h2>
+      <ul>
+        <li><a href="https://www.irs.gov/taxtopics/tc502" rel="noopener" target="_blank">IRS Topic no. 502, Medical and dental expenses</a></li>
+        <li><a href="https://www.irs.gov/publications/p502" rel="noopener" target="_blank">IRS Publication 502 (2025), Medical and Dental Expenses</a></li>
+        <li><a href="https://www.irs.gov/pub/irs-pdf/f1040sa.pdf" rel="noopener" target="_blank">Schedule A (Form 1040) 2025</a> and <a href="https://www.irs.gov/instructions/i1040sca" rel="noopener" target="_blank">its instructions</a></li>
+        <li><a href="https://www.irs.gov/tax-professionals/standard-mileage-rates" rel="noopener" target="_blank">IRS standard mileage rates</a></li>
+        <li><a href="https://www.irs.gov/pub/irs-drop/rp-25-32.pdf" rel="noopener" target="_blank">Rev. Proc. 2025-32 (2026 standard deduction and long-term care limits)</a></li>
+        <li><a href="https://www.irs.gov/publications/p501" rel="noopener" target="_blank">IRS Publication 501 (2025), standard deduction tables</a></li>
+        <li><a href="https://uscode.house.gov/" rel="noopener" target="_blank">26 U.S.C. 213</a> (Office of the Law Revision Counsel, current through Pub. L. 119-120)</li>
+      </ul>
+      <p>Amounts checked on October 21, 2026. This is a calculator, not tax advice.</p>
+
+      <AdSlot label="medical-expense-result-en-us" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/us/medical-expense-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

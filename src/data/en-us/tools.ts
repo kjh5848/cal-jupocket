@@ -96,4 +96,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/en-us/medical-expense-deduction/",
+    name: "Medical Expense Deduction Calculator",
+    blurb: "Schedule A medical and dental costs above 7.5% of AGI, with 2026 medical mileage, long-term care premium limits and the standard deduction to compare",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];
