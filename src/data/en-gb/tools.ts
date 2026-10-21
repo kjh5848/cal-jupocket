@@ -86,4 +86,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/en-gb/stamp-duty/",
+    name: "Stamp Duty calculator",
+    blurb: "UK Stamp Duty Land Tax on a home in England or Northern Ireland: band-by-band SDLT, first-time buyer relief, second home and non-resident rates",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];

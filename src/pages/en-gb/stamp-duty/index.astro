@@ -1,0 +1,226 @@
+---
+/**
+ * Stamp Duty Calculator UK — 영국판 제도 도구(basis "law"). 한국어판 취득세(/acquisition-tax/)와 과세 방식(구간별 marginal)·
+ * 세율이 달라 짝(hreflang)을 맺지 않는다(조사표 영국 칸 '제도').
+ * 계산은 lib/gb/stamp-duty.ts(정수 펜스 × 정수 %), 화면은 lib/gb/stamp-duty-ui.ts, 숫자는 rates/gb/stamp-duty-land-tax-2026.json
+ * (GOV.UK Stamp Duty Land Tax 가이드·Higher rates 안내 updated_at 2026-09-30 · HMRC SDLTM00050 · FA 2003 s.55(1B)·Sch 4ZA·Sch 6ZA·
+ * s.75ZA·Sch 9A — 2026-10-21 확인).
+ *
+ * 범위: 잉글랜드·북아일랜드, 주거용 단일 주택, effective date 2025-04-01 이후. 스코틀랜드 LBTT·웨일스 LTT 는 숫자 없이 링크만.
+ * 생애최초·추가 주택·비거주 해당 여부는 판정하지 않고 사용자가 고른다.
+ *
+ * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-stamp-duty-2026-10-21.csv, hl en · gl gb):
+ *   stamp duty calculator uk·2026·england·ni / first time buyer stamp duty threshold·relief·on 500k house /
+ *   stamp duty second home 250k·300k·500k·rules·refund / sdlt calculator residential / stamp duty calculator scotland·wales
+ * 쓰지 않는 것: 비주거·혼합 요율, 리스 NPV, linked transactions, 6채 이상, 법인 17%, shared ownership 단계 납부, 환급 계산, 면제 판정.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { sdlt, bandsOf, gbp0, bandTax, money, FTB_MAX, HIGHER_MIN, SURCHARGE_MIN, SURCHARGE_PCT } from "../../../lib/gb/stamp-duty";
+import "../../../styles/global.css";
+
+const title = "Stamp Duty Calculator UK 2026 — SDLT on Homes in England and Northern Ireland";
+const description =
+  "Work out SDLT on a home in England or Northern Ireland: standard rates, first-time buyer relief, higher rates for a second home and the 2% non-UK surcharge.";
+
+const P = (pounds: number) => pounds * 100;
+const start = sdlt(P(295000), "standard", false);
+const ftb500 = sdlt(P(500000), "firstTimeBuyer", false);
+const ftb400 = sdlt(P(400000), "firstTimeBuyer", false);
+const ftb400std = sdlt(P(400000), "standard", false);
+const ftbOver = sdlt(P(500001), "firstTimeBuyer", false);
+const second = [250000, 300000, 500000].map((v) => ({ v, std: sdlt(P(v), "standard", false), hi: sdlt(P(v), "higher", false) }));
+const nonRes = sdlt(P(300000), "standard", true);
+const fmt = (b: { from: number; upTo: number | null }) =>
+  b.upTo === null ? `Above ${gbp0(b.from)}` : b.from === 0 ? `Up to ${gbp0(b.upTo)}` : `${gbp0(b.from + 1)} to ${gbp0(b.upTo)}`;
+const stdBands = bandsOf("standard");
+const hiBands = bandsOf("higher");
+const ftbBands = bandsOf("firstTimeBuyer");
+---
+
+<html lang="en-GB">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Stamp Duty Calculator UK</h1>
+      <p>
+        Type the price of the home and choose which rates apply to you. The calculator works out Stamp Duty Land Tax (SDLT) for a
+        single residential property in <strong>England or Northern Ireland</strong> bought on or after 1 April 2025, band by band, the
+        way GOV.UK shows it. Scotland and Wales have their own taxes — see the question at the end.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="sd-price">Property price (£)</label>
+          <input type="text" inputmode="decimal" id="sd-price" value="295,000" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="sd-buyer">Which rates?</label>
+          <select id="sd-buyer" data-seg>
+            <option value="standard" selected>Standard (only home)</option>
+            <option value="ftb">First-time buyer</option>
+            <option value="higher">Additional property</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="sd-resident">UK resident for SDLT?</label>
+          <select id="sd-resident" data-seg>
+            <option value="uk" selected>UK resident</option>
+            <option value="non">Not a UK resident (+2%)</option>
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label">Stamp Duty Land Tax to pay</p>
+          <p class="big" id="hero-value">{gbp0(start.total)}</p>
+          <p class="hint" id="sd-effective">Standard residential rates</p>
+        </div>
+
+        <ul id="sd-bands">
+          {start.lines.map((l) => <li>{l.pct}% on {money(l.portion)} = {bandTax(l.taxCentiPence)}</li>)}
+        </ul>
+        <p class="hint" id="sd-note">Total rounded down to the nearest pound.</p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How Stamp Duty is calculated in 2026</h2>
+      <p>
+        SDLT is not one rate on the whole price. Each slice of the price is taxed at the rate for its band and the slices are added
+        up. HMRC's manual says the result is rounded down to the nearest pound. These are the standard rates for a home that will be
+        the only residential property you own:
+      </p>
+      <table>
+        <thead><tr><th>Portion of the price</th><th>Standard rate</th><th>Additional property</th></tr></thead>
+        <tbody>
+          {stdBands.map((b, i) => <tr><td>{fmt(b)}</td><td>{b.pct}%</td><td>{hiBands[i].pct}%</td></tr>)}
+        </tbody>
+      </table>
+      <p>
+        GOV.UK's example: a house bought for {gbp0(295000)} pays 0% on the first {gbp0(125000)}, 2% on the next {gbp0(125000)}{" "}
+        ({bandTax(start.lines[1].taxCentiPence)}) and 5% on the final {gbp0(45000)} ({bandTax(start.lines[2].taxCentiPence)}) —{" "}
+        {gbp0(start.total)} in total. Nothing is due on the standard rates up to {gbp0(125000)}.
+      </p>
+
+      <h2>First-time buyer stamp duty: threshold and relief</h2>
+      <p>
+        If you and everyone you are buying with are first-time buyers and you will live in the home, you can claim first-time buyer
+        relief:
+      </p>
+      <ul>
+        {ftbBands.map((b) => <li>{fmt(b)}: {b.pct}%</li>)}
+      </ul>
+      <p>
+        On a {gbp0(500000)} house the relief gives {gbp0(ftb500.total)} (GOV.UK's example). On {gbp0(400000)} it is{" "}
+        {gbp0(ftb400.total)} instead of {gbp0(ftb400std.total)}. Above {gbp0(FTB_MAX)} the relief cannot be claimed at all, so the whole
+        price goes on the standard rates — {gbp0(500001)} gives {gbp0(ftbOver.total)}. The calculator switches automatically when the
+        price is over the limit. The relief also cannot be combined with the higher rates.
+      </p>
+
+      <h2>Stamp duty on a second home or buy-to-let</h2>
+      <p>
+        You usually pay the higher rates — 5 percentage points on top of each standard rate — if, at the end of the day you buy, you
+        will own more than one residential property worth {gbp0(HIGHER_MIN)} or more anywhere in the world. GOV.UK points out that
+        the rules also count anyone you are married to or buying with. They do not apply if the new home replaces your main residence
+        and you have sold the old one; if you sell your previous main home within 3 years, you can apply for a refund of the extra.
+        The higher rates only apply to a price of {gbp0(HIGHER_MIN)} or more.
+      </p>
+      <table>
+        <thead><tr><th>Price</th><th>Only home</th><th>Additional property</th></tr></thead>
+        <tbody>
+          {second.map((s) => <tr><td>{gbp0(s.v)}</td><td>{gbp0(s.std.total)}</td><td>{gbp0(s.hi.total)}</td></tr>)}
+        </tbody>
+      </table>
+      <p>
+        GOV.UK's own example of an additional property bought for {gbp0(300000)} comes to {gbp0(second[1].hi.total)}. This
+        calculator does not decide whether the higher rates apply to you — use GOV.UK's guidance on the higher rates for that.
+      </p>
+
+      <h2>Stamp duty if you are not a UK resident</h2>
+      <p>
+        Non-UK residents usually pay a {SURCHARGE_PCT}% surcharge on top of every other residential rate, including the higher rates
+        and first-time buyer relief, when the price is {gbp0(SURCHARGE_MIN)} or more. GOV.UK's short test is that you are not a UK
+        resident for SDLT if you were not present in the UK for at least 183 days during the 12 months before your purchase; the law
+        sets out the test in more detail and allows a refund if you become resident later. For example, {gbp0(300000)} on the standard
+        rates with the surcharge is {gbp0(nonRes.total)}.
+      </p>
+
+      <h2>When and how to pay</h2>
+      <p>
+        GOV.UK says you must send an SDLT return to HMRC and pay the tax within 14 days of completion. A solicitor or conveyancer
+        usually does this for you on completion day and adds it to their fees.
+      </p>
+
+      <details>
+        <summary>Is there stamp duty in Scotland or Wales?</summary>
+        <p>
+          Not SDLT. In Scotland you pay Land and Buildings Transaction Tax, and in Wales Land Transaction Tax (for sales completed
+          on or after 1 April 2018). Their bands and rates are different, and this calculator does not work them out.
+        </p>
+      </details>
+
+      <details>
+        <summary>Do I pay stamp duty on a property under £40,000?</summary>
+        <p>
+          GOV.UK says you do not have to pay SDLT or send a return if you buy a freehold property for less than £40,000. On the
+          standard rates there is no tax below {gbp0(125000)} anyway; the £40,000 figure matters for the higher rates and the
+          non-resident surcharge.
+        </p>
+      </details>
+
+      <details>
+        <summary>What is not covered here?</summary>
+        <p>
+          Non-residential and mixed-use property, the rent part of a new lease, linked transactions, buying 6 or more homes in one
+          transaction, purchases by companies, shared ownership payments, and refunds. HMRC's SDLT calculator on GOV.UK covers more
+          of these cases.
+        </p>
+      </details>
+
+      <p>
+        Related: <a href="/en-gb/tools/percent/">percentage calculator</a> and
+        <a href="/en-gb/tools/compound/">compound interest calculator</a> for a house deposit.
+      </p>
+
+      <h2>Sources</h2>
+      <ul>
+        <li>
+          <a href="https://www.gov.uk/stamp-duty-land-tax/residential-property-rates" rel="noopener" target="_blank">GOV.UK — Stamp Duty Land Tax: residential property rates</a>
+          (updated 30 September 2026, checked 21 October 2026)
+        </li>
+        <li>
+          <a href="https://www.gov.uk/guidance/stamp-duty-land-tax-buying-an-additional-residential-property" rel="noopener" target="_blank">GOV.UK — Higher rates of Stamp Duty Land Tax</a>
+          (checked 21 October 2026)
+        </li>
+        <li>
+          <a href="https://www.gov.uk/hmrc-internal-manuals/stamp-duty-land-tax-manual/sdltm00050" rel="noopener" target="_blank">HMRC — SDLT Manual SDLTM00050, rates of tax</a>
+        </li>
+        <li>
+          <a href="https://www.legislation.gov.uk/ukpga/2003/14/section/55" rel="noopener" target="_blank">Finance Act 2003</a>
+          section 55, section 75ZA and Schedules 4ZA, 6ZA and 9A (legislation.gov.uk, checked 21 October 2026)
+        </li>
+      </ul>
+
+      <AdSlot label="stamp-duty-result-en-gb" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/gb/stamp-duty-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
