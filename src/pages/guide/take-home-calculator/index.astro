@@ -27,7 +27,7 @@ const title = "연봉 실수령액 계산기 — 연봉이나 월급, 비과세,
 const description =
   "연봉 실수령액 계산기는 연봉 또는 월급에서 비과세를 뺀 금액으로 4대보험 근로자 몫과 근로소득 간이세액표 소득세, 지방소득세를 계산해 한 달 실수령액을 보여 줍니다. 부양가족 수와 8~20세 자녀 수를 넣으면 간이세액표의 해당 칸을 씁니다.";
 
-const ANSWER = `계산 순서는 ① 연봉 ÷ 12 ② 비과세(식대 월 ${manwon(MEAL_ALLOWANCE)} 이하 등)를 뺀 과세 월급여 ③ 4대보험과 간이세액표 소득세·지방소득세 ④ 월급 − 공제 합계입니다. 연봉 ${eokwon(A)}, 식대 비과세, 본인 1명이면 한 달 ${won(ex.net)}입니다.`;
+const ANSWER = `계산 순서는 ① 연봉 ÷ 12(연봉에 퇴직금이 들어 있으면 ÷ 13) ② 비과세(식대 월 ${manwon(MEAL_ALLOWANCE)} 이하 등)를 뺀 과세 월급여 ③ 4대보험과 간이세액표 소득세·지방소득세 ④ 월급 − 공제 합계입니다. 연봉 ${eokwon(A)}, 식대 비과세, 본인 1명이면 한 달 ${won(ex.net)}입니다.`;
 
 const QA = [
   { q: "공제대상가족 수는 어떻게 넣나요?", a: `본인과 배우자도 각각 1명으로 셉니다(소득세법 시행령 별표 2 비고 2). 혼자면 1명, 배우자와 자녀 2명이면 4명입니다. 그중 8세 이상 20세 이하 자녀 수를 따로 넣으면 1명 ${won(t.kidsDeduction.one)}, 2명 ${won(t.kidsDeduction.two)}, 3명부터는 1명마다 ${won(t.kidsDeduction.perExtra)}을 더 뺍니다(비고 3).` },
@@ -43,10 +43,14 @@ const PRESETS = Object.fromEntries(Object.entries(calcPresets["/guide/take-home-
   <AnswerBox text={ANSWER} />
 
   <div class="calc-card" data-two>
-    <p class="meta">2026년 근로소득 간이세액표와 4대보험 요율로 계산합니다. 연봉을 넣으면 12로 나눈 금액을 월급으로 봅니다.</p>
+    <p class="meta">2026년 근로소득 간이세액표와 4대보험 요율로 계산합니다. 연봉을 넣으면 12로 나눈 금액을 월급으로 보고, '퇴직금 포함'을 고르면 13으로 나눈 금액을 월급으로 봅니다. 실제 퇴직금은 <a href="/guide/severance-pay-calculator/">퇴직금 계산기</a>로 따로 계산하세요.</p>
     <div class="calc-input-wrap">
       <label for="th-mode">입력 기준</label>
       <select id="th-mode" data-seg><option value="annual" selected>연봉</option><option value="monthly">월급(세전)</option></select>
+    </div>
+    <div class="calc-input-wrap" id="th-sev-wrap">
+      <label for="th-sev">연봉에 퇴직금</label>
+      <select id="th-sev" data-seg><option value="12" selected>별도(÷ 12)</option><option value="13">포함(÷ 13)</option></select>
     </div>
     <div class="calc-input-wrap">
       <label for="th-amount">금액</label>

@@ -79,9 +79,14 @@ export function takeHome(monthly: number, o: TakeHomeOptions = {}) {
   };
 }
 
-/** 연봉 → 12로 나눈 월급의 실수령액(원 미만 버림) */
-export function takeHomeFromAnnual(annual: number, o: TakeHomeOptions = {}) {
-  return takeHome(fl(Math.max(0, annual) / 12), o);
+/** 연봉을 월급으로 나누는 수 — 퇴직금 별도면 12, 연봉에 퇴직금이 들어 있다고 보면 13(1/13 을 퇴직금 몫으로 떼어 둠) */
+export function annualDivisor(severanceIncluded = false): 12 | 13 {
+  return severanceIncluded ? 13 : 12;
+}
+
+/** 연봉 → 12(퇴직금 포함이면 13)로 나눈 월급의 실수령액(원 미만 버림) */
+export function takeHomeFromAnnual(annual: number, o: TakeHomeOptions & { severanceIncluded?: boolean } = {}) {
+  return takeHome(fl(Math.max(0, annual) / annualDivisor(o.severanceIncluded)), o);
 }
 
 export const MEAL_ALLOWANCE = t.mealAllowance.monthly;

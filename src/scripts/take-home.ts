@@ -2,7 +2,7 @@
  * 연봉·월급 실수령액 계산기 — /guide/take-home-calculator/.
  * 계산은 src/lib/take-home.ts takeHome() 가 한다. 여기서는 입력을 읽고 결과를 그린다.
  */
-import { takeHome } from "../lib/take-home";
+import { takeHome, annualDivisor } from "../lib/take-home";
 import { payPerDay, workTimeFor, type WorkPattern } from "../lib/pay-per-day";
 import { formatWon, parseAmount, formatAmountInput } from "../lib/money";
 import { trackCalculatorUse } from "../lib/track";
@@ -10,6 +10,7 @@ import { trackCalculatorUse } from "../lib/track";
 const reportUse = trackCalculatorUse("take-home");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const mode = $<HTMLSelectElement>("th-mode");
+const sev = $<HTMLSelectElement>("th-sev");
 const amount = $<HTMLInputElement>("th-amount");
 const nontax = $<HTMLInputElement>("th-nontax");
 const family = $<HTMLInputElement>("th-family");
@@ -19,7 +20,8 @@ let lastNet = 0;
 
 function render() {
   const a = parseAmount(amount.value);
-  const monthly = mode.value === "monthly" ? a : Math.floor(a / 12);
+  $("th-sev-wrap").hidden = mode.value === "monthly";
+  const monthly = mode.value === "monthly" ? a : Math.floor(a / annualDivisor(sev.value === "13"));
   const x = takeHome(monthly, {
     nonTaxable: parseAmount(nontax.value),
     family: Number(family.value) || 1,
@@ -54,7 +56,7 @@ mode.addEventListener("input", () => {
   if (mode.value === "annual" && n && n < 12_000_000) amount.value = formatAmountInput(n * 12);
   onUserInput();
 });
-for (const el of [family, kids]) el.addEventListener("input", onUserInput);
+for (const el of [family, kids, sev]) el.addEventListener("input", onUserInput);
 render();
 
 // 하루·시간 나누기 — 위 실수령액을 기준 월에 일한 날·근무시간으로 나눈다(src/lib/pay-per-day.ts)

@@ -5,7 +5,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import t from "../../rates/withholding-table-2026.json";
 import { takeHomeSeries } from "../../data/series/take-home";
-import { simplifiedTax, takeHome, takeHomeFromAnnual, MEAL_ALLOWANCE } from "../take-home";
+import { simplifiedTax, takeHome, takeHomeFromAnnual, annualDivisor, MEAL_ALLOWANCE } from "../take-home";
 import { manwon } from "../won";
 
 describe("근로소득 간이세액표", () => {
@@ -50,6 +50,21 @@ describe("근로소득 간이세액표", () => {
     expect(x.incomeTax).toBe(simplifiedTax(2_800_000));
     expect(x.localTax).toBe(Math.floor(x.incomeTax / 10));
     expect(x.net).toBe(3_000_000 - x.pension - x.health - x.care - x.employment - x.incomeTax - x.localTax);
+  });
+});
+
+describe("연봉 → 월급 나누기(퇴직금 별도 12 · 포함 13)", () => {
+  it("5천만원: 별도 4,166,666원 · 포함 3,846,153원(원 미만 버림)", () => {
+    expect(annualDivisor()).toBe(12);
+    expect(annualDivisor(true)).toBe(13);
+    expect(takeHomeFromAnnual(50_000_000).gross).toBe(4_166_666);
+    expect(takeHomeFromAnnual(50_000_000, { severanceIncluded: true }).gross).toBe(3_846_153);
+  });
+  it("포함이면 13으로 나눈 월급을 그대로 takeHome 에 넣은 것과 같다", () => {
+    const o = { nonTaxable: MEAL_ALLOWANCE, family: 2, kids: 1 };
+    for (const a of [30_000_000, 39_000_000, 65_000_000, 130_000_000]) {
+      expect(takeHomeFromAnnual(a, { ...o, severanceIncluded: true })).toEqual(takeHome(Math.floor(a / 13), o));
+    }
   });
 });
 
