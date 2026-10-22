@@ -1,0 +1,44 @@
+{
+  "country": "TW",
+  "year": 2026,
+  "rocYear": 115,
+  "verifiedOn": "2026-10-22",
+  "status": "보험료 숫자 검증됨 — 月投保金額·費率·자付 비율·금액·반올림·按日 계산 전부 원문 확인(2026-10-22). 남은 미확인은 연체 이자 일수 기준 하나(보험료 계산에는 안 씀). 아직 쓰는 페이지 없음(tw.md 2026-10-22 판정 행). 國民年金(국민연금 지역가입자에 해당 — 勞保·公教保·軍保·農保에 안 든 25~65세 국민) 보험료만. 給付(老年年金 등) 금액은 다루지 않는다.",
+  "note": "月投保金額·保險費率은 法 第10·11條에 따라 衛生福利部 公告로 바뀐다(月投保金額은 CPI 누적 5% 때 다음 해 1월부터, 費率은 2년마다 0.5%p 인상 검토 — 상한 12%). 114年1月起 10.5% 다음 조정 시점은 원문에 날짜 없음 → 2027-01 전에 bli.gov.tw 0019853 다시 확인. 民國年 = 西元 − 1911.",
+  "sources": [
+    { "label": "全國法規資料庫 — 國民年金法(修正日期 民國109年06月03日, 法規整編資料截止日 民國115年10月16日) 第7·10~17條", "url": "https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0050152", "checkedOn": "2026-10-22" },
+    { "label": "勞動部勞工保險局 — 國民年金 月投保金額及保險費率(最後更新日期 2026-01-06)", "url": "https://www.bli.gov.tw/0019853.html", "checkedOn": "2026-10-22" },
+    { "label": "勞動部勞工保險局 — 國民年金 保險費負擔比率及金額(最後更新日期 2026-01-02)", "url": "https://www.bli.gov.tw/0013596.html", "checkedOn": "2026-10-22" },
+    { "label": "勞動部勞工保險局 — 國民年金 保險費計費方式(最後更新日期 2026-01-02)", "url": "https://www.bli.gov.tw/0013597.html", "checkedOn": "2026-10-22" },
+    { "label": "勞動部勞工保險局 — 國民年金 利息計算方式(最後更新日期 2026-10-01)", "url": "https://www.bli.gov.tw/0014977.html", "checkedOn": "2026-10-22" }
+  ],
+  "monthlyInsuredAmount": 21103,
+  "monthlyInsuredAmountFrom": "115年(2026)1月起 — 112年1月~114年12月 19,761元, 104年1月~111年12月 18,282元, 97年10月~103年12月 17,280元",
+  "premiumRate": 0.105,
+  "premiumRateFrom": "114年(2025)1月起 — 112年1月~113年12月 10%",
+  "premiumRateCap": 0.12,
+  "formula": "國民年金每月保險費 = 月投保金額 × 保險費率; 被保險人每月自付 = 月投保金額 × 保險費率 × 自付比率; 政府負擔 = 每月保險費 − 自付 (以元為單位，角以下四捨五入)",
+  "rounding": "각 결과를 元 단위로 四捨五入(자付는 반올림 전 保險費에서 곱한 뒤 반올림 — 21,103 × 10.5% × 60% = 1,329.489 → 1,329, 政府 2,216 − 1,329 = 887)",
+  "monthlyPremium": 2216,
+  "selfPayShares": {
+    "general": { "self": 0.6, "selfAmount": 1329, "governmentAmount": 887, "basis": "法 第12條 第4款 其餘被保險人" },
+    "lowIncomeHousehold": { "self": 0, "selfAmount": 0, "governmentAmount": 2216, "basis": "第12條 第1款 第1目 低收入戶 政府全額" },
+    "middleLowIncomeHousehold": { "self": 0.3, "selfAmount": 665, "governmentAmount": 1551, "basis": "第12條 第1款 第2目 中低收入戶" },
+    "incomeBelow1_5xMinimumLiving": { "self": 0.3, "selfAmount": 665, "governmentAmount": 1551, "basis": "第12條 第2款 第1目 — 家庭總收入 平均 每人每月 < 當年度最低生活費 1.5倍 且 ≤ 臺灣地區平均每人每月消費支出 1倍" },
+    "incomeBelow2xMinimumLiving": { "self": 0.45, "selfAmount": 997, "governmentAmount": 1219, "basis": "第12條 第2款 第2目 — < 最低生活費 2倍 且 ≤ 平均消費支出 1.5倍" },
+    "disabilitySevere": { "self": 0, "selfAmount": 0, "governmentAmount": 2216, "basis": "第12條 第3款 第1目 極重度·重度" },
+    "disabilityModerate": { "self": 0.3, "selfAmount": 665, "governmentAmount": 1551, "basis": "第12條 第3款 第2目 中度" },
+    "disabilityMild": { "self": 0.45, "selfAmount": 997, "governmentAmount": 1219, "basis": "第12條 第3款 第3目 輕度" }
+  },
+  "partialMonth": "101年1月起 按日計算: 自付 = 月投保金額 × 費率 × 自付比率 × 加保天數 ÷ 30 — 원문 예: 21,103 × 10.5% × 60% × 2/30 = 89元 (法 第13條 第1項)",
+  "billing": "2개월 1기, 次月底前 繳款單 → 再次月底前 납부(法 第13條 第2項·bli 0013597 四). 65세 되기 전날까지 계산(第7條·bli 0013597 五). 1년까지 預繳 가능(第13條 第4項).",
+  "lateInterest": {
+    "rule": "繳納期限 다음 날부터 납부 전날까지 每年 1月1日 郵局 1年期 定存 固定利率로 按日 이자(法 第14條)",
+    "annualRate2026": 0.01725,
+    "annualRate2025": 0.01725,
+    "waiver": "월별 보험료 이자가 30元 이하면 면제 — 衛生福利部 115年10月1日 修正 「國民年金保險費一定金額以下利息免徵規定」으로 115年10月1日(含)부터 100元 이하 면제",
+    "dayCountBasis": "원문에 365일 나눗셈 명시 없음 — 계산하려면 다시 확인"
+  },
+  "lapse": "기한 안에 안 낸 보험료·이자는 年資에 안 들어가고, 10년 넘은 부분은 補繳 못 함(法 第17條). 配偶 連帶 납부 의무(第15條 第2項)",
+  "notVerified": ["연체 이자 按日 계산의 연 일수(365 등) — bli 0014977·法 第14條에 명시 없음"]
+}
