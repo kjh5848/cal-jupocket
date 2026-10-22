@@ -1,0 +1,123 @@
+{
+  "country": "US",
+  "draft": true,
+  "year": 2026,
+  "verifiedOn": "2026-10-22",
+  "status": "초안 — 페이지에서 쓰지 않는다. 연방 Earned Income Tax Credit(26 U.S.C. 32) 금액 계산만, 주(州) EITC 는 다루지 않음(us.md 주의). 법조문·2025·2026 금액·2025 EIC Table 산식은 원문 확인(2026-10-22), 남은 미확인은 notVerified",
+  "note": "세액공제(환급형)라 계산 결과가 곧 credit 금액. 2026 EIC Table(2026 Form 1040 지침·Pub 596 (2026))은 아직 안 나옴 — 2026 숫자는 Rev. Proc. 2025-32 §3.06 금액(공식)에 2025 EIC Table 을 재현한 산식(tableMethod)을 적용한 값이라, 페이지는 2026 결과에 'computed from Rev. Proc. 2025-32 with the 2025 table method' 를 밝히고 표가 나오면(2027 초) 다시 대조한다. 자영업(Worksheet B·Schedule SE)·자격 판정(qualifying child 관계·거주 테스트·tiebreaker·SSN)은 계산하지 않고 원문 안내만.",
+  "sources": [
+    {
+      "label": "26 U.S.C. 32 — OLRC 다운로드 htm_usc26@119-121.zip(PRELIMusc26.htm, current through Pub. L. 119-120)",
+      "url": "https://uscode.house.gov/download/releasepoints/us/pl/119/121/htm_usc26@119-121.zip",
+      "checkedOn": "2026-10-22",
+      "quote": "(a)(1) credit percentage of so much of the taxpayer's earned income … as does not exceed the earned income amount. (2) … shall not exceed the excess (if any) of (A) the credit percentage of the earned income amount, over (B) the phaseout percentage of so much of the adjusted gross income (or, if greater, the earned income) … as exceeds the phaseout amount. (b)(1) 1 qualifying child 34 / 15.98 · 2 qualifying children 40 / 21.06 · 3 or more 45 / 21.06 · No qualifying children 7.65 / 7.65. (c)(1)(A)(ii) [no qualifying child] principal place of abode in the United States for more than one-half of such taxable year, … has attained age 25 but not attained age 65 before the close of the taxable year … not a dependent. (d)(1) In the case of an individual who is married, this section shall apply only if a joint return is filed … (2)(B) [separated spouse] … resides with a qualifying child … more than one-half … during the last 6 months … does not have the same principal place of abode … (f)(2) tables … shall have income brackets of not greater than $50 each. (i)(1) No credit … if the aggregate amount of disqualified income … exceeds $10,000 [inflation-adjusted, (j)(2)(B) next lowest multiple of $50]. (n) [age 19·no max age·15.3%] — taxable years beginning after December 31, 2020, and before January 1, 2022 only"
+    },
+    {
+      "label": "Rev. Proc. 2025-32 §3.06 Earned Income Credit (taxable years beginning in 2026)",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+      "checkedOn": "2026-10-22",
+      "quote": "One / Two / Three or More / None — Earned Income Amount $13,020 $18,290 $18,290 $8,680 · Maximum Amount of Credit $4,427 $7,316 $8,231 $664 · Threshold Phaseout Amount (Married Filing Jointly) $31,160 $31,160 $31,160 $18,140 · Completed Phaseout Amount (MFJ) $58,863 $65,899 $70,244 $26,820 · Threshold Phaseout Amount (All other filing statuses) $23,890 $23,890 $23,890 $10,860 · Completed Phaseout Amount (All other) $51,593 $58,629 $62,974 $19,540 … (2) … not allowed under § 32(i) if the aggregate amount of certain investment income exceeds $12,200"
+    },
+    {
+      "label": "Rev. Proc. 2024-40 §3.06 Earned Income Credit (taxable years beginning in 2025)",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-40.pdf",
+      "checkedOn": "2026-10-22",
+      "quote": "Earned Income Amount $12,730 $17,880 $17,880 $8,490 · Maximum Amount of Credit $4,328 $7,152 $8,046 $649 · Threshold Phaseout (MFJ) $30,470 ×3 $17,730 · Completed Phaseout (MFJ) $57,554 $64,430 $68,675 $26,214 · Threshold Phaseout (All other) $23,350 ×3 $10,620 · Completed Phaseout (All other) $50,434 $57,310 $61,555 $19,104 … investment income exceeds $11,950"
+    },
+    {
+      "label": "IRS Earned income and Earned Income Tax Credit (EITC) tables (Page Last Reviewed or Updated: 08-May-2026)",
+      "url": "https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/earned-income-and-earned-income-tax-credit-eitc-tables",
+      "checkedOn": "2026-10-22",
+      "quote": "Tax year 2025 … Zero $19,104 $26,214 · One $50,434 $57,554 · Two $57,310 $64,430 · Three $61,555 $68,675 · Investment income limit: $11,950 or less · No qualifying children: $649 · 1 qualifying child: $4,328 · 2: $7,152 · 3 or more: $8,046 … Note: Include the full amount of tip and overtime income in the calculation of earned income when determining eligibility for the Earned Income Tax Credit, even if all or part is deductible. … Earned income does not include: … Interest and dividends · Pensions or annuities · Social Security benefits · Unemployment benefits · Alimony · Child support. (2026 칸은 아직 없음)"
+    },
+    {
+      "label": "IRS Publication 596 (2025), Earned Income Credit (EIC) — For use in preparing 2025 Returns (Page Last Reviewed or Updated: 30-Apr-2026), Rule 3·6·11 and 2025 EIC Table",
+      "url": "https://www.irs.gov/publications/p596",
+      "checkedOn": "2026-10-22",
+      "quote": "Rule 11 — You must be at least age 25 but under age 65 at the end of 2025. If you are married filing a joint return, either you or your spouse … Age Test [qualifying child]: Under age 19 at the end of 2025 and younger than you …; Under age 24 … a full-time student …; or Any age and permanently and totally disabled. … EIC Table: Single, head of household, or qualifying surviving spouse★ … ★ Use this column if your filing status is married filing separately and you qualify to claim the EIC. … Example. If your filing status is single, you have one qualifying child, and the amount you are looking up from your EIC Worksheet is $2,455, you would enter $842."
+    },
+    {
+      "label": "1040 (and 1040-SR) Instructions 2025 — Worksheet A—2025 EIC—Line 27a (Page Last Reviewed or Updated: 07-May-2026)",
+      "url": "https://www.irs.gov/instructions/i1040gi",
+      "checkedOn": "2026-10-22",
+      "quote": "1. Enter your earned income from Step 5. 2. Look up the amount on line 1 above in the EIC Table … Is line 2 zero? … Stop. You can't take the credit. 3. Enter the amount from Form 1040 or 1040-SR, line 11. 4. Are the amounts on lines 3 and 1 the same? Yes — Skip line 5; enter the amount from line 2 on line 6. 5. [qualifying children] Is the amount on line 3 less than $23,350 ($30,470 if married filing jointly)? [none] less than $10,620 ($17,730 if married filing jointly)? Yes — enter the amount from line 2 on line 6. No — Look up the amount on line 3 in the EIC Table … enter the smaller amount on line 6. Worksheet B: self-employed, clergy, church employee, statutory employee"
+    },
+    {
+      "label": "IRS Who qualifies for the Earned Income Tax Credit (EITC)",
+      "url": "https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/who-qualifies-for-the-earned-income-tax-credit-eitc",
+      "checkedOn": "2026-10-22",
+      "quote": "Have earned income · Have investment income below the limit · Have a valid Social Security number by the due date of your return (including extensions) · Be a U.S. citizen or a resident alien all year · Not file Form 2555 … Eligible filing statuses: Married filing jointly · Head of household · Qualifying surviving spouse · Single · Married filing separate [only] … had a qualifying child who lived with you for more than half of the tax year and … lived apart from your spouse for the last 6 months … or legally separated"
+    }
+  ],
+  "percentages": {
+    "byChildren": {
+      "0": { "credit": 7.65, "phaseout": 7.65 },
+      "1": { "credit": 34, "phaseout": 15.98 },
+      "2": { "credit": 40, "phaseout": 21.06 },
+      "3": { "credit": 45, "phaseout": 21.06 }
+    },
+    "note": "26 U.S.C. 32(b)(1). '3' = 3 or more. 연도마다 바뀌지 않는 법정 비율(물가 조정 없음). (n) 의 15.3% 는 2021 과세연도만"
+  },
+  "amounts": {
+    "2025": {
+      "source": "Rev. Proc. 2024-40 §3.06 · EITC tables page · Pub 596 (2025)",
+      "earnedIncomeAmount": { "0": 8490, "1": 12730, "2": 17880, "3": 17880 },
+      "maxCredit": { "0": 649, "1": 4328, "2": 7152, "3": 8046 },
+      "thresholdPhaseout": {
+        "mfj": { "0": 17730, "1": 30470, "2": 30470, "3": 30470 },
+        "other": { "0": 10620, "1": 23350, "2": 23350, "3": 23350 }
+      },
+      "completedPhaseout": {
+        "mfj": { "0": 26214, "1": 57554, "2": 64430, "3": 68675 },
+        "other": { "0": 19104, "1": 50434, "2": 57310, "3": 61555 }
+      },
+      "investmentIncomeLimit": 11950,
+      "investmentIncomeRule": "$11,950 이하면 됨('or less' — Pub 596 Rule 6), 넘으면 credit 없음"
+    },
+    "2026": {
+      "source": "Rev. Proc. 2025-32 §3.06",
+      "earnedIncomeAmount": { "0": 8680, "1": 13020, "2": 18290, "3": 18290 },
+      "maxCredit": { "0": 664, "1": 4427, "2": 7316, "3": 8231 },
+      "thresholdPhaseout": {
+        "mfj": { "0": 18140, "1": 31160, "2": 31160, "3": 31160 },
+        "other": { "0": 10860, "1": 23890, "2": 23890, "3": 23890 }
+      },
+      "completedPhaseout": {
+        "mfj": { "0": 26820, "1": 58863, "2": 65899, "3": 70244 },
+        "other": { "0": 19540, "1": 51593, "2": 58629, "3": 62974 }
+      },
+      "investmentIncomeLimit": 12200,
+      "investmentIncomeRule": "'exceeds $12,200' 이면 credit 없음",
+      "selfCheck": "0.34 × 13,020 = 4,426.8 → 4,427 · 23,890 + 4,427 ÷ 0.1598 = 51,593 · 0.0765 × 8,680 = 664.02 → 664 · 31,160 + 8,231 ÷ 0.2106 = 70,244 — 법정 비율과 Rev. Proc. 금액이 서로 맞음(2026-10-22 손계산)"
+    }
+  },
+  "filingStatus": {
+    "mfjColumn": "married filing jointly",
+    "otherColumn": "single · head of household · qualifying surviving spouse · married filing separately(별거 배우자 특례 32(d)(2)(B) 를 충족할 때만 — 자녀와 반년 넘게 같이 살고, 마지막 6개월 따로 살았거나 법적 별거)",
+    "rule": "부부가 MFS 로 내면 원칙상 credit 없음(32(d)(1)), 특례 충족 시 'other' 열"
+  },
+  "noChildAge": {
+    "min": 25,
+    "maxExclusive": 65,
+    "rule": "과세연도 말 나이 25 이상 65 미만(MFJ 는 둘 중 한 명), 미국에 반년 넘게 거주, 남의 부양가족 아님 — 32(c)(1)(A)(ii)·Pub 596 Rule 11·14·12"
+  },
+  "qualifyingChildAge": "과세연도 말 19세 미만이고 본인(MFJ 면 배우자)보다 어림 · 24세 미만 full-time student · 나이 무관 영구·완전 장애(Pub 596 Age Test, §152(c)(3)) — 페이지는 자녀 수만 입력받고 자격 판정은 원문 안내",
+  "worksheetA": {
+    "rule": "credit = table(earned income). AGI(1040 line 11) 가 earned income 과 같거나 thresholdPhaseout 미만이면 그대로, 아니면 min(table(earned income), table(AGI)). table 값이 0 이면 credit 없음",
+    "scope": "Worksheet A = 자영업·성직자·교회 근로자·statutory employee 가 아닌 사람. Worksheet B(자영업 순소득·Schedule SE)는 계산하지 않음"
+  },
+  "tableMethod": {
+    "status": "원문 문장 아님 — 2025 EIC Table(Pub 596 (2025))을 재현해 찾은 산식, 2026-10-22 스크립트로 대조",
+    "rule": "구간은 $50 폭($1–$50, $50–$100, …; 소득 0 이면 credit 0). 그 구간의 중간값 m 으로 계산하고 원 단위 반올림(0.5 는 올림 — 34% × 25 = 8.5 → 9). 증가 구간: 구간 윗끝 ≤ earnedIncomeAmount 이면 round(credit% × m), 아니면 maxCredit. 감소 구간: 구간 아랫끝 ≥ thresholdPhaseout 이면 min(위 값, max(0, round(maxCredit − phaseout% × (m − threshold)))). completedPhaseout 에 걸린 마지막 짧은 구간(예 $57,300–$57,310)은 그 짧은 구간의 중간값, completedPhaseout 이상은 credit 없음",
+    "evidence": "2025 표 본문 1,366행 × 8열 중 1,365행 일치 + 1행(61,550–61,600)은 각주 글이 섞인 파싱 문제라 눈으로 확인(single 0·1·2 열 0, 3 children 각주 $1). Pub 596 예시 single·1 child·$2,455 → $842(0.34 × 2,475 = 841.5 → 842) 재현. 마지막 짧은 구간 각주 8개 중 7개 재현(19,100–19,104 → $0 · 26,200–26,214 → $1 · 50,400–50,434 → $3 · 57,300–57,310 → $1 · 57,550–57,554 → $0 · 61,550–61,555 → $1 · 64,400–64,430 → $3)",
+    "anchorTests": [
+      { "year": 2025, "status": "other", "children": 1, "lookup": 2455, "credit": 842, "source": "Pub 596 (2025) EIC Table example" },
+      { "year": 2025, "status": "other", "children": 1, "lookup": 24575, "credit": 4132, "source": "Pub 596 (2025) EIC Table row 24,550–24,600" },
+      { "year": 2025, "status": "mfj", "children": 0, "lookup": 24575, "credit": 125, "source": "Pub 596 (2025) EIC Table row 24,550–24,600" },
+      { "year": 2025, "status": "other", "children": 2, "lookup": 57305, "credit": 1, "source": "Pub 596 (2025) EIC Table footnote 57,300–57,310" }
+    ]
+  },
+  "notVerified": [
+    "2025 EIC Table 각주 '68,650 이상 68,675 미만, 자녀 3명(MFJ) → $3' 이 tableMethod 로는 $5(중간값 68,662.5: 8,046 − 0.2106 × (68,662.5 − 30,470) = 8,046 − 8,043.34 = 4.66 → 5)로 재현되지 않음 — 마지막 짧은 구간의 IRS 규칙을 원문에서 못 찾음. 페이지 회차 전에 Pub 596·i1040gi 표 이미지·IRS 설명을 다시 보거나, 마지막 짧은 구간만 '표를 보라' 고지로 처리할지 정한다"
+  ]
+}
