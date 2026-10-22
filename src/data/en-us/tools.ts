@@ -104,4 +104,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/en-us/earned-income-credit/",
+    name: "Earned Income Credit Calculator",
+    blurb: "Federal EITC for 2025 and 2026 with 0 to 3+ children — IRS income limits, maximum credit and the EIC Table, with the AGI check from Worksheet A",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];

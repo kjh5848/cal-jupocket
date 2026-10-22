@@ -1,0 +1,310 @@
+---
+/**
+ * Earned Income Credit Calculator — 미국 영어판 제도 도구(basis "law"). 한국 근로장려금(가구·재산 요건, 반기 지급)과
+ * 제도가 달라 짝(hreflang)을 맺지 않는다(조사표 25행 미국 칸 '제도').
+ * 계산은 lib/us/eitc.ts, 화면은 lib/us/eitc-ui.ts, 숫자는 rates/us/eitc-2026.json
+ * (26 U.S.C. 32 · Rev. Proc. 2024-40·2025-32 · EITC tables · Pub 596 (2025) · i1040gi Worksheet A — 2026-10-22 확인).
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-eitc-2026-10-22.csv):
+ *   earned income credit calculator 2025·2026 with dependents / earned income tax credit table 2025·2026 pdf /
+ *   eitc 2026 income limits·married filing jointly·amount·eligibility·requirements / earned income credit calculation worksheet /
+ *   earned income tax credit qualifications
+ * 쓰지 않는 것(원문 미확인·주의 원칙): 환급 날짜(refund date·payment schedule), 주(州) EITC(california 등),
+ * Worksheet B(자영업·성직자), qualifying child 자격 판정, 2026 EIC Table(아직 없음 — 2025 표 산식으로 계산했다고 밝힘).
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { NO_CHILD_AGE, params, summary, tableAmount, computeEitc } from "../../../lib/us/eitc";
+import { usd0 } from "../../../lib/us/fica";
+import "../../../styles/global.css";
+
+const title = "Earned Income Credit Calculator 2025 & 2026 — EITC With Dependents (IRS)";
+const description =
+  "Estimate the federal earned income tax credit for 2025 and 2026 with 0 to 3+ children: IRS income limits, maximum credit and the EIC table method.";
+
+const first = computeEitc({ year: 2026, status: "other", children: 2, earned: 30_000 });
+const s25 = summary(2025);
+const s26 = summary(2026);
+const kidsName = (c: number) => (c === 3 ? "3 or more" : String(c));
+const p1 = params(2025, "other", 1);
+const exAgi = computeEitc({ year: 2025, status: "other", children: 1, earned: 15_000, agi: 24_575 });
+const mfj3 = computeEitc({ year: 2026, status: "mfj", children: 3, earned: 40_000 });
+const pMfj3 = params(2026, "mfj", 3);
+const noKid = computeEitc({ year: 2026, status: "other", children: 0, earned: 9000 });
+const pNoKid = params(2026, "other", 0);
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Earned Income Credit Calculator</h1>
+      <p>
+        The earned income tax credit (EITC, or EIC on Form 1040) is a refundable federal credit for people who work and have low to
+        moderate income. Its size depends on three things: your earned income (and AGI), your filing status, and how many qualifying
+        children you claim. Enter them below. The calculator follows Worksheet A in the Form 1040 instructions and the IRS EIC Table,
+        so the result is the credit for these entries — whether you meet every eligibility rule is a separate check, listed further down.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="ei-year">Tax year</label>
+          <select id="ei-year" data-ui="off">
+            <option value="2026" selected>2026 (filed in 2027)</option>
+            <option value="2025">2025 (filed in 2026)</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ei-status">Filing status</label>
+          <select id="ei-status" data-ui="off">
+            <option value="other" selected>Single, head of household or qualifying surviving spouse</option>
+            <option value="mfj">Married filing jointly</option>
+            <option value="mfs">Married filing separately (separated-spouse rule)</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ei-kids">Qualifying children</label>
+          <select id="ei-kids" data-ui="off">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3 or more</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap" id="ei-age-wrap" hidden>
+          <label for="ei-age">No children: age at the end of the year (you or your spouse)</label>
+          <select id="ei-age" data-ui="off">
+            <option value="yes" selected>{NO_CHILD_AGE.min} to {NO_CHILD_AGE.maxExclusive - 1}</option>
+            <option value="no">Under {NO_CHILD_AGE.min}, or {NO_CHILD_AGE.maxExclusive} or older</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ei-earned">Earned income ($) — wages, salary, tips</label>
+          <input type="text" inputmode="decimal" id="ei-earned" value="30,000" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ei-agi">AGI ($) — Form 1040 line 11, leave blank if the same</label>
+          <input type="text" inputmode="decimal" id="ei-agi" value="" placeholder="same as earned income" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ei-invest">Investment income ($) — interest, dividends, capital gains</label>
+          <input type="text" inputmode="decimal" id="ei-invest" value="" placeholder="0" autocomplete="off" data-ui="off" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value" data-bar="out-max,out-threshold,out-end">
+          <p class="label">Earned income credit</p>
+          <p class="big" id="hero-value">{usd0(first.credit)}</p>
+          <p class="hint" id="ei-hint">The table amount for these entries. 2026 figures use Rev. Proc. 2025-32 amounts with the 2025 table method; the 2026 EIC Table is not out yet.</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">Maximum credit</span>
+            <span class="value" id="out-max">{usd0(first.params.maxCredit)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Phase-out starts</span>
+            <span class="value" id="out-threshold">{usd0(first.params.threshold)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Credit ends at</span>
+            <span class="value" id="out-end">{usd0(first.params.completed)}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>EITC 2026 income limits and maximum credit</h2>
+      <p>
+        The IRS adjusts the amounts for inflation every year. For tax year 2026 (returns filed in 2027) they come from Rev. Proc.
+        2025-32. Your earned income and your AGI must both be below the "credit ends at" figure, and investment income can't be more
+        than {usd0(params(2026, "other", 0).investmentIncomeLimit)}.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Children</th>
+              <th scope="col">Maximum credit</th>
+              <th scope="col">Credit ends — single, HOH, QSS</th>
+              <th scope="col">Credit ends — married filing jointly</th>
+            </tr>
+          </thead>
+          <tbody>
+            {s26.map((r) => (
+              <tr><th scope="row">{kidsName(r.children)}</th><td>{usd0(r.maxCredit)}</td><td>{usd0(r.completed)}</td><td>{usd0(r.completedMfj)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Earned income tax credit 2025</h2>
+      <p>
+        For tax year 2025 (returns filed in 2026), from Rev. Proc. 2024-40 and the IRS EITC tables page. The investment income limit is
+        {usd0(params(2025, "other", 0).investmentIncomeLimit)} or less.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Children</th>
+              <th scope="col">Maximum credit</th>
+              <th scope="col">Credit ends — single, HOH, QSS</th>
+              <th scope="col">Credit ends — married filing jointly</th>
+            </tr>
+          </thead>
+          <tbody>
+            {s25.map((r) => (
+              <tr><th scope="row">{kidsName(r.children)}</th><td>{usd0(r.maxCredit)}</td><td>{usd0(r.completed)}</td><td>{usd0(r.completedMfj)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>How the earned income credit is calculated</h2>
+      <p>The credit rises with earned income, stays flat at the maximum, then phases out as income goes up:</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Children</th>
+              <th scope="col">Credit rate</th>
+              <th scope="col">2026 maximum reached at</th>
+              <th scope="col">Phase-out rate</th>
+              <th scope="col">2026 phase-out starts (single / joint)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {s26.map((r) => (
+              <tr>
+                <th scope="row">{kidsName(r.children)}</th><td>{r.creditPct}%</td><td>{usd0(r.earnedIncomeAmount)}</td><td>{r.phaseoutPct}%</td>
+                <td>{usd0(r.threshold)} / {usd0(r.thresholdMfj)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The rates are fixed in 26 U.S.C. 32(b). The return itself does not use the formula directly: you look up your income in the
+        EIC Table, which has rows $50 wide. Each row's amount is the formula applied to the middle of the row, rounded to the nearest
+        dollar. That is why Publication 596's example — single, one child, $2,455 — shows
+        {usd0(tableAmount(2025, "other", 1, 2455))} (34% × $2,475 = $841.50, rounded up).
+      </p>
+
+      <h2>Earned income credit calculation worksheet</h2>
+      <p>Worksheet A in the Form 1040 instructions does it in a few steps:</p>
+      <ol>
+        <li>Look up your earned income in the EIC Table. If the amount is zero, you can't take the credit.</li>
+        <li>If your AGI is the same as your earned income, that table amount is your credit.</li>
+        <li>
+          If your AGI is different, but less than the phase-out start ({usd0(p1.threshold)} for single with children in 2025,
+          {usd0(params(2025, "mfj", 1).threshold)} if married filing jointly), you still use the earned income amount.
+        </li>
+        <li>Otherwise, look up your AGI in the table too and use the smaller of the two amounts.</li>
+      </ol>
+      <p>
+        Example (2025, single, one child): earned income {usd0(15_000)} gives the maximum {usd0(exAgi.byEarned)}, but with an AGI of
+        {usd0(24_575)} the table shows {usd0(exAgi.byAgi ?? 0)}, so the credit is {usd0(exAgi.credit)}. Enter an AGI in the calculator to
+        run the same comparison.
+      </p>
+      <p>
+        If you are self-employed, a member of the clergy, a church employee or a statutory employee, the instructions send you to
+        Worksheet B instead; this calculator does not handle it.
+      </p>
+
+      <h2>EITC 2026 married filing jointly</h2>
+      <p>
+        A joint return gets a higher phase-out start, so the credit lasts to a higher income. With three children, the 2026 phase-out
+        starts at {usd0(pMfj3.threshold)} instead of {usd0(params(2026, "other", 3).threshold)}. A couple earning {usd0(40_000)} falls in the $40,000–$40,050 table row, whose middle is $40,025:
+        {usd0(pMfj3.maxCredit)} − {pMfj3.phaseoutPct}% × ($40,025 − {usd0(pMfj3.threshold)}) = {usd0(mfj3.credit)}. With no children,
+        a {usd0(9000)} earner filing single gets {usd0(noKid.credit)} — the maximum for no children is {usd0(pNoKid.maxCredit)}.
+      </p>
+      <p>
+        Married filing separately generally can't claim the credit. The exception: you have a qualifying child who lived with you
+        more than half the year, and you lived apart from your spouse for the last 6 months of the year or are legally separated.
+        Then you use the single column.
+      </p>
+
+      <h2>Earned income tax credit table 2026</h2>
+      <p>
+        The IRS prints the full table in the Form 1040 instructions and Publication 596 for each year. The 2025 table is out; the
+        2026 table will come with the 2026 instructions. Until then, this calculator's 2026 results apply the 2026 amounts from Rev.
+        Proc. 2025-32 to the same table method, which reproduces every row of the 2025 table. Check against the official 2026 table once
+        it is published.
+      </p>
+
+      <h2>EITC eligibility requirements</h2>
+      <p>This calculator does not decide whether you qualify. The main rules from the IRS:</p>
+      <ul>
+        <li>You have earned income, and investment income at or under the limit for the year.</li>
+        <li>You (and your spouse, on a joint return) have a valid Social Security number by the due date of the return.</li>
+        <li>You are a U.S. citizen or resident alien all year, and you don't file Form 2555.</li>
+        <li>
+          With no qualifying child: you are at least {NO_CHILD_AGE.min} and under {NO_CHILD_AGE.maxExclusive} at the end of the year
+          (either spouse on a joint return), live in the United States more than half the year, and can't be claimed as someone
+          else's dependent.
+        </li>
+        <li>
+          A qualifying child must meet the relationship, residency, age and joint-return tests — for age, under 19 at year-end and
+          younger than you, under 24 and a full-time student, or any age if permanently and totally disabled.
+        </li>
+      </ul>
+
+      <details>
+        <summary>Do tips and overtime count as earned income?</summary>
+        <p>
+          Yes. The IRS says to include the full amount of tip and overtime income when figuring earned income for the EITC, even if
+          part of it is deductible.
+        </p>
+      </details>
+
+      <details>
+        <summary>What doesn't count as earned income?</summary>
+        <p>Interest and dividends, pensions and annuities, Social Security, unemployment benefits, alimony and child support.</p>
+      </details>
+
+      <details>
+        <summary>Does this include my state's earned income credit?</summary>
+        <p>No. It covers the federal credit only. Many states have their own, with their own rules — check your state's tax agency.</p>
+      </details>
+
+      <details>
+        <summary>Can I enter a dollar sign or commas?</summary>
+        <p>Yes, both are ignored. The table works in $50 rows, so cents don't change the result.</p>
+      </details>
+
+      <h2>Sources</h2>
+      <ul>
+        <li><a href="https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/earned-income-and-earned-income-tax-credit-eitc-tables" rel="noopener" target="_blank">IRS Earned income and EITC tables</a></li>
+        <li><a href="https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/who-qualifies-for-the-earned-income-tax-credit-eitc" rel="noopener" target="_blank">IRS Who qualifies for the EITC</a></li>
+        <li><a href="https://www.irs.gov/publications/p596" rel="noopener" target="_blank">IRS Publication 596 (2025), Earned Income Credit — EIC Table</a></li>
+        <li><a href="https://www.irs.gov/instructions/i1040gi" rel="noopener" target="_blank">Form 1040 Instructions (2025), Worksheet A for line 27a</a></li>
+        <li><a href="https://www.irs.gov/pub/irs-drop/rp-25-32.pdf" rel="noopener" target="_blank">Rev. Proc. 2025-32 §3.06 (2026 amounts)</a> and <a href="https://www.irs.gov/pub/irs-drop/rp-24-40.pdf" rel="noopener" target="_blank">Rev. Proc. 2024-40 §3.06 (2025 amounts)</a></li>
+        <li><a href="https://uscode.house.gov/" rel="noopener" target="_blank">26 U.S.C. 32</a> (Office of the Law Revision Counsel, current through Pub. L. 119-120)</li>
+      </ul>
+      <p>Amounts checked on October 22, 2026. This is a calculator, not tax advice.</p>
+
+      <AdSlot label="eitc-result-en-us" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/us/eitc-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

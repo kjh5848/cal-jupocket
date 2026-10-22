@@ -1,9 +1,8 @@
 {
   "country": "US",
-  "draft": true,
   "year": 2026,
   "verifiedOn": "2026-10-22",
-  "status": "초안 — 페이지에서 쓰지 않는다. 연방 Earned Income Tax Credit(26 U.S.C. 32) 금액 계산만, 주(州) EITC 는 다루지 않음(us.md 주의). 법조문·2025·2026 금액·2025 EIC Table 산식은 원문 확인(2026-10-22), 남은 미확인 없음 — 다음 발행 회차가 draft 를 지운다",
+  "status": "검증됨 — /en-us/earned-income-credit/ 가 쓴다(2026-10-23 발행). 연방 Earned Income Tax Credit(26 U.S.C. 32) 금액 계산만, 주(州) EITC 는 다루지 않음(us.md 주의). 법조문·2025·2026 금액·2025 EIC Table 산식은 원문 확인(2026-10-22), 남은 미확인 없음",
   "note": "세액공제(환급형)라 계산 결과가 곧 credit 금액. 2026 EIC Table(2026 Form 1040 지침·Pub 596 (2026))은 아직 안 나옴 — 2026 숫자는 Rev. Proc. 2025-32 §3.06 금액(공식)에 2025 EIC Table 을 재현한 산식(tableMethod)을 적용한 값이라, 페이지는 2026 결과에 'computed from Rev. Proc. 2025-32 with the 2025 table method' 를 밝히고 표가 나오면(2027 초) 다시 대조한다. 자영업(Worksheet B·Schedule SE)·자격 판정(qualifying child 관계·거주 테스트·tiebreaker·SSN)은 계산하지 않고 원문 안내만.",
   "sources": [
     {
