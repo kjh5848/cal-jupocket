@@ -68,3 +68,20 @@ export function workTimeFor(price: number, monthly: number, days: number, workHo
   const minutes = fl((p * days * workHours * 60) / monthly);
   return { minutes, hours: Math.floor(minutes / 60), mins: minutes % 60, workDays: Math.floor((minutes / (workHours * 60)) * 10 + 1e-6) / 10 };
 }
+
+/**
+ * 일한 시간만큼 쌓인 실수령액 — 근무 중 누적 표시용.
+ *   누적 = 월 금액 × 경과 초 ÷ (계산 기준일 × 실근무시간 × 3600) (원 미만 버림)
+ * 근무시간당 금액을 버리기 전 비율로 곱해 오래 켜 둬도 끝수가 쌓이지 않는다. 분당은 원 미만 버림, 초당은 소수 첫째 자리 버림.
+ */
+export function earnedFor(monthly: number, days: number, workHours: number, seconds: number) {
+  const m = Math.max(0, fl(monthly || 0));
+  const s = Math.max(0, Math.floor(seconds || 0));
+  if (!(m > 0) || !(days > 0) || !(workHours > 0)) return { earned: 0, perMinute: 0, perSecond: 0 };
+  const total = days * workHours * 3600;
+  return {
+    earned: fl((m * s) / total),
+    perMinute: fl((m * 60) / total),
+    perSecond: Math.floor((m * 10) / total + 1e-6) / 10,
+  };
+}

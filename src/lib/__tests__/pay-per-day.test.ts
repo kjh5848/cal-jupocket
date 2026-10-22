@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { daysInMonth, workDaysInMonth, payPerDay, workTimeFor } from "../pay-per-day";
+import { daysInMonth, workDaysInMonth, payPerDay, workTimeFor, earnedFor } from "../pay-per-day";
 
 describe("계산 기준일", () => {
   it("월 날짜 수 — 윤년 2월 포함", () => {
@@ -83,10 +83,33 @@ describe("물건 가격 → 필요한 근무시간(분 미만 버림)", () => {
   });
 });
 
+describe("일한 시간만큼 쌓인 실수령액(원 미만 버림)", () => {
+  // 300만원 · 20일 · 8시간 → 160시간 = 576,000초, 시간당 18,750원 · 분당 312.5원 · 초당 5.208…원
+  it("0초 → 0원, 분당 312원 · 초당 5.2원", () => {
+    expect(earnedFor(3_000_000, 20, 8, 0)).toEqual({ earned: 0, perMinute: 312, perSecond: 5.2 });
+  });
+  it("1시간 → 18,750원", () => {
+    expect(earnedFor(3_000_000, 20, 8, 3600).earned).toBe(18_750);
+  });
+  it("하루 8시간 → 150,000원(하루 실수령액과 같다)", () => {
+    expect(earnedFor(3_000_000, 20, 8, 8 * 3600).earned).toBe(150_000);
+    expect(payPerDay({ monthly: 3_000_000, year: 2026, month: 2, pattern: "weekdays" }).perDay).toBe(150_000);
+  });
+  it("버리기 전 비율로 곱한다 — 600만원 22일 7시간, 10시간 → 389,610원", () => {
+    // 6,000,000 × 36,000 ÷ (22 × 7 × 3600) = 389,610.38…
+    expect(earnedFor(6_000_000, 22, 7, 36_000).earned).toBe(389_610);
+  });
+  it("월 금액·날·시간이 0이면 0", () => {
+    expect(earnedFor(0, 20, 8, 3600).earned).toBe(0);
+    expect(earnedFor(3_000_000, 0, 8, 3600).earned).toBe(0);
+    expect(earnedFor(3_000_000, 20, 0, 3600).earned).toBe(0);
+  });
+});
+
 describe("실수령액 계산기 화면", () => {
   it("하루·시간 나누기 칸이 빌드에 들어 있다", () => {
     const html = readFileSync("dist/guide/take-home-calculator/index.html", "utf-8");
-    for (const id of ["pd-month", "pd-pattern", "pd-days", "pd-hours", "pd-break", "pd-day", "pd-hour", "pd-price", "pd-need"]) expect(html, id).toContain(`id="${id}"`);
+    for (const id of ["pd-month", "pd-pattern", "pd-days", "pd-hours", "pd-break", "pd-day", "pd-hour", "pd-price", "pd-need", "pd-live", "pd-start", "pd-earned"]) expect(html, id).toContain(`id="${id}"`);
     expect(html).toContain("공휴일");
   });
 });

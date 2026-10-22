@@ -3,7 +3,7 @@
  * 계산은 src/lib/take-home.ts takeHome() 가 한다. 여기서는 입력을 읽고 결과를 그린다.
  */
 import { takeHome, annualDivisor } from "../lib/take-home";
-import { payPerDay, workTimeFor, type WorkPattern } from "../lib/pay-per-day";
+import { payPerDay, workTimeFor, earnedFor, type WorkPattern } from "../lib/pay-per-day";
 import { formatWon, parseAmount, formatAmountInput } from "../lib/money";
 import { trackCalculatorUse } from "../lib/track";
 
@@ -97,7 +97,45 @@ function renderPerDay() {
   const need = workTimeFor(parseAmount(pdPrice.value), r.monthly, r.days, r.workHours);
   $("pd-need").textContent = `${need.hours}시간 ${need.mins}분`;
   $("pd-need-days").textContent = `${need.workDays}일`;
+  lastPd = r;
+  renderLive();
 }
+
+// 근무 중 누적 — 시작 시각과 지금의 차이로 센다(탭이 뒤에 있어도 어긋나지 않게)
+let lastPd = { monthly: 0, days: 0, workHours: 0 };
+let liveMs = 0; // 멈춘 동안까지 쌓인 시간
+let liveFrom = 0; // 0 이면 멈춤
+let liveTimer = 0;
+const pdStart = $<HTMLButtonElement>("pd-start");
+function liveSeconds() {
+  return Math.floor((liveMs + (liveFrom ? Date.now() - liveFrom : 0)) / 1000);
+}
+function renderLive() {
+  const s = liveSeconds();
+  const e = earnedFor(lastPd.monthly, lastPd.days, lastPd.workHours, s);
+  $("pd-clock").textContent = `${pad2(Math.floor(s / 3600))}:${pad2(Math.floor(s / 60) % 60)}:${pad2(s % 60)}`;
+  $("pd-earned").textContent = formatWon(e.earned);
+  $("pd-rate").textContent = `${formatWon(e.perMinute)} · ${e.perSecond}원`;
+}
+pdStart.addEventListener("click", () => {
+  if (liveFrom) {
+    liveMs += Date.now() - liveFrom;
+    liveFrom = 0;
+    clearInterval(liveTimer);
+    pdStart.textContent = "이어서 일하기";
+  } else {
+    liveFrom = Date.now();
+    liveTimer = window.setInterval(renderLive, 250);
+    pdStart.textContent = "잠깐 멈춤";
+  }
+  renderLive();
+});
+$("pd-reset").addEventListener("click", () => {
+  liveMs = 0;
+  if (liveFrom) liveFrom = Date.now();
+  if (!liveFrom) pdStart.textContent = "근무 시작";
+  renderLive();
+});
 pdPrice.addEventListener("input", () => {
   const n = parseAmount(pdPrice.value);
   pdPrice.value = n ? formatAmountInput(n) : "";
