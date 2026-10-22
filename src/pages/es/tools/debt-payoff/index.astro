@@ -1,0 +1,242 @@
+---
+/**
+ * Calculadora para pagar deudas — 스페인판 일곱 번째 도구. 한국어판 /tools/debt-payoff/ 와 계산(lib/debt-payoff.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/debt-payoff.ts 의 ES 사전), 문장은 스페인 자동완성으로 새로 썼다(번역 아님). 산술이라 rates 와 상관없다(조사표 스페인 칸 '같음').
+ *
+ * 금액은 센트 정수로 payoffPlan 에 넣는다(lib/es/debt-payoff.ts) — 월 이자는 센트 미만 버림. 표기는 '1234,56 euros'·'12 345,67 euros'
+ * (RD 2032/2009 Anexo III 2.8·2.9, € 기호 위치는 미확인이라 'euros' 말만).
+ * 스페인 은행·카드가 실제로 이자를 매기는 방식은 조사표에서 미확인이라 본문에 주장하지 않는다(계획용 어림이라고만 적는다).
+ * 세무서·사회보장 체납(deudas con Hacienda·Seguridad Social)은 따로 규칙이 있어 이 도구 대상이 아니라고만 적는다.
+ *
+ * 소제목은 스페인 구글 자동완성에서 왔다(keywords/es-debt-payoff-2026-10-23.csv, hl es · gl es):
+ *   calculadora para pagar deudas·online·excel / método avalancha para pagar deudas / método bola de nieve deudas /
+ *   bola de nieve o avalancha / cómo salir de deudas rápido·con poco dinero
+ *   (sunat·guatemala·biblia·인물·통계 표본 뜻의 bola de nieve·aeat·tgss·ayuntamiento·reunificación·prescripción 축은 버림)
+ * 본문 숫자는 전부 아래 frontmatter 에서 payoffPlan() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { payoffPlan, type Debt } from "../../../../lib/debt-payoff";
+import { euroCentEs, inputEuroEs, spellMonthsEs } from "../../../../lib/es/debt-payoff";
+import { decimalEs } from "../../../../lib/es/money";
+import "../../../../styles/global.css";
+
+const title = "Calculadora para pagar deudas — método avalancha o bola de nieve";
+const description =
+  "Calculadora para pagar deudas: saldo, interés y cuota mínima de cada deuda. Método avalancha o bola de nieve, mes en que terminas y total de intereses.";
+
+/** Ejemplo en céntimos */
+const sample: Debt[] = [
+  { name: "Tarjeta de crédito", balance: 240_000, ratePct: 18.9, minPayment: 8_000, priority: 2 },
+  { name: "Préstamo personal", balance: 150_000, ratePct: 12.5, minPayment: 5_000, priority: 1 },
+  { name: "Préstamo del coche", balance: 900_000, ratePct: 6.9, minPayment: 18_000, priority: 3 },
+];
+const extra = 15_000;
+const ex = payoffPlan({ debts: sample, strategy: "avalanche", extra, extraGrowthPct: 0 });
+const snow = payoffPlan({ debts: sample, strategy: "snowball", extra, extraGrowthPct: 0 });
+const none = payoffPlan({ debts: sample, strategy: "avalanche", extra: 0, extraGrowthPct: 0 });
+if (!ex.ok || !snow.ok || !none.ok) throw new Error("debt-payoff 스페인판 예시가 계산되지 않음");
+const rows = [0, 1, 2, 3, 4].map((i) => sample[i] ?? null);
+const eur = euroCentEs;
+const rate = (p: number) => `${decimalEs(String(p))} %`;
+const orderOf = (r: typeof ex) => (r.ok ? [...r.debts].sort((a, b) => a.order - b.order) : []);
+const mes = (n: number) => `mes ${n}`;
+---
+
+<html lang="es-ES">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Calculadora para pagar deudas</h1>
+      <p>
+        Cuando se pagan varias deudas a la vez, hay que decidir a cuál va el dinero que sobra después de las cuotas mínimas. Escribe
+        para cada deuda el saldo pendiente, el interés anual y la cuota mínima al mes, y añade lo que puedes pagar de más cada mes.
+        Cuando una deuda queda pagada, su cuota pasa a la siguiente: el presupuesto mensual no baja. La calculadora te dice en qué mes
+        terminas de pagar y cuántos intereses pagas hasta entonces.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="dp-debts">
+          {rows.map((d, i) => (
+            <fieldset class="dp-debt" data-row={i + 1}>
+              <legend>Deuda {i + 1}{i >= 3 ? " (opcional)" : ""}</legend>
+              <div class="calc-input-wrap">
+                <label for={`dp-name-${i + 1}`}>Nombre</label>
+                <input type="text" id={`dp-name-${i + 1}`} value={d?.name ?? ""} placeholder={`Deuda ${i + 1}`} maxlength="20" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-bal-${i + 1}`}>Saldo pendiente (euros)</label>
+                <input type="text" inputmode="decimal" id={`dp-bal-${i + 1}`} value={d ? inputEuroEs(d.balance) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-rate-${i + 1}`}>Interés anual</label>
+                <input type="number" id={`dp-rate-${i + 1}`} value={d ? d.ratePct : ""} min="0" max="100" step="0.1" inputmode="decimal" />
+                <span class="unit">%</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-min-${i + 1}`}>Cuota mínima al mes (euros)</label>
+                <input type="text" inputmode="decimal" id={`dp-min-${i + 1}`} value={d ? inputEuroEs(d.minPayment) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap dp-prio">
+                <label for={`dp-prio-${i + 1}`}>Orden propio</label>
+                <select id={`dp-prio-${i + 1}`}>
+                  {[1, 2, 3, 4, 5].map((n) => <option value={n} selected={(d?.priority ?? i + 1) === n}>{n}.º lugar</option>)}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="dp-strategy">Orden de pago</label>
+          <select id="dp-strategy" data-seg>
+            <option value="avalanche" selected>Primero el interés más alto (avalancha)</option>
+            <option value="snowball">Primero la deuda más pequeña (bola de nieve)</option>
+            <option value="custom">Orden propio</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-extra">Pago extra al mes (euros)</label>
+          <input type="text" inputmode="decimal" id="dp-extra" value={inputEuroEs(extra)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-growth">Subir el pago extra cada año</label>
+          <input type="number" id="dp-growth" value="0" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="dp-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="dp-debt|dp-int" data-bar-labels="Capital|Intereses" data-dock="dp-hero">
+          <p class="label">Sin deudas en</p>
+          <p class="big" id="dp-hero">{spellMonthsEs(ex.months)}</p>
+          <p class="meta" id="dp-note">{ex.months} meses · presupuesto del primer mes {eur(ex.startBudget)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Deuda total</span><span class="value" id="dp-debt">{eur(ex.totalDebt)}</span></div>
+          <div class="stat-chip"><span class="label">Intereses totales</span><span class="value" id="dp-int">{eur(ex.totalInterest)}</span></div>
+          <div class="stat-chip"><span class="label">Total pagado</span><span class="value" id="dp-paid">{eur(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">Intereses: avalancha frente a bola de nieve</span><span class="value" id="dp-vs">La avalancha paga {eur(snow.totalInterest - ex.totalInterest)} menos</span></div>
+          <div class="stat-chip"><span class="label">Ahorro por el pago extra</span><span class="value" id="dp-saved">{eur(none.totalInterest - ex.totalInterest)} · {none.months - ex.months} meses antes</span></div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Orden</th><th>Deuda</th><th>Pagada en</th><th>Intereses</th></tr></thead>
+            <tbody id="dp-order">
+              {orderOf(ex).map((d) => <tr><th scope="row">{d.order}</th><td>{d.name}</td><td>{mes(d.payoffMonth)}</td><td>{eur(d.interest)}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Plan de pagos mes a mes: pago, capital, intereses y saldo</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Mes</th><th>Pagado</th><th>Capital</th><th>Intereses</th><th>Saldo</th></tr></thead>
+              <tbody id="dp-rows">
+                {ex.rows.map((r) => <tr><th scope="row">{mes(r.month)}</th><td>{eur(r.payment)}</td><td>{eur(r.principal)}</td><td>{eur(r.interest)}</td><td>{eur(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Guardar como PNG</button>
+          <button id="btn-share" type="button" class="secondary">Compartir</button>
+        </div>
+      </div>
+
+      <h2>Cómo calcula esta calculadora para pagar deudas</h2>
+      <ul>
+        <li><strong>Presupuesto mensual</strong> — la suma de todas las cuotas mínimas más el pago extra. Cuando terminas una deuda, el presupuesto no baja: su cuota pasa a la siguiente.</li>
+        <li><strong>Intereses</strong> — cada mes, saldo pendiente × interés anual ÷ 12, redondeado hacia abajo al céntimo.</li>
+        <li><strong>Orden dentro del mes</strong> — primero se suman los intereses, después se paga cada cuota mínima y lo que sobra va a la deuda que está en primer lugar. Si esa deuda se termina ese mismo mes, el resto pasa enseguida a la siguiente.</li>
+        <li><strong>Orden de pago</strong> — avalancha: primero el interés más alto (con el mismo interés, el saldo más pequeño). Bola de nieve: primero el saldo más pequeño (con el mismo saldo, el interés más alto). Orden propio: tus números. El orden se fija una sola vez con los datos de partida.</li>
+        <li><strong>Subir cada año</strong> — solo el pago extra sube ese porcentaje cada 12 meses; las cuotas mínimas no cambian.</li>
+      </ul>
+
+      <h2>Método avalancha para pagar deudas</h2>
+      <p>
+        En el ejemplo de arriba hay tres deudas: tarjeta de crédito de {eur(sample[0].balance)} al {rate(sample[0].ratePct)}, préstamo
+        personal de {eur(sample[1].balance)} al {rate(sample[1].ratePct)} y préstamo del coche de {eur(sample[2].balance)} al
+        {" "}{rate(sample[2].ratePct)}. Las cuotas mínimas suman {eur(ex.startBudget - extra)} y se pagan {eur(extra)} de más cada mes.
+        Con el método avalancha, la tarjeta va primero porque es la más cara: las tres deudas quedan pagadas en {spellMonthsEs(ex.months)}
+        {" "}y los intereses suman {eur(ex.totalInterest)}.
+      </p>
+
+      <h2>Método bola de nieve: deudas de la más pequeña a la más grande</h2>
+      <p>
+        Con la bola de nieve se empieza por el préstamo personal, el saldo más pequeño. Con el mismo presupuesto, terminas en
+        {" "}{spellMonthsEs(snow.months)} y pagas {eur(snow.totalInterest)} de intereses, {eur(snow.totalInterest - ex.totalInterest)} más
+        que con la avalancha. A cambio, la primera deuda desaparece antes: el préstamo personal queda pagado en el
+        {" "}{mes(orderOf(snow)[0]?.payoffMonth ?? 0)} en lugar del {mes(ex.debts.find((d) => d.name === "Préstamo personal")?.payoffMonth ?? 0)},
+        y te quedan menos acreedores.
+      </p>
+
+      <h2>¿Bola de nieve o avalancha?</h2>
+      <p>
+        Con el mismo presupuesto, la avalancha nunca paga más intereses que la bola de nieve, porque primero reduce la parte de la deuda
+        que sale más cara. La bola de nieve gana en otra cosa: ver pronto una deuda cerrada. Cambia el orden de pago en la calculadora y
+        mira la diferencia en «Intereses: avalancha frente a bola de nieve». Si es pequeña, conviene el orden que vayas a mantener.
+      </p>
+
+      <h2>Cómo salir de deudas más rápido, aunque sea con poco dinero</h2>
+      <p>
+        Sin los {eur(extra)} extra, el ejemplo tardaría {spellMonthsEs(none.months)} y pagaría {eur(none.totalInterest)} de intereses. El
+        pago extra ahorra {eur(none.totalInterest - ex.totalInterest)} y {none.months - ex.months} meses. Prueba con cantidades pequeñas
+        en «Pago extra al mes» o usa «Subir el pago extra cada año» si cuentas con poder aportar algo más con el tiempo.
+      </p>
+
+      <h2>Calculadora de deudas en Excel</h2>
+      <p>
+        El plan mes a mes de debajo del resultado tiene las mismas columnas que una plantilla de Excel: mes, pagado, capital, intereses y
+        saldo. Si prefieres llevarlo en una hoja de cálculo, los intereses de un mes son saldo × interés anual ÷ 12, y el capital es lo
+        pagado menos esos intereses.
+      </p>
+
+      <details>
+        <summary>La cuota mínima es demasiado baja</summary>
+        <p>
+          Si la cuota mínima no supera los intereses del primer mes (saldo × interés anual ÷ 12), esa deuda no baja solo con la cuota
+          mínima. Escribe una cantidad mayor. En préstamos o tarjetas cuya cuota cambia con el saldo, pon la cuota actual y toma el
+          resultado como una estimación.
+        </p>
+      </details>
+
+      <details>
+        <summary>¿Por qué no coincide con mi extracto?</summary>
+        <p>
+          La calculadora supone que cada mes se cobra la misma parte del interés anual. El banco o la entidad de la tarjeta pueden
+          calcular los intereses por días, cobrar comisiones, cambiar el tipo o tener otras fechas de liquidación. El resultado es una
+          estimación para planificar, no una oferta ni un asesoramiento: lo que vale es tu contrato y tu extracto. Las deudas con Hacienda
+          o con la Seguridad Social tienen sus propias reglas y no se calculan aquí. Para ver cómo crece un ahorro mensual, usa la
+          {" "}<a href="/es/tools/compound/">calculadora de interés compuesto</a>.
+        </p>
+      </details>
+
+      <AdSlot label="debt-payoff-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .dp-debts { display: grid; gap: 0.75rem; }
+      .dp-debt { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.5rem 0.75rem 0.75rem; margin: 0; min-width: 0; }
+      .dp-debt legend { font-weight: 600; padding: 0 0.25rem; }
+      .dp-prio[hidden] { display: none; }
+    </style>
+    <script src="../../../../scripts/debt-payoff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

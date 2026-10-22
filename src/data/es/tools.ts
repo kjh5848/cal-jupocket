@@ -62,4 +62,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/es/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "Calculadora para pagar deudas",
+    blurb: "Varias deudas a la vez: método avalancha o bola de nieve, mes en que terminas de pagar e intereses totales",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];
