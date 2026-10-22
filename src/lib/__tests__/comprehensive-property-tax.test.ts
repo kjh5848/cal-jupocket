@@ -97,7 +97,10 @@ describe("어림값이라는 것을 남겨 둔다", () => {
     expect(r.oneHomeCredit.cap).toBe(0.8);
     expect(r.burdenCap.rate).toBe(1.5);
     // 재산세액 공제는 식만 읽고 계산기에는 넣지 않았다 — 그 사실은 남긴다
-    expect(r.notVerified.join(" ")).toMatch(/재산세액 공제/);
+    // 2026-10-22 집행기준 9-4의3 으로 산식 해석이 닫혀 notVerified 에서 빠졌다 — 보유세 lib(holding-tax)가 쓰고, 종부세 계산기는 아직 공제 전 상한
+    expect(r.notVerified.join(" ")).not.toMatch(/재산세액 공제/);
+    expect(r.propertyTaxCredit.verifiedOn).toBe("2026-10-22");
+    expect(r.propertyTaxCredit.note).toMatch(/누진공제를 빼지 않고/);
   });
 
   it("세율표가 조문 표에서 왔음을 밝힌다", () => {
