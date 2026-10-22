@@ -3,7 +3,7 @@
   "draft": true,
   "year": 2026,
   "verifiedOn": "2026-10-22",
-  "status": "초안 — 페이지에서 쓰지 않는다. 연방 Earned Income Tax Credit(26 U.S.C. 32) 금액 계산만, 주(州) EITC 는 다루지 않음(us.md 주의). 법조문·2025·2026 금액·2025 EIC Table 산식은 원문 확인(2026-10-22), 남은 미확인은 notVerified",
+  "status": "초안 — 페이지에서 쓰지 않는다. 연방 Earned Income Tax Credit(26 U.S.C. 32) 금액 계산만, 주(州) EITC 는 다루지 않음(us.md 주의). 법조문·2025·2026 금액·2025 EIC Table 산식은 원문 확인(2026-10-22), 남은 미확인 없음 — 다음 발행 회차가 draft 를 지운다",
   "note": "세액공제(환급형)라 계산 결과가 곧 credit 금액. 2026 EIC Table(2026 Form 1040 지침·Pub 596 (2026))은 아직 안 나옴 — 2026 숫자는 Rev. Proc. 2025-32 §3.06 금액(공식)에 2025 EIC Table 을 재현한 산식(tableMethod)을 적용한 값이라, 페이지는 2026 결과에 'computed from Rev. Proc. 2025-32 with the 2025 table method' 를 밝히고 표가 나오면(2027 초) 다시 대조한다. 자영업(Worksheet B·Schedule SE)·자격 판정(qualifying child 관계·거주 테스트·tiebreaker·SSN)은 계산하지 않고 원문 안내만.",
   "sources": [
     {
@@ -34,7 +34,7 @@
       "label": "IRS Publication 596 (2025), Earned Income Credit (EIC) — For use in preparing 2025 Returns (Page Last Reviewed or Updated: 30-Apr-2026), Rule 3·6·11 and 2025 EIC Table",
       "url": "https://www.irs.gov/publications/p596",
       "checkedOn": "2026-10-22",
-      "quote": "Rule 11 — You must be at least age 25 but under age 65 at the end of 2025. If you are married filing a joint return, either you or your spouse … Age Test [qualifying child]: Under age 19 at the end of 2025 and younger than you …; Under age 24 … a full-time student …; or Any age and permanently and totally disabled. … EIC Table: Single, head of household, or qualifying surviving spouse★ … ★ Use this column if your filing status is married filing separately and you qualify to claim the EIC. … Example. If your filing status is single, you have one qualifying child, and the amount you are looking up from your EIC Worksheet is $2,455, you would enter $842."
+      "quote": "Rule 11 — You must be at least age 25 but under age 65 at the end of 2025. If you are married filing a joint return, either you or your spouse … Age Test [qualifying child]: Under age 19 at the end of 2025 and younger than you …; Under age 24 … a full-time student …; or Any age and permanently and totally disabled. … EIC Table: Single, head of household, or qualifying surviving spouse★ … ★ Use this column if your filing status is married filing separately and you qualify to claim the EIC. … Example. If your filing status is single, you have one qualifying child, and the amount you are looking up from your EIC Worksheet is $2,455, you would enter $842. … [68,650–68,700 행 각주] If the amount you are looking up from the worksheet is at least $68,650 but less than $68,675, and you have three qualifying children who have valid SSNs, your credit is $3. (같은 표 68,600–68,650 행 MFJ 3 children $11)"
     },
     {
       "label": "1040 (and 1040-SR) Instructions 2025 — Worksheet A—2025 EIC—Line 27a (Page Last Reviewed or Updated: 07-May-2026)",
@@ -109,15 +109,15 @@
   "tableMethod": {
     "status": "원문 문장 아님 — 2025 EIC Table(Pub 596 (2025))을 재현해 찾은 산식, 2026-10-22 스크립트로 대조",
     "rule": "구간은 $50 폭($1–$50, $50–$100, …; 소득 0 이면 credit 0). 그 구간의 중간값 m 으로 계산하고 원 단위 반올림(0.5 는 올림 — 34% × 25 = 8.5 → 9). 증가 구간: 구간 윗끝 ≤ earnedIncomeAmount 이면 round(credit% × m), 아니면 maxCredit. 감소 구간: 구간 아랫끝 ≥ thresholdPhaseout 이면 min(위 값, max(0, round(maxCredit − phaseout% × (m − threshold)))). completedPhaseout 에 걸린 마지막 짧은 구간(예 $57,300–$57,310)은 그 짧은 구간의 중간값, completedPhaseout 이상은 credit 없음",
-    "evidence": "2025 표 본문 1,366행 × 8열 중 1,365행 일치 + 1행(61,550–61,600)은 각주 글이 섞인 파싱 문제라 눈으로 확인(single 0·1·2 열 0, 3 children 각주 $1). Pub 596 예시 single·1 child·$2,455 → $842(0.34 × 2,475 = 841.5 → 842) 재현. 마지막 짧은 구간 각주 8개 중 7개 재현(19,100–19,104 → $0 · 26,200–26,214 → $1 · 50,400–50,434 → $3 · 57,300–57,310 → $1 · 57,550–57,554 → $0 · 61,550–61,555 → $1 · 64,400–64,430 → $3)",
+    "evidence": "2025 표 본문 1,366행 × 8열 중 1,365행 일치 + 1행(61,550–61,600)은 각주 글이 섞인 파싱 문제라 눈으로 확인(single 0·1·2 열 0, 3 children 각주 $1). Pub 596 예시 single·1 child·$2,455 → $842(0.34 × 2,475 = 841.5 → 842) 재현. 마지막 짧은 구간 각주 8개 모두 재현(68,650–68,675 → $3 · 19,100–19,104 → $0 · 26,200–26,214 → $1 · 50,400–50,434 → $3 · 57,300–57,310 → $1 · 57,550–57,554 → $0 · 61,550–61,555 → $1 · 64,400–64,430 → $3). 지난 회차 notVerified 의 '$5' 는 뺄셈 실수(8,046 − 8,043.34 = 2.66 → $3, 4.66 아님) — 2026-10-22 Pub 596 (2025) 각주 원문을 다시 열어 $3 확인",
     "anchorTests": [
       { "year": 2025, "status": "other", "children": 1, "lookup": 2455, "credit": 842, "source": "Pub 596 (2025) EIC Table example" },
       { "year": 2025, "status": "other", "children": 1, "lookup": 24575, "credit": 4132, "source": "Pub 596 (2025) EIC Table row 24,550–24,600" },
       { "year": 2025, "status": "mfj", "children": 0, "lookup": 24575, "credit": 125, "source": "Pub 596 (2025) EIC Table row 24,550–24,600" },
-      { "year": 2025, "status": "other", "children": 2, "lookup": 57305, "credit": 1, "source": "Pub 596 (2025) EIC Table footnote 57,300–57,310" }
+      { "year": 2025, "status": "other", "children": 2, "lookup": 57305, "credit": 1, "source": "Pub 596 (2025) EIC Table footnote 57,300–57,310" },
+      { "year": 2025, "status": "mfj", "children": 3, "lookup": 68662.5, "credit": 3, "source": "Pub 596 (2025) EIC Table footnote 68,650–68,675" },
+      { "year": 2025, "status": "mfj", "children": 3, "lookup": 68625, "credit": 11, "source": "Pub 596 (2025) EIC Table row 68,600–68,650" }
     ]
   },
-  "notVerified": [
-    "2025 EIC Table 각주 '68,650 이상 68,675 미만, 자녀 3명(MFJ) → $3' 이 tableMethod 로는 $5(중간값 68,662.5: 8,046 − 0.2106 × (68,662.5 − 30,470) = 8,046 − 8,043.34 = 4.66 → 5)로 재현되지 않음 — 마지막 짧은 구간의 IRS 규칙을 원문에서 못 찾음. 페이지 회차 전에 Pub 596·i1040gi 표 이미지·IRS 설명을 다시 보거나, 마지막 짧은 구간만 '표를 보라' 고지로 처리할지 정한다"
-  ]
+  "notVerified": []
 }
