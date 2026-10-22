@@ -62,4 +62,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-sg/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "Debt Payoff Calculator",
+    blurb: "Up to five debts in Singapore dollars with one monthly budget: avalanche vs snowball or your own order, the debt-free month and total interest",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

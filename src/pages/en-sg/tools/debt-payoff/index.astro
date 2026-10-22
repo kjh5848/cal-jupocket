@@ -1,0 +1,233 @@
+---
+/**
+ * Debt payoff calculator — 싱가포르판 도구. 한국어판 /tools/debt-payoff/ 와 계산(lib/debt-payoff.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/debt-payoff.ts 의 EN 사전, 통화는 판의 SGD·en-SG), 문장은 싱가포르 영어로 새로 썼다(번역 아님).
+ * 산술 투영이라 rates 와 상관없다(조사표 싱가포르 칸 '같음').
+ *
+ * lib 은 정수 단위로 이자를 버림한다 — 한국어판은 원, 여기는 센트(입력 × 100, 표시 ÷ 100). 아래 예시도 같은 단위로 계산해
+ * 정적 HTML 과 스크립트의 첫 계산이 맞는다.
+ * 싱가포르 카드·대출의 실제 이자율·최소 결제액 규칙·일할 이자는 허용 출처(IRAS·MOM·CPF·SSO)에서 확인하지 않아 쓰지 않는다 —
+ * 예시 이자율은 사용자가 바꿔 넣는 가정이다.
+ *
+ * 소제목은 싱가포르 구글 자동완성에서 왔다(keywords/sg-debt-payoff-2026-10-23.csv, hl en · gl sg):
+ *   debt payoff calculator with extra payments · credit card / debt avalanche vs snowball · avalanche method meaning ·
+ *   debt snowball calculator excel · spreadsheet / how to pay off credit card debt singapore · how to clear debt singapore
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { payoffPlan, type Debt } from "../../../../lib/debt-payoff";
+import "../../../../styles/global.css";
+
+const title = "Debt Payoff Calculator Singapore (SGD) — Avalanche vs Snowball, Extra Payments";
+const description =
+  "Singapore debt payoff calculator in SGD: list up to five debts, set a monthly budget and compare avalanche, snowball or your own order — debt-free month and total interest.";
+
+const C = 100; // 센트
+const sample: Debt[] = [
+  { name: "Credit card", balance: 3_000 * C, ratePct: 24, minPayment: 100 * C, priority: 2 },
+  { name: "Personal loan", balance: 8_000 * C, ratePct: 7, minPayment: 250 * C, priority: 1 },
+  { name: "Instalment plan", balance: 1_200 * C, ratePct: 4, minPayment: 50 * C, priority: 3 },
+];
+const extraCents = 200 * C;
+const ex = payoffPlan({ debts: sample, strategy: "avalanche", extra: extraCents, extraGrowthPct: 0 });
+const snow = payoffPlan({ debts: sample, strategy: "snowball", extra: extraCents, extraGrowthPct: 0 });
+const none = payoffPlan({ debts: sample, strategy: "avalanche", extra: 0, extraGrowthPct: 0 });
+if (!ex.ok || !snow.ok || !none.ok) throw new Error("debt-payoff en-sg 예시가 계산되지 않음");
+const rows = [0, 1, 2, 3, 4].map((i) => sample[i] ?? null);
+const sgd = (cents: number) =>
+  (cents / C).toLocaleString("en-SG", { style: "currency", currency: "SGD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const plain = (cents: number) => (cents / C).toLocaleString("en-SG");
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+const spell = (m: number) => [Math.floor(m / 12) ? plural(Math.floor(m / 12), "year") : "", m % 12 ? plural(m % 12, "month") : ""].filter(Boolean).join(" ") || "0 months";
+const gap = snow.totalInterest - ex.totalInterest;
+const firstCardInterest = Math.floor((sample[0].balance * sample[0].ratePct) / 100 / 12);
+---
+
+<html lang="en-SG">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Debt Payoff Calculator (SGD)</h1>
+      <p>
+        Juggling a credit card, a personal loan and an instalment plan? Key in each debt's balance, interest rate per year and
+        minimum monthly payment, then add whatever extra you can pay on top. The calculator shows the month you become debt-free
+        and the total interest, and compares paying the highest rate first (avalanche) with the smallest balance first (snowball).
+        When one debt is cleared, the money you were paying on it rolls over to the next, so your monthly budget stays the same.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="dp-debts">
+          {rows.map((d, i) => (
+            <fieldset class="dp-debt" data-row={i + 1}>
+              <legend>Debt {i + 1}{i >= 3 ? " (optional)" : ""}</legend>
+              <div class="calc-input-wrap">
+                <label for={`dp-name-${i + 1}`}>Name</label>
+                <input type="text" id={`dp-name-${i + 1}`} value={d?.name ?? ""} placeholder={`Debt ${i + 1}`} maxlength="20" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-bal-${i + 1}`}>Balance owed ($)</label>
+                <input type="text" inputmode="decimal" id={`dp-bal-${i + 1}`} value={d ? plain(d.balance) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-rate-${i + 1}`}>Interest rate per year</label>
+                <input type="number" id={`dp-rate-${i + 1}`} value={d ? d.ratePct : ""} min="0" max="100" step="0.1" inputmode="decimal" />
+                <span class="unit">%</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-min-${i + 1}`}>Minimum monthly payment ($)</label>
+                <input type="text" inputmode="decimal" id={`dp-min-${i + 1}`} value={d ? plain(d.minPayment) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap dp-prio">
+                <label for={`dp-prio-${i + 1}`}>Your order</label>
+                <select id={`dp-prio-${i + 1}`}>
+                  {[1, 2, 3, 4, 5].map((n) => <option value={n} selected={(d?.priority ?? i + 1) === n}>{["1st", "2nd", "3rd", "4th", "5th"][n - 1]}</option>)}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="dp-strategy">Which debt first</label>
+          <select id="dp-strategy" data-seg>
+            <option value="avalanche" selected>Highest rate first (avalanche)</option>
+            <option value="snowball">Smallest balance first (snowball)</option>
+            <option value="custom">My own order</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-extra">Extra payment each month ($)</label>
+          <input type="text" inputmode="decimal" id="dp-extra" value="200" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-growth">Raise the extra payment every year by</label>
+          <input type="number" id="dp-growth" value="0" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="dp-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="dp-debt|dp-int" data-bar-labels="Principal|Interest" data-dock="dp-hero">
+          <p class="label">Debt-free in</p>
+          <p class="big" id="dp-hero">{spell(ex.months)}</p>
+          <p class="meta" id="dp-note">{ex.months} months · first-month budget {sgd(ex.startBudget)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total debt</span><span class="value" id="dp-debt">{sgd(ex.totalDebt)}</span></div>
+          <div class="stat-chip"><span class="label">Total interest</span><span class="value" id="dp-int">{sgd(ex.totalInterest)}</span></div>
+          <div class="stat-chip"><span class="label">Total paid</span><span class="value" id="dp-paid">{sgd(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">Avalanche vs snowball interest</span><span class="value" id="dp-vs">Avalanche pays {sgd(gap)} less</span></div>
+          <div class="stat-chip"><span class="label">Interest saved by paying extra</span><span class="value" id="dp-saved">{sgd(none.totalInterest - ex.totalInterest)}</span></div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Order</th><th>Debt</th><th>Cleared in</th><th>Interest paid</th></tr></thead>
+            <tbody id="dp-order">
+              {[...ex.debts].sort((a, b) => a.order - b.order).map((d) => <tr><th scope="row">{d.order}</th><td>{d.name}</td><td>month {d.payoffMonth}</td><td>{sgd(d.interest)}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Month by month: payment, principal, interest and balance left</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Month</th><th>Paid</th><th>Principal</th><th>Interest</th><th>Balance left</th></tr></thead>
+              <tbody id="dp-rows">
+                {ex.rows.map((r) => <tr><th scope="row">month {r.month}</th><td>{sgd(r.payment)}</td><td>{sgd(r.principal)}</td><td>{sgd(r.interest)}</td><td>{sgd(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as PNG</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How the calculator works</h2>
+      <ul>
+        <li><strong>Monthly budget</strong> — all the minimum payments added up, plus your extra payment. The budget does not drop when a debt is cleared; that debt's payment moves on to the next one.</li>
+        <li><strong>Interest</strong> — each month, balance × rate per year ÷ 12, rounded down to the cent.</li>
+        <li><strong>Each month</strong> — interest is added, every debt gets its minimum payment, and what is left goes to the target debt. If the target is cleared that month with money to spare, the rest goes to the next target in the same month.</li>
+        <li><strong>Target order</strong> — avalanche: highest rate first (smaller balance breaks a tie); snowball: smallest starting balance first (higher rate breaks a tie); your own order: the numbers you pick. The order is fixed from what you first key in.</li>
+        <li><strong>Raising the extra</strong> — only the extra payment goes up every 12 months by the percentage you set; minimum payments stay as they are.</li>
+      </ul>
+
+      <h2>Debt payoff with extra payments: the example above</h2>
+      <p>
+        The sample has three debts adding up to {sgd(ex.totalDebt)}: a credit card balance of {sgd(sample[0].balance)} at {sample[0].ratePct}%,
+        a personal loan of {sgd(sample[1].balance)} at {sample[1].ratePct}% and an instalment plan of {sgd(sample[2].balance)} at {sample[2].ratePct}%.
+        These rates are assumptions for the example — key in the rates on your own statements. Paying only the minimums clears
+        everything in {spell(none.months)} with {sgd(none.totalInterest)} of interest. Adding {sgd(extraCents)} a month with the avalanche order
+        cuts that to {spell(ex.months)} and {sgd(ex.totalInterest)} — {sgd(none.totalInterest - ex.totalInterest)} less interest.
+      </p>
+
+      <h2>Debt avalanche vs snowball</h2>
+      <p>
+        The avalanche method sends every spare dollar to the debt with the highest interest rate, so the most expensive balance
+        shrinks first. For the same budget it usually costs less interest than the snowball, and almost never more. The snowball method clears the smallest
+        balance first, so you have fewer bills to track sooner. In the example the snowball costs {sgd(gap)} more interest
+        ({sgd(snow.totalInterest)} against {sgd(ex.totalInterest)}). When the gap is small, pick the order you are more likely to stick to.
+      </p>
+
+      <h2>Doing it in Excel or Google Sheets</h2>
+      <p>
+        A debt snowball spreadsheet follows the same steps as this page: one row per month, and for each debt a column for the
+        opening balance, interest (<code>=ROUNDDOWN(balance*rate/12, 2)</code>), the payment and the closing balance. The payment for
+        the target debt is the monthly budget minus the other debts' minimums. This calculator does that bookkeeping for up to five
+        debts and shows the month-by-month table above.
+      </p>
+
+      <details>
+        <summary>It says my minimum payment is not more than the interest</summary>
+        <p>
+          Then that debt never gets smaller on its minimum payment alone. For example, {sgd(sample[0].balance)} at {sample[0].ratePct}% a year
+          builds up {sgd(firstCardInterest)} of interest in the first month, so the minimum has to be more than that. If your card's
+          minimum changes with the balance, key in this month's amount from your statement and treat the result as a rough guide.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why is my bank's figure different?</summary>
+        <p>
+          Lenders and card issuers can charge interest by the day, add fees and late charges, change rates, or charge for paying a
+          loan off early. This calculator assumes the same monthly rate throughout, which makes it a planning estimate rather than
+          a quote. Check the terms of each loan or card with the bank before you rely on a date.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I key in cents?</summary>
+        <p>
+          Yes — amounts are read to the cent (for example 1,250.50), and interest is rounded down to the cent each month.
+        </p>
+      </details>
+
+      <AdSlot label="debt-payoff-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .dp-debts { display: grid; gap: 0.75rem; }
+      .dp-debt { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.5rem 0.75rem 0.75rem; margin: 0; min-width: 0; }
+      .dp-debt legend { font-weight: 600; padding: 0 0.25rem; }
+      .dp-prio[hidden] { display: none; }
+    </style>
+    <script src="../../../../scripts/debt-payoff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
