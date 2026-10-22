@@ -1,0 +1,233 @@
+---
+/**
+ * Kalkulator Pelunasan Hutang — 인도네시아어판 도구. 한국어판 /tools/debt-payoff/ 와 계산(lib/debt-payoff.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/debt-payoff.ts 의 ID 사전, 통화는 판의 IDR·id-ID), 문장은 인도네시아어로 새로 썼다(번역 아님).
+ * 산술 투영이라 rates 와 상관없다(조사표 인도네시아 칸 '같음').
+ *
+ * lib 은 정수 단위로 이자를 버림한다 — 한국어판처럼 루피아 정수(센트 없음). 아래 예시도 같은 단위로 계산해
+ * 정적 HTML 과 스크립트의 첫 계산이 맞는다.
+ * 인도네시아 카드·대출·pinjol 의 실제 이자율·최소 결제액 규칙·일할 이자는 허용 출처(pajak.go.id 등)에 없어 쓰지 않는다 —
+ * 예시 이자율은 사용자가 바꿔 넣는 가정이다.
+ *
+ * 소제목은 인도네시아 구글 자동완성에서 왔다(keywords/id-debt-payoff-2026-10-23.csv, hl id · gl id):
+ *   cara melunasi hutang yang menumpuk · dengan cepat / kalkulator pelunasan dipercepat · sebagian /
+ *   metode snowball dalam melunasi hutang · metode debt snowball · metode avalanche hutang / cara melunasi hutang 50 juta
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { payoffPlan, type Debt } from "../../../../lib/debt-payoff";
+import "../../../../styles/global.css";
+
+const title = "Kalkulator Pelunasan Hutang — Metode Snowball vs Avalanche, Pelunasan Dipercepat";
+const description =
+  "Susun rencana melunasi hutang yang menumpuk dalam rupiah: sampai lima utang, satu anggaran bulanan, metode snowball atau avalanche — bulan lunas dan total bunga.";
+
+const sample: Debt[] = [
+  { name: "Kartu kredit", balance: 12_000_000, ratePct: 24, minPayment: 600_000, priority: 2 },
+  { name: "KTA", balance: 30_000_000, ratePct: 12, minPayment: 1_000_000, priority: 1 },
+  { name: "Paylater", balance: 3_000_000, ratePct: 18, minPayment: 300_000, priority: 3 },
+];
+const extra = 500_000;
+const ex = payoffPlan({ debts: sample, strategy: "avalanche", extra, extraGrowthPct: 0 });
+const snow = payoffPlan({ debts: sample, strategy: "snowball", extra, extraGrowthPct: 0 });
+const none = payoffPlan({ debts: sample, strategy: "avalanche", extra: 0, extraGrowthPct: 0 });
+if (!ex.ok || !snow.ok || !none.ok) throw new Error("debt-payoff id 예시가 계산되지 않음");
+const rows = [0, 1, 2, 3, 4].map((i) => sample[i] ?? null);
+const rp = (v: number) => v.toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const plain = (v: number) => v.toLocaleString("id-ID");
+const spell = (m: number) => [Math.floor(m / 12) ? `${Math.floor(m / 12)} tahun` : "", m % 12 ? `${m % 12} bulan` : ""].filter(Boolean).join(" ") || "0 bulan";
+const gap = snow.totalInterest - ex.totalInterest;
+const firstCardInterest = Math.floor((sample[0].balance * sample[0].ratePct) / 100 / 12);
+const snowFirst = [...snow.debts].sort((a, b) => a.order - b.order)[0];
+---
+
+<html lang="id-ID">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Kalkulator Pelunasan Hutang</h1>
+      <p>
+        Punya tagihan kartu kredit, KTA, dan paylater sekaligus? Isi sisa pokok, bunga per tahun, dan cicilan minimum setiap utang,
+        lalu tambahkan berapa yang sanggup Anda bayar di luar cicilan minimum. Kalkulator ini menunjukkan bulan semua utang lunas dan
+        total bunganya, sekaligus membandingkan dua urutan: bunga tertinggi dulu (avalanche) dan saldo terkecil dulu (snowball).
+        Begitu satu utang lunas, uang yang biasa dipakai untuk utang itu dialihkan ke utang berikutnya, jadi anggaran bulanan tetap.
+      </p>
+      <p class="meta">Nominal dalam rupiah bulat: ketik 12000000 atau 12.000.000, tanpa desimal.</p>
+
+      <div class="calc-card" data-two>
+        <div class="dp-debts">
+          {rows.map((d, i) => (
+            <fieldset class="dp-debt" data-row={i + 1}>
+              <legend>Utang {i + 1}{i >= 3 ? " (opsional)" : ""}</legend>
+              <div class="calc-input-wrap">
+                <label for={`dp-name-${i + 1}`}>Nama</label>
+                <input type="text" id={`dp-name-${i + 1}`} value={d?.name ?? ""} placeholder={`Utang ${i + 1}`} maxlength="20" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-bal-${i + 1}`}>Sisa pokok (Rp)</label>
+                <input type="text" inputmode="numeric" id={`dp-bal-${i + 1}`} value={d ? plain(d.balance) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-rate-${i + 1}`}>Bunga per tahun</label>
+                <input type="number" id={`dp-rate-${i + 1}`} value={d ? d.ratePct : ""} min="0" max="100" step="0.1" inputmode="decimal" />
+                <span class="unit">%</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-min-${i + 1}`}>Cicilan minimum per bulan (Rp)</label>
+                <input type="text" inputmode="numeric" id={`dp-min-${i + 1}`} value={d ? plain(d.minPayment) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap dp-prio">
+                <label for={`dp-prio-${i + 1}`}>Urutan pilihan Anda</label>
+                <select id={`dp-prio-${i + 1}`}>
+                  {[1, 2, 3, 4, 5].map((n) => <option value={n} selected={(d?.priority ?? i + 1) === n}>{`Ke-${n}`}</option>)}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="dp-strategy">Utang mana yang dilunasi dulu</label>
+          <select id="dp-strategy" data-seg>
+            <option value="avalanche" selected>Bunga tertinggi dulu (avalanche)</option>
+            <option value="snowball">Saldo terkecil dulu (snowball)</option>
+            <option value="custom">Urutan saya sendiri</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-extra">Pembayaran tambahan per bulan (Rp)</label>
+          <input type="text" inputmode="numeric" id="dp-extra" value={plain(extra)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-growth">Naikkan pembayaran tambahan setiap tahun sebesar</label>
+          <input type="number" id="dp-growth" value="0" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="dp-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="dp-debt|dp-int" data-bar-labels="Pokok|Bunga" data-dock="dp-hero">
+          <p class="label">Semua utang lunas dalam</p>
+          <p class="big" id="dp-hero">{spell(ex.months)}</p>
+          <p class="meta" id="dp-note">{ex.months} bulan · anggaran bulan pertama {rp(ex.startBudget)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total utang</span><span class="value" id="dp-debt">{rp(ex.totalDebt)}</span></div>
+          <div class="stat-chip"><span class="label">Total bunga</span><span class="value" id="dp-int">{rp(ex.totalInterest)}</span></div>
+          <div class="stat-chip"><span class="label">Total dibayar</span><span class="value" id="dp-paid">{rp(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">Bunga avalanche vs snowball</span><span class="value" id="dp-vs">Avalanche lebih hemat {rp(gap)}</span></div>
+          <div class="stat-chip"><span class="label">Bunga yang dihemat dengan pembayaran tambahan</span><span class="value" id="dp-saved">{rp(none.totalInterest - ex.totalInterest)}</span></div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Urutan</th><th>Utang</th><th>Lunas pada</th><th>Bunga dibayar</th></tr></thead>
+            <tbody id="dp-order">
+              {[...ex.debts].sort((a, b) => a.order - b.order).map((d) => <tr><th scope="row">{d.order}</th><td>{d.name}</td><td>bulan ke-{d.payoffMonth}</td><td>{rp(d.interest)}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Rincian per bulan: pembayaran, pokok, bunga, dan sisa utang</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Bulan</th><th>Dibayar</th><th>Pokok</th><th>Bunga</th><th>Sisa utang</th></tr></thead>
+              <tbody id="dp-rows">
+                {ex.rows.map((r) => <tr><th scope="row">bulan ke-{r.month}</th><td>{rp(r.payment)}</td><td>{rp(r.principal)}</td><td>{rp(r.interest)}</td><td>{rp(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Simpan sebagai PNG</button>
+          <button id="btn-share" type="button" class="secondary">Bagikan</button>
+        </div>
+      </div>
+
+      <h2>Cara kerja kalkulator ini</h2>
+      <ul>
+        <li><strong>Anggaran bulanan</strong> — jumlah semua cicilan minimum ditambah pembayaran tambahan. Anggaran ini tidak turun saat satu utang lunas; cicilan utang yang sudah lunas pindah ke utang berikutnya.</li>
+        <li><strong>Bunga</strong> — setiap bulan, sisa pokok × bunga per tahun ÷ 12, dibulatkan ke bawah ke rupiah penuh.</li>
+        <li><strong>Setiap bulan</strong> — bunga ditambahkan, setiap utang dibayar cicilan minimumnya, dan sisa anggaran masuk ke utang sasaran. Kalau utang sasaran lunas di bulan itu dan masih ada sisa uang, sisanya langsung masuk ke sasaran berikutnya di bulan yang sama.</li>
+        <li><strong>Urutan sasaran</strong> — avalanche: bunga tertinggi dulu (kalau sama, saldo lebih kecil dulu); snowball: saldo awal terkecil dulu (kalau sama, bunga lebih tinggi dulu); urutan sendiri: angka yang Anda pilih. Urutan ditetapkan dari angka yang pertama kali Anda isi.</li>
+        <li><strong>Menaikkan pembayaran tambahan</strong> — hanya pembayaran tambahan yang naik setiap 12 bulan sebesar persentase yang Anda isi; cicilan minimum tetap.</li>
+      </ul>
+
+      <h2>Cara melunasi hutang yang menumpuk: contoh di atas</h2>
+      <p>
+        Contoh ini berisi tiga utang dengan total {rp(ex.totalDebt)}: tagihan kartu kredit {rp(sample[0].balance)} dengan bunga {sample[0].ratePct}% per tahun,
+        KTA {rp(sample[1].balance)} dengan bunga {sample[1].ratePct}%, dan paylater {rp(sample[2].balance)} dengan bunga {sample[2].ratePct}%.
+        Angka bunga ini hanya asumsi untuk contoh — isi dengan angka di tagihan dan perjanjian kredit Anda sendiri. Jika hanya membayar
+        cicilan minimum, semuanya lunas dalam {spell(none.months)} dengan total bunga {rp(none.totalInterest)}.
+      </p>
+
+      <h2>Kalkulator pelunasan dipercepat: efek pembayaran tambahan</h2>
+      <p>
+        Dengan tambahan {rp(extra)} per bulan dan urutan avalanche, waktu lunas menjadi {spell(ex.months)} dan total bunga {rp(ex.totalInterest)} —
+        hemat {rp(none.totalInterest - ex.totalInterest)} dan {none.months - ex.months} bulan lebih cepat. Pembayaran tambahan selalu masuk ke pokok
+        utang sasaran, jadi bunga bulan berikutnya ikut mengecil. Kalau penghasilan Anda naik setiap tahun, isi kolom kenaikan untuk melihat
+        seberapa cepat utang lunas bila tambahannya ikut naik.
+      </p>
+
+      <h2>Metode snowball vs avalanche dalam melunasi hutang</h2>
+      <p>
+        Metode avalanche mengarahkan setiap rupiah sisa ke utang dengan bunga tertinggi, sehingga utang yang paling mahal menyusut lebih dulu.
+        Dengan anggaran yang sama, cara ini biasanya membayar bunga lebih sedikit daripada snowball, dan hampir tidak pernah lebih banyak.
+        Metode debt snowball melunasi saldo terkecil lebih dulu — dalam contoh ini {snowFirst.name} lunas pada bulan ke-{snowFirst.payoffMonth} —
+        sehingga jumlah tagihan yang harus diingat cepat berkurang. Di contoh ini snowball membayar bunga {rp(gap)} lebih banyak
+        ({rp(snow.totalInterest)} dibanding {rp(ex.totalInterest)}). Kalau selisihnya kecil, pilih urutan yang paling mungkin Anda jalani sampai selesai.
+      </p>
+
+      <details>
+        <summary>Muncul pesan cicilan minimum tidak lebih besar dari bunga</summary>
+        <p>
+          Artinya utang itu tidak akan pernah berkurang kalau hanya dibayar cicilan minimum. Misalnya, {rp(sample[0].balance)} dengan bunga {sample[0].ratePct}%
+          per tahun menghasilkan bunga {rp(firstCardInterest)} di bulan pertama, jadi cicilan minimumnya harus lebih besar dari angka itu.
+          Kalau cicilan minimum kartu Anda berubah mengikuti saldo, isi angka dari tagihan bulan ini dan anggap hasilnya sebagai perkiraan.
+        </p>
+      </details>
+
+      <details>
+        <summary>Kenapa angkanya beda dengan hitungan bank atau aplikasi pinjaman?</summary>
+        <p>
+          Bank, penerbit kartu, dan penyedia pinjaman bisa menghitung bunga harian, menambahkan biaya administrasi dan denda keterlambatan,
+          mengubah suku bunga, atau mengenakan penalti pelunasan dipercepat. Kalkulator ini menganggap bunga bulanan tetap sepanjang waktu,
+          jadi hasilnya adalah perkiraan untuk perencanaan, bukan angka resmi dari pemberi pinjaman. Periksa ketentuan setiap utang
+          langsung ke pemberi pinjamannya sebelum mengandalkan tanggal lunas.
+        </p>
+      </details>
+
+      <details>
+        <summary>Bisakah memasukkan nominal dengan sen?</summary>
+        <p>
+          Tidak — kalkulator ini membaca rupiah bulat. Titik dan koma dianggap pemisah ribuan, dan bunga dibulatkan ke bawah ke rupiah penuh setiap bulan.
+        </p>
+      </details>
+
+      <AdSlot label="debt-payoff-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .dp-debts { display: grid; gap: 0.75rem; }
+      .dp-debt { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.5rem 0.75rem 0.75rem; margin: 0; min-width: 0; }
+      .dp-debt legend { font-weight: 600; padding: 0 0.25rem; }
+      .dp-prio[hidden] { display: none; }
+    </style>
+    <script src="../../../../scripts/debt-payoff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

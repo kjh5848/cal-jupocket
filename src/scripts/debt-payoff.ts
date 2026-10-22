@@ -7,6 +7,8 @@
  * 독일어판(/de/tools/debt-payoff/)은 DE 사전 — 같은 센트 단위, 표기는 lib/de/debt-payoff('1 234,56 Euro'·'November 2027', Intl 안 씀).
  * 스페인판(/es/tools/debt-payoff/)은 ES 사전 — 같은 센트 단위, 표기는 lib/es/debt-payoff('1234,56 euros'·'noviembre de 2027', Intl 안 씀).
  * 번체판(/zh-hk/tools/debt-payoff/)은 ZH_HANT 사전 — 읽기·금액·달은 EN 과 같은 센트 단위·판 Intl(zh-HK → 'HK$1,234.50'·'2027年11月'), 중립 서면어라 대만판도 쓸 수 있다.
+ * 인도네시아어판(/id/tools/debt-payoff/)은 ID 사전 — 루피아 정수 단위(한국어판처럼 parseAmount, 이자는 1 루피아 미만 버림),
+ * 표시는 판의 IDR·id-ID('Rp 50.000.000'), 달은 Intl id-ID('November 2027').
  */
 import { payoffPlan, monthLabel, spellMonths, type Debt, type Strategy } from "../lib/debt-payoff";
 import { formatWon, parseAmount } from "../lib/money";
@@ -181,7 +183,46 @@ const ES: typeof KO = {
   share: "Plan para pagar deudas - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, en: EN, de: DE, es: ES, "zh-Hant": ZH_HANT });
+/** Bahasa Indonesia — /id/tools/debt-payoff/. 루피아 정수 단위(센트 없음), 표시 'Rp 1.250.000' */
+const ID_META = EN_META;
+const ID: typeof KO = {
+  read: parseAmount,
+  money: (v) =>
+    v.toLocaleString(ID_META.numberLocale, { style: "currency", currency: ID_META.currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+  month: (y, m, n) => {
+    const t = y * 12 + (m - 1) + (n - 1);
+    return new Intl.DateTimeFormat(ID_META.numberLocale, { month: "long", year: "numeric", timeZone: "UTC" }).format(
+      new Date(Date.UTC(Math.floor(t / 12), t % 12, 1)),
+    );
+  },
+  spell: (months) => {
+    const y = Math.floor(months / 12);
+    const r = months % 12;
+    return [y ? `${y} tahun` : "", r ? `${r} bulan` : ""].filter(Boolean).join(" ") || "0 bulan";
+  },
+  debtName: (n) => `Utang ${n}`,
+  errEmpty: "Masukkan minimal satu utang yang masih punya sisa pokok.",
+  errMin: (name, first) =>
+    `${name}: cicilan minimum per bulan tidak lebih besar dari bunga bulan pertama sebesar ${first}, jadi sisa utang tidak pernah berkurang. Masukkan angka yang lebih besar.`,
+  errLong: "Utang ini tidak lunas dalam 50 tahun (600 bulan). Naikkan pembayaran per bulan.",
+  note: (end, months, budget) => `Lunas pada ${end} · ${months} bulan · anggaran bulan pertama ${budget}`,
+  vsSame: (monthGap) => `Bunga sama${monthGap ? ` · selisih ${Math.abs(monthGap)} bulan` : ""}`,
+  vs: (gap, less, monthGap) =>
+    `Avalanche ${less ? "lebih hemat" : "lebih mahal"} ${gap}${monthGap ? ` · ${Math.abs(monthGap)} bulan lebih ${monthGap > 0 ? "cepat" : "lambat"}` : ""}`,
+  saved: (amount, months) => `${amount} · ${months} bulan lebih cepat`,
+  savedNever: "Tanpa tambahan, tidak lunas dalam 50 tahun",
+  noExtra: "Tanpa pembayaran tambahan",
+  payoffAt: (end, m) => `${end} (bulan ke-${m})`,
+  lineDebt: "Total utang",
+  lineBudget: "Anggaran bulan pertama",
+  lineEnd: "Lunas pada",
+  lineEndValue: (end, spelled) => `${end} (${spelled})`,
+  lineInt: "Total bunga",
+  title: "Rencana pelunasan utang",
+  share: "Rencana pelunasan utang - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, en: EN, de: DE, es: ES, "zh-Hant": ZH_HANT, id: ID });
 
 const reportUse = trackCalculatorUse("debt-payoff");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;

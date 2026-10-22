@@ -62,4 +62,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/id/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "Kalkulator Pelunasan Hutang",
+    blurb: "Sampai lima utang dalam rupiah dengan satu anggaran bulanan: metode avalanche vs snowball atau urutan sendiri, bulan lunas dan total bunga",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];
