@@ -1,0 +1,251 @@
+---
+/**
+ * Debt repayment calculator — 호주판. 한국어판 /tools/debt-payoff/ 와 계산(lib/debt-payoff.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/debt-payoff.ts 의 EN 사전, 통화는 판의 AUD, 금액은 센트로 셈), 문장은 호주 영어로 새로 썼다(번역 아님).
+ * 산술 투영이라 rates 와 상관없다(조사표 호주 칸 '같음').
+ *
+ * 소제목은 호주 구글 자동완성에서 왔다(keywords/au-debt-payoff-2026-10-23.csv, hl en · gl au):
+ *   debt repayment calculator multiple cards · with extra payments / credit card repayment calculator australia /
+ *   debt avalanche vs snowball (calculator) / credit card payoff calculator month by month · with amortization schedule /
+ *   debt payoff calculator excel · spreadsheet
+ * 호주 쪽 사실은 Moneysmart(ASIC) 원문에서 확인한 것만(확인 2026-10-23):
+ *   빚을 하나씩 — 모두 최소 상환, 남는 돈은 비용(수수료·이자율)이 가장 큰 빚에, 이 방법이 이자를 더 아낌
+ *   (https://moneysmart.gov.au/managing-debt/get-debt-under-control, Last updated 31 August 2026) ·
+ *   카드 여러 장이면 가장 작은 빚부터(동기) 또는 이자율 가장 높은 카드부터
+ *   (https://moneysmart.gov.au/credit-cards/pay-off-your-credit-card, Last updated 28 July 2026).
+ * 호주 대출·카드가 실제로 이자를 매기는 방식(일할 등)은 조사표에서 미확인이라 사실로 적지 않는다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 payoffPlan() 으로 계산한다(센트 단위로 넘기고 ÷ 100).
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { payoffPlan, type Debt } from "../../../../lib/debt-payoff";
+import "../../../../styles/global.css";
+
+const title = "Debt Repayment Calculator Australia — Snowball vs Avalanche, Extra Payments";
+const description =
+  "Australian debt repayment calculator for several cards and loans: avalanche vs snowball, extra repayments, your debt-free month and total interest.";
+
+/** 예시 빚 — 금액은 센트 */
+const sample: Debt[] = [
+  { name: "Credit card", balance: 450_000, ratePct: 19.99, minPayment: 13_500, priority: 1 },
+  { name: "Car loan", balance: 1_200_000, ratePct: 8.5, minPayment: 29_000, priority: 2 },
+  { name: "Personal loan", balance: 300_000, ratePct: 12, minPayment: 11_000, priority: 3 },
+];
+const EXTRA = 25_000;
+const ex = payoffPlan({ debts: sample, strategy: "avalanche", extra: EXTRA, extraGrowthPct: 0 });
+const snow = payoffPlan({ debts: sample, strategy: "snowball", extra: EXTRA, extraGrowthPct: 0 });
+const minOnly = payoffPlan({ debts: sample, strategy: "avalanche", extra: 0, extraGrowthPct: 0 });
+if (!ex.ok || !snow.ok || !minOnly.ok) throw new Error("en-au debt-payoff 예시가 계산되지 않음");
+const rows = [0, 1, 2, 3, 4].map((i) => sample[i] ?? null);
+const aud = (cents: number) =>
+  (cents / 100).toLocaleString("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const input = (cents: number) =>
+  (cents / 100).toLocaleString("en-AU", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+const spell = (m: number) =>
+  [Math.floor(m / 12) ? plural(Math.floor(m / 12), "year") : "", m % 12 ? plural(m % 12, "month") : ""].filter(Boolean).join(" ") || "0 months";
+const gap = snow.totalInterest - ex.totalInterest;
+const firstOf = (r: typeof ex) => [...r.debts].sort((a, b) => a.order - b.order)[0].name;
+---
+
+<html lang="en-AU">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Debt Repayment Calculator</h1>
+      <p>
+        Got a few credit cards and loans on the go? List each one with its balance, interest rate p.a. and minimum
+        repayment, then add whatever extra you can put towards debt each month. The calculator shows which debt to clear
+        first, the month you become debt-free and how much interest you pay along the way. When one debt is paid off, the
+        money you were paying on it rolls over to the next one, so your monthly budget stays the same.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="dp-debts">
+          {rows.map((d, i) => (
+            <fieldset class="dp-debt" data-row={i + 1}>
+              <legend>Debt {i + 1}{i >= 3 ? " (optional)" : ""}</legend>
+              <div class="calc-input-wrap">
+                <label for={`dp-name-${i + 1}`}>Name</label>
+                <input type="text" id={`dp-name-${i + 1}`} value={d?.name ?? ""} placeholder={`Debt ${i + 1}`} maxlength="20" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-bal-${i + 1}`}>Balance owing ($)</label>
+                <input type="text" inputmode="decimal" id={`dp-bal-${i + 1}`} value={d ? input(d.balance) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-rate-${i + 1}`}>Interest rate p.a.</label>
+                <input type="number" id={`dp-rate-${i + 1}`} value={d ? d.ratePct : ""} min="0" max="100" step="0.01" inputmode="decimal" />
+                <span class="unit">%</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-min-${i + 1}`}>Minimum monthly repayment ($)</label>
+                <input type="text" inputmode="decimal" id={`dp-min-${i + 1}`} value={d ? input(d.minPayment) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap dp-prio">
+                <label for={`dp-prio-${i + 1}`}>Your order</label>
+                <select id={`dp-prio-${i + 1}`}>
+                  {[1, 2, 3, 4, 5].map((n) => <option value={n} selected={(d?.priority ?? i + 1) === n}>{["1st", "2nd", "3rd", "4th", "5th"][n - 1]}</option>)}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="dp-strategy">Repayment order</label>
+          <select id="dp-strategy" data-seg>
+            <option value="avalanche" selected>Highest interest first (avalanche)</option>
+            <option value="snowball">Smallest balance first (snowball)</option>
+            <option value="custom">My own order</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-extra">Extra repayment each month ($)</label>
+          <input type="text" inputmode="decimal" id="dp-extra" value={input(EXTRA)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-growth">Increase the extra each year by</label>
+          <input type="number" id="dp-growth" value="0" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="dp-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="dp-debt|dp-int" data-bar-labels="Principal|Interest" data-dock="dp-hero">
+          <p class="label">Time until debt-free</p>
+          <p class="big" id="dp-hero">{spell(ex.months)}</p>
+          <p class="meta" id="dp-note">{plural(ex.months, "month")} · first-month budget {aud(ex.startBudget)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total debt</span><span class="value" id="dp-debt">{aud(ex.totalDebt)}</span></div>
+          <div class="stat-chip"><span class="label">Total interest</span><span class="value" id="dp-int">{aud(ex.totalInterest)}</span></div>
+          <div class="stat-chip"><span class="label">Total repaid</span><span class="value" id="dp-paid">{aud(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">Avalanche vs snowball interest</span><span class="value" id="dp-vs">Avalanche pays {aud(gap)} less</span></div>
+          <div class="stat-chip"><span class="label">Interest saved by paying extra</span><span class="value" id="dp-saved">{aud(minOnly.totalInterest - ex.totalInterest)}</span></div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Order</th><th>Debt</th><th>Paid off</th><th>Interest paid</th></tr></thead>
+            <tbody id="dp-order">
+              {[...ex.debts].sort((a, b) => a.order - b.order).map((d) => <tr><th scope="row">{d.order}</th><td>{d.name}</td><td>month {d.payoffMonth}</td><td>{aud(d.interest)}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Month-by-month schedule: repayment, principal, interest, balance</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Month</th><th>Repaid</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead>
+              <tbody id="dp-rows">
+                {ex.rows.map((r) => <tr><th scope="row">Month {r.month}</th><td>{aud(r.payment)}</td><td>{aud(r.principal)}</td><td>{aud(r.interest)}</td><td>{aud(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as PNG</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Debt avalanche vs debt snowball</h2>
+      <p>
+        Both methods pay the minimum on every debt and put all the spare money on one target debt at a time. The only
+        difference is the order:
+      </p>
+      <ul>
+        <li><strong>Avalanche</strong> — the debt with the highest interest rate goes first. Moneysmart describes this as putting extra money towards the debt with the highest costs and notes that it saves more on interest over time.</li>
+        <li><strong>Snowball</strong> — the smallest balance goes first. Moneysmart's credit card guide suggests this when clearing a small card quickly helps keep you motivated.</li>
+      </ul>
+      <p>
+        In the example above ({sample.map((d) => d.name).join(", ")} with {aud(EXTRA)} extra a month), avalanche starts
+        with the {firstOf(ex).toLowerCase()} and pays {aud(ex.totalInterest)} in interest over {spell(ex.months)}. Snowball
+        starts with the {firstOf(snow).toLowerCase()} and pays {aud(snow.totalInterest)} over {spell(snow.months)} — avalanche
+        is {aud(gap)} cheaper here. With the same budget, avalanche usually pays the same or less interest, because the
+        most expensive balance shrinks first. If the gap is small for your debts, pick the order you are more likely to stick with.
+      </p>
+
+      <h2>Paying off multiple credit cards</h2>
+      <p>
+        Enter each card as its own debt, using the minimum repayment from your latest statement. If you have more than five
+        debts, combine the smallest ones or run the calculator twice. To see a single card on its own, leave the other rows
+        blank — rows with a zero balance are ignored.
+      </p>
+
+      <h2>How much extra repayments save</h2>
+      <p>
+        Paying only the minimums on the example debts takes {spell(minOnly.months)} and costs {aud(minOnly.totalInterest)} in
+        interest. Adding {aud(EXTRA)} a month cuts that to {spell(ex.months)} and {aud(ex.totalInterest)} — a saving of
+        {" "}{aud(minOnly.totalInterest - ex.totalInterest)}. The "Increase the extra each year" box grows only the extra amount
+        every 12 months (for example after a pay rise); minimum repayments stay as entered.
+      </p>
+
+      <h2>How it's calculated</h2>
+      <ul>
+        <li><strong>Monthly budget</strong> — all minimum repayments added together, plus the extra. When a debt is cleared the budget does not shrink; that debt's repayment moves to the next target.</li>
+        <li><strong>Interest</strong> — each month, balance × interest rate p.a. ÷ 12, rounded down to the cent.</li>
+        <li><strong>Each month</strong> — interest is added, every debt gets its minimum repayment, then the rest goes to the current target. If the target is cleared part-way through the month, the leftover goes to the next target in the same month.</li>
+        <li><strong>Order</strong> — avalanche sorts by highest rate (ties: smaller balance first), snowball by smallest starting balance (ties: higher rate first), and "My own order" uses the numbers you choose. The order is set once from what you enter.</li>
+      </ul>
+      <p>
+        The same steps work in Excel or Google Sheets: one column per debt, a row per month, interest as
+        <code>=balance*rate/12</code>, and the leftover budget added to the target column. The month-by-month table above
+        gives you totals to check a spreadsheet against.
+      </p>
+
+      <details>
+        <summary>It says my minimum repayment is lower than the interest</summary>
+        <p>
+          That debt never gets smaller on its minimum repayment alone. Enter an amount above the first month's interest
+          (balance × rate ÷ 12). If your minimum changes with the balance, use this month's figure and treat the result as
+          an estimate.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why is this different from my statement?</summary>
+        <p>
+          This is a planning estimate that charges the same rate every month. Your lender's statement can differ because of
+          how and when it calculates interest, fees, rate changes, promotional or balance transfer rates and payment dates.
+          Check your contract or ask your lender for the exact figures.
+        </p>
+      </details>
+
+      <h2>Sources</h2>
+      <ul>
+        <li><a href="https://moneysmart.gov.au/managing-debt/get-debt-under-control" rel="noopener">Moneysmart — Get debt under control</a> (last updated 31 August 2026, checked 23 October 2026)</li>
+        <li><a href="https://moneysmart.gov.au/credit-cards/pay-off-your-credit-card" rel="noopener">Moneysmart — Pay off your credit card</a> (last updated 28 July 2026, checked 23 October 2026)</li>
+      </ul>
+      <p>
+        Related: <a href="/en-au/tools/compound/">compound interest calculator</a> for growing savings once the debts are gone.
+      </p>
+
+      <AdSlot label="debt-payoff-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .dp-debts { display: grid; gap: 0.75rem; }
+      .dp-debt { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.5rem 0.75rem 0.75rem; margin: 0; min-width: 0; }
+      .dp-debt legend { font-weight: 600; padding: 0 0.25rem; }
+      .dp-prio[hidden] { display: none; }
+    </style>
+    <script src="../../../../scripts/debt-payoff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

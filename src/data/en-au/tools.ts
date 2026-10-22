@@ -62,4 +62,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-au/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "Debt Repayment Calculator",
+    blurb: "Several credit cards and loans at once: debt avalanche vs snowball or your own order, extra repayments, the month you're debt-free and total interest",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];
