@@ -94,4 +94,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/en-gb/council-tax/",
+    name: "Council Tax calculator",
+    blurb: "Council Tax in England for bands A to H from your council's Band D charge, the 25% single person discount and 10 or 12 monthly instalments",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];

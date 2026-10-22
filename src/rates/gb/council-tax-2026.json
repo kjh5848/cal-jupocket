@@ -1,14 +1,17 @@
 {
   "country": "GB",
-  "draft": true,
-  "note": "조사표 주택 재산세(/property-tax/) 행의 영국 칸 — Council Tax. 한국 재산세(공시가격 × 비율 × 세율)와 달리 집값에 세율을 곱하지 않는다: 집의 평가 구간(band, 잉글랜드 1991-04-01 시가·웨일스 2003-04-01 시가)을 Valuation Office 가 정하고, 금액은 그 지역 의회(billing authority)가 해마다 정한다. 그래서 전국 공통 £ 금액은 없다 — 이 초안에 Band D 금액을 넣지 않는다. 다음 회차 페이지의 입력 계약: 사용자가 고지서(또는 의회 사이트)의 Band D 금액(또는 자기 band 금액)을 넣고, band 금액 = Band D × 비율 ÷ 9(잉글랜드 비율 6:7:8:9:11:13:15:18, D = 9 기준), 할인 = 25%(성인 1명) 또는 50%(모두 disregarded), 연액을 분할 횟수(보통 10, 신청하면 12)로 나눈다(1파운드 단위 반올림, 나머지는 첫 회). 기간은 과세연도(4/6~4/5)가 아니라 회계연도(financial year, 4/1~3/31) — 2026-27 은 2026-04-01 부터. 범위는 잉글랜드(전부 원문 확인)·웨일스(비율·구간만 확인, 할인율은 미확인). 스코틀랜드는 같은 법 다른 Part 이고 비율이 order 로 바뀌어 이번에 읽지 않음 — 범위 밖. 북아일랜드는 GOV.UK Council Tax 안내가 잉글랜드·웨일스·스코틀랜드만 말해 범위 밖(무엇으로 대신하는지는 허용 출처에서 안 읽었으므로 페이지에 적지 않음). 거주자 수·disregarded 여부·장애 감면은 판정하지 말고 사용자가 고르게 할 것.",
+  "note": "조사표 주택 재산세(/property-tax/) 행의 영국 칸 — Council Tax. 한국 재산세(공시가격 × 비율 × 세율)와 달리 집값에 세율을 곱하지 않는다: 집의 평가 구간(band, 잉글랜드 1991-04-01 시가·웨일스 2003-04-01 시가)을 Valuation Office 가 정하고, 금액은 그 지역 의회(billing authority)가 해마다 정한다. 그래서 전국 공통 £ 금액은 없다 — 이 초안에 Band D 금액을 넣지 않는다. 페이지(/en-gb/council-tax/, 2026-10-23 발행)의 입력 계약: 사용자가 고지서(또는 의회 사이트)의 Band D 금액(또는 자기 band 금액)을 넣고, band 금액 = Band D × 비율 ÷ 9(잉글랜드 비율 6:7:8:9:11:13:15:18, D = 9 기준), 할인 = 25%(성인 1명) 또는 50%(모두 disregarded), 연액을 분할 횟수(보통 10, 신청하면 12)로 나눈다(1파운드 단위 반올림, 나머지는 첫 회). 기간은 과세연도(4/6~4/5)가 아니라 회계연도(financial year, 4/1~3/31) — 2026-27 은 2026-04-01 부터. 범위는 잉글랜드(전부 원문 확인)·웨일스(비율·구간만 확인, 할인율은 미확인). 스코틀랜드는 같은 법 다른 Part 이고 비율이 order 로 바뀌어 이번에 읽지 않음 — 범위 밖. 북아일랜드는 GOV.UK Council Tax 안내가 잉글랜드·웨일스·스코틀랜드만 말해 범위 밖(무엇으로 대신하는지는 허용 출처에서 안 읽었으므로 페이지에 적지 않음). 거주자 수·disregarded 여부·장애 감면은 판정하지 말고 사용자가 고르게 할 것. 2026-10-23 발행 회차: 페이지 범위를 잉글랜드로 좁혀 draft 를 지우고 notVerified(웨일스·스코틀랜드·북아일랜드)를 outOfScope 로 옮김 — 웨일스 표는 이 파일에만 두고 페이지에 쓰지 않는다(재평가 시행일 미확인).",
   "verifiedOn": "2026-10-23",
   "financialYear": "2026-27 (from 1 April 2026)",
-  "region": "England (Wales: ratios and bands only)",
+  "region": "England (Wales ratios and bands kept here only, not used on the page)",
   "sources": [
     {
       "label": "Local Government Finance Act 1992 s.5 — band proportions (1)·(1A) Wales, England bands (2), Wales bands (3)",
       "url": "https://www.legislation.gov.uk/ukpga/1992/14/section/5"
+    },
+    {
+      "label": "Local Government Finance Act 1992 s.36 — 각 band 금액 = A × N ÷ D (D = Band D 의 9), s.30(2) 의회 금액 + 각 major precepting authority 금액(s.47 같은 식)을 합친 것이 그 band 의 council tax",
+      "url": "https://www.legislation.gov.uk/ukpga/1992/14/section/36"
     },
     {
       "label": "Local Government Finance Act 1992 s.11 — Discounts: England (appropriate percentage 25%, twice for no non-disregarded resident)",
@@ -35,34 +38,104 @@
     "valuationDate": "1991-04-01",
     "referenceBand": "D",
     "bands": [
-      { "band": "A", "valueUpTo": 40000, "ratio": 6 },
-      { "band": "B", "valueUpTo": 52000, "ratio": 7 },
-      { "band": "C", "valueUpTo": 68000, "ratio": 8 },
-      { "band": "D", "valueUpTo": 88000, "ratio": 9 },
-      { "band": "E", "valueUpTo": 120000, "ratio": 11 },
-      { "band": "F", "valueUpTo": 160000, "ratio": 13 },
-      { "band": "G", "valueUpTo": 320000, "ratio": 15 },
-      { "band": "H", "valueUpTo": null, "ratio": 18 }
+      {
+        "band": "A",
+        "valueUpTo": 40000,
+        "ratio": 6
+      },
+      {
+        "band": "B",
+        "valueUpTo": 52000,
+        "ratio": 7
+      },
+      {
+        "band": "C",
+        "valueUpTo": 68000,
+        "ratio": 8
+      },
+      {
+        "band": "D",
+        "valueUpTo": 88000,
+        "ratio": 9
+      },
+      {
+        "band": "E",
+        "valueUpTo": 120000,
+        "ratio": 11
+      },
+      {
+        "band": "F",
+        "valueUpTo": 160000,
+        "ratio": 13
+      },
+      {
+        "band": "G",
+        "valueUpTo": 320000,
+        "ratio": 15
+      },
+      {
+        "band": "H",
+        "valueUpTo": null,
+        "ratio": 18
+      }
     ],
     "discounts": {
       "oneAdultOrAllButOneDisregarded": 0.25,
       "noneOrAllDisregarded": 0.5,
-      "source": "LGFA 1992 s.11(1)~(3) — appropriate percentage 25%, (2) 는 그 두 배. GOV.UK 'Who has to pay' 도 같은 25%·50%"
-    }
+      "source": "LGFA 1992 s.11(1)~(3) — appropriate percentage 25%, (2) 는 그 두 배. GOV.UK 'Who has to pay' 도 같은 25%·50%",
+      "perDay": "s.11 할인은 날마다(any day) 판정 — 페이지는 1년 내내 같은 상태로 계산하고 중간에 바뀌면 의회가 일할한다고 밝힘. 할인 금액은 1p 반올림(페이지 선택)"
+    },
+    "bandFormula": "band 금액 = Band D × N ÷ 9 (s.36·s.47 은 의회·precept 금액마다 따로 적용한 뒤 s.30 에서 합침). 법은 끝수를 정하지 않음 — 페이지는 1p 반올림(페이지 선택)이라 고지서와 1p 안팎 다를 수 있다고 밝히고, 고지서의 자기 band 금액을 바로 넣는 모드도 둔다"
   },
   "wales": {
     "valuationDate": "2003-04-01",
     "referenceBand": "D",
     "bands": [
-      { "band": "A", "valueUpTo": 44000, "ratio": 6 },
-      { "band": "B", "valueUpTo": 65000, "ratio": 7 },
-      { "band": "C", "valueUpTo": 91000, "ratio": 8 },
-      { "band": "D", "valueUpTo": 123000, "ratio": 9 },
-      { "band": "E", "valueUpTo": 162000, "ratio": 11 },
-      { "band": "F", "valueUpTo": 223000, "ratio": 13 },
-      { "band": "G", "valueUpTo": 324000, "ratio": 15 },
-      { "band": "H", "valueUpTo": 424000, "ratio": 18 },
-      { "band": "I", "valueUpTo": null, "ratio": 21 }
+      {
+        "band": "A",
+        "valueUpTo": 44000,
+        "ratio": 6
+      },
+      {
+        "band": "B",
+        "valueUpTo": 65000,
+        "ratio": 7
+      },
+      {
+        "band": "C",
+        "valueUpTo": 91000,
+        "ratio": 8
+      },
+      {
+        "band": "D",
+        "valueUpTo": 123000,
+        "ratio": 9
+      },
+      {
+        "band": "E",
+        "valueUpTo": 162000,
+        "ratio": 11
+      },
+      {
+        "band": "F",
+        "valueUpTo": 223000,
+        "ratio": 13
+      },
+      {
+        "band": "G",
+        "valueUpTo": 324000,
+        "ratio": 15
+      },
+      {
+        "band": "H",
+        "valueUpTo": 424000,
+        "ratio": 18
+      },
+      {
+        "band": "I",
+        "valueUpTo": null,
+        "ratio": 21
+      }
     ],
     "discounts": null
   },
@@ -70,7 +143,9 @@
     "default": 10,
     "onRequest": 12,
     "rounding": "C ÷ D 가 1파운드 배수면 그 금액, 아니면 2회차부터 A = C ÷ D 를 가장 가까운 1파운드로 반올림, 첫 회 B = C − (D − 1) × A (C 연액, D 횟수)",
-    "source": "SI 1992/613 Sch 1 para 2(3)(a)(고지서가 연도 시작 전~4/30 발행이면 10회)·para 2(3A)(a)(i)(reg 21(1C) 신청 시 12회)·para 5·6. 5월 이후 발행은 남은 달 수에 따라 줄어듦 — 페이지는 횟수를 사용자가 고르게"
+    "source": "SI 1992/613 Sch 1 para 2(3)(a)(고지서가 연도 시작 전~4/30 발행이면 10회)·para 2(3A)(a)(i)(reg 21(1C) 신청 시 12회)·para 5·6. 5월 이후 발행은 남은 달 수에 따라 줄어듦 — 페이지는 횟수를 사용자가 고르게",
+    "tieRounding": "para 2(6) 'rounded up or down (as the case may be) to the nearest pound' — 정확히 50p 일 때는 원문이 정하지 않음, 페이지는 올림(half up)을 택함(페이지 선택, 테스트에 법 규칙으로 고정하지 않음)",
+    "overrides": "para 2(7) 회당 £5 미만이면 달리 정할 수 있고, 의회의 Part II scheme·고지서 날짜·금액이 우선 — 페이지는 법정 기본 일정이라고만 안내"
   },
   "notCalculated": [
     "Disabled Band Reduction Scheme — GOV.UK: 한 band 아래 금액, Band A 는 17% 할인(원문 그대로만 안내, 5/9 등으로 직접 유도하지 않음)",
@@ -78,7 +153,7 @@
     "의회 재량 할인(second homes·empty properties)·학생 전원 가구 면제 등 exemption",
     "Council Tax Reduction(저소득) — 의회 제도"
   ],
-  "notVerified": [
+  "outOfScope": [
     "웨일스 할인율 — 2026-04-01 부터 LGFA 1992 s.11E(Welsh Ministers regulations)로 정해져 그 regulations 를 안 읽음. 25% 를 웨일스에 옮겨 쓰지 않는다",
     "웨일스 분할 규정 — SI 1992/613 Sch 1 을 웨일스에 그대로 쓰는지(웨일스 개정 여부) 안 읽음",
     "스코틀랜드 band 비율·구간·할인 — LGFA 1992 Part II 와 비율 변경 order 를 안 읽음(범위 밖)",

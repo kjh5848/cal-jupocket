@@ -1,0 +1,281 @@
+---
+/**
+ * Council Tax Calculator (England) — 영국판 제도 도구(basis "law"). 한국어판 재산세(/property-tax/)와 제도가 달라
+ * (집값 × 세율이 아니라 band 비율 × 의회가 정한 금액) 짝(hreflang)을 맺지 않는다 — 조사표 영국 칸 '제도'.
+ * 계산은 lib/gb/council-tax.ts(정수 펜스), 화면은 lib/gb/council-tax-ui.ts, 숫자는 rates/gb/council-tax-2026.json
+ * (LGFA 1992 s.5·s.11·s.30·s.36, SI 1992/613 Sch 1, GOV.UK council-tax — 2026-10-23 확인).
+ *
+ * 범위: 잉글랜드만. 웨일스(비율 …:21·Band I, 할인은 2026-04-01 부터 s.11E regulations — 미확인)·스코틀랜드·북아일랜드는 계산하지 않는다.
+ * £ 금액은 의회마다 달라 사용자가 고지서의 Band D(또는 자기 band) 연액을 넣는다. 예시 £2,280 은 계산 설명용 숫자다.
+ *
+ * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-council-tax-2026-10-23.csv, hl en · gl gb):
+ *   council tax bands / bands prices / band a·b·c·d·e monthly cost · band c per month / council tax calculator uk·single person·by postcode /
+ *   single person discount rules·band a·child turns 18·child at university / calculator wales·scotland
+ * 쓰지 않는 것(판정 안 함): 누가 disregarded 인지 개인 판정, Council Tax Reduction 금액, second home·empty home premium 금액,
+ * 장애 band 감면 금액 계산(원문 문장만 안내), 'to be scrapped' 같은 뉴스.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import {
+  BANDS, D_RATIO, SINGLE_DISCOUNT, NONE_DISCOUNT, INSTALMENTS, INSTALMENTS_ON_REQUEST,
+  fromBandD, applyDiscount, instalments, gbp, bandRange,
+} from "../../../lib/gb/council-tax";
+import "../../../styles/global.css";
+
+const title = "Council Tax Calculator (England) — Bands A to H, Monthly Cost and Single Person Discount";
+const description =
+  "Work out Council Tax in England for bands A to H from your council's Band D charge (6/9 to 18/9), take off the 25% single person discount and split the bill into 10 or 12 monthly instalments.";
+
+const EX = 228000; // 예시 Band D £2,280 — 실제 의회 숫자가 아님
+const rows = BANDS.map((b) => {
+  const annual = fromBandD(EX, b.band);
+  return { ...b, annual, ten: instalments(annual, INSTALMENTS), twelve: instalments(annual, INSTALMENTS_ON_REQUEST) };
+});
+const c = fromBandD(EX, "C");
+const c10 = instalments(c, INSTALMENTS);
+const c12 = instalments(c, INSTALMENTS_ON_REQUEST);
+const cSingle = applyDiscount(c, SINGLE_DISCOUNT);
+const cSingle10 = instalments(cSingle.payable, INSTALMENTS);
+const dNone = applyDiscount(EX, NONE_DISCOUNT);
+const start = { annual: EX, s: instalments(EX, INSTALMENTS) };
+---
+
+<html lang="en-GB">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Council Tax Calculator (England)</h1>
+      <p>
+        Council Tax is not a percentage of what your home is worth. Your home sits in a valuation band, A to H, and your local council
+        sets a charge for each band every year. Type the Band D charge from your bill or your council's website (or the charge for your
+        own band), choose your band and any discount, and the calculator shows the bill for the year and the monthly instalments. The
+        figure already in the box, {gbp(EX)}, is just an example — replace it with your council's.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="ct-mode">Which charge do you know?</label>
+          <select id="ct-mode" data-seg>
+            <option value="bandD" selected>Band D charge</option>
+            <option value="own">My band's charge</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-band">Your band</label>
+          <select id="ct-band">
+            {BANDS.map((b) => <option value={b.band} selected={b.band === "D"}>Band {b.band}</option>)}
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label id="ct-amount-label" for="ct-amount">Band D charge for the year (£)</label>
+          <input type="text" inputmode="decimal" id="ct-amount" value="2,280.00" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-discount">Discount</label>
+          <select id="ct-discount">
+            <option value="0" selected>None — 2 or more adults counted</option>
+            <option value={String(SINGLE_DISCOUNT)}>{SINGLE_DISCOUNT}% — one adult counted (single person)</option>
+            <option value={String(NONE_DISCOUNT)}>{NONE_DISCOUNT}% — nobody counted</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-count">Monthly instalments</label>
+          <select id="ct-count" data-seg>
+            <option value="10" selected>{INSTALMENTS}</option>
+            <option value="12">{INSTALMENTS_ON_REQUEST}</option>
+          </select>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value" data-bar="out-first,out-rest">
+          <p class="label" id="hero-label">Council Tax to pay, Band D</p>
+          <p class="big" id="hero-value">{gbp(start.annual)}</p>
+          <p class="hint" id="ct-formula">Band D = {gbp(EX)} × 9/9 = {gbp(EX)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">Band charge for the year</span>
+            <span class="value" id="out-annual">{gbp(start.annual)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Discount</span>
+            <span class="value" id="out-discount">{gbp(0)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">First instalment</span>
+            <span class="value" id="out-first">{gbp(start.s.first)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="rest-label">Instalments 2 to 10</span>
+            <span class="value" id="out-rest">{gbp(start.s.rest)}</span>
+          </div>
+        </div>
+        <p class="hint" id="ct-small" hidden>
+          At least one instalment is under £5. The regulations let the council collect small amounts differently — check your bill.
+        </p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How Council Tax is worked out</h2>
+      <p>
+        GOV.UK says you need three things: the valuation band of your home, how much your local council charges for that band, and
+        whether you can get a discount or exemption. The band comes from the Valuation Office Agency. The charge comes from your
+        council — section 30 of the Local Government Finance Act 1992 adds the council's own amount to the amounts set by "major
+        precepting authorities" — so it differs from one area to the next, and there is no single national figure for any band.
+      </p>
+      <p>
+        What the law does fix is how the bands relate to each other. The Local Government Finance Act 1992 (section 5) sets the
+        proportion for England as 6 : 7 : 8 : 9 : 11 : 13 : 15 : 18 for bands A to H, and section 36 works each band out from Band D
+        as Band D × N ÷ {D_RATIO}. So Band A pays 6/9 of Band D, Band H pays 18/9 — twice Band D, and three times Band A.
+      </p>
+
+      <h2>Council Tax bands in England</h2>
+      <p>
+        Homes in England are banded on what they would have sold for on 1 April 1991, not on today's price. The prices below are the
+        bands in section 5(2); the charges are worked out for an example Band D of {gbp(EX)}, not for any real council.
+      </p>
+      <table>
+        <thead><tr><th>Band</th><th>Value on 1 April 1991</th><th>Share of Band D</th><th>Year (example)</th><th>Monthly, 10 payments</th></tr></thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <td>{r.band}</td>
+              <td>{bandRange(r.band)}</td>
+              <td>{r.ratio}/{D_RATIO}</td>
+              <td>{gbp(r.annual)}</td>
+              <td>{r.ten.first === r.ten.rest ? gbp(r.ten.rest) : `${gbp(r.ten.first)}, then ${gbp(r.ten.rest)}`}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        To check which band your home is in, use the GOV.UK Council Tax band search; you can challenge your band if you think it is
+        wrong.
+      </p>
+
+      <h2>Council Tax monthly cost: 10 or 12 payments</h2>
+      <p>
+        GOV.UK says the bill is usually split into 10 monthly payments, and that you can ask your council to spread it over 12 instead.
+        The Council Tax (Administration and Enforcement) Regulations 1992 (Schedule 1, paragraph 2) set the default: 10 instalments
+        when the bill is issued before the year starts or by 30 April, 12 if you ask for them. If the yearly amount divides into whole
+        pounds, every instalment is the same. If not, instalments 2 onwards are the yearly amount ÷ the number of instalments rounded to
+        the nearest pound, and the first instalment takes whatever is left.
+      </p>
+      <p>
+        Example: Band C on a {gbp(EX)} Band D is {gbp(c)} for the year. Over 10 months that is {gbp(c10.first)} first, then
+        {" "}{c10.count - 1} payments of {gbp(c10.rest)}. Over 12 months it is {gbp(c12.first)} first, then {c12.count - 1} payments of
+        {" "}{gbp(c12.rest)}. Bills issued later in the year have fewer instalments, and your council's own payment scheme and the dates on
+        your bill always come first — this is the default schedule in the regulations, not your council's. Where the rounding lands on
+        exactly 50p the regulations do not say which way to go; this calculator rounds up.
+      </p>
+      <p>
+        Council Tax runs for the financial year, 1 April to 31 March — the 2026–27 bill started on 1 April 2026. That is different from
+        the income tax year, which starts on 6 April.
+      </p>
+
+      <h2>Single person discount: 25% off</h2>
+      <p>
+        A full bill assumes at least two adults live in the home. Section 11 of the 1992 Act gives a {SINGLE_DISCOUNT}% discount in
+        England when only one adult lives there, or when everyone else is "disregarded", and {NONE_DISCOUNT}% when nobody living there
+        counts. With the single person discount, the Band C example becomes {gbp(c)} − {gbp(cSingle.discount)} = {gbp(cSingle.payable)}
+        {" "}— {gbp(cSingle10.rest)} a month over 10 months. A Band D home where everyone is disregarded pays {gbp(dNone.payable)}.
+      </p>
+      <p>
+        GOV.UK lists who is disregarded — for example people under 18, some apprentices, 18 or 19 year olds in full-time education,
+        full-time students, student nurses and live-in carers — and says you have to apply for the discount even if you are disregarded.
+        This calculator does not decide who counts in your home. The discount applies day by day, so if someone moves in or out, or
+        a child turns 18, during the year, your council works out the change for those days; the calculator assumes the same situation
+        all year.
+      </p>
+
+      <h2>Other reductions this calculator does not work out</h2>
+      <ul>
+        <li>
+          <strong>Disabled Band Reduction Scheme</strong> — GOV.UK says that if you qualify, your bill is reduced to the next band down
+          (Band D pays the Band C rate); a home already in Band A gets a 17% discount instead. You can approximate it here by choosing the
+          band below yours.
+        </li>
+        <li><strong>Households where everyone is a full-time student</strong> do not have to pay Council Tax (GOV.UK).</li>
+        <li><strong>Council Tax Reduction</strong> for people on a low income or benefits is run by each council.</li>
+        <li>
+          <strong>Second homes and empty homes</strong> — your council decides any discount, and can charge up to twice the normal
+          amount on second homes (more on homes that have been empty for a long time).
+        </li>
+      </ul>
+
+      <details>
+        <summary>Does this work for Wales or Scotland?</summary>
+        <p>
+          No — the calculator is for England only. Wales has its own bands (A to I, valued on 1 April 2003, with Band I at 21/9) and,
+          from 1 April 2026, its own rules on discounts, which we have not checked yet. Scotland's Council Tax is set under a different
+          part of the 1992 Act, and we have not checked its bands. Use your council's figures and its website instead.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why might my bill differ by a penny?</summary>
+        <p>
+          Section 36 applies the band proportion to your council's amount and to each precept separately before they are added up, and
+          the law does not say how to round. This calculator applies it once to the total Band D charge and rounds to the nearest penny.
+          If you choose "My band's charge" and type the figure from your bill, there is no rounding at that step.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I find my Council Tax by postcode?</summary>
+        <p>
+          Your band, yes — GOV.UK's "Check your Council Tax band" service looks up a home in England or Wales by address or postcode. The charge for
+          each band comes from your council, and GOV.UK says your bill shows how much you pay for the year and how that amount has been
+          worked out. Type that figure into the calculator.
+        </p>
+      </details>
+
+      <p>
+        Related: <a href="/en-gb/stamp-duty/">Stamp Duty calculator</a> for buying a home in England, and the
+        <a href="/en-gb/tools/percent/">percentage calculator</a>.
+      </p>
+
+      <h2>Sources</h2>
+      <ul>
+        <li>
+          <a href="https://www.legislation.gov.uk/ukpga/1992/14/section/5" rel="noopener" target="_blank">Local Government Finance Act 1992, section 5</a>
+          {" "}(band proportions and England bands),
+          <a href="https://www.legislation.gov.uk/ukpga/1992/14/section/11" rel="noopener" target="_blank">section 11</a> (discounts: England),
+          <a href="https://www.legislation.gov.uk/ukpga/1992/14/section/30" rel="noopener" target="_blank">section 30</a> and
+          <a href="https://www.legislation.gov.uk/ukpga/1992/14/section/36" rel="noopener" target="_blank">section 36</a> (amounts for each band) — checked 23 October 2026
+        </li>
+        <li>
+          <a href="https://www.legislation.gov.uk/uksi/1992/613/schedule/1" rel="noopener" target="_blank">Council Tax (Administration and Enforcement) Regulations 1992, Schedule 1</a>
+          {" "}(instalments) — checked 23 October 2026
+        </li>
+        <li><a href="https://www.gov.uk/council-tax" rel="noopener" target="_blank">GOV.UK — How Council Tax works</a> (checked 23 October 2026)</li>
+        <li>
+          <a href="https://www.gov.uk/guidance/understand-how-council-tax-bands-are-assessed" rel="noopener" target="_blank">GOV.UK (VOA) — How domestic properties are assessed for Council Tax bands</a>
+          {" "}· <a href="https://www.gov.uk/council-tax-bands" rel="noopener" target="_blank">Check your Council Tax band</a>
+        </li>
+      </ul>
+
+      <AdSlot label="council-tax-result-en-gb" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/gb/council-tax-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
