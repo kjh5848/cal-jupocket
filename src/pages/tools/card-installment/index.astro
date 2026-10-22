@@ -1,0 +1,187 @@
+---
+/**
+ * 신용카드 할부 수수료 — 범용 도구(/tools/). 결제 금액 · 개월 · 연 수수료율 · 무이자 방식 → 회차별 원금·수수료.
+ *
+ * 수수료율은 카드사·고객·개월마다 달라 법 숫자가 없다 — rates 없이 산식 출처만 lib/card-installment.ts 머리말에 둔다.
+ * 계산은 lib, 화면은 scripts/card-installment.ts(한국어판 전용).
+ * roberin #29 는 입력·결과 항목만 대조했다(docs/calc-benchmark.md). roberin 의 '앞 개월 무이자'는 카드사 부분무이자
+ * (앞 회차 고객 부담 · 뒤 회차 무이자)와 반대라 따르지 않았다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { installmentPlan, approxTotalFee } from "../../../lib/card-installment";
+import { formatWon } from "../../../lib/money";
+import "../../../styles/global.css";
+
+const title = "카드 할부 수수료 계산기 — 부분무이자·회차별 할부 이자까지";
+const description =
+  "결제 금액·할부 개월·연 할부 수수료율을 넣으면 회차마다 내는 원금과 수수료, 총 할부 이자를 계산합니다. 부분무이자(앞 회차만 고객 부담)·전액 무이자, 이용일과 결제일로 날짜 계산도 됩니다.";
+
+const ex = installmentPlan({ amount: 1_000_000, months: 12, ratePct: 15, mode: "normal" });
+const slim = installmentPlan({ amount: 1_000_000, months: 12, ratePct: 15, mode: "partial", paidTerms: 5 });
+if (!ex.ok || !slim.ok) throw new Error("card-installment 예시가 계산되지 않음");
+const COMPARE = [2, 3, 6, 10, 12, 24];
+const compare = COMPARE.map((m) => {
+  const r = installmentPlan({ amount: 1_000_000, months: m, ratePct: 15, mode: "normal" });
+  return { m, fee: r.ok ? r.totalFee : 0, first: r.ok ? r.firstPayment : 0 };
+});
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>카드 할부 수수료 계산기</h1>
+      <p class="qa-lead">
+        카드 할부 수수료는 <strong>회차마다 남은 할부잔액 × 연 수수료율 × 사용일수 ÷ 365</strong>로 붙습니다(여신금융협회
+        신용카드 이용자 가이드). 원금은 개월 수로 똑같이 나눠 갚으니 잔액이 큰 앞 회차에 수수료가 몰립니다. 100만원을
+        연 15%로 12개월 나누면 수수료는 약 {formatWon(ex.totalFee)}이고, 1~5회차만 고객이 내는 부분무이자면
+        {" "}{formatWon(slim.totalFee)}입니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="ci-amount">결제 금액</label>
+          <input type="text" inputmode="numeric" id="ci-amount" value="1,000,000" data-won autocomplete="off" />
+          <span class="unit">원</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ci-months">할부 개월</label>
+          <input type="number" id="ci-months" value="12" min="2" max="60" step="1" inputmode="numeric" data-step />
+          <span class="unit">개월</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ci-rate">연 할부 수수료율</label>
+          <input type="number" id="ci-rate" value="15" min="0" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ci-mode">무이자</label>
+          <select id="ci-mode" data-seg>
+            <option value="normal" selected>없음</option>
+            <option value="partial">부분무이자</option>
+            <option value="free">전액 무이자</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap" id="ci-paid-wrap" hidden>
+          <label for="ci-paid">수수료를 내는 앞 회차</label>
+          <input type="number" id="ci-paid" value="5" min="1" max="59" step="1" inputmode="numeric" data-step />
+          <span class="unit">회</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ci-how">수수료 날수</label>
+          <select id="ci-how" data-seg>
+            <option value="month" selected>한 달 = 1/12 (어림)</option>
+            <option value="date">이용일·결제일로</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap" data-date hidden>
+          <label for="ci-use">이용일(결제한 날)</label>
+          <input type="date" id="ci-use" min="2000-01-01" max="2099-12-31" />
+        </div>
+        <div class="calc-input-wrap" data-date hidden>
+          <label for="ci-bill">첫 결제일(1회차 청구일)</label>
+          <input type="date" id="ci-bill" min="2000-01-01" max="2099-12-31" />
+        </div>
+
+        <p class="hint" id="ci-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="ci-principal|ci-fee" data-bar-labels="원금|할부 수수료" data-dock="ci-hero">
+          <p class="label">총 할부 수수료</p>
+          <p class="big" id="ci-hero">{formatWon(ex.totalFee)}</p>
+          <p class="meta" id="ci-note">원금의 {((ex.totalFee / 1_000_000) * 100).toFixed(2)}% · 1회차 {formatWon(ex.firstPayment)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">원금</span><span class="value" id="ci-principal">{formatWon(1_000_000)}</span></div>
+          <div class="stat-chip"><span class="label">할부 수수료</span><span class="value" id="ci-fee">{formatWon(ex.totalFee)}</span></div>
+          <div class="stat-chip"><span class="label">낼 돈 합계</span><span class="value" id="ci-total">{formatWon(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">1회차 청구</span><span class="value" id="ci-first">{formatWon(ex.firstPayment)}</span></div>
+          <div class="stat-chip"><span class="label">무이자로 덜 낸 수수료</span><span class="value" id="ci-saved">무이자 없음</span></div>
+        </div>
+
+        <details open>
+          <summary>회차마다 내는 원금·수수료</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>회차</th><th>남은 할부잔액</th><th>원금</th><th>수수료</th><th>청구액</th></tr></thead>
+              <tbody id="ci-rows">
+                {ex.rows.map((r) => <tr><th scope="row">{r.term}회</th><td>{formatWon(r.balance)}</td><td>{formatWon(r.principal)}</td><td>{formatWon(r.fee)}</td><td>{formatWon(r.payment)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details>
+          <summary>같은 금액·수수료율로 개월만 바꾸면</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>할부</th><th>총 수수료</th><th>1회차 청구</th></tr></thead>
+              <tbody id="ci-compare">
+                {compare.map((c) => <tr><th scope="row">{c.m}개월</th><td>{formatWon(c.fee)}</td><td>{formatWon(c.first)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>어떻게 계산하나</h2>
+      <ul>
+        <li><strong>원금</strong> — 결제 금액 ÷ 할부 개월. 나눠떨어지지 않고 남는 원은 1회차에 더합니다(은행 할부 계산기 안내 '1원 미만의 금액은 첫회 월납입액에 포함').</li>
+        <li><strong>수수료</strong> — 그 회차를 시작할 때 남은 할부잔액 × 연 수수료율 × 사용일수 ÷ 365(윤년은 366). 할부잔액은 결제 금액에서 이미 낸 원금을 뺀 돈입니다. 원 미만은 버립니다.</li>
+        <li><strong>어림</strong> — 이용일·결제일을 모를 때는 한 달을 1년의 1/12로 봅니다. 총 수수료는 결제 금액 × 수수료율 × (개월 + 1) ÷ 2 ÷ 12 에 몇 원 차이로 맞습니다. 지금 넣은 값의 이 식 결과: <span id="ci-approx">{formatWon(approxTotalFee(1_000_000, 12, 15))}</span>.</li>
+        <li><strong>날짜로</strong> — 1회차는 이용일부터 첫 결제일 전날까지, 그다음은 결제일부터 다음 결제일 전날까지의 날수로 셉니다. 결제일은 매달 첫 결제일과 같은 날(그 달에 없으면 말일)로 둡니다.</li>
+      </ul>
+
+      <details>
+        <summary>부분무이자는 어느 회차가 무이자인가요?</summary>
+        <p>
+          카드사 부분무이자(슬림할부)는 <strong>앞 회차 수수료를 고객이 내고 남은 회차가 무이자</strong>입니다. 예를 들어
+          신한카드 2026년 7월 안내의 12개월 슬림할부는 '1~5회차 이자 고객부담, 6회차부터 잔여 회차 무이자'였습니다.
+          잔액이 가장 클 때 수수료를 내므로, 회차 수의 절반을 내도 수수료는 절반보다 많습니다 — 위 예시에서 12회 중
+          5회만 내도 일반 할부 수수료의 약 {Math.round((slim.totalFee / ex.totalFee) * 100)}%입니다. 몇 회차까지 내는지는
+          카드사·달·개월마다 바뀌니 결제 화면이나 카드사 무이자 안내에서 확인해 '수수료를 내는 앞 회차'에 넣으세요.
+        </p>
+      </details>
+
+      <details>
+        <summary>할부 수수료율은 어디서 보나요?</summary>
+        <p>
+          수수료율은 카드사·회원 신용도·할부 개월마다 다릅니다. 카드 이용대금명세서, 카드사 앱·홈페이지, 여신금융협회
+          공시실(상품별 수수료율)에서 볼 수 있습니다. 이 계산기는 수수료율 기본값을 정해 두지 않습니다 — 15%는 예시입니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>실제 청구서와 왜 다른가요?</summary>
+        <p>
+          카드사마다 결제일과 이용기간(어느 날 쓴 금액이 어느 결제일에 청구되는지), 원 단위 끝수 처리가 다릅니다. 어림
+          계산은 모든 달을 같은 길이로 보니 날짜 계산과도 몇 원~몇백 원 차이가 납니다. 남은 할부금을 일찍 갚으면 남은
+          기간의 수수료는 붙지 않습니다. 빚이 여러 개라면 <a href="/tools/debt-payoff/">부채 상환 계획 계산기</a>로 갚는
+          순서를, 대출 하나의 상환표는 <a href="/guide/loan-calculator/">대출 이자 계산기</a>로 보세요.
+        </p>
+      </details>
+
+      <AdSlot label="card-installment-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/card-installment.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

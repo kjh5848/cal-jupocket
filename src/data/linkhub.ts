@@ -374,6 +374,7 @@ export const hubEntries: HubEntry[] = [
   { no: 347, href: "/guide/stock-breakeven/", label: "주식 본전 계산 — 본전 매도가", kind: "guide" },
   { no: 348, href: "/guide/stock-return-calculator/", label: "주식 수익률 계산기", kind: "calc" },
   { no: 349, href: "/tools/debt-payoff/", label: "부채 상환 계획 계산기", kind: "calc" },
+  { no: 350, href: "/tools/card-installment/", label: "카드 할부 수수료 계산기", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */

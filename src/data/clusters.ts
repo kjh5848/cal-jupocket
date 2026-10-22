@@ -441,6 +441,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/installment-savings-calculator/", title: "적금 이자 계산기", kind: "calc", icon: "calculator", blurb: "월 납입액·이율·개월 → 세후 이자·만기 수령액" },
       { href: "/tools/compound/", title: "적립식 복리 계산기", kind: "calc", icon: "chart", blurb: "원금·매달 적립·수익률 → 몇 년 뒤 금액·세후·오늘 가치" },
       { href: "/tools/debt-payoff/", title: "부채 상환 계획 계산기", kind: "calc", icon: "calculator", blurb: "빚 여러 개 · 한 달 예산 → 눈사태·눈덩이 순서로 다 갚는 달·총 이자" },
+      { href: "/tools/card-installment/", title: "카드 할부 수수료 계산기", kind: "calc", icon: "calculator", blurb: "결제 금액·개월·수수료율 → 회차별 수수료·부분무이자" },
       { href: "/guide/prepayment-fee/", title: "중도상환수수료 계산 — 갚는 원금 × 약정 요율 × 남은 날 ÷ 부과기간, 계약 3년이 지나면 0원입니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/prepayment-fee-3-years/", title: "중도상환수수료 3년 — 대출계약이 성립한 날부터 3년이 지나면 법으로 받을 수 없습니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/prepayment-fee-calculator/", title: "중도상환수수료 계산기", kind: "calc", icon: "calculator", blurb: "갚을 원금·요율·실행일·상환일 → 수수료·0원이 되는 날" },
