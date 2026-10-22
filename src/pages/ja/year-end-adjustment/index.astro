@@ -1,0 +1,592 @@
+---
+/**
+ * 年末調整の計算(令和8年分) — 일본어판 제도 도구(basis "law"). 한국 연말정산과 계산 단계가 달라(給与所得控除後 表·102.1%·100円未満 切り捨て) 짝을 맺지 않는다.
+ * 계산은 lib/jp/year-end-adjustment.ts, 근거는 rates/jp/year-end-adjustment-2026.json(国税庁 タックスアンサー [令和8年4月1日現在法令等]·
+ * 令和8年分 年末調整のしかた·令和8年度改正 Q&A·所得税法 別表第五/措法 第29条の4 令和8年12月1日 施行 版, 2026-10-21 확인).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/jp-year-end-adjustment-2026-10-22.csv, 앞 회차 jp-year-end-adjustment-2026-10-21.csv):
+ *   年末調整 計算方法·計算式·計算の流れ / 還付 計算·還付 計算方法 / シミュレーション 令和8年·計算ツール 令和8年 /
+ *   シミュレーション 保険·生命保険 / 住宅ローン控除 / ideco / 計算 エクセル·計算シート / 計算期間
+ * 生命保険料·地震保険料 控除는 保険料控除申告書의 控除額을 그대로 받는다. 住宅借入金等特別控除額 산정·11/30 이전 마지막 給与·
+ * 年の中途 退職·特定支出控除는 계산하지 않는다. 扶養·配偶者 해당 여부는 사용자가 고른다(판정하지 않음).
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import {
+  BRACKETS,
+  employmentIncome,
+  basicDeduction,
+  calculatedIncomeTax,
+  annualTaxWithSurtax,
+  yearEndAdjustment,
+  emptyInput,
+  formatYen,
+} from "../../../lib/jp/year-end-adjustment";
+import rates from "../../../rates/jp/year-end-adjustment-2026.json";
+import "../../../styles/global.css";
+
+const title = "年末調整の計算（令和8年分）— 年税額と還付金・徴収額のシミュレーション";
+const description =
+  "給与の総額・源泉徴収税額・社会保険料と配偶者・扶養などの控除から、令和8年分の年末調整の年税額と還付・徴収の額を計算します。基礎控除104万円・給与所得控除後の給与等の金額の表・速算表・102.1%（100円未満切り捨て）まで国税庁の資料どおりに計算します。";
+
+const y = formatYen;
+const man = (yen: number) => (yen / 10000).toLocaleString("ja-JP") + "万円";
+const ex = yearEndAdjustment({ ...emptyInput(), salary: 5_000_000, withheld: 120_000, socialInsurance: 750_000 });
+const salaryRows = [1_000_000, 1_360_000, 2_000_000, 3_000_000, 4_000_000, 5_000_000, 6_000_000, 7_000_000, 8_000_000, 10_000_000];
+const upTo = (u: number | null, i: number) =>
+  u === null
+    ? `${y(BRACKETS[i - 1].upToYen! + 1000)}以上`
+    : i === 0
+      ? `1,000円から${y(u)}まで`
+      : `${y(BRACKETS[i - 1].upToYen! + 1000)}から${y(u)}まで`;
+const basicRows = rates.basicDeduction.brackets;
+const sp = rates.spouseDeduction.brackets;
+const sps = rates.spouseSpecialDeduction.rows;
+const dep = rates.dependentDeduction.amountsYen;
+const per = rates.personalDeductionsYen;
+const sr = rates.specifiedRelativeDeduction.brackets;
+// rates 의 출처 이름에서 한국어 메모(괄호 안 쪽수 등)를 뺀다
+const HANGUL = new RegExp("[\uac00-\ud7a3]");
+const cleanLabel = (label: string) =>
+  label
+    .replace(/\(([^)]*)\)/g, (m, inner: string) => (HANGUL.test(inner) ? "" : m))
+    .split("")
+    .filter((c) => !HANGUL.test(c))
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim();
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>年末調整の計算（令和8年分）— 還付金・徴収額のシミュレーション</h1>
+      <p>
+        1 年間の給与の総額と、毎月の給与から源泉徴収された所得税の合計、社会保険料などの控除を入れると、令和 8 年分の年末調整で
+        計算される年税額（年調年税額）と、還付される額・追加で徴収される額を計算します。式と数字は国税庁 タックスアンサー
+        （令和8年4月1日現在法令等）と「令和8年分 年末調整のしかた」、令和 8 年度税制改正の Q&amp;A です（令和8年10月21日に確認）。
+        会社が行う実際の年末調整の結果は、会社が受け取った申告書の内容で決まります。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="ya-salary">給与・賞与の総額（1年分・税引き前）</label>
+          <input type="text" inputmode="numeric" id="ya-salary" value="5,000,000" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-withheld">源泉徴収された所得税の合計</label>
+          <input type="text" inputmode="numeric" id="ya-withheld" value="120,000" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-social">社会保険料（給与から差し引かれた額など）</label>
+          <input type="text" inputmode="numeric" id="ya-social" value="750,000" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-smb">小規模企業共済等掛金（iDeCo など）</label>
+          <input type="text" inputmode="numeric" id="ya-smb" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-life">生命保険料控除額（保険料控除申告書の額）</label>
+          <input type="text" inputmode="numeric" id="ya-life" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-quake">地震保険料控除額（保険料控除申告書の額）</label>
+          <input type="text" inputmode="numeric" id="ya-quake" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-spouse">配偶者</label>
+          <select id="ya-spouse" data-seg>
+            <option value="none" selected>対象外</option>
+            <option value="salary">給与収入で入力</option>
+            <option value="income">合計所得金額で入力</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-spouse-amt">配偶者の給与収入または合計所得金額</label>
+          <input type="text" inputmode="numeric" id="ya-spouse-amt" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-spouse-old">配偶者は70歳以上（12月31日現在）</label>
+          <select id="ya-spouse-old" data-seg>
+            <option value="no" selected>いいえ</option>
+            <option value="yes">はい</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-dep-gen">一般の控除対象扶養親族（16〜18歳・23〜69歳）</label>
+          <input type="number" id="ya-dep-gen" inputmode="numeric" min="0" max="20" step="1" value="0" />
+          <span class="unit">人</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-dep-spec">特定扶養親族（19〜22歳）</label>
+          <input type="number" id="ya-dep-spec" inputmode="numeric" min="0" max="20" step="1" value="0" />
+          <span class="unit">人</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-dep-old">老人扶養親族（70歳以上・同居老親等以外）</label>
+          <input type="number" id="ya-dep-old" inputmode="numeric" min="0" max="20" step="1" value="0" />
+          <span class="unit">人</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-dep-oldt">老人扶養親族のうち同居老親等</label>
+          <input type="number" id="ya-dep-oldt" inputmode="numeric" min="0" max="20" step="1" value="0" />
+          <span class="unit">人</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-rel">特定親族（19〜22歳）1人の合計所得金額（いなければ空欄）</label>
+          <input type="text" inputmode="numeric" id="ya-rel" value="" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-dis">障害者（本人・配偶者・扶養親族）</label>
+          <input type="number" id="ya-dis" inputmode="numeric" min="0" max="20" step="1" value="0" />
+          <span class="unit">人</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-sdis">特別障害者（同居特別障害者以外）</label>
+          <input type="number" id="ya-sdis" inputmode="numeric" min="0" max="20" step="1" value="0" />
+          <span class="unit">人</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-sdist">同居特別障害者</label>
+          <input type="number" id="ya-sdist" inputmode="numeric" min="0" max="20" step="1" value="0" />
+          <span class="unit">人</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-widow">寡婦・ひとり親</label>
+          <select id="ya-widow" data-seg>
+            <option value="none" selected>なし</option>
+            <option value="widow">寡婦</option>
+            <option value="singleParent">ひとり親</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-student">勤労学生</label>
+          <select id="ya-student" data-seg>
+            <option value="no" selected>いいえ</option>
+            <option value="yes">はい</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-adj">所得金額調整控除の対象（23歳未満の扶養親族・特別障害者がいる）</label>
+          <select id="ya-adj" data-seg>
+            <option value="no" selected>いいえ</option>
+            <option value="yes">はい</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ya-housing">住宅借入金等特別控除額（申告書の額）</label>
+          <input type="text" inputmode="numeric" id="ya-housing" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="ya-hero-label">還付される額</p>
+          <p class="big" id="hero-value">{y(ex.difference)}</p>
+          <p class="hint" id="ya-formula">源泉徴収税額 {y(120_000)} − 年調年税額 {y(ex.annualTax)}</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">給与所得控除後の給与等の金額</span>
+            <span class="value" id="out-ei">{y(ex.employmentIncome)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">所得控除の合計</span>
+            <span class="value" id="out-ded">{y(ex.totalDeductions)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">課税給与所得金額（1,000円未満切り捨て）</span>
+            <span class="value" id="out-taxable">{y(ex.taxable)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">算出所得税額</span>
+            <span class="value" id="out-calc">{y(ex.calculatedTax)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">年調年税額（× 102.1%・100円未満切り捨て）</span>
+            <span class="value" id="out-annual">{y(ex.annualTax)}</span>
+          </div>
+        </div>
+        <p class="hint" id="ya-note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>年末調整の計算方法・計算の流れ</h2>
+      <p>年末調整の年税額は次の順に計算します（No.2662・年末調整のしかた）。</p>
+      <ol>
+        <li>その年の 1 月 1 日から 12 月 31 日までに支払が確定した給与・賞与の総額を出す。</li>
+        <li>「給与所得控除後の給与等の金額」を表で求める（下の表）。所得金額調整控除の対象なら、その額を引く。</li>
+        <li>社会保険料控除・小規模企業共済等掛金控除・生命保険料控除・地震保険料控除・配偶者（特別）控除・扶養控除・基礎控除などを引く。</li>
+        <li>1,000 円未満を切り捨てた課税給与所得金額に速算表の税率をかけ、算出所得税額を出す。</li>
+        <li>住宅借入金等特別控除があれば引き（引ききれない分は切り捨て）、年調所得税額にする。</li>
+        <li>年調所得税額 × 102.1% の 100 円未満を切り捨てた額が年調年税額（所得税と復興特別所得税）。</li>
+        <li>源泉徴収された税額の合計が年調年税額より多ければ差額が還付され、少なければ差額が徴収されます。</li>
+      </ol>
+      <p>
+        上の計算機の初期値（給与 {man(5_000_000)}・社会保険料 {man(750_000)}・源泉徴収税額 {y(120_000)}）では、給与所得控除後の給与等の金額 {y(ex.employmentIncome)}、
+        基礎控除 {y(ex.basic)}、課税給与所得金額 {y(ex.taxable)}、算出所得税額 {y(ex.calculatedTax)}、年調年税額は
+        {y(ex.calculatedTax)} × 102.1% ＝ {(ex.calculatedTax * 1.021).toLocaleString("ja-JP")}円 の 100 円未満を切り捨てた {y(ex.annualTax)} で、
+        還付される額は {y(ex.difference)} です。
+      </p>
+
+      <h2>令和8年分の年末調整で変わったこと</h2>
+      <p>
+        令和 8 年度税制改正（所得税の基礎控除の引上げ等）は令和 8 年 12 月 1 日に施行され、令和 8 年分の所得税から適用されます。
+        12 月に行う年末調整では、改正後の基礎控除・給与所得控除後の給与等の金額の表・扶養親族などの所得要件で 1 年分の税額を計算し、
+        改正前の源泉徴収税額表で徴収された税額との差を精算します（改正 Q&amp;A Q1-1・Q3-1）。
+      </p>
+      <ul>
+        <li>基礎控除: 合計所得金額 489 万円以下なら {man(1_040_000)}（令和 8 年分・令和 9 年分）</li>
+        <li>給与所得控除の最低額: 74 万円（給与 2,190,000 円未満は給与 − 740,000 円、令和 8 年分・令和 9 年分）</li>
+        <li>扶養親族・同一生計配偶者の所得要件: 合計所得金額 62 万円以下（給与だけなら給与収入 136 万円以下）</li>
+      </ul>
+      <p>
+        令和 8 年 11 月 30 日以前にその年最後の給与を受け取って年末調整をした人（年の途中の死亡退職・出国など）には改正後の控除が反映されないため、
+        確定申告で適用を受けます（Q&amp;A Q1-3・Q7-1）。この計算機はその計算をしません。
+      </p>
+
+      <h2>給与所得控除後の給与等の金額の表</h2>
+      <p>
+        令和 8 年分の年末調整では、給与所得控除後の給与等の金額を国税庁の表（所得税法 別表第五と租税特別措置法 第 29 条の 4）で求めます。
+        2,200,000 円から 6,600,000 円までは 4,000 円ごとの区分で、その区分の下限の金額から計算した額になります。
+        6,600,000 円以上は 給与 × 90% − 1,100,000 円（1 円未満切り捨て）、8,500,000 円以上は 給与 − 1,950,000 円です。
+      </p>
+      <table>
+        <thead>
+          <tr><th>給与等の金額</th><th>給与所得控除後の給与等の金額</th></tr>
+        </thead>
+        <tbody>
+          {salaryRows.map((s) => (
+            <tr><td>{y(s)}</td><td>{y(employmentIncome(s))}</td></tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        所得金額調整控除: 給与が 850 万円を超え、本人が特別障害者か、23 歳未満の扶養親族・特別障害者である同一生計配偶者や扶養親族がいる場合、
+        （給与（1,000 万円を超えるときは 1,000 万円）− 850 万円）× 10%（1 円未満切り上げ）を給与所得控除後の給与等の金額から引きます（No.1411）。
+      </p>
+
+      <h2>基礎控除（令和8年分）</h2>
+      <table>
+        <thead>
+          <tr><th>本人の合計所得金額</th><th>基礎控除額</th></tr>
+        </thead>
+        <tbody>
+          {basicRows.map((b, i) => (
+            <tr>
+              <td>{b.upToYen === null ? `${man(basicRows[i - 1].upToYen!)}超` : i === 0 ? `${man(b.upToYen)}以下` : `${man(basicRows[i - 1].upToYen!)}超 ${man(b.upToYen)}以下`}</td>
+              <td>{b.deductionYen === 0 ? "0円" : man(b.deductionYen)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2>配偶者控除・配偶者特別控除</h2>
+      <p>
+        本人の合計所得金額が 1,000 万円を超えると、どちらも受けられません。配偶者の合計所得金額が 62 万円以下（給与だけなら給与収入 136 万円以下）なら配偶者控除、
+        62 万円を超え 133 万円以下なら配偶者特別控除です（No.1191・No.1195）。配偶者の給与収入で入力すると、上の表と同じ方法で合計所得金額に直して判定します。
+      </p>
+      <table>
+        <thead>
+          <tr><th>本人の合計所得金額</th><th>配偶者控除（一般）</th><th>配偶者控除（70歳以上）</th></tr>
+        </thead>
+        <tbody>
+          {sp.map((b, i) => (
+            <tr>
+              <td>{i === 0 ? `${man(b.taxpayerUpToYen)}以下` : `${man(sp[i - 1].taxpayerUpToYen)}超 ${man(b.taxpayerUpToYen)}以下`}</td>
+              <td>{man(b.generalYen)}</td>
+              <td>{man(b.elderly70plusYen)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <table>
+        <thead>
+          <tr><th>配偶者の合計所得金額</th><th>本人 900万円以下</th><th>950万円以下</th><th>1,000万円以下</th></tr>
+        </thead>
+        <tbody>
+          {sps.map((r) => (
+            <tr>
+              <td>{man(r.spouseOverYen)}超 {man(r.spouseUpToYen)}以下</td>
+              {r.deductionYen.map((d) => <td>{man(d)}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2>扶養控除・特定親族特別控除</h2>
+      <p>年齢はその年 12 月 31 日現在で数えます。扶養親族の合計所得金額は 62 万円以下（給与だけなら給与収入 136 万円以下）です（No.1180）。</p>
+      <table>
+        <thead>
+          <tr><th>区分</th><th>控除額</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>一般の控除対象扶養親族（16歳以上19歳未満・23歳以上70歳未満）</td><td>{man(dep.general)}</td></tr>
+          <tr><td>特定扶養親族（19歳以上23歳未満）</td><td>{man(dep.specified19to22)}</td></tr>
+          <tr><td>老人扶養親族（70歳以上・同居老親等以外）</td><td>{man(dep.elderly70plus)}</td></tr>
+          <tr><td>老人扶養親族（同居老親等）</td><td>{man(dep.elderlyLivingTogether)}</td></tr>
+        </tbody>
+      </table>
+      <p>
+        19 歳以上 23 歳未満で合計所得金額が 62 万円を超え 123 万円以下の親族（給与だけなら給与収入 197 万円以下）は、扶養控除ではなく特定親族特別控除の対象です（No.1177）。
+        この計算機は 1 人分を計算します。
+      </p>
+      <table>
+        <thead>
+          <tr><th>特定親族の合計所得金額</th><th>控除額</th></tr>
+        </thead>
+        <tbody>
+          {sr.map((b) => (
+            <tr><td>{man(b.overYen)}超 {man(b.upToYen)}以下</td><td>{man(b.deductionYen)}</td></tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        そのほか、障害者控除 {man(per.disabled)}・特別障害者 {man(per.speciallyDisabled)}・同居特別障害者 {man(per.speciallyDisabledLivingTogether)}、
+        寡婦控除 {man(per.widow)}・ひとり親控除 {man(per.singleParent)}（本人の合計所得金額 500 万円以下）、勤労学生控除 {man(per.workingStudent)}
+        （合計所得金額 89 万円以下）です（No.1160・No.1170・No.1171・No.1175）。ひとり親控除の 38 万円への引上げは令和 9 年分からで、令和 8 年分は 35 万円です（改正 Q&amp;A Q3-2）。
+        だれが扶養親族や配偶者控除の対象になるかは、この計算機では判断しません。
+      </p>
+
+      <h2>所得税の税率 — 年末調整の速算表</h2>
+      <table>
+        <thead>
+          <tr><th>課税給与所得金額</th><th>税率</th><th>控除額</th></tr>
+        </thead>
+        <tbody>
+          {BRACKETS.slice(0, 6).map((b, i) => (
+            <tr><td>{upTo(b.upToYen, i)}</td><td>{b.pct}%</td><td>{y(b.deductionYen)}</td></tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        算出所得税額 ＝ 課税給与所得金額 × 税率 − 控除額 です。課税給与所得金額が 7,000,000 円なら 7,000,000円 × 23% − 636,000円 ＝ {y(calculatedIncomeTax(7_000_000))}、
+        2,696,000 円なら {y(calculatedIncomeTax(2_696_000))} で、年調年税額は {y(172_100)} × 102.1% の 100 円未満を切り捨てた {y(annualTaxWithSurtax(172_100))} です。
+        年末調整用の速算表は 18,050,000 円までです。令和 9 年分以後は防衛特別所得税が加わりますが、国税庁は所得税と合わせた合計税率に変更はないと説明しています（No.2260）。
+      </p>
+
+      <h2>還付金の計算方法 — 還付と徴収</h2>
+      <p>
+        還付・徴収の額 ＝ その年に源泉徴収された税額の合計 − 年調年税額 です。プラスなら還付、マイナスなら不足額が徴収されます。源泉徴収された税額の合計は、給与明細の所得税の欄を 1 年分足した額です。
+      </p>
+
+      <h2>生命保険料控除・地震保険料控除</h2>
+      <p>
+        この計算機には保険料控除申告書で計算した控除額をそのまま入れます。新契約の一般の生命保険料・介護医療保険料・個人年金保険料は、
+        それぞれ次の式で計算し、合計の上限は {man(rates.lifeInsuranceDeduction.totalCapYen)} です（No.1140）。
+      </p>
+      <table>
+        <thead>
+          <tr><th>年間の支払保険料</th><th>控除額</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>20,000円以下</td><td>支払保険料の全額</td></tr>
+          <tr><td>20,000円超 40,000円以下</td><td>支払保険料 × 1/2 ＋ 10,000円</td></tr>
+          <tr><td>40,000円超 80,000円以下</td><td>支払保険料 × 1/4 ＋ 20,000円</td></tr>
+          <tr><td>80,000円超</td><td>一律 40,000円</td></tr>
+        </tbody>
+      </table>
+      <p>
+        令和 8 年分からは、23 歳未満の扶養親族がいる人の新生命保険料（一般）の控除が 30,000 円以下 全額・60,000 円以下 × 1/2 ＋ 15,000 円・120,000 円以下 × 1/4 ＋ 30,000 円・
+        それを超えると 60,000 円になります（No.1140）。地震保険料控除は、地震保険料 50,000 円以下なら全額、超えると 50,000 円です（No.1145）。
+        どちらも計算した額の 1 円未満は切り上げます（年末調整のしかた）。
+      </p>
+
+      <h2>住宅ローン控除と年末調整</h2>
+      <p>
+        住宅借入金等特別控除は、年末調整では計算し直さず、住宅借入金等特別控除申告書の控除額をそのまま使います。算出所得税額から引き、
+        控除額のほうが大きいときは年調所得税額を 0 円にして、引ききれない分は切り捨てます（年末調整のしかた 3-6）。
+        控除を受ける最初の年は確定申告が必要で、年末調整では受けられません。
+      </p>
+
+      <h2>iDeCo・社会保険料は全額が控除</h2>
+      <p>
+        社会保険料控除はその年に支払った額（給与から差し引かれた額を含む）の全額、小規模企業共済等掛金控除（小規模企業共済・iDeCo などの掛金）もその年に支払った掛金の全額です（No.1130・No.1135）。
+      </p>
+
+      <h2>エクセル・計算シートで計算する式</h2>
+      <p>B1 に課税給与所得金額（1,000 円未満切り捨て前）、B2 に速算表の税率（10% なら 0.1）、B3 に控除額、B4 に住宅借入金等特別控除額、B5 に源泉徴収税額の合計を入れた例です。</p>
+      <ul>
+        <li>課税給与所得金額: <code>=ROUNDDOWN(B1,-3)</code>（B6 とする）</li>
+        <li>年調年税額: <code>=ROUNDDOWN(MAX(B6*B2-B3-B4,0)*1.021,-2)</code>（B7 とする）</li>
+        <li>還付（＋）・徴収（−）: <code>=B5-B7</code></li>
+      </ul>
+      <p>給与所得控除後の給与等の金額は、2,200,000 円から 6,600,000 円の間は 4,000 円ごとの表になっているので、上の表か国税庁の表で確かめてください。</p>
+
+      <details>
+        <summary>年末調整の対象にならない人は？</summary>
+        <p>
+          その年の給与の総額が 2,000 万円を超える人と、災害減免法で源泉徴収税額の徴収猶予などを受けた人は、12 月の年末調整の対象になりません（No.2665）。
+          給与が 2,000 万円を超えると、この計算機は結果を参考として表示します。
+        </p>
+      </details>
+
+      <details>
+        <summary>計算期間はいつからいつまでですか？</summary>
+        <p>その年の 1 月 1 日から 12 月 31 日までに支払が確定した給与・賞与が対象です（年末調整のしかた）。</p>
+      </details>
+
+      <details>
+        <summary>計算しないものは？</summary>
+        <p>
+          住宅借入金等特別控除額そのものの計算、年の途中で退職した人・非居住者の年末調整、令和 8 年 11 月 30 日以前に年末調整を終えた人、特定支出控除、
+          旧契約の生命保険料の計算はしません。どの控除の対象になるかの判断もしません。
+        </p>
+      </details>
+
+      <details>
+        <summary>全角の数字で入力してもいいですか？</summary>
+        <p>はい。「５，０００，０００」のような全角の数字も半角に直して計算します。</p>
+      </details>
+
+      <h2>出典</h2>
+      <ul>
+        {rates.sources.map((s) => (
+          <li><a href={s.url} rel="noopener" target="_blank">{cleanLabel(s.label)}</a></li>
+        ))}
+      </ul>
+      <p>いずれも令和8年10月21日に確認しました。</p>
+
+      <AdSlot label="year-end-adjustment-result-ja" />
+    </main>
+    <SiteFooter />
+    <script>
+      import { yearEndAdjustment, formatYen, type SpouseIncomeKind, type WidowKind } from "../../../lib/jp/year-end-adjustment";
+      import { renderCard, downloadCard, shareCard } from "../../../lib/result-card";
+      import { track, trackCalculatorUse } from "../../../lib/track";
+
+      const reportUse = trackCalculatorUse("jp-year-end-adjustment");
+      const $ = (id: string) => document.getElementById(id)!;
+      const inp = (id: string) => $(id) as HTMLInputElement;
+      const sel = (id: string) => $(id) as HTMLSelectElement;
+
+      const toHalf = (s: string) => s.replace(/[０-９，．]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+      const num = (id: string) => {
+        const v = Number(toHalf(inp(id).value).replace(/,/g, ""));
+        return Number.isFinite(v) && v > 0 ? v : 0;
+      };
+
+      const moneyIds = ["ya-salary", "ya-withheld", "ya-social", "ya-smb", "ya-life", "ya-quake", "ya-spouse-amt", "ya-rel", "ya-housing"];
+      const countIds = ["ya-dep-gen", "ya-dep-spec", "ya-dep-old", "ya-dep-oldt", "ya-dis", "ya-sdis", "ya-sdist"];
+      const selIds = ["ya-spouse", "ya-spouse-old", "ya-widow", "ya-student", "ya-adj"];
+
+      let lastLines: [string, string][] = [];
+
+      function compute() {
+        const spouseKind = sel("ya-spouse").value;
+        const relRaw = toHalf(inp("ya-rel").value).replace(/,/g, "").trim();
+        const withheld = num("ya-withheld");
+        const r = yearEndAdjustment({
+          salary: num("ya-salary"),
+          withheld,
+          socialInsurance: num("ya-social"),
+          smallBusinessMutualAid: num("ya-smb"),
+          lifeInsuranceDeduction: num("ya-life"),
+          earthquakeInsuranceDeduction: num("ya-quake"),
+          incomeAdjustmentEligible: sel("ya-adj").value === "yes",
+          spouse:
+            spouseKind === "none"
+              ? null
+              : { amount: num("ya-spouse-amt"), kind: spouseKind as SpouseIncomeKind, elderly70: sel("ya-spouse-old").value === "yes" },
+          dependents: {
+            general: num("ya-dep-gen"),
+            specified: num("ya-dep-spec"),
+            elderly: num("ya-dep-old"),
+            elderlyLivingTogether: num("ya-dep-oldt"),
+          },
+          specifiedRelativeIncome: relRaw === "" ? null : num("ya-rel"),
+          disabled: num("ya-dis"),
+          speciallyDisabled: num("ya-sdis"),
+          speciallyDisabledLivingTogether: num("ya-sdist"),
+          widow: sel("ya-widow").value as WidowKind,
+          workingStudent: sel("ya-student").value === "yes",
+          housingLoanCredit: num("ya-housing"),
+        });
+
+        const refund = r.difference >= 0;
+        $("ya-hero-label").textContent = refund ? "還付される額" : "追加で徴収される額";
+        $("hero-value").textContent = formatYen(Math.abs(r.difference));
+        $("ya-formula").textContent = `源泉徴収税額 ${formatYen(withheld)} − 年調年税額 ${formatYen(r.annualTax)}`;
+        $("out-ei").textContent = formatYen(r.employmentIncome);
+        $("out-ded").textContent = formatYen(r.totalDeductions);
+        $("out-taxable").textContent = formatYen(r.taxable);
+        $("out-calc").textContent = formatYen(r.calculatedTax);
+        $("out-annual").textContent = formatYen(r.annualTax);
+
+        const notes: string[] = [];
+        if (r.notEligible) notes.push("給与の総額が2,000万円を超えるため年末調整の対象外です（確定申告）。表示は参考の計算です。");
+        if (r.incomeAdjustment > 0) notes.push(`所得金額調整控除 ${formatYen(r.incomeAdjustment)} を引いています。`);
+        if (r.spouse.kind === "spouse") notes.push(`配偶者控除 ${formatYen(r.spouse.yen)}`);
+        if (r.spouse.kind === "special") notes.push(`配偶者特別控除 ${formatYen(r.spouse.yen)}`);
+        if (spouseKind !== "none" && r.spouse.kind === "none") notes.push("配偶者控除・配偶者特別控除は0円です（所得の条件に当たらないため）。");
+        if (r.housingApplied > 0) notes.push(`住宅借入金等特別控除 ${formatYen(r.housingApplied)} を引いています。`);
+        $("ya-note").textContent = notes.join(" ");
+
+        lastLines = [
+          ["給与の総額", formatYen(num("ya-salary"))],
+          ["課税給与所得金額", formatYen(r.taxable)],
+          ["年調年税額", formatYen(r.annualTax)],
+          ["源泉徴収税額", formatYen(withheld)],
+          [refund ? "還付" : "徴収", formatYen(Math.abs(r.difference))],
+        ];
+      }
+
+      for (const id of moneyIds) {
+        inp(id).addEventListener("input", () => {
+          if (id === "ya-salary") reportUse(num(id));
+          compute();
+        });
+        inp(id).addEventListener("blur", () => {
+          const raw = toHalf(inp(id).value).replace(/,/g, "").trim();
+          if (raw === "") return;
+          const v = num(id);
+          inp(id).value = Math.floor(v).toLocaleString("ja-JP");
+        });
+      }
+      for (const id of countIds) inp(id).addEventListener("input", compute);
+      for (const id of selIds) {
+        sel(id).addEventListener("change", compute);
+        sel(id).addEventListener("input", compute);
+      }
+
+      const buildCard = () => renderCard({ title: "年末調整の計算（令和8年分）", lines: lastLines, footer: "jupocket.com" });
+      $("btn-download").addEventListener("click", () => {
+        track("save_result", { calculator: "jp-year-end-adjustment" });
+        downloadCard(buildCard(), "year-end-adjustment-result.png");
+      });
+      $("btn-share").addEventListener("click", async () => {
+        track("share_result", { calculator: "jp-year-end-adjustment" });
+        await shareCard(buildCard(), "年末調整の計算結果 - jupocket.com");
+      });
+
+      compute();
+    </script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

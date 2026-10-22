@@ -165,4 +165,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/ja/year-end-adjustment/",
+    name: "年末調整の計算（令和8年分）",
+    blurb: "給与の総額・源泉徴収税額・社会保険料と各種控除から、年調年税額と還付・徴収の額を令和8年分の基礎控除・給与所得控除後の表で計算",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];
