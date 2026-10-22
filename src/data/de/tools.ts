@@ -62,4 +62,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/de/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "Schuldenabbau-Rechner",
+    blurb: "Mehrere Kredite abbezahlen: Lawinen- oder Schneeballmethode, Monat der Schuldenfreiheit und Zinsen gesamt",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

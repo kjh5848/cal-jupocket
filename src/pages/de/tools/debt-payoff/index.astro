@@ -1,0 +1,223 @@
+---
+/**
+ * Schuldenabbau-Rechner — 독일어판 일곱 번째 도구. 한국어판 /tools/debt-payoff/ 와 계산(lib/debt-payoff.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/debt-payoff.ts 의 DE 사전), 문장은 독일 자동완성으로 새로 썼다(번역 아님). 산술이라 rates 와 상관없다(조사표 독일 칸 '같음').
+ *
+ * 금액은 센트 정수로 payoffPlan 에 넣는다(lib/de/debt-payoff.ts) — 월 이자는 센트 미만 버림. 표기는 '1 234,56 Euro'(§ 32a EStG 꼴).
+ * 독일 은행·카드가 실제로 이자를 매기는 방식은 조사표에서 미확인이라 본문에 주장하지 않는다(계획용 어림이라고만 적는다).
+ *
+ * 소제목은 독일 구글 자동완성에서 왔다(keywords/de-debt-payoff-2026-10-23.csv, hl de · gl de):
+ *   schulden abbezahlen rechner·plan·excel·tipps / welche schulden zuerst bezahlen / lawinen methode schulden / schneeballmethode schulden /
+ *   mehrere kredite abbezahlen (schneeballmethode literatur·bürgergeld·privatinsolvenz·hartz 4·oder investieren 축은 버림)
+ * 본문 숫자는 전부 아래 frontmatter 에서 payoffPlan() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { payoffPlan, type Debt } from "../../../../lib/debt-payoff";
+import { euroCentDe, spellMonthsDe } from "../../../../lib/de/debt-payoff";
+import { decimalDe } from "../../../../lib/de/money";
+import { intDe } from "../../../../lib/de/date-format";
+import "../../../../styles/global.css";
+
+const title = "Schuldenabbau-Rechner — mehrere Kredite abbezahlen: Lawinen- oder Schneeballmethode";
+const description =
+  "Schulden abbezahlen mit Plan: Restschuld, Zinssatz und Mindestrate je Kredit eingeben und vergleichen, wann Sie mit der Lawinenmethode, der Schneeballmethode oder Ihrer eigenen Reihenfolge schuldenfrei sind und wie viel Zinsen anfallen.";
+
+/** Beispiel in Cent */
+const sample: Debt[] = [
+  { name: "Kreditkarte", balance: 240_000, ratePct: 18.9, minPayment: 8_000, priority: 2 },
+  { name: "Dispokredit", balance: 150_000, ratePct: 12.5, minPayment: 5_000, priority: 1 },
+  { name: "Ratenkredit", balance: 900_000, ratePct: 6.9, minPayment: 18_000, priority: 3 },
+];
+const extra = 15_000;
+const ex = payoffPlan({ debts: sample, strategy: "avalanche", extra, extraGrowthPct: 0 });
+const snow = payoffPlan({ debts: sample, strategy: "snowball", extra, extraGrowthPct: 0 });
+const none = payoffPlan({ debts: sample, strategy: "avalanche", extra: 0, extraGrowthPct: 0 });
+if (!ex.ok || !snow.ok || !none.ok) throw new Error("debt-payoff 독일어판 예시가 계산되지 않음");
+const rows = [0, 1, 2, 3, 4].map((i) => sample[i] ?? null);
+const eur = euroCentDe;
+const inputEur = (cents: number) => intDe(Math.round(cents / 100));
+const rate = (p: number) => `${decimalDe(String(p))} %`;
+const orderOf = (r: typeof ex) => (r.ok ? [...r.debts].sort((a, b) => a.order - b.order) : []);
+---
+
+<html lang="de-DE">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Schuldenabbau-Rechner</h1>
+      <p>
+        Wer mehrere Kredite gleichzeitig abbezahlt, muss entscheiden, wohin das Geld fließt, das über die Mindestraten hinaus übrig
+        ist. Tragen Sie für jede Schuld Restschuld, Zinssatz pro Jahr und monatliche Mindestrate ein und dazu den Betrag, den Sie jeden
+        Monat zusätzlich tilgen können. Ist eine Schuld getilgt, wandert ihre Rate an die nächste — das Monatsbudget bleibt gleich.
+        Der Rechner zeigt, wann Sie schuldenfrei sind und wie viel Zinsen Sie bis dahin zahlen.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="dp-debts">
+          {rows.map((d, i) => (
+            <fieldset class="dp-debt" data-row={i + 1}>
+              <legend>Schuld {i + 1}{i >= 3 ? " (optional)" : ""}</legend>
+              <div class="calc-input-wrap">
+                <label for={`dp-name-${i + 1}`}>Bezeichnung</label>
+                <input type="text" id={`dp-name-${i + 1}`} value={d?.name ?? ""} placeholder={`Schuld ${i + 1}`} maxlength="20" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-bal-${i + 1}`}>Restschuld (Euro)</label>
+                <input type="text" inputmode="decimal" id={`dp-bal-${i + 1}`} value={d ? inputEur(d.balance) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-rate-${i + 1}`}>Zinssatz pro Jahr</label>
+                <input type="number" id={`dp-rate-${i + 1}`} value={d ? d.ratePct : ""} min="0" max="100" step="0.1" inputmode="decimal" />
+                <span class="unit">%</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-min-${i + 1}`}>Mindestrate pro Monat (Euro)</label>
+                <input type="text" inputmode="decimal" id={`dp-min-${i + 1}`} value={d ? inputEur(d.minPayment) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap dp-prio">
+                <label for={`dp-prio-${i + 1}`}>Eigene Reihenfolge</label>
+                <select id={`dp-prio-${i + 1}`}>
+                  {[1, 2, 3, 4, 5].map((n) => <option value={n} selected={(d?.priority ?? i + 1) === n}>{n}. Stelle</option>)}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="dp-strategy">Reihenfolge der Tilgung</label>
+          <select id="dp-strategy" data-seg>
+            <option value="avalanche" selected>Höchster Zins zuerst (Lawine)</option>
+            <option value="snowball">Kleinste Schuld zuerst (Schneeball)</option>
+            <option value="custom">Eigene Reihenfolge</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-extra">Zusätzliche Tilgung pro Monat (Euro)</label>
+          <input type="text" inputmode="decimal" id="dp-extra" value={inputEur(extra)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-growth">Zusätzliche Tilgung jährlich erhöhen</label>
+          <input type="number" id="dp-growth" value="0" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="dp-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="dp-debt|dp-int" data-bar-labels="Tilgung|Zinsen" data-dock="dp-hero">
+          <p class="label">Schuldenfrei nach</p>
+          <p class="big" id="dp-hero">{spellMonthsDe(ex.months)}</p>
+          <p class="meta" id="dp-note">{ex.months} Monate · Budget im ersten Monat {eur(ex.startBudget)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Schulden gesamt</span><span class="value" id="dp-debt">{eur(ex.totalDebt)}</span></div>
+          <div class="stat-chip"><span class="label">Zinsen gesamt</span><span class="value" id="dp-int">{eur(ex.totalInterest)}</span></div>
+          <div class="stat-chip"><span class="label">Gezahlt insgesamt</span><span class="value" id="dp-paid">{eur(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">Zinsen Lawine vs. Schneeball</span><span class="value" id="dp-vs">Lawine {eur(snow.totalInterest - ex.totalInterest)} günstiger</span></div>
+          <div class="stat-chip"><span class="label">Durch Zusatztilgung gespart</span><span class="value" id="dp-saved">{eur(none.totalInterest - ex.totalInterest)} · {none.months - ex.months} Monate früher</span></div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Rang</th><th>Schuld</th><th>Getilgt im</th><th>Zinsen</th></tr></thead>
+            <tbody id="dp-order">
+              {orderOf(ex).map((d) => <tr><th scope="row">{d.order}</th><td>{d.name}</td><td>{d.payoffMonth}. Monat</td><td>{eur(d.interest)}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Tilgungsplan pro Monat: Rate, Tilgung, Zinsen, Restschuld</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Monat</th><th>Gezahlt</th><th>Tilgung</th><th>Zinsen</th><th>Restschuld</th></tr></thead>
+              <tbody id="dp-rows">
+                {ex.rows.map((r) => <tr><th scope="row">{r.month}. Monat</th><td>{eur(r.payment)}</td><td>{eur(r.principal)}</td><td>{eur(r.interest)}</td><td>{eur(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Als PNG speichern</button>
+          <button id="btn-share" type="button" class="secondary">Teilen</button>
+        </div>
+      </div>
+
+      <h2>So rechnet der Schuldenabbau-Rechner</h2>
+      <ul>
+        <li><strong>Monatsbudget</strong> — Summe aller Mindestraten plus zusätzliche Tilgung. Ist eine Schuld getilgt, sinkt das Budget nicht; ihre Rate geht an die nächste Schuld.</li>
+        <li><strong>Zinsen</strong> — jeden Monat Restschuld × Zinssatz pro Jahr ÷ 12, auf volle Cent abgerundet.</li>
+        <li><strong>Ablauf im Monat</strong> — erst Zinsen aufschlagen, dann jede Mindestrate zahlen, den Rest auf die Schuld an erster Stelle. Wird sie im selben Monat getilgt, geht der übrige Betrag gleich an die nächste.</li>
+        <li><strong>Reihenfolge</strong> — Lawine: höchster Zinssatz zuerst (bei gleichem Zins die kleinere Restschuld). Schneeball: kleinste Restschuld zuerst (bei gleicher Restschuld der höhere Zins). Eigene Reihenfolge: Ihre Nummern. Die Reihenfolge wird einmal aus den Startwerten festgelegt.</li>
+        <li><strong>Jährlich erhöhen</strong> — nur die zusätzliche Tilgung steigt alle 12 Monate um den Prozentsatz, die Mindestraten bleiben gleich.</li>
+      </ul>
+
+      <h2>Welche Schulden zuerst bezahlen?</h2>
+      <p>
+        Im Beispiel oben stehen drei Schulden: Kreditkarte {eur(sample[0].balance)} zu {rate(sample[0].ratePct)}, Dispokredit
+        {" "}{eur(sample[1].balance)} zu {rate(sample[1].ratePct)} und Ratenkredit {eur(sample[2].balance)} zu {rate(sample[2].ratePct)},
+        Mindestraten zusammen {eur(ex.startBudget - extra)} und {eur(extra)} zusätzlich pro Monat. Mit der Lawinenmethode sind alle
+        drei nach {spellMonthsDe(ex.months)} getilgt, die Zinsen betragen {eur(ex.totalInterest)}. Mit der Schneeballmethode sind es
+        {" "}{spellMonthsDe(snow.months)} und {eur(snow.totalInterest)} Zinsen — {eur(snow.totalInterest - ex.totalInterest)} mehr.
+      </p>
+      <p>
+        Bei gleichem Budget zahlt die Lawine nie mehr Zinsen als der Schneeball, weil zuerst der Teil der Schulden schrumpft, der am
+        teuersten verzinst wird. Der Schneeball tilgt dafür die kleinste Schuld früher — im Beispiel ist der Dispokredit im
+        {" "}{orderOf(snow)[0]?.payoffMonth}. statt im {ex.debts.find((d) => d.name === "Dispokredit")?.payoffMonth}. Monat weg, und es bleiben
+        weniger Gläubiger übrig. Ist der Unterschied klein, ist die Reihenfolge besser, die Sie durchhalten.
+      </p>
+
+      <h2>Schulden abbezahlen mit Plan</h2>
+      <p>
+        Ohne die {eur(extra)} Zusatztilgung bräuchte das Beispiel {spellMonthsDe(none.months)} und {eur(none.totalInterest)} Zinsen.
+        Die zusätzliche Rate spart also {eur(none.totalInterest - ex.totalInterest)} und {none.months - ex.months} Monate. Der Tilgungsplan
+        unter dem Ergebnis zeigt jeden Monat Rate, Tilgung, Zinsen und Restschuld; wer lieber in Excel plant, legt dieselben Spalten an
+        und rechnet die Zinsen eines Monats als Restschuld × Zinssatz ÷ 12.
+      </p>
+
+      <details>
+        <summary>Die Mindestrate ist zu niedrig</summary>
+        <p>
+          Liegt die Mindestrate nicht über den Zinsen des ersten Monats (Restschuld × Zinssatz ÷ 12), sinkt diese Schuld durch die
+          Mindestrate allein nicht. Tragen Sie einen höheren Betrag ein. Bei Krediten, deren Mindestrate sich mit der Restschuld ändert,
+          nehmen Sie die aktuelle Rate und lesen das Ergebnis als grobe Schätzung.
+        </p>
+      </details>
+
+      <details>
+        <summary>Warum weicht das von meiner Abrechnung ab?</summary>
+        <p>
+          Der Rechner nimmt an, dass jeden Monat derselbe Anteil des Jahreszinses anfällt. Banken und Kartenanbieter können Zinsen nach
+          Tagen berechnen, Gebühren erheben, den Zinssatz ändern oder andere Abrechnungstermine haben. Das Ergebnis ist eine Schätzung zum
+          Planen, kein Angebot und keine Beratung — maßgeblich sind Ihr Vertrag und Ihre Abrechnung. Wie Zinseszins bei einer Sparrate
+          wirkt, zeigt der <a href="/de/tools/compound/">Zinseszinsrechner</a>.
+        </p>
+      </details>
+
+      <AdSlot label="debt-payoff-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .dp-debts { display: grid; gap: 0.75rem; }
+      .dp-debt { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.5rem 0.75rem 0.75rem; margin: 0; min-width: 0; }
+      .dp-debt legend { font-weight: 600; padding: 0 0.25rem; }
+      .dp-prio[hidden] { display: none; }
+    </style>
+    <script src="../../../../scripts/debt-payoff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
