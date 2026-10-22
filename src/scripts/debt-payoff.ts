@@ -5,6 +5,7 @@
  * 여러 언어판이 같은 계산을 쓰고 말·통화 표기만 다르다(pickLang). lib 은 금액을 정수 단위로 버림하므로
  * 영어 사전은 센트(× 100)로 넣고 꺼낼 때 ÷ 100 — 이자는 센트 미만 버림. 통화는 판의 currency·numberLocale(src/i18n/locales.ts).
  * 독일어판(/de/tools/debt-payoff/)은 DE 사전 — 같은 센트 단위, 표기는 lib/de/debt-payoff('1 234,56 Euro'·'November 2027', Intl 안 씀).
+ * 번체판(/zh-hk/tools/debt-payoff/)은 ZH_HANT 사전 — 읽기·금액·달은 EN 과 같은 센트 단위·판 Intl(zh-HK → 'HK$1,234.50'·'2027年11月'), 중립 서면어라 대만판도 쓸 수 있다.
  */
 import { payoffPlan, monthLabel, spellMonths, type Debt, type Strategy } from "../lib/debt-payoff";
 import { formatWon, parseAmount } from "../lib/money";
@@ -118,7 +119,39 @@ const DE: typeof KO = {
   share: "Schuldenabbau-Plan - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, en: EN, de: DE });
+/** 繁體中文 — /zh-hk/tools/debt-payoff/. 센트 단위·Intl 은 EN 과 같음(판의 currency·numberLocale), 기간 '1年3個月' */
+const zhSpell = (months: number) => {
+  const y = Math.floor(months / 12);
+  const r = months % 12;
+  return [y ? `${y}年` : "", r ? `${r}個月` : ""].join("") || "0個月";
+};
+const ZH_HANT: typeof KO = {
+  read: EN.read,
+  money: EN.money,
+  month: EN.month,
+  spell: zhSpell,
+  debtName: (n) => `債務${n}`,
+  errEmpty: "請至少輸入一筆尚有結欠的債務。",
+  errMin: (name, first) => `${name}：每月最低還款額不高於首月利息 ${first}，結欠不會減少。請輸入較大的金額。`,
+  errLong: "50年（600個月）內未能還清，請提高每月還款額。",
+  note: (end, months, budget) => `${end}還清 · ${months}個月 · 首月預算 ${budget}`,
+  vsSame: (monthGap) => `利息相同${monthGap ? ` · 期間相差${Math.abs(monthGap)}個月` : ""}`,
+  vs: (gap, less, monthGap) =>
+    `雪崩法利息${less ? "少" : "多"} ${gap}${monthGap ? ` · ${monthGap > 0 ? "快" : "慢"}${Math.abs(monthGap)}個月` : ""}`,
+  saved: (amount, months) => `${amount} · 提早${months}個月`,
+  savedNever: "不額外還款，50年內未能還清",
+  noExtra: "沒有額外還款",
+  payoffAt: (end, m) => `${end}（第${m}個月）`,
+  lineDebt: "債務總額",
+  lineBudget: "首月預算",
+  lineEnd: "還清月份",
+  lineEndValue: (end, spelled) => `${end}（${spelled}）`,
+  lineInt: "總利息",
+  title: "債務還款計劃",
+  share: "債務還款計劃 - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, en: EN, de: DE, "zh-Hant": ZH_HANT });
 
 const reportUse = trackCalculatorUse("debt-payoff");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
