@@ -5,6 +5,7 @@
  * 여러 언어판이 같은 계산을 쓰고 말·통화 표기만 다르다(pickLang). lib 은 금액을 정수 단위로 버림하므로
  * 영어 사전은 센트(× 100)로 넣고 꺼낼 때 ÷ 100 — 이자는 센트 미만 버림. 통화는 판의 currency·numberLocale(src/i18n/locales.ts).
  * 독일어판(/de/tools/debt-payoff/)은 DE 사전 — 같은 센트 단위, 표기는 lib/de/debt-payoff('1 234,56 Euro'·'November 2027', Intl 안 씀).
+ * 스페인판(/es/tools/debt-payoff/)은 ES 사전 — 같은 센트 단위, 표기는 lib/es/debt-payoff('1234,56 euros'·'noviembre de 2027', Intl 안 씀).
  * 번체판(/zh-hk/tools/debt-payoff/)은 ZH_HANT 사전 — 읽기·금액·달은 EN 과 같은 센트 단위·판 Intl(zh-HK → 'HK$1,234.50'·'2027年11月'), 중립 서면어라 대만판도 쓸 수 있다.
  */
 import { payoffPlan, monthLabel, spellMonths, type Debt, type Strategy } from "../lib/debt-payoff";
@@ -14,6 +15,7 @@ import { track, trackCalculatorUse } from "../lib/track";
 import { pageLocale, pickLang } from "../i18n/ui";
 import { meta } from "../i18n/locales";
 import { centsDe, euroCentDe, monthLabelDe, spellMonthsDe } from "../lib/de/debt-payoff";
+import { centsEs, euroCentEs, monthLabelEs, spellMonthsEs } from "../lib/es/debt-payoff";
 
 const KO = {
   /** 입력칸 → lib 정수 단위 */
@@ -151,7 +153,35 @@ const ZH_HANT: typeof KO = {
   share: "債務還款計劃 - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, en: EN, de: DE, "zh-Hant": ZH_HANT });
+/** Español — /es/tools/debt-payoff/. 센트 정수로 계산, 금액 '1234,56 euros'·'12 345,67 euros'(RD 2032/2009 Anexo III 2.8·2.9), 달 'noviembre de 2027' */
+const ES: typeof KO = {
+  read: centsEs,
+  money: euroCentEs,
+  month: monthLabelEs,
+  spell: spellMonthsEs,
+  debtName: (n) => `Deuda ${n}`,
+  errEmpty: "Escribe al menos una deuda con saldo pendiente.",
+  errMin: (name, first) =>
+    `${name}: la cuota mínima no supera los intereses del primer mes, ${first}, así que el saldo no baja. Escribe una cantidad mayor.`,
+  errLong: "Estas deudas no quedan pagadas en 50 años (600 meses). Paga más cada mes.",
+  note: (end, months, budget) => `Sin deudas en ${end} · ${months} ${months === 1 ? "mes" : "meses"} · presupuesto del primer mes ${budget}`,
+  vsSame: (monthGap) => `Mismos intereses${monthGap ? ` · ${spellMonthsEs(Math.abs(monthGap))} de diferencia` : ""}`,
+  vs: (gap, less, monthGap) =>
+    `La avalancha paga ${gap} ${less ? "menos" : "más"}${monthGap ? ` · ${spellMonthsEs(Math.abs(monthGap))} ${monthGap > 0 ? "antes" : "después"}` : ""}`,
+  saved: (amount, months) => `${amount} · ${months} ${months === 1 ? "mes" : "meses"} antes`,
+  savedNever: "Sin el pago extra no se termina en 50 años",
+  noExtra: "Sin pago extra",
+  payoffAt: (end, m) => `${end} (mes ${m})`,
+  lineDebt: "Deuda total",
+  lineBudget: "Presupuesto del primer mes",
+  lineEnd: "Sin deudas en",
+  lineEndValue: (end, spelled) => `${end} (${spelled})`,
+  lineInt: "Intereses totales",
+  title: "Plan para pagar deudas",
+  share: "Plan para pagar deudas - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, en: EN, de: DE, es: ES, "zh-Hant": ZH_HANT });
 
 const reportUse = trackCalculatorUse("debt-payoff");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
