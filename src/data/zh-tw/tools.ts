@@ -62,4 +62,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/zh-tw/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "還債計算機",
+    blurb: "最多五筆卡債、信用貸款或分期，用同一個每月預算比較雪崩法、雪球法或自訂順序，算出哪個月還清和總利息",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

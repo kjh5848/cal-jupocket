@@ -1,0 +1,245 @@
+---
+/**
+ * 還債計算機 — 대만판 도구. 한국어판 /tools/debt-payoff/ 와 계산(lib/debt-payoff.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/debt-payoff.ts 의 ZH_HANT 사전 — 홍콩판과 공용, 금액은 판의 TWD·zh-TW 표기 '$1,234', 원 단위 정수),
+ * 문장은 대만 번체로 새로 썼다(번역 아님). 산술 투영이라 rates 와 상관없다(조사표 대만 칸 '같음').
+ *
+ * lib 은 정수 단위로 이자를 버림한다 — 한국어판은 원, 여기는 元(소수점 아래는 읽지 않음). 아래 예시도 같은 단위로 계산해
+ * 정적 HTML 과 스크립트의 첫 계산이 맞는다.
+ * 법 숫자는 銀行法 第47條之1 第2項(信用卡 循環信用利率·現金卡 利率 年 15% 상한, 民國104年(2015)9月1日起) 하나만 —
+ * https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=G0380001&flno=47-1 (修正日期 民國112年06月28日, 截止日 民國115年10月16日, 확인 2026-10-23).
+ * 最低應繳金額 규칙·일할 이자·債務協商/更生 절차·債務整合 비용은 허용 출처로 확인하지 않아 숫자를 쓰지 않는다.
+ * 예시 이자율은 사용자가 바꿔 넣는 가정이다. 은행·상품 이름은 쓰지 않는다.
+ *
+ * 소제목은 대만 구글 자동완성에서 왔다(keywords/tw-debt-payoff-2026-10-23.csv, hl zh-TW · gl tw):
+ *   還債計算機 · 還債雪球計算機 / 雪崩式還債法 · 雪球還債法 · 雪崩法 雪球法 / 卡債怎麼算 · 卡債利息計算 · 信用卡利息計算公式 /
+ *   還款計畫表 · 還款計畫表下載 · 貸款還款試算 excel / 提前還款試算表 / 負債還款方式 · 信用卡債怎麼還
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { payoffPlan, type Debt } from "../../../../lib/debt-payoff";
+import "../../../../styles/global.css";
+
+const title = "台灣還債計算機 — 雪崩法 vs 雪球法，卡債、信用貸款還款計畫表";
+const description =
+  "台灣還債計算機（新臺幣）：最多五筆卡債、信用貸款或分期，用同一個每月預算比較雪崩法、雪球法或自訂順序，算出哪個月還清、總利息與逐月還款計畫表。";
+
+const sample: Debt[] = [
+  { name: "信用卡", balance: 60_000, ratePct: 15, minPayment: 3_000, priority: 2 },
+  { name: "信用貸款", balance: 300_000, ratePct: 6, minPayment: 9_000, priority: 1 },
+  { name: "分期付款", balance: 24_000, ratePct: 3, minPayment: 2_000, priority: 3 },
+];
+const extra = 5_000;
+const ex = payoffPlan({ debts: sample, strategy: "avalanche", extra, extraGrowthPct: 0 });
+const snow = payoffPlan({ debts: sample, strategy: "snowball", extra, extraGrowthPct: 0 });
+const none = payoffPlan({ debts: sample, strategy: "avalanche", extra: 0, extraGrowthPct: 0 });
+if (!ex.ok || !snow.ok || !none.ok) throw new Error("debt-payoff zh-tw 예시가 계산되지 않음");
+const rows = [0, 1, 2, 3, 4].map((i) => sample[i] ?? null);
+const ntd = (x: number) =>
+  Math.round(x).toLocaleString("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+const plain = (x: number) => x.toLocaleString("zh-TW");
+const spell = (m: number) => [Math.floor(m / 12) ? `${Math.floor(m / 12)}年` : "", m % 12 ? `${m % 12}個月` : ""].join("") || "0個月";
+const gap = snow.totalInterest - ex.totalInterest;
+const firstCardInterest = Math.floor((sample[0].balance * sample[0].ratePct) / 100 / 12);
+const card = ex.debts.find((d) => d.index === 0)!;
+const cardSnow = snow.debts.find((d) => d.index === 0)!;
+---
+
+<html lang="zh-Hant-TW">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>還債計算機（雪崩法・雪球法）</h1>
+      <p>
+        同時有卡債、信用貸款和分期付款，不知道該先還哪一筆？把每筆債務的剩餘本金、年利率和每月最低還款填進去，再填上每月能多還的金額，
+        就能看到哪個月全部還清、總共付多少利息，並比較先還利率最高的（雪崩法）和先還餘額最小的（雪球法）。
+        一筆債還清後，原本付給它的錢會轉去還下一筆，所以每月總預算維持不變。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="dp-debts">
+          {rows.map((d, i) => (
+            <fieldset class="dp-debt" data-row={i + 1}>
+              <legend>第{i + 1}筆債務{i >= 3 ? "（選填）" : ""}</legend>
+              <div class="calc-input-wrap">
+                <label for={`dp-name-${i + 1}`}>名稱</label>
+                <input type="text" id={`dp-name-${i + 1}`} value={d?.name ?? ""} placeholder={`債務 ${i + 1}`} maxlength="20" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-bal-${i + 1}`}>剩餘本金（元）</label>
+                <input type="text" inputmode="numeric" id={`dp-bal-${i + 1}`} value={d ? plain(d.balance) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-rate-${i + 1}`}>年利率</label>
+                <input type="number" id={`dp-rate-${i + 1}`} value={d ? d.ratePct : ""} min="0" max="100" step="0.1" inputmode="decimal" />
+                <span class="unit">%</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-min-${i + 1}`}>每月最低還款（元）</label>
+                <input type="text" inputmode="numeric" id={`dp-min-${i + 1}`} value={d ? plain(d.minPayment) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap dp-prio">
+                <label for={`dp-prio-${i + 1}`}>自訂順序</label>
+                <select id={`dp-prio-${i + 1}`}>
+                  {[1, 2, 3, 4, 5].map((n) => <option value={n} selected={(d?.priority ?? i + 1) === n}>第{n}個還</option>)}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="dp-strategy">先還哪一筆</label>
+          <select id="dp-strategy" data-seg>
+            <option value="avalanche" selected>利率最高的先還（雪崩法）</option>
+            <option value="snowball">餘額最小的先還（雪球法）</option>
+            <option value="custom">自訂順序</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-extra">每月多還（元）</label>
+          <input type="text" inputmode="numeric" id="dp-extra" value={plain(extra)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-growth">多還金額每年增加</label>
+          <input type="number" id="dp-growth" value="0" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="dp-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="dp-debt|dp-int" data-bar-labels="本金|利息" data-dock="dp-hero">
+          <p class="label">全部還清需要</p>
+          <p class="big" id="dp-hero">{spell(ex.months)}</p>
+          <p class="meta" id="dp-note">{ex.months}個月 · 第一個月預算 {ntd(ex.startBudget)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">債務合計</span><span class="value" id="dp-debt">{ntd(ex.totalDebt)}</span></div>
+          <div class="stat-chip"><span class="label">總利息</span><span class="value" id="dp-int">{ntd(ex.totalInterest)}</span></div>
+          <div class="stat-chip"><span class="label">總共付出</span><span class="value" id="dp-paid">{ntd(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">雪崩法 vs 雪球法 利息</span><span class="value" id="dp-vs">雪崩法少付 {ntd(gap)}</span></div>
+          <div class="stat-chip"><span class="label">多還省下的利息</span><span class="value" id="dp-saved">{ntd(none.totalInterest - ex.totalInterest)}</span></div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>順序</th><th>債務</th><th>還清時間</th><th>付出利息</th></tr></thead>
+            <tbody id="dp-order">
+              {[...ex.debts].sort((a, b) => a.order - b.order).map((d) => <tr><th scope="row">{d.order}</th><td>{d.name}</td><td>第{d.payoffMonth}個月</td><td>{ntd(d.interest)}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>還款計畫表：每月還款、本金、利息與剩餘本金</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>月份</th><th>還款</th><th>本金</th><th>利息</th><th>剩餘本金</th></tr></thead>
+              <tbody id="dp-rows">
+                {ex.rows.map((r) => <tr><th scope="row">第{r.month}個月</th><td>{ntd(r.payment)}</td><td>{ntd(r.principal)}</td><td>{ntd(r.interest)}</td><td>{ntd(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">存成圖片</button>
+          <button id="btn-share" type="button" class="secondary">分享</button>
+        </div>
+      </div>
+
+      <h2>還債計算機怎麼算</h2>
+      <ul>
+        <li><strong>每月預算</strong>：所有債務的每月最低還款加總，再加上每月多還的金額。某一筆還清後預算不減少，那一筆的還款會轉去還下一筆。</li>
+        <li><strong>利息</strong>：每個月以「剩餘本金 × 年利率 ÷ 12」計算，元以下捨去。</li>
+        <li><strong>每個月的順序</strong>：先把利息加進餘額，每筆債務付最低還款，剩下的錢全部還給目標債務。目標當月還清還有剩，就在同一個月轉去還下一個目標。</li>
+        <li><strong>目標順序</strong>：雪崩法是年利率高的先還（利率相同時餘額小的先）；雪球法是一開始餘額小的先還（餘額相同時利率高的先）；自訂順序照你選的號碼。順序以一開始填的資料決定，中途不會改。</li>
+        <li><strong>多還金額每年增加</strong>：只有每月多還的部分每 12 個月按填入的比例增加，最低還款不變。</li>
+      </ul>
+
+      <h2>還款計畫表範例：多還 {ntd(extra)} 差多少</h2>
+      <p>
+        上面的範例有三筆債務，合計 {ntd(ex.totalDebt)}：信用卡 {ntd(sample[0].balance)}（年利率 {sample[0].ratePct}%）、
+        信用貸款 {ntd(sample[1].balance)}（年利率 {sample[1].ratePct}%）、分期付款 {ntd(sample[2].balance)}（年利率 {sample[2].ratePct}%）。
+        這些利率只是假設，請改成你帳單或合約上的利率。只付最低還款時，要 {spell(none.months)} 才還清，利息共 {ntd(none.totalInterest)}；
+        每月多還 {ntd(extra)} 並用雪崩法，縮短為 {spell(ex.months)}，利息 {ntd(ex.totalInterest)}，少付 {ntd(none.totalInterest - ex.totalInterest)}。
+      </p>
+
+      <h2>雪崩式還債法 vs 雪球還債法</h2>
+      <p>
+        雪崩法把多出來的錢全部拿去還年利率最高的那一筆，最貴的債先變小。同樣的預算下，雪崩法付的利息通常比雪球法少，幾乎不會更多。
+        雪球法先還餘額最小的，帳單數量比較快減少，容易看到進度。範例中，雪崩法在第 {card.payoffMonth} 個月就還清信用卡，
+        雪球法則先在第 {snow.debts.find((d) => d.index === 2)!.payoffMonth} 個月還清分期、第 {cardSnow.payoffMonth} 個月還清信用卡，
+        總利息多 {ntd(gap)}（{ntd(snow.totalInterest)} 對 {ntd(ex.totalInterest)}）。差距不大時，選一個你比較能堅持下去的方法就好。
+      </p>
+
+      <h2>卡債怎麼算：信用卡利息計算公式</h2>
+      <p>
+        這個計算機用「剩餘本金 × 年利率 ÷ 12」估算每月利息。例如卡債 {ntd(sample[0].balance)}、年利率 {sample[0].ratePct}%，
+        第一個月利息約 {ntd(firstCardInterest)}。依
+        <a href="https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=G0380001&flno=47-1" rel="noopener" target="_blank">銀行法第47條之1</a>，
+        自民國104年（2015年）9月1日起，信用卡循環信用利率和現金卡利率不得超過年利率 15%。這是法律上限，不是你的實際利率；
+        發卡機構實際怎麼計息（例如按日計算、從哪一天起算），以及最低應繳金額怎麼定，請看你的帳單和契約條款。
+      </p>
+
+      <h2>還款計畫表 Excel 怎麼做</h2>
+      <p>
+        自己用 Excel 或 Google 試算表做還款計畫表，步驟和這個計算機一樣：每個月一列，每筆債務各有期初餘額、利息
+        （<code>=ROUNDDOWN(餘額*年利率/12, 0)</code>）、還款和期末餘額四欄。目標債務的還款等於每月預算減去其他債務的最低還款。
+        這裡最多可以同時算五筆，並直接列出上面的逐月還款計畫表，存成圖片也可以。
+      </p>
+
+      <h2>提前還款試算：多還一點有多少差別</h2>
+      <p>
+        把「每月多還」改成 0，就是只付最低還款的情況；改大一點，就能看到還清月份提前多少、利息少多少（結果顯示在「多還省下的利息」）。
+        也可以用「多還金額每年增加」模擬加薪後每年多還一些。信用貸款或房貸提前還款可能有違約金或手續費，這裡沒有算進去，
+        請先向貸款銀行確認。
+      </p>
+
+      <details>
+        <summary>顯示「每月最低還款不高於第一個月利息」是什麼意思？</summary>
+        <p>
+          表示只付最低還款時，這筆債務永遠不會變少。例如 {ntd(sample[0].balance)}、年利率 {sample[0].ratePct}% 的卡債，第一個月利息是
+          {ntd(firstCardInterest)}，最低還款要比這個數字高才會開始減少本金。如果你的最低應繳金額會隨餘額變動，請填這個月帳單上的金額，
+          結果當作大概的參考。
+        </p>
+      </details>
+
+      <details>
+        <summary>為什麼和銀行算的不一樣？</summary>
+        <p>
+          銀行和發卡機構可能按日計息、收取手續費或違約金、調整利率，或在提前清償時收費。這個計算機假設每月利率固定不變，
+          只是規劃用的估算，不是銀行的報價。實際金額和日期請以各筆貸款或信用卡的契約與帳單為準。
+        </p>
+      </details>
+
+      <details>
+        <summary>金額可以輸入小數嗎？</summary>
+        <p>金額以「元」為單位，輸入的逗號和 $ 符號會被忽略，小數點以下不計。每月利息也是元以下捨去。</p>
+      </details>
+
+      <AdSlot label="debt-payoff-result-zh-tw" />
+    </main>
+    <SiteFooter />
+    <style>
+      .dp-debts { display: grid; gap: 0.75rem; }
+      .dp-debt { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.5rem 0.75rem 0.75rem; margin: 0; min-width: 0; }
+      .dp-debt legend { font-weight: 600; padding: 0 0.25rem; }
+      .dp-prio[hidden] { display: none; }
+    </style>
+    <script src="../../../../scripts/debt-payoff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
