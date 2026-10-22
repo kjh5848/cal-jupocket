@@ -173,4 +173,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/ja/ideco/",
+    name: "iDeCoの節税シミュレーション（令和8年分）",
+    blurb: "iDeCo・小規模企業共済の掛金で所得税・住民税がいくら減るか、加入区分ごとの掛金の上限（2026年12月からの改正後も）を計算",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];

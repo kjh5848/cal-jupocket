@@ -1,0 +1,420 @@
+---
+/**
+ * iDeCoの節税シミュレーション(令和8年分) — 일본어판 제도 도구(basis "law"). 한국 연금저축·IRP 세액공제(납입액 × 공제율)와 달리
+ * 일본은 掛金 전액 소득공제(小規模企業共済等掛金控除)라 계산이 달라 짝을 맺지 않는다.
+ * 계산은 lib/jp/ideco.ts(所得税 단계는 lib/jp/year-end-adjustment.ts), 근거는 rates/jp/ideco-deduction-2026.json(2026-10-23 확인)과
+ * rates/jp/year-end-adjustment-2026.json(速算表·102.1%·基礎控除·給与所得控除後 表, 2026-10-21 확인).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/jp-ideco-2026-10-23.csv, 앞 회차 jp-ideco-2026-10-22.csv):
+ *   ideco 節税 シミュレーション·改正後·62000円·個人事業主 / 節税効果 いくら·年収別 / 計算方法·計算式 所得控除 /
+ *   掛け金 上限 2026·2027·会社員·公務員·変更 いつから / 小規模企業共済等掛金控除 住民税·年末調整·確定申告 / 節税にならない
+ * 住民税는 掛金 × 10% 目安(調整控除 A = 5万円 기준, 끝수 처리 없음). 他制度掛金相当額·事業主掛金은 사용자가 넣는다(계산하지 않음).
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { taxSaving, CURRENT, DEC2026, MIN_MONTHLY, SMB, NOTICE, formatYen } from "../../../lib/jp/ideco";
+import { BRACKETS } from "../../../lib/jp/year-end-adjustment";
+import rates from "../../../rates/jp/ideco-deduction-2026.json";
+import yea from "../../../rates/jp/year-end-adjustment-2026.json";
+import "../../../styles/global.css";
+
+const title = "iDeCoの節税シミュレーション（令和8年分）— 掛金の上限と所得税・住民税がいくら減るか";
+const description =
+  "iDeCo（個人型確定拠出年金）と小規模企業共済の掛金で、所得税・住民税がいくら減るかを年収や所得から計算します。掛金は全額が小規模企業共済等掛金控除。会社員・公務員・自営業・専業主婦の掛金の上限を、現行と2026年12月からの改正後の両方で表示します。";
+
+const y = formatYen;
+const ex = taxSaving({ kind: "salary", amount: 5_000_000, socialInsurance: 750_000, otherDeductions: 0, annualContribution: 23_000 * 12 });
+const ex2 = taxSaving({ kind: "income", amount: 4_000_000, socialInsurance: 600_000, otherDeductions: 0, annualContribution: 68_000 * 12 });
+const rough = (annual: number, pct: number) => Math.floor((annual * pct * 1021) / 100_000);
+const upTo = (u: number | null, i: number) =>
+  u === null
+    ? `${y(BRACKETS[i - 1].upToYen! + 1000)}以上`
+    : i === 0
+      ? `${y(u)}以下`
+      : `${y(BRACKETS[i - 1].upToYen! + 1000)}〜${y(u)}`;
+const taxSources = yea.sources.filter((s) => /No\.2260|No\.1199|No\.1410/.test(s.label)).slice(0, 3);
+const HANGUL = new RegExp("[가-힣]");
+const cleanLabel = (label: string) =>
+  label
+    .replace(/\(([^)]*)\)/g, (m, inner: string) => (HANGUL.test(inner) ? "" : m))
+    .split("")
+    .filter((c) => !HANGUL.test(c))
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim();
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>iDeCoの節税シミュレーション（令和8年分）</h1>
+      <p>
+        iDeCo（個人型確定拠出年金）や小規模企業共済の掛金は、その年に払った全額が「小規模企業共済等掛金控除」として所得から差し引かれます（所得税法 第 75 条・国税庁 No.1135）。
+        年収（給与収入）か合計所得金額と、毎月の掛金を入れると、所得税（復興特別所得税を含む）と住民税がいくら減るかを計算し、加入区分ごとの掛金の上限も表示します。
+        数字は国税庁・厚生労働省の資料と e-Gov の法令です（令和8年10月23日に確認）。実際の税額は、年末調整や確定申告の内容で決まります。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="id-kind">収入の入れ方</label>
+          <select id="id-kind" data-seg>
+            <option value="salary" selected>給与収入（会社員・公務員）</option>
+            <option value="income">合計所得金額（自営業など）</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="id-amount" id="id-amount-label">給与・賞与の総額（1年分・税引き前）</label>
+          <input type="text" inputmode="numeric" id="id-amount" value="5,000,000" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="id-social">社会保険料（1年分）</label>
+          <input type="text" inputmode="numeric" id="id-social" value="750,000" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="id-other">そのほかの所得控除（配偶者・扶養・生命保険料など、基礎控除を除く）</label>
+          <input type="text" inputmode="numeric" id="id-other" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="id-cat">iDeCoの加入区分</label>
+          <select id="id-cat">
+            <option value="cat2None" selected>会社員（企業年金なし）</option>
+            <option value="cat2DC">会社員（企業型DCのみ）</option>
+            <option value="cat2Other">会社員（確定給付企業年金など）</option>
+            <option value="cat2Public">公務員・私学教職員（共済）</option>
+            <option value="cat1">自営業・フリーランス・学生（第1号）・任意加入（第4号）</option>
+            <option value="cat3">専業主婦・主夫（第3号）</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="id-period">掛金の上限の基準</label>
+          <select id="id-period" data-seg>
+            <option value="current" selected>2026年11月まで</option>
+            <option value="dec2026">2026年12月から</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap" data-for="cat2DC cat2Other">
+          <label for="id-employer">企業型DCの事業主掛金（月額）</label>
+          <input type="text" inputmode="numeric" id="id-employer" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap" data-for="cat2Other cat2Public">
+          <label for="id-otherplan">他制度掛金相当額・共済掛金相当額（月額）</label>
+          <input type="text" inputmode="numeric" id="id-otherplan" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap" data-for="cat1">
+          <label for="id-addon">付加保険料・国民年金基金の掛金（月額）</label>
+          <input type="text" inputmode="numeric" id="id-addon" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="id-monthly">iDeCoの掛金（月額）</label>
+          <input type="text" inputmode="numeric" id="id-monthly" value="23,000" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="id-months">その年に払う月数</label>
+          <input type="number" id="id-months" inputmode="numeric" min="0" max="12" step="1" value="12" />
+          <span class="unit">か月</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="id-smb">小規模企業共済の掛金（月額・なければ0）</label>
+          <input type="text" inputmode="numeric" id="id-smb" value="0" autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label">1年で減る税金（所得税＋住民税の目安）</p>
+          <p class="big" id="hero-value">{y(ex.total)}</p>
+          <p class="hint" id="id-formula">所得税 {y(ex.incomeTaxSaving)} ＋ 住民税 {y(ex.residentSaving)}（掛金 {y(276_000)} の 10%）</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">1年の掛金（全額が所得控除）</span>
+            <span class="value" id="out-annual">{y(276_000)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">iDeCoの掛金の上限（月額）</span>
+            <span class="value" id="out-limit">{y(CURRENT.cat2None)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">課税所得金額（控除前 → 控除後）</span>
+            <span class="value" id="out-taxable">{y(ex.taxableBefore)} → {y(ex.taxableAfter)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">所得税・復興特別所得税（控除前 → 控除後）</span>
+            <span class="value" id="out-tax">{y(ex.incomeTaxBefore)} → {y(ex.incomeTaxAfter)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">所得税の税率（控除前）</span>
+            <span class="value" id="out-rate">{ex.marginalPct}%</span>
+          </div>
+        </div>
+        <p class="hint" id="id-note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>iDeCoの節税の仕組み — 掛金は全額が所得控除</h2>
+      <p>
+        iDeCo の掛金（個人型年金加入者掛金）、企業型 DC の加入者掛金、小規模企業共済の掛金は、その年に払った全額が小規模企業共済等掛金控除になります。
+        生命保険料控除のような上限や「控除額の計算」はなく、払った額がそのまま課税所得から引かれます（No.1135）。会社が出す企業型 DC の事業主掛金は、本人が払う掛金ではないので対象外です。
+        住民税でも同じ額が所得から引かれます（地方税法 第 314 条の 2）。
+      </p>
+
+      <h2>iDeCoの節税効果はいくら？ 計算方法・計算式</h2>
+      <ol>
+        <li>課税所得金額（1,000 円未満切り捨て）を、掛金を引く前と引いた後で出す。</li>
+        <li>それぞれに所得税の速算表をあて、× 102.1%（復興特別所得税を含む）の 100 円未満を切り捨てる。差が所得税の減る額。</li>
+        <li>住民税（所得割）は標準税率が合計 10%（道府県民税 4%・市町村民税 6%）なので、掛金 × 10% が減る額の目安。住民税は前年の所得で計算するので、減るのは翌年度の住民税です。</li>
+      </ol>
+      <p>
+        上の計算機の初期値（給与 500 万円・社会保険料 75 万円・会社員 企業年金なし・月 23,000 円 × 12 か月）では、課税所得金額が {y(ex.taxableBefore)} から {y(ex.taxableAfter)} に下がり、
+        所得税は {y(ex.incomeTaxBefore)} → {y(ex.incomeTaxAfter)} で {y(ex.incomeTaxSaving)}、住民税は {y(276_000)} × 10% ＝ {y(ex.residentSaving)}、合計 {y(ex.total)} 減ります。
+      </p>
+      <p>
+        個人事業主の例（合計所得金額 400 万円・社会保険料 60 万円・月 68,000 円 × 12 か月 ＝ {y(816_000)}）では、課税所得金額が {y(ex2.taxableBefore)}（税率 10%）から {y(ex2.taxableAfter)}（税率 5%）に下がり、
+        所得税が {y(ex2.incomeTaxSaving)}、住民税の目安が {y(ex2.residentSaving)} 減ります。税率の区分をまたぐときは、掛金 × 税率 の単純な掛け算より小さくなります。
+      </p>
+
+      <h2>課税所得別の節税額の目安</h2>
+      <p>
+        課税所得金額が同じ税率の区分に収まる場合の、1 年の掛金に対する所得税（× 102.1%）の減る額の目安です。住民税の目安（10%）を足しています。年収別の額は社会保険料や控除で変わるので、上の計算機で確かめてください。
+      </p>
+      <table>
+        <thead>
+          <tr><th>課税所得金額</th><th>税率</th><th>月 23,000円（年 276,000円）</th><th>月 62,000円（年 744,000円）</th></tr>
+        </thead>
+        <tbody>
+          {BRACKETS.map((b, i) => (
+            <tr>
+              <td>{upTo(b.upToYen, i)}</td>
+              <td>{b.pct}%</td>
+              <td>約 {y(rough(276_000, b.pct) + 27_600)}</td>
+              <td>約 {y(rough(744_000, b.pct) + 74_400)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2>iDeCoの掛金の上限 — 会社員・公務員・自営業（2026年11月まで）</h2>
+      <p>確定拠出年金法施行令 第 36 条（令和8年10月1日施行）の月額です。各月の上限の合計が 1 年の上限になります。</p>
+      <table>
+        <thead>
+          <tr><th>加入区分</th><th>掛金の上限（月額）</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>第1号（自営業者など）・第4号</td><td>{y(CURRENT.cat1)}（付加保険料・国民年金基金の掛金と合わせて）</td></tr>
+          <tr><td>第2号 企業年金なし</td><td>{y(CURRENT.cat2None)}</td></tr>
+          <tr><td>第2号 企業型DC・確定給付企業年金など・公務員</td><td>{y(CURRENT.cat2Base)}（事業主掛金・他制度掛金相当額が {y(CURRENT.cat2Threshold)} を超えると、超えた分を引く）</td></tr>
+          <tr><td>第3号（専業主婦・主夫）</td><td>{y(CURRENT.cat3)}</td></tr>
+        </tbody>
+      </table>
+
+      <h2>掛金の上限はいつから変わる？ 2026年12月からの改正後</h2>
+      <p>
+        令和 7 年政令第 442 号で、2026 年 12 月 1 日から上限が引き上げられます（厚生労働省「DC拠出限度額（令和８(2026)年12月～）」・e-Gov の改正後の条文）。2026 年 12 月 1 日以降は改正後の上限です。
+      </p>
+      <table>
+        <thead>
+          <tr><th>加入区分</th><th>掛金の上限（月額）</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>第1号・第4号</td><td>{y(DEC2026.cat1)}（付加保険料・国民年金基金の掛金と合わせて）</td></tr>
+          <tr><td>第2号 企業年金なし</td><td>{y(DEC2026.cat2)}</td></tr>
+          <tr><td>第2号 企業年金あり・公務員</td><td>{y(DEC2026.cat2)} − 事業主掛金 − 他制度掛金相当額（共済掛金相当額）</td></tr>
+          <tr><td>第3号</td><td>{y(DEC2026.cat3)}</td></tr>
+          <tr><td>第5号（新設）</td><td>{y(DEC2026.cat2)}（企業年金等があれば第2号と同じく差し引く）</td></tr>
+        </tbody>
+      </table>
+      <p>
+        公務員（国家公務員共済組合・地方公務員共済組合）の共済掛金相当額は告示で {y(NOTICE.nationalPublicServiceMutualAid)}、私立学校教職員共済は {y(NOTICE.privateSchoolMutualAid)} です（厚生労働省 iDeCoの概要）。
+        2026 年 12 月からの公務員の上限は 62,000 円 − 共済掛金相当額 で、告示額が改正後も同じかは 2026 年 12 月に確かめる必要があります。確定給付企業年金などの他制度掛金相当額は規約に書かれ、加入者に知らされる額を入れてください。
+      </p>
+
+      <h2>最低掛金と1,000円単位</h2>
+      <p>
+        iDeCo の掛金は月 {y(MIN_MONTHLY)} 以上・1,000 円単位です。上限が {y(MIN_MONTHLY)} を下回ると掛金を出せません。第 1 号で付加保険料 400 円を納める月は、上限は 68,000 − 400 ＝ 67,600 円ではなく 1,000 円単位の 67,000 円です
+        （厚生労働省 確定拠出年金Q&amp;A No.227〜230-2）。計算機は上限を 1,000 円単位に切り捨てて表示します。
+      </p>
+
+      <h2>小規模企業共済の掛金</h2>
+      <p>
+        小規模企業共済の掛金月額は {y(SMB.monthlyMinYen)} 以上 {y(SMB.monthlyMaxYen)} 以下で、{y(SMB.monthlyStepYen)} 単位です（小規模企業共済法 第 4 条）。iDeCo と同じ小規模企業共済等掛金控除になるので、計算機では 2 つの掛金を合計して所得から引きます。
+      </p>
+
+      <h2>年末調整・確定申告での手続き</h2>
+      <p>
+        会社員は「給与所得者の保険料控除申告書」に掛金の額を書き、掛金の証明書を添付すると、年末調整で控除されます。
+        給与から天引きされる掛金は会社が反映します。年末調整で出し忘れたときや自営業者は、確定申告書の該当欄に書いて証明書を添付し、控除を受けます（No.1135）。
+      </p>
+
+      <details>
+        <summary>iDeCoで節税にならないのはどんな人？</summary>
+        <p>
+          課税所得金額が 0 円の人（収入が少ない人、専業主婦・主夫で所得がない人など）は、掛金を引いても所得税・住民税は減りません。計算機で所得税の減る額が 0 円になるときは、住民税もほとんど減らない可能性があります。
+        </p>
+      </details>
+
+      <details>
+        <summary>住民税の減る額はなぜ目安ですか？</summary>
+        <p>
+          住民税は基礎控除などの額が所得税と違い、調整控除（地方税法 第 37 条・第 314 条の 6）もあります。配偶者・扶養などの人的控除がない人なら調整控除は 2,500 円で変わらないので、減る額は掛金 × 10% になります。
+          扶養親族がいる人、住民税の課税所得が掛金より少ない人、標準税率と違う税率の市町村に住む人はずれることがあります。
+        </p>
+      </details>
+
+      <details>
+        <summary>計算しないものは？</summary>
+        <p>
+          運用益の非課税、受け取るとき（退職所得控除・公的年金等控除）の税金、他制度掛金相当額や事業主掛金そのものの計算、所得金額調整控除・住宅ローン控除はこの計算機では計算しません。
+          どの加入区分にあたるかの判断もしません。
+        </p>
+      </details>
+
+      <details>
+        <summary>全角の数字で入力してもいいですか？</summary>
+        <p>はい。「２３，０００」のような全角の数字も半角に直して計算します。</p>
+      </details>
+
+      <h2>出典</h2>
+      <ul>
+        {rates.sources.map((s) => (
+          <li><a href={s.url} rel="noopener" target="_blank">{cleanLabel(s.label)}</a></li>
+        ))}
+        {taxSources.map((s) => (
+          <li><a href={s.url} rel="noopener" target="_blank">{cleanLabel(s.label)}</a></li>
+        ))}
+      </ul>
+      <p>令和8年10月23日に確認しました（所得税の速算表・基礎控除・給与所得控除後の給与等の金額は令和8年10月21日に確認）。</p>
+
+      <AdSlot label="ideco-result-ja" />
+    </main>
+    <SiteFooter />
+    <script>
+      import { taxSaving, maxContribution, checkIdeco, checkSmb, formatYen, type Category, type Period, type IncomeKind } from "../../../lib/jp/ideco";
+      import { renderCard, downloadCard, shareCard } from "../../../lib/result-card";
+      import { track, trackCalculatorUse } from "../../../lib/track";
+
+      const reportUse = trackCalculatorUse("jp-ideco");
+      const $ = (id: string) => document.getElementById(id)!;
+      const inp = (id: string) => $(id) as HTMLInputElement;
+      const sel = (id: string) => $(id) as HTMLSelectElement;
+
+      const toHalf = (s: string) => s.replace(/[０-９，．]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+      const num = (id: string) => {
+        const v = Number(toHalf(inp(id).value).replace(/,/g, ""));
+        return Number.isFinite(v) && v > 0 ? Math.floor(v) : 0;
+      };
+
+      const moneyIds = ["id-amount", "id-social", "id-other", "id-employer", "id-otherplan", "id-addon", "id-monthly", "id-smb"];
+      const selIds = ["id-kind", "id-cat", "id-period"];
+      let lastLines: [string, string][] = [];
+
+      function compute() {
+        const kind = sel("id-kind").value as IncomeKind;
+        const cat = sel("id-cat").value as Category;
+        const period = sel("id-period").value as Period;
+        $("id-amount-label").textContent = kind === "salary" ? "給与・賞与の総額（1年分・税引き前）" : "合計所得金額（事業所得など・1年分）";
+        document.querySelectorAll<HTMLElement>("[data-for]").forEach((el) => {
+          el.style.display = el.dataset.for!.split(" ").includes(cat) ? "" : "none";
+        });
+        const opts = {
+          addOn: cat === "cat1" ? num("id-addon") : 0,
+          employer: cat === "cat2DC" || cat === "cat2Other" ? num("id-employer") : 0,
+          other: cat === "cat2Other" || cat === "cat2Public" ? num("id-otherplan") : 0,
+        };
+        const max = maxContribution(cat, period, opts);
+        const monthly = num("id-monthly");
+        const smb = num("id-smb");
+        const months = Math.min(12, num("id-months"));
+        const annual = (monthly + smb) * months;
+        const r = taxSaving({ kind, amount: num("id-amount"), socialInsurance: num("id-social"), otherDeductions: num("id-other"), annualContribution: annual });
+
+        $("hero-value").textContent = formatYen(r.total);
+        $("id-formula").textContent = `所得税 ${formatYen(r.incomeTaxSaving)} ＋ 住民税 ${formatYen(r.residentSaving)}（掛金 ${formatYen(annual)} の 10%）`;
+        $("out-annual").textContent = formatYen(annual);
+        $("out-limit").textContent = max === 0 ? "拠出できません" : formatYen(max);
+        $("out-taxable").textContent = `${formatYen(r.taxableBefore)} → ${formatYen(r.taxableAfter)}`;
+        $("out-tax").textContent = `${formatYen(r.incomeTaxBefore)} → ${formatYen(r.incomeTaxAfter)}`;
+        $("out-rate").textContent = `${r.marginalPct}%`;
+
+        const notes: string[] = [];
+        const c = checkIdeco(monthly, max);
+        if (c === "belowMin") notes.push("iDeCoの掛金は月5,000円以上です。");
+        if (c === "notStep") notes.push("iDeCoの掛金は1,000円単位です。");
+        if (c === "overLimit") notes.push(`iDeCoの掛金が上限（月${formatYen(max)}）を超えています。`);
+        if (max === 0) notes.push("上限が5,000円未満のため、この条件ではiDeCoの掛金を出せません。");
+        if (period === "dec2026" && cat === "cat1" && opts.addOn > 0)
+          notes.push("2026年12月からの上限で付加保険料などを納める場合の1,000円単位の扱いは、改正後の資料で確かめてください（表示は1,000円単位に切り捨てた額）。");
+        if (period === "dec2026" && cat === "cat2Public")
+          notes.push("共済掛金相当額の告示額が2026年12月以降も同じかは確かめてください。");
+        const s = checkSmb(smb);
+        if (s === "belowMin") notes.push("小規模企業共済の掛金は月1,000円以上です。");
+        if (s === "notStep") notes.push("小規模企業共済の掛金は500円単位です。");
+        if (s === "overLimit") notes.push("小規模企業共済の掛金は月70,000円までです。");
+        if (r.taxableBefore === 0) notes.push("課税所得金額が0円なので所得税は減りません。住民税もほとんど減らない可能性があります。");
+        else if (r.taxableAfter === 0) notes.push("掛金が課税所得金額より多いため、引ききれない分は節税になりません。住民税の額は目安です。");
+        $("id-note").textContent = notes.join(" ");
+
+        lastLines = [
+          ["1年の掛金", formatYen(annual)],
+          ["所得税の減る額", formatYen(r.incomeTaxSaving)],
+          ["住民税の減る額（目安）", formatYen(r.residentSaving)],
+          ["合計", formatYen(r.total)],
+        ];
+      }
+
+      for (const id of moneyIds) {
+        inp(id).addEventListener("input", () => {
+          if (id === "id-monthly") reportUse(num(id));
+          compute();
+        });
+        inp(id).addEventListener("blur", () => {
+          const raw = toHalf(inp(id).value).replace(/,/g, "").trim();
+          if (raw === "") return;
+          inp(id).value = num(id).toLocaleString("ja-JP");
+        });
+      }
+      inp("id-months").addEventListener("input", compute);
+      for (const id of selIds) {
+        sel(id).addEventListener("change", compute);
+        sel(id).addEventListener("input", compute);
+      }
+
+      const buildCard = () => renderCard({ title: "iDeCoの節税シミュレーション", lines: lastLines, footer: "jupocket.com" });
+      $("btn-download").addEventListener("click", () => {
+        track("save_result", { calculator: "jp-ideco" });
+        downloadCard(buildCard(), "ideco-result.png");
+      });
+      $("btn-share").addEventListener("click", async () => {
+        track("share_result", { calculator: "jp-ideco" });
+        await shareCard(buildCard(), "iDeCoの節税シミュレーション - jupocket.com");
+      });
+
+      compute();
+    </script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
