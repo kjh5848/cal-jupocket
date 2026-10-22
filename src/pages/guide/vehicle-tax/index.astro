@@ -9,8 +9,8 @@
  * 두 번째가 차령 감면이다. 3년차부터 5%씩 깎이되 12년에서 멈춘다 —
  * 조문이 n 을 12 이하로 묶었다. "오래 탈수록 계속 깎인다" 가 아니다.
  *
- * ⚠️ 연납 공제율은 쓰지 않는다. 제128조 제3항이 "100분의 10의 범위에서"
- * 라고만 하고 시행령의 이자율에 넘긴다. 시행령을 아직 읽지 않았다.
+ * 연납 공제는 2026-10-13 시행령 제125조 제6항(이자율 5%)을 읽고 채웠다 —
+ * 금액은 prepayDiscount() 가 내고, 자세한 것은 /guide/vehicle-tax-prepay/ 시리즈.
  *
  * 금액은 손으로 적지 않는다 — yearlyBase()·bill()·ageDiscountRate() 가 낸다.
  */
@@ -25,6 +25,9 @@ import {
   EDU_RATE,
   LUMP_SUM_UNDER,
   PREPAY_CAP,
+  PREPAY_INTEREST,
+  prepayDiscount,
+  effectivePrepayRate,
 } from "../../../lib/vehicle-tax";
 import { formatWon, formatMan } from "../../../lib/money";
 import r from "../../../rates/local-tax-2026.json";
@@ -37,6 +40,8 @@ const V = r.vehicleTax;
 const 예시cc = [1000, 1598, 1601, 2000, 2500];
 const 차령예시 = [2, 3, 5, 7, 10, 12, 15];
 const 기준차 = 2000;
+const 연납공제 = prepayDiscount(yearlyBase(기준차), "jan", 2027);
+const 연납율 = (effectivePrepayRate("jan", 2027) * 100).toFixed(2);
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn}>
@@ -197,18 +202,21 @@ const 기준차 = 2000;
     </tbody>
   </table>
 
-  <h2>연납하면 깎이는데, 얼마인지는 아직 못 적었습니다</h2>
+  <h2>연납하면 1월 기준 약 {연납율}% 깎입니다</h2>
   <p>
     연세액을 한꺼번에 내면 공제받습니다. 신고납부기간은 1월 16~31일,
     3월 16~31일, 6월 16~30일, 9월 16~30일 네 구간입니다. 1월에 낼수록
     많이 깎입니다 — 남은 기간이 길기 때문입니다.
   </p>
   <p>
-    다만 <strong>공제율을 여기 적지 않았습니다.</strong> 제128조 제3항이
-    "{PREPAY_CAP * 100}분의 10의 범위에서"라고만 하고 실제 공제액은
-    시행령이 정하는 이자율로 계산하게 넘겼습니다. 흔히 쓰이는 숫자가 있지만
-    <strong>원문에서 확인하지 못한 값은 쓰지 않습니다.</strong> 시행령을 읽는
-    대로 채웁니다.
+    제128조 제3항은 공제를 "{PREPAY_CAP * 100}분의 10의 범위에서" 계산식으로
+    정하게 하고, 그 이자율을 시행령 제125조 제6항이 {PREPAY_INTEREST * 100}%로
+    정했습니다. 계산식에 납부기한 다음 날부터 12월 31일까지의 일수 비율이
+    곱해져서, 1월에 내도 실제 공제는 연세액의 약 {연납율}%입니다.{" "}
+    {기준차.toLocaleString()}cc 비영업용 승용차(본세 {formatWon(yearlyBase(기준차))})를
+    2027년 1월에 연납하면 {formatWon(연납공제)}이 빠집니다. 기간별 공제액과
+    연납 뒤 차를 팔 때 돌려받는 법은{" "}
+    <a href="/guide/vehicle-tax-prepay/">자동차세 연납</a>에 정리했습니다.
   </p>
 
   <h2>이 글에 없는 것</h2>
