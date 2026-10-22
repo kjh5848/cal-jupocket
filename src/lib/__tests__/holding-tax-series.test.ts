@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { holdingTax, propertyTaxCredit, propertyRatio, trunc10, TOP_RATE } from "../holding-tax";
+import { readFileSync } from "node:fs";
+import J from "../../rates/comprehensive-property-2026.json";
+import local from "../../rates/local-tax-2026.json";
+import { holdingTaxSeries } from "../../data/series/holding-tax";
+import { eokwon } from "../won";
 
 const 억 = 100_000_000;
 
@@ -87,4 +92,29 @@ describe("holdingTax — 재산세 + 종부세 + 농특세", () => {
     expect(r.homes).toBe(1);
     expect(r.total).toBe(7_099_200);
   });
+});
+
+/**
+ * 보유세 시리즈 — 제목·설명은 RSS·사이트맵 메타가 문자열로 읽어(guide-meta.ts) 리터럴로 둔다.
+ * 그 문자열의 금액·비율이 rates 와 어긋나지 않는지 대조한다.
+ */
+describe("보유세 시리즈 제목·설명", () => {
+  const pct = (v: number) => `${Number((v * 100).toFixed(2))}%`;
+  const money = new Set([J.taxBase.deduction.oneHouseholdOneHome, J.taxBase.deduction.other].map(eokwon));
+  const rates = new Set([pct(J.ruralTax.rate), pct(TOP_RATE)]);
+  it("rates 숫자", () => {
+    expect([J.taxBase.deduction.oneHouseholdOneHome, J.taxBase.deduction.other]).toEqual([12 * 억, 9 * 억]);
+    expect(local.propertyTax.assessmentDate).toBe("6월 1일");
+    expect(J.payment.from.startsWith("12월")).toBe(true);
+  });
+  for (const s of [holdingTaxSeries.hub, ...holdingTaxSeries.items]) {
+    it(s.slug, () => {
+      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
+      const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
+      expect(title).toContain(s.keyword);
+      for (const m of head.matchAll(/[\d,]+억원/g)) expect(money, m[0]).toContain(m[0]);
+      for (const m of head.matchAll(/[\d.]+%/g)) expect(rates, m[0]).toContain(m[0]);
+    });
+  }
 });

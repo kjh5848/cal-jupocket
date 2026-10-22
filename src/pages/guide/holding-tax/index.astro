@@ -1,0 +1,88 @@
+---
+/**
+ * "보유세" — 보유세 시리즈 허브. (보유세 뜻·부동산 보유세·주택보유세·1주택·2주택·다주택자 보유세·보유세 기준일도 이 글)
+ * 계산: src/lib/holding-tax.ts holdingTax() — 재산세(지방세법) + 종부세(종합부동산세법) + 농어촌특별세.
+ * 쓰지 않은 것: 보유세 개편안·2027 숫자(확정 원문 없음), 토지·건축물분(주택만 계산).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import J from "../../../rates/comprehensive-property-2026.json";
+import L from "../../../rates/local-tax-2026.json";
+import { holdingTax } from "../../../lib/holding-tax";
+import { won, eokwon } from "../../../lib/won";
+import { holdingTaxSeries as S } from "../../../data/series/holding-tax";
+
+const 억 = 100_000_000;
+const P = L.propertyTax;
+const pct = (v: number, d = 2) => `${Number((v * 100).toFixed(d))}%`;
+const one = (price: number) => holdingTax({ houses: [{ price, urban: true }], oneHome: true });
+const rows = [
+  { k: "5억원 1채 (1세대 1주택)", x: one(5 * 억) },
+  { k: "10억원 1채 (1세대 1주택)", x: one(10 * 억) },
+  { k: "15억원 1채 (1세대 1주택)", x: one(15 * 억) },
+  { k: "20억원 1채 (1세대 1주택)", x: one(20 * 억) },
+  { k: "10억원 + 8억원 (2주택)", x: holdingTax({ houses: [{ price: 10 * 억, urban: true }, { price: 8 * 억, urban: true }] }) },
+  { k: "10억원 + 8억원 + 7억원 (3주택)", x: holdingTax({ houses: [{ price: 10 * 억, urban: true }, { price: 8 * 억, urban: true }, { price: 7 * 억, urban: true }] }) },
+];
+const ten = rows[1].x;
+const twenty = rows[3].x;
+const half = P.periods.filter((p) => p.subject.startsWith("주택"));
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 holding-tax-series.test.ts 가 rates 와 대조한다.
+const title = "보유세 — 6월 1일에 집을 가진 사람이 내는 재산세와 종부세를 합친 말이고, 종부세에서 재산세 일부를 뺍니다";
+const description =
+  "보유세는 6월 1일 현재 주택·토지를 가진 사람이 내는 재산세(지방세)와 종합부동산세(국세)를 함께 부르는 말입니다. 재산세는 집마다 7월·9월에 나눠 내고, 종부세는 공시가격 합계가 1세대 1주택 12억원, 그 밖 9억원을 넘을 때 12월에 내며, 같은 집 재산세 일부를 종부세에서 뺍니다.";
+
+const ANSWER = `보유세는 6월 1일 현재 집을 가진 사람이 그해 내는 재산세와 종부세(농어촌특별세 포함)를 합친 말입니다. 공시가격 10억원 한 채(1세대 1주택)면 종부세 없이 재산세 고지서 ${won(ten.total)}이 보유세 전부이고, 20억원 한 채면 재산세 ${won(twenty.propertyBill)}에 종부세·농특세 ${won(twenty.jongbu + twenty.rural)}를 더해 ${won(twenty.total)}입니다.`;
+
+const QA = [
+  { q: "보유세는 무엇인가요?", a: `법에 '보유세'라는 세목은 없습니다. 부동산을 가지고 있다는 이유로 해마다 붙는 재산세(시·군·구가 걷는 지방세)와 종합부동산세(국세)를 묶어 부르는 말입니다. 둘 다 ${P.assessmentDate} 현재 소유자에게 그해 1년치가 통째로 부과됩니다(${P.assessmentArticle}, 종합부동산세법 제3조). 6월 2일에 판 집도 그해 보유세는 판 사람이 냅니다.` },
+  { q: "1주택·2주택·3주택이면 보유세가 얼마인가요?", a: `아래 표는 도시지역분이 붙는 지역의 공시가격 기준 계산입니다. 1세대 1주택은 공시가격 합계 ${eokwon(J.taxBase.deduction.oneHouseholdOneHome)}까지 종부세가 없고, 2주택부터는 ${eokwon(J.taxBase.deduction.other)}을 넘는 부분에 종부세가 붙습니다. 재산세는 집마다 따로 계산해 더합니다.` },
+  { q: "보유세는 언제 내나요?", a: `재산세 주택분은 연세액의 절반씩 ${half.map((p) => `${p.from}~${p.to}`).join("과 ")}에 냅니다(${P.periodsArticle}). 종부세와 그 ${pct(J.ruralTax.rate, 0)}인 농어촌특별세는 ${J.payment.from}~${J.payment.to}에 냅니다(${J.payment.article}). 고지서가 세 번 오는 셈입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={J.propertyTaxCredit.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th></th><th>재산세</th><th>종부세</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">걷는 곳</th><td>시·군·구 (지방세)</td><td>국세청 (국세)</td></tr>
+        <tr><th scope="row">단위</th><td>집마다 따로</td><td>사람마다 공시가격 합산</td></tr>
+        <tr><th scope="row">과세표준</th><td>공시가격 × 60% (1세대 1주택 43~45%)</td><td>(합계 − 12억원 또는 9억원) × {pct(J.taxBase.ratio, 0)}</td></tr>
+        <tr><th scope="row">같이 붙는 세금</th><td>도시지역분 · 지방교육세 20%</td><td>농어촌특별세 {pct(J.ruralTax.rate, 0)}</td></tr>
+        <tr><th scope="row">내는 때</th><td>7월 · 9월</td><td>12월</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>같은 집에 두 세금이 겹치므로 종부세를 계산할 때 그 집에 붙은 재산세 가운데 종부세 과세표준에 해당하는 몫을 뺍니다(종합부동산세법 제9조 제3항). 어떻게 빼는지는 <a href="/guide/property-jongbu-double-tax/">재산세 종부세 이중과세</a>에 있습니다. 두 세금의 차이 자체는 <a href="/guide/comprehensive-property-tax/">종부세</a>에서 더 자세히 다뤘습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>공시가격 (도시지역)</th><th>재산세 고지서</th><th>종부세 + 농특세</th><th>보유세</th></tr></thead>
+      <tbody>
+        {rows.map(({ k, x }) => <tr><th scope="row">{k}</th><td>{won(x.propertyBill)}</td><td>{won(x.jongbu + x.rural)}</td><td>{won(x.total)}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+  <p>1세대 1주택은 나이·보유 공제를 넣지 않은 값입니다(만 60세 이상이거나 5년 이상 보유했으면 종부세가 더 줄어듭니다). 세부담 상한과 재산세 과세표준 상한은 직전 연도 금액이 있어야 해서 넣지 않았기 때문에, 실제 고지서는 이 값보다 크지 않습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>주택분 재산세가 {won(P.smallAmountLumpSum)} 이하면 조례에 따라 7월에 한 번에 걷기도 합니다(제115조 제1항 제3호 단서 — 지자체마다 다름). 자세한 날짜는 <a href="/guide/property-tax-payment/">재산세 납부기간</a>과 <a href="/guide/jongbu-payment/">종부세 납부기간</a>에 있습니다. 내 집으로 바로 계산하려면 <a href="/guide/holding-tax-calculator/">보유세 계산기</a>에 집마다 공시가격을 넣으세요.</p>
+
+  <h2>보유세 시리즈</h2>
+  <ul>
+    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+  </ul>
+</GuideLayout>

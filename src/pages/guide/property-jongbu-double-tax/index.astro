@@ -1,0 +1,64 @@
+---
+/**
+ * "재산세 종부세 이중과세" — 보유세 시리즈. (재산세액 공제·종부세에서 재산세 빼기·재산세 종부세 중복도 이 글)
+ * 계산: src/lib/holding-tax.ts propertyTaxCredit() — 종합부동산세법 제9조 ③·시행령 제4조의3 ①, 국세청 집행기준 9-4의3-4·6.
+ * 쓰지 않은 것: 위헌·위법 논쟁의 평가(판결 결론 한 줄만), 토지분 재산세액 공제(주택만).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import J from "../../../rates/comprehensive-property-2026.json";
+import { holdingTax, TOP_RATE } from "../../../lib/holding-tax";
+import { won } from "../../../lib/won";
+
+const 억 = 100_000_000;
+const pct = (v: number, d = 1) => `${Number((v * 100).toFixed(d))}%`;
+const one = holdingTax({ houses: [{ price: 20 * 억, urban: true }], oneHome: true });
+const two = holdingTax({ houses: [{ price: 10 * 억, urban: true }, { price: 8 * 억, urban: true }] });
+const C = J.propertyTaxCredit;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 holding-tax-series.test.ts 가 rates 와 대조한다.
+const title = "재산세 종부세 이중과세 — 종부세에서 같은 집 재산세 가운데 종부세 과세표준에 해당하는 몫을 뺍니다";
+const description =
+  "재산세와 종부세는 같은 집에 함께 붙지만, 종합부동산세법 제9조 제3항과 시행령 제4조의3이 종부세 과세표준에 해당하는 재산세를 종부세에서 빼도록 해 겹치는 부분을 조정합니다. 분자는 재산세 맨 위 세율 0.4%를 누진공제 없이 곱하고, 분모는 공시가격 합계로 계산한 재산세입니다.";
+
+const ANSWER = `종부세를 계산할 때 같은 집에 이미 붙은 재산세 가운데 종부세 과세표준에 해당하는 몫을 뺍니다(종합부동산세법 제9조 제3항). 공시가격 20억원 한 채(1세대 1주택)면 재산세 본세 ${won(one.propertyTax)} 가운데 ${won(one.credit.credit)}를 종부세 ${won(one.jongbuGross)}에서 빼 종부세는 ${won(one.jongbu)}이 됩니다. 재산세 전부를 빼지는 않습니다.`;
+
+const QA = [
+  { q: "재산세와 종부세는 이중과세인가요?", a: `같은 집에 두 세금이 붙는 것은 맞지만, 겹치는 부분은 종부세에서 빼 줍니다. 공시가격 가운데 종부세 공제금액(1세대 1주택 12억원, 그 밖 9억원)까지는 재산세만 붙고, 그 위 부분은 재산세와 종부세가 함께 계산되므로 그 위 부분에 붙은 재산세를 종부세에서 뺍니다. 대법원은 2015년 11월 개정된 이 안분 산식이 법률의 위임 범위 안이라 유효하다고 판단했습니다(대법원 2023. 8. 31. 선고 2019두39796 판결).` },
+  { q: "종부세에서 빼는 재산세는 어떻게 계산하나요?", a: `재산세 본세 부과세액 합계 × (종부세 과세표준 × 재산세 공정시장가액비율 × ${pct(TOP_RATE)}) ÷ (공시가격 합계를 재산세 표준세율로 계산한 재산세)입니다(시행령 제4조의3 제1항). 분자는 누진공제 없이 맨 위 세율 ${pct(TOP_RATE)}만 곱하고, 분모는 누진공제를 뺀 값입니다 — 국세청 「종합부동산세 집행기준」 9-4의3-4·6이 이렇게 정합니다.` },
+  { q: "집이 두 채면 빼는 재산세는 얼마인가요?", a: `공시가격 10억원 + 8억원(2주택, 도시지역)이면 재산세 본세 ${won(two.propertyTax)}에 분자 ${won(two.credit.numerator)} ÷ 분모 ${won(two.credit.denominator)}를 곱한 ${won(two.credit.credit)}를 종부세 ${won(two.jongbuGross)}에서 뺍니다. 종부세는 ${won(two.jongbu)}이 되고, 농어촌특별세는 그 ${pct(J.ruralTax.rate, 0)}인 ${won(two.rural)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={C.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>빼는 대상은 재산세 <strong>본세</strong>뿐입니다. 재산세와 함께 고지되는 도시지역분과 지방교육세는 빼지 않습니다. 그래서 보유세 합계에는 공시가격 공제금액 위 부분에서도 재산세가 일부 남습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>공시가격 20억원 1채 (1세대 1주택, 재산세 비율 45%)</th><th>금액</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">종부세 과세표준 (20억 − 12억) × 60%</th><td>{won(one.jongbuTaxBase)}</td></tr>
+        <tr><th scope="row">분자 = 과세표준 × 45% × {pct(TOP_RATE)}</th><td>{won(one.credit.numerator)}</td></tr>
+        <tr><th scope="row">분모 = 20억 × 45%에 표준세율</th><td>{won(one.credit.denominator)}</td></tr>
+        <tr><th scope="row">재산세 본세 부과세액</th><td>{won(one.propertyTax)}</td></tr>
+        <tr><th scope="row">빼는 재산세액 = 본세 × 분자 ÷ 분모</th><td>{won(one.credit.credit)}</td></tr>
+        <tr><th scope="row">종부세 = {won(one.jongbuGross)} − 빼는 재산세액</th><td>{won(one.jongbu)}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>분자에 맨 위 세율만 곱하는 이유는, 종부세 공제금액을 넘는 공시가격은 재산세 누진 구간에서 언제나 맨 위 구간에 있기 때문입니다. 1세대 1주택은 재산세 공정시장가액비율이 43~45%라 분자·분모 모두 그 비율을 쓰고(지방세법 시행령 제109조 제1항 제2호 단서), 다주택은 60%를 씁니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>집이 여러 채면 재산세는 집마다 따로 누진으로 계산하지만, 분모는 공시가격을 모두 합쳐 한 번에 계산한 재산세라 분모가 실제 재산세보다 커지고 빼는 비율이 줄어듭니다. 내 집으로 바로 계산하려면 <a href="/guide/holding-tax-calculator/">보유세 계산기</a>에 집마다 공시가격을 넣으세요. 보유세 전체 구조는 <a href="/guide/holding-tax/">보유세</a>에 있습니다.</p>
+</GuideLayout>

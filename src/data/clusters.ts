@@ -368,6 +368,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/brokerage-fee/", title: "중개보수 요율표 — 주택 매매 0.4~0.7%, 전세·월세 0.3~0.6%, 2억원 미만 매매는 한도액", kind: "guide", icon: "home", year: 2026 },
       { href: "/guide/monthly-rent-brokerage-fee/", title: "월세 복비 — 보증금 + 월세 × 100, 5천만원 미만이면 70배", kind: "guide", icon: "home", year: 2026 },
       { href: "/guide/brokerage-fee-calculator/", title: "중개보수 계산기", kind: "calc", icon: "calculator", blurb: "거래금액·매매·전세·월세 → 법정 상한 복비와 부가세" },
+      { href: "/guide/holding-tax/", title: "보유세 — 6월 1일에 집을 가진 사람이 내는 재산세와 종부세를 합친 말이고, 종부세에서 재산세 일부를 뺍니다", kind: "guide", icon: "home", year: 2026 },
+      { href: "/guide/property-jongbu-double-tax/", title: "재산세 종부세 이중과세 — 종부세에서 같은 집 재산세 가운데 종부세 과세표준에 해당하는 몫을 뺍니다", kind: "guide", icon: "home", year: 2026 },
+      { href: "/guide/holding-tax-calculator/", title: "보유세 계산기", kind: "calc", icon: "calculator", blurb: "주택별 공시가격 → 재산세·종부세·빼는 재산세액·한 해 보유세" },
     ],
   },
   {
@@ -484,6 +487,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/holding-tax-calculator/",
+  "/guide/property-jongbu-double-tax/",
+  "/guide/holding-tax/",
   "/guide/parking-account-interest-calculator/",
   "/guide/parking-account-tax/",
   "/guide/parking-account-interest/",

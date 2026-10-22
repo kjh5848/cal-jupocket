@@ -1,0 +1,148 @@
+---
+/**
+ * "보유세 계산기" — 보유세 시리즈. (보유세 계산·보유세 계산 방법·재산세 종부세 계산기·아파트 보유세 계산기도 이 글, 계산기 포함)
+ * 계산: src/lib/holding-tax.ts holdingTax() — 지방세법 제110~113조·제151조, 종합부동산세법 제8~9조·시행령 제4조의3 ①, 농어촌특별세법 제5조.
+ * 넣지 않은 것: 세부담 상한(종부세법 제10조), 재산세 과세표준 상한 105%(지방세법 제110조 ③), 지역자원시설세 → 합계만 "이보다 크지 않다".
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import J from "../../../rates/comprehensive-property-2026.json";
+import { holdingTax } from "../../../lib/holding-tax";
+import { won, eokwon } from "../../../lib/won";
+
+const 억 = 100_000_000;
+const pct = (v: number, d = 0) => `${Number((v * 100).toFixed(d))}%`;
+const ex = holdingTax({ houses: [{ price: 20 * 억, urban: true }], oneHome: true });
+const two = holdingTax({ houses: [{ price: 10 * 억, urban: true }, { price: 8 * 억, urban: true }] });
+const three = holdingTax({ houses: [{ price: 10 * 억, urban: true }, { price: 8 * 억, urban: true }, { price: 7 * 억, urban: true }] });
+const old = holdingTax({ houses: [{ price: 20 * 억, urban: true }], oneHome: true, age: 70, years: 15 });
+const HOUSES = [20 * 억, 0, 0, 0];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 holding-tax-series.test.ts 가 rates 와 대조한다.
+const title = "보유세 계산기 — 주택별 공시가격을 넣으면 재산세와 종부세, 종부세에서 빼는 재산세까지 한 번에 계산합니다";
+const description =
+  "보유세 계산기는 6월 1일 현재 가진 주택마다 공시가격을 넣으면 재산세(도시지역분·지방교육세 포함)와 종합부동산세, 종부세에서 빼는 재산세액, 농어촌특별세 20%를 더해 한 해 보유세를 계산합니다. 1세대 1주택은 12억원, 그 밖은 9억원을 공제합니다.";
+
+const ANSWER = `공시가격 20억원 아파트 한 채(1세대 1주택, 도시지역분 대상)면 재산세 고지서 ${won(ex.propertyBill)}, 종부세 ${won(ex.jongbu)}, 농어촌특별세 ${won(ex.rural)}로 보유세는 한 해 ${won(ex.total)}입니다. 종부세는 세율로 계산한 ${won(ex.jongbuGross)}에서 같은 집 재산세 ${won(ex.credit.credit)}를 뺀 값입니다(세부담 상한 전).`;
+
+const QA = [
+  { q: "보유세는 어떻게 계산하나요?", a: `① 주택마다 재산세를 계산합니다 — 공시가격 × 공정시장가액비율(1세대 1주택 43~45%, 그 밖 60%)에 누진세율, 여기에 도시지역분 0.14%와 지방교육세 20%가 붙습니다. ② 공시가격을 사람 단위로 합쳐 ${eokwon(J.taxBase.deduction.oneHouseholdOneHome)}(1세대 1주택) 또는 ${eokwon(J.taxBase.deduction.other)}을 빼고 ${pct(J.taxBase.ratio)}를 곱해 종부세를 계산합니다. ③ 종부세에서 같은 집에 붙은 재산세 일부를 빼고 ④ 1세대 1주택이면 나이·보유 공제를 뺀 뒤 ⑤ 농어촌특별세 ${pct(J.ruralTax.rate)}를 더합니다.` },
+  { q: "2주택·3주택이면 보유세가 얼마나 늘어나나요?", a: `공시가격 10억원 + 8억원 두 채(도시지역)면 보유세 ${won(two.total)}, 7억원 한 채를 더한 세 채면 ${won(three.total)}입니다. 재산세는 집마다 따로 붙어 거의 그대로 늘지만, 종부세는 합산한 과세표준에 매기고 3주택 이상이면 과세표준 12억원 초과 구간부터 세율이 높아집니다.` },
+  { q: "계산기 값이 고지서와 다른 이유는 무엇인가요?", a: `전년 대비 세 부담이 150%를 넘지 않게 하는 세부담 상한(종부세법 제10조)과 재산세 과세표준이 직전 연도의 105%를 넘지 않게 하는 상한(지방세법 제110조 제3항)은 직전 연도 금액이 있어야 해서 넣지 않았습니다. 둘 다 합계를 낮추기만 하므로 합계는 이보다 크지 않습니다. 지역자원시설세(건축물분)도 빠져 있습니다.` },
+  { q: "1세대 1주택 나이·보유 공제는 어디에 적용되나요?", a: `종부세에만 적용됩니다. 재산세를 뺀 종부세에서 만 60세 이상 20~40%, 5년 이상 보유 20~50%를 합쳐 ${pct(J.oneHomeCredit.cap)}까지 뺍니다(종부세법 제9조 제5항). 같은 20억원 한 채라도 만 70세·15년 보유면 종부세가 ${won(ex.jongbu)}에서 ${won(old.jongbu)}로 줄어 보유세는 ${won(old.total)}입니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={J.propertyTaxCredit.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">6월 1일 현재 <strong>본인 명의</strong> 주택의 <strong>공시가격</strong>(시세 아님)을 집마다 넣으세요. 빈 칸은 계산하지 않습니다. 도시지역분은 시·군·구 조례로 정한 지역에만 붙습니다 — 고지서에 '도시지역분'이 있으면 '붙음'.</p>
+    {HOUSES.map((v, i) => (
+      <fieldset class="calc-row-group">
+        <legend>주택 {i + 1}</legend>
+        <div class="calc-input-wrap">
+          <label for={`ht-price-${i}`}>공시가격</label>
+          <input type="text" inputmode="numeric" id={`ht-price-${i}`} value={v ? v.toLocaleString("ko-KR") : ""} data-won data-ht-price={i} />
+          <span class="unit">원</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for={`ht-urban-${i}`}>도시지역분</label>
+          <select id={`ht-urban-${i}`} data-seg data-ht-urban={i}><option value="1" selected>붙음</option><option value="0">안 붙음</option></select>
+        </div>
+      </fieldset>
+    ))}
+    <div class="calc-input-wrap">
+      <label for="ht-kind">세대 구분</label>
+      <select id="ht-kind" data-seg>
+        <option value="one" selected>1세대 1주택</option>
+        <option value="other">그 밖(다주택 등)</option>
+      </select>
+    </div>
+    <div id="ht-one-fields">
+      <div class="calc-input-wrap">
+        <label for="ht-age">6월 1일 현재 만 나이</label>
+        <input type="number" min="0" max="120" id="ht-age" value="50" data-step />
+        <span class="unit">세</span>
+      </div>
+      <div class="calc-input-wrap">
+        <label for="ht-years">보유기간</label>
+        <input type="number" min="0" max="80" id="ht-years" value="3" data-step />
+        <span class="unit">년</span>
+      </div>
+    </div>
+
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="ht-bill|ht-jongbu|ht-rural"
+      data-bar-labels="재산세 고지서|종부세|농어촌특별세"
+      data-dock="ht-hero"
+    >
+      <p class="label">한 해 보유세 (세부담 상한 전 — 이보다 크지 않다)</p>
+      <p class="big" id="ht-hero">{won(ex.total)}</p>
+      <p class="meta" id="ht-note"></p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip" data-group="재산세 (7월·9월)"><span class="label">재산세 본세</span><span class="value" id="ht-pt">{won(ex.propertyTax)}</span></div>
+      <div class="stat-chip"><span class="label">도시지역분 (과세표준 × 0.14%)</span><span class="value" id="ht-urban">{won(ex.urbanArea)}</span></div>
+      <div class="stat-chip"><span class="label">지방교육세 (본세 × 20%)</span><span class="value" id="ht-edu">{won(ex.educationTax)}</span></div>
+      <div class="stat-chip"><span class="label">재산세 고지서 합계</span><span class="value" id="ht-bill">{won(ex.propertyBill)}</span></div>
+      <div class="stat-chip" data-group="종부세 (12월)"><span class="label">종부세 과세표준</span><span class="value" id="ht-base">{won(ex.jongbuTaxBase)}</span></div>
+      <div class="stat-chip"><span class="label">세율 적용 세액</span><span class="value" id="ht-gross">{won(ex.jongbuGross)}</span></div>
+      <div class="stat-chip"><span class="label">빼는 재산세액 (시행령 제4조의3)</span><span class="value" id="ht-credit">-{won(ex.credit.credit)}</span></div>
+      <div class="stat-chip"><span class="label">1주택 나이·보유 공제</span><span class="value" id="ht-onehome">{won(0)}</span></div>
+      <div class="stat-chip"><span class="label">종부세</span><span class="value" id="ht-jongbu">{won(ex.jongbu)}</span></div>
+      <div class="stat-chip"><span class="label">농어촌특별세 ({pct(J.ruralTax.rate)})</span><span class="value" id="ht-rural">{won(ex.rural)}</span></div>
+      <div class="stat-chip"><span class="label">합계 ÷ 공시가격 합계</span><span class="value" id="ht-eff">{pct(ex.effective, 3)}</span></div>
+    </div>
+    <p class="meta" id="ht-formula"></p>
+    <p class="meta" id="ht-warn" hidden></p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>단계 (공시가격 20억원 1채, 1세대 1주택)</th><th>금액</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">재산세 본세 (과세표준 20억 × 45%)</th><td>{won(ex.propertyTax)}</td></tr>
+        <tr><th scope="row">+ 도시지역분 + 지방교육세</th><td>{won(ex.urbanArea + ex.educationTax)}</td></tr>
+        <tr><th scope="row">종부세 과세표준 (20억 − 12억) × 60%</th><td>{won(ex.jongbuTaxBase)}</td></tr>
+        <tr><th scope="row">종부세 세율 적용</th><td>{won(ex.jongbuGross)}</td></tr>
+        <tr><th scope="row">− 빼는 재산세액</th><td>{won(ex.credit.credit)}</td></tr>
+        <tr><th scope="row">= 종부세 (10원 미만 버림)</th><td>{won(ex.jongbu)}</td></tr>
+        <tr><th scope="row">+ 농어촌특별세</th><td>{won(ex.rural)}</td></tr>
+        <tr><th scope="row">보유세 합계</th><td>{won(ex.total)}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>빼는 재산세액은 집 전체 재산세가 아니라 종부세 과세표준에 해당하는 부분만입니다. 계산식과 그 이유는 <a href="/guide/property-jongbu-double-tax/">재산세 종부세 이중과세</a>에 정리했습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>보유 주택 (공시가격, 도시지역)</th><th>재산세 고지서</th><th>종부세 + 농특세</th><th>보유세</th></tr></thead>
+      <tbody>
+        {[["20억원 1채 (1세대 1주택)", ex], ["10억원 + 8억원", two], ["10억원 + 8억원 + 7억원", three]].map(([k, x]: any) => (
+          <tr><th scope="row">{k}</th><td>{won(x.propertyBill)}</td><td>{won(x.jongbu + x.rural)}</td><td>{won(x.total)}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>재산세만 따로 보려면 <a href="/property-tax/">재산세 계산기</a>, 종부세 세율표와 1주택 공제율은 <a href="/guide/jongbu-calculator/">종부세 계산기</a>에 있습니다. 보유세가 무엇이고 언제 내는지는 <a href="/guide/holding-tax/">보유세</a>에서 볼 수 있습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <script src="../../../scripts/holding-tax.ts"></script>
+</GuideLayout>
