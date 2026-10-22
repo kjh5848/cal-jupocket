@@ -1,0 +1,199 @@
+---
+/**
+ * 부채 상환 계획 — 범용 도구(/tools/). 빚 여러 개 + 한 달 예산 → 눈사태·눈덩이·직접 지정 순서로 언제 다 갚나.
+ *
+ * 법 숫자가 없는 투영이라 rates 가 없다. 계산은 lib/debt-payoff.ts, 화면은 scripts/debt-payoff.ts(한국어판 전용).
+ * 빚 칸은 5줄 고정(빈 줄은 계산에서 뺌) — 줄을 늘리는 버튼을 두면 calc-ui 의 data-won 읽어 주기가 새 칸을 못 묶는다.
+ * roberin #27 은 입력·결과 항목만 대조했다(docs/calc-benchmark.md) — CSV 내려받기·잔액 차트는 뺐다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { payoffPlan, spellMonths, type Debt } from "../../../lib/debt-payoff";
+import { formatWon } from "../../../lib/money";
+import "../../../styles/global.css";
+
+const title = "부채 상환 계획 계산기 — 빚 여러 개, 어떤 순서로 갚으면 언제 끝나나";
+const description =
+  "빚마다 잔액·연 이자율·월 최소 상환액을 넣고 한 달 예산을 정하면, 이자율 높은 빚부터(눈사태)·잔액 작은 빚부터(눈덩이)·직접 정한 순서로 갚을 때 다 갚는 달과 총 이자를 계산합니다. 끝난 빚의 상환액은 다음 빚으로 넘깁니다.";
+
+const sample: Debt[] = [
+  { name: "카드론", balance: 3_000_000, ratePct: 15, minPayment: 100_000, priority: 2 },
+  { name: "신용대출", balance: 8_000_000, ratePct: 7, minPayment: 150_000, priority: 1 },
+  { name: "할부", balance: 1_200_000, ratePct: 4, minPayment: 50_000, priority: 3 },
+];
+const ex = payoffPlan({ debts: sample, strategy: "avalanche", extra: 200_000, extraGrowthPct: 0 });
+const snow = payoffPlan({ debts: sample, strategy: "snowball", extra: 200_000, extraGrowthPct: 0 });
+if (!ex.ok || !snow.ok) throw new Error("debt-payoff 예시가 계산되지 않음");
+const rows = [0, 1, 2, 3, 4].map((i) => sample[i] ?? null);
+const fmt = (v: number) => v.toLocaleString("ko-KR");
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>부채 상환 계획 계산기</h1>
+      <p>
+        빚이 여러 개일 때 한 달에 갚을 수 있는 돈을 어느 빚에 먼저 몰아야 하는지 비교합니다. 빚마다 잔액·연
+        이자율·월 최소 상환액을 넣고, 최소 상환액 말고 더 낼 수 있는 돈을 넣으세요. 빚 하나를 다 갚으면 거기에 내던
+        돈은 다음 빚으로 넘어가 한 달 예산이 그대로 유지됩니다. 대출 하나의 상환표는
+        <a href="/guide/loan-calculator/">대출 이자 계산기</a>가 따로 계산합니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="dp-debts">
+          {rows.map((d, i) => (
+            <fieldset class="dp-debt" data-row={i + 1}>
+              <legend>빚 {i + 1}{i >= 3 ? " (선택)" : ""}</legend>
+              <div class="calc-input-wrap">
+                <label for={`dp-name-${i + 1}`}>이름</label>
+                <input type="text" id={`dp-name-${i + 1}`} value={d?.name ?? ""} placeholder={`빚 ${i + 1}`} maxlength="20" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-bal-${i + 1}`}>남은 잔액</label>
+                <input type="text" inputmode="numeric" id={`dp-bal-${i + 1}`} value={d ? fmt(d.balance) : ""} placeholder="0" data-won autocomplete="off" />
+                <span class="unit">원</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-rate-${i + 1}`}>연 이자율</label>
+                <input type="number" id={`dp-rate-${i + 1}`} value={d ? d.ratePct : ""} min="0" max="100" step="0.1" inputmode="decimal" />
+                <span class="unit">%</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-min-${i + 1}`}>월 최소 상환액</label>
+                <input type="text" inputmode="numeric" id={`dp-min-${i + 1}`} value={d ? fmt(d.minPayment) : ""} placeholder="0" data-won autocomplete="off" />
+                <span class="unit">원</span>
+              </div>
+              <div class="calc-input-wrap dp-prio">
+                <label for={`dp-prio-${i + 1}`}>직접 지정 순서</label>
+                <select id={`dp-prio-${i + 1}`}>
+                  {[1, 2, 3, 4, 5].map((n) => <option value={n} selected={(d?.priority ?? i + 1) === n}>{n}번째</option>)}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="dp-strategy">갚는 순서</label>
+          <select id="dp-strategy" data-seg>
+            <option value="avalanche" selected>이자율 높은 빚부터 (눈사태)</option>
+            <option value="snowball">잔액 작은 빚부터 (눈덩이)</option>
+            <option value="custom">직접 정한 순서</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-extra">매달 더 갚을 돈</label>
+          <input type="text" inputmode="numeric" id="dp-extra" value="200,000" data-won autocomplete="off" />
+          <span class="unit">원</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-growth">더 갚을 돈을 해마다 늘리기</label>
+          <input type="number" id="dp-growth" value="0" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="dp-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="dp-debt|dp-int" data-bar-labels="갚을 원금|낼 이자" data-dock="dp-hero">
+          <p class="label">다 갚을 때까지</p>
+          <p class="big" id="dp-hero">{spellMonths(ex.months)}</p>
+          <p class="meta" id="dp-note">{ex.months}개월 · 첫 달 예산 {formatWon(ex.startBudget)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">빚 합계</span><span class="value" id="dp-debt">{formatWon(ex.totalDebt)}</span></div>
+          <div class="stat-chip"><span class="label">총 이자</span><span class="value" id="dp-int">{formatWon(ex.totalInterest)}</span></div>
+          <div class="stat-chip"><span class="label">낸 돈 합계</span><span class="value" id="dp-paid">{formatWon(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">눈사태 vs 눈덩이 이자</span><span class="value" id="dp-vs">눈사태가 {formatWon(snow.totalInterest - ex.totalInterest)} 적음</span></div>
+          <div class="stat-chip"><span class="label">더 갚아서 줄인 이자</span><span class="value" id="dp-saved">—</span></div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>순서</th><th>빚</th><th>다 갚는 달</th><th>낸 이자</th></tr></thead>
+            <tbody id="dp-order">
+              {[...ex.debts].sort((a, b) => a.order - b.order).map((d) => <tr><th scope="row">{d.order}</th><td>{d.name}</td><td>{d.payoffMonth}개월째</td><td>{formatWon(d.interest)}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>달마다 낸 돈·원금·이자·남은 잔액</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>달</th><th>낸 돈</th><th>원금</th><th>이자</th><th>남은 잔액</th></tr></thead>
+              <tbody id="dp-rows">
+                {ex.rows.map((r) => <tr><th scope="row">{r.month}개월째</th><td>{formatWon(r.payment)}</td><td>{formatWon(r.principal)}</td><td>{formatWon(r.interest)}</td><td>{formatWon(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>어떻게 계산하나</h2>
+      <ul>
+        <li><strong>한 달 예산</strong> — 모든 빚의 월 최소 상환액을 더하고 매달 더 갚을 돈을 얹습니다. 빚 하나가 끝나도 예산은 줄지 않고, 그 빚에 내던 돈이 다음 빚으로 넘어갑니다.</li>
+        <li><strong>이자</strong> — 매달 남은 잔액 × 연 이자율 ÷ 12. 원 미만은 버립니다.</li>
+        <li><strong>한 달 순서</strong> — 이자를 붙이고, 빚마다 최소 상환액을 내고, 남은 돈을 첫 번째 목표 빚에 냅니다. 그 빚이 그달 끝나고 돈이 남으면 같은 달에 다음 목표로 넘어갑니다.</li>
+        <li><strong>목표 순서</strong> — 눈사태는 이자율이 높은 빚부터(같으면 잔액 작은 빚), 눈덩이는 처음 잔액이 작은 빚부터(같으면 이자율 높은 빚), 직접 지정은 정한 번호 순입니다. 순서는 처음 넣은 값으로 한 번 정합니다.</li>
+        <li><strong>해마다 늘리기</strong> — 더 갚을 돈만 12개월마다 그 비율만큼 늘립니다. 최소 상환액은 그대로 둡니다.</li>
+      </ul>
+
+      <details>
+        <summary>눈사태와 눈덩이, 어느 쪽이 나은가요?</summary>
+        <p>
+          같은 예산이면 이자율 높은 빚부터 갚는 눈사태가 총 이자가 적거나 같습니다 — 비싼 이자가 붙는 잔액을 먼저
+          줄이기 때문입니다. 눈덩이는 작은 빚이 빨리 끝나 갚을 곳 수가 먼저 줄어듭니다. 위 '눈사태 vs 눈덩이 이자'
+          칸이 지금 넣은 빚으로 두 방식의 이자 차이를 보여 줍니다. 차이가 작으면 꾸준히 갚기 쉬운 쪽을 고르면 됩니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>최소 상환액이 이자보다 작다고 나와요</summary>
+        <p>
+          그 빚은 최소 상환액만 내서는 잔액이 줄지 않습니다. 첫 달 이자(잔액 × 연 이자율 ÷ 12)보다 큰 금액을
+          넣어 주세요. 카드 리볼빙처럼 최소 결제액이 잔액에 따라 바뀌는 빚은 고지서의 이번 달 금액을 넣고, 결과는
+          어림으로 보세요.
+        </p>
+      </details>
+
+      <details>
+        <summary>실제 고지서와 왜 다른가요?</summary>
+        <p>
+          은행·카드사는 보통 날짜 수로 이자를 계산하고(일할), 결제일·수수료·변동금리·중도상환수수료가 붙습니다. 이
+          계산기는 매달 같은 비율로 붙는다고 보는 계획용 어림입니다. 대출을 일찍 갚을 때 드는 수수료는
+          <a href="/guide/prepayment-fee-calculator/">중도상환수수료 계산기</a>로, 마이너스통장의 일할 이자는
+          <a href="/guide/minus-account-calculator/">마이너스통장 이자 계산기</a>로 따로 보세요.
+        </p>
+      </details>
+
+      <AdSlot label="debt-payoff-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .dp-debts { display: grid; gap: 0.75rem; }
+      .dp-debt { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.5rem 0.75rem 0.75rem; margin: 0; min-width: 0; }
+      .dp-debt legend { font-weight: 600; padding: 0 0.25rem; }
+      .dp-prio[hidden] { display: none; }
+    </style>
+    <script src="../../../scripts/debt-payoff.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
