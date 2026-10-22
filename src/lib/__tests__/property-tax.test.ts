@@ -16,6 +16,7 @@ import {
   BURDEN_CAP,
   BASE_CAP_RATE,
   LUMP_SUM_UNDER,
+  oneHomeRateApplies,
 } from "../property-tax";
 import r from "../../rates/local-tax-2026.json";
 
@@ -70,6 +71,16 @@ describe("1세대 1주택 세율 특례 — 제111조의2", () => {
       const 특례 = baseTax({ standardValue: v, kind: "house", oneHome: true });
       expect(특례, `${v / 억}억`).toBeLessThan(일반);
     }
+  });
+
+  it("시가표준액 9억원 이하만 특례 세율 — 9억은 특례, 9억 1만원은 일반 세율(제111조의2 ①)", () => {
+    // 9억: 과표 4.05억 → 420,000 + 1.05억 × 0.0035 = 787,500
+    expect(baseTax({ standardValue: 9 * 억, kind: "house", oneHome: true })).toBe(787_500);
+    // 9억 1만원: 과표 405,004,500 → 570,000 + 105,004,500 × 0.004 = 990,018
+    expect(baseTax({ standardValue: 9 * 억 + 10_000, kind: "house", oneHome: true })).toBe(990_018);
+    expect(oneHomeRateApplies(9 * 억, true)).toBe(true);
+    expect(oneHomeRateApplies(9 * 억 + 1, true)).toBe(false);
+    expect(oneHomeRateApplies(5 * 억, false)).toBe(false);
   });
 
   it("5억짜리 집이면 특례가 절반 아래다", () => {
@@ -164,7 +175,9 @@ describe("housePage — 계산기 화면", () => {
     [3 * 억, true, true, 99_000, 180_600, 19_800, 299_400],
     [5 * 억, true, true, 260_000, 308_000, 52_000, 620_000],
     [9 * 억, true, true, 787_500, 567_000, 157_500, 1_512_000],
-    [15 * 억, true, false, 1_732_500, 0, 346_500, 2_079_000],
+    // 9억 초과 1주택: 비율 45%(시행령 제109조 ① 2호 단서)지만 세율은 일반(제111조의2 ① 9억원 이하 한정)
+    // 과표 6.75억 → 570,000 + 3.75억 × 0.004 = 2,070,000
+    [15 * 억, true, false, 2_070_000, 0, 414_000, 2_484_000],
     [1 * 억, false, true, 60_000, 84_000, 12_000, 156_000],
     [5 * 억, false, false, 570_000, 0, 114_000, 684_000],
     [15 * 억, false, true, 2_970_000, 1_260_000, 594_000, 4_824_000],
@@ -216,7 +229,7 @@ describe("housePage — 계산기 화면", () => {
         const V = BigInt(v);
         const ratio = one ? R1.find(([u]) => u === null || V <= u)![1] : 60n;
         const base = (V * ratio) / 100n;
-        const pt = prog(base, one ? HB : GB);
+        const pt = prog(base, one && V <= 900_000_000n ? HB : GB);
         const p = housePage({ standardValue: v, oneHome: one, urban: true });
         if (BigInt(p.base) !== base || BigInt(p.propertyTax) !== pt || BigInt(p.urbanArea) !== (base * 14n) / 10_000n || BigInt(p.educationTax) !== (pt * 2n) / 10n) bad++;
       }

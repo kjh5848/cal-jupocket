@@ -11,7 +11,8 @@
  * (+ 지역자원시설세  아직 읽지 않았다)
  *
  * 그리고 과세표준이 시가표준액이 아니다. **시가표준액 × 공정시장가액비율**
- * 이고, 2026년에는 1세대 1주택에 43~45% 구간이 따로 있다.
+ * 이고, 2026년에는 1세대 1주택에 43~45% 구간이 따로 있다. 1주택 특례세율
+ * (제111조의2)은 시가표준액 9억원 이하만이다 — 2026-10-22 원문으로 고침.
  *
  * 숫자는 전부 `src/rates/local-tax-2026.json` 에서 온다. 그 값은
  * 국가법령정보센터 조문 원문에서 확인했고, 세율표는 이미지의 대체
@@ -67,9 +68,14 @@ function progressive(base: number, brackets: Bracket[]): number {
   return 0;
 }
 
-function bracketsFor(kind: Kind, oneHome: boolean): Bracket[] {
+/** 1세대 1주택 세율 특례(제111조의2)를 받는가 — 시가표준액 9억원 이하만. 비율 43~45%는 9억 초과도 받는다. */
+export function oneHomeRateApplies(standardValue: number, oneHome: boolean): boolean {
+  return oneHome && standardValue <= P.rates.houseOneHome.maxStandardValue;
+}
+
+function bracketsFor(kind: Kind, oneHome: boolean, standardValue: number): Bracket[] {
   if (kind === "house")
-    return (oneHome ? P.rates.houseOneHome : P.rates.house).brackets as Bracket[];
+    return (oneHomeRateApplies(standardValue, oneHome) ? P.rates.houseOneHome : P.rates.house).brackets as Bracket[];
   if (kind === "landAggregate") return P.rates.landAggregate.brackets as Bracket[];
   if (kind === "landSeparate") return P.rates.landSeparate.brackets as Bracket[];
   return [{ upTo: null, rate: P.rates.buildingOther.rate, base: 0 }];
@@ -82,7 +88,7 @@ export function baseTax(opts: {
   oneHome?: boolean;
 }): number {
   const { kind, oneHome = false } = opts;
-  return progressive(taxBase(opts), bracketsFor(kind, oneHome));
+  return progressive(taxBase(opts), bracketsFor(kind, oneHome, opts.standardValue));
 }
 
 export interface Bill {
@@ -119,7 +125,7 @@ export function bill(opts: {
   const { standardValue, kind, oneHome = false, urban = false } = opts;
   const base = taxBase(opts);
   const ratio = standardValue > 0 ? base / standardValue : 0;
-  const propertyTax = progressive(base, bracketsFor(kind, oneHome));
+  const propertyTax = progressive(base, bracketsFor(kind, oneHome, standardValue));
   const urbanArea = urban ? Math.floor(base * P.urbanArea.rate) : 0;
   const educationTax = Math.floor(propertyTax * P.localEducationTax.rate);
   const total = propertyTax + urbanArea + educationTax;
@@ -137,7 +143,7 @@ export function bill(opts: {
 export interface HousePage extends Bill {
   /** 같은 집을 1세대 1주택이 아닌 '그 밖의 주택'으로 볼 때의 합계 */
   generalTotal: number;
-  /** 1세대 1주택 특례(비율 43~45% + 제111조의2 세율)로 줄어드는 돈 */
+  /** 1세대 1주택 특례(비율 43~45% + 9억원 이하면 제111조의2 세율)로 줄어드는 돈 */
   oneHomeSaving: number;
   /** 합계 ÷ 시가표준액 */
   effective: number;
