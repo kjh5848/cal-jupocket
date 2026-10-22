@@ -4,6 +4,7 @@
  * 몇 년 몇 월은 이 화면에서만 정한다 — 첫 달은 다음 달(오늘이 10월이면 11월).
  * 여러 언어판이 같은 계산을 쓰고 말·통화 표기만 다르다(pickLang). lib 은 금액을 정수 단위로 버림하므로
  * 영어 사전은 센트(× 100)로 넣고 꺼낼 때 ÷ 100 — 이자는 센트 미만 버림. 통화는 판의 currency·numberLocale(src/i18n/locales.ts).
+ * 독일어판(/de/tools/debt-payoff/)은 DE 사전 — 같은 센트 단위, 표기는 lib/de/debt-payoff('1 234,56 Euro'·'November 2027', Intl 안 씀).
  */
 import { payoffPlan, monthLabel, spellMonths, type Debt, type Strategy } from "../lib/debt-payoff";
 import { formatWon, parseAmount } from "../lib/money";
@@ -11,6 +12,7 @@ import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pageLocale, pickLang } from "../i18n/ui";
 import { meta } from "../i18n/locales";
+import { centsDe, euroCentDe, monthLabelDe, spellMonthsDe } from "../lib/de/debt-payoff";
 
 const KO = {
   /** 입력칸 → lib 정수 단위 */
@@ -88,7 +90,35 @@ const EN: typeof KO = {
   share: "Debt payoff plan - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, en: EN });
+/** Deutsch — /de/tools/debt-payoff/. 센트 정수로 계산, 금액 '1 234,56 Euro'(§ 32a EStG 꼴), 달 'November 2027' */
+const DE: typeof KO = {
+  read: centsDe,
+  money: euroCentDe,
+  month: monthLabelDe,
+  spell: spellMonthsDe,
+  debtName: (n) => `Schuld ${n}`,
+  errEmpty: "Bitte mindestens eine Schuld mit Restschuld eingeben.",
+  errMin: (name, first) =>
+    `${name}: Die Mindestrate liegt nicht über den Zinsen des ersten Monats von ${first}, die Restschuld sinkt so nicht. Bitte einen höheren Betrag eingeben.`,
+  errLong: "Diese Schulden sind in 50 Jahren (600 Monaten) nicht getilgt. Bitte mehr pro Monat zahlen.",
+  note: (end, months, budget) => `Schuldenfrei im ${end} · ${months} Monate · Budget im ersten Monat ${budget}`,
+  vsSame: (monthGap) => `Gleiche Zinsen${monthGap ? ` · ${spellMonthsDe(Math.abs(monthGap))} Unterschied` : ""}`,
+  vs: (gap, less, monthGap) =>
+    `Lawine ${gap} ${less ? "günstiger" : "teurer"}${monthGap ? ` · ${spellMonthsDe(Math.abs(monthGap))} ${monthGap > 0 ? "schneller" : "langsamer"}` : ""}`,
+  saved: (amount, months) => `${amount} · ${months} ${months === 1 ? "Monat" : "Monate"} früher`,
+  savedNever: "Ohne Zusatztilgung nicht in 50 Jahren getilgt",
+  noExtra: "Keine Zusatztilgung",
+  payoffAt: (end, m) => `${end} (${m}. Monat)`,
+  lineDebt: "Schulden gesamt",
+  lineBudget: "Budget im ersten Monat",
+  lineEnd: "Schuldenfrei",
+  lineEndValue: (end, spelled) => `${end} (${spelled})`,
+  lineInt: "Zinsen gesamt",
+  title: "Schuldenabbau-Plan",
+  share: "Schuldenabbau-Plan - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, en: EN, de: DE });
 
 const reportUse = trackCalculatorUse("debt-payoff");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
