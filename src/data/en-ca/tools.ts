@@ -62,4 +62,13 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/en-ca/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "Debt Payoff Calculator",
+    blurb: "Credit cards, a line of credit and loans at once in Canadian dollars: avalanche vs snowball or your own order, extra payments, your debt-free date and total interest",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];
