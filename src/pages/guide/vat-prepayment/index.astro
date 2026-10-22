@@ -26,8 +26,10 @@
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AdSlot from "../../../components/AdSlot.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
 import {
   noticeAmount,
+  noticeRate,
   noticeThresholdTax,
   corporateSupplyThreshold,
   noCollectionUnder,
@@ -56,6 +58,11 @@ const 경계 = noticeAmount(noticeThresholdTax());
 /** 예정신고로 갈아탈 수 있는 기준선 */
 const 부진기준 = oneThirdLine(직전납부세액);
 
+const period1 = periods.find((p) => p.period === 1)!;
+
+/** 제목 바로 아래 한 줄 답 — 숫자는 전부 rates 에서 */
+const ANSWER = `부가세 예정고지는 개인사업자와 직전 과세기간 공급가액 ${formatMan(corporateSupplyThreshold)} 미만 법인에게 세무서가 직전 과세기간 납부세액의 ${noticeRate * 100}%(1천원 미만 버림)를 고지하는 것입니다. ${formatMan(noCollectionUnder)} 미만이면 나오지 않고, ${period1.returnDeadline}·${period2.returnDeadline}까지 냅니다(부가가치세법 제48조 제3항, ${r.verifiedOn} 원문 확인).`;
+
 const srcLaw = r.sources.find((s) => s.label.includes("제48조"))!;
 const srcDecree = r.sources.find((s) => s.label.includes("시행령"))!;
 const srcBasic = r.sources.find((s) => s.label.includes("국세기본법"))!;
@@ -63,6 +70,7 @@ const srcBasic = r.sources.find((s) => s.label.includes("국세기본법"))!;
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn}>
   <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
 
   <p>
     10월 초에 세무서에서 부가세 고지서가 날아왔습니다. 신고한 적이 없는데
