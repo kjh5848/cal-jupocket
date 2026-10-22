@@ -112,4 +112,13 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/en-us/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "Debt Payoff Calculator",
+    blurb: "Credit cards, car and student loans together: debt snowball vs avalanche or your own order, extra payments, your debt-free month and total interest",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];
