@@ -1,0 +1,66 @@
+---
+/**
+ * "주식 본전 계산" — 주식 수익률 시리즈. (주식 본전·주식 본전 퍼센트·본전 매도가도 이 글)
+ * 계산: src/lib/stock-return.ts priceForReturn(목표 0%) — 수수료(사용자 입력)·증권거래세·농어촌특별세를 메우는 가장 낮은 1원 단위 매도가.
+ * 쓰지 않은 것: '본전 찾는 법'(투자 조언), 물타기 평균 단가 계산, 호가 단위.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/stock-trade-2026.json";
+import { stockReturn, priceForReturn, MARKETS } from "../../../lib/stock-return";
+import { won } from "../../../lib/won";
+
+const bp = (n: number) => `${Number((n / 100).toFixed(2))}%`;
+const M = r.markets;
+const base = { buyPrice: 10_000, qty: 100, feePct: 0.015 };
+const rows = MARKETS.map((k) => {
+  const p = priceForReturn({ ...base, market: k })!;
+  return { k, p, up: (p - base.buyPrice) / base.buyPrice, at: stockReturn({ ...base, market: k, sellPrice: p }) };
+});
+const kospi = rows.find((x) => x.k === "kospi")!;
+const etf = rows.find((x) => x.k === "etf")!;
+const same = stockReturn({ ...base, market: "kospi", sellPrice: base.buyPrice });
+const up = (v: number) => `${(v * 100).toFixed(2)}%`;
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 stock-return-series.test.ts 가 rates 와 대조한다.
+const title = "주식 본전 계산 — 산 가격에 팔면 수수료와 세금만큼 손해라, 본전은 매수가보다 조금 높습니다";
+const description =
+  "주식 본전 계산은 산 가격이 아니라 수수료와 증권거래세까지 메우는 매도가를 찾는 일입니다. 코스피·코스닥은 판 금액의 0.2%가 세금이라 수수료 0.015%를 더하면 매수가보다 0.2% 넘게 올라야 본전입니다.";
+
+const ANSWER = `산 가격 그대로 팔면 본전이 아니라 수수료와 세금만큼 손해입니다. 1만원에 100주(코스피, 수수료 0.015%)를 샀다면 ${won(base.buyPrice)}에 팔 때 ${won(-same.profit)} 손해이고, 본전 매도가는 ${won(kospi.p)}(매수가 대비 +${up(kospi.up)})입니다.`;
+
+const QA = [
+  { q: "주식 본전은 어떻게 계산하나요?", a: `본전 매도가 = 매수 원가 ÷ (수량 × (1 − 수수료율 − 매도 세율))을 원 단위로 올린 값입니다. 매수 원가는 매수 금액 + 매수 수수료이고, 매도 세율은 코스피 ${bp(M.kospi.tax + M.kospi.rural)}(거래세 + 농특세), 코스닥 ${bp(M.kosdaq.tax)}입니다. 수수료·세금의 원 미만 끝수 때문에 1원 단위로 다시 확인합니다.` },
+  { q: "주식 본전은 몇 퍼센트 올라야 하나요?", a: `수수료 0.015%라면 코스피·코스닥 주식은 매수가보다 약 ${up(kospi.up)}, 코넥스는 약 ${up(rows.find((x) => x.k === "konex")!.up)}, 거래세가 없는 국내 ETF는 약 ${up(etf.up)} 높게 팔아야 본전입니다. 사고팔 때 수수료 두 번과 팔 때 세금 한 번을 메워야 하기 때문입니다.` },
+  { q: "평균 단가에 팔면 왜 손해인가요?", a: `증권사 앱의 평균 단가에는 보통 매도 때 낼 증권거래세가 들어 있지 않습니다. 1만원 × 100주를 1만원에 팔면 매수·매도 수수료 ${won(same.buyFee + same.sellFee)}과 거래세·농특세 ${won(same.tax + same.rural)}이 빠져 ${won(-same.profit)}을 잃습니다. 금액이 커질수록 손해도 같은 비율로 커집니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>정확한 본전은 '그 가격 이상이면 순손익이 0 아래로 내려가지 않는 가장 낮은 가격'입니다. 수량이 1~2주처럼 적으면 원 미만 버림 때문에 1원 오를 때 오히려 순손익이 잠깐 줄 수 있어, 식으로 구한 값 근처를 1원씩 확인해 정합니다. 매수 단가·수량·수수료율을 넣어 바로 구하려면 <a href="/guide/stock-return-calculator/">주식 수익률 계산기</a>의 '본전 매도가'를 보세요.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>1만원 × 100주, 수수료 0.015%</th><th>매도 세율</th><th>본전 매도가</th><th>매수가 대비</th></tr></thead>
+      <tbody>
+        {rows.map((x) => (
+          <tr><th scope="row">{M[x.k].label}</th><td>{bp(M[x.k].tax + M[x.k].rural)}</td><td>{won(x.p)}</td><td>+{up(x.up)}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>코스피는 거래세 {bp(M.kospi.tax)}에 농어촌특별세 {bp(M.kospi.rural)}가 붙고, 코스닥은 거래세만 {bp(M.kosdaq.tax)}라 두 시장의 본전 퍼센트가 같습니다. 세율과 근거 조문은 <a href="/guide/securities-transaction-tax/">증권거래세</a>에 있습니다. 실제 주문은 호가 단위에 맞춰야 하므로 본전 매도가보다 한 호가 위에 내는 경우가 많습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+</GuideLayout>

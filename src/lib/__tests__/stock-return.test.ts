@@ -4,7 +4,9 @@
  */
 import { describe, it, expect } from "vitest";
 import r from "../../rates/stock-trade-2026.json";
-import { stockReturn, priceForReturn, feeOf, sellTaxes } from "../stock-return";
+import { stockReturn, priceForReturn, feeOf, sellTaxes, MARKETS } from "../stock-return";
+import { readFileSync } from "node:fs";
+import { stockReturnSeries } from "../../data/series/stock-return";
 
 describe("세율 — 증권거래세법 시행령 제5조 · 농어촌특별세법 제5조 ① 5호", () => {
   it("1만분의 단위", () => {
@@ -85,4 +87,27 @@ describe("본전·목표가 정의", () => {
     expect(priceForReturn({ buyPrice: 0, qty: 10, feePct: 0.015, market: "kospi" })).toBeNull();
     expect(priceForReturn({ buyPrice: 1_000, qty: 0, feePct: 0.015, market: "kospi" })).toBeNull();
   });
+});
+
+/**
+ * 주식 수익률 시리즈 — 제목·설명은 RSS·사이트맵 메타가 문자열로 읽어(guide-meta.ts) 리터럴로 둔다.
+ * 그 문자열의 비율이 rates(1만분의 단위)와 어긋나지 않는지 대조한다. 0.015% 는 수수료 예시(사용자 입력, 출처 숫자 아님).
+ */
+describe("주식 수익률 시리즈 제목·설명", () => {
+  const bp = (n: number) => `${Number((n / 100).toFixed(2))}%`;
+  const rates = new Set(["0.015%", ...MARKETS.flatMap((k) => [r.markets[k].tax, r.markets[k].rural, r.markets[k].tax + r.markets[k].rural].filter(Boolean).map(bp))]);
+  it("rates 숫자", () => {
+    expect([...rates].sort()).toEqual(["0.015%", "0.05%", "0.1%", "0.15%", "0.2%"]);
+    expect(r.appliesFrom).toBe("2026-01-01");
+  });
+  for (const s of [stockReturnSeries.hub, ...stockReturnSeries.items]) {
+    it(s.slug, () => {
+      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
+      const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
+      expect(title).toContain(s.keyword);
+      expect(head).not.toMatch(/억원|만원/);
+      for (const m of head.matchAll(/[\d.]+%/g)) expect(rates, m[0]).toContain(m[0]);
+    });
+  }
 });

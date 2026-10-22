@@ -165,6 +165,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/crypto-tax/", title: "코인 과세 — 2027년 1월 1일 이후 파는 코인부터 1년 이익에서 250만원을 빼고 22%를 냅니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/crypto-tax-delay/", title: "가상자산 과세 유예 — 지금 법은 2027년 1월 1일 시행이고, 적용 시기는 세 번 미뤄졌습니다", kind: "guide", icon: "coins", year: 2026 },
       { href: "/guide/crypto-tax-calculator/", title: "코인 세금 계산기", kind: "calc", icon: "calculator", blurb: "양도가액·취득가액·2026년 말 시가 → 2027년부터의 코인 세금" },
+      { href: "/guide/securities-transaction-tax/", title: "증권거래세 — 2026년 주식을 팔 때 코스피는 0.05%에 농어촌특별세 0.15%, 코스닥은 0.2%를 뗍니다", kind: "guide", icon: "chart", year: 2026 },
+      { href: "/guide/stock-breakeven/", title: "주식 본전 계산 — 산 가격에 팔면 수수료와 세금만큼 손해라, 본전은 매수가보다 조금 높습니다", kind: "guide", icon: "chart", year: 2026 },
+      { href: "/guide/stock-return-calculator/", title: "주식 수익률 계산기", kind: "calc", icon: "calculator", blurb: "매수가·매도가·수량·수수료율 → 세금 뺀 순손익·실제 수익률·본전 매도가" },
     ],
   },
   {
@@ -487,6 +490,9 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/stock-return-calculator/",
+  "/guide/stock-breakeven/",
+  "/guide/securities-transaction-tax/",
   "/guide/holding-tax-calculator/",
   "/guide/property-jongbu-double-tax/",
   "/guide/holding-tax/",

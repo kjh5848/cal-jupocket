@@ -1,0 +1,138 @@
+---
+/**
+ * "주식 수익률 계산기" — 주식 수익률 시리즈. (주식 수익률 계산 방법·주식 수익률 세금·주식 수수료 계산기·주식 수익률 10%도 이 글, 계산기 포함)
+ * 계산: src/lib/stock-return.ts stockReturn()·priceForReturn() — 증권거래세법 시행령 제5조, 농어촌특별세법 제5조 ① 5호.
+ * 수수료율은 증권사마다 달라 사용자가 넣는다(기본값 0.015% 는 예시일 뿐 출처 숫자가 아니다).
+ * 넣지 않은 것: 대주주·해외주식 양도소득세, 배당소득세, 유관기관 제비용, 호가 단위.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/stock-trade-2026.json";
+import { stockReturn, priceForReturn, MARKETS } from "../../../lib/stock-return";
+import { won, manwon } from "../../../lib/won";
+
+const bp = (n: number) => `${Number((n / 100).toFixed(2))}%`;
+const rate = (v: number) => `${(v * 100).toFixed(2)}%`;
+const M = r.markets;
+const base = { buyPrice: 10_000, qty: 100, feePct: 0.015, market: "kospi" as const };
+const ex = stockReturn({ ...base, sellPrice: 11_000 });
+const even = priceForReturn(base)!;
+const ten = priceForReturn(base, 10)!;
+const tenAt = stockReturn({ ...base, sellPrice: ten });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 stock-return-series.test.ts 가 rates 와 대조한다.
+const title = "주식 수익률 계산기 — 매수가·매도가·수량을 넣으면 수수료와 증권거래세를 뺀 실제 수익률이 나옵니다";
+const description =
+  "주식 수익률 계산기는 매수 단가·수량·매도 단가·수수료율을 넣으면 수수료, 증권거래세, 코스피 농어촌특별세 0.15%를 뺀 순손익과 실제 수익률, 본전 매도가, 목표 수익률 매도가를 계산합니다.";
+
+const ANSWER = `1만원에 100주를 사서 1만1천원에 팔면 주가는 10% 올랐지만, 수수료 0.015%(예시)와 코스피 거래세·농특세 ${won(ex.tax + ex.rural)}을 빼면 순이익 ${won(ex.profit)}, 실제 수익률은 ${rate(ex.returnRate)}입니다. 본전 매도가는 ${won(even)}입니다.`;
+
+const QA = [
+  { q: "주식 수익률은 어떻게 계산하나요?", a: `실제 수익률 = 순손익 ÷ 매수 원가입니다. 매수 원가는 매수 금액 + 매수 수수료, 순손익은 매도 금액에서 매도 수수료·증권거래세·농어촌특별세를 빼고 매수 원가를 뺀 값입니다. 세금은 팔 때만, 판 금액에 붙습니다. 수수료와 세금은 원 미만을 버렸습니다.` },
+  { q: "수익률 10%를 내려면 얼마에 팔아야 하나요?", a: `1만원에 100주(코스피, 수수료 0.015%)를 샀다면 ${won(ten)} 이상에 팔아야 비용을 뺀 수익률이 10%가 됩니다. 그 가격에 팔면 순이익 ${won(tenAt.profit)}, 수익률 ${rate(tenAt.returnRate)}입니다. 주가가 정확히 10% 오른 1만1천원에서는 ${rate(ex.returnRate)}에 그칩니다.` },
+  { q: "주식 수수료는 어떻게 계산하나요?", a: `거래 금액 × 증권사 수수료율이고, 살 때와 팔 때 각각 붙습니다. 수수료율은 증권사·계좌·이벤트마다 달라 계산기에 직접 넣어야 합니다. 1천만원어치를 사고팔 때 수수료율이 0.015%면 한 번에 1,500원씩입니다. 유관기관 제비용은 계산에 넣지 않았습니다.` },
+  { q: "주식 수익률에 세금이 얼마나 영향을 주나요?", a: `코스피·코스닥은 판 금액의 ${bp(M.kospi.tax + M.kospi.rural)}, 코넥스는 ${bp(M.konex.tax)}가 세금으로 빠집니다. 판 금액에 붙어서 주가가 오를수록 세금도 커지고, 손해를 봐도 냅니다. 국내 ETF는 거래세가 없는 것으로 봅니다(해석). 대주주 양도소득세와 배당소득세는 이 계산에 없습니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">세율은 2026년 1월 1일 이후 매도분 기준입니다. 수수료율은 쓰는 증권사 앱에 적힌 값을 넣으세요(살 때·팔 때 같다고 봅니다).</p>
+    <div class="calc-input-wrap">
+      <label for="sr-buy">매수 단가 (평균)</label>
+      <input type="text" inputmode="numeric" id="sr-buy" value={base.buyPrice.toLocaleString("ko-KR")} data-won />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="sr-qty">수량</label>
+      <input type="number" min="1" step="1" id="sr-qty" value={base.qty} data-step />
+      <span class="unit">주</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="sr-sell">매도 단가</label>
+      <input type="text" inputmode="numeric" id="sr-sell" value={(11_000).toLocaleString("ko-KR")} data-won />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="sr-market">시장</label>
+      <select id="sr-market">
+        {MARKETS.map((k) => <option value={k} selected={k === "kospi"}>{M[k].label}</option>)}
+      </select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="sr-fee">수수료율 (한 번)</label>
+      <input type="number" min="0" max="1" step="0.001" id="sr-fee" value={base.feePct} />
+      <span class="unit">%</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="sr-target">목표 수익률</label>
+      <select id="sr-target" data-seg>
+        <option value="5">5%</option>
+        <option value="10" selected>10%</option>
+        <option value="20">20%</option>
+      </select>
+    </div>
+
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="sr-buyfee,sr-sellfee|sr-tax|sr-rural"
+      data-bar-labels="수수료|증권거래세|농어촌특별세"
+      data-dock="sr-hero"
+    >
+      <p class="label">순손익 (수수료·세금 뺀 뒤)</p>
+      <p class="big" id="sr-hero">{won(ex.profit)}</p>
+      <p class="meta" id="sr-note">실제 수익률 {rate(ex.returnRate)} · 주가 변동 {rate(ex.priceChange)}</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip"><span class="label">실제 수익률</span><span class="value" id="sr-rate">{rate(ex.returnRate)}</span></div>
+      <div class="stat-chip"><span class="label">본전 매도가</span><span class="value" id="sr-even">{won(even)}</span></div>
+      <div class="stat-chip"><span class="label" id="sr-target-label">목표 10% 매도가</span><span class="value" id="sr-goal">{won(ten)}</span></div>
+      <div class="stat-chip" data-group="산 돈 (매수 원가)"><span class="label">매수 금액</span><span class="value" id="sr-buyamt">{won(ex.buyAmount)}</span></div>
+      <div class="stat-chip"><span class="label">매수 수수료</span><span class="value" id="sr-buyfee">{won(ex.buyFee)}</span></div>
+      <div class="stat-chip" data-group="팔 때 빠지는 돈"><span class="label">매도 수수료</span><span class="value" id="sr-sellfee">{won(ex.sellFee)}</span></div>
+      <div class="stat-chip"><span class="label">증권거래세</span><span class="value" id="sr-tax">{won(ex.tax)}</span></div>
+      <div class="stat-chip"><span class="label">농어촌특별세</span><span class="value" id="sr-rural">{won(ex.rural)}</span></div>
+      <div class="stat-chip" data-group="받는 돈"><span class="label">매도 정산액</span><span class="value" id="sr-proceeds">{won(ex.proceeds)}</span></div>
+    </div>
+    <p class="meta" id="sr-formula"></p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>1만원 × 100주 → 1만1천원 (코스피, 수수료 0.015%)</th><th>금액</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">매수 금액 + 매수 수수료 = 매수 원가</th><td>{won(ex.buyAmount)} + {won(ex.buyFee)} = {won(ex.cost)}</td></tr>
+        <tr><th scope="row">매도 금액</th><td>{won(ex.sellAmount)}</td></tr>
+        <tr><th scope="row">− 매도 수수료</th><td>{won(ex.sellFee)}</td></tr>
+        <tr><th scope="row">− 증권거래세 ({bp(M.kospi.tax)})</th><td>{won(ex.tax)}</td></tr>
+        <tr><th scope="row">− 농어촌특별세 ({bp(M.kospi.rural)})</th><td>{won(ex.rural)}</td></tr>
+        <tr><th scope="row">= 매도 정산액</th><td>{won(ex.proceeds)}</td></tr>
+        <tr><th scope="row">순손익 = 정산액 − 매수 원가</th><td>{won(ex.profit)}</td></tr>
+        <tr><th scope="row">실제 수익률 = 순손익 ÷ 매수 원가</th><td>{rate(ex.returnRate)}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>증권사 앱의 '수익률'은 보통 아직 팔지 않은 평가 수익률이라 매도 때 나갈 세금이 빠져 있을 수 있습니다. 실제로 팔았을 때 손에 남는 돈은 위처럼 비용을 모두 뺀 정산액입니다. 시장별 세율과 그 근거는 <a href="/guide/securities-transaction-tax/">증권거래세</a>에 정리했습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>목표 매도가는 '그 가격 이상이면 비용을 뺀 수익률이 늘 목표 이상인 가장 낮은 1원 단위 가격'입니다. 실제 주문은 호가 단위에 맞춰야 해서 그보다 조금 높을 수 있습니다. 손해 없이 빠져나올 가격만 알고 싶다면 <a href="/guide/stock-breakeven/">주식 본전 계산</a>을 보세요.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+
+  <script src="../../../scripts/stock-return.ts"></script>
+</GuideLayout>

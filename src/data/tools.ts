@@ -115,6 +115,7 @@ const SYN: Record<string, string[]> = {
   "/guide/industrial-accident-leave-pay/": ["산재", "휴업급여", "산재 월급"],
   "/guide/irp-tax-credit-calculator/": ["IRP", "연금저축", "세액공제"],
   "/guide/jongbu-calculator/": ["종부세", "종합부동산세"],
+  "/guide/stock-return-calculator/": ["주식 수익률", "주식 수익률 계산", "주식 수익률 계산 방법", "주식 수익률 계산기 퍼센트", "주식 수익률 세금", "주식 수수료 계산기", "주식 수수료 계산", "증권거래세 계산", "주식 본전", "주식 본전 계산", "본전 매도가", "목표 수익률 매도가"],
   "/guide/holding-tax-calculator/": ["보유세", "보유세 계산", "보유세계산기", "보유세 계산 방법", "부동산 보유세", "아파트 보유세", "주택보유세", "재산세 종부세", "재산세 종부세 계산기", "1주택 보유세", "다주택자 보유세"],
   "/guide/lotto-tax-calculator/": ["로또", "로또 세금", "복권 당첨금"],
   "/guide/medical-credit-limit/": ["의료비 세액공제", "의료비 공제"],

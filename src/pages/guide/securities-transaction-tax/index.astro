@@ -1,0 +1,78 @@
+---
+/**
+ * "증권거래세" — 주식 수익률 시리즈 허브. (증권거래세율·증권 거래세율 2026·증권거래세란·증권거래세 세율도 이 글)
+ * 숫자: src/rates/stock-trade-2026.json — 증권거래세법 시행령 제5조(2026-01-01 양도분부터), 농어촌특별세법 제5조 ① 5호.
+ * 쓰지 않은 것: 신고·신고기한(제3조·제10조 원문 미확인), 폐지 논의, 2025년 이전 세율, 대주주·해외주식 양도소득세.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/stock-trade-2026.json";
+import { stockReturn, MARKETS } from "../../../lib/stock-return";
+import { won, manwon } from "../../../lib/won";
+
+/** 1만분의 n → '0.05%' */
+const bp = (n: number) => `${Number((n / 100).toFixed(2))}%`;
+const M = r.markets;
+const win = stockReturn({ buyPrice: 10_000, qty: 100, sellPrice: 11_000, feePct: 0.015, market: "kospi" });
+const loss = stockReturn({ buyPrice: 10_000, qty: 100, sellPrice: 9_000, feePct: 0.015, market: "kosdaq" });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 stock-return-series.test.ts 가 rates 와 대조한다.
+const title = "증권거래세 — 2026년 주식을 팔 때 코스피는 0.05%에 농어촌특별세 0.15%, 코스닥은 0.2%를 뗍니다";
+const description =
+  "증권거래세는 주식을 팔 때 판 금액에 붙는 세금입니다. 2026년 1월 1일 이후 양도분부터 코스피 0.05%(농어촌특별세 0.15% 별도), 코스닥·K-OTC 0.2%, 코넥스 0.1%이고, 손해를 보고 팔아도 냅니다.";
+
+const ANSWER = `증권거래세는 주식을 팔 때 판 금액(양도가액)에 붙습니다. 2026년 양도분부터 코스피 ${bp(M.kospi.tax)}에 농어촌특별세 ${bp(M.kospi.rural)}, 코스닥 ${bp(M.kosdaq.tax)}, 코넥스 ${bp(M.konex.tax)}입니다. 코스피 주식을 ${manwon(win.sellAmount)}에 팔면 거래세 ${won(win.tax)}과 농특세 ${won(win.rural)}을 냅니다.`;
+
+const QA = [
+  { q: "증권거래세란 무엇인가요?", a: `주권(주식)을 팔 때 판 금액에 매기는 국세입니다(증권거래세법 제2조). 과세표준은 이익이 아니라 양도가액이라(제7조) 산 값과 상관없이 판 금액 × 세율입니다. 증권시장에서 팔면 매도 대금에서 미리 떼고 정산합니다(제9조 거래징수). 사는 쪽에는 붙지 않습니다.` },
+  { q: "2026년 증권거래세율은 얼마인가요?", a: `2026년 1월 1일 이후 양도분부터 코스피 ${bp(M.kospi.tax)}, 코넥스 ${bp(M.konex.tax)}, 코스닥과 K-OTC ${bp(M.kosdaq.tax)}입니다(시행령 제5조). 코스피만 농어촌특별세 ${bp(M.kospi.rural)}가 더 붙어(농어촌특별세법 제5조 제1항 제5호) 코스피와 코스닥 모두 판 금액의 ${bp(M.kospi.tax + M.kospi.rural)}를 세금으로 냅니다.` },
+  { q: "손해 보고 팔아도 증권거래세를 내나요?", a: `냅니다. 세금이 판 금액에 붙기 때문입니다. 코스닥 주식을 ${manwon(loss.buyAmount)}에 사서 ${manwon(loss.sellAmount)}에 팔면 ${manwon(loss.buyAmount - loss.sellAmount)} 손해를 봐도 거래세 ${won(loss.tax)}이 빠집니다. 수수료 0.015%까지 넣으면 실제 손실은 ${won(-loss.profit)}입니다.` },
+  { q: "ETF를 팔 때도 증권거래세를 내나요?", a: `국내 ETF는 대부분 투자신탁 수익증권이라 증권거래세가 붙지 않는 것으로 봅니다. 증권거래세법이 과세대상을 '주권 또는 지분'으로 정하고(제2조), 주권 정의(제1조의2)에 투자신탁 수익증권이 없기 때문입니다(해석). 투자회사형 상품이나 해외 상장 ETF는 따로 확인해야 합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>그래서 증권거래세는 이익을 볼 때나 손해를 볼 때나 판 금액에 비례해 나갑니다. 산 가격, 보유 기간, 이익 크기와는 상관이 없습니다. 상장주식 매매차익에 붙는 양도소득세는 대주주 등 일부에만 붙는 다른 세금이라 이 글에서는 다루지 않습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>시장 (2026년 양도분)</th><th>증권거래세</th><th>농어촌특별세</th><th>합계</th><th>근거</th></tr></thead>
+      <tbody>
+        {MARKETS.map((k) => (
+          <tr><th scope="row">{M[k].label}</th><td>{bp(M[k].tax)}</td><td>{M[k].rural ? bp(M[k].rural) : "없음"}</td><td>{bp(M[k].tax + M[k].rural)}</td><td>{M[k].article}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>증권시장 밖에서 비상장 주식을 넘기면 법에 적힌 기본세율 {bp(r.baseRate.tax)}가 적용됩니다(제8조 제1항). 위 세율은 시행령이 증권시장 주권에 낮춰 정한 탄력세율이고, 2026년 1월 1일 이후 양도하는 주식부터 적용됩니다(대통령령 제36001호 부칙). 원문은 {r.verifiedOn}에 국가법령정보센터에서 확인했습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>1만원 × 100주, 수수료 0.015%</th><th>코스피 1만1천원에 매도</th><th>코스닥 9천원에 매도</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">매도 금액</th><td>{won(win.sellAmount)}</td><td>{won(loss.sellAmount)}</td></tr>
+        <tr><th scope="row">증권거래세</th><td>{won(win.tax)}</td><td>{won(loss.tax)}</td></tr>
+        <tr><th scope="row">농어촌특별세</th><td>{won(win.rural)}</td><td>{won(loss.rural)}</td></tr>
+        <tr><th scope="row">수수료 (산 때 + 판 때)</th><td>{won(win.buyFee + win.sellFee)}</td><td>{won(loss.buyFee + loss.sellFee)}</td></tr>
+        <tr><th scope="row">순손익</th><td>{won(win.profit)}</td><td>{won(loss.profit)}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>내 매수가·매도가·수량으로 세금과 실제 수익률을 보려면 <a href="/guide/stock-return-calculator/">주식 수익률 계산기</a>를 쓰세요. 수수료와 세금까지 메우려면 얼마에 팔아야 하는지는 <a href="/guide/stock-breakeven/">주식 본전 계산</a>에 정리했습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>{M.etf.note}</p>
+</GuideLayout>
