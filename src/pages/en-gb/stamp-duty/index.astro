@@ -12,6 +12,8 @@
  * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-stamp-duty-2026-10-21.csv, hl en · gl gb):
  *   stamp duty calculator uk·2026·england·ni / first time buyer stamp duty threshold·relief·on 500k house /
  *   stamp duty second home 250k·300k·500k·rules·refund / sdlt calculator residential / stamp duty calculator scotland·wales
+ * #divorce 절(2026-10-22, 조사표 이혼 재산분할 행): FA 2003 Sch 3 para 3·civil partnership 3A 면제·신고 없음(HMRC 이전 안내), 비혼 공동소유 지분 이전 예시
+ *   £275,000 을 오늘 표준 요율로, higher rates 의 영구 별거·SDLTM09797 은 링크만(keywords/gb-divorce-stamp-duty-2026-10-22.csv).
  * 쓰지 않는 것: 비주거·혼합 요율, 리스 NPV, linked transactions, 6채 이상, 법인 17%, shared ownership 단계 납부, 환급 계산, 면제 판정.
  */
 import BaseHead from "../../../components/BaseHead.astro";
@@ -37,6 +39,7 @@ const ftb400std = sdlt(P(400000), "standard", false);
 const ftbOver = sdlt(P(500001), "firstTimeBuyer", false);
 const second = [250000, 300000, 500000].map((v) => ({ v, std: sdlt(P(v), "standard", false), hi: sdlt(P(v), "higher", false) }));
 const nonRes = sdlt(P(300000), "standard", true);
+const split = sdlt(P(275000), "standard", false);
 const fmt = (b: { from: number; upTo: number | null }) =>
   b.upTo === null ? `Above ${gbp0(b.from)}` : b.from === 0 ? `Up to ${gbp0(b.upTo)}` : `${gbp0(b.from + 1)} to ${gbp0(b.upTo)}`;
 const stdBands = bandsOf("standard");
@@ -160,6 +163,30 @@ const ftbBands = bandsOf("firstTimeBuyer");
         rates with the surcharge is {gbp0(nonRes.total)}.
       </p>
 
+      <h2 id="divorce">Stamp duty on divorce or separation</h2>
+      <p>
+        A transfer of a home from one spouse or civil partner to the other because of a divorce, dissolution, annulment or legal
+        (judicial) separation is exempt from SDLT. Finance Act 2003, Schedule 3, exempts it when it is made under a court order on or
+        after the divorce, dissolution, annulment or separation, or under an agreement the two of you make in connection with it — the
+        same rules apply to civil partners. HMRC's guidance adds that there is no need to tell HMRC about the transfer, even if its
+        value is above the SDLT threshold. There is nothing to work out in the calculator for these transfers.
+      </p>
+      <p>
+        The exemption is for married couples and civil partners. HMRC says joint owners who are not married or in a civil partnership
+        may have to pay SDLT when one of them takes over the other's share: the amount taxed is any cash paid for the share plus the
+        part of the outstanding mortgage taken over. In HMRC's example, a new sole owner pays {gbp0(175000)} for half the equity and
+        takes on {gbp0(100000)} of the mortgage — {gbp0(275000)} of chargeable consideration. HMRC worked that example on the rates of
+        October 2022; on today's standard rates {gbp0(275000)} comes to {gbp0(split.total)}. Type the amount of consideration, not
+        the value of the house, into the calculator above.
+      </p>
+      <p>
+        Buying a new home while separating is a separate question. GOV.UK says a married couple is treated as one buyer for the higher
+        rates unless they are permanently separated, and HMRC's manual explains when an interest in a former home that a court order
+        makes you keep is ignored. This calculator does not decide either point — choose the rates yourself or check GOV.UK's guidance
+        on the higher rates. This section is about SDLT in England and Northern Ireland only; Scotland (LBTT) and Wales (LTT) are
+        separate taxes.
+      </p>
+
       <h2>When and how to pay</h2>
       <p>
         GOV.UK says you must send an SDLT return to HMRC and pay the tax within 14 days of completion. A solicitor or conveyancer
@@ -213,6 +240,18 @@ const ftbBands = bandsOf("firstTimeBuyer");
         <li>
           <a href="https://www.legislation.gov.uk/ukpga/2003/14/section/55" rel="noopener" target="_blank">Finance Act 2003</a>
           section 55, section 75ZA and Schedules 4ZA, 6ZA and 9A (legislation.gov.uk, checked 21 October 2026)
+        </li>
+        <li>
+          <a href="https://www.legislation.gov.uk/ukpga/2003/14/schedule/3" rel="noopener" target="_blank">Finance Act 2003, Schedule 3</a>
+          — transactions in connection with divorce and dissolution of civil partnership (legislation.gov.uk, checked 22 October 2026)
+        </li>
+        <li>
+          <a href="https://www.gov.uk/guidance/sdlt-transferring-ownership-of-land-or-property" rel="noopener" target="_blank">HMRC — SDLT: transferring ownership of land or property</a>
+          (updated 30 September 2026, checked 22 October 2026)
+        </li>
+        <li>
+          <a href="https://www.gov.uk/hmrc-internal-manuals/stamp-duty-land-tax-manual/sdltm09797" rel="noopener" target="_blank">HMRC — SDLT Manual SDLTM09797, higher rates: divorce and civil partnership dissolution</a>
+          (checked 22 October 2026)
         </li>
       </ul>
 
