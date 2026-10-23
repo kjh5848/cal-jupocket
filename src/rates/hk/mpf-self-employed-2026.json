@@ -1,0 +1,30 @@
+{
+  "country": "HK",
+  "draft": true,
+  "note": "홍콩 자영업자(自僱人士) 強積金 강제 기여금 초안 — 한국 국민연금 지역가입자(/national-pension-premium/) 행의 홍콩 판정에서 만든 것. 페이지에서 아직 쓰지 않는다. 기여금 = 有關入息 × 5%, 有關入息이 최저 수준 미만이면 기여 의무 없음, 최고 수준 넘으면 최고 기여액 고정. 숫자는 積金局 원문(修訂日期 30/04/2026)과 과거 수정 이력 PDF로 확인. 미확인: 센트 단위 끝수 처리(반올림·버림) 문장, 《強制性公積金計劃條例》(第485章) 附表 2·3 원문 대조(elegislation.gov.hk 는 스크립트 페이지라 본문을 못 엶), 기여금의 薪俸稅·利得稅 공제 한도(稅務局 원문 이번에 안 엶).",
+  "verifiedOn": "2026-10-23",
+  "lawVersion": "積金局「自僱人士」強制性供款(修訂日期 30/04/2026) — 2014年6月1日或之後開始的供款期",
+  "sources": [
+    { "label": "積金局 — 強制性供款：自僱人士(修訂日期 30/04/2026)", "url": "https://www.mpfa.org.hk/tc/mpf-system/mandatory-contributions/self-employed-persons" },
+    { "label": "積金局 — 自僱人士的最低及最高有關入息水平過往修訂紀錄(PDF, 날짜 표기 없음)", "url": "https://www.mpfa.org.hk/-/media/files/mpf_system/mandatory_contributions/self-employed-persons/summary-table-for-legislative-amendment-history_sep-c.pdf" },
+    { "label": "積金局 — 強積金制度涵蓋範圍(修訂日期 20/07/2026)", "url": "https://www.mpfa.org.hk/tc/mpf-system/mpf-coverage" }
+  ],
+  "effectiveFrom": "2014-06-01",
+  "rate": 0.05,
+  "monthly": { "minRelevantIncome": 7100, "maxRelevantIncome": 30000, "maxContribution": 1500 },
+  "yearly": { "minRelevantIncome": 85200, "maxRelevantIncome": 360000, "maxContribution": 18000 },
+  "belowMinimum": "低於最低有關入息水平 — 無須供款",
+  "coverage": "年滿18歲至64歲的自僱人士(獨資經營者·合夥人) — 自僱小販·未滿18歲或年屆65歲 등은 獲豁免人士",
+  "relevantIncomeMethods": [
+    "最近期評稅通知書上的「應評稅利潤」",
+    "《稅務條例》第28條所界定的基本免稅額",
+    "向「積金易」平台作出入息聲明",
+    "每年最高有關入息水平"
+  ],
+  "frequency": "按月(자영업자가 지정한 供款日) 또는 按年(計劃 財政年度 最後一日)",
+  "notVerified": [
+    "센트 단위 끝수 처리(반올림·버림) — 원문에 문장 없음",
+    "第485章 附表 2·3 조문 대조 — elegislation.gov.hk 본문 못 엶",
+    "強積金 강제 기여금의 稅務 공제 한도 — 稅務局 원문 이번에 안 엶"
+  ]
+}
