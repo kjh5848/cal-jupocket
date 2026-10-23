@@ -9,9 +9,11 @@
  * 번체판(/zh-hk/tools/debt-payoff/)은 ZH_HANT 사전 — 읽기·금액·달은 EN 과 같은 센트 단위·판 Intl(zh-HK → 'HK$1,234.50'·'2027年11月'), 중립 서면어라 대만판도 쓸 수 있다.
  * 인도네시아어판(/id/tools/debt-payoff/)은 ID 사전 — 루피아 정수 단위(한국어판처럼 parseAmount, 이자는 1 루피아 미만 버림),
  * 표시는 판의 IDR·id-ID('Rp 50.000.000'), 달은 Intl id-ID('November 2027').
+ * 일본어판(/ja/tools/debt-payoff/)은 JA 사전 — 엔 정수 단위(parseAmount, 이자는 1円 미만 버림), 표시 formatYen('1,250,000円'),
+ * 달 '2027年11月', 기간 '1年3か月'.
  */
 import { payoffPlan, monthLabel, spellMonths, type Debt, type Strategy } from "../lib/debt-payoff";
-import { formatWon, parseAmount } from "../lib/money";
+import { formatWon, formatYen, parseAmount } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
 import { pageLocale, pickLang } from "../i18n/ui";
@@ -222,7 +224,42 @@ const ID: typeof KO = {
   share: "Rencana pelunasan utang - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, en: EN, de: DE, es: ES, "zh-Hant": ZH_HANT, id: ID });
+/** 日本語 — /ja/tools/debt-payoff/. 엔 정수 단위(센트 없음), 표시 '1,250,000円', 달 '2027年11月', 기간 '1年3か月' */
+const jaSpell = (months: number) => {
+  const y = Math.floor(months / 12);
+  const r = months % 12;
+  return [y ? `${y}年` : "", r ? `${r}か月` : ""].join("") || "0か月";
+};
+const JA: typeof KO = {
+  read: parseAmount,
+  money: formatYen,
+  month: (y, m, n) => {
+    const t = y * 12 + (m - 1) + (n - 1);
+    return `${Math.floor(t / 12)}年${(t % 12) + 1}月`;
+  },
+  spell: jaSpell,
+  debtName: (n) => `借入${n}`,
+  errEmpty: "残高のある借入を1つ以上入力してください。",
+  errMin: (name, first) => `${name}：毎月の最低返済額が初月の利息 ${first} 以下のため、残高が減りません。これより大きい金額を入力してください。`,
+  errLong: "50年（600か月）以内に完済できません。毎月の返済額を増やしてください。",
+  note: (end, months, budget) => `${end}に完済 · ${months}か月 · 初月の返済予算 ${budget}`,
+  vsSame: (monthGap) => `利息は同じ${monthGap ? ` · 期間の差 ${Math.abs(monthGap)}か月` : ""}`,
+  vs: (gap, less, monthGap) =>
+    `金利順のほうが利息 ${gap} ${less ? "少ない" : "多い"}${monthGap ? ` · ${Math.abs(monthGap)}か月${monthGap > 0 ? "早い" : "遅い"}` : ""}`,
+  saved: (amount, months) => `${amount} · ${months}か月早く完済`,
+  savedNever: "上乗せなしでは50年以内に完済できない",
+  noExtra: "上乗せ返済なし",
+  payoffAt: (end, m) => `${end}（${m}か月目）`,
+  lineDebt: "借入の合計",
+  lineBudget: "初月の返済予算",
+  lineEnd: "完済する月",
+  lineEndValue: (end, spelled) => `${end}（${spelled}）`,
+  lineInt: "利息の合計",
+  title: "借金返済シミュレーション",
+  share: "借金返済シミュレーション - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE, es: ES, "zh-Hant": ZH_HANT, id: ID });
 
 const reportUse = trackCalculatorUse("debt-payoff");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;

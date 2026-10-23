@@ -181,4 +181,13 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/ja/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "借金返済シミュレーション",
+    blurb: "カードローン・リボ払いなど複数の借入を金利の高い順・残高の少ない順で比べ、完済する月と利息の合計を計算",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

@@ -1,0 +1,253 @@
+---
+/**
+ * 借金返済シミュレーション — 일본어판 도구. 한국어판 /tools/debt-payoff/ 와 계산(lib/debt-payoff.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/debt-payoff.ts 의 JA 사전, 금액은 formatYen), 문장은 일본어로 새로 썼다(번역 아님).
+ * 산술 투영이라 rates 와 상관없다(조사표 일본 칸 '같음').
+ *
+ * lib 은 정수 단위로 이자를 버림한다 — 한국어판처럼 엔 정수. 아래 예시도 같은 단위로 계산해
+ * 정적 HTML 과 스크립트의 첫 계산이 맞는다.
+ * 예시 금리는 사용자가 바꿔 넣는 가정이다. 법 숫자는 利息制限法 第1条 상한(年20%·18%·15%)만 —
+ * e-Gov 법령 API(lawId 329AC0000000100, article 1) 2026-10-23 확인. 카드 리볼빙·카드론의 실제 이자 계산(일할·残高スライド)은
+ * 허용 출처에 없어 쓰지 않는다.
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/jp-debt-payoff-2026-10-23.csv, hl ja · gl jp):
+ *   借金 返済 シミュレーション 複数·計算·エクセル·リボ·ボーナス / 借金返済 計画の立て方·計画表·計画書 /
+ *   複数 借金 返済 順番·借金返済 コツ / 雪だるま式返済 / 繰り上げ返済 シミュレーション 簡単
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { payoffPlan, type Debt } from "../../../../lib/debt-payoff";
+import { formatYen } from "../../../../lib/money";
+import "../../../../styles/global.css";
+
+const title = "借金返済シミュレーション（複数の借入）— 返済の順番・完済月・利息の合計";
+const description =
+  "カードローン・リボ払い・自動車ローンなど複数の借金を、毎月の返済予算でどの順番に返すと早く終わるかを計算。金利の高い順と残高の少ない順を比べ、完済する月と利息の合計を表示します。";
+
+const sample: Debt[] = [
+  { name: "カードローン", balance: 500_000, ratePct: 15, minPayment: 15_000, priority: 2 },
+  { name: "リボ払い", balance: 300_000, ratePct: 15, minPayment: 10_000, priority: 3 },
+  { name: "自動車ローン", balance: 1_500_000, ratePct: 4, minPayment: 30_000, priority: 1 },
+];
+const extra = 10_000;
+const ex = payoffPlan({ debts: sample, strategy: "avalanche", extra, extraGrowthPct: 0 });
+const snow = payoffPlan({ debts: sample, strategy: "snowball", extra, extraGrowthPct: 0 });
+const none = payoffPlan({ debts: sample, strategy: "avalanche", extra: 0, extraGrowthPct: 0 });
+if (!ex.ok || !snow.ok || !none.ok) throw new Error("debt-payoff ja 예시가 계산되지 않음");
+const rows = [0, 1, 2, 3, 4].map((i) => sample[i] ?? null);
+const y = (v: number) => formatYen(v);
+const plain = (v: number) => v.toLocaleString("ja-JP");
+const spell = (m: number) => [Math.floor(m / 12) ? `${Math.floor(m / 12)}年` : "", m % 12 ? `${m % 12}か月` : ""].join("") || "0か月";
+const gap = snow.totalInterest - ex.totalInterest;
+const firstCardInterest = Math.floor((sample[0].balance * sample[0].ratePct) / 100 / 12);
+const avFirst = [...ex.debts].sort((a, b) => a.order - b.order)[0];
+const snowFirst = [...snow.debts].sort((a, b) => a.order - b.order)[0];
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>借金返済シミュレーション（複数の借入）</h1>
+      <p>
+        カードローン、リボ払い、自動車ローンのように借入がいくつもあるとき、それぞれの残高・年利・毎月の最低返済額と、
+        最低返済とは別に毎月上乗せできる金額を入れてください。すべて完済する月と利息の合計を計算し、
+        金利の高い順に返す方法と残高の少ない順に返す方法を並べて比べます。1つ返し終わると、その分の返済額を次の借入に回すので、
+        毎月の返済予算は最後まで変わりません。
+      </p>
+      <p class="meta">金額は円単位の整数で入力します（例：500000 または 500,000）。</p>
+
+      <div class="calc-card" data-two>
+        <div class="dp-debts">
+          {rows.map((d, i) => (
+            <fieldset class="dp-debt" data-row={i + 1}>
+              <legend>借入 {i + 1}{i >= 3 ? "（任意）" : ""}</legend>
+              <div class="calc-input-wrap">
+                <label for={`dp-name-${i + 1}`}>名前</label>
+                <input type="text" id={`dp-name-${i + 1}`} value={d?.name ?? ""} placeholder={`借入${i + 1}`} maxlength="20" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-bal-${i + 1}`}>残高</label>
+                <input type="text" inputmode="numeric" id={`dp-bal-${i + 1}`} value={d ? plain(d.balance) : ""} placeholder="0" data-won autocomplete="off" />
+                <span class="unit">円</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-rate-${i + 1}`}>年利（実質年率）</label>
+                <input type="number" id={`dp-rate-${i + 1}`} value={d ? d.ratePct : ""} min="0" max="100" step="0.1" inputmode="decimal" />
+                <span class="unit">%</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-min-${i + 1}`}>毎月の最低返済額</label>
+                <input type="text" inputmode="numeric" id={`dp-min-${i + 1}`} value={d ? plain(d.minPayment) : ""} placeholder="0" data-won autocomplete="off" />
+                <span class="unit">円</span>
+              </div>
+              <div class="calc-input-wrap dp-prio">
+                <label for={`dp-prio-${i + 1}`}>自分で決める順番</label>
+                <select id={`dp-prio-${i + 1}`}>
+                  {[1, 2, 3, 4, 5].map((n) => <option value={n} selected={(d?.priority ?? i + 1) === n}>{`${n}番目`}</option>)}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="dp-strategy">どの借入から返すか</label>
+          <select id="dp-strategy" data-seg>
+            <option value="avalanche" selected>金利の高い順</option>
+            <option value="snowball">残高の少ない順</option>
+            <option value="custom">自分で決めた順</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-extra">毎月の上乗せ返済額</label>
+          <input type="text" inputmode="numeric" id="dp-extra" value={plain(extra)} data-won autocomplete="off" />
+          <span class="unit">円</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-growth">上乗せ額を毎年増やす割合</label>
+          <input type="number" id="dp-growth" value="0" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="dp-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="dp-debt|dp-int" data-bar-labels="元金|利息" data-dock="dp-hero">
+          <p class="label">すべて完済するまで</p>
+          <p class="big" id="dp-hero">{spell(ex.months)}</p>
+          <p class="meta" id="dp-note">{ex.months}か月 · 初月の返済予算 {y(ex.startBudget)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">借入の合計</span><span class="value" id="dp-debt">{y(ex.totalDebt)}</span></div>
+          <div class="stat-chip"><span class="label">利息の合計</span><span class="value" id="dp-int">{y(ex.totalInterest)}</span></div>
+          <div class="stat-chip"><span class="label">返済額の合計</span><span class="value" id="dp-paid">{y(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">金利の高い順 vs 残高の少ない順</span><span class="value" id="dp-vs">金利順のほうが利息 {y(gap)} 少ない</span></div>
+          <div class="stat-chip"><span class="label">上乗せ返済で減る利息</span><span class="value" id="dp-saved">{y(none.totalInterest - ex.totalInterest)}</span></div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>順番</th><th>借入</th><th>完済</th><th>払う利息</th></tr></thead>
+            <tbody id="dp-order">
+              {[...ex.debts].sort((a, b) => a.order - b.order).map((d) => <tr><th scope="row">{d.order}</th><td>{d.name}</td><td>{d.payoffMonth}か月目</td><td>{y(d.interest)}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>毎月の返済計画表（返済額・元金・利息・残高）</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>月</th><th>返済額</th><th>元金</th><th>利息</th><th>残高</th></tr></thead>
+              <tbody id="dp-rows">
+                {ex.rows.map((r) => <tr><th scope="row">{r.month}か月目</th><td>{y(r.payment)}</td><td>{y(r.principal)}</td><td>{y(r.interest)}</td><td>{y(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>計算のしかた</h2>
+      <ul>
+        <li><strong>毎月の返済予算</strong> — すべての最低返済額の合計 + 上乗せ返済額。1つ完済しても予算は減らさず、その借入に払っていた分を次の借入に回します。</li>
+        <li><strong>利息</strong> — 毎月、残高 × 年利 ÷ 12。1円未満は切り捨てます。</li>
+        <li><strong>毎月の流れ</strong> — 利息を足し、各借入に最低返済額を払い、残った予算を「いま集中して返す借入」に入れます。その月のうちに完済して予算が余れば、余りはすぐ次の借入に回します。</li>
+        <li><strong>集中して返す順番</strong> — 金利の高い順（同じ金利なら残高の少ないほう）、残高の少ない順（同じ残高なら金利の高いほう）、または自分で決めた順。順番は最初に入れた数字で決まります。</li>
+        <li><strong>上乗せ額を毎年増やす</strong> — 12か月ごとに上乗せ返済額だけを入れた割合で増やします。最低返済額は変えません。</li>
+      </ul>
+
+      <h2>複数の借金を返す順番</h2>
+      <p>
+        返済予算が同じなら、余ったお金を金利の高い借入に集中させるほど、高い利息がかかる残高が早く減ります。
+        そのため金利の高い順は、残高の少ない順より利息の合計が少なくなるのがふつうで、多くなることはほとんどありません。
+        上の例では金利が同じ {sample[0].ratePct}％ の借入が2つあるので、残高の少ない{avFirst.name}から先に返します。
+      </p>
+      <p>
+        残高の少ない順は、小さい借入から片づけていく方法です。借入の件数が早く減るので、返している実感を持ちやすいのが長所です。
+        上の例では{snowFirst.name}が{snowFirst.payoffMonth}か月目に完済になり、その分の返済額が次の借入に回る「雪だるま式返済」の形になります。
+        この例で残高の少ない順を選ぶと、利息の合計は {y(snow.totalInterest)} で、金利の高い順の {y(ex.totalInterest)} より {y(gap)} 多くなります。
+        差が小さいなら、最後まで続けられそうな順番を選んでかまいません。
+      </p>
+
+      <h2>借金返済計画の立て方：上の例</h2>
+      <p>
+        例は借入3件、合計 {y(ex.totalDebt)} です。カードローン {y(sample[0].balance)}（年{sample[0].ratePct}％）、
+        リボ払い {y(sample[1].balance)}（年{sample[1].ratePct}％）、自動車ローン {y(sample[2].balance)}（年{sample[2].ratePct}％）。
+        金利はこの例のための仮の数字なので、ご自分の契約書や利用明細の数字に置き換えてください。
+        最低返済額だけを払い続けると、完済まで {spell(none.months)}、利息の合計は {y(none.totalInterest)} です。
+      </p>
+
+      <h2>上乗せ返済（繰り上げ返済）でどれだけ変わるか</h2>
+      <p>
+        毎月 {y(extra)} を上乗せして金利の高い順に返すと、完済まで {spell(ex.months)}、利息の合計は {y(ex.totalInterest)} になります。
+        最低返済だけの場合より利息が {y(none.totalInterest - ex.totalInterest)} 少なく、{none.months - ex.months}か月早く終わります。
+        上乗せ分はそのまま集中して返す借入の元金に入るので、翌月からの利息も小さくなります。
+        ボーナス月にまとめて返す計算はできないので、年間の上乗せ額 ÷ 12 を毎月の上乗せ額に入れるとおおよその目安になります。
+      </p>
+
+      <details>
+        <summary>「最低返済額が初月の利息以下」と表示されたら</summary>
+        <p>
+          最低返済額だけでは、その借入の残高がいつまでも減らないという意味です。たとえば {y(sample[0].balance)} を年{sample[0].ratePct}％で借りていると、
+          初月の利息は {y(firstCardInterest)} なので、最低返済額はこれより大きくなければなりません。
+          リボ払いのように残高に応じて最低返済額が変わる場合は、今月の明細の金額を入れ、結果は目安として見てください。
+        </p>
+      </details>
+
+      <details>
+        <summary>カード会社や銀行のシミュレーションと数字が違うのは？</summary>
+        <p>
+          実際の利息は、日割りで計算されたり、残高によって返済額が変わったり（残高スライド方式）、手数料・遅延損害金がかかったり、
+          途中で金利が変わったりします。この計算機は毎月同じ年利で月単位に計算するので、結果は計画を立てるための目安です。
+          完済日をあてにする前に、それぞれの借入先で返済予定を確認してください。
+        </p>
+      </details>
+
+      <details>
+        <summary>年利にはどんな数字を入れればいいですか？</summary>
+        <p>
+          契約書や利用明細にある実質年率を入れます。利息制限法 第1条は、お金の貸し借りの利息の上限を元本10万円未満で年20％、
+          10万円以上100万円未満で年18％、100万円以上で年15％と定め、これを超える部分の利息の契約を無効としています（e-Gov 法令検索
+          <a href="https://laws.e-gov.go.jp/law/329AC0000000100" rel="noopener" target="_blank">利息制限法</a>、2026年10月23日確認）。
+          この計算機は入れた年利をそのまま使い、上限を超えているかどうかの判断はしません。
+        </p>
+      </details>
+
+      <details>
+        <summary>エクセルの返済計画表と同じ計算ですか？</summary>
+        <p>
+          毎月「前月の残高 × 年利 ÷ 12」で利息を出し、返済額から利息を引いた分だけ元金を減らす表を作れば、同じ計算になります。
+          上の「毎月の返済計画表」を開くと、月ごとの返済額・元金・利息・残高をそのまま確認できます。
+        </p>
+      </details>
+
+      <AdSlot label="debt-payoff-result-ja" />
+    </main>
+    <SiteFooter />
+    <style>
+      .dp-debts { display: grid; gap: 0.75rem; }
+      .dp-debt { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.5rem 0.75rem 0.75rem; margin: 0; min-width: 0; }
+      .dp-debt legend { font-weight: 600; padding: 0 0.25rem; }
+      .dp-prio[hidden] { display: none; }
+    </style>
+    <script src="../../../../scripts/debt-payoff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
