@@ -1,30 +1,71 @@
 {
   "country": "FR",
   "year": 2026,
-  "draft": true,
   "verifiedOn": "2026-10-23",
-  "status": "초안 — 페이지에서 쓰지 않는다(아래 notVerified 가 남음). 조사표 부가세 행(/vat/)의 프랑스 칸 — 2026-10-23 판정(제도: 환산식 같음, 세율·소규모 사업자 제도 다름)에 이어 HT ↔ TTC 도구용 숫자를 모음. 다음 회차는 scope.outOfScope(Corse·Guyane·Mayotte)를 페이지에서 빼고 범위 안 미확인이 없으면 draft 를 풀어 /fr/tva/(basis law)로 낼 수 있다.",
+  "status": "검증됨 — /fr/tva/(basis law)가 쓴다(2026-10-23). 범위 안 숫자(본토 20·10·5,5·2,1 %, Guadeloupe·Martinique·La Réunion 8,5·2,1·1,05 %, F24271 식·HT 반올림·TTC 50 € 표)는 모두 service-public(허용 출처) 원문으로 확인. Corse·Guyane·Mayotte·품목 분류는 scope.outOfScope — 페이지에서 단정하지 않는다. CGI·impots.gouv.fr·economie.gouv.fr 는 같은 숫자의 교차 확인용 원문이라 unreadCrossChecks 로 옮김(숫자를 그쪽에서 가져오지 않음).",
   "note": "한국 부가세(단일 10 %, 공급가액 × 1.1 = 합계)와 환산식은 같고(Prix HT = Prix TTC ÷ (1 + taux)) 세율이 지역·품목별로 여러 단계. 품목 분류(어느 상품이 몇 %)는 계산하지 않고 service-public 분야별 쪽(N13445 'Taux applicables')으로 안내만. 2026-10-23 판정 행의 'Corse 는 본토와 같은 20·10·5,5·2,1 % 만 보임'은 고친다 — F37605(spectacles vivants)의 Corse 칸에 141 번째 회차부터 0,9 % 특례가 있다(CGI art. 297 참조). DOM(Guadeloupe·Martinique·Réunion)도 8,5·2,1 % 밖에 1,05 % 특례가 있다(F37605 공연·F37781 presse). 원문(F24271·분야별 쪽)에 개정 예정 문장 없음(2026-10-23). 2027 세율로 쓰기 전에 다시 확인 — 추측해 넘기지 않는다.",
   "sources": [
-    { "label": "Comment calculer un prix hors taxes à partir d'un prix toutes taxes comprises ? (Vérifié le 04 mai 2026) — formule, arrondi, tableau TTC 50 €", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F24271" },
-    { "label": "Taxe sur la valeur ajoutée (TVA) — index 'Taux applicables'", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/N13445" },
-    { "label": "Taux de TVA dans le secteur de l'hygiène et de la santé (Vérifié le 18 juin 2025) — métropole/Corse/DOM, références CGI 278-0 bis à 279 bis, 294 à 296 ter, 297", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F23567" },
-    { "label": "Taux de TVA sur les produits alimentaires et les boissons (Vérifié le 03 décembre 2025)", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F22399" },
-    { "label": "Taux de TVA pour les travaux de rénovation d'un logement (Vérifié le 21 février 2026)", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F23568" },
-    { "label": "Taux de TVA applicables aux services à la personne (Vérifié le 05 mai 2026)", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F31596" },
-    { "label": "Taux de TVA applicables à la formation et à l'enseignement (Vérifié le 20 juillet 2026)", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F32231" },
-    { "label": "Taux de TVA dans le secteur de l'hébergement et de l'hôtellerie (Vérifié le 01 janvier 2024)", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F37288" },
-    { "label": "Taux de TVA dans le secteur des loisirs (Vérifié le 11 août 2026) — Corse 0,9 %, DOM 1,05 % (spectacles, à partir de la 141e représentation)", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F37605" },
-    { "label": "Taux de TVA dans les secteurs des arts et de la presse (Vérifié le 02 février 2024) — DOM presse 1,05 %", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F37781" },
-    { "label": "Taux de TVA dans le secteur agricole (Vérifié le 21 février 2026)", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F37786" },
-    { "label": "Taux de TVA dans le secteur des énergies et des déchets (Vérifié le 21 février 2026)", "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F37826" }
+    {
+      "label": "Comment calculer un prix hors taxes à partir d'un prix toutes taxes comprises ? (Vérifié le 04 mai 2026) — formule, arrondi, tableau TTC 50 €",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F24271"
+    },
+    {
+      "label": "Taxe sur la valeur ajoutée (TVA) — index 'Taux applicables'",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/N13445"
+    },
+    {
+      "label": "Taux de TVA dans le secteur de l'hygiène et de la santé (Vérifié le 18 juin 2025) — métropole/Corse/DOM, références CGI 278-0 bis à 279 bis, 294 à 296 ter, 297",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F23567"
+    },
+    {
+      "label": "Taux de TVA sur les produits alimentaires et les boissons (Vérifié le 03 décembre 2025)",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F22399"
+    },
+    {
+      "label": "Taux de TVA pour les travaux de rénovation d'un logement (Vérifié le 21 février 2026)",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F23568"
+    },
+    {
+      "label": "Taux de TVA applicables aux services à la personne (Vérifié le 05 mai 2026)",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F31596"
+    },
+    {
+      "label": "Taux de TVA applicables à la formation et à l'enseignement (Vérifié le 20 juillet 2026)",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F32231"
+    },
+    {
+      "label": "Taux de TVA dans le secteur de l'hébergement et de l'hôtellerie (Vérifié le 01 janvier 2024)",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F37288"
+    },
+    {
+      "label": "Taux de TVA dans le secteur des loisirs (Vérifié le 11 août 2026) — Corse 0,9 %, DOM 1,05 % (spectacles, à partir de la 141e représentation)",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F37605"
+    },
+    {
+      "label": "Taux de TVA dans les secteurs des arts et de la presse (Vérifié le 02 février 2024) — DOM presse 1,05 %",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F37781"
+    },
+    {
+      "label": "Taux de TVA dans le secteur agricole (Vérifié le 21 février 2026)",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F37786"
+    },
+    {
+      "label": "Taux de TVA dans le secteur des énergies et des déchets (Vérifié le 21 février 2026)",
+      "url": "https://entreprendre.service-public.gouv.fr/vosdroits/F37826"
+    }
   ],
   "formula": "Prix HT = Prix TTC ÷ (1 + Taux de TVA) (F24271). Sens inverse (HT → TTC) : TTC = HT × (1 + taux) — même formule ; TVA = TTC − HT.",
-  "rounding": "F24271 : prix HT exprimé avec 2 chiffres après la virgule — centime supérieur si le 3e chiffre ≥ 5, centime inférieur si < 5 (41,669 € → 41,67 €). La règle est écrite pour le prix HT ; l'appliquer aussi au TTC calculé depuis un HT est une convention d'outil (même arrondi au centime), pas un texte lu — à signaler sur la page.",
+  "rounding": "F24271 : prix HT exprimé avec 2 chiffres après la virgule — centime supérieur si le 3e chiffre ≥ 5, centime inférieur si < 5 (41,669 € → 41,67 €). La règle est écrite pour le prix HT. Convention de l’outil (pas un texte lu, dite sur la page) : la TVA calculée depuis un prix HT est arrondie au centime de la même façon, TTC = HT + TVA ; depuis un TTC, HT arrondi selon F24271 puis TVA = TTC − HT — les trois montants s’additionnent toujours au centime.",
   "officialExamples": {
     "source": "F24271, Tableau — prix TTC 50 €",
     "ttc": 50,
-    "ht": { "20": 41.67, "10": 45.45, "8.5": 46.08, "5.5": 47.39, "2.1": 48.97 }
+    "ht": {
+      "10": 45.45,
+      "20": 41.67,
+      "8.5": 46.08,
+      "5.5": 47.39,
+      "2.1": 48.97
+    }
   },
   "rates": {
     "metropole": {
@@ -41,20 +82,38 @@
       "basis": "F23567 (cosmétiques 8,5 %, protections 2,1 %) · F37605 (spectacles 1,05 % à partir de la 141e représentation) · F37781 (journaux et écrits périodiques 1,05 %) ; CGI 294 à 296 ter cité"
     },
     "corse": {
-      "seen": [0.2, 0.1, 0.055, 0.021, 0.009],
+      "seen": [
+        0.2,
+        0.1,
+        0.055,
+        0.021,
+        0.009
+      ],
       "basis": "F23567 (Corse : 20 %, 10 %, 5,5 %, 2,1 % sur les exemples santé) · F37605 (Corse : billets 2,1 %, 0,9 % à partir de la 141e séance) ; CGI art. 297 cité, non lu — liste complète inconnue"
     }
   },
   "scope": {
-    "inScope": ["France métropolitaine (hors Corse) : 20 %, 10 %, 5,5 %, 2,1 %", "Guadeloupe, Martinique, La Réunion : 8,5 %, 2,1 %, 1,05 %", "taux saisi librement (la formule ne dépend pas du taux)"],
-    "outOfScope": ["Corse — taux particuliers (CGI 297) non listés en entier ; la page doit renvoyer au taux saisi librement sans affirmer la liste", "Guyane et Mayotte — absentes des fiches lues (non déduites des DOM)", "quel taux pour quel produit — la page renvoie aux fiches N13445"]
+    "inScope": [
+      "France métropolitaine (hors Corse) : 20 %, 10 %, 5,5 %, 2,1 %",
+      "Guadeloupe, Martinique, La Réunion : 8,5 %, 2,1 %, 1,05 %",
+      "taux saisi librement (la formule ne dépend pas du taux)"
+    ],
+    "outOfScope": [
+      "Corse — taux particuliers (CGI 297) non listés en entier : seuls 0,9 % (spectacles, F37605) et les taux identiques à la métropole sur les exemples des fiches ont été vus ; la page renvoie au taux saisi librement sans affirmer la liste",
+      "Guyane et Mayotte — aucune fiche lue ne les cite ; rien déduit des autres DOM",
+      "quel taux pour quel produit — la page renvoie aux fiches N13445"
+    ]
   },
-  "notVerified": [
-    "Corse : liste complète des taux (CGI art. 297) — seuls 0,9 % (spectacles, F37605) et les taux identiques à la métropole sur les exemples des fiches ont été vus",
-    "Guyane, Mayotte : aucune fiche lue ne les cite — rien déduit",
-    "CGI art. 278-0 bis à 279 bis, 294 à 297 : Légifrance HTTP 403 (codes/section_lc/LEGITEXT000006069577/…, 2026-10-23), pas de contournement de la vérification anti-robots",
-    "impots.gouv.fr « Quels sont les taux de TVA en vigueur ? » (/professionnel/questions/quels-sont-les-taux-de-tva-en-vigueur) : page « site en maintenance » le 2026-10-23",
-    "economie.gouv.fr (fiche taux de TVA) : HTTP 403 le 2026-10-23",
-    "arrondi du TTC calculé depuis un HT : F24271 n'écrit la règle que pour le prix HT ; fiche DGFiP « Les arrondis » (impots.gouv.fr) non lue — maintenance"
+  "notVerified": [],
+  "display": {
+    "source": "Simulateur « Calculateur prix HT ou TTC » (Vérifié le 26 Novembre 2025) — options de la page : decimalPoint « , », groupingSeparator « » (espace), moneySymbol « € », symbolPosition « after » ; F24271 écrit « 41,67 € »",
+    "url": "https://entreprendre.service-public.gouv.fr/simulateur/calcul/convertisseurPrixHTouTTC",
+    "checkedOn": "2026-10-23"
+  },
+  "unreadCrossChecks": [
+    "CGI art. 278-0 bis à 279 bis, 294 à 297 : Légifrance HTTP 403 (2026-10-23, de nouveau 403 le même jour sur article_lc), pas de contournement de la vérification anti-robots",
+    "impots.gouv.fr « Quels sont les taux de TVA en vigueur ? » : « site en maintenance » (2026-10-23, deux essais) — fiche DGFiP « Les arrondis » non lue pour la même raison",
+    "economie.gouv.fr (fiche taux de TVA) : HTTP 403 (2026-10-23)",
+    "bofip.impots.gouv.fr (BOI-TVA-LIQ-10) : vérification anti-robots (2026-10-23)"
   ]
 }

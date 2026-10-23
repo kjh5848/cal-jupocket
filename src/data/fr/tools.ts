@@ -62,4 +62,12 @@ export const tools: LocaleTool[] = [
     icon: "calendar",
     basis: "math",
   },
+  {
+    href: "/fr/tva/",
+    name: "Calcul TVA HT ↔ TTC",
+    blurb: "Prix HT en TTC ou TTC en HT aux taux de 20 %, 10 %, 5,5 % et 2,1 % (8,5 % en outre-mer), TVA arrondie au centime",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];
