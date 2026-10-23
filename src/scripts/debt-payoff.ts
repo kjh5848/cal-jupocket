@@ -11,6 +11,7 @@
  * 표시는 판의 IDR·id-ID('Rp 50.000.000'), 달은 Intl id-ID('November 2027').
  * 일본어판(/ja/tools/debt-payoff/)은 JA 사전 — 엔 정수 단위(parseAmount, 이자는 1円 미만 버림), 표시 formatYen('1,250,000円'),
  * 달 '2027年11月', 기간 '1年3か月'.
+ * 프랑스어판(/fr/tools/debt-payoff/)은 FR 사전 — 같은 센트 단위, 표기는 lib/fr/debt-payoff('1 234,56 €'·'novembre 2027'·'2 ans et 3 mois').
  */
 import { payoffPlan, monthLabel, spellMonths, type Debt, type Strategy } from "../lib/debt-payoff";
 import { formatWon, formatYen, parseAmount } from "../lib/money";
@@ -20,6 +21,7 @@ import { pageLocale, pickLang } from "../i18n/ui";
 import { meta } from "../i18n/locales";
 import { centsDe, euroCentDe, monthLabelDe, spellMonthsDe } from "../lib/de/debt-payoff";
 import { centsEs, euroCentEs, monthLabelEs, spellMonthsEs } from "../lib/es/debt-payoff";
+import { centsFr, euroCentFr, monthLabelFr, spellMonthsFr } from "../lib/fr/debt-payoff";
 
 const KO = {
   /** 입력칸 → lib 정수 단위 */
@@ -259,7 +261,35 @@ const JA: typeof KO = {
   share: "借金返済シミュレーション - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE, es: ES, "zh-Hant": ZH_HANT, id: ID });
+/** Français — /fr/tools/debt-payoff/. 센트 정수로 계산, 금액 '1 234,56 €'(Intl fr-FR), 달 'novembre 2027', 기간 '2 ans et 3 mois' */
+const FR: typeof KO = {
+  read: centsFr,
+  money: euroCentFr,
+  month: monthLabelFr,
+  spell: spellMonthsFr,
+  debtName: (n) => `Dette ${n}`,
+  errEmpty: "Indiquez au moins une dette avec un capital restant dû.",
+  errMin: (name, first) =>
+    `${name} : la mensualité minimale ne dépasse pas les intérêts du premier mois (${first}), le capital ne baisse donc pas. Indiquez un montant plus élevé.`,
+  errLong: "Ces dettes ne sont pas remboursées en 50 ans (600 mois). Versez davantage chaque mois.",
+  note: (end, months, budget) => `Remboursé en ${end} · ${months} mois · budget du premier mois ${budget}`,
+  vsSame: (monthGap) => `Mêmes intérêts${monthGap ? ` · ${Math.abs(monthGap)} mois d’écart` : ""}`,
+  vs: (gap, less, monthGap) =>
+    `L’avalanche coûte ${gap} de ${less ? "moins" : "plus"}${monthGap ? ` · ${Math.abs(monthGap)} mois plus ${monthGap > 0 ? "tôt" : "tard"}` : ""}`,
+  saved: (amount, months) => `${amount} · ${months} mois plus tôt`,
+  savedNever: "Sans le versement en plus, pas remboursé en 50 ans",
+  noExtra: "Pas de versement en plus",
+  payoffAt: (end, m) => `${end} (mois ${m})`,
+  lineDebt: "Total des dettes",
+  lineBudget: "Budget du premier mois",
+  lineEnd: "Remboursé en",
+  lineEndValue: (end, spelled) => `${end} (${spelled})`,
+  lineInt: "Total des intérêts",
+  title: "Plan de remboursement de dettes",
+  share: "Plan de remboursement de dettes - jupocket.com",
+};
+
+const S = pickLang({ ko: KO, ja: JA, en: EN, de: DE, es: ES, "zh-Hant": ZH_HANT, id: ID, fr: FR });
 
 const reportUse = trackCalculatorUse("debt-payoff");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
