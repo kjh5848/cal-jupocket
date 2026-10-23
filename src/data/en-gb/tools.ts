@@ -102,4 +102,13 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/en-gb/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "Debt repayment calculator",
+    blurb: "Credit cards, car finance and loans in pounds: snowball vs avalanche or your own order, monthly overpayments, debt-free date and total interest",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

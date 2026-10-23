@@ -1,0 +1,259 @@
+---
+/**
+ * Debt repayment calculator — 영국판. 한국어판 /tools/debt-payoff/ 와 계산(lib/debt-payoff.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/debt-payoff.ts 의 EN 사전, 통화는 판의 GBP·en-GB, 금액은 펜스로 셈), 문장은 영국 영어로 새로 썼다(번역 아님).
+ * 산술 투영이라 rates 와 상관없다(조사표 영국 칸 '같음').
+ *
+ * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-debt-payoff-2026-10-23.csv, hl en · gl gb):
+ *   debt repayment calculator uk · with extra payments / credit card repayment calculator uk · with extra payments /
+ *   debt snowball vs avalanche · debt snowball calculator uk / debt payoff calculator with amortization schedule /
+ *   debt payoff calculator excel · spreadsheet · google sheets
+ * 영국 쪽 사실은 GOV.UK 원문에서 확인한 것만(확인 2026-10-23): 갚기 어려우면 Breathing Space·Debt Management Plan·
+ *   Administration order·IVA·Debt Relief Order 같은 선택지가 있고 debt adviser 와 상의하라는 안내
+ *   (https://www.gov.uk/options-for-paying-off-your-debts). 상환 순서(눈사태·눈덩이)를 권하는 GOV.UK 원문은 찾지 못해
+ *   두 방법은 산술 결과로만 비교한다. 영국 대출·카드가 실제로 이자를 매기는 방식(일할·APR)은 조사표에서 미확인이라 사실로 적지 않는다.
+ * 본문 숫자는 전부 아래 frontmatter 에서 payoffPlan() 으로 계산한다(펜스 단위로 넘기고 ÷ 100).
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { payoffPlan, type Debt } from "../../../../lib/debt-payoff";
+import "../../../../styles/global.css";
+
+const title = "Debt Repayment Calculator UK (£) — Snowball vs Avalanche, Overpayments";
+const description =
+  "UK debt repayment calculator in pounds for credit cards, car finance and loans: snowball vs avalanche, monthly overpayments, debt-free date and total interest.";
+
+/** 예시 빚 — 금액은 펜스 */
+const sample: Debt[] = [
+  { name: "Credit card", balance: 300_000, ratePct: 24.9, minPayment: 9_000, priority: 1 },
+  { name: "Car finance", balance: 800_000, ratePct: 9.9, minPayment: 20_000, priority: 2 },
+  { name: "Personal loan", balance: 250_000, ratePct: 12, minPayment: 8_500, priority: 3 },
+];
+const EXTRA = 15_000;
+const ex = payoffPlan({ debts: sample, strategy: "avalanche", extra: EXTRA, extraGrowthPct: 0 });
+const snow = payoffPlan({ debts: sample, strategy: "snowball", extra: EXTRA, extraGrowthPct: 0 });
+const minOnly = payoffPlan({ debts: sample, strategy: "avalanche", extra: 0, extraGrowthPct: 0 });
+if (!ex.ok || !snow.ok || !minOnly.ok) throw new Error("en-gb debt-payoff 예시가 계산되지 않음");
+const rows = [0, 1, 2, 3, 4].map((i) => sample[i] ?? null);
+const gbp = (pence: number) =>
+  (pence / 100).toLocaleString("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const input = (pence: number) =>
+  (pence / 100).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+const spell = (m: number) =>
+  [Math.floor(m / 12) ? plural(Math.floor(m / 12), "year") : "", m % 12 ? plural(m % 12, "month") : ""].filter(Boolean).join(" ") || "0 months";
+const gap = snow.totalInterest - ex.totalInterest;
+const firstOf = (r: typeof ex) => [...r.debts].sort((a, b) => a.order - b.order)[0].name;
+---
+
+<html lang="en-GB">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Debt Repayment Calculator</h1>
+      <p>
+        Juggling a couple of credit cards, car finance and a loan? Enter each debt with what you owe, its yearly interest
+        rate and the minimum monthly payment, then add any overpayment you can afford each month. You'll see which debt to
+        clear first, the month you'll be debt-free and how much interest you'll pay in total. Once a debt is cleared, the
+        money you were paying on it rolls on to the next one, so your monthly outgoings stay the same.
+      </p>
+
+<div class="calc-card" data-two>
+        <div class="dp-debts">
+          {rows.map((d, i) => (
+            <fieldset class="dp-debt" data-row={i + 1}>
+              <legend>Debt {i + 1}{i >= 3 ? " (optional)" : ""}</legend>
+              <div class="calc-input-wrap">
+                <label for={`dp-name-${i + 1}`}>Name</label>
+                <input type="text" id={`dp-name-${i + 1}`} value={d?.name ?? ""} placeholder={`Debt ${i + 1}`} maxlength="20" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-bal-${i + 1}`}>Balance owed (£)</label>
+                <input type="text" inputmode="decimal" id={`dp-bal-${i + 1}`} value={d ? input(d.balance) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-rate-${i + 1}`}>Interest rate (% a year)</label>
+                <input type="number" id={`dp-rate-${i + 1}`} value={d ? d.ratePct : ""} min="0" max="100" step="0.01" inputmode="decimal" />
+                <span class="unit">%</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-min-${i + 1}`}>Minimum monthly payment (£)</label>
+                <input type="text" inputmode="decimal" id={`dp-min-${i + 1}`} value={d ? input(d.minPayment) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap dp-prio">
+                <label for={`dp-prio-${i + 1}`}>Your order</label>
+                <select id={`dp-prio-${i + 1}`}>
+                  {[1, 2, 3, 4, 5].map((n) => <option value={n} selected={(d?.priority ?? i + 1) === n}>{["1st", "2nd", "3rd", "4th", "5th"][n - 1]}</option>)}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="dp-strategy">Repayment order</label>
+          <select id="dp-strategy" data-seg>
+            <option value="avalanche" selected>Highest interest first (avalanche)</option>
+            <option value="snowball">Smallest balance first (snowball)</option>
+            <option value="custom">My own order</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-extra">Overpayment each month (£)</label>
+          <input type="text" inputmode="decimal" id="dp-extra" value={input(EXTRA)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-growth">Raise the overpayment each year by</label>
+          <input type="number" id="dp-growth" value="0" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="dp-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="dp-debt|dp-int" data-bar-labels="Principal|Interest" data-dock="dp-hero">
+          <p class="label">Time until debt-free</p>
+          <p class="big" id="dp-hero">{spell(ex.months)}</p>
+          <p class="meta" id="dp-note">{plural(ex.months, "month")} · first-month budget {gbp(ex.startBudget)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total debt</span><span class="value" id="dp-debt">{gbp(ex.totalDebt)}</span></div>
+          <div class="stat-chip"><span class="label">Total interest</span><span class="value" id="dp-int">{gbp(ex.totalInterest)}</span></div>
+          <div class="stat-chip"><span class="label">Total repaid</span><span class="value" id="dp-paid">{gbp(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">Avalanche vs snowball interest</span><span class="value" id="dp-vs">Avalanche pays {gbp(gap)} less</span></div>
+          <div class="stat-chip"><span class="label">Interest saved by paying extra</span><span class="value" id="dp-saved">{gbp(minOnly.totalInterest - ex.totalInterest)}</span></div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Order</th><th>Debt</th><th>Paid off</th><th>Interest paid</th></tr></thead>
+            <tbody id="dp-order">
+              {[...ex.debts].sort((a, b) => a.order - b.order).map((d) => <tr><th scope="row">{d.order}</th><td>{d.name}</td><td>month {d.payoffMonth}</td><td>{gbp(d.interest)}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Month-by-month schedule: repayment, principal, interest, balance</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Month</th><th>Repaid</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead>
+              <tbody id="dp-rows">
+                {ex.rows.map((r) => <tr><th scope="row">Month {r.month}</th><td>{gbp(r.payment)}</td><td>{gbp(r.principal)}</td><td>{gbp(r.interest)}</td><td>{gbp(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as PNG</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Debt snowball vs debt avalanche</h2>
+      <p>
+        Both methods keep up the minimum payment on every debt and throw all the spare money at one target debt at a time.
+        Only the order changes:
+      </p>
+      <ul>
+        <li><strong>Avalanche</strong> — the highest interest rate goes first, so the most expensive balance shrinks soonest.</li>
+        <li><strong>Snowball</strong> — the smallest balance goes first, so the first debt disappears quickly and you have one fewer payment to keep track of.</li>
+      </ul>
+      <p>
+        In the example above ({sample.map((d) => d.name).join(", ")} with {gbp(EXTRA)} extra a month), avalanche starts
+        with the {firstOf(ex).toLowerCase()} and costs {gbp(ex.totalInterest)} in interest over {spell(ex.months)}. Snowball
+        starts with the {firstOf(snow).toLowerCase()} and costs {gbp(snow.totalInterest)} over {spell(snow.months)}
+        {gap > 0 ? <> — avalanche is {gbp(gap)} cheaper here.</> : <> — the same interest here.</>} With the same monthly
+        budget, avalanche normally pays the same or less interest. If the difference for your own debts is small, choose
+        the order you're more likely to stick to — or set "My own order".
+      </p>
+
+      <h2>Paying off several credit cards</h2>
+      <p>
+        Put each card in its own row, using the minimum payment on your latest statement and the interest rate it shows for
+        purchases. Leave a row blank, or with a £0 balance, and it's ignored — handy for checking a single card on its own.
+        Got more than five debts? Combine the smallest ones, or run the calculator twice.
+      </p>
+
+      <h2>How much overpaying saves</h2>
+      <p>
+        Paying just the minimums on the example debts takes {spell(minOnly.months)} and costs {gbp(minOnly.totalInterest)}
+        in interest. Adding {gbp(EXTRA)} a month brings that down to {spell(ex.months)} and {gbp(ex.totalInterest)} — a
+        saving of {gbp(minOnly.totalInterest - ex.totalInterest)}. The "Raise the overpayment each year" box increases only
+        the overpayment every 12 months (after a pay rise, say); minimum payments stay as you entered them. Before
+        overpaying a loan, check its agreement for any early repayment charge.
+      </p>
+
+      <h2>How it's worked out</h2>
+      <ul>
+        <li><strong>Monthly budget</strong> — every minimum payment added up, plus the overpayment. When a debt is cleared, the budget stays the same and that payment moves to the next target.</li>
+        <li><strong>Interest</strong> — each month, balance × yearly rate ÷ 12, rounded down to the penny.</li>
+        <li><strong>Each month</strong> — interest is added, every debt gets its minimum, then the rest goes to the current target. If the target is cleared part-way through the month, what's left goes to the next target in the same month.</li>
+        <li><strong>Order</strong> — avalanche sorts by highest rate (ties: smaller balance first), snowball by smallest starting balance (ties: higher rate first), and "My own order" follows the numbers you pick. The order is fixed once, from what you enter.</li>
+      </ul>
+      <p>
+        You can build the same thing in Excel or Google Sheets: one column per debt, one row per month, interest as
+        <code>=balance*rate/12</code>, and whatever's left of the budget added to the target column. Use the month-by-month
+        schedule above to check your spreadsheet's totals.
+      </p>
+
+      <details>
+        <summary>It says my minimum payment is lower than the interest</summary>
+        <p>
+          On its minimum alone that debt never goes down. Enter an amount above the first month's interest
+          (balance × rate ÷ 12). If your minimum changes with the balance, use this month's figure and treat the answer as
+          an estimate.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why doesn't this match my statement?</summary>
+        <p>
+          It's a planning estimate that charges the same rate every month. Your lender may work out interest differently
+          and on different dates, and add fees, promotional or balance transfer rates, or rate changes. Your credit agreement
+          or your lender can give you the exact figures.
+        </p>
+      </details>
+
+      <details>
+        <summary>What if I can't keep up with the minimum payments?</summary>
+        <p>
+          GOV.UK lists formal options for people struggling with debt — including Breathing Space, Debt Management Plans,
+          Administration orders, Individual Voluntary Arrangements and Debt Relief Orders — and recommends speaking to a
+          debt adviser to choose the right one.
+        </p>
+      </details>
+
+      <h2>Sources</h2>
+      <ul>
+        <li><a href="https://www.gov.uk/options-for-paying-off-your-debts" rel="noopener">GOV.UK — Options for dealing with your debts</a> (checked 23 October 2026)</li>
+      </ul>
+      <p>
+        Related: <a href="/en-gb/tools/compound/">compound interest calculator</a> for growing your savings once the debts are gone.
+      </p>
+
+      <AdSlot label="debt-payoff-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .dp-debts { display: grid; gap: 0.75rem; }
+      .dp-debt { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.5rem 0.75rem 0.75rem; margin: 0; min-width: 0; }
+      .dp-debt legend { font-weight: 600; padding: 0 0.25rem; }
+      .dp-prio[hidden] { display: none; }
+    </style>
+    <script src="../../../../scripts/debt-payoff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
