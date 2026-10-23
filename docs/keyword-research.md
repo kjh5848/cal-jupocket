@@ -3448,3 +3448,12 @@ v133 에서 진행 중으로 남긴 #6 의 페이지 회차. .kr-mode 는 improv
 **쓴 것** — /tools/overseas-payment-fee/(링크허브 351, 돈·금융 클러스터): 외화 금액 · 통화(14개, 100단위 3개) · 매매기준율 · 현찰 환율·우대 · 송금 환율·브랜드·카드사 수수료 · DCC 웃돈 · 충전 환율·결제 수수료 → 방법 4개 원화 부담 · 가장 싼 방법 · 나눠 보기 표. lib/overseas-payment-fee.ts + 테스트 7개. 기본값 환율(1,400 등)은 예시라고 페이지에 밝힘.
 
 **쓰지 않은 것** — 은행별 통화 스프레드표·카드사별 해외서비스 수수료 목록(roberin 이 실은 신한 0.18%·현대 0.18%·하나 0.2% 등은 이 회차에 원문 확인 안 함), 실시간 환율, ATM 인출 수수료, 남은 외화 되팔기·트래블카드 환급 수수료, 2027년 매매기준율 산출 방식 변경.
+
+## v145 2026-10-23 연말정산 계산기(/guide/year-end-calculator/) 보강 — 도구 담기 루틴 보강 회차
+
+**고른 이유** — `social/index-status.json`(2026-10-19 받음) 에서 '발견됨 - 현재 색인이 생성되지 않음'(사이트맵 등록), 같은 연말정산 클러스터에 색인된 글(year-end-settlement·pension-savings-tax-credit) 있음.
+
+**고친 것** — ① 답 문단에 세율 소득세법 제55조·정산·환급 제137조·rates 원문 확인일(year-end-2026.json verifiedOn 2026-10-13 — 6개월 안이라 재확인 안 함) ② 색인된 /guide/year-end-settlement/ '정산 순서' 환급 문단 끝, /guide/pension-savings-tax-credit/ '직장인은 연말정산' 항목에 계산기로 가는 문맥 링크 한 줄씩.
+
+**확인한 것** — index-status 에서 inSitemap False 로 찍힌 year-end-personal-deduction·refund-amount·refund-date·rent-credit·simplified 는 라이브 sitemap-0.xml 에 다 있음(2026-10-23 확인). 구글이 마지막으로 사이트맵을 받은 날(10-15) 뒤 검사라 생긴 표시로 보이고, 사이트맵 누락은 아님.
+
