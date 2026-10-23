@@ -101,4 +101,21 @@ describe("적립식 복리", () => {
     expect(far.goalMonth).toBeNull();
     expect(far.goalLater).toBeNull();
   });
+
+  it("매달 0원이면 거치식 단순 복리 = 원금 × (1 + 월 수익률)^개월 — 월 수익률은 연 수익률 칸에 × 12", () => {
+    const lump = (principal: number, monthlyPct: number, months: number) =>
+      compound({ principal, monthly: 0, ratePct: monthlyPct * 12, months, timing: "start", taxPct: 0, inflationPct: 0 });
+    // 100만원, 월 1%, 12개월 → 1,126,825원(이익 126,825원)
+    expect(won(lump(1_000_000, 1, 12).balance)).toBe(1_126_825);
+    expect(won(lump(1_000_000, 1, 12).gain)).toBe(126_825);
+    // 500만원, 월 0.8%, 36개월 → 6,661,149원
+    expect(won(lump(5_000_000, 0.8, 36).balance)).toBe(6_661_149);
+    // 1,234,567원, 월 0.5%, 120개월 → 2,246,167원
+    expect(won(lump(1_234_567, 0.5, 120).balance)).toBe(2_246_167);
+    // 0%·1개월이면 그대로
+    expect(won(lump(10_000_000, 0, 1).balance)).toBe(10_000_000);
+    // 월초·월말 적립 구분은 적립이 0원이면 결과를 바꾸지 않는다
+    expect(compound({ principal: 1_000_000, monthly: 0, ratePct: 12, months: 12, timing: "end", taxPct: 0, inflationPct: 0 }).balance)
+      .toBeCloseTo(lump(1_000_000, 1, 12).balance, 6);
+  });
 });
