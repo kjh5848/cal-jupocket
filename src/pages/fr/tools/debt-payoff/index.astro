@@ -1,0 +1,244 @@
+---
+/**
+ * Simulateur de remboursement de dettes — 프랑스어판 여덟 번째 도구. 한국어판 /tools/debt-payoff/ 와 계산(lib/debt-payoff.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/debt-payoff.ts 의 FR 사전), 문장은 프랑스 자동완성으로 새로 썼다(번역 아님). 산술이라 rates 와 상관없다(조사표 프랑스 칸 '같음').
+ *
+ * 금액은 센트 정수로 payoffPlan 에 넣는다(lib/fr/debt-payoff.ts) — 월 이자는 센트 미만 버림. 표기는 '1 234,56 €'(Intl fr-FR,
+ * 근거는 service-public 공식 시뮬레이터 설정 — docs/countries/fr.md 2026-10-23 TVA 행).
+ * 프랑스 은행·카드가 실제로 이자를 매기는 방식(일할·taux d'usure 등)은 조사표에서 미확인이라 본문에 주장하지 않는다(계획용 어림이라고만 적는다).
+ * 예시 이율은 지어낸 값이고 실제 시장 금리·상한을 뜻하지 않는다.
+ * 세금·Urssaf 체납은 따로 규칙이 있어 이 도구 대상이 아니라고만 적는다.
+ *
+ * 소제목은 프랑스 구글 자동완성에서 왔다(keywords/fr-debt-payoff-2026-10-24.csv, hl fr · gl fr):
+ *   simulateur remboursement dettes·de dette / calculateur remboursement dettes / méthode avalanche dette /
+ *   méthode boule de neige dette·crédit·budget / comment rembourser ses dettes·rapidement / rembourser ses dettes ou épargner
+ *   (citation·proverbe·bible·islam·hadith·synonyme·en anglais·risques d'avalanche 축은 버림)
+ * 본문 숫자는 전부 아래 frontmatter 에서 payoffPlan() 으로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { payoffPlan, type Debt } from "../../../../lib/debt-payoff";
+import { euroCentFr, inputEuroFr, spellMonthsFr } from "../../../../lib/fr/debt-payoff";
+import "../../../../styles/global.css";
+
+const title = "Simulateur de remboursement de dettes — méthode avalanche ou boule de neige";
+const description =
+  "Simulateur de remboursement de dettes : capital restant, taux et mensualité minimale de chaque crédit. Méthode avalanche ou boule de neige, date de fin et intérêts.";
+
+/** Exemple en centimes — taux fictifs */
+const sample: Debt[] = [
+  { name: "Carte de crédit", balance: 240_000, ratePct: 14.9, minPayment: 8_000, priority: 2 },
+  { name: "Prêt personnel", balance: 150_000, ratePct: 7.5, minPayment: 5_000, priority: 1 },
+  { name: "Crédit auto", balance: 900_000, ratePct: 5.9, minPayment: 18_000, priority: 3 },
+];
+const extra = 15_000;
+const ex = payoffPlan({ debts: sample, strategy: "avalanche", extra, extraGrowthPct: 0 });
+const snow = payoffPlan({ debts: sample, strategy: "snowball", extra, extraGrowthPct: 0 });
+const none = payoffPlan({ debts: sample, strategy: "avalanche", extra: 0, extraGrowthPct: 0 });
+if (!ex.ok || !snow.ok || !none.ok) throw new Error("debt-payoff 프랑스어판 예시가 계산되지 않음");
+const rows = [0, 1, 2, 3, 4].map((i) => sample[i] ?? null);
+const eur = euroCentFr;
+const rate = (p: number) => `${String(p).replace(".", ",")} %`;
+const orderOf = (r: typeof ex) => (r.ok ? [...r.debts].sort((a, b) => a.order - b.order) : []);
+const mois = (n: number) => `mois ${n}`;
+const rang = (n: number) => (n === 1 ? "1er rang" : `${n}e rang`);
+---
+
+<html lang="fr-FR">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Simulateur de remboursement de dettes</h1>
+      <p>
+        Quand on rembourse plusieurs crédits en même temps, il faut choisir où va l’argent qui reste après les mensualités minimales.
+        Indiquez pour chaque dette le capital restant dû, le taux annuel et la mensualité minimale, puis ce que vous pouvez verser en plus
+        chaque mois. Quand une dette est soldée, sa mensualité passe à la suivante : le budget mensuel ne baisse pas. Le simulateur indique
+        le mois où tout est remboursé et le total des intérêts payés jusque-là.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="dp-debts">
+          {rows.map((d, i) => (
+            <fieldset class="dp-debt" data-row={i + 1}>
+              <legend>Dette {i + 1}{i >= 3 ? " (facultatif)" : ""}</legend>
+              <div class="calc-input-wrap">
+                <label for={`dp-name-${i + 1}`}>Nom</label>
+                <input type="text" id={`dp-name-${i + 1}`} value={d?.name ?? ""} placeholder={`Dette ${i + 1}`} maxlength="20" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-bal-${i + 1}`}>Capital restant dû (€)</label>
+                <input type="text" inputmode="decimal" id={`dp-bal-${i + 1}`} value={d ? inputEuroFr(d.balance) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-rate-${i + 1}`}>Taux annuel</label>
+                <input type="number" id={`dp-rate-${i + 1}`} value={d ? d.ratePct : ""} min="0" max="100" step="0.1" inputmode="decimal" />
+                <span class="unit">%</span>
+              </div>
+              <div class="calc-input-wrap">
+                <label for={`dp-min-${i + 1}`}>Mensualité minimale (€)</label>
+                <input type="text" inputmode="decimal" id={`dp-min-${i + 1}`} value={d ? inputEuroFr(d.minPayment) : ""} placeholder="0" autocomplete="off" />
+              </div>
+              <div class="calc-input-wrap dp-prio">
+                <label for={`dp-prio-${i + 1}`}>Ordre personnalisé</label>
+                <select id={`dp-prio-${i + 1}`}>
+                  {[1, 2, 3, 4, 5].map((n) => <option value={n} selected={(d?.priority ?? i + 1) === n}>{rang(n)}</option>)}
+                </select>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="dp-strategy">Ordre de remboursement</label>
+          <select id="dp-strategy" data-seg>
+            <option value="avalanche" selected>Taux le plus élevé d’abord (avalanche)</option>
+            <option value="snowball">Plus petite dette d’abord (boule de neige)</option>
+            <option value="custom">Ordre personnalisé</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-extra">Versement en plus chaque mois (€)</label>
+          <input type="text" inputmode="decimal" id="dp-extra" value={inputEuroFr(extra)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="dp-growth">Augmenter le versement en plus chaque année</label>
+          <input type="number" id="dp-growth" value="0" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="dp-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="dp-debt|dp-int" data-bar-labels="Capital|Intérêts" data-dock="dp-hero">
+          <p class="label">Dettes remboursées en</p>
+          <p class="big" id="dp-hero">{spellMonthsFr(ex.months)}</p>
+          <p class="meta" id="dp-note">{ex.months} mois · budget du premier mois {eur(ex.startBudget)}</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Total des dettes</span><span class="value" id="dp-debt">{eur(ex.totalDebt)}</span></div>
+          <div class="stat-chip"><span class="label">Total des intérêts</span><span class="value" id="dp-int">{eur(ex.totalInterest)}</span></div>
+          <div class="stat-chip"><span class="label">Total versé</span><span class="value" id="dp-paid">{eur(ex.totalPaid)}</span></div>
+          <div class="stat-chip"><span class="label">Intérêts : avalanche contre boule de neige</span><span class="value" id="dp-vs">L’avalanche coûte {eur(snow.totalInterest - ex.totalInterest)} de moins</span></div>
+          <div class="stat-chip"><span class="label">Gain grâce au versement en plus</span><span class="value" id="dp-saved">{eur(none.totalInterest - ex.totalInterest)} · {none.months - ex.months} mois plus tôt</span></div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Ordre</th><th>Dette</th><th>Soldée en</th><th>Intérêts</th></tr></thead>
+            <tbody id="dp-order">
+              {orderOf(ex).map((d) => <tr><th scope="row">{d.order}</th><td>{d.name}</td><td>{mois(d.payoffMonth)}</td><td>{eur(d.interest)}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Tableau de remboursement mois par mois : versé, capital, intérêts et restant dû</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Mois</th><th>Versé</th><th>Capital</th><th>Intérêts</th><th>Restant dû</th></tr></thead>
+              <tbody id="dp-rows">
+                {ex.rows.map((r) => <tr><th scope="row">{mois(r.month)}</th><td>{eur(r.payment)}</td><td>{eur(r.principal)}</td><td>{eur(r.interest)}</td><td>{eur(r.balance)}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Enregistrer en PNG</button>
+          <button id="btn-share" type="button" class="secondary">Partager</button>
+        </div>
+      </div>
+
+      <h2>Comment ce simulateur de remboursement de dettes calcule</h2>
+      <ul>
+        <li><strong>Budget mensuel</strong> — la somme des mensualités minimales plus le versement en plus. Quand une dette est soldée, le budget ne baisse pas : sa mensualité passe à la suivante.</li>
+        <li><strong>Intérêts</strong> — chaque mois, capital restant dû × taux annuel ÷ 12, arrondi au centime inférieur.</li>
+        <li><strong>Ordre dans le mois</strong> — les intérêts s’ajoutent d’abord, puis chaque mensualité minimale est payée, et le reste va à la dette placée en premier. Si elle est soldée ce mois-là, le reliquat passe aussitôt à la suivante.</li>
+        <li><strong>Ordre de remboursement</strong> — avalanche : le taux le plus élevé d’abord (à taux égal, le plus petit capital). Boule de neige : le plus petit capital d’abord (à capital égal, le taux le plus élevé). Ordre personnalisé : vos rangs. L’ordre est fixé une seule fois, à partir des données de départ.</li>
+        <li><strong>Augmenter chaque année</strong> — seul le versement en plus augmente de ce pourcentage tous les 12 mois ; les mensualités minimales ne changent pas.</li>
+      </ul>
+
+      <h2>Méthode avalanche : la dette la plus chère d’abord</h2>
+      <p>
+        L’exemple ci-dessus compte trois dettes (taux fictifs) : une carte de crédit de {eur(sample[0].balance)} à {rate(sample[0].ratePct)},
+        un prêt personnel de {eur(sample[1].balance)} à {rate(sample[1].ratePct)} et un crédit auto de {eur(sample[2].balance)} à
+        {" "}{rate(sample[2].ratePct)}. Les mensualités minimales font {eur(ex.startBudget - extra)} et {eur(extra)} sont versés en plus
+        chaque mois. Avec la méthode avalanche, la carte passe en premier parce que c’est la plus chère : les trois dettes sont remboursées
+        en {spellMonthsFr(ex.months)} et les intérêts s’élèvent à {eur(ex.totalInterest)}.
+      </p>
+
+      <h2>Méthode boule de neige pour un crédit : la plus petite dette d’abord</h2>
+      <p>
+        Avec la boule de neige, on commence par le prêt personnel, le plus petit capital. Avec le même budget, tout est remboursé en
+        {" "}{spellMonthsFr(snow.months)} pour {eur(snow.totalInterest)} d’intérêts, soit {eur(snow.totalInterest - ex.totalInterest)} de
+        plus qu’avec l’avalanche. En échange, la première dette disparaît plus tôt : le prêt personnel est soldé au
+        {" "}{mois(orderOf(snow)[0]?.payoffMonth ?? 0)} au lieu du {mois(ex.debts.find((d) => d.name === "Prêt personnel")?.payoffMonth ?? 0)},
+        et il reste moins de créanciers à suivre dans le budget.
+      </p>
+
+      <h2>Boule de neige ou avalanche ?</h2>
+      <p>
+        À budget égal, l’avalanche ne paie jamais plus d’intérêts que la boule de neige, puisqu’elle réduit d’abord la partie la plus chère
+        de la dette. La boule de neige gagne sur un autre point : voir vite une dette disparaître. Changez l’ordre de remboursement dans le
+        simulateur et regardez l’écart dans « Intérêts : avalanche contre boule de neige ». S’il est faible, l’ordre que vous tiendrez sur la
+        durée compte davantage.
+      </p>
+
+      <h2>Comment rembourser ses dettes rapidement, même avec peu</h2>
+      <p>
+        Sans les {eur(extra)} versés en plus, l’exemple prendrait {spellMonthsFr(none.months)} et coûterait {eur(none.totalInterest)}
+        d’intérêts. Le versement en plus fait gagner {eur(none.totalInterest - ex.totalInterest)} et {none.months - ex.months} mois.
+        Essayez de petites sommes dans « Versement en plus chaque mois », ou « Augmenter le versement en plus chaque année » si vous pensez
+        pouvoir verser un peu plus avec le temps.
+      </p>
+
+      <h2>Rembourser ses dettes ou épargner ?</h2>
+      <p>
+        Le simulateur ne tranche pas cette question : il montre seulement combien d’intérêts un versement en plus évite sur vos dettes. Pour
+        voir ce que la même somme rapporterait placée chaque mois à un taux supposé, utilisez le
+        {" "}<a href="/fr/tools/compound/">calcul d’intérêts composés</a> et comparez les deux montants.
+      </p>
+
+      <details>
+        <summary>La mensualité minimale est trop basse</summary>
+        <p>
+          Si la mensualité minimale ne dépasse pas les intérêts du premier mois (capital restant dû × taux annuel ÷ 12), cette dette ne
+          baisse pas avec la seule mensualité minimale. Indiquez un montant plus élevé. Pour un crédit dont la mensualité varie avec le
+          capital restant, mettez la mensualité actuelle et prenez le résultat comme une estimation.
+        </p>
+      </details>
+
+      <details>
+        <summary>Pourquoi le résultat diffère de mon relevé ?</summary>
+        <p>
+          Le simulateur suppose que chaque mois on paie un douzième du taux annuel. La banque ou l’organisme de crédit peut calculer les
+          intérêts au jour le jour, ajouter une assurance ou des frais, modifier le taux ou avoir d’autres dates d’échéance. Le résultat est
+          une estimation pour s’organiser, ni une offre de crédit ni un conseil : seuls votre contrat et vos relevés font foi. Les dettes
+          d’impôts ou envers l’Urssaf suivent leurs propres règles et ne se calculent pas ici.
+        </p>
+      </details>
+
+      <AdSlot label="debt-payoff-result" />
+    </main>
+    <SiteFooter />
+    <style>
+      .dp-debts { display: grid; gap: 0.75rem; }
+      .dp-debt { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.5rem 0.75rem 0.75rem; margin: 0; min-width: 0; }
+      .dp-debt legend { font-weight: 600; padding: 0 0.25rem; }
+      .dp-prio[hidden] { display: none; }
+    </style>
+    <script src="../../../../scripts/debt-payoff.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

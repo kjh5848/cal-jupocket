@@ -63,6 +63,15 @@ export const tools: LocaleTool[] = [
     basis: "math",
   },
   {
+    href: "/fr/tools/debt-payoff/",
+    ko: "/tools/debt-payoff/",
+    name: "Simulateur de remboursement de dettes",
+    blurb: "Plusieurs crédits à la fois — méthode avalanche ou boule de neige, mois où tout est remboursé et total des intérêts",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
+  {
     href: "/fr/tva/",
     name: "Calcul TVA HT ↔ TTC",
     blurb: "Prix HT en TTC ou TTC en HT aux taux de 20 %, 10 %, 5,5 % et 2,1 % (8,5 % en outre-mer), TVA arrondie au centime",
