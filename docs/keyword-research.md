@@ -3514,3 +3514,11 @@ v133 에서 진행 중으로 남긴 #6 의 페이지 회차. .kr-mode 는 improv
 **원문에서 건진 것** — 한국은행 ECOS 901Y009 소비자물가지수 총지수 연간(원자료 통계청 소비자물가조사, 2020=100) 1965~2025 61개 연도를 Open API 로 받음. 2025 = 116.61, 2000 = 63.151(셋째 자리까지).
 
 **쓰지 않은 것** — 2026 연간 값(아직 없음), 품목별·지역별 지수, 다른 나라 CPI, 근원물가. KOSIS 화면은 스크립트라 값을 못 읽어 자릿수 대조는 후속.
+
+## 2026-10-24 9시 improve 회차 — /guide/year-end-refund-how/ 보강
+
+**고른 이유** — index-status(2026-10-19 판, 7일 안이라 다시 받지 않음)에서 '발견됨 - 현재 색인이 생성되지 않음'. 같은 클러스터에 색인된 글(year-end-settlement·monthly-take-home)이 있는데 사이트 안에서 이 글로 오는 링크가 하나도 없었다.
+
+**고친 것** — 한 줄 답(AnswerBox)에 경정청구 기한 5년(rates correction.years)과 근거(소득세법 제137조·제140조, 국세기본법 제45조의2)·원문 확인일(year-end-2026.json verifiedOn 2026-10-13, 6개월 안이라 재확인 안 함), 187자. 색인된 /guide/year-end-settlement/(환급 조문 문단)·/guide/monthly-take-home/(연말정산 설명 문장)에 문맥 링크 한 줄씩.
+
+**쓰지 않은 것** — 새 숫자 없음. 합칠 후보: year-end-refund-date·year-end-refund-amount·year-end-refund-unpaid 와 주제가 붙어 있음 — 겹치는지 사람이 볼 것(직접 합치지 않음).
