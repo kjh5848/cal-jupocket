@@ -55,6 +55,7 @@ const MOVED: { path: string; attrs: string[] }[] = [
   { path: "/guide/child-incentive-amount/", attrs: ["data-two", "data-won", "data-step", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/earned-incentive-amount/", attrs: ["data-two", "data-won", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/medical-credit-limit/", attrs: ["data-two", "data-won", "data-receipt", "data-group", "data-bar", "data-dock"] },
+  { path: "/guide/dividend-calculator/", attrs: ["data-two", "data-won", "data-presets", "data-seg", "data-step", "data-receipt", "data-group", "data-bar", "data-dock"] },
   { path: "/guide/irp-tax-credit-calculator/", attrs:["data-two", "data-won", "data-presets", "data-seg", "data-receipt", "data-group", "data-bar", "data-dock"] },
 ];
 

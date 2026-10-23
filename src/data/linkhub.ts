@@ -376,6 +376,7 @@ export const hubEntries: HubEntry[] = [
   { no: 349, href: "/tools/debt-payoff/", label: "부채 상환 계획 계산기", kind: "calc" },
   { no: 350, href: "/tools/card-installment/", label: "카드 할부 수수료 계산기", kind: "calc" },
   { no: 351, href: "/tools/overseas-payment-fee/", label: "해외결제 수수료 계산기", kind: "calc" },
+  { no: 352, href: "/guide/dividend-calculator/", label: "배당금 계산기 — 세후 월배당", kind: "guide" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
@@ -514,6 +515,7 @@ export const hubGroups: HubGroup[] = [
       "/guide/securities-transaction-tax",
       "/guide/stock-breakeven",
       "/guide/stock-return-calculator",
+      "/guide/dividend-calculator",
     ]),
   },
   {

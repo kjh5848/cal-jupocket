@@ -168,6 +168,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/securities-transaction-tax/", title: "증권거래세 — 2026년 주식을 팔 때 코스피는 0.05%에 농어촌특별세 0.15%, 코스닥은 0.2%를 뗍니다", kind: "guide", icon: "chart", year: 2026 },
       { href: "/guide/stock-breakeven/", title: "주식 본전 계산 — 산 가격에 팔면 수수료와 세금만큼 손해라, 본전은 매수가보다 조금 높습니다", kind: "guide", icon: "chart", year: 2026 },
       { href: "/guide/stock-return-calculator/", title: "주식 수익률 계산기", kind: "calc", icon: "calculator", blurb: "매수가·매도가·수량·수수료율 → 세금 뺀 순손익·실제 수익률·본전 매도가" },
+      { href: "/guide/dividend-calculator/", title: "배당금 계산기 — 1주당 배당과 주식 수로 15.4%를 뗀 세후 월배당, 목표까지 필요한 주식 수를 계산합니다", kind: "guide", icon: "percent", year: 2026 },
     ],
   },
   {
@@ -493,6 +494,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/dividend-calculator/",
   "/guide/stock-return-calculator/",
   "/guide/stock-breakeven/",
   "/guide/securities-transaction-tax/",

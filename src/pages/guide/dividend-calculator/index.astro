@@ -1,0 +1,131 @@
+---
+/**
+ * "배당금 계산기" — 금융소득 시리즈. (배당금계산기·월배당 계산기·배당금 세금 계산기·월배당 100만원 원금도 이 글, 계산기 포함)
+ * 계산: src/lib/dividend.ts dividend() — 지급 건마다 소득세 14%·지방소득세 10% 각각 10원 미만 버림, 1회 소득세 1천원 미만이면 0.
+ * 근거: 소득세법 제129조 ① 2호, 제86조 1호, 제127조 ① 2호, 지방세법 제103조의13, 국고금 관리법 제47조 ① (rates: dividend-2026.json, financial-income-2026.json)
+ * 2026-10-23 도구 담기 루틴(roberin #34) — 대조는 docs/calc-benchmark.md, 테스트 src/lib/__tests__/dividend.test.ts
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import r from "../../../rates/dividend-2026.json";
+import { dividend, paymentTax, DIVIDEND_RATE, LOCAL_RATIO, THRESHOLD, SMALL_AMOUNT } from "../../../lib/dividend";
+import { calcPresets } from "../../../data/calc-presets";
+import { won, eokwon } from "../../../lib/won";
+
+const PRESETS = JSON.stringify({ default: calcPresets["/guide/dividend-calculator/"].default.amounts });
+const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
+const total = pct(DIVIDEND_RATE * (1 + LOCAL_RATIO));
+const base = { perShare: 361, basis: "payment", freq: 4, shares: 1_000, price: 52_000, targetMonthly: 1_000_000 } as const;
+const ex = dividend(base);
+// 1회 지급액이 이 금액 이하면 소득세를 떼지 않는다(제86조 1호) — lib 으로 찾은 경계
+let edge = 0;
+while (paymentTax(edge + 1).exempt) edge++;
+const monthlySmall = dividend({ perShare: 600, basis: "payment", freq: 12, shares: 11 });
+const quarterlySame = dividend({ perShare: 1_800, basis: "payment", freq: 4, shares: 11 });
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 비율·금액은 financial-income-series.test.ts 가 rates 와 대조한다.
+const title = "배당금 계산기 — 1주당 배당과 주식 수로 15.4%를 뗀 세후 월배당, 목표까지 필요한 주식 수를 계산합니다";
+const description =
+  "배당금 계산기는 1주당 배당금·지급 주기·보유 주식 수로 15.4%를 뗀 연·월 세후 배당을 계산합니다. 세금은 지급할 때마다 따로 떼고 1회 소득세가 1천원 미만이면 떼지 않는 규칙까지 넣었고, 목표 월배당에 필요한 주식 수와 투자금도 거꾸로 구합니다.";
+
+const ANSWER = `분기마다 1주당 ${won(base.perShare)}을 주는 주식 ${base.shares.toLocaleString("ko-KR")}주면 1년 세전 ${won(ex.annualGross)}, ${total}를 떼고 세후 ${won(ex.annualNet)}, 한 달 평균 ${won(ex.monthlyNet)}입니다. 세후로 한 달 평균 ${won(base.targetMonthly)}을 받으려면 같은 종목이 ${ex.target!.shares.toLocaleString("ko-KR")}주, 주가 ${won(base.price)}이면 약 ${eokwon(Math.round(ex.target!.invest! / 1e6) * 1e6)}이 필요합니다.`;
+
+const QA = [
+  { q: "배당금 세금은 어떻게 계산하나요?", a: `배당이 들어올 때마다 그 금액의 ${pct(DIVIDEND_RATE)}를 소득세로, 그 소득세의 10%를 지방소득세로 떼고 각각 10원 미만은 버립니다(소득세법 제129조 제1항 제2호, 지방세법 제103조의13, 국고금 관리법 제47조). 위 예시는 한 번에 ${won(ex.perPayment.gross)}이 들어와 소득세 ${won(ex.perPayment.incomeTax)}, 지방소득세 ${won(ex.perPayment.localTax)}을 떼고 ${won(ex.perPayment.net)}이 입금됩니다.` },
+  { q: "배당금이 적으면 세금이 안 붙나요?", a: `한 번 받는 배당의 소득세가 ${won(SMALL_AMOUNT)} 미만이면 떼지 않습니다(소득세법 제86조 제1호 — 이자소득에는 이 규칙이 적용되지 않지만 배당소득에는 적용됩니다). 10원 미만을 버린 소득세로 보면 1회 배당 ${won(edge)}까지가 이 구간이고, ${won(edge + 1)}부터 소득세 ${won(paymentTax(edge + 1).incomeTax)}과 지방소득세 ${won(paymentTax(edge + 1).localTax)}을 뗍니다.` },
+  { q: "월배당 100만원을 받으려면 얼마가 필요한가요?", a: `세후 기준이면 1년에 ${won(ex.target!.goal)}이 남아야 해서 세전으로는 세금 몫을 더 받아야 합니다. 분기마다 1주당 ${won(base.perShare)}을 주는 종목이면 ${ex.target!.shares.toLocaleString("ko-KR")}주(세전 연 ${won(ex.target!.annualGross)}), 주가 ${won(base.price)}이면 ${won(ex.target!.invest!)}입니다. 1주당 배당과 주가를 바꾸면 계산기가 다시 구합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card" data-two>
+    <p class="meta">국내 상장주식·ETF 현금배당을 일반 계좌에서 받는 거주자 기준입니다. 세금은 지급할 때마다 따로 계산합니다. 금융소득종합과세·고배당기업 분리과세·해외주식 배당·ISA·연금계좌는 넣지 않았습니다.</p>
+    <div class="calc-input-wrap">
+      <label for="dv-freq">지급 주기</label>
+      <select id="dv-freq" data-seg>
+        <option value="12">매월</option>
+        <option value="4" selected>분기</option>
+        <option value="2">반기</option>
+        <option value="1">연 1회</option>
+      </select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dv-basis">1주당 배당 기준</label>
+      <select id="dv-basis" data-seg>
+        <option value="payment" selected>한 번 받는 금액</option>
+        <option value="annual">1년 합계</option>
+      </select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dv-per">1주당 배당금</label>
+      <input type="text" inputmode="numeric" id="dv-per" value={base.perShare.toLocaleString("ko-KR")} data-won />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dv-shares">보유 주식 수</label>
+      <input type="number" id="dv-shares" value={base.shares} min="0" max="100000000" step="1" inputmode="numeric" data-step />
+      <span class="unit">주</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dv-price">지금 주가</label>
+      <input type="text" inputmode="numeric" id="dv-price" value={base.price.toLocaleString("ko-KR")} data-won />
+      <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="dv-target">목표 월배당(세후)</label>
+      <input type="text" inputmode="numeric" id="dv-target" value={base.targetMonthly.toLocaleString("ko-KR")} data-won data-presets={PRESETS} />
+      <span class="unit">원</span>
+    </div>
+    <div
+      class="result-hero"
+      aria-live="polite"
+      aria-atomic="true"
+      data-bar="dv-net|dv-tax2"
+      data-bar-labels="세후 배당|세금"
+      data-dock="dv-hero"
+    >
+      <p class="label">한 달 평균 세후 배당</p>
+      <p class="big" id="dv-hero">{won(ex.monthlyNet)}</p>
+      <p class="meta" id="dv-note">1년 세후 {won(ex.annualNet)} ÷ 12 — 실제로는 분기마다 {won(ex.perPayment.net)}씩 들어옵니다</p>
+    </div>
+    <div class="stat-row" data-receipt>
+      <div class="stat-chip" data-group="1년"><span class="label">세전 배당</span><span class="value" id="dv-gross">{won(ex.annualGross)}</span></div>
+      <div class="stat-chip"><span class="label">소득세</span><span class="value" id="dv-itax">−{won(ex.annualIncomeTax)}</span></div>
+      <div class="stat-chip"><span class="label">지방소득세</span><span class="value" id="dv-ltax">−{won(ex.annualLocalTax)}</span></div>
+      <div class="stat-chip"><span class="label">세금 합계</span><span class="value" id="dv-tax2">{won(ex.annualTax)}</span></div>
+      <div class="stat-chip"><span class="label">세후 배당</span><span class="value" id="dv-net">{won(ex.annualNet)}</span></div>
+      <div class="stat-chip" data-group="한 번 받을 때"><span class="label">세전</span><span class="value" id="dv-pgross">{won(ex.perPayment.gross)}</span></div>
+      <div class="stat-chip"><span class="label">세후 입금</span><span class="value" id="dv-pnet">{won(ex.perPayment.net)}</span></div>
+      <div class="stat-chip" data-group="수익률"><span class="label">평가금액</span><span class="value" id="dv-value">{won(ex.value)}</span></div>
+      <div class="stat-chip"><span class="label">세전 배당수익률</span><span class="value" id="dv-gy">{(ex.grossYield! * 100).toFixed(2)}%</span></div>
+      <div class="stat-chip"><span class="label">세후 배당수익률</span><span class="value" id="dv-ny">{(ex.netYield! * 100).toFixed(2)}%</span></div>
+      <div class="stat-chip" data-group="목표까지"><span class="label">필요한 주식 수</span><span class="value" id="dv-need">{ex.target!.shares.toLocaleString("ko-KR")}주</span></div>
+      <div class="stat-chip"><span class="label">필요한 투자금</span><span class="value" id="dv-invest">{won(ex.target!.invest!)}</span></div>
+      <div class="stat-chip"><span class="label">더 사야 할 주식</span><span class="value" id="dv-more">{ex.target!.moreShares.toLocaleString("ko-KR")}주</span></div>
+      <div class="stat-chip"><span class="label">더 필요한 돈</span><span class="value" id="dv-moreinv">{won(ex.target!.moreInvest!)}</span></div>
+    </div>
+    <p class="meta" id="dv-exempt" hidden>한 번 받는 배당의 소득세가 {won(SMALL_AMOUNT)} 미만이라 세금을 떼지 않습니다(소득세법 제86조 제1호).</p>
+    <p class="meta" id="dv-threshold" hidden>1년 세전 배당이 {eokwon(THRESHOLD)}을 넘습니다. 한 해 이자·배당 합계가 이 금액을 넘으면 <a href="/guide/financial-income-tax/">금융소득종합과세</a>로 다시 계산합니다.</p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>15.4%를 한 번에 곱한 값과 몇 원씩 다를 수 있는 이유가 이 끝수 버림입니다. 버림은 지급할 때마다 하니 배당을 자주 받을수록 차이가 쌓입니다. 세율과 출자공동사업자 예외는 <a href="/guide/dividend-income-tax/">배당소득세</a>에 있습니다.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>그래서 1년 합계가 같아도 나눠 받는 횟수에 따라 세금이 달라집니다. 1주당 연 7,200원을 주는 주식 11주라면 매달 받을 때 1회 {won(monthlySmall.perPayment.gross)}이라 세금이 {won(monthlySmall.annualTax)}이고, 분기로 받으면 1회 {won(quarterlySame.perPayment.gross)}이라 1년 {won(quarterlySame.annualTax)}을 뗍니다. 계산기에서 지급 주기만 바꿔 보면 확인할 수 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>목표 역산은 15.4%로 나누는 근사가 아니라, 끝수 버림과 소액 부징수를 넣은 실제 세후 금액이 목표를 넘는 가장 적은 주식 수를 찾습니다. 1년 세전 배당이 {eokwon(THRESHOLD)}을 넘는 목표라면 그 해에는 <a href="/guide/financial-income-tax/">금융소득종합과세</a> 대상이 될 수 있어 실제 세금이 이보다 많아질 수 있습니다.</p>
+  <p>미국 주식·ETF 배당은 외국에서 먼저 떼는 세금이 있어 이 계산기 범위 밖입니다. 국내 주식을 팔 때의 세금과 수수료는 <a href="/guide/stock-return-calculator/">주식 수익률 계산기</a>, 예금과 비교하려면 <a href="/guide/deposit-interest-calculator/">예금 이자 계산기</a>로 볼 수 있습니다.</p>
+
+  <script src="../../../scripts/dividend.ts"></script>
+</GuideLayout>
