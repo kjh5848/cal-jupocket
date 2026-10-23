@@ -1,18 +1,43 @@
 {
   "country": "HK",
   "draft": true,
-  "note": "홍콩 자영업자(自僱人士) 強積金 강제 기여금 초안 — 한국 국민연금 지역가입자(/national-pension-premium/) 행의 홍콩 판정에서 만든 것. 페이지에서 아직 쓰지 않는다. 기여금 = 有關入息 × 5%, 有關入息이 최저 수준 미만이면 기여 의무 없음, 최고 수준 넘으면 최고 기여액 고정. 숫자는 積金局 원문(修訂日期 30/04/2026)과 과거 수정 이력 PDF로 확인. 미확인: 센트 단위 끝수 처리(반올림·버림) 문장, 《強制性公積金計劃條例》(第485章) 附表 2·3 원문 대조(elegislation.gov.hk 는 스크립트 페이지라 본문을 못 엶), 기여금의 薪俸稅·利得稅 공제 한도(稅務局 원문 이번에 안 엶).",
+  "note": "홍콩 자영업자(自僱人士) 強積金 강제 기여금 초안 — 한국 국민연금 지역가입자(/national-pension-premium/) 행의 홍콩 판정에서 만든 것. 페이지에서 아직 쓰지 않는다. 기여금 = 有關入息 × 5%(第485章 第7C(1)(b)·(3)條), 有關入息이 최저 수준 미만이면 기여 의무 없음(第9(4)條), 최고 수준 넘는 부분은 기여 의무 없음(第10(4)條) → 최고 기여액 고정. 최저·최고 수준은 第485章 附表2 第3段·附表3 第3段 원문(elegislation 현행판 05/10/2026)으로 積金局 숫자와 대조해 같음(2026-10-23 보강). 기여금 稅務 공제는 2020/21 課税年度부터 每年 최고 $18,000(gov.hk 修訂日期 2026年5月). 남은 미확인: 센트 단위 끝수 처리(반올림·버림) 문장 — 第485章·第485A章 본문과 積金局 自僱人士·僱員 페이지 어디에도 '仙'·'四捨五入'·'小數' 문장 없음.",
   "verifiedOn": "2026-10-23",
-  "lawVersion": "積金局「自僱人士」強制性供款(修訂日期 30/04/2026) — 2014年6月1日或之後開始的供款期",
+  "lawVersion": "《強制性公積金計劃條例》(第485章) 現行版本 05/10/2026 — 第7C·9·10條, 附表2·3(2013年第133·135號法律公告 개정); 積金局「自僱人士」(修訂日期 30/04/2026)",
   "sources": [
-    { "label": "積金局 — 強制性供款：自僱人士(修訂日期 30/04/2026)", "url": "https://www.mpfa.org.hk/tc/mpf-system/mandatory-contributions/self-employed-persons" },
-    { "label": "積金局 — 自僱人士的最低及最高有關入息水平過往修訂紀錄(PDF, 날짜 표기 없음)", "url": "https://www.mpfa.org.hk/-/media/files/mpf_system/mandatory_contributions/self-employed-persons/summary-table-for-legislative-amendment-history_sep-c.pdf" },
-    { "label": "積金局 — 強積金制度涵蓋範圍(修訂日期 20/07/2026)", "url": "https://www.mpfa.org.hk/tc/mpf-system/mpf-coverage" }
+    {
+      "label": "積金局 — 強制性供款：自僱人士(修訂日期 30/04/2026)",
+      "url": "https://www.mpfa.org.hk/tc/mpf-system/mandatory-contributions/self-employed-persons"
+    },
+    {
+      "label": "積金局 — 自僱人士的最低及最高有關入息水平過往修訂紀錄(PDF, 날짜 표기 없음)",
+      "url": "https://www.mpfa.org.hk/-/media/files/mpf_system/mandatory_contributions/self-employed-persons/summary-table-for-legislative-amendment-history_sep-c.pdf"
+    },
+    {
+      "label": "積金局 — 強積金制度涵蓋範圍(修訂日期 20/07/2026)",
+      "url": "https://www.mpfa.org.hk/tc/mpf-system/mpf-coverage"
+    },
+    {
+      "label": "電子版香港法例 — 第485章《強制性公積金計劃條例》第7C·9·10條, 附表2·3(現行版本 05/10/2026)",
+      "url": "https://www.elegislation.gov.hk/hk/cap485!zh-Hant-HK"
+    },
+    {
+      "label": "GovHK — 強制性公積金計劃或認可職業退休計劃供款扣税簡介(修訂日期 2026年5月)",
+      "url": "https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/mpf.htm"
+    }
   ],
   "effectiveFrom": "2014-06-01",
   "rate": 0.05,
-  "monthly": { "minRelevantIncome": 7100, "maxRelevantIncome": 30000, "maxContribution": 1500 },
-  "yearly": { "minRelevantIncome": 85200, "maxRelevantIncome": 360000, "maxContribution": 18000 },
+  "monthly": {
+    "minRelevantIncome": 7100,
+    "maxRelevantIncome": 30000,
+    "maxContribution": 1500
+  },
+  "yearly": {
+    "minRelevantIncome": 85200,
+    "maxRelevantIncome": 360000,
+    "maxContribution": 18000
+  },
   "belowMinimum": "低於最低有關入息水平 — 無須供款",
   "coverage": "年滿18歲至64歲的自僱人士(獨資經營者·合夥人) — 自僱小販·未滿18歲或年屆65歲 등은 獲豁免人士",
   "relevantIncomeMethods": [
@@ -23,8 +48,19 @@
   ],
   "frequency": "按月(자영업자가 지정한 供款日) 또는 按年(計劃 財政年度 最後一日)",
   "notVerified": [
-    "센트 단위 끝수 처리(반올림·버림) — 원문에 문장 없음",
-    "第485章 附表 2·3 조문 대조 — elegislation.gov.hk 본문 못 엶",
-    "強積金 강제 기여금의 稅務 공제 한도 — 稅務局 원문 이번에 안 엶"
-  ]
+    "센트 단위 끝수 처리(반올림·버림) — 第485章·第485A章(現行版本 05/10/2026) 본문과 積金局 自僱人士(30/04/2026)·僱員(20/08/2026) 페이지에 해당 문장 없음(2026-10-23)"
+  ],
+  "law": {
+    "rate": "第7C(1)(b)·(3)條 — 訂明百分比為百分之五",
+    "belowMinimum": "第9(4)條 — 有關入息低於最低有關入息水平的自僱人士，無須向註冊計劃作出供款",
+    "aboveMaximum": "第10(4)條 — 超逾最高有關入息水平的部分可供款，但並非一項規定",
+    "minLevel": "附表2 第3段 — 自僱人士的最低有關入息水平為每月$7,100或每年$85,200",
+    "maxLevel": "附表3 第3段 — 自僱人士的最高有關入息水平為每月$30,000或每年$360,000"
+  },
+  "taxDeduction": {
+    "maxPerYear": 18000,
+    "fromYearOfAssessment": "2020/21",
+    "rule": "利得税 應課税利潤에서 강제 自我供款 공제, 薪俸税(僱員 몫)와 합쳐 每課税年度 최고 $18,000; 配偶의 供款은 공제 불가; BIR60 第4.3部 또는 IR831로 申索",
+    "source": "https://www.gov.hk/tc/residents/taxes/salaries/allowances/deductions/mpf.htm"
+  }
 }
