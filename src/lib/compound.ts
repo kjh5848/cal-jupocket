@@ -9,6 +9,7 @@
  *
  * 은행 적금(약관 이자)이 아니라 수익률 가정으로 굴려 보는 투영이라 법 숫자가 없다 — 세율만 rates 에서 기본값을 가져온다.
  * 부동소수로 끝까지 계산하고 화면에 낼 때만 원 단위로 반올림한다. 일 단위 적립·복리는 넣지 않는다(실제로 매일 넣지 않음).
+ * 목표 금액을 넣으면 기간 안 도달 개월(goalMonth)과, 못 닿으면 이어서 넣었을 때 도달 개월(goalLater)을 함께 낸다.
  * 원금 0·월초 적립이면 적금 월복리(lib/installment-savings.ts savingsMonthlyInterest)와 같은 식이다 — 테스트로 묶음.
  */
 import fin from "../rates/financial-income-2026.json";
@@ -61,8 +62,13 @@ export interface CompoundResult {
   real: number;
   /** 잔액이 목표에 처음 닿은 개월(못 닿으면 null) */
   goalMonth: number | null;
+  /** 기간 안에 못 닿았을 때, 같은 조건으로 계속 넣으면 처음 닿는 개월(GOAL_CAP_MONTHS 안에 못 닿으면 null) */
+  goalLater: number | null;
   years: CompoundYear[];
 }
+
+/** 기간 밖 목표 도달을 찾는 상한 — 페이지 기간 상한(1200개월 = 100년)과 같다 */
+export const GOAL_CAP_MONTHS = 1200;
 
 export function compound(input: CompoundInput): CompoundResult {
   const { principal, monthly, ratePct, timing, taxPct, inflationPct } = input;
@@ -86,11 +92,23 @@ export function compound(input: CompoundInput): CompoundResult {
       yStart = bal;
     }
   }
+  // 기간 안에 못 닿았으면 같은 적립·수익률로 이어서 굴려 본다 — 잔액·세금·연도별 표는 기간까지만
+  let goalLater: number | null = null;
+  if (goal > 0 && goalMonth === null) {
+    let b = bal;
+    for (let m = months + 1; m <= GOAL_CAP_MONTHS; m++) {
+      b = timing === "start" ? (b + monthly) * (1 + r) : b * (1 + r) + monthly;
+      if (b >= goal) {
+        goalLater = m;
+        break;
+      }
+    }
+  }
   const gain = bal - paid;
   const tax = Math.max(0, gain) * (taxPct / 100);
   const afterTax = bal - tax;
   const real = afterTax / Math.pow(1 + inflationPct / 100, months / 12);
-  return { balance: bal, paid, gain, tax, afterTax, real, goalMonth, years };
+  return { balance: bal, paid, gain, tax, afterTax, real, goalMonth, goalLater, years };
 }
 
 /** 화면용 원 단위 반올림 */

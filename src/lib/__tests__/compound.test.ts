@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { compound, won, DEFAULT_TAX_PCT } from "../compound";
+import { compound, won, DEFAULT_TAX_PCT, GOAL_CAP_MONTHS } from "../compound";
 import { savingsMonthlyInterest } from "../installment-savings";
 
 const base = { principal: 10_000_000, monthly: 300_000, ratePct: 5, months: 120, timing: "start" as const, taxPct: 15.4, inflationPct: 0 };
@@ -76,5 +76,29 @@ describe("적립식 복리", () => {
     const z = compound({ ...base, months: 0 });
     expect(z.balance).toBe(10_000_000);
     expect(z.years).toHaveLength(0);
+  });
+
+  it("기간 안에 못 닿으면 같은 조건으로 이어서 넣었을 때 목표 도달 개월을 따로 낸다(잔액은 기간까지만)", () => {
+    const g = { taxPct: 0, inflationPct: 0, timing: "start" as const, months: 12 };
+    // 100만원 + 월 50만원, 연 8% → 5천만원: 75개월째 처음 넘는다(그달 잔액 50,418,068원)
+    const a = compound({ ...g, principal: 1_000_000, monthly: 500_000, ratePct: 8, goal: 50_000_000 });
+    expect(a.goalMonth).toBeNull();
+    expect(a.goalLater).toBe(75);
+    expect(compound({ ...g, principal: 1_000_000, monthly: 500_000, ratePct: 8, months: 75 }).balance).toBeGreaterThanOrEqual(50_000_000);
+    expect(compound({ ...g, principal: 1_000_000, monthly: 500_000, ratePct: 8, months: 74 }).balance).toBeLessThan(50_000_000);
+    expect(won(compound({ ...g, principal: 1_000_000, monthly: 500_000, ratePct: 8, months: 75 }).balance)).toBe(50_418_068);
+    expect(a.paid).toBe(7_000_000);
+    // 0% 이면 넣은 돈만: 월 30만원으로 1천만원 → 34개월(1,020만원)
+    expect(compound({ ...g, principal: 0, monthly: 300_000, ratePct: 0, goal: 10_000_000 }).goalLater).toBe(34);
+    // 500만원 + 월 100만원, 연 5% → 1억원: 79개월
+    expect(compound({ ...g, principal: 5_000_000, monthly: 1_000_000, ratePct: 5, goal: 100_000_000 }).goalLater).toBe(79);
+  });
+
+  it("기간 안에 닿으면 goalLater 는 없고, 상한(1200개월) 안에 못 닿으면 둘 다 null", () => {
+    expect(compound({ ...base, goal: 50_000_000 }).goalLater).toBeNull();
+    const far = compound({ ...base, principal: 0, monthly: 100_000, ratePct: 0, goal: 1_000_000_000 });
+    expect(GOAL_CAP_MONTHS).toBe(1200);
+    expect(far.goalMonth).toBeNull();
+    expect(far.goalLater).toBeNull();
   });
 });

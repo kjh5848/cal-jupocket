@@ -43,6 +43,7 @@ const KO = {
   goalNever: "기간 안에 못 닿음",
   goalAtStart: "처음부터 넘음",
   goalAt: (s: string) => `${s}째`,
+  goalLater: (s: string) => `기간 밖 · 계속 넣으면 ${s}째`,
   yearRow: (year: number, rest: number) => (rest === 0 ? `${year}년째` : `${year}년째 (${rest}개월)`),
   after: (s: string) => `${s} 뒤 잔액`,
   paid: "넣은 돈",
@@ -61,6 +62,7 @@ const JA: typeof KO = {
   goalAtStart: "最初から到達",
   goalNever: "期間内に届かない",
   goalAt: (s) => `${s}目`,
+  goalLater: (s) => `期間外 · 続ければ${s}目`,
   yearRow: (year, rest) => (rest === 0 ? `${year}年目` : `${year}年目（${rest}か月）`),
   after: (s) => `${s}後の残高`,
   paid: "元本（積立総額）",
@@ -83,6 +85,7 @@ const EN: typeof KO = {
   goalNever: "Not reached in this period",
   goalAtStart: "Reached from the start",
   goalAt: (s) => `After ${s}`,
+  goalLater: (s) => `Beyond this period · after ${s} if you keep going`,
   yearRow: (year, rest) => (rest === 0 ? `Year ${year}` : `Year ${year} (${rest} mo)`),
   after: (s) => `Balance after ${s}`,
   paid: "Total contributions",
@@ -101,6 +104,7 @@ const ID: typeof KO = {
   goalNever: "Tidak tercapai dalam jangka waktu ini",
   goalAtStart: "Sudah tercapai sejak awal",
   goalAt: (s) => `Setelah ${s}`,
+  goalLater: (s) => `Di luar jangka waktu · setelah ${s} jika diteruskan`,
   yearRow: (year, rest) => (rest === 0 ? `Tahun ke-${year}` : `Tahun ke-${year} (${rest} bulan)`),
   after: (s) => `Saldo setelah ${s}`,
   paid: "Total setoran",
@@ -120,6 +124,7 @@ const ZH_HANT: typeof KO = {
   goalNever: "期間內未能達到",
   goalAtStart: "一開始已達到",
   goalAt: (s) => `${s}後達到`,
+  goalLater: (s) => `超出期間 · 繼續投入則${s}後達到`,
   yearRow: (year, rest) => (rest === 0 ? `第${year}年` : `第${year}年（${rest}個月）`),
   after: (s) => `${s}後結餘`,
   paid: "投入本金",
@@ -139,6 +144,7 @@ const FR: typeof KO = {
   goalNever: "Non atteint sur la durée",
   goalAtStart: "Atteint dès le départ",
   goalAt: (s) => `Au bout de ${s}`,
+  goalLater: (s) => `Hors durée · au bout de ${s} en continuant`,
   yearRow: (year, rest) => (rest === 0 ? `Année ${year}` : `Année ${year} (${rest} mois)`),
   after: (s) => `Capital au bout de ${s}`,
   paid: "Total versé",
@@ -159,6 +165,7 @@ const DE: typeof KO = {
   goalNever: "In der Laufzeit nicht erreicht",
   goalAtStart: "Schon zu Beginn erreicht",
   goalAt: (s) => `Nach ${s}`,
+  goalLater: (s) => `Außerhalb der Laufzeit · nach ${s} bei Fortsetzung`,
   yearRow: (year, rest) => (rest === 0 ? `${year}. Jahr` : `${year}. Jahr (${rest} Mon.)`),
   after: (s) => `Guthaben nach ${s}`,
   paid: "Eingezahlt",
@@ -179,6 +186,7 @@ const ES: typeof KO = {
   goalNever: "No se alcanza en este plazo",
   goalAtStart: "Alcanzado desde el principio",
   goalAt: (s) => `A los ${s}`,
+  goalLater: (s) => `Fuera del plazo · a los ${s} si se continúa`,
   yearRow: (year, rest) => (rest === 0 ? `Año ${year}` : `Año ${year} (${rest} ${rest === 1 ? "mes" : "meses"})`),
   after: (s) => `Capital a los ${s}`,
   paid: "Total aportado",
@@ -227,7 +235,7 @@ function render() {
   $("cp-tax-v").textContent = Math.round(x.tax) ? `−${w(x.tax)}` : S.noTax;
   $("cp-after").textContent = w(x.afterTax);
   $("cp-real").textContent = w(x.real);
-  $("cp-goal-v").textContent = !G ? S.goalNone : x.goalMonth === null ? S.goalNever : x.goalMonth === 0 ? S.goalAtStart : S.goalAt(spell(x.goalMonth));
+  $("cp-goal-v").textContent = !G ? S.goalNone : x.goalMonth === null ? (x.goalLater === null ? S.goalNever : S.goalLater(spell(x.goalLater))) : x.goalMonth === 0 ? S.goalAtStart : S.goalAt(spell(x.goalMonth));
   $("cp-rows").replaceChildren(
     ...x.years.map((y) => {
       const tr = document.createElement("tr");
