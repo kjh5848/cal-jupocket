@@ -21,8 +21,8 @@ describe("적금 이자 시리즈 제목·설명", () => {
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);
-      // 예시 입력(월 50만원)을 빼면 남는 숫자는 15.4% 뿐
-      const cut = head.replace(/월 50만원/g, "");
+      // 예시 입력(월 50만원)과 납입 방식 이름(6-1-5·6-6·1-11 — 선납이연 계산기)을 빼면 남는 숫자는 15.4% 뿐
+      const cut = head.replace(/월 50만원/g, "").replace(/\d+(?:-\d+)+/g, "");
       for (const m of cut.matchAll(/\d+(?:\.\d+)?%/g)) expect(m[0]).toBe(total);
       const rest = cut.replace(/\d+(?:\.\d+)?%/g, "");
       expect(rest).not.toMatch(/\d/);

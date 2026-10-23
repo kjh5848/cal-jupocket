@@ -440,6 +440,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/installment-savings-interest/", title: "적금 이자 계산 — 매달 넣은 돈마다 남은 개월만큼만 이자가 붙고, 받을 때 15.4%를 뗍니다", kind: "guide", icon: "chart" },
       { href: "/guide/installment-savings-simple-compound/", title: "적금 단리 복리 — 단리는 회차마다 남은 개월만큼, 월복리는 붙은 이자에도 이자가 붙습니다", kind: "guide", icon: "chart" },
       { href: "/guide/installment-savings-calculator/", title: "적금 이자 계산기", kind: "calc", icon: "calculator", blurb: "월 납입액·이율·개월 → 세후 이자·만기 수령액" },
+      { href: "/guide/prepay-defer-calculator/", title: "선납이연 계산기 — 적금을 6-1-5·6-6·1-11로 나눠 넣으면 만기가 늦어지는지 날짜로 계산합니다", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/tools/compound/", title: "적립식 복리 계산기", kind: "calc", icon: "chart", blurb: "원금·매달 적립·수익률 → 몇 년 뒤 금액·세후·오늘 가치" },
       { href: "/tools/debt-payoff/", title: "부채 상환 계획 계산기", kind: "calc", icon: "calculator", blurb: "빚 여러 개 · 한 달 예산 → 눈사태·눈덩이 순서로 다 갚는 달·총 이자" },
       { href: "/tools/card-installment/", title: "카드 할부 수수료 계산기", kind: "calc", icon: "calculator", blurb: "결제 금액·개월·수수료율 → 회차별 수수료·부분무이자" },
@@ -494,6 +495,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/prepay-defer-calculator/",
   "/guide/dividend-calculator/",
   "/guide/stock-return-calculator/",
   "/guide/stock-breakeven/",
