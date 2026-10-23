@@ -1,0 +1,131 @@
+{
+  "country": "GB",
+  "draft": true,
+  "note": "조사표 자동차세(/vehicle-tax/) 행의 영국 칸 — Vehicle Excise Duty(VED, 흔히 car tax·road tax). 한국 자동차세(배기량 × cc당 세액, 차령 감면)와 달리 차의 첫 등록일에 따라 세 체계로 갈린다: ① 2017-04-01 이후 등록 승용차(VERA 1994 Sch 1 Part 1AA) — 첫 면허(first licence)는 CO2 배출량 구간 금액(Table 1, 2026-27 £10~£5,690; Euro 6d 를 못 맞춘 경유차는 Table 2), 그다음부터는 정액 £200, 차 가격(list price + 비표준 옵션)이 £40,000(배출 0g/km 차는 £50,000) 넘고 첫 등록 후 6년 미만이면 £200 대신 £640(GOV.UK 표현 'extra £440 a year … for 5 years from the second time the vehicle is taxed'); ② 2001-03-01~2017-03-31 등록 승용차(Part IA para 1B) — 배출량 band A~M 연액(£20~£790), 2006-03-23 전 등록은 마지막 두 줄(L·M)을 £445 로; ③ 2001-03-01 전 등록(Part I para 1 general rate) — 배기량 1,549cc 이하·전기 £230, 초과 £375. 납부 방식(VERA s.4): 12개월 연액 그대로, 12개월 분할(Direct Debit 여러 회) 105%, 6개월 55%, 6개월 Direct Debit 52.5%. 2026-27 금액은 Finance Act 2026 s.92(11) 에 따라 2026-04-01 이후 받는 면허부터, £50,000(0g/km) 기준은 s.97(2) 에 따라 면허 기간이 2026-04-01 이후 시작하는 것부터. 배기량 감면·차령 감면 없음. 영국 전체(VERA Sch 1 RestrictExtent E+W+S+N.I.). 다음 금액 변경은 2027-04-01 전에 다시 확인.",
+  "verifiedOn": "2026-10-23",
+  "appliesTo": "licences taken out on or after 1 April 2026 (FA 2026 s.92(11)); expensive car threshold for licence periods beginning on or after 1 April 2026 (FA 2026 s.97(2))",
+  "region": "United Kingdom (England, Wales, Scotland, Northern Ireland)",
+  "sources": [
+    {
+      "label": "GOV.UK Vehicle tax rates (parts: Cars registered on or after 1 April 2017 · between 1 March 2001 and 31 March 2017 · before 1 March 2001) — content API updated_at 2026-09-09",
+      "url": "https://www.gov.uk/vehicle-tax-rate-tables"
+    },
+    {
+      "label": "Vehicle Excise and Registration Act 1994 Sch 1 Part 1AA paras 1GA·1GC·1GD·1GE·1GF (legislation.gov.uk, modified 2026-08-06)",
+      "url": "https://www.legislation.gov.uk/ukpga/1994/22/schedule/1/part/1AA"
+    },
+    {
+      "label": "VERA 1994 Sch 1 para 1A·1B (2001-03-01 ~ 2017-03-31 등록)",
+      "url": "https://www.legislation.gov.uk/ukpga/1994/22/schedule/1/paragraph/1B"
+    },
+    {
+      "label": "VERA 1994 Sch 1 para 1 general rate (2001-03-01 전 등록)",
+      "url": "https://www.legislation.gov.uk/ukpga/1994/22/schedule/1/paragraph/1"
+    },
+    {
+      "label": "VERA 1994 s.4 — 12개월 105%(분할)·6개월 55%·6개월 Direct Debit 52.5%",
+      "url": "https://www.legislation.gov.uk/ukpga/1994/22/section/4"
+    },
+    {
+      "label": "Finance Act 2026 s.92 — 2026-27 금액, (11) 2026-04-01 이후 받는 면허부터",
+      "url": "https://www.legislation.gov.uk/ukpga/2026/11/section/92"
+    },
+    {
+      "label": "Finance Act 2026 s.97 — 0g/km 차 기준 £50,000, (2) 면허 기간이 2026-04-01 이후 시작하는 것부터",
+      "url": "https://www.legislation.gov.uk/ukpga/2026/11/section/97"
+    }
+  ],
+  "post2017": {
+    "law": "VERA 1994 Sch 1 Part 1AA",
+    "firstLicence": {
+      "note": "para 1GC Table 1 — 'Exceeding or, in the first row, equal to' 이라 구간은 (하한 초과, 상한 이하], 첫 줄만 0 과 같음. 배출량은 정수 g/km 로 GOV.UK 표('1 to 50g/km')와 같다. GOV.UK: 'this covers the vehicle for 12 months'.",
+      "standard": [
+        { "overGkm": null, "upToGkm": 0, "pounds": 10 },
+        { "overGkm": 0, "upToGkm": 50, "pounds": 115 },
+        { "overGkm": 50, "upToGkm": 75, "pounds": 135 },
+        { "overGkm": 75, "upToGkm": 90, "pounds": 280 },
+        { "overGkm": 90, "upToGkm": 100, "pounds": 365 },
+        { "overGkm": 100, "upToGkm": 110, "pounds": 405 },
+        { "overGkm": 110, "upToGkm": 130, "pounds": 455 },
+        { "overGkm": 130, "upToGkm": 150, "pounds": 560 },
+        { "overGkm": 150, "upToGkm": 170, "pounds": 1410 },
+        { "overGkm": 170, "upToGkm": 190, "pounds": 2270 },
+        { "overGkm": 190, "upToGkm": 225, "pounds": 3420 },
+        { "overGkm": 225, "upToGkm": 255, "pounds": 4850 },
+        { "overGkm": 255, "upToGkm": null, "pounds": 5690 }
+      ],
+      "higherRateDiesel": {
+        "note": "para 1GC(3)(4)(5) Table 2 — 경유차이면서 Euro 6d 를 충족하지 못한 차(Euro 6d-TEMP 는 미충족). GOV.UK 는 같은 것을 'diesel cars that do not meet the RDE2 standard' 로 적음. 첫 줄은 'equal to or exceeding 0, not exceeding 50' 으로 0g/km 도 £135.",
+        "bands": [
+          { "overGkm": null, "upToGkm": 50, "pounds": 135 },
+          { "overGkm": 50, "upToGkm": 75, "pounds": 280 },
+          { "overGkm": 75, "upToGkm": 90, "pounds": 365 },
+          { "overGkm": 90, "upToGkm": 100, "pounds": 405 },
+          { "overGkm": 100, "upToGkm": 110, "pounds": 455 },
+          { "overGkm": 110, "upToGkm": 130, "pounds": 560 },
+          { "overGkm": 130, "upToGkm": 150, "pounds": 1410 },
+          { "overGkm": 150, "upToGkm": 170, "pounds": 2270 },
+          { "overGkm": 170, "upToGkm": 190, "pounds": 3420 },
+          { "overGkm": 190, "upToGkm": 225, "pounds": 4850 },
+          { "overGkm": 225, "upToGkm": 255, "pounds": 5690 },
+          { "overGkm": 255, "upToGkm": null, "pounds": 5690 }
+        ]
+      }
+    },
+    "laterLicences": {
+      "annualPounds": 200,
+      "source": "para 1GD(1) — 연료 구분 없이 같음(GOV.UK 'Petrol or diesel, Electric & Alternative Fuel')"
+    },
+    "expensiveCar": {
+      "annualPounds": 640,
+      "extraOverStandardPounds": 440,
+      "thresholdPounds": { "zeroEmission": 50000, "other": 40000 },
+      "conditions": "para 1GE(1)(1A): 가격이 기준액 '초과'(같으면 해당 없음) · 첫 등록 후 6년 미만에 효력이 생기는 면허 · 2025-04-01 이후 등록이거나, 그 전 등록이면 배출량 0g/km 초과. 즉 2025-04-01 전 등록한 0g/km 차는 해당 없음. 1GE(5): 첫 등록 때 taxi capable of zero emissions 는 제외. 첫 면허(1GC)에는 붙지 않음 — '두 번째 면허부터 5년'(GOV.UK).",
+      "price": "para 1GF: list price + 첫 등록 때 붙은 non-standard accessory 의 list price, list price 가 없으면 notional price(ITEPA 2003 ss.123–130 준용 — 안 읽음). GOV.UK: 'the published price of the vehicle before it's registered for the first time … before any discounts'."
+    }
+  },
+  "registered2001to2017": {
+    "law": "VERA 1994 Sch 1 Part IA para 1A·1B",
+    "note": "2001-02-28 이후 ~ 2017-04-01 전 등록 승용차. 연료 구분 없음(GOV.UK 'Petrol car, diesel car, alternative fuel and zero emission cars'). 2006-03-23 전 등록이면 L·M 줄도 £445(para 1B 끝 문장, GOV.UK K* 주석).",
+    "bands": [
+      { "band": "A", "overGkm": null, "upToGkm": 100, "pounds": 20 },
+      { "band": "B", "overGkm": 100, "upToGkm": 110, "pounds": 20 },
+      { "band": "C", "overGkm": 110, "upToGkm": 120, "pounds": 35 },
+      { "band": "D", "overGkm": 120, "upToGkm": 130, "pounds": 170 },
+      { "band": "E", "overGkm": 130, "upToGkm": 140, "pounds": 200 },
+      { "band": "F", "overGkm": 140, "upToGkm": 150, "pounds": 225 },
+      { "band": "G", "overGkm": 150, "upToGkm": 165, "pounds": 275 },
+      { "band": "H", "overGkm": 165, "upToGkm": 175, "pounds": 325 },
+      { "band": "I", "overGkm": 175, "upToGkm": 185, "pounds": 360 },
+      { "band": "J", "overGkm": 185, "upToGkm": 200, "pounds": 410 },
+      { "band": "K", "overGkm": 200, "upToGkm": 225, "pounds": 445 },
+      { "band": "L", "overGkm": 225, "upToGkm": 255, "pounds": 760, "before2006_03_23": 445 },
+      { "band": "M", "overGkm": 255, "upToGkm": null, "pounds": 790, "before2006_03_23": 445 }
+    ]
+  },
+  "before2001": {
+    "law": "VERA 1994 Sch 1 Part I para 1(2)(2A) general rate",
+    "upTo1549ccOrElectricPounds": 230,
+    "over1549ccPounds": 375
+  },
+  "paymentOptions": {
+    "law": "VERA 1994 s.4(1)(2)",
+    "twelveMonths": 1.0,
+    "twelveMonthsByInstalments": 1.05,
+    "sixMonths": 0.55,
+    "sixMonthsByDirectDebit": 0.525,
+    "checkedAgainstGovUk": "£200 → £200·£210·£110·£105, £640 → £640·£672·£352·£336, £225 → £236.25·£123.75·£118.13, £375 → £393.75·£206.25·£196.88 — GOV.UK 표와 모두 일치(1p 미만은 GOV.UK 표가 반올림, .5 는 올림으로 보임)."
+  },
+  "notVerified": [
+    "s.4 비율을 곱한 값의 1p 끝수 규칙 — 법 본문에 없음. GOV.UK 표는 반올림(£118.125 → £118.13)으로 보이지만 근거 조문(규정·DVLA 규칙)을 허용 출처에서 못 읽음. 페이지는 GOV.UK 표 금액을 그대로 쓰거나 끝수 규칙을 '페이지 선택'으로 밝힐 것.",
+    "2001~2017 band A~C 의 6개월 납부가 GOV.UK 에서 'N/A' 인 근거 — s.4 본문에는 제한이 없음. 페이지는 GOV.UK 대로 N/A 로 두고 근거는 적지 말 것.",
+    "첫 면허를 6개월·분할로 낼 수 있는지 — GOV.UK 는 '12 months' 만 말함. 페이지는 첫 면허를 12개월 한 번으로만 계산할 것.",
+    "12개월 Direct Debit 의 회차별 금액(£210 ÷ 12 의 끝수) — 원문 안 읽음, 계산 안 함."
+  ],
+  "notCalculated": [
+    "모터홈(2020-03-12 이후 등록은 Part 1AA 아님)·밴·오토바이·HGV·택시·장애 면제(disabled tax class)·역사 차량(40년) 면제 — 이번 회차 범위 밖",
+    "list price 판정·notional price(ITEPA 준용)·비표준 옵션 — 사용자가 가격이 기준을 넘는지 고르게",
+    "환급(남은 달)·판매·SORN·지각 벌금"
+  ],
+  "matrixRows": "자동차세(/vehicle-tax/) 와 전기차 세금(/guide/electric-car-tax-calculator/ — 0g/km 첫해 £10·이후 £200·£50,000 초과 £640) 두 행이 이 한 파일을 쓴다."
+}
