@@ -111,4 +111,12 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/en-gb/vehicle-tax/",
+    name: "Car tax calculator",
+    blurb: "UK vehicle tax (VED) 2026/27 by registration date and CO2: first-year rate, £200 or £640 after, electric cars and 6-month or Direct Debit costs",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];

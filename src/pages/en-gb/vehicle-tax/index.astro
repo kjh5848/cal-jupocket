@@ -1,0 +1,284 @@
+---
+/**
+ * UK Vehicle Tax (VED) Calculator — 영국판 제도 도구(basis "law"). 한국어판 자동차세(/vehicle-tax/)와 제도가 달라
+ * (배기량 × cc당 세액이 아니라 첫 등록일에 따라 CO2 구간·정액·배기량 두 단계) 짝(hreflang)을 맺지 않는다 — 조사표 영국 칸 '제도'.
+ * 전기차 세금 행(/guide/electric-car-tax-calculator/)도 이 페이지의 절(#electric)로 낸다.
+ * 계산은 lib/gb/vehicle-tax.ts, 화면은 lib/gb/vehicle-tax-ui.ts, 숫자는 rates/gb/vehicle-excise-duty-2026.json
+ * (VERA 1994 Sch 1 Part 1AA·IA·I·s.4, FA 2026 s.92·97 — 2026-10-23, GOV.UK vehicle-tax-rate-tables — 2026-10-24 확인).
+ *
+ * 범위: 승용차(Part 1AA·para 1B·para 1 general rate)만. 6개월·Direct Debit 금액은 GOV.UK 표 값 그대로(s.4 비율을 곱하지 않음).
+ * 첫 면허는 12개월 한 번만. 모터홈·밴·오토바이·장애·역사 차량 면제·환급·SORN 은 계산하지 않는다.
+ *
+ * 소제목은 영국 구글 자동완성에서 왔다(keywords/gb-vehicle-tax-2026-10-23.csv, hl en · gl gb):
+ *   car tax bands 2026/27·from april 2026·explained·pre 2017 / car tax calculator uk·2026·by reg / road tax electric cars uk·over 40000 /
+ *   vehicle tax uk how much
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import {
+  FIRST_STANDARD, FIRST_DIESEL, OLD_BANDS, LATER_POUNDS, EXPENSIVE_POUNDS, EXPENSIVE_EXTRA, THRESHOLD_ZERO, THRESHOLD_OTHER,
+  PRE2001_SMALL, PRE2001_LARGE, vehicleTax, bandLabel, gbpP, gbp0,
+} from "../../../lib/gb/vehicle-tax";
+import rates from "../../../rates/gb/vehicle-excise-duty-2026.json";
+import "../../../styles/global.css";
+
+const title = "UK Car Tax Calculator 2026/27 — Vehicle Tax (VED) Bands, First Year and £40,000 Rule";
+const description =
+  "UK vehicle tax (VED) for 2026/27 from your car's registration date and CO2: first-year rate, £200 standard rate, £640 expensive car rate and 6-month costs.";
+
+const START = { registered: "2021-05-01", taxFrom: "2026-11-01", fuel: "petrol" as const, co2: 120, engineCc: 1500, listPrice: 25000, payment: "later" as const };
+const s = vehicleTax(START);
+const later = rates.post2017.laterLicences.govUkPence;
+const exp = rates.post2017.expensiveCar.govUkPence;
+const old = rates.before2001.govUkPence;
+const na = (p: number | null) => (p === null ? "N/A" : gbpP(p));
+const exFirst = vehicleTax({ ...START, payment: "first" });
+const exF = vehicleTax({ ...START, registered: "2010-06-01", co2: 145 });
+---
+
+<html lang="en-GB">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>UK Car Tax Calculator 2026/27</h1>
+      <p>
+        Vehicle tax — Vehicle Excise Duty, still often called road tax — depends first on when your car was first registered. Cars
+        registered from 1 April 2017 pay a first-year rate based on CO2 and then a flat rate; cars registered between March 2001 and
+        March 2017 pay by CO2 band; older cars pay by engine size. Enter your car's details to see the 12-month rate for 2026/27 and the
+        GOV.UK amounts for paying monthly or every 6 months. The rates are the same across England, Wales, Scotland and Northern Ireland.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="vt-registered">First registered</label>
+          <input type="date" id="vt-registered" value={START.registered} />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="vt-from">Tax starts on</label>
+          <input type="date" id="vt-from" value={START.taxFrom} />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="vt-fuel">Fuel</label>
+          <select id="vt-fuel">
+            <option value="petrol" selected>Petrol, hybrid or alternative fuel</option>
+            <option value="dieselRde2">Diesel that meets RDE2</option>
+            <option value="dieselOther">Other diesel</option>
+            <option value="electric">Electric (0g/km)</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap" id="wrap-co2">
+          <label for="vt-co2">CO2 emissions (g/km)</label>
+          <input type="text" inputmode="numeric" id="vt-co2" value={String(START.co2)} autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap" id="wrap-payment">
+          <label for="vt-payment">Which payment?</label>
+          <select id="vt-payment" data-seg>
+            <option value="first">First (registering)</option>
+            <option value="later" selected>Second onwards</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap" id="wrap-price">
+          <label for="vt-price">List price when new (£)</label>
+          <input type="text" inputmode="decimal" id="vt-price" value="25,000" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap" id="wrap-cc" hidden>
+          <label for="vt-cc">Engine size (cc)</label>
+          <input type="text" inputmode="numeric" id="vt-cc" value={String(START.engineCc)} autocomplete="off" data-ui="off" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value" data-bar="out-six,out-dd12">
+          <p class="label" id="hero-label">Vehicle tax for 12 months</p>
+          <p class="big" id="hero-value">{gbp0(s.annualPounds)}</p>
+          <p class="hint" id="vt-rule">{s.rule}</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">12 monthly Direct Debits (total)</span>
+            <span class="value" id="out-dd12">{gbpP(s.pay!.monthlyDirectDebitTotal)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">6 months</span>
+            <span class="value" id="out-six">{na(s.pay!.sixMonths)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">6 months by Direct Debit</span>
+            <span class="value" id="out-six-dd">{na(s.pay!.sixMonthsDirectDebit)}</span>
+          </div>
+        </div>
+        <p class="hint" id="vt-first-note" hidden>
+          GOV.UK says the first tax payment covers the vehicle for 12 months; this calculator shows it as one 12-month payment.
+        </p>
+        <p class="hint" id="vt-expensive" hidden>
+          Includes the extra {gbp0(EXPENSIVE_EXTRA)} a year for a car with a list price over {gbp0(THRESHOLD_OTHER)}
+          ({gbp0(THRESHOLD_ZERO)} for a zero emission car), payable until the sixth anniversary of first registration.
+        </p>
+        <p class="hint" id="vt-before" hidden>
+          These are the rates for tax starting on or after 1 April 2026. Tax that started earlier was charged at the 2025/26 rates,
+          which this calculator does not show.
+        </p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How much is car tax in the UK?</h2>
+      <p>
+        It depends on which of three sets of rules your car falls under, and that is decided by the date on its V5C log book when it was
+        first registered:
+      </p>
+      <ul>
+        <li><strong>From 1 April 2017</strong> — a first-year rate based on CO2 ({gbp0(FIRST_STANDARD[0].pounds)} to {gbp0(FIRST_STANDARD[FIRST_STANDARD.length - 1].pounds)}), then {gbp0(LATER_POUNDS)} a year, or {gbp0(EXPENSIVE_POUNDS)} for a car that cost more than {gbp0(THRESHOLD_OTHER)}.</li>
+        <li><strong>1 March 2001 to 31 March 2017</strong> — a yearly rate for the CO2 band, A to M ({gbp0(OLD_BANDS[0].pounds)} to {gbp0(OLD_BANDS[OLD_BANDS.length - 1].pounds)}).</li>
+        <li><strong>Before 1 March 2001</strong> — {gbp0(PRE2001_SMALL)} for an engine up to 1,549cc and {gbp0(PRE2001_LARGE)} above that.</li>
+      </ul>
+      <p>
+        These are set out in Schedule 1 to the Vehicle Excise and Registration Act 1994, and the 2026/27 amounts come from the Finance
+        Act 2026 — they apply to vehicle tax taken out on or after 1 April 2026. Unlike some other countries, there is no discount for an
+        older car: a 2018 car pays the same {gbp0(LATER_POUNDS)} as a 2024 one.
+      </p>
+
+      <h2>Car tax bands 2026/27: first tax payment for cars registered from April 2017</h2>
+      <p>
+        The first time a car is taxed — usually by the dealer, in the price you pay — the rate depends on its CO2 figure. Diesel cars
+        that do not meet the Real Driving Emissions 2 (RDE2) standard pay the higher column. The car's CO2 figure is on the V5C.
+      </p>
+      <table>
+        <thead><tr><th>CO2 emissions</th><th>Petrol, RDE2 diesel, alternative fuel, electric</th><th>Other diesel</th></tr></thead>
+        <tbody>
+          {FIRST_STANDARD.map((b, i) => (
+            <tr>
+              <td>{bandLabel(b)}</td>
+              <td>{gbp0(b.pounds)}</td>
+              <td>{i === 0 ? "—" : gbp0(FIRST_DIESEL[Math.min(i - 1, FIRST_DIESEL.length - 1)].pounds)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        Example: a petrol car at 120g/km pays {gbp0(exFirst.annualPounds)} the first time. From the second payment it pays the standard
+        rate, whatever its CO2 figure.
+      </p>
+
+      <h2>Second tax payment onwards: £200, or £640 over £40,000</h2>
+      <table>
+        <thead><tr><th>How you pay</th><th>Standard rate</th><th>List price over £40,000 (£50,000 electric)</th></tr></thead>
+        <tbody>
+          <tr><td>Single 12 month payment (or by Direct Debit)</td><td>{gbp0(LATER_POUNDS)}</td><td>{gbp0(EXPENSIVE_POUNDS)}</td></tr>
+          <tr><td>Total of 12 monthly payments by Direct Debit</td><td>{gbpP(later.monthlyDirectDebitTotal)}</td><td>{gbpP(exp.monthlyDirectDebitTotal)}</td></tr>
+          <tr><td>Single 6 month payment</td><td>{na(later.sixMonths)}</td><td>{na(exp.sixMonths)}</td></tr>
+          <tr><td>Single 6 month payment by Direct Debit</td><td>{na(later.sixMonthsDirectDebit)}</td><td>{na(exp.sixMonthsDirectDebit)}</td></tr>
+        </tbody>
+      </table>
+      <p>
+        The expensive car rate adds {gbp0(EXPENSIVE_EXTRA)} a year when the list price is <em>more than</em> {gbp0(THRESHOLD_OTHER)}
+        ({gbp0(THRESHOLD_ZERO)} for a zero emission car). GOV.UK describes the list price as the published price before the car is first
+        registered and before any discounts; the Act adds the price of non-standard accessories fitted when it was first registered. The
+        extra applies for 5 years from the second time the car is taxed — in the Act, to tax that starts before the sixth anniversary of
+        first registration — so the calculator uses the date your tax starts.
+      </p>
+
+      <h2 id="electric">Road tax for electric cars in the UK</h2>
+      <p>
+        Electric cars now pay vehicle tax. A zero emission car registered from 1 April 2017 pays {gbp0(FIRST_STANDARD[0].pounds)} the
+        first time and then {gbp0(LATER_POUNDS)} a year. The expensive car rate applies to an electric car only if its list price is over
+        {" "}{gbp0(THRESHOLD_ZERO)}, and GOV.UK says you do not pay it if your zero emission car was registered before 1 April 2025. An
+        electric car registered between March 2001 and March 2017 is in band A ({gbp0(OLD_BANDS[0].pounds)} a year), and one registered
+        before March 2001 pays {gbp0(PRE2001_SMALL)}.
+      </p>
+
+      <h2>Car tax bands for cars registered before April 2017</h2>
+      <p>
+        Cars first registered between 1 March 2001 and 31 March 2017 pay by CO2 band, whatever the fuel. A car with a CO2 figure over
+        225g/km that was registered before 23 March 2006 pays the Band K rate. GOV.UK shows "N/A" for 6-month payments in bands A to C.
+      </p>
+      <table>
+        <thead><tr><th>Band and CO2</th><th>12 months</th><th>12 monthly Direct Debits (total)</th><th>6 months</th><th>6 months by Direct Debit</th></tr></thead>
+        <tbody>
+          {OLD_BANDS.map((b) => (
+            <tr>
+              <td>{b.band}: {bandLabel(b)}</td>
+              <td>{gbp0(b.pounds)}</td>
+              <td>{gbpP(b.govUkPence.monthlyDirectDebitTotal)}</td>
+              <td>{na(b.govUkPence.sixMonths)}</td>
+              <td>{na(b.govUkPence.sixMonthsDirectDebit)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        Example: a 2010 car at 145g/km is in band {exF.band} — {gbp0(exF.annualPounds)} for 12 months or
+        {" "}{na(exF.pay!.sixMonths)} for 6 months.
+      </p>
+      <p>
+        Cars registered before 1 March 2001: engine not over 1,549cc {gbp0(PRE2001_SMALL)} a year ({gbpP(old.upTo1549cc.sixMonths!)}
+        {" "}for 6 months); over 1,549cc {gbp0(PRE2001_LARGE)} ({gbpP(old.over1549cc.sixMonths!)} for 6 months).
+      </p>
+
+      <h2>Car tax explained: paying monthly or every 6 months</h2>
+      <p>
+        Section 4 of the 1994 Act sets what the other ways of paying cost compared with the 12-month rate: 105% when you spread
+        12 months over monthly Direct Debits, 55% for 6 months, and 52.5% for 6 months by Direct Debit. The calculator shows GOV.UK's
+        published amounts for each option rather than working them out, so they match the table to the penny. It does not split the
+        monthly total into individual Direct Debit payments.
+      </p>
+
+      <details>
+        <summary>Can I check my car tax by registration number?</summary>
+        <p>
+          Yes — GOV.UK's "Check if a vehicle is taxed" service shows when a vehicle's tax runs out, and the V5C log book shows the date
+          of first registration and the CO2 figure you need here. This calculator does not look up vehicles.
+        </p>
+      </details>
+
+      <details>
+        <summary>What does this calculator not cover?</summary>
+        <p>
+          Motorhomes, vans, motorcycles and other vehicles; the disabled and historic vehicle exemptions; refunds when you sell or SORN a
+          car; and deciding what counts in the list price. Check GOV.UK for those.
+        </p>
+      </details>
+
+      <p>
+        Related: <a href="/en-gb/stamp-duty/">Stamp Duty calculator</a>, <a href="/en-gb/council-tax/">Council Tax calculator</a> and
+        the <a href="/en-gb/tools/percent/">percentage calculator</a>.
+      </p>
+
+      <h2>Sources</h2>
+      <ul>
+        <li><a href="https://www.gov.uk/vehicle-tax-rate-tables" rel="noopener" target="_blank">GOV.UK — Vehicle tax rates</a> (checked 24 October 2026)</li>
+        <li>
+          <a href="https://www.legislation.gov.uk/ukpga/1994/22/schedule/1/part/1AA" rel="noopener" target="_blank">Vehicle Excise and Registration Act 1994, Schedule 1 Part 1AA</a>
+          {" "}(cars registered from 1 April 2017),
+          <a href="https://www.legislation.gov.uk/ukpga/1994/22/schedule/1/paragraph/1B" rel="noopener" target="_blank">paragraph 1B</a> (2001 to 2017),
+          <a href="https://www.legislation.gov.uk/ukpga/1994/22/schedule/1/paragraph/1" rel="noopener" target="_blank">paragraph 1</a> (before 2001) and
+          <a href="https://www.legislation.gov.uk/ukpga/1994/22/section/4" rel="noopener" target="_blank">section 4</a> (6-month and instalment rates) — checked 23 October 2026
+        </li>
+        <li>
+          <a href="https://www.legislation.gov.uk/ukpga/2026/11/section/92" rel="noopener" target="_blank">Finance Act 2026, section 92</a> (2026/27 rates) and
+          <a href="https://www.legislation.gov.uk/ukpga/2026/11/section/97" rel="noopener" target="_blank">section 97</a> (£50,000 for zero emission cars) — checked 23 October 2026
+        </li>
+      </ul>
+
+      <AdSlot label="vehicle-tax-result-en-gb" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/gb/vehicle-tax-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
