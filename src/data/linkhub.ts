@@ -378,6 +378,7 @@ export const hubEntries: HubEntry[] = [
   { no: 351, href: "/tools/overseas-payment-fee/", label: "해외결제 수수료 계산기", kind: "calc" },
   { no: 352, href: "/guide/dividend-calculator/", label: "배당금 계산기 — 세후 월배당", kind: "guide" },
   { no: 353, href: "/guide/prepay-defer-calculator/", label: "선납이연 계산기 — 만기 늦어지는 날", kind: "guide" },
+  { no: 354, href: "/tools/inflation/", label: "화폐가치 계산기 — 옛날 돈 지금 가치", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */

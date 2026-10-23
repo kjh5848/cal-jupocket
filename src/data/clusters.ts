@@ -442,6 +442,7 @@ export const clusters: Cluster[] = [
       { href: "/guide/installment-savings-calculator/", title: "적금 이자 계산기", kind: "calc", icon: "calculator", blurb: "월 납입액·이율·개월 → 세후 이자·만기 수령액" },
       { href: "/guide/prepay-defer-calculator/", title: "선납이연 계산기 — 적금을 6-1-5·6-6·1-11로 나눠 넣으면 만기가 늦어지는지 날짜로 계산합니다", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/tools/compound/", title: "적립식 복리 계산기", kind: "calc", icon: "chart", blurb: "원금·매달 적립·수익률 → 몇 년 뒤 금액·세후·오늘 가치" },
+      { href: "/tools/inflation/", title: "화폐가치 계산기", kind: "calc", icon: "chart", blurb: "금액·두 해 → 소비자물가지수로 옛날 돈 지금 가치·누적·연평균 물가상승률" },
       { href: "/tools/debt-payoff/", title: "부채 상환 계획 계산기", kind: "calc", icon: "calculator", blurb: "빚 여러 개 · 한 달 예산 → 눈사태·눈덩이 순서로 다 갚는 달·총 이자" },
       { href: "/tools/card-installment/", title: "카드 할부 수수료 계산기", kind: "calc", icon: "calculator", blurb: "결제 금액·개월·수수료율 → 회차별 수수료·부분무이자" },
       { href: "/tools/overseas-payment-fee/", title: "해외결제 수수료 계산기", kind: "calc", icon: "calculator", blurb: "외화 금액·환율·수수료율 → 현금 환전·카드·원화결제·충전 카드 비교" },

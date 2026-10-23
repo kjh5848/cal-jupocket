@@ -1,0 +1,190 @@
+---
+/**
+ * 화폐가치 계산기(인플레이션 조정) — 범용 도구(/tools/). 옛날 돈이 지금 얼마어치인지, 지금 돈이 옛날 얼마어치인지.
+ *
+ * 연도 비교는 소비자물가지수(rates/cpi-2026.json — 한국은행 ECOS 901Y009, 원자료 통계청, 2020=100) 비율로,
+ * 직접 입력은 사용자가 정한 연 물가 상승률로 계산한다. 계산은 lib/inflation.ts.
+ * roberin #37 은 입력·결과 항목만 대조했다(docs/calc-benchmark.md) — 그쪽 예시 이름·구성은 쓰지 않았다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { cpiAdjust, rateAdjust, won, CPI, FIRST_YEAR, LAST_YEAR } from "../../../lib/inflation";
+import { formatWon } from "../../../lib/money";
+import cpi from "../../../rates/cpi-2026.json";
+import "../../../styles/global.css";
+
+const title = "화폐가치 계산기 — 옛날 돈 지금 가치, 물가상승률로 환산";
+const description = `${FIRST_YEAR}~${LAST_YEAR}년 소비자물가지수로 옛날 돈이 지금 얼마어치인지, 지금 돈이 옛날 얼마어치인지 계산합니다. 누적·연평균 물가상승률과, 직접 넣은 상승률로 몇 년 뒤 가격·오늘 가치까지.`;
+
+const w = (x: number) => formatWon(won(x));
+const ex = cpiAdjust(10_000, 1995, LAST_YEAR);
+if (!ex.ok) throw new Error("예시 계산 실패");
+const ex2 = cpiAdjust(1_000_000, 2000, LAST_YEAR);
+const ex3 = rateAdjust(1_000_000, 2.5, 10, "future");
+const ex4 = rateAdjust(100_000_000, 2, 10, "present");
+if (!ex2.ok || !ex3.ok || !ex4.ok) throw new Error("예시 계산 실패");
+const yearsDesc = Object.keys(CPI).map(Number).sort((a, b) => b - a);
+const decades = [1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020, LAST_YEAR];
+const presets = [
+  { label: "30년 전 1만원", amount: 10_000, from: LAST_YEAR - 30, to: LAST_YEAR },
+  { label: "40년 전 1천원", amount: 1_000, from: LAST_YEAR - 40, to: LAST_YEAR },
+  { label: "60년 전 100원", amount: 100, from: LAST_YEAR - 60, to: LAST_YEAR },
+  { label: "지금 100만원 → 20년 전", amount: 1_000_000, from: LAST_YEAR, to: LAST_YEAR - 20 },
+];
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>화폐가치 계산기</h1>
+      <p class="qa-lead">
+        {LAST_YEAR - 30}년의 1만원은 {LAST_YEAR}년 돈으로 <strong>{w(ex.value)}</strong>어치입니다 — 그사이 소비자물가가
+        {ex.cumulativePct.toFixed(1)}%, 해마다 평균 {ex.annualPct.toFixed(2)}%씩 올랐기 때문입니다. 금액과 두 해를 고르면
+        통계청 소비자물가지수(2020=100) 비율로 옛날 돈의 지금 가치와 지금 돈의 옛날 가치를 계산합니다. 앞으로의 물가는
+        상승률을 직접 넣어 몇 년 뒤 가격이나 그 돈의 오늘 가치를 봅니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="if-mode">계산 방식</label>
+          <select id="if-mode" data-seg>
+            <option value="cpi" selected>연도로 비교 (실제 물가)</option>
+            <option value="rate">상승률 직접 넣기</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="if-amount">금액</label>
+          <input type="text" inputmode="numeric" id="if-amount" value="10,000" data-won autocomplete="off" />
+          <span class="unit">원</span>
+        </div>
+        <div class="ux-presets if-cpi" role="group" aria-label="예시 넣기">
+          {presets.map((p) => <button type="button" data-amount={p.amount} data-from={p.from} data-to={p.to}>{p.label}</button>)}
+        </div>
+        <div class="calc-input-wrap if-cpi">
+          <label for="if-from">그 돈을 쓰던 해</label>
+          <select id="if-from">
+            {yearsDesc.map((y) => <option value={y} selected={y === LAST_YEAR - 30}>{y}년</option>)}
+          </select>
+        </div>
+        <div class="calc-input-wrap if-cpi">
+          <label for="if-to">바꿔 볼 해</label>
+          <select id="if-to">
+            {yearsDesc.map((y) => <option value={y} selected={y === LAST_YEAR}>{y}년</option>)}
+          </select>
+        </div>
+        <div class="calc-input-wrap if-rate" hidden>
+          <label for="if-dir">무엇을 볼까</label>
+          <select id="if-dir" data-seg>
+            <option value="future" selected>몇 년 뒤 가격</option>
+            <option value="present">몇 년 뒤 돈의 오늘 가치</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap if-rate" hidden>
+          <label for="if-rate">연 물가 상승률</label>
+          <input type="number" id="if-rate" value="2" min="-50" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap if-rate" hidden>
+          <label for="if-years">기간</label>
+          <input type="number" id="if-years" value="10" min="0" max="200" step="1" data-step />
+          <span class="unit">년</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="if-hero">
+          <p class="label" id="if-hero-label">{LAST_YEAR}년 돈으로</p>
+          <p class="big" id="if-hero">{w(ex.value)}</p>
+          <p class="meta" id="if-note">{LAST_YEAR - 30}년 10,000원 · 물가 {ex.ratio.toFixed(2)}배</p>
+          <p class="meta" id="if-err" role="alert"></p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">물가 배율</span><span class="value" id="if-ratio">{ex.ratio.toFixed(2)}배</span></div>
+          <div class="stat-chip"><span class="label">누적 상승률</span><span class="value" id="if-cum">+{ex.cumulativePct.toFixed(1)}%</span></div>
+          <div class="stat-chip"><span class="label">연평균 상승률</span><span class="value" id="if-ann">{ex.annualPct.toFixed(2)}%</span></div>
+          <div class="stat-chip"><span class="label">기간</span><span class="value" id="if-span">{ex.span}년</span></div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>어떻게 계산하나</h2>
+      <ul>
+        <li><strong>연도로 비교</strong> — 금액 × (바꿔 볼 해 소비자물가지수 ÷ 그 돈을 쓰던 해 소비자물가지수). 지수는 연간 총지수이고 2020년을 100으로 둡니다.</li>
+        <li><strong>누적·연평균 상승률</strong> — 늘 이른 해에서 늦은 해로 셉니다. 지금 돈을 옛날로 돌려 봐도 '그사이 물가가 몇 % 올랐나'로 보여 줍니다.</li>
+        <li><strong>몇 년 뒤 가격</strong> — 금액 × (1 + 연 상승률)<sup>년</sup>. 지금 100만원짜리가 연 2.5%씩 10년 오르면 {w(ex3.value)}입니다.</li>
+        <li><strong>몇 년 뒤 돈의 오늘 가치</strong> — 금액 ÷ (1 + 연 상승률)<sup>년</sup>. 10년 뒤 받을 1억원은 연 2% 물가라면 지금 돈 {w(ex4.value)}어치입니다. <a href="/tools/compound/">적립식 복리 계산기</a>의 '오늘 돈 가치'와 같은 식입니다.</li>
+      </ul>
+
+      <h2>해마다 소비자물가지수</h2>
+      <p>2020년 = 100 기준 연간 총지수입니다. 두 해의 지수를 나누면 그사이 물가가 몇 배가 됐는지 나옵니다.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>해</th><th>지수</th><th>{LAST_YEAR}년 1만원은 그해 돈으로</th></tr></thead>
+          <tbody>
+            {decades.map((y) => <tr><th scope="row">{y}년</th><td>{CPI[y]}</td><td>{w((10_000 * CPI[y]) / CPI[LAST_YEAR])}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">
+        출처: 한국은행 경제통계시스템(ECOS) 소비자물가지수 총지수 연간(원자료 통계청 소비자물가조사), 확인 {cpi.verifiedOn}.
+        {LAST_YEAR + 1}년 연간 값은 그해 12월 물가 발표 뒤 더합니다.
+      </p>
+
+      <details>
+        <summary>옛날 돈 가치는 정말 이만큼인가요?</summary>
+        <p>
+          소비자물가지수는 가구가 사는 여러 상품·서비스 값을 평균 낸 숫자라, 집값·학비·외식처럼 특정 품목은
+          훨씬 더 오르거나 덜 올랐을 수 있습니다. 이 계산은 '그 돈으로 평균적인 장바구니를 얼마나 살 수 있었나'를
+          맞춘 값입니다. 예를 들어 2000년 100만원은 {LAST_YEAR}년 돈으로 {w(ex2.value)}어치(물가 {ex2.ratio.toFixed(2)}배)지만,
+          같은 기간 집값이나 임금이 오른 비율은 이와 다릅니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>다른 계산기와 몇십 원 다르게 나와요</summary>
+        <p>
+          2020년보다 앞선 해 지수를 소수 몇째 자리까지 쓰느냐에 따라 끝자리가 달라집니다. 이 계산기는 한국은행이 공개하는
+          소수 셋째 자리 값(예: 2000년 63.151)을 그대로 씁니다. 둘째 자리로 줄여(63.15) 계산하면 2000년 100만원이 몇십 원
+          더 크게 나옵니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>앞으로 물가 상승률은 몇 %로 넣으면 되나요?</summary>
+        <p>
+          정해진 답은 없습니다. 위 표로 지난 기간의 연평균을 확인해 비슷하게 넣어 보거나, 0%·2%·3%처럼 몇 가지를 바꿔 넣어
+          범위를 보는 편이 낫습니다. 연도로 비교에서 2015년 → {LAST_YEAR}년을 고르면 최근 10년 연평균 상승률이 나옵니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>지금 돈이 옛날 얼마어치인지도 보나요?</summary>
+        <p>
+          '그 돈을 쓰던 해'에 지금 해를, '바꿔 볼 해'에 옛날 해를 고르면 됩니다. 지금 100만원은 {LAST_YEAR - 30}년 돈으로
+          {w(1_000_000 / ex.ratio)}어치입니다. 상승률은 이때도 옛날 → 지금 방향으로 보여 줍니다.
+        </p>
+      </details>
+
+      <AdSlot label="inflation-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/inflation.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
