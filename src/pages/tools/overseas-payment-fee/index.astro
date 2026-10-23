@@ -1,0 +1,216 @@
+---
+/**
+ * 해외결제·환전 수수료 — 범용 도구(/tools/). 외화 금액 · 매매기준율 · 방법별 환율·수수료율 → 현금 환전·카드·원화결제·충전 카드 원화 부담.
+ *
+ * 환율·수수료율은 은행·카드사·상품마다 달라 법 숫자가 없다 — rates 없이 산식 출처만 lib/overseas-payment-fee.ts 머리말에 둔다.
+ * 계산은 lib, 화면은 scripts/overseas-payment-fee.ts(한국어판 전용). 기본값 환율은 계산 모양을 보이려는 예시다(은행 고시값 아님).
+ * roberin #31 은 입력·결과 항목만 대조했다(docs/calc-benchmark.md).
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { compareMethods, type Method } from "../../../lib/overseas-payment-fee";
+import { formatWon } from "../../../lib/money";
+import "../../../styles/global.css";
+
+const title = "해외결제 수수료 계산기 — 현금 환전·카드·원화결제 비교";
+const description =
+  "외화 금액과 매매기준율, 은행 환율표의 현찰·송금 환율, 카드 브랜드·해외서비스 수수료율을 넣으면 현금 환전·카드 현지통화 결제·원화결제(DCC)·외화 충전 카드의 원화 부담을 나란히 계산합니다.";
+
+const EX = {
+  amount: 100,
+  unit: 1,
+  base: 1400,
+  cash: { rate: 1424.5, prefPct: 90 },
+  card: { rate: 1413.7, brandPct: 1.1, servicePct: 0.2 },
+  dccPct: 5,
+  prepaid: {},
+};
+const ex = compareMethods(EX);
+if (!ex.ok) throw new Error("overseas-payment-fee 예시가 계산되지 않음");
+const m = (k: Method) => ex.methods.find((x) => x.method === k)!;
+const NAME: Record<Method, string> = { cash: "현금 환전", card: "카드 현지통화 결제", dcc: "카드 원화결제", prepaid: "외화 충전 카드" };
+const CURRENCIES: [string, string, number][] = [
+  ["USD", "미국 달러", 1], ["JPY", "일본 엔", 100], ["EUR", "유로", 1], ["CNY", "중국 위안", 1], ["VND", "베트남 동", 100],
+  ["THB", "태국 바트", 1], ["TWD", "대만 달러", 1], ["HKD", "홍콩 달러", 1], ["SGD", "싱가포르 달러", 1], ["PHP", "필리핀 페소", 1],
+  ["GBP", "영국 파운드", 1], ["AUD", "호주 달러", 1], ["CAD", "캐나다 달러", 1], ["IDR", "인도네시아 루피아", 100],
+];
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>해외결제·환전 수수료 계산기</h1>
+      <p class="qa-lead">
+        해외에서 카드로 내면 <strong>외화 금액 × 전신환매도율(은행 '송금 보낼 때' 환율)에 국제브랜드 수수료와 카드사 해외서비스
+        수수료가 더해져</strong> 원화로 청구됩니다(신용카드 개인회원 표준약관 제27조). 현금은 현찰 살 때 환율에서 우대율만큼
+        깎인 환율로, 원화결제(DCC)는 금융감독원 안내로 결제금액의 약 3~8%가 더 붙습니다. 매매기준율 1,400원일 때 100달러를
+        예로 들면 현금(90% 우대) {formatWon(m("cash").won)}, 카드 {formatWon(m("card").won)}, 원화결제 5% {formatWon(m("dcc").won)}입니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="op-amount">낼 외화 금액</label>
+          <input type="text" inputmode="decimal" id="op-amount" value="100" autocomplete="off" />
+          <span class="unit" id="op-cur-unit">USD</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="op-cur">통화</label>
+          <select id="op-cur">
+            {CURRENCIES.map(([code, name, unit]) => (
+              <option value={`${code}|${unit}`} selected={code === "USD"}>{code} · {name}{unit === 100 ? " (100단위 환율)" : ""}</option>
+            ))}
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="op-base">매매기준율 <span class="op-per">1 USD당</span></label>
+          <input type="number" id="op-base" value="1400" min="0" step="0.01" inputmode="decimal" />
+          <span class="unit">원</span>
+        </div>
+
+        <p class="hint">은행 환율표에서 <strong>같은 회차</strong>의 매매기준율·현찰 살 때·송금 보낼 때 환율을 넣으세요. 기본값은 예시입니다.</p>
+
+        <div class="calc-input-wrap">
+          <label for="op-cash">현금 — 현찰 살 때 환율 <span class="op-per">1 USD당</span></label>
+          <input type="number" id="op-cash" value="1424.5" min="0" step="0.01" inputmode="decimal" />
+          <span class="unit">원</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="op-pref">현금 — 환율 우대</label>
+          <input type="number" id="op-pref" value="90" min="0" max="100" step="1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="op-tt">카드 — 송금 보낼 때 환율(전신환매도율) <span class="op-per">1 USD당</span></label>
+          <input type="number" id="op-tt" value="1413.7" min="0" step="0.01" inputmode="decimal" />
+          <span class="unit">원</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="op-brand">카드 — 국제브랜드 수수료</label>
+          <input type="number" id="op-brand" value="1.1" min="0" max="10" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="op-svc">카드 — 카드사 해외서비스 수수료</label>
+          <input type="number" id="op-svc" value="0.2" min="0" max="10" step="0.01" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="op-dcc">원화결제(DCC) 웃돈</label>
+          <input type="number" id="op-dcc" value="5" min="0" max="20" step="0.5" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="op-pp-rate">충전 카드 — 충전 환율(비우면 매매기준율) <span class="op-per">1 USD당</span></label>
+          <input type="number" id="op-pp-rate" value="" min="0" step="0.01" inputmode="decimal" />
+          <span class="unit">원</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="op-pp-fee">충전 카드 — 결제 수수료(비우면 0)</label>
+          <input type="number" id="op-pp-fee" value="" min="0" max="10" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+
+        <p class="hint" id="op-err" role="alert"></p>
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-bar="op-base-won|op-gap" data-bar-labels="매매기준율로 바꾼 금액|가장 싼 방법도 더 내는 돈" data-dock="op-hero">
+          <p class="label">가장 적게 드는 방법</p>
+          <p class="big" id="op-hero">{NAME[ex.cheapest]} {formatWon(m(ex.cheapest).won)}</p>
+          <p class="meta" id="op-note">원화결제보다 {formatWon(m("dcc").won - m(ex.cheapest).won)} 덜 냄</p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">매매기준율로 바꾼 금액</span><span class="value" id="op-base-won">{formatWon(ex.baseWon)}</span></div>
+          <div class="stat-chip"><span class="label">가장 싼 방법도 더 내는 돈</span><span class="value" id="op-gap">{formatWon(m(ex.cheapest).extra)}</span></div>
+          <div class="stat-chip"><span class="label">현금 환전</span><span class="value" id="op-cash-won">{formatWon(m("cash").won)}</span></div>
+          <div class="stat-chip"><span class="label">카드 현지통화 결제</span><span class="value" id="op-card-won">{formatWon(m("card").won)}</span></div>
+          <div class="stat-chip"><span class="label">카드 원화결제</span><span class="value" id="op-dcc-won">{formatWon(m("dcc").won)}</span></div>
+          <div class="stat-chip"><span class="label">외화 충전 카드</span><span class="value" id="op-pp-won">{formatWon(m("prepaid").won)}</span></div>
+        </div>
+
+        <details open>
+          <summary>방법마다 더 내는 돈 나눠 보기</summary>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>방법</th><th>원화 부담</th><th>환율 차이</th><th>수수료</th><th>원화결제 웃돈</th></tr></thead>
+              <tbody id="op-rows">
+                {ex.methods.map((x) => (
+                  <tr><th scope="row">{NAME[x.method]}</th><td>{formatWon(x.won)}</td><td>{formatWon(x.parts.rate)}</td><td>{formatWon(x.parts.fee)}</td><td>{formatWon(x.parts.dcc)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p class="hint" id="op-card-detail">카드 청구 = 원금 {formatWon(m("card").card!.principal)} + 국제브랜드 수수료 {formatWon(m("card").card!.brand)} + 해외서비스 수수료 {formatWon(m("card").card!.service)}</p>
+        </details>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>어떻게 계산하나</h2>
+      <ul>
+        <li><strong>기준</strong> — 외화 금액 × 매매기준율. 엔·베트남 동·인도네시아 루피아는 은행이 100단위로 고시하므로 금액을 100으로 나눠 곱합니다(5,000엔 × 100엔당 환율 ÷ 100).</li>
+        <li><strong>현금 환전</strong> — 적용 환율 = 매매기준율 + (현찰 살 때 환율 − 매매기준율) × (1 − 우대율). 우대율은 현찰 환율과 매매기준율의 차이를 깎는 비율이라 100% 면 매매기준율 그대로입니다(KB국민은행 환율 안내).</li>
+        <li><strong>카드 현지통화 결제</strong> — 원금(외화 × 전신환매도율) + 국제브랜드 수수료(외화 × 브랜드 수수료율 × 전신환매도율) + 해외서비스 수수료(외화 × 카드사 수수료율 × 전신환매도율). 표준약관 제27조 ③의 식이고, 해외서비스 수수료는 브랜드 수수료를 빼고 셉니다.</li>
+        <li><strong>카드 원화결제</strong> — 위 카드 청구액에 원화결제 웃돈 비율을 더한 어림입니다. 가맹점이 정한 환율에 붙는 웃돈이라 정확한 비율은 영수증으로만 알 수 있습니다.</li>
+        <li><strong>외화 충전 카드</strong> — 충전 환율로 바꾼 금액 + 결제 수수료. 무료 환전 통화면 충전 환율을 비워 두세요.</li>
+        <li>항목마다 원 미만은 반올림합니다(약관에 끝수 규정이 없음).</li>
+      </ul>
+
+      <details>
+        <summary>카드 청구 환율은 언제 정해지나요?</summary>
+        <p>
+          표준약관은 해외 이용대금을 <strong>카드사에 접수된 날</strong> 대외결제대행은행이 그날 처음 고시한 전신환매도율로 바꾼다고
+          정합니다. 결제한 날이 아니라 접수일이라, 그사이 환율이 움직이면 청구액도 달라집니다. 미리 계산할 때는 오늘 은행 환율표의
+          '송금 보내실 때' 값을 넣으면 됩니다. 달러가 아닌 통화는 국제브랜드가 먼저 달러로 바꾸므로, 그 통화의 송금 환율로 넣은
+          결과는 어림입니다. 해외 결제를 취소하면 환율 변동에 따른 손익은 카드사가 부담한다고 같은 조항이 정합니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>국제브랜드·해외서비스 수수료율은 얼마인가요?</summary>
+        <p>
+          카드 뒷면 브랜드와 상품마다 다릅니다. 예를 들어 KB국민카드 해외이용 안내는 신용카드 국제브랜드 수수료를 비자 1.0~1.1%,
+          마스터 1.0%, 아멕스 1.4%, 유니온페이 0.6~0.8%로, 해외서비스 수수료를 이용금액의 0.25%로 적고 있습니다. 카드사마다,
+          상품마다 면제나 다른 값이 있으니 내 카드 상품설명서의 숫자를 넣으세요. 기본값 1.1%·0.2%는 예시입니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>원화결제(DCC)는 어떻게 피하나요?</summary>
+        <p>
+          단말기나 영수증에 원화(KRW) 금액이 함께 찍히면 원화결제가 된 것입니다. 금융감독원은 이때 결제금액의 약 3~8%가 더
+          청구될 수 있다며 현지 통화로 결제하고, 출국 전에 카드사 앱·홈페이지·콜센터에서 해외원화결제 차단 서비스를 신청하라고
+          안내합니다. 해외 숙박·쇼핑 사이트는 원화 표시가 기본으로 켜져 있는 경우가 있으니 결제 통화를 먼저 확인하세요.
+        </p>
+      </details>
+
+      <details>
+        <summary>이 계산기가 하지 않는 것</summary>
+        <p>
+          실시간 환율을 불러오지 않습니다 — 넣은 환율과 수수료율로 계산한 예상액입니다. 해외 현금인출(ATM) 수수료, 남은 외화를
+          원화로 되팔 때의 환율·환급 수수료, 카드사별 원 단위 끝수 처리는 계산하지 않습니다. 해외에서 쓴 카드를 할부로 돌렸다면
+          {" "}<a href="/tools/card-installment/">카드 할부 수수료 계산기</a>로 회차별 수수료를 보세요.
+        </p>
+      </details>
+
+      <AdSlot label="overseas-payment-fee-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/overseas-payment-fee.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
