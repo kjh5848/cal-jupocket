@@ -1,9 +1,8 @@
 {
   "country": "US",
-  "draft": true,
   "year": 2026,
   "verifiedOn": "2026-10-23",
-  "status": "초안 — 페이지에서 쓰지 않는다. 연방 Child Tax Credit·Credit for Other Dependents·Additional Child Tax Credit(26 U.S.C. 24, Schedule 8812) 금액 계산만, 주(州) child tax credit 은 다루지 않음(us.md 주의). 법조문·2025·2026 금액·Schedule 8812 (2025) 줄 순서는 원문 확인(2026-10-23), 남은 미확인 없음",
+  "status": "검증됨 — /en-us/child-tax-credit/ 가 쓴다(lib src/lib/us/child-tax-credit.ts). 연방 Child Tax Credit·Credit for Other Dependents·Additional Child Tax Credit(26 U.S.C. 24, Schedule 8812) 금액 계산만, 주(州) child tax credit 은 다루지 않음(us.md 주의). 법조문·2025·2026 금액·Schedule 8812 (2025) 줄 순서는 원문 확인(2026-10-23), 남은 미확인 없음",
   "note": "CTC·ODC 는 비환급(세액 한도 = Credit Limit Worksheet A), ACTC 만 환급형. 2026 Schedule 8812·지침은 아직 안 나옴 — 2026 결과는 Rev. Proc. 2025-32 §3.05 금액에 Schedule 8812 (2025) 줄 순서를 적용한 값이라, 페이지는 'Rev. Proc. 2025-32 amounts with the 2025 Schedule 8812 method' 를 밝히고 2026 서식이 나오면(2026 말~2027 초) 줄 번호·금액을 다시 대조한다. Pub 972 는 2021 부터 폐지(Schedule 8812 지침이 유일한 출처) — 공식 숫자 예시는 없어 anchorTests 는 서식 줄 손계산. 세액(Form 1040 line 18 − Schedule 3 감면)은 계산하지 않고 사용자가 입력한다(세율표·표준공제 검증은 별도 일). 자격 판정(17세 미만·SSN·관계·거주·부양가족)은 계산하지 않고 원문 안내만. 2026 서식이 나오면 줄 번호·Part II-B 기준(3 × $1,700 = $5,100 예상)·Credit Limit Worksheet A 의 Schedule 3 줄 목록을 대조한다(EITC 의 2026 EIC Table 과 같은 처리 — 미확인이 아니라 공식 금액 + 2025 서식 방법으로 밝힘).",
   "sources": [
     {
@@ -98,7 +97,7 @@
       "16b": "자녀 수 × actcCapPerChild (ODC 부양가족은 넣지 않음 — §24(h)(5); 자녀 0 이면 ACTC 없음)",
       "partIIBTest": "line 16b ≥ actcCapPerChild × 3 (2025 서식 '$5,100' = 3 × $1,700) 이고 line 20 < line 17 일 때만 Part II-B. 아니면 ACTC = min(line 17, line 20)"
     },
-    "partIIBDecision": "포함 — 자녀 3명 이상이면 W-2 box 4·6 합계(사용자 입력)와 EIC(src/lib/us/eitc.ts 의 computeEitc 로 계산하거나 사용자 입력)를 받아 line 25 를 계산. 자영업세(Schedule 1 line 15·Schedule 2 lines 5·6·13)·Schedule 3 line 11(초과 원천징수 사회보장세)은 0 으로 두고 그렇다고 밝힘",
+    "partIIBDecision": "포함 — 자녀 3명 이상이면 W-2 box 4·6 합계와 EIC(Form 1040 line 27a)를 사용자가 입력(비우면 0)해 line 25 를 계산. 임금만 있으면 earned 약 $5,100 넘는 구간에서 line 20 이 늘 크고 그 아래는 EIC(45%)가 사회보장세(7.65%)보다 커서 line 25 가 이기는 경우는 EIC 가 없을 때(투자소득 한도 초과·MFS 등)뿐. 자영업세(Schedule 1 line 15·Schedule 2 lines 5·6·13)·Schedule 3 line 11 은 0 으로 두고 페이지에 밝힘",
     "rounding": "서식에 따로 끝수 규칙 없음 — 1040 지침: 센트를 달러로 반올림할 수 있음(50센트 이상 올림). 계산은 센트 그대로, 표시는 달러 반올림"
   },
   "qualifyingChild": "과세연도 말 17세 미만(§24(c)(1)) · §152(c) qualifying child · 반년 넘게 같이 거주 · 본인 부양의 반 넘게 부담하지 않음 · 미국 시민·국민·거주 외국인 · 신고기한 전 발급된 근로 가능 SSN(본인 또는 MFJ 면 한 명 + 자녀, §24(h)(7)) — 페이지는 자녀 수만 입력받고 자격 판정은 원문 안내. 17세 이상·SSN 없는 자녀는 ODC($500) 쪽 인원으로",

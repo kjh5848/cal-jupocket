@@ -1,0 +1,252 @@
+---
+/**
+ * Child Tax Credit Calculator — 미국 영어판 제도 도구(basis "law"). 한국 자녀장려금(가구 소득·재산 요건, 환급형)과
+ * 제도가 달라 짝(hreflang)을 맺지 않는다(조사표 26행 미국 칸 '제도').
+ * 계산은 lib/us/child-tax-credit.ts, 화면은 lib/us/child-tax-credit-ui.ts, 숫자는 rates/us/child-tax-credit-2026.json
+ * (26 U.S.C. 24 · Rev. Proc. 2024-40·2025-32 §3.05 · Schedule 8812 (2025)·지침 · IRS CTC 페이지 — 2026-10-23 확인).
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-child-tax-credit-2026-10-23.csv):
+ *   child tax credit calculator 2026 with dependents·based on income·high income / child tax credit 2026 amount·income limit·
+ *   phase out·age limit·for 17 year olds·vs 2025 / additional child tax credit refundable·vs child tax credit /
+ *   schedule 8812 credit limit worksheet a
+ * 쓰지 않는 것(원문 미확인·주의 원칙): 환급 날짜, 2021 월 선지급(advance·monthly payment), 신생아 특례(newborn),
+ * 주(州) credit(california·nj·texas), Worksheet B·Form 2555·자영업세, 자격 판정(원문 안내만).
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { amounts, computeCtc, phaseoutEnd, ODC, THRESHOLD, EARNED_FLOOR } from "../../../lib/us/child-tax-credit";
+import { usd0 } from "../../../lib/us/fica";
+import "../../../styles/global.css";
+
+const title = "Child Tax Credit Calculator 2026 — IRS Schedule 8812, Refundable ACTC";
+const description =
+  "Estimate the federal child tax credit for 2025 and 2026: $2,200 per child, up to $1,700 refundable, the $500 other-dependent credit and the $200,000/$400,000 phase-out.";
+
+const a26 = amounts(2026);
+const first = computeCtc({ year: 2026, status: "other", children: 2, otherDependents: 0, magi: 40_000, taxLimit: 1500, earned: 40_000 });
+const firstHint = `Line 14 ${usd0(first.line14)} reduces your tax; line 27 ${usd0(first.line27)} is refundable (15% of earned income over $2,500 is ${usd0(first.line20)}, the cap is ${usd0(first.line16b)}). 2026 uses Rev. Proc. 2025-32 amounts with the 2025 Schedule 8812 method.`;
+
+const hi = computeCtc({ year: 2026, status: "mfj", children: 2, otherDependents: 0, magi: 410_500, taxLimit: 100_000, earned: 410_500 });
+const low = computeCtc({ year: 2026, status: "other", children: 1, otherDependents: 0, magi: 10_000, taxLimit: 0, earned: 10_000 });
+const part = computeCtc({ year: 2026, status: "other", children: 1, otherDependents: 0, magi: 30_000, taxLimit: 600, earned: 30_000 });
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Child Tax Credit Calculator</h1>
+      <p>
+        The federal child tax credit is {usd0(a26.ctcPerChild)} per qualifying child for 2025 and 2026, plus {usd0(ODC)} for each other
+        dependent. It first reduces the tax you owe; if the credit is bigger than your tax, up to {usd0(a26.actcCapPerChild)} per child can come
+        back as a refund — the additional child tax credit. This calculator follows Schedule 8812 line by line. Enter how many children
+        and other dependents you claim, your modified AGI, your tax before credits and your earned income.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="ct-year">Tax year</label>
+          <select id="ct-year" data-ui="off">
+            <option value="2026" selected>2026 (filed in 2027)</option>
+            <option value="2025">2025 (filed in 2026)</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-status">Filing status</label>
+          <select id="ct-status" data-ui="off">
+            <option value="other" selected>Single, head of household, married filing separately or qualifying surviving spouse</option>
+            <option value="mfj">Married filing jointly</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-kids">Qualifying children under 17 with an SSN</label>
+          <input type="text" inputmode="numeric" id="ct-kids" value="2" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-other">Other dependents ($500 each)</label>
+          <input type="text" inputmode="numeric" id="ct-other" value="0" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-magi">Modified AGI ($) — usually Form 1040 line 11</label>
+          <input type="text" inputmode="decimal" id="ct-magi" value="40,000" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-tax">Tax before credits ($) — Credit Limit Worksheet A</label>
+          <input type="text" inputmode="decimal" id="ct-tax" value="1,500" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="ct-earned">Earned income ($) — leave blank if the same as MAGI</label>
+          <input type="text" inputmode="decimal" id="ct-earned" value="" placeholder="same as MAGI" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap" id="ct-ss-wrap" hidden>
+          <label for="ct-ss">3+ children: Social Security and Medicare withheld ($) — W-2 boxes 4 and 6</label>
+          <input type="text" inputmode="decimal" id="ct-ss" value="" placeholder="0" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap" id="ct-eic-wrap" hidden>
+          <label for="ct-eic">3+ children: earned income credit ($) — Form 1040 line 27a</label>
+          <input type="text" inputmode="decimal" id="ct-eic" value="" placeholder="0" autocomplete="off" data-ui="off" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value" data-bar="out-nonref,out-actc,out-reduce">
+          <p class="label">Child tax credit total</p>
+          <p class="big" id="hero-value">{usd0(first.total)}</p>
+          <p class="hint" id="ct-hint">{firstHint}</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">Nonrefundable (CTC + ODC)</span>
+            <span class="value" id="out-nonref">{usd0(first.line14)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Refundable (ACTC)</span>
+            <span class="value" id="out-actc">{usd0(first.line27)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Income phase-out</span>
+            <span class="value" id="out-reduce">{usd0(first.line11)}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Child tax credit 2026 amount</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Tax year</th>
+              <th scope="col">Per qualifying child</th>
+              <th scope="col">Refundable part, max per child</th>
+              <th scope="col">Per other dependent</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">2026</th><td>{usd0(a26.ctcPerChild)}</td><td>{usd0(a26.actcCapPerChild)}</td><td>{usd0(ODC)}</td></tr>
+            <tr><th scope="row">2025</th><td>{usd0(amounts(2025).ctcPerChild)}</td><td>{usd0(amounts(2025).actcCapPerChild)}</td><td>{usd0(ODC)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <strong>Child tax credit 2026 vs 2025:</strong> the amounts are the same. The law sets {usd0(a26.ctcPerChild)} for 2025 and indexes it
+        for inflation after that, in steps of $100; Rev. Proc. 2025-32 kept 2026 at {usd0(a26.ctcPerChild)} and the refundable cap at
+        {" "}{usd0(a26.actcCapPerChild)}. So the year menu above changes nothing yet. The 2026 Schedule 8812 is not out, so 2026 results use the 2026
+        amounts with the 2025 form's method — compare with the 2026 form once it is published.
+      </p>
+
+      <h2>Child tax credit income limit and phase-out</h2>
+      <p>
+        The credit starts to shrink when modified AGI is over {usd0(THRESHOLD.mfj)} on a joint return or {usd0(THRESHOLD.other)} for any
+        other filing status. It drops by $50 for each $1,000 — or part of $1,000 — above that line (Schedule 8812 lines 9–11). Because any
+        part counts as a full $1,000, $425 over the limit already costs $50.
+      </p>
+      <p>
+        Example: married filing jointly, two children, MAGI {usd0(410_500)}. The excess {usd0(10_500)} rounds up to {usd0(hi.line10)}, so the
+        credit is {usd0(hi.line8)} − {usd0(hi.line11)} = {usd0(hi.line12)}. For a high income the credit is gone once MAGI is over
+        {" "}{usd0(phaseoutEnd("other", a26.ctcPerChild))} (one child, single) or {usd0(phaseoutEnd("mfj", 2 * a26.ctcPerChild))} (two
+        children, joint).
+      </p>
+
+      <h2>Additional child tax credit vs child tax credit</h2>
+      <p>
+        The child tax credit and the {usd0(ODC)} credit for other dependents only reduce tax. Schedule 8812 caps them at your tax from
+        Credit Limit Worksheet A (line 14). Whatever is left over can become the <strong>additional child tax credit</strong>, which is
+        refundable — but only for qualifying children, never for other dependents. It is the smallest of:
+      </p>
+      <ul>
+        <li>the unused credit (line 16a),</li>
+        <li>{usd0(a26.actcCapPerChild)} × the number of qualifying children (line 16b), and</li>
+        <li>15% of earned income above {usd0(EARNED_FLOOR)} (line 20).</li>
+      </ul>
+      <p>
+        Example: single, one child, earned income {usd0(30_000)}, tax {usd0(600)}. The credit uses {usd0(part.line14)} against tax, and the
+        remaining {usd0(part.line16a)} is under the {usd0(part.line16b)} cap and under 15% × $27,500 = {usd0(part.line20)}, so all
+        {" "}{usd0(part.line27)} is refunded — {usd0(part.total)} in total. With earned income of {usd0(10_000)} and no tax, 15% × $7,500 limits the
+        refund to {usd0(low.line27)}.
+      </p>
+      <p>
+        With three or more qualifying children there is a second test (Part II-B): if Social Security and Medicare tax withheld minus
+        the earned income credit is larger than line 20, that amount is used instead. The calculator asks for those two numbers when you
+        enter three or more children. It does not include self-employment tax or excess Social Security withholding, which also count in
+        Part II-B.
+      </p>
+
+      <h2>Schedule 8812 Credit Limit Worksheet A</h2>
+      <p>
+        "Tax before credits" in the calculator is line 13 of Schedule 8812, from Credit Limit Worksheet A in the 2025 instructions: the
+        tax on Form 1040 line 18, minus the credits on Schedule 3 lines 1, 2, 3, 4, 5b, 6d, 6f, 6l and 6m. If that amount is zero, the nonrefundable
+        part is zero and only the refundable part is left. If you have a mortgage interest credit, adoption credit, residential clean
+        energy credit or D.C. first-time homebuyer credit, the instructions add Worksheet B, which this calculator does not do.
+      </p>
+
+      <h2>Child tax credit age limit and eligibility</h2>
+      <p>This calculator does not decide who qualifies. The main IRS rules for a qualifying child:</p>
+      <ul>
+        <li>Under 17 at the end of the tax year. A 17-year-old does not qualify for the child tax credit but can count for the {usd0(ODC)} other-dependent credit.</li>
+        <li>Meets the relationship test for a qualifying child under section 152(c).</li>
+        <li>Lived with you for more than half the year and did not provide more than half of their own support.</li>
+        <li>Claimed as your dependent, and a U.S. citizen, national or resident alien.</li>
+        <li>
+          Has a Social Security number valid for employment issued by the due date of the return. Starting with 2025 you need a valid SSN
+          too — on a joint return, at least one spouse.
+        </li>
+      </ul>
+      <p>
+        A child who doesn't meet the age or SSN rule may still count as an other dependent. If you file Form 2555 (foreign earned
+        income), you can't take the additional child tax credit.
+      </p>
+
+      <details>
+        <summary>What is modified AGI here?</summary>
+        <p>
+          For most people it is the AGI on Form 1040 line 11. Schedule 8812 adds back income excluded as a Puerto Rico resident or on
+          Form 2555 or Form 4563.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does this include my state's child tax credit?</summary>
+        <p>No. It covers the federal credit only. Several states have their own, with their own rules — check your state's tax agency.</p>
+      </details>
+
+      <details>
+        <summary>Why are some numbers shown with cents?</summary>
+        <p>
+          The calculator keeps cents. On the return you may round every amount to whole dollars — drop under 50 cents, round 50 to 99
+          cents up — as long as you round all of them.
+        </p>
+      </details>
+
+      <h2>Sources</h2>
+      <ul>
+        <li><a href="https://www.irs.gov/credits-deductions/individuals/child-tax-credit" rel="noopener" target="_blank">IRS Child Tax Credit</a></li>
+        <li><a href="https://www.irs.gov/pub/irs-pdf/f1040s8.pdf" rel="noopener" target="_blank">Schedule 8812 (Form 1040), 2025</a> and <a href="https://www.irs.gov/pub/irs-pdf/i1040s8.pdf" rel="noopener" target="_blank">its instructions, including Credit Limit Worksheet A</a></li>
+        <li><a href="https://www.irs.gov/pub/irs-drop/rp-25-32.pdf" rel="noopener" target="_blank">Rev. Proc. 2025-32 §3.05 (2026 amounts)</a> and <a href="https://www.irs.gov/pub/irs-drop/rp-24-40.pdf" rel="noopener" target="_blank">Rev. Proc. 2024-40 §3.05 (2025 refundable amount)</a></li>
+        <li><a href="https://uscode.house.gov/" rel="noopener" target="_blank">26 U.S.C. 24</a> (Office of the Law Revision Counsel, release point Pub. L. 119-121)</li>
+      </ul>
+      <p>Amounts checked on October 23, 2026. This is a calculator, not tax advice.</p>
+
+      <AdSlot label="ctc-result-en-us" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/us/child-tax-credit-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

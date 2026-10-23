@@ -121,4 +121,12 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/en-us/child-tax-credit/",
+    name: "Child Tax Credit Calculator",
+    blurb: "Federal CTC for 2025 and 2026 on Schedule 8812 — $2,200 per child, the refundable additional credit up to $1,700, $500 other dependents and the income phase-out",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];
