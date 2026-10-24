@@ -59,6 +59,18 @@
       "url": "https://bofip.impots.gouv.fr/bofip/11364-PGP.html",
       "checkedOn": "2026-10-21",
       "quote": "§80 déduction de l'IFI lui-même : tarif appliqué au patrimoine net compte non tenu de l'IFI, moins les impôts similaires acquittés à l'étranger sur des actifs imposables · exemple 8 M€, impôts étrangers 5 000 € → 73 190 − 5 000 = 68 190 ; 7 931 810 € ; impôt exigible 72 338 € ; à payer 67 338 €"
+    },
+    {
+      "label": "BOFiP BOI-PAT-IFI-20-40-10 (Déduction du passif — Conditions de déductibilité des dettes), version en vigueur du 05/06/2024 (§40·§210·§220 identiques à la version 2018-2024)",
+      "url": "https://bofip.impots.gouv.fr/bofip/11364-PGP.html",
+      "checkedOn": "2026-10-24",
+      "quote": "§210 Sont ainsi déductibles les impositions qui sont dues à raison de la simple détention de la propriété … la taxe foncière sur les propriétés bâties et la taxe foncière sur les propriétés non bâties · §40 fait générateur au plus tard au 1er janvier de l'année d'imposition, redevable propriétaire au 1er janvier · §220 taxe d'habitation non déductible (occupation)"
+    },
+    {
+      "label": "service-public.gouv.fr — Taxe foncière sur les propriétés bâties (F59, Vérifié le 25 septembre 2026)",
+      "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F59",
+      "checkedOn": "2026-10-24",
+      "quote": "propriétaire ou usufruitier … au 1er janvier de l'année d'imposition · Les taux d'imposition sont votés par les collectivités territoriales"
     }
   ],
   "valuationDate": "1er janvier de l'année d'imposition (1.1.2026 pour l'IFI 2026), valeur vénale",
@@ -120,7 +132,13 @@
     "capAssetsEur": 5000000,
     "capShare": 0.6,
     "capDeductibleShare": 0.5,
-    "exemptAssets": "dettes afférentes à des biens totalement exonérés : non déductibles ; partiellement exonérés : à hauteur de la part non exonérée"
+    "exemptAssets": "dettes afférentes à des biens totalement exonérés : non déductibles ; partiellement exonérés : à hauteur de la part non exonérée",
+    "taxeFonciere": {
+      "rule": "la taxe foncière (bâti et non bâti) due à raison de la simple détention est une dette déductible de l'assiette IFI si son fait générateur est au plus tard au 1er janvier de l'année d'imposition et si le redevable est encore propriétaire au 1er janvier (BOI-PAT-IFI-20-40-10 §40, §210) — c'est une déduction de la base (valeur nette taxable), pas un crédit sur l'IFI : pas d'imputation à la coréenne",
+      "notDeductible": "taxe d'habitation (occupation, §220)",
+      "rate": "pas de taux national : voté par les collectivités territoriales (F59) — l'outil devrait demander le montant de l'avis",
+      "checkedOn": "2026-10-24"
+    }
   },
   "partialExemptions": {
     "boisForetsGroupementsForestiers": 0.75,
@@ -175,7 +193,8 @@
     "ordre plafonnement ↔ IFI acquitté hors de France : non fixé par les textes lus (brochure p.338 les énumère seulement ; exemple PGP 11364 sans plafonnement)",
     "CGI art. 977 (barème, décote), 978, 979 (plafonnement) : texte Légifrance non lu — HTTP 403 sur l'adresse d'article (codes/article_lc/LEGIARTI000036428045) et sur l'adresse de section (codes/section_lc/LEGITEXT000006069577/LEGISCTA000036377447), 2026-10-21 ; 3e passage (2026-10-21) : codes/id/LEGIARTI000036428045 et jorf/id/JORFTEXT000036339197 aussi en 403, navigateur bloqué sur la vérification anti-robots Cloudflare (non contournée) ; barème et décote vérifiés par brochure IR 2026 + BOFiP en vigueur + 4 exemples recalculés",
     "aucun exemple chiffré officiel daté IFI 2026 (exemples BOFiP au 1.1.2018, même barème) — calcul témoin non officiel : P = 1 350 000 € → barème 2 850 €, décote 625 €, IFI 2 225 € ; P = 1 400 000 € → décote 0",
-    "algorithme_ifi.pdf (open data impots.gouv.fr) : métadonnées 2023, texte non lisible — non utilisé"
+    "algorithme_ifi.pdf (open data impots.gouv.fr) : métadonnées 2023, texte non lisible — non utilisé",
+    "taxe foncière : montant déductible pour l'IFI N (avis d'octobre N-1 ou N ? — §40 tolère un avis postérieur à la déclaration sous réserve de fait générateur ≤ 1er janvier ; la ligne exacte à retenir n'a pas été lue) ; texte CGI art. 974 non lu (Légifrance 403)"
   ],
   "orderOfImputation": {
     "verified": "barème (art. 977, avec décote) → réduction dons (art. 978) → plafonnement (art. 979) calculé sur l'IFI après dons — BOI-PAT-IFI-40 §1 et §10, BOI-PAT-IFI-40-30-10 §40",
