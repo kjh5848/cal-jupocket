@@ -38,3 +38,7 @@ out.txt
 out-ship.txt
 social/indexnow-sent.json
 social/index-status.json
+social/index-history.json
+social/dashboard/
+# 에이전트가 브라우저 도구를 쓰면 생기는 폴더
+.playwright-mcp/
