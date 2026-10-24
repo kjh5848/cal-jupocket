@@ -14,7 +14,7 @@ import TrackLinks from "../../../components/TrackLinks.astro";
 import AdSenseHead from "../../../components/AdSenseHead.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
-import { compound, won as round, DEFAULT_TAX_PCT } from "../../../lib/compound";
+import { compound, won as round, DEFAULT_TAX_PCT, dailyCompound, daysToMultiple } from "../../../lib/compound";
 import { formatWon } from "../../../lib/money";
 import "../../../styles/global.css";
 
@@ -24,6 +24,9 @@ const description =
 
 const ex = compound({ principal: 10_000_000, monthly: 300_000, ratePct: 5, months: 120, timing: "start", taxPct: DEFAULT_TAX_PCT, inflationPct: 0 });
 const w = (x: number) => formatWon(round(x));
+// '하루 1% 복리' 질문 표 — 100만원을 매일 같은 비율로 불린 이론값(적립·세금 없음)
+const dailyRates = [0.1, 0.5, 1, 2, 3];
+const dailyDays = [30, 100, 365];
 ---
 
 <html lang="ko">
@@ -174,7 +177,37 @@ const w = (x: number) => formatWon(round(x));
           매달 넣는 돈을 0원으로 두면 거치식 단순 복리, 곧 원금 × (1 + 월 수익률)<sup>개월</sup>이 됩니다. 이 계산기는
           연 수익률을 12로 나눠 매달 붙이므로, '월 1%'처럼 월 수익률로 알고 있다면 연 수익률 칸에 12배(12%)를 넣으면
           같은 값이 나옵니다. 예를 들어 100만원을 월 1%로 12개월 굴리면 세전 1,126,825원(이익 126,825원), 500만원을
-          월 0.8%로 36개월 굴리면 6,661,149원입니다. 매일 붙는 일 단위 복리는 넣지 않았습니다.
+          월 0.8%로 36개월 굴리면 6,661,149원입니다. 하루 단위로 불리는 경우는 아래 '하루 1% 복리' 질문에 표로 적었습니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>하루 1% 복리면 1년 뒤 얼마인가요? (일복리)</summary>
+        <p>
+          원금 하나를 매일 같은 비율로 불리면 마지막 금액은 원금 × (1 + 하루 수익률)<sup>일수</sup>입니다. 100만원을 하루 1%씩
+          365일 불리면 {w(dailyCompound(1_000_000, 1, 365).balance)}, 약 {dailyCompound(1_000_000, 1, 365).multiple.toFixed(1)}배가
+          되고 2배에는 {daysToMultiple(1, 2)}일째, 10배에는 {daysToMultiple(1, 10)}일째 닿습니다. 아래는 적립·세금 없이 100만원으로 계산한 이론값입니다.
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>하루 수익률</th>{dailyDays.map((d) => <th>{d}일 뒤</th>)}<th>2배 되는 날</th><th>1년으로 치면</th></tr></thead>
+            <tbody>
+              {dailyRates.map((r) => (
+                <tr>
+                  <th scope="row">{r}%</th>
+                  {dailyDays.map((d) => <td>{w(dailyCompound(1_000_000, r, d).balance)}</td>)}
+                  <td>{daysToMultiple(r, 2)}일째</td>
+                  <td>{Math.round(dailyCompound(1, r, 0).annualPct).toLocaleString("ko-KR")}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p>
+          하루 0.1%만 돼도 1년으로 치면 {Math.round(dailyCompound(1, 0.1, 0).annualPct)}%가 넘습니다 — 매일 같은 수익률이 1년 내내 이어지는
+          투자는 사실상 없어서, 이 표는 복리가 얼마나 빨리 커지는지 보는 계산일 뿐 기대할 수 있는 수익이 아닙니다. 위 계산기는 연
+          수익률을 12로 나눠 매달 붙이는 월 단위라, 같은 연 수익률이면 하루 단위보다 아주 조금 적게 나옵니다. 날마다 이자가 붙는 파킹통장의 실제 이자는
+          <a href="/guide/parking-account-interest-calculator/">파킹통장 이자 계산기</a>가 날짜별 잔액·금리로 따로 계산합니다.
         </p>
       </details>
 

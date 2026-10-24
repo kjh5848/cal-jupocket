@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { compound, won, DEFAULT_TAX_PCT, GOAL_CAP_MONTHS } from "../compound";
+import { compound, won, DEFAULT_TAX_PCT, GOAL_CAP_MONTHS, dailyCompound, daysToMultiple } from "../compound";
 import { savingsMonthlyInterest } from "../installment-savings";
 
 const base = { principal: 10_000_000, monthly: 300_000, ratePct: 5, months: 120, timing: "start" as const, taxPct: 15.4, inflationPct: 0 };
@@ -117,5 +117,35 @@ describe("적립식 복리", () => {
     // 월초·월말 적립 구분은 적립이 0원이면 결과를 바꾸지 않는다
     expect(compound({ principal: 1_000_000, monthly: 0, ratePct: 12, months: 12, timing: "end", taxPct: 0, inflationPct: 0 }).balance)
       .toBeCloseTo(lump(1_000_000, 1, 12).balance, 6);
+  });
+});
+
+// roberin #38 일일 복리 성장 — 같은 입력 3개 결과 원 단위까지 같음(2026-10-24, docs/calc-benchmark.md)
+describe("하루 복리", () => {
+  it("원금 × (1 + 하루 수익률)^일수", () => {
+    const a = dailyCompound(1_000_000, 1, 365);
+    expect(won(a.balance)).toBe(37_783_434);
+    expect(won(a.gain)).toBe(36_783_434);
+    expect(a.annualPct).toBeCloseTo(3678.34, 2);
+    const b = dailyCompound(5_000_000, 0.1, 100);
+    expect(won(b.balance)).toBe(5_525_578);
+    expect(b.annualPct).toBeCloseTo(44.03, 2);
+    const c = dailyCompound(123_456, 0.05, 3650);
+    expect(won(c.balance)).toBe(765_423);
+    expect(c.multiple).toBeCloseTo(6.2, 2);
+  });
+
+  it("2배·5배·10배 되는 첫날", () => {
+    expect([2, 5, 10].map((t) => daysToMultiple(1, t))).toEqual([70, 162, 232]);
+    expect([2, 5].map((t) => daysToMultiple(0.05, t))).toEqual([1387, 3220]);
+    expect(daysToMultiple(0, 2)).toBeNull();
+    // 첫날 정확히 닿는 경계 — 하루 100%면 1일째 2배
+    expect(daysToMultiple(100, 2)).toBe(1);
+  });
+
+  it("0일이면 원금 그대로, 연 수익률 ÷ 12 월복리와는 다른 식", () => {
+    expect(dailyCompound(1_000_000, 1, 0).balance).toBe(1_000_000);
+    // 하루 0.1% × 30일(1,030,439)은 월 3% 한 번(1,030,000)보다 조금 크다
+    expect(won(dailyCompound(1_000_000, 0.1, 30).balance)).toBe(1_030_439);
   });
 });

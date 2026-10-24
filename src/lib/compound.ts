@@ -8,7 +8,8 @@
  *   물가     세후 금액 ÷ (1 + 연 물가 상승률)^(개월 ÷ 12) — 오늘 돈 가치로 바꾼 값
  *
  * 은행 적금(약관 이자)이 아니라 수익률 가정으로 굴려 보는 투영이라 법 숫자가 없다 — 세율만 rates 에서 기본값을 가져온다.
- * 부동소수로 끝까지 계산하고 화면에 낼 때만 원 단위로 반올림한다. 일 단위 적립·복리는 넣지 않는다(실제로 매일 넣지 않음).
+ * 부동소수로 끝까지 계산하고 화면에 낼 때만 원 단위로 반올림한다. 일 단위 적립은 넣지 않는다(실제로 매일 넣지 않음).
+ * '하루 1% 복리' 같은 질문은 적립 없이 원금 하나를 매일 같은 비율로 불리는 dailyCompound 가 답한다(페이지 질문 표).
  * 목표 금액을 넣으면 기간 안 도달 개월(goalMonth)과, 못 닿으면 이어서 넣었을 때 도달 개월(goalLater)을 함께 낸다.
  * 원금 0·월초 적립이면 적금 월복리(lib/installment-savings.ts savingsMonthlyInterest)와 같은 식이다 — 테스트로 묶음.
  */
@@ -109,6 +110,29 @@ export function compound(input: CompoundInput): CompoundResult {
   const afterTax = bal - tax;
   const real = afterTax / Math.pow(1 + inflationPct / 100, months / 12);
   return { balance: bal, paid, gain, tax, afterTax, real, goalMonth, goalLater, years };
+}
+
+export interface DailyCompoundResult {
+  /** 마지막 날 금액 = 원금 × (1 + 하루 수익률)^일수 */
+  balance: number;
+  gain: number;
+  /** 배율 = 마지막 금액 ÷ 원금 */
+  multiple: number;
+  /** 같은 비율이 365일 붙었을 때 1년 수익률(%) = ((1 + 하루)^365 − 1) × 100 */
+  annualPct: number;
+}
+
+/** 원금 하나를 매일 같은 비율로 불리는 일 단위 복리 — 적립·세금 없음, 이론값 */
+export function dailyCompound(principal: number, dailyPct: number, days: number): DailyCompoundResult {
+  const g = 1 + dailyPct / 100;
+  const balance = principal * Math.pow(g, Math.max(0, Math.floor(days)));
+  return { balance, gain: balance - principal, multiple: balance / principal, annualPct: (Math.pow(g, 365) - 1) * 100 };
+}
+
+/** 하루 수익률로 원금이 times 배가 되는 첫날 — 수익률이 0 이하면 null */
+export function daysToMultiple(dailyPct: number, times: number): number | null {
+  if (dailyPct <= 0) return null;
+  return Math.ceil(Math.log(times) / Math.log(1 + dailyPct / 100) - 1e-9);
 }
 
 /** 화면용 원 단위 반올림 */
