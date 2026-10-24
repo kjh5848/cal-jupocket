@@ -22,6 +22,8 @@ const NEVER = [/^social\/[^/]+\.json$/, /^\.claude\//, /^package(-lock)?\.json$/
 
 export function classify(code, locale, file) {
   const f = file.split("\\").join("/");
+  // 한국 루틴(kr)·사람은 에이전트·스킬 정의(.claude/agents·skills)를 고칠 수 있다 — launch.json 등 나머지 .claude 는 막는다
+  if (code === "kr" && /^\.claude\/(agents|skills)\//.test(f)) return "own";
   if (NEVER.some((r) => r.test(f))) return "forbidden";
   if (code === "kr") return "own";
   const own = [

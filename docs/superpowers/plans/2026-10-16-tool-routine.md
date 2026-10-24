@@ -41,6 +41,7 @@
 4. 테스트·빌드 → 커밋(`seo: <글> 보강`) → push → 라이브 200 → `npm run indexnow -- <고친 글 주소>`.
 
 ### 1. 상태 보기
+- [ ] **먼저 `node scripts/kr-brief.mjs` 한 번**(2026-10-24 토큰 다이어트 — 한국 회차 1회 평균 97만, 일 시작 전 문맥 10만을 44턴 동안 다시 읽었다). 모드·진행 중·보관 브랜치·우선순위 순 후보·keyword-research 마지막 절이 나온다. tool-backlog(3.7만 토큰)·keyword-research(11만)·calc-benchmark(6만)·country-matrix(4만)는 **통째로 읽지 않는다** — `grep -n`·`sed -n 'Np'`, 새 절은 `cat >>` 로 덧붙인다. 실제 작업은 예약 세션이 `kr-runner` 에이전트(`.claude/agents/kr-runner.md`, 도구 제한)에 맡긴다.
 - [ ] `git pull` 후 `docs/tool-backlog.md` 맨 위 "현재:" 줄과 `진행 중` 행을 본다. `진행 중` 이 있으면 그것부터 끝낸다.
 - [ ] 리브랜딩 기반 계획의 미완료 항목이 있으면 **이번 회차에 그 하나를 먼저** 한다 — Task 8 은 계산기 목록에서 체크 안 된 **계산기 한 줄**이 한 회차(도구가 늘기 전에 틀이 서야 이전 비용이 작다). 다 끝났으면 2로.
 

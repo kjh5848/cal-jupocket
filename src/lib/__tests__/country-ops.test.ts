@@ -49,6 +49,9 @@ describe("내 파일 검사", () => {
     expect(classify("kr", "ko", "src/i18n/ui.ts")).toBe("own");
     expect(classify("kr", "ko", "docs/country-matrix.md")).toBe("own");
     expect(classify("kr", "ko", "social/stats.json")).toBe("forbidden");
+    expect(classify("kr", "ko", ".claude/agents/country-runner.md")).toBe("own");
+    expect(classify("kr", "ko", ".claude/launch.json")).toBe("forbidden");
+    expect(classify("us", "en-us", ".claude/agents/country-runner.md")).toBe("forbidden");
   });
   it("공유 파일은 잠금을 잡았을 때만 통과", () => {
     const files = ["src/pages/de/tools/percent/index.astro", "src/scripts/percent.ts"];
@@ -89,5 +92,20 @@ describe("공용 잠금", () => {
     expect(tryAcquire("main", "es")).toBe(true);
     expect(holder("main")).toMatch(/^es /);
     expect(existsSync(join(dir, ".locks", "main"))).toBe(true);
+  });
+});
+
+describe("나라 기록 파일 다이어트(2026-10-24)", () => {
+  it("기록 메모는 300자 이내 — 긴 설명은 커밋 메시지·archive 로", async () => {
+    const { readdirSync, readFileSync } = await import("node:fs");
+    const bad: string[] = [];
+    for (const f of readdirSync("docs/countries").filter((n) => n.endsWith(".md"))) {
+      for (const l of readFileSync(join("docs/countries", f), "utf8").split("\n")) {
+        if (!/^\| \d{4}-\d{2}-\d{2} /.test(l)) continue;
+        const memo = l.trim().replace(/^\||\|$/g, "").split(" | ").slice(5).join(" | ");
+        if (memo.length > 300) bad.push(`${f}: ${l.slice(0, 60)}… (${memo.length}자)`);
+      }
+    }
+    expect(bad).toEqual([]);
   });
 });

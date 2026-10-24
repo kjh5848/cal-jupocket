@@ -51,6 +51,8 @@
 - [ ] `git fetch origin && git checkout --detach origin/main`. `node_modules` 가 `package-lock.json` 보다 오래됐으면 `npm ci`.
 
 ### 1. 고르기 — 조사표 그 나라 칸 (읽기만)
+- [ ] **먼저 `node scripts/country/brief.mjs <code>` 한 번**(2026-10-24 토큰 다이어트). 설정·한 일·순위별 후보·보관 브랜치·'▶ 다음'이 한 화면에 나온다. 조사표(4만 토큰)·기록 파일을 cat 하지 않는다 — 행 근거는 `sed -n '<줄>p'` 로 그 줄만.
+- [ ] 후보를 건너뛰면(짝 없음·원문 막힘) **반드시 `보류(이유)` 행을 남긴다** — brief 는 발행·판정·보류 행으로 끝난 도구를 뺀다. 행 없이 메모에만 적으면 다음 회차가 같은 후보를 또 고른다.
 - [ ] `docs/countries/<code>.md` 에 `진행 중` 이 있으면 그것부터. 없으면 조사표에서 설정의 **칸 이름** 열을 이 순서로 하나(같은 순위면 표 위쪽부터). 이미 `docs/countries/<code>.md` 에 `발행`·`판정` 으로 적힌 도구는 건너뛴다.
 
 | 순위 | 그 나라 칸 | 이번 회차 | 기록 상태 |
@@ -89,15 +91,20 @@
 - [ ] 라이브 주소가 200 이 안 됐으면(배포 지연) 다음 회차가 확인한다 — 기록 행 메모에 '라이브 확인 전'.
 
 ### 6. 기록
-- [ ] `docs/countries/<code>.md` 행 상태(발행·보강·판정·보류(이유)) + 근거 주소·자동완성 CSV·확인일. **ship 전에** 커밋해 같은 push 에 묶는다(5단계).
+- [ ] `docs/countries/<code>.md` 행 상태(발행·보강·판정·보류(이유)) + 근거 주소·자동완성 CSV·확인일. **메모는 200자 이내**(테스트가 300자에서 막는다 — 긴 설명은 커밋 메시지로, 예전 긴 메모는 `docs/countries/archive/`). **ship 전에** 커밋해 같은 push 에 묶는다(5단계).
 - [ ] 회차 요약 3줄.
 
-## 배차 루틴 (2026-10-20 — 나라별 예약 12개를 대신한다)
+## 배차 루틴 (2026-10-20, 2026-10-24 개정 — 나라별 예약 12개를 대신한다)
 
-앱의 예약 실행은 동시에 몇 개만 돌고 나머지 시각을 건너뛴다(13개를 걸어 두니 4개 안팎만 돌았다). 그래서 예약은 **배차 루틴 하나**(`jupocket-country-dispatch`)만 두고, 그 회차가 안에서 나라별 하위 에이전트 12개(jp·us·gb·ca·au·sg·de·fr·es·tw·hk·id — 중국 제외)를 **동시에** 띄워 각자 위 '한 회차'를 돌게 한다.
+앱의 예약 실행은 동시에 몇 개만 돌고 나머지 시각을 건너뛴다. 그래서 예약은 **배차 루틴 하나**(`jupocket-country-dispatch`, 2시간마다)만 두고, 그 회차가 나라 4개를 하위 에이전트로 동시에 돌린다 — 세 조가 차례로(0조 jp·us·gb·ca → 1조 au·sg·de·fr → 2조 es·tw·hk·id, 순번 `cal-wt/.dispatch-group`). 12개를 한꺼번에 돌리면 요금제 5시간·주간 한도를 빨리 써서 2026-10-21 에 4개로 줄였다.
 
-1. 배차 잠금 `cal-wt/.dispatch-lock`(90분 넘으면 지움) — 배차 회차끼리 겹치지 않게.
-2. 배차 전용 작업 폴더 `cal-wt/_dispatch`(없으면 `worktree add --detach … origin/main`)를 origin/main 으로 맞추고 거기서 `node scripts/country/audit.mjs --fix`.
-3. 12개 에이전트를 한 메시지에 동시에 띄운다(각자 자기 나라 코드로 이 문서의 '한 회차'). 모두 끝날 때까지 기다린다.
-4. 다시 `audit.mjs --fix` → 결과(나라별 한 줄)를 `cal-wt/dispatch-log.md` 에 덧붙인다(저장소 밖).
+**토큰 다이어트(2026-10-24 측정 뒤):** 나라 에이전트 1회 중앙값 47.5만(가중) 중 약 70% 가 일 시작 전 문맥(7.9만 — 쓰지 않는 도구 정의)을 턴마다 다시 읽은 몫이었다.
+- 에이전트는 **`country-runner` 유형**(`.claude/agents/country-runner.md`)으로 띄운다 — 도구를 Bash·Read·Write·Edit·Grep·Glob·WebFetch·WebSearch·브라우저 읽기 둘로 줄였고, 회차 지시도 그 파일에 있다.
+- **모델은 할 일에 따라**: 배차가 먼저 `node scripts/country/brief.mjs <code> --next` 로 종류를 보고 — `law`(그 나라 제도를 적용하는 페이지)·`resume`(보관 브랜치 이어 올리기)은 Opus, `page`(산술 도구 페이지)·`draft`(초안 보강)·`judge`(판정)는 Sonnet.
+- 회차 안에서는 brief 한 번으로 상황을 보고, 큰 파일을 통째로 읽지 않는다.
+
+1. 배차 잠금 `cal-wt/.dispatch-lock`(150분 넘으면 지움) — 배차 회차끼리 겹치지 않게.
+2. 배차 전용 작업 폴더 `cal-wt/_dispatch` 를 origin/main 으로 맞추고 `node scripts/country/audit.mjs --fix`, 이번 조 4개국마다 `brief.mjs <code> --next`.
+3. 4개 에이전트(`country-runner`, 모델은 2의 결과)를 한 메시지에 동시에 띄우고 끝날 때까지 기다린다.
+4. 다시 `audit.mjs --fix` → 나라별 한 줄을 `cal-wt/dispatch-log.md` 에 덧붙이고 다음 조 번호를 쓴다.
 5. 잠금을 풀고 끝.
