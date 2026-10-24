@@ -75,13 +75,25 @@ async function token() {
   return body.access_token;
 }
 
+/**
+ * 네트워크가 한 번 끊기면(ECONNRESET) 전체가 죽고 그때까지 결과를 다 잃었다(2026-10-24, 497개 중 300번째).
+ * 끊김·5xx·429 는 세 번까지 기다렸다 다시, 그래도 안 되면 그 주소만 실패로 남기고 계속한다.
+ */
 async function api(url, tok, body) {
-  const res = await fetch(url, {
-    method: body ? "POST" : "GET",
-    headers: { Authorization: `Bearer ${tok}`, ...(body ? { "Content-Type": "application/json" } : {}) },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  });
-  return { ok: res.ok, status: res.status, json: await res.json().catch(() => ({})) };
+  for (let i = 0; ; i++) {
+    try {
+      const res = await fetch(url, {
+        method: body ? "POST" : "GET",
+        headers: { Authorization: `Bearer ${tok}`, ...(body ? { "Content-Type": "application/json" } : {}) },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+      });
+      if ((res.status >= 500 || res.status === 429) && i < 3) throw new Error(`HTTP ${res.status}`);
+      return { ok: res.ok, status: res.status, json: await res.json().catch(() => ({})) };
+    } catch (e) {
+      if (i >= 3) return { ok: false, status: 0, json: { error: { message: String(e.cause?.code ?? e.message) } } };
+      await new Promise((r) => setTimeout(r, 2000 * 2 ** i));
+    }
+  }
 }
 
 const tok = await token();
