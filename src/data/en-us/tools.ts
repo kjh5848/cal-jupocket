@@ -129,4 +129,12 @@ export const tools: LocaleTool[] = [
     icon: "calculator",
     basis: "law",
   },
+  {
+    href: "/en-us/lottery-tax/",
+    name: "Lottery Tax Calculator",
+    blurb: "Federal tax on lottery and gambling winnings for 2026 — the 24% withholding over $5,000, the extra tax at your bracket up to 37%, and what is still owed at filing",
+    type: "tax",
+    icon: "calculator",
+    basis: "law",
+  },
 ];

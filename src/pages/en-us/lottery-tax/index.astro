@@ -1,0 +1,308 @@
+---
+/**
+ * Lottery Tax Calculator — 미국 영어판 제도 도구(basis "law"). 한국 복권 당첨금 세금(분리과세 22%·33%)과 제도가 달라
+ * 짝(hreflang)을 맺지 않는다(조사표 43행 미국 칸 '제도').
+ * 계산은 lib/us/gambling-winnings.ts, 화면은 lib/us/gambling-winnings-ui.ts, 숫자는 rates/us/gambling-winnings-2026.json
+ * (26 U.S.C. 3402(q)·3406·1(j)(2)(F)·165(d) · W-2G 지침 Rev. January 2026 · Pub 1099 (2026) · Rev. Proc. 2025-32 · Topic 419 — 2026-10-24 확인).
+ *
+ * 소제목은 미국 구글 자동완성에서 왔다(keywords/us-lottery-tax-2026-10-24.csv):
+ *   lottery tax calculator 2026·powerball·state and federal / lottery winnings tax rate·taxable·form /
+ *   gambling winnings tax threshold·minimum·percentage / w2g withholding requirements·what is a w-2g /
+ *   how do i report gambling winnings without a w2g
+ * 쓰지 않는 것(원문 미확인·주의 원칙): 주(州)·시 복권세(by state·california·ny·nj…), 복권 연금 지급표, slot·keno·bingo·poker 의
+ * 종류별 W-2G 기준, 외국인 조약, 전문 도박사, 추정세 가산세, 장기 양도·적격 배당 세율.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import {
+  brackets,
+  computeLottery,
+  noncashPayerPaidWithholding,
+  regularWithholding,
+  standardDeduction,
+  BACKUP_RATE,
+  FOREIGN_RATE,
+  NONCASH_PAYER_RATE,
+  PROCEEDS_THRESHOLD,
+  REGULAR_RATE,
+  W2G_MINIMUM,
+  type Status,
+} from "../../../lib/us/gambling-winnings";
+import { usd0 } from "../../../lib/us/fica";
+import "../../../styles/global.css";
+
+const title = "Lottery Tax Calculator 2026 — Federal 24% Withholding, W-2G";
+const description =
+  "Federal tax on 2026 lottery and gambling winnings: 24% withheld over $5,000, brackets up to 37%, what you still owe at filing, and the $2,000 W-2G threshold.";
+
+const pct = (r: number) => `${Math.round(r * 10000) / 100}%`;
+const first = computeLottery({ status: "single", game: "lottery", winnings: 1_000_000, wager: 2, otherIncome: 66_100 });
+const firstHint = `The payer withholds 24% of ${usd0(first.proceeds)} = ${usd0(first.withholding)}. The prize adds ${usd0(first.additionalTax)} of federal income tax (${(first.effectiveRate * 100).toFixed(1)}% of the prize, top bracket 37%). You would owe about ${usd0(first.balanceDue)} more when you file. Expect a Form W-2G. State tax is not included.`;
+
+const small = computeLottery({ status: "mfj", game: "lottery", winnings: 100_000, wager: 2, otherIncome: 0 });
+const statuses: [Status, string][] = [
+  ["single", "Single"],
+  ["mfj", "Married filing jointly"],
+  ["hoh", "Head of household"],
+  ["mfs", "Married filing separately"],
+];
+const single = brackets("single");
+const mfj = brackets("mfj");
+const hoh = brackets("hoh");
+const mfs = brackets("mfs");
+const rangeText = (b: { upTo: number | null; over: number }) => (b.upTo === null ? `over ${usd0(b.over)}` : `up to ${usd0(b.upTo)}`);
+---
+
+<html lang="en-US">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Lottery Tax Calculator</h1>
+      <p>
+        When you win more than {usd0(PROCEEDS_THRESHOLD)} in a lottery, the payer holds back {pct(REGULAR_RATE)} for federal income tax. That
+        is a prepayment, not the final tax. The prize is added to the rest of your income for the year, and big prizes land in the 32%,
+        35% or 37% brackets — so you often owe more when you file. Enter the prize and your other income to see the 24% withholding, the
+        extra federal tax for 2026 and the gap between them. This is federal tax only; state and city lottery taxes are not included.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="lt-win">Winnings you receive this year ($)</label>
+          <input type="text" inputmode="decimal" id="lt-win" value="1,000,000" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lt-wager">Ticket or wager cost ($)</label>
+          <input type="text" inputmode="decimal" id="lt-wager" value="2" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lt-game">Type of win</label>
+          <select id="lt-game" data-ui="off">
+            <option value="lottery" selected>State lottery, sweepstakes or wagering pool</option>
+            <option value="wager">Horse racing, sports betting or other wager</option>
+            <option value="slots">Slot machine, keno or bingo</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lt-status">Filing status</label>
+          <select id="lt-status" data-ui="off">
+            <option value="single" selected>Single</option>
+            <option value="mfj">Married filing jointly</option>
+            <option value="hoh">Head of household</option>
+            <option value="mfs">Married filing separately</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lt-other">Other income for 2026 ($) — wages and everything else, before deductions</label>
+          <input type="text" inputmode="decimal" id="lt-other" value="66,100" autocomplete="off" data-ui="off" />
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lt-ded">Deduction ($) — leave blank for the standard deduction, or enter your itemized total</label>
+          <input type="text" inputmode="decimal" id="lt-ded" value="" placeholder="$16,100 standard" autocomplete="off" data-ui="off" />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value" data-bar="out-withheld,out-balance,out-net">
+          <p class="label">Extra federal income tax from the prize</p>
+          <p class="big" id="hero-value">{usd0(first.additionalTax)}</p>
+          <p class="hint" id="lt-hint">{firstHint}</p>
+        </div>
+
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip">
+            <span class="label">24% withheld by the payer</span>
+            <span class="value" id="out-withheld">{usd0(first.withholding)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Still owed at filing (− = over-withheld)</span>
+            <span class="value" id="out-balance">{usd0(first.balanceDue)}</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">Left after federal tax</span>
+            <span class="value" id="out-net">{usd0(first.netAfterFederal)}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as image</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How the lottery tax calculator works</h2>
+      <ol>
+        <li>
+          <strong>Withholding:</strong> {pct(REGULAR_RATE)} of the winnings minus the wager, if that amount is more than
+          {" "}{usd0(PROCEEDS_THRESHOLD)}. It is figured on the whole amount, not just the part over {usd0(PROCEEDS_THRESHOLD)}.
+        </li>
+        <li>
+          <strong>Extra federal tax:</strong> tax on (other income + winnings − deduction) minus tax on (other income − deduction), using
+          the 2026 tax rate schedules from Rev. Proc. 2025-32. The whole prize counts as income; the ticket price only comes back as a
+          gambling loss if you itemize.
+        </li>
+        <li><strong>Balance:</strong> extra tax minus withholding. A positive number is roughly what you still owe; a negative number is over-withholding.</li>
+      </ol>
+      <p>
+        It uses ordinary income tax rates only. If your other income includes long-term capital gains or qualified dividends, or you
+        have credits, the real numbers will differ. Below {usd0(100_000)} of taxable income the actual return uses the IRS Tax Table, which
+        can be a few dollars off from the rate schedule.
+      </p>
+
+      <h2>Lottery winnings tax rate for 2026</h2>
+      <p>
+        Lottery winnings are taxed as ordinary income at the same rates as wages. There is no special lottery rate — the {pct(REGULAR_RATE)}
+        {" "}is only the withholding rate. These are the 2026 brackets for taxable income (after the deduction):
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Rate</th>
+              <th scope="col">Single</th>
+              <th scope="col">Married filing jointly</th>
+              <th scope="col">Head of household</th>
+              <th scope="col">Married filing separately</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              single.map((b, n) => (
+                <tr>
+                  <th scope="row">{pct(b.rate)}</th>
+                  <td>{rangeText(b)}</td>
+                  <td>{rangeText(mfj[n])}</td>
+                  <td>{rangeText(hoh[n])}</td>
+                  <td>{rangeText(mfs[n])}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <p>
+        2026 standard deduction:{" "}
+        {statuses.map(([s, label], n) => (
+          <span>
+            {label} {usd0(standardDeduction(s))}
+            {n < statuses.length - 1 ? "; " : "."}
+          </span>
+        ))}
+      </p>
+      <p>
+        Example: a single filer with {usd0(50_000)} of taxable income wins a {usd0(1_000_000)} lump sum on a $2 ticket. Withholding is
+        24% × {usd0(999_998)} = {usd0(first.withholding)}. Tax goes from {usd0(first.taxWithout)} to {usd0(first.taxWith)}, so the prize adds
+        {" "}{usd0(first.additionalTax)} and about {usd0(first.balanceDue)} is still due at filing.
+      </p>
+      <p>
+        It can go the other way. A married couple with no other income wins {usd0(100_000)}: {usd0(small.withholding)} is withheld, but after
+        the {usd0(standardDeduction("mfj"))} standard deduction the tax is {usd0(small.additionalTax)}, so about {usd0(-small.balanceDue)} was
+        over-withheld.
+      </p>
+
+      <h2>Powerball and Mega Millions: lump sum or annuity</h2>
+      <p>
+        Federal tax is the same whatever the game. What changes is how much you receive in a year. With the cash option, enter the lump
+        sum you are paid. With the annuity, each yearly payment is income in the year you get it — enter one year's payment. Each
+        installment is withheld at 24% when the total prize is expected to be over {usd0(PROCEEDS_THRESHOLD)}. Payment schedules are set by
+        each lottery, so the calculator does not build them.
+      </p>
+
+      <h2>Lottery tax: state and federal</h2>
+      <p>
+        This calculator covers federal tax only. Many states, and a few cities, tax lottery winnings too, and some states do not. Check
+        your state's tax agency or lottery for its rate and withholding.
+      </p>
+
+      <h2>Gambling winnings tax threshold and W-2G withholding requirements</h2>
+      <ul>
+        <li>
+          <strong>24% regular withholding</strong> applies when winnings minus the wager are more than {usd0(PROCEEDS_THRESHOLD)}: state
+          lotteries, sweepstakes and wagering pools always; horse racing, sports and other wagers only if the winnings are also at least
+          300 times the wager.
+        </li>
+        <li><strong>Slot machines, keno and bingo</strong> have no regular withholding.</li>
+        <li>
+          <strong>Backup withholding</strong> of {pct(BACKUP_RATE)} can apply if you don't give the payer your taxpayer ID and regular
+          withholding doesn't apply.
+        </li>
+        <li>
+          <strong>Non-cash prizes</strong> such as a car are valued at fair market value. If the payer also pays the tax for you, the rate
+          is {pct(NONCASH_PAYER_RATE)} — for a {usd0(30_000)} prize on a $1 entry, {usd0(noncashPayerPaidWithholding(30_000, 1))}.
+        </li>
+        <li><strong>Nonresident aliens</strong> are generally withheld at {pct(FOREIGN_RATE)} instead, unless a tax treaty says otherwise.</li>
+        <li>
+          A group that shares one ticket is checked on the total before splitting: for a $1 ticket that wins $5,002, 24% of $5,001 is
+          {" "}{usd0(regularWithholding(5002, 1))}.
+        </li>
+      </ul>
+
+      <h2>What is a W-2G?</h2>
+      <p>
+        Form W-2G is the form the payer sends you and the IRS for gambling winnings. For payments made in 2026 the minimum reporting
+        amount is {usd0(W2G_MINIMUM)}, and it will be adjusted for inflation from 2027. For lotteries and other wagers the
+        winnings must also be at least 300 times the wager. Any winnings that had federal tax withheld get a W-2G regardless of the
+        amount. Slot machines, keno, bingo and poker tournaments have their own reporting rules.
+      </p>
+
+      <h2>How do I report gambling winnings without a W-2G?</h2>
+      <p>
+        Gambling winnings are fully taxable whether or not you get a W-2G. Report them as other income on Schedule 1 (Form 1040) — line 8b
+        in the 2025 form, "Gambling" — and claim any federal tax withheld shown on W-2Gs as a payment. Keep a record of your wins and
+        losses. If you expect to owe a lot more than was withheld, the IRS points to estimated tax payments (Publication 505).
+      </p>
+
+      <h2>Gambling losses in 2026</h2>
+      <p>
+        You can deduct gambling losses only if you itemize on Schedule A, and only up to your gambling winnings. Starting with the 2026
+        tax year, the law allows 90% of your losses (it was 100% through 2025). The calculator does not subtract losses — if you itemize,
+        put your itemized total, including the allowed losses, in the deduction field.
+      </p>
+
+      <details>
+        <summary>Is the lottery tax 24% or 37%?</summary>
+        <p>
+          24% is what the payer withholds. 37% is the top federal bracket for 2026, which starts at {usd0(single[6].over)} of taxable income
+          for single filers and {usd0(mfj[6].over)} for joint filers. A large prize is taxed partly at each rate up to 37%, which is why
+          withholding often falls short.
+        </p>
+      </details>
+
+      <details>
+        <summary>Are small lottery winnings taxable?</summary>
+        <p>Yes. All gambling winnings are taxable income, even when there is no withholding and no W-2G.</p>
+      </details>
+
+      <details>
+        <summary>Why are some numbers shown with cents?</summary>
+        <p>The calculator keeps cents. On the return you may round every amount to whole dollars, as long as you round all of them.</p>
+      </details>
+
+      <h2>Sources</h2>
+      <ul>
+        <li><a href="https://www.irs.gov/pub/irs-pdf/iw2g.pdf" rel="noopener" target="_blank">Instructions for Forms W-2G and 5754 (Rev. January 2026)</a></li>
+        <li><a href="https://www.irs.gov/pub/irs-pdf/p1099.pdf" rel="noopener" target="_blank">Publication 1099 (2026) — $2,000 W-2G threshold</a></li>
+        <li><a href="https://www.irs.gov/pub/irs-drop/rp-25-32.pdf" rel="noopener" target="_blank">Rev. Proc. 2025-32 §4.01 and §4.14 (2026 tax rate schedules and standard deduction)</a></li>
+        <li><a href="https://www.irs.gov/taxtopics/tc419" rel="noopener" target="_blank">IRS Topic no. 419, Gambling income and losses</a></li>
+        <li><a href="https://www.irs.gov/pub/irs-pdf/i1040gi.pdf" rel="noopener" target="_blank">Form 1040 instructions (2025) — Schedule 1 line 8b</a></li>
+        <li><a href="https://uscode.house.gov/" rel="noopener" target="_blank">26 U.S.C. 3402(q), 3406, 1(j)(2)(F) and 165(d)</a> (Office of the Law Revision Counsel, release point Pub. L. 119-121)</li>
+      </ul>
+      <p>Amounts checked on October 24, 2026. This is a calculator, not tax advice.</p>
+
+      <AdSlot label="lottery-tax-result-en-us" />
+    </main>
+    <SiteFooter />
+    <script src="../../../lib/us/gambling-winnings-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
