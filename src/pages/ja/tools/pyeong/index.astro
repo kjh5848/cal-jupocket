@@ -1,0 +1,317 @@
+---
+/**
+ * 坪・㎡・ft² 換算 — 일본어판 도구. 한국어판 /tools/pyeong/ 와 계산(lib/pyeong.ts)을 같이 쓰고, 문장은 일본어로 새로 썼다(번역 아님).
+ * 한국어판 스크립트(scripts/pyeong.ts)는 문구가 한국어로 박혀 있어 공유 파일을 건드리지 않고, 이 페이지 안에 일본어 스크립트를 둔다.
+ *
+ * 값: 1坪 = 400/121 ㎡ (旧 計量法施行法 昭和26年 法律第208号 第4条 — 衆議院 제정 원문). 현행 計量法(平成4年 法律第51号)에는 坪 정의가 없고
+ *   (e-Gov 법령 API lawId 404AC0000000051 전문에서 '坪'·'尺貫' 0건), 別表第一 면적 = 平方メートル, 第8条第1項이 非法定計量単位의 取引・証明 사용을 금지,
+ *   附則 第2条가 旧施行法 폐지 — 2026-10-26 확인.
+ * 면적 정의: 建築基準法施行令 第2条第1項第3号(床面積 = 壁その他の区画の中心線)·第4号(延べ面積 = 各階の床面積の合計) lawId 325CO0000000338,
+ *   不動産登記規則 第115条(建物の床面積 — 区分建物は 壁その他の区画の内側線) lawId 417M60000010018 — 2026-10-26 확인.
+ * 壁芯 ↔ 内法 비율은 법 공식이 아니라 사용자가 넣는 추정이다(기본값 95% 는 예시). 畳·坪単価의 공식 원문은 못 봐서 다루지 않는다.
+ * ft² = 0.3048² ㎡ (영국 Weights and Measures Act 1985 Sch.1, rates/pyeong-2026.json).
+ *
+ * 소제목은 일본 구글 자동완성에서 왔다(keywords/jp-pyeong-2026-10-26.csv, hl ja · gl jp):
+ *   坪 ㎡ 換算 · 坪数 計算 0.3025 / 縦横 / 二階建て / 計算方法 · 専有面積 壁芯 内法 · 坪 m2 畳 換算 · 坪単価 m2単価 換算
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import "../../../../styles/global.css";
+import { pyeong } from "../../../../lib/pyeong";
+
+const title = "坪数計算・㎡坪換算ツール — 坪 ↔ ㎡ ↔ ft²、壁芯と内法の面積差";
+const description =
+  "㎡を入れると何坪か、坪を入れると何㎡かを計算。1坪＝400/121㎡のまま換算し、縦×横の長さからも坪数を出せます。壁芯面積と内法面積の差も比率から推定します。";
+
+const f = (x: number) => (Math.round(x * 100) / 100).toLocaleString("ja-JP", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// lib 의 basis "supply" = 넣은 쪽이 큰 면적(壁芯), "exclusive" = 작은 면적(内法). 비율은 항상 内法 ÷ 壁芯.
+const x0 = pyeong(70, "m2", "supply", 95)!;
+const t30 = pyeong(30, "pyeong", "exclusive", 100)!;
+const room = pyeong(10 * 12, "m2", "exclusive", 100)!;
+---
+
+<html lang="ja">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>坪数計算・㎡坪換算ツール</h1>
+      <p>
+        面積を入れると、坪・㎡（平米）・ft² がいっぺんに出ます。縦と横の長さ（m）から坪数を出すこともできます。
+        マンションの面積は、壁の中心線で測る方法と、壁の内側で測る方法とで数字が変わるので、2つの面積の比率（仮の数字）を入れると、反対側の面積の見当もつけられます。
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="how">何を入れますか</label>
+          <select id="how" data-seg>
+            <option value="area" selected>面積</option>
+            <option value="rect">縦 × 横（m）</option>
+          </select>
+        </div>
+
+        <div class="calc-input-wrap" id="area-wrap">
+          <label for="unit">単位</label>
+          <select id="unit" data-seg>
+            <option value="m2" selected>㎡（平米）</option>
+            <option value="pyeong">坪</option>
+            <option value="ft2">ft²</option>
+          </select>
+          <label for="area">面積</label>
+          <input type="text" inputmode="decimal" id="area" value="70" autocomplete="off" />
+          <div class="ux-presets" role="group" aria-label="よく使う面積">
+            <button type="button" data-preset="m2:70">70㎡</button>
+            <button type="button" data-preset="m2:100">100㎡</button>
+            <button type="button" data-preset="pyeong:30">30坪</button>
+            <button type="button" data-preset="pyeong:50">50坪</button>
+          </div>
+        </div>
+
+        <div class="calc-input-wrap" id="rect-wrap" hidden>
+          <label for="w">縦（m）</label>
+          <input type="text" inputmode="decimal" id="w" value="10" autocomplete="off" />
+          <label for="d">横（m）</label>
+          <input type="text" inputmode="decimal" id="d" value="12" autocomplete="off" />
+        </div>
+
+        <div class="calc-input-wrap">
+          <label for="basis">この面積は</label>
+          <select id="basis" data-seg>
+            <option value="supply" selected>壁芯面積（壁の中心線で測る）</option>
+            <option value="exclusive">内法面積（壁の内側で測る）</option>
+          </select>
+          <label for="ratio">内法 ÷ 壁芯（％）</label>
+          <input type="text" inputmode="decimal" id="ratio" value="95" autocomplete="off" />
+          <p class="hint">95％は例として置いた仮の数字です。物件ごとに違うので、パンフレットと登記簿の面積があれば、その2つで割った値に直してください。</p>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hero-value">
+          <p class="label" id="hero-label">壁芯面積</p>
+          <p class="big" id="hero-value">{f(x0.given.pyeong)}坪</p>
+          <p class="hint" id="hero-sub">{f(x0.given.m2)}㎡ · {f(x0.given.ft2)}ft²</p>
+        </div>
+
+        <div class="stat-row" data-receipt id="receipt">
+          <div class="stat-chip">
+            <span class="label">㎡</span>
+            <span class="value" id="v-m2">{f(x0.given.m2)}㎡</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label">ft²</span>
+            <span class="value" id="v-ft2">{f(x0.given.ft2)}ft²</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l-other">内法面積の推定（坪）</span>
+            <span class="value" id="v-other">{f(x0.other!.pyeong)}坪</span>
+          </div>
+          <div class="stat-chip">
+            <span class="label" id="l-other-m2">内法面積の推定（㎡）</span>
+            <span class="value" id="v-other-m2">{f(x0.other!.m2)}㎡</span>
+          </div>
+        </div>
+        <p class="hint" id="note"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">画像で保存</button>
+          <button id="btn-share" type="button" class="secondary">共有</button>
+        </div>
+      </div>
+
+      <h2>坪と㎡の換算（0.3025 の根拠）</h2>
+      <ul>
+        <li>
+          <strong>1坪 ＝ 400/121㎡（約3.3058㎡）</strong> — 1坪は1辺6尺の正方形で、1尺は 10/33 m です。(60/33)² ＝ 400/121 ㎡。
+          旧・計量法施行法（昭和26年法律第208号）第4条は、坪を「平方メートルの一二一分の四〇〇」と定めていました。
+        </li>
+        <li>
+          <strong>㎡ → 坪</strong>は ㎡ × 121 ÷ 400（＝ × 0.3025）。{f(x0.given.m2)}㎡ × 0.3025 ＝ {f(x0.given.pyeong)}坪です。
+          逆に<strong>坪 → ㎡</strong>は坪 × 400 ÷ 121。30坪なら {f(t30.given.m2)}㎡になります。
+          3.3 と丸めると 30坪で 0.17㎡ほどずれるため、このツールは分数のまま計算し、表示のときだけ小数第2位に丸めます。
+        </li>
+        <li>
+          <strong>1ft² ＝ 0.09290304㎡</strong> — 1ヤード＝0.9144m、1フィートはその3分の1の 0.3048m で、これを2乗した値です。
+        </li>
+      </ul>
+
+      <h2>坪数の計算方法：縦×横から、二階建ては合計</h2>
+      <p>
+        四角い部屋や敷地は、縦(m) × 横(m) で㎡を出し、0.3025 を掛ければ坪になります。上の例の縦10m × 横12m は {f(room.given.m2)}㎡、{f(room.given.pyeong)}坪です。
+        二階建てなどは階ごとの面積を出して足します。建築基準法施行令第2条第1項第4号は、延べ面積を「各階の床面積の合計」としています。
+        なお同項第3号は、床面積を「壁その他の区画の中心線で囲まれた部分の水平投影面積」としています（e-Gov 法令検索、2026年10月26日確認）。
+        凹凸のある形は、いくつかの長方形に分けて足してください。
+      </p>
+
+      <h2>専有面積：壁芯と内法の違い</h2>
+      <p>
+        建築基準法施行令の床面積は壁の<strong>中心線</strong>で測ります（壁芯）。一方、不動産登記規則第115条は、建物の床面積を各階ごとに壁その他の区画の中心線で囲まれた部分とし、
+        区分建物（マンションの1室など）は壁その他の区画の<strong>内側線</strong>で囲まれた部分とします（内法）。
+        壁の厚みの半分だけ、内法のほうが小さくなります。同じ部屋でも、壁芯で測った面積と登記簿の面積は一致しないのが普通です。
+        どれくらい違うかは建物ごとに違い、決まった比率はないので、上の「内法 ÷ 壁芯」の欄に自分で入れてください。
+        広告やパンフレットの面積がどちらの測り方かは、各資料の注記を確認してください。
+      </p>
+
+      <details>
+        <summary>不動産の広告に「坪」を使ってよいですか</summary>
+        <p>
+          現行の計量法（平成4年法律第51号）に坪の定義はなく、別表第一は面積の単位を平方メートルと定めています。
+          第8条第1項は、法定計量単位以外の計量単位を、取引や証明に用いてはならないとしています（e-Gov 法令検索、2026年10月26日確認）。
+          坪を定めていた旧・計量法施行法は、平成4年法律第51号の附則第2条で廃止されました。
+          この規定が日常の会話やこのツールのような換算まで禁じるものではありませんが、契約や証明に使う面積は㎡で書くのが法律上のルールです。
+          個別の広告表示のルールは、このツールでは確認していません。
+        </p>
+      </details>
+
+      <details>
+        <summary>畳への換算や坪単価はできますか</summary>
+        <p>
+          畳への換算は扱っていません。1畳の広さを定めた公的な原文を確認できていないためです。
+          坪単価は「価格 ÷ 坪数」、㎡単価は「価格 ÷ ㎡」で、どちらも延べ面積か専有面積か、壁芯か内法かで値が変わります。
+          比べるときは、割った面積の測り方を揃えてください。
+        </p>
+      </details>
+
+      <p class="hint">
+        根拠：
+        <a href="https://laws.e-gov.go.jp/law/404AC0000000051" rel="noopener" target="_blank">計量法</a> ·
+        <a href="https://www.shugiin.go.jp/internet/itdb_housei.nsf/html/houritsu/01019510608208.htm" rel="noopener" target="_blank">計量法施行法（昭和26年、旧）</a> ·
+        <a href="https://laws.e-gov.go.jp/law/325CO0000000338" rel="noopener" target="_blank">建築基準法施行令</a> ·
+        <a href="https://laws.e-gov.go.jp/law/417M60000010018" rel="noopener" target="_blank">不動産登記規則</a> ·
+        <a href="https://www.legislation.gov.uk/ukpga/1985/72/schedule/1" rel="noopener" target="_blank">Weights and Measures Act 1985（ft）</a>
+        （確認 2026年10月26日）
+      </p>
+
+      <AdSlot label="pyeong-result-ja" />
+    </main>
+    <SiteFooter />
+    <script>
+      import { pyeong, rectM2, type AreaUnit, type AreaBasis } from "../../../../lib/pyeong";
+      import { parseNumber } from "../../../../lib/percent";
+      import { renderCard, downloadCard, shareCard } from "../../../../lib/result-card";
+      import { track, trackCalculatorUse } from "../../../../lib/track";
+
+      const reportUse = trackCalculatorUse("pyeong-ja");
+      const $ = (id: string) => document.getElementById(id)!;
+      const howSel = $("how") as HTMLSelectElement;
+      const unitSel = $("unit") as HTMLSelectElement;
+      const basisSel = $("basis") as HTMLSelectElement;
+      const areaIn = $("area") as HTMLInputElement;
+      const wIn = $("w") as HTMLInputElement;
+      const dIn = $("d") as HTMLInputElement;
+      const ratioIn = $("ratio") as HTMLInputElement;
+
+      const NAME: Record<AreaBasis, string> = { supply: "壁芯面積", exclusive: "内法面積" };
+      const OTHER: Record<AreaBasis, string> = { supply: "内法面積", exclusive: "壁芯面積" };
+      const f = (x: number) => (Math.round(x * 100) / 100).toLocaleString("ja-JP", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      let lastLines: [string, string][] = [];
+      let lastTitle = "坪数計算";
+      const set = (id: string, text: string) => {
+        $(id).textContent = text;
+      };
+
+      function clear(note: string) {
+        set("hero-value", "—");
+        set("hero-sub", "");
+        for (const id of ["v-m2", "v-ft2", "v-other", "v-other-m2"]) set(id, "—");
+        set("note", note);
+        lastLines = [];
+      }
+
+      function compute() {
+        const rect = howSel.value === "rect";
+        $("area-wrap").hidden = rect;
+        $("rect-wrap").hidden = !rect;
+        const basis = basisSel.value as AreaBasis;
+        set("hero-label", NAME[basis]);
+        set("l-other", `${OTHER[basis]}の推定（坪）`);
+        set("l-other-m2", `${OTHER[basis]}の推定（㎡）`);
+
+        let value: number;
+        let unit: AreaUnit;
+        if (rect) {
+          const m2 = rectM2(parseNumber(wIn.value), parseNumber(dIn.value));
+          if (m2 === null) return clear("縦と横の長さをm単位で入れてください。");
+          value = m2;
+          unit = "m2";
+        } else {
+          value = parseNumber(areaIn.value);
+          unit = unitSel.value as AreaUnit;
+        }
+        const ratio = parseNumber(ratioIn.value);
+        const x = pyeong(value, unit, basis, ratio);
+        if (!x) return clear("0より大きい面積を入れてください。");
+
+        const g = x.given;
+        const heroPyeong = unit !== "pyeong";
+        set("hero-value", heroPyeong ? `${f(g.pyeong)}坪` : `${f(g.m2)}㎡`);
+        set("hero-sub", heroPyeong ? `${f(g.m2)}㎡ · ${f(g.ft2)}ft²` : `${f(g.pyeong)}坪 · ${f(g.ft2)}ft²`);
+        set("v-m2", `${f(g.m2)}㎡`);
+        set("v-ft2", `${f(g.ft2)}ft²`);
+        set("v-other", x.other ? `${f(x.other.pyeong)}坪` : "—");
+        set("v-other-m2", x.other ? `${f(x.other.m2)}㎡` : "—");
+
+        const notes: string[] = [];
+        if (rect) notes.push(`縦 × 横 ＝ ${f(value)}㎡。`);
+        if (!x.other) notes.push("比率は0より大きく100以下の％で入れてください。");
+        else notes.push(`${OTHER[basis]}は、内法 ÷ 壁芯 ＝ ${ratio}％として見当をつけた値です。`);
+        set("note", notes.join(" "));
+
+        lastTitle = `${NAME[basis]} ${f(g.m2)}㎡`;
+        lastLines = [
+          ["坪", `${f(g.pyeong)}坪`],
+          ["㎡ · ft²", `${f(g.m2)}㎡ · ${f(g.ft2)}ft²`],
+        ];
+        if (x.other) lastLines.push([`${OTHER[basis]}の推定（${ratio}％）`, `${f(x.other.pyeong)}坪 · ${f(x.other.m2)}㎡`]);
+      }
+
+      for (const el of [areaIn, wIn, dIn, ratioIn]) {
+        el.addEventListener("input", () => {
+          reportUse(1);
+          compute();
+        });
+      }
+      for (const el of [howSel, unitSel, basisSel]) {
+        el.addEventListener("change", () => {
+          reportUse(1);
+          compute();
+        });
+      }
+      for (const b of document.querySelectorAll<HTMLButtonElement>("[data-preset]")) {
+        b.addEventListener("click", () => {
+          const [u, v] = (b.dataset.preset ?? "").split(":");
+          howSel.value = "area";
+          howSel.dispatchEvent(new Event("change"));
+          unitSel.value = u;
+          unitSel.dispatchEvent(new Event("change"));
+          areaIn.value = v;
+          reportUse(1);
+          compute();
+        });
+      }
+
+      const buildCard = () => renderCard({ title: lastTitle, lines: lastLines, footer: "jupocket.com" });
+      $("btn-download").addEventListener("click", () => {
+        track("save_result", { calculator: "pyeong-ja" });
+        downloadCard(buildCard(), "tsubo-result.png");
+      });
+      $("btn-share").addEventListener("click", async () => {
+        track("share_result", { calculator: "pyeong-ja" });
+        await shareCard(buildCard(), "坪数計算の結果 - jupocket.com");
+      });
+      compute();
+    </script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

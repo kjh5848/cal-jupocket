@@ -190,4 +190,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/ja/tools/pyeong/",
+    ko: "/tools/pyeong/",
+    name: "坪数計算・㎡坪換算",
+    blurb: "㎡と坪をすぐ換算（1坪＝400/121㎡）、縦×横から坪数を計算し、壁芯と内法の面積差も比率で推定",
+    type: "unit",
+    icon: "scale",
+    basis: "math",
+  },
 ];
