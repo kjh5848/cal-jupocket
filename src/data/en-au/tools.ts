@@ -71,4 +71,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/en-au/tools/loss-recovery/",
+    ko: "/tools/loss-recovery/",
+    name: "Loss Recovery Calculator",
+    blurb: "The gain needed to get back to even after a loss, dollars short, years to recover at different returns, and maximum drawdown from daily closing prices",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

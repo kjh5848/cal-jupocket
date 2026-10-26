@@ -1,0 +1,203 @@
+---
+/**
+ * Loss recovery calculator — 호주판. 한국어판 /tools/loss-recovery/ 와 계산(lib/loss-recovery.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/loss-recovery.ts 의 EN 사전, 통화는 판의 AUD), 문장은 호주 영어로 새로 썼다(번역 아님).
+ * 산술(원금÷평가액−1, 매년 같은 수익률 가정 회복 기간, 고점 대비 최대 낙폭)이라 rates 와 상관없다(조사표 호주 칸 '같음').
+ * 팔 때 비용은 사용자가 넣는 %이고, 호주의 매도 세금·수수료는 조사표에서 미확인이라 본문에 사실로 적지 않는다.
+ * 소제목은 호주 구글 자동완성에서 왔다(keywords/au-loss-recovery-2026-10-26.csv, hl en · gl au):
+ *   how much to recover a 50% loss / percentage gain needed to recover a loss (calculator) / loss recovery formula /
+ *   what percentage gain to recover 20 loss
+ * (loss carry back calculator ato 는 세법의 다른 개념이라 쓰지 않았다.)
+ * 본문 숫자는 전부 아래 frontmatter 에서 recovery()·needFromLoss() 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { recovery, needFromLoss, recoveryMonths } from "../../../../lib/loss-recovery";
+import "../../../../styles/global.css";
+
+const title = "Loss Recovery Calculator Australia — Gain Needed to Break Even, Recovery Time, Drawdown";
+const description =
+  "How much do you need to gain to recover a loss? Enter what you invested and its value now for the break-even gain, dollars short, years to recover and drawdown.";
+
+const ex = recovery(10_000, 7_000);
+if (!ex.ok) throw new Error("en-au loss-recovery 예시가 계산되지 않음");
+const pct = (x: number) => `${x.toLocaleString("en-AU", { maximumFractionDigits: 2 })}%`;
+const aud = (x: number) => x.toLocaleString("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const input = (x: number) => x.toLocaleString("en-AU", { maximumFractionDigits: 2 });
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+const spell = (m: number | null) => {
+  if (m === null) return "Never at this rate";
+  if (m === Infinity) return "Over 100 years";
+  if (m === 0) return "Already there";
+  const y = Math.floor(m / 12);
+  const r = m % 12;
+  return [y ? plural(y, "year") : "", r ? plural(r, "month") : ""].filter(Boolean).join(" ");
+};
+const losses = [5, 10, 20, 25, 30, 40, 50, 60, 70, 80, 90];
+const rates = [3, 5, 7, 10];
+const presets = [10, 20, 30, 50, 70];
+const sample = "2026-09-01, 20.00\n2026-09-02, 18.60\n2026-09-03, 17.10\n2026-09-04, 17.90\n2026-09-07, 16.40\n2026-09-08, 17.20";
+const y8 = spell(recoveryMonths(ex.needPct, 8));
+---
+
+<html lang="en-AU">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Loss Recovery Calculator</h1>
+      <p class="qa-lead">
+        Lose 30% and you need to gain <strong>{pct(ex.needPct)}</strong> to get back to even; lose 50% and you need
+        <strong>{pct(needFromLoss(50))}</strong>. The gain has to come from the smaller balance, so for a loss of L the
+        gain needed is L ÷ (1 − L), and it climbs quickly as losses get bigger. Enter what you invested and what it is
+        worth now (or the percentage lost) to see the gain needed, the dollars short, the figure after selling costs and
+        how long recovery takes at different annual returns. Paste in daily closing prices to get the maximum drawdown too.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="lr-mode">Work it out from</label>
+          <select id="lr-mode" data-seg>
+            <option value="value" selected>Current value or % lost</option>
+            <option value="series">Daily closing prices</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-principal">Amount invested ($)</label>
+          <input type="text" inputmode="decimal" id="lr-principal" value={input(10_000)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap lr-value">
+          <label for="lr-current">Current value ($)</label>
+          <input type="text" inputmode="decimal" id="lr-current" value={input(7_000)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap lr-value">
+          <label for="lr-loss">Loss so far</label>
+          <input type="number" id="lr-loss" value="30" min="0" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="ux-presets lr-value" role="group" aria-label="Quick loss percentages">
+          {presets.map((p) => <button type="button" data-loss={p}>−{p}%</button>)}
+        </div>
+        <p class="meta lr-value">Working from share prices? Put your average buy price in the first box and today's price in the second — the percentages come out the same.</p>
+        <div class="calc-input-wrap lr-series" hidden>
+          <label for="lr-closes">Date, closing price (one per line, the first line is the day you bought)</label>
+          <textarea id="lr-closes" rows="7" spellcheck="false">{sample}</textarea>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-fee">Selling costs (% of the sale amount)</label>
+          <input type="number" id="lr-fee" value="0" min="0" max="50" step="0.01" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-rate">Annual return to assume for the recovery time</label>
+          <input type="number" id="lr-rate" value="8" min="0.1" max="100" step="0.5" inputmode="decimal" data-step />
+          <span class="unit">%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="lr-hero">
+          <p class="label" id="lr-hero-label">Gain needed to break even</p>
+          <p class="big" id="lr-hero">+{pct(ex.needPct)}</p>
+          <p class="meta" id="lr-note">Current value {aud(7_000)} needs to grow by {aud(3_000)} to get back to even · {(ex.needPct - 30).toFixed(2)} percentage points more than the 30% you lost</p>
+          <p class="meta" id="lr-err" role="alert"></p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Versus cost</span><span class="value" id="lr-chg">−30%</span></div>
+          <div class="stat-chip"><span class="label">Profit or loss</span><span class="value" id="lr-pnl">−{aud(3_000)}</span></div>
+          <div class="stat-chip"><span class="label">Dollars short of cost</span><span class="value" id="lr-short">{aud(ex.shortfall)}</span></div>
+          <div class="stat-chip"><span class="label">Back to even at 8% a year</span><span class="value" id="lr-months">{y8}</span></div>
+        </div>
+        <div class="stat-row lr-series" data-receipt hidden>
+          <div class="stat-chip"><span class="label">Maximum drawdown</span><span class="value" id="lr-mdd">—</span></div>
+          <div class="stat-chip"><span class="label">Peak → trough</span><span class="value" id="lr-mdd-span">—</span></div>
+          <div class="stat-chip"><span class="label">Gain to the highest close</span><span class="value" id="lr-high">—</span></div>
+          <div class="stat-chip"><span class="label">Since the day before</span><span class="value" id="lr-day">—</span></div>
+          <div class="stat-chip"><span class="label">Average daily move (simple / compound)</span><span class="value" id="lr-avg">—</span></div>
+        </div>
+        <p class="meta" id="lr-nofee"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as PNG</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>Percentage gain needed to recover a loss: the formula</h2>
+      <ul>
+        <li><strong>Gain needed</strong> — amount invested ÷ current value − 1. Written with the loss L it is L ÷ (1 − L). If {aud(10_000)} falls to {aud(7_000)}, you have to earn {aud(3_000)} on {aud(7_000)}, and 3,000 ÷ 7,000 = {pct(ex.needPct)}.</li>
+        <li><strong>Selling costs</strong> — put in the share of the sale that comes off when you sell (brokerage, for example) and the target value becomes amount invested ÷ (1 − cost). The calculator does not know your costs or your tax position, so it uses only the percentage you enter.</li>
+        <li><strong>Recovery time</strong> — assuming the same return r every year, the time is ln(1 + gain needed) ÷ ln(1 + r) years, converted to months and rounded up to the first month that reaches your starting amount. Anything beyond 100 years shows as "Over 100 years". Real markets rise and fall from year to year, so treat it as arithmetic, not a forecast.</li>
+        <li><strong>Daily closing prices</strong> — the first line is treated as your buy price, so current value = amount invested × last close ÷ first close. Maximum drawdown is the biggest fall from the highest close so far, and the average daily move is shown two ways: the simple average and (last ÷ first)<sup>1/steps</sup> − 1.</li>
+      </ul>
+
+      <h2>How much do you need to gain to recover a 50% loss?</h2>
+      <p>
+        A 50% loss needs a {pct(needFromLoss(50))} gain, because {aud(10_000)} that has halved to {aud(5_000)} has to double to get back to {aud(10_000)}. The table shows other losses and how long each takes at a steady annual return, with no selling costs.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Loss</th><th>Gain needed</th>{rates.map((r) => <th>At {r}% a year</th>)}</tr></thead>
+          <tbody>
+            {losses.map((l) => (
+              <tr>
+                <th scope="row">−{l}%</th>
+                <td>+{pct(needFromLoss(l))}</td>
+                {rates.map((r) => <td>{spell(recoveryMonths(needFromLoss(l), r))}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">Recovery times assume the same return every year and no selling costs. They are arithmetic, not a prediction.</p>
+
+      <details>
+        <summary>What percentage gain do I need to recover a 20% loss?</summary>
+        <p>
+          A 20% loss needs a {pct(needFromLoss(20))} gain. Type 20 into "Loss so far" above, or tap the −20% button, and you will also see the dollars short and the recovery time for your own amounts.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why does a −10% year followed by a +10% year leave me behind?</summary>
+        <p>
+          $100 that falls 10% is $90, and a 10% rise on $90 is $99. The gain is applied to the smaller balance. When the same-sized falls and rises repeat, each pair multiplies to (1 − x)(1 + x) = 1 − x², so bigger swings cost more. That is also why the compound average daily move in the closing-price view comes out lower than the simple average.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does buying more at a lower price reduce the gain I need?</summary>
+        <p>
+          Your average buy price comes down, so the gain needed to get back to that average is smaller. More money is then exposed to the same risk, and your dollar loss is unchanged. For a clean answer, enter your new average buy price as the amount invested and today's price as the current value.
+        </p>
+      </details>
+
+      <details>
+        <summary>Is it better to sell at a loss and move the money elsewhere?</summary>
+        <p>
+          This calculator only shows the distance back to your starting amount. Whether to sell depends on the investment, your outlook and your tax situation, which a calculation cannot decide. If you assume the same return wherever the money sits, the recovery time is the same, so the selling-costs box is where the difference shows up. For personal advice, speak to a licensed financial adviser or an accountant.
+        </p>
+      </details>
+
+      <p>
+        Related: <a href="/en-au/tools/compound/">compound interest calculator</a> for growing a balance with regular deposits ·
+        <a href="/en-au/tools/percent/">percentage calculator</a> for percentage change between two numbers.
+      </p>
+
+      <AdSlot label="loss-recovery-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/loss-recovery.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
