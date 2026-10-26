@@ -38,3 +38,4 @@
 | 2026-10-24 | 부채 상환 계획(눈사태·눈덩이, 조사표 83행 /tools/debt-payoff/) | 같음 | 발행 | /fr/tools/debt-payoff/ | 1순위 — 조사표 83행 프랑스 칸 '같음'이 기록에 없던 마지막 같음·단위 행(다른 11개 판은 이미 있음). 프랑스판 여덟 번째 도구, `ko` 짝 /tools/debt-payoff/(`src/data/fr/tools.ts`, type money·icon cha …(보관) |
 | 2026-10-24 | 기한 후 신고 가산세(무신고·납부지연, 조사표 12행, /penalty/) | 미확인 → 제도 | 판정 | — | 4순위 — 같음·단위 행은 전부 발행·보류(#24·#3·#12 건너뜀, 83행 부채 상환은 발행), 제도 행 IFI(38행)·39행은 지난 기록대로 건너뜀, 미확인 9·10·11행은 판정됨 → 12행. 판정 **제도(구조는 '세액 × 가산 비율 + 기간 이자'로 닮 …(보관) |
 | 2026-10-24 | 주택 보유세(조사표 39행, /guide/holding-tax-calculator/) — 초안 | 제도 | 보강 | — | taxe foncière=IFI 과세표준에서 빼는 부채(공제 방식 다름, 세액 공제 아님·BOI-PAT-IFI-20-40-10 §40·§210, 2024-06-05 판) → ifi-2026.json taxeFonciere 추가, 세율 지방결정(F59), draft 유지 |
+| 2026-10-26 | 손실 원금 복구(필요 상승률 L÷(1−L)·회복 기간·최대 낙폭, 조사표 89행 /tools/loss-recovery/) | 같음 | 발행 | /fr/tools/loss-recovery/ | 산술(통화 단위만 다름), 프랑스 매도 세율·수수료는 미확인이라 사용자 입력 %로만 둠. keywords/fr-loss-recovery-2026-10-26.csv, 화면 lib/fr/loss-recovery-ui.ts |

@@ -72,6 +72,15 @@ export const tools: LocaleTool[] = [
     basis: "math",
   },
   {
+    href: "/fr/tools/loss-recovery/",
+    ko: "/tools/loss-recovery/",
+    name: "Perte en capital : hausse nécessaire pour retrouver sa mise",
+    blurb: "Perte en % ou valeur actuelle — hausse nécessaire, manque en euros, durée du retour selon le rendement et baisse maximale",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
+  {
     href: "/fr/tva/",
     name: "Calcul TVA HT ↔ TTC",
     blurb: "Prix HT en TTC ou TTC en HT aux taux de 20 %, 10 %, 5,5 % et 2,1 % (8,5 % en outre-mer), TVA arrondie au centime",

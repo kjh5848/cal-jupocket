@@ -1,0 +1,193 @@
+---
+/**
+ * Perte en capital : hausse nécessaire pour retrouver sa mise — 프랑스어판 아홉 번째 도구. 한국어판 /tools/loss-recovery/ 와 계산(lib/loss-recovery.ts)을
+ * 같이 쓰고, 화면은 lib/fr/loss-recovery-ui.ts, 표기·종가 읽기는 lib/fr/loss-recovery.ts. 문장은 프랑스 자동완성으로 새로 썼다(번역 아님).
+ * 산술이라 rates 와 상관없다(조사표 프랑스 칸 '같음'). 팔 때 세금·수수료는 사용자가 넣는 %이고 프랑스 매도 세율은 이 도구가 주장하지 않는다(미확인).
+ * 'perte en capital' 은 세법의 moins-value(손실 공제) 뜻으로도 쓰이지만 이 도구는 그 규칙을 다루지 않는다고 본문에 적는다.
+ *
+ * 소제목은 프랑스 구글 자동완성에서 왔다(keywords/fr-loss-recovery-2026-10-26.csv, hl fr · gl fr):
+ *   calcul perte bourse remonter / perte en capital remontée nécessaire / pourcentage pour récupérer une perte / drawdown maximum
+ *   (perte en capital scpi·obligation·entreprise 축은 세법·상품 이야기라 버림)
+ * 본문 숫자는 전부 아래 frontmatter 에서 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { recovery, needFromLoss, recoveryMonths } from "../../../../lib/loss-recovery";
+import { eur, eurosInput } from "../../../../lib/fr/tva";
+import { numFr, pctFr, monthsFr } from "../../../../lib/fr/loss-recovery";
+import "../../../../styles/global.css";
+
+const title = "Perte en capital : de combien remonter pour retrouver sa mise ? Calcul et durée";
+const description =
+  "Après une perte de 30 %, il faut gagner 42,86 % pour retrouver son capital. Calcul de la hausse nécessaire, du manque en euros, de la durée et du drawdown.";
+
+/** Exemple en centimes */
+const ex = recovery(1_000_000, 700_000);
+if (!ex.ok) throw new Error("loss-recovery 프랑스어판 예시가 계산되지 않음");
+const losses = [5, 10, 20, 25, 30, 40, 50, 60, 70, 80, 90];
+const rates = [3, 5, 7, 10];
+const presets = [10, 20, 30, 50, 70];
+const sample = "01/09/2026; 20,00\n02/09/2026; 18,60\n03/09/2026; 17,10\n04/09/2026; 17,90\n07/09/2026; 16,40\n08/09/2026; 17,20";
+---
+
+<html lang="fr-FR">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Perte en capital : la hausse nécessaire pour retrouver sa mise</h1>
+      <p class="qa-lead">
+        Après une perte de 30 %, il faut gagner <strong>{pctFr(ex.needPct)}</strong> pour retrouver son capital ; après une perte de 50 %,
+        il faut <strong>{pctFr(needFromLoss(50))}</strong>. La hausse repart de la valeur diminuée : pour une perte L, la hausse nécessaire
+        est L ÷ (1 − L), et elle grimpe vite quand la perte est grosse. Indiquez le capital investi et la valeur actuelle (ou le
+        pourcentage perdu) : le calcul donne la hausse nécessaire, le manque en euros, la valeur à viser une fois les frais de vente
+        comptés et la durée du retour selon un rendement annuel supposé. Avec une liste de cours, il donne aussi la baisse maximale.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="lr-mode">Mode de calcul</label>
+          <select id="lr-mode" data-seg>
+            <option value="value" selected>Avec la valeur ou le pourcentage perdu</option>
+            <option value="series">Avec une liste de cours</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-principal">Capital investi (€)</label>
+          <input type="text" inputmode="decimal" id="lr-principal" value={eurosInput(1_000_000)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap lr-value">
+          <label for="lr-current">Valeur actuelle (€)</label>
+          <input type="text" inputmode="decimal" id="lr-current" value={eurosInput(700_000)} autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap lr-value">
+          <label for="lr-loss">Perte</label>
+          <input type="number" id="lr-loss" value="30" min="0" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="ux-presets lr-value" role="group" aria-label="Choisir une perte">
+          {presets.map((p) => <button type="button" data-loss={p}>−{p} %</button>)}
+        </div>
+        <p class="meta lr-value">
+          Vous pouvez aussi saisir un prix d’achat moyen et un cours actuel : le pourcentage est le même (prix d’achat dans la case
+          capital, cours actuel dans la case valeur).
+        </p>
+        <div class="calc-input-wrap lr-series" hidden>
+          <label for="lr-closes">Date et cours de clôture (une ligne par séance, la première ligne est l’achat)</label>
+          <textarea id="lr-closes" rows="7" spellcheck="false">{sample}</textarea>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-fee">Frais à la vente (% du montant vendu)</label>
+          <input type="number" id="lr-fee" value="0" min="0" max="50" step="0.01" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-rate">Rendement annuel supposé pour la durée</label>
+          <input type="number" id="lr-rate" value="8" min="0.1" max="100" step="0.5" inputmode="decimal" data-step />
+          <span class="unit">%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="lr-hero">
+          <p class="label" id="lr-hero-label">Hausse nécessaire pour retrouver le capital</p>
+          <p class="big" id="lr-hero">+{pctFr(ex.needPct)}</p>
+          <p class="meta" id="lr-note">Valeur actuelle {eur(700_000)} : il faut gagner {eur(300_000)} pour retrouver le capital · {numFr(ex.needPct - 30)} points de plus que les {pctFr(30)} perdus</p>
+          <p class="meta" id="lr-err" role="alert"></p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Variation par rapport au capital</span><span class="value" id="lr-chg">−{pctFr(30)}</span></div>
+          <div class="stat-chip"><span class="label">Gain ou perte latent</span><span class="value" id="lr-pnl">−{eur(300_000)}</span></div>
+          <div class="stat-chip"><span class="label">Manque pour retrouver le capital</span><span class="value" id="lr-short">{eur(ex.shortfall)}</span></div>
+          <div class="stat-chip"><span class="label">Retour à 8 % par an</span><span class="value" id="lr-months">{monthsFr(recoveryMonths(ex.needPct, 8))}</span></div>
+        </div>
+        <div class="stat-row lr-series" data-receipt hidden>
+          <div class="stat-chip"><span class="label">Baisse maximale (drawdown)</span><span class="value" id="lr-mdd">—</span></div>
+          <div class="stat-chip"><span class="label">Du plus haut au plus bas</span><span class="value" id="lr-mdd-span">—</span></div>
+          <div class="stat-chip"><span class="label">Jusqu’au plus haut cours</span><span class="value" id="lr-high">—</span></div>
+          <div class="stat-chip"><span class="label">Dernière variation</span><span class="value" id="lr-day">—</span></div>
+          <div class="stat-chip"><span class="label">Variation moyenne (simple / composée)</span><span class="value" id="lr-avg">—</span></div>
+        </div>
+        <p class="meta" id="lr-nofee"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Enregistrer en PNG</button>
+          <button id="btn-share" type="button" class="secondary">Partager</button>
+        </div>
+      </div>
+
+      <h2>Pourcentage pour récupérer une perte : le calcul</h2>
+      <ul>
+        <li><strong>Hausse nécessaire</strong> — capital ÷ valeur actuelle − 1. Avec la perte L, c’est L ÷ (1 − L). Un capital de {eur(1_000_000)} tombé à {eur(700_000)} doit regagner {eur(300_000)} à partir de {eur(700_000)} : 300 ÷ 700 = {pctFr(ex.needPct)}.</li>
+        <li><strong>Frais à la vente</strong> — si la vente coûte une part f du montant vendu, il faut qu’il reste le capital après ces frais : valeur cible = capital ÷ (1 − f). Les frais, les impôts et les prélèvements dépendent de votre placement et de votre situation : saisissez le total en pourcentage, la page ne fixe aucun taux.</li>
+        <li><strong>Durée du retour</strong> — on suppose le même rendement annuel r chaque année : ln(1 + hausse nécessaire) ÷ ln(1 + r) années, converties en mois et arrondies au premier mois où le capital est atteint. Au-delà de 100 ans, la page écrit « Plus de 100 ans ». Les marchés ne montent pas de façon régulière : ce n’est pas une prévision.</li>
+        <li><strong>Liste de cours (drawdown maximum)</strong> — la première ligne est l’achat ; valeur = capital × dernier cours ÷ premier cours. La baisse maximale est le plus fort recul depuis le plus haut cours atteint jusque-là. La variation moyenne est donnée de deux façons : moyenne simple et moyenne composée, (dernier ÷ premier)<sup>1/variations</sup> − 1.</li>
+      </ul>
+
+      <h2>Calcul perte bourse : combien remonter selon la perte</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Perte</th><th>Hausse nécessaire</th>{rates.map((r) => <th>À {r} % par an</th>)}</tr></thead>
+          <tbody>
+            {losses.map((l) => (
+              <tr>
+                <th scope="row">−{l} %</th>
+                <td>+{pctFr(needFromLoss(l))}</td>
+                {rates.map((r) => <td>{monthsFr(recoveryMonths(needFromLoss(l), r))}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">Sans frais à la vente. Les durées sont un calcul avec un rendement identique chaque année, pas une prévision.</p>
+
+      <details>
+        <summary>Pourquoi −10 % puis +10 % ne ramènent-ils pas au capital ?</summary>
+        <p>
+          100 € qui perdent 10 % valent 90 € ; 10 % de hausse sur 90 € donnent 99 €. Le gain se calcule sur la valeur diminuée. Quand
+          des baisses et des hausses de même ampleur se suivent, chaque aller-retour multiplie la valeur par (1 − x)(1 + x) = 1 − x² :
+          plus l’écart est grand, plus on perd. C’est aussi pourquoi la variation moyenne composée est plus basse que la moyenne simple
+          dans le mode « liste de cours ».
+        </p>
+      </details>
+
+      <details>
+        <summary>Renforcer sa position fait-il baisser la hausse nécessaire ?</summary>
+        <p>
+          Acheter davantage à bas prix abaisse le prix de revient moyen, donc la hausse nécessaire pour l’atteindre diminue. Mais toute
+          la somme investie reste exposée au même risque et la perte en euros déjà subie ne change pas. Pour mesurer la distance,
+          saisissez le nouveau prix de revient moyen dans la case capital et le cours actuel dans la case valeur.
+        </p>
+      </details>
+
+      <details>
+        <summary>Est-ce la « perte en capital » au sens fiscal ?</summary>
+        <p>
+          Non. Cette page ne fait que de l’arithmétique : de combien la valeur doit remonter pour retrouver la mise. Elle ne calcule
+          ni moins-value imputable, ni impôt sur les plus-values, ni prélèvements sociaux, et ne dit pas s’il vaut mieux vendre ou
+          conserver. Pour la fiscalité de votre cas, reportez-vous aux documents de l’administration fiscale ou à un professionnel.
+        </p>
+      </details>
+
+      <p>
+        À voir aussi : <a href="/fr/tools/compound/">calculateur d’intérêts composés</a> (pour faire grossir un capital avec des versements) ·
+        <a href="/fr/tools/percent/">calculateur de pourcentage</a> (pour une simple variation en %).
+      </p>
+
+      <AdSlot label="loss-recovery-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../lib/fr/loss-recovery-ui.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
