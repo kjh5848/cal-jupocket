@@ -1,0 +1,183 @@
+---
+/**
+ * 손실 원금 복구 계산기 — 범용 도구(/tools/). 잃은 비율보다 더 올라야 원금이 되는 이유와 그 거리.
+ *
+ * 법 숫자가 없는 산술이라 rates 파일이 없다. 팔 때 비용은 사람마다 달라 직접 넣는다(국내 주식 세율은
+ * /guide/stock-breakeven/ 이 원문으로 다룬다). 계산은 lib/loss-recovery.ts.
+ * roberin #39 는 입력·결과 항목만 대조했다(docs/calc-benchmark.md) — 그쪽 문구·예시 구성은 쓰지 않았다.
+ */
+import BaseHead from "../../../components/BaseHead.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import ClarityHead from "../../../components/ClarityHead.astro";
+import GtagHead from "../../../components/GtagHead.astro";
+import TrackLinks from "../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { recovery, needFromLoss, recoveryMonths, formatMonths } from "../../../lib/loss-recovery";
+import { formatWon } from "../../../lib/money";
+import "../../../styles/global.css";
+
+const title = "손실 원금 복구 계산기 — 잃은 만큼보다 더 올라야 원금, 필요 상승률·회복 기간·최대 낙폭";
+const description =
+  "원금과 지금 평가액(또는 손실률)을 넣으면 원금까지 몇 % 올라야 하는지, 부족한 금액, 팔 때 비용을 넣은 값, 연 수익률별 회복 기간을 계산합니다. 날짜별 종가를 붙여 넣으면 최대 낙폭과 최고 종가까지 거리도 봅니다.";
+
+const ex = recovery(10_000_000, 7_000_000);
+if (!ex.ok) throw new Error("예시 계산 실패");
+const pct = (x: number) => `${x.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}%`;
+const losses = [5, 10, 20, 25, 30, 40, 50, 60, 70, 80, 90];
+const rates = [3, 5, 7, 10];
+const presets = [10, 20, 30, 50, 70];
+const sample = "2026-09-01, 20,000\n2026-09-02, 18,600\n2026-09-03, 17,100\n2026-09-04, 17,900\n2026-09-07, 16,400\n2026-09-08, 17,200";
+---
+
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>손실 원금 복구 계산기</h1>
+      <p class="qa-lead">
+        30%를 잃으면 원금까지 <strong>{pct(ex.needPct)}</strong>, 50%를 잃으면 <strong>{pct(needFromLoss(50))}</strong>가 올라야
+        합니다. 줄어든 금액에서 다시 올라야 하므로 필요한 상승률은 손실률 L 일 때 L ÷ (1 − L)이고, 손실이 클수록 빠르게 커집니다.
+        원금과 지금 평가액이나 손실률을 넣으면 필요 상승률·부족한 금액·팔 때 비용을 넣은 값·연 수익률별 회복 기간을, 날짜별 종가를
+        붙여 넣으면 최대 낙폭까지 계산합니다.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="lr-mode">계산 방식</label>
+          <select id="lr-mode" data-seg>
+            <option value="value" selected>평가액·손실률로</option>
+            <option value="series">날짜별 종가로</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-principal">투자 원금</label>
+          <input type="text" inputmode="numeric" id="lr-principal" value="10,000,000" data-won autocomplete="off" />
+          <span class="unit">원</span>
+        </div>
+        <div class="calc-input-wrap lr-value">
+          <label for="lr-current">지금 평가액</label>
+          <input type="text" inputmode="numeric" id="lr-current" value="7,000,000" data-won autocomplete="off" />
+          <span class="unit">원</span>
+        </div>
+        <div class="calc-input-wrap lr-value">
+          <label for="lr-loss">손실률</label>
+          <input type="number" id="lr-loss" value="30" min="0" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="ux-presets lr-value" role="group" aria-label="손실률 넣기">
+          {presets.map((p) => <button type="button" data-loss={p}>−{p}%</button>)}
+        </div>
+        <p class="meta lr-value">평균 매수가와 현재가를 넣어도 비율은 같습니다(원금 칸에 매수가, 평가액 칸에 현재가).</p>
+        <div class="calc-input-wrap lr-series" hidden>
+          <label for="lr-closes">날짜, 종가 (한 줄에 하나, 첫 줄이 산 날)</label>
+          <textarea id="lr-closes" rows="7" spellcheck="false">{sample}</textarea>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-fee">팔 때 비용 (매도 금액의 %)</label>
+          <input type="number" id="lr-fee" value="0" min="0" max="50" step="0.01" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-rate">회복 기간 볼 연 수익률 (가정)</label>
+          <input type="number" id="lr-rate" value="8" min="0.1" max="100" step="0.5" inputmode="decimal" data-step />
+          <span class="unit">%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="lr-hero">
+          <p class="label" id="lr-hero-label">원금까지 필요한 상승률</p>
+          <p class="big" id="lr-hero">+{pct(ex.needPct)}</p>
+          <p class="meta" id="lr-note">7,000,000원에서 3,000,000원 늘어야 원금 · 잃은 30%보다 {(ex.needPct - 30).toFixed(2)}%p 더</p>
+          <p class="meta" id="lr-err" role="alert"></p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">원금 대비</span><span class="value" id="lr-chg">−30%</span></div>
+          <div class="stat-chip"><span class="label">평가 손익</span><span class="value" id="lr-pnl">−3,000,000원</span></div>
+          <div class="stat-chip"><span class="label">원금까지 부족</span><span class="value" id="lr-short">{formatWon(ex.shortfall)}</span></div>
+          <div class="stat-chip"><span class="label">연 8%로 회복</span><span class="value" id="lr-months">{formatMonths(recoveryMonths(ex.needPct, 8))}</span></div>
+        </div>
+        <div class="stat-row lr-series" data-receipt hidden>
+          <div class="stat-chip"><span class="label">최대 낙폭</span><span class="value" id="lr-mdd">—</span></div>
+          <div class="stat-chip"><span class="label">고점 → 저점</span><span class="value" id="lr-mdd-span">—</span></div>
+          <div class="stat-chip"><span class="label">최고 종가까지</span><span class="value" id="lr-high">—</span></div>
+          <div class="stat-chip"><span class="label">전날 대비</span><span class="value" id="lr-day">—</span></div>
+          <div class="stat-chip"><span class="label">하루 평균(단순 / 복리)</span><span class="value" id="lr-avg">—</span></div>
+        </div>
+        <p class="meta" id="lr-nofee"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">PNG 저장</button>
+          <button id="btn-share" type="button" class="secondary">공유</button>
+        </div>
+      </div>
+
+      <h2>어떻게 계산하나</h2>
+      <ul>
+        <li><strong>필요 상승률</strong> — 원금 ÷ 평가액 − 1. 손실률 L 로 쓰면 L ÷ (1 − L)입니다. 1,000만원이 700만원이 되면 300만원을 700만원에서 벌어야 하므로 300 ÷ 700 = {pct(ex.needPct)}.</li>
+        <li><strong>팔 때 비용</strong> — 팔 때 떼는 비율 f 를 넣으면 손에 쥐는 돈이 원금이 되도록 목표 평가액을 원금 ÷ (1 − f)로 잡습니다. 국내 주식의 거래세·수수료는 <a href="/guide/stock-breakeven/">주식 본전 계산</a>에서 원문 세율로 확인할 수 있습니다.</li>
+        <li><strong>회복 기간</strong> — 해마다 같은 수익률 r 로 불어난다고 보고 ln(1 + 필요 상승률) ÷ ln(1 + r)년을 달로 바꿔, 원금에 처음 닿는 달로 올립니다. 100년이 넘으면 '100년 넘게'로 적습니다. 실제 시장은 해마다 오르내리므로 예측이 아닙니다.</li>
+        <li><strong>날짜별 종가</strong> — 첫 줄 종가에 샀다고 보고 평가액 = 원금 × 마지막 종가 ÷ 첫 종가. 최대 낙폭은 그때까지 가장 높았던 종가에서 가장 크게 떨어진 비율, 하루 평균은 단순 평균과 (마지막 ÷ 첫)<sup>1/횟수</sup> − 1 두 가지입니다.</li>
+      </ul>
+
+      <h2>손실률별 필요 상승률과 회복 기간</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>손실률</th><th>필요 상승률</th>{rates.map((r) => <th>연 {r}%로</th>)}</tr></thead>
+          <tbody>
+            {losses.map((l) => (
+              <tr>
+                <th scope="row">−{l}%</th>
+                <td>+{pct(needFromLoss(l))}</td>
+                {rates.map((r) => <td>{formatMonths(recoveryMonths(needFromLoss(l), r))}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">팔 때 비용 0% 기준. 회복 기간은 매년 같은 수익률을 가정한 산술값입니다.</p>
+
+      <details>
+        <summary>−10%와 +10%를 번갈아 겪으면 왜 원금이 줄어드나요?</summary>
+        <p>
+          100이 10% 떨어지면 90, 거기서 10% 오르면 99입니다. 오른 10%가 줄어든 90에 붙기 때문입니다. 같은 폭으로 오르내리는 일이
+          되풀이되면 (1 − x)(1 + x) = 1 − x² 만큼씩 줄어, 폭이 클수록 더 많이 깎입니다. 위 계산의 '하루 평균'이 단순 평균보다 복리
+          평균이 낮게 나오는 것도 같은 이유입니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>물타기(추가 매수)를 하면 필요 상승률이 줄어드나요?</summary>
+        <p>
+          평균 매수가가 내려가므로 그 평균가까지 필요한 상승률은 줄어듭니다. 다만 넣은 돈 전체가 같은 위험에 놓이고 손실 금액은
+          그대로이므로, 이 계산기의 원금 칸에 새 평균 매수가를, 평가액 칸에 현재가를 넣어 거리를 다시 보는 편이 정확합니다.
+        </p>
+      </details>
+
+      <details>
+        <summary>손실을 확정하고 다른 곳에 넣는 편이 나은가요?</summary>
+        <p>
+          이 계산기는 원금까지의 거리만 보여 줍니다. 어느 쪽이 나은지는 종목·시장 전망·세금 상황에 달려 있어 계산으로 답할 수
+          없습니다. 다만 같은 수익률을 가정하면 어디에 두든 회복 기간은 같으므로, 팔 때 비용을 넣어 그 차이를 확인해 볼 수 있습니다.
+        </p>
+      </details>
+
+      <p>
+        함께 보면 좋은 계산: <a href="/tools/compound/">적립식 복리 계산기</a>(매달 더 넣으며 불릴 때) ·
+        <a href="/tools/percent/">퍼센트 계산기</a>(변화율만 볼 때).
+      </p>
+
+      <AdSlot label="loss-recovery-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../scripts/loss-recovery.ts"></script>
+    <TrackLinks />
+    <script src="../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

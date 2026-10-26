@@ -379,6 +379,7 @@ export const hubEntries: HubEntry[] = [
   { no: 352, href: "/guide/dividend-calculator/", label: "배당금 계산기 — 세후 월배당", kind: "guide" },
   { no: 353, href: "/guide/prepay-defer-calculator/", label: "선납이연 계산기 — 만기 늦어지는 날", kind: "guide" },
   { no: 354, href: "/tools/inflation/", label: "화폐가치 계산기 — 옛날 돈 지금 가치", kind: "calc" },
+  { no: 355, href: "/tools/loss-recovery/", label: "손실 원금 복구 계산기 — 원금까지 몇 % 올라야", kind: "calc" },
 ];
 
 /** 다음에 쓸 번호. 새 글을 추가할 때 이 값을 쓴다. */
