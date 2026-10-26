@@ -71,4 +71,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/en-sg/tools/loss-recovery/",
+    ko: "/tools/loss-recovery/",
+    name: "Loss Recovery Calculator",
+    blurb: "Gain needed to get back to cost after a loss in Singapore dollars, amount short, selling costs, recovery time at a yearly return, and max drawdown from closing prices",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];

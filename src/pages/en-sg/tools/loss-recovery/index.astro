@@ -1,0 +1,203 @@
+---
+/**
+ * Loss recovery calculator — 싱가포르판 도구. 한국어판 /tools/loss-recovery/ 와 계산(lib/loss-recovery.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/loss-recovery.ts 의 EN 사전, 통화는 판의 SGD·en-SG), 문장은 싱가포르 영어로 새로 썼다(번역 아님).
+ * 산술(원금 ÷ 평가액 − 1, 매년 같은 수익률 가정 회복 기간, 고점 대비 최대 낙폭)이라 rates 와 상관없다(조사표 '같음').
+ * 팔 때 비용은 사용자가 넣는 %다 — 싱가포르 매도 세금·수수료는 허용 출처(IRAS·MOM·CPF·SSO)에서 확인하지 않아 쓰지 않는다.
+ *
+ * 소제목은 싱가포르 구글 자동완성에서 왔다(keywords/sg-loss-recovery-2026-10-26.csv, hl en · gl sg):
+ *   how much gain to recover a loss · gains needed to recover from loss · drawdown calculator ·
+ *   stock market loss recovery calculator · loss recovery formula
+ * 예시(10,000 → 7,000)는 한국어판과 같은 비율이고, 정적 표는 스크립트의 첫 계산과 같은 lib 로 만든다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { recovery, needFromLoss, recoveryMonths } from "../../../../lib/loss-recovery";
+import "../../../../styles/global.css";
+
+const title = "Loss Recovery Calculator Singapore — Gain Needed to Break Even, Drawdown (SGD)";
+const description =
+  "Find the % gain needed to get back to cost after a loss in SGD, the amount short, selling costs and recovery time at your yearly return. Paste closing prices for max drawdown.";
+
+const ex = recovery(10_000, 7_000);
+if (!ex.ok) throw new Error("loss-recovery en-sg 예시가 계산되지 않음");
+const fmt = (x: number) => x.toLocaleString("en-SG", { maximumFractionDigits: 2 });
+const pct = (x: number) => `${fmt(x)}%`;
+const sgd = (x: number) => x.toLocaleString("en-SG", { style: "currency", currency: "SGD", minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+const spell = (m: number | null) => {
+  if (m === null) return "Never at this rate";
+  if (m === Infinity) return "Over 100 years";
+  if (m === 0) return "Already there";
+  const y = Math.floor(m / 12);
+  const r = m % 12;
+  return [y ? plural(y, "year") : "", r ? plural(r, "month") : ""].filter(Boolean).join(" ");
+};
+const losses = [5, 10, 20, 25, 30, 40, 50, 60, 70, 80, 90];
+const rates = [3, 5, 7, 10];
+const presets = [10, 20, 30, 50, 70];
+const sample = "2026-09-01, 20.00\n2026-09-02, 18.60\n2026-09-03, 17.10\n2026-09-04, 17.90\n2026-09-07, 16.40\n2026-09-08, 17.20";
+---
+
+<html lang="en-SG">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Loss Recovery Calculator (SGD)</h1>
+      <p class="qa-lead">
+        Lose 30% and you need <strong>{pct(ex.needPct)}</strong> to get back to cost; lose 50% and you need <strong>{pct(needFromLoss(50))}</strong>.
+        The gain has to come from the smaller balance, so for a loss of L the gain needed is L ÷ (1 − L), and it climbs fast as the loss gets deeper.
+        Key in what you invested and what it is worth now (or the % lost) to see the gain needed, the dollar amount short, the figure with selling costs
+        and how long recovery takes at a yearly return you choose. Paste dated closing prices to get the maximum drawdown too.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="lr-mode">How to calculate</label>
+          <select id="lr-mode" data-seg>
+            <option value="value" selected>From value or % lost</option>
+            <option value="series">From dated closing prices</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-principal">Amount invested ($)</label>
+          <input type="text" inputmode="decimal" id="lr-principal" value="10,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap lr-value">
+          <label for="lr-current">Current value ($)</label>
+          <input type="text" inputmode="decimal" id="lr-current" value="7,000" autocomplete="off" />
+        </div>
+        <div class="calc-input-wrap lr-value">
+          <label for="lr-loss">Loss</label>
+          <input type="number" id="lr-loss" value="30" min="0" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="ux-presets lr-value" role="group" aria-label="Set the loss">
+          {presets.map((p) => <button type="button" data-loss={p}>−{p}%</button>)}
+        </div>
+        <p class="meta lr-value">Your average buy price and today's price give the same percentages — key in the buy price as the amount invested and today's price as the value now.</p>
+        <div class="calc-input-wrap lr-series" hidden>
+          <label for="lr-closes">Date, closing price (one per line, the first line is the day you bought; dates as YYYY-MM-DD)</label>
+          <textarea id="lr-closes" rows="7" spellcheck="false">{sample}</textarea>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-fee">Selling costs (% of the sale amount)</label>
+          <input type="number" id="lr-fee" value="0" min="0" max="50" step="0.01" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-rate">Yearly return to test recovery time (assumption)</label>
+          <input type="number" id="lr-rate" value="8" min="0.1" max="100" step="0.5" inputmode="decimal" data-step />
+          <span class="unit">%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="lr-hero">
+          <p class="label" id="lr-hero-label">Gain needed to break even</p>
+          <p class="big" id="lr-hero">+{pct(ex.needPct)}</p>
+          <p class="meta" id="lr-note">Current value {sgd(7_000)} needs to grow by {sgd(ex.shortfall)} to get back to even · {fmt(ex.needPct - 30)} percentage points more than the 30% you lost</p>
+          <p class="meta" id="lr-err" role="alert"></p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Versus cost</span><span class="value" id="lr-chg">−30%</span></div>
+          <div class="stat-chip"><span class="label">Profit or loss</span><span class="value" id="lr-pnl">−{sgd(3_000)}</span></div>
+          <div class="stat-chip"><span class="label">Short of cost by</span><span class="value" id="lr-short">{sgd(ex.shortfall)}</span></div>
+          <div class="stat-chip"><span class="label">Back to even at 8% a year</span><span class="value" id="lr-months">{spell(recoveryMonths(ex.needPct, 8))}</span></div>
+        </div>
+        <div class="stat-row lr-series" data-receipt hidden>
+          <div class="stat-chip"><span class="label">Maximum drawdown</span><span class="value" id="lr-mdd">—</span></div>
+          <div class="stat-chip"><span class="label">Peak → trough</span><span class="value" id="lr-mdd-span">—</span></div>
+          <div class="stat-chip"><span class="label">Up to the highest close</span><span class="value" id="lr-high">—</span></div>
+          <div class="stat-chip"><span class="label">Vs previous day</span><span class="value" id="lr-day">—</span></div>
+          <div class="stat-chip"><span class="label">Average daily move (simple / compound)</span><span class="value" id="lr-avg">—</span></div>
+        </div>
+        <p class="meta" id="lr-nofee"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Save as PNG</button>
+          <button id="btn-share" type="button" class="secondary">Share</button>
+        </div>
+      </div>
+
+      <h2>How much gain to recover a loss: the formula</h2>
+      <ul>
+        <li><strong>Gain needed</strong> — amount invested ÷ value now − 1. Written with the loss L it is L ÷ (1 − L). If {sgd(10_000)} falls to {sgd(7_000)}, you must earn {sgd(3_000)} on {sgd(7_000)}: 3,000 ÷ 7,000 = {pct(ex.needPct)}.</li>
+        <li><strong>Selling costs</strong> — enter the share f taken off when you sell, and the target value becomes amount invested ÷ (1 − f), so that what you keep equals what you put in. Brokerage, platform and other charges differ by provider, so this page does not assume any figure — use the rate on your own contract note or fee schedule.</li>
+        <li><strong>Recovery time</strong> — assumes the same return r every year: ln(1 + gain needed) ÷ ln(1 + r) years, converted to months and rounded up to the first month that reaches cost. Over 100 years is shown as "Over 100 years". Real markets move up and down, so this is arithmetic, not a forecast.</li>
+        <li><strong>Closing prices</strong> — the first line is treated as your buy price, so value now = amount invested × last close ÷ first close. Maximum drawdown is the biggest fall from the highest close so far; the average daily move is shown both as a simple average and as (last ÷ first)<sup>1/steps</sup> − 1.</li>
+      </ul>
+
+      <h2>Gains needed to recover from a loss, by size of loss</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Loss</th><th>Gain needed</th>{rates.map((r) => <th>At {r}% a year</th>)}</tr></thead>
+          <tbody>
+            {losses.map((l) => (
+              <tr>
+                <th scope="row">−{l}%</th>
+                <td>+{pct(needFromLoss(l))}</td>
+                {rates.map((r) => <td>{spell(recoveryMonths(needFromLoss(l), r))}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">With 0% selling costs. Recovery times assume the same return every year.</p>
+
+      <h2>Drawdown from closing prices</h2>
+      <p>
+        Paste one closing price per line, oldest first, to turn the calculator into a simple drawdown calculator. The maximum drawdown is the
+        largest peak-to-trough fall in the list, and "up to the highest close" shows the gain still needed to return to the best close in the pasted
+        period. Write dates as YYYY-MM-DD (for example 2026-09-01); a date such as 1/9/2026 is cut down to day and month in the result.
+      </p>
+
+      <details>
+        <summary>Why does losing 10% and then gaining 10% leave me below where I started?</summary>
+        <p>
+          100 falling 10% is 90, and a 10% rise from 90 is 99. The rise is applied to the smaller amount. Repeating equal swings of x costs
+          (1 − x)(1 + x) = 1 − x² each round, so wider swings cut more. It is also why the compound average daily move above comes out lower than the simple average.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does averaging down lower the gain I need?</summary>
+        <p>
+          Buying more at a lower price brings your average buy price down, so the gain needed to reach that average falls. But all of the money is
+          now exposed to the same risk and the dollar loss so far stays the same. For a clearer picture, key the new average buy price into the amount
+          invested and today's price into the value now.
+        </p>
+      </details>
+
+      <details>
+        <summary>Is it better to sell at a loss and move the money elsewhere?</summary>
+        <p>
+          The calculator only shows the distance back to cost. Which choice is better depends on the investment, your outlook and your tax position,
+          and arithmetic cannot settle that. At the same assumed return the recovery time is the same wherever the money sits, so the selling-cost
+          field is the place to see what a switch would cost you.
+        </p>
+      </details>
+
+      <p>
+        Related calculators: <a href="/en-sg/tools/compound/">Compound interest calculator</a> (when you keep adding every month) ·
+        <a href="/en-sg/tools/percent/">Percentage calculator</a> (when you only need the % change).
+      </p>
+
+      <AdSlot label="loss-recovery-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/loss-recovery.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>
