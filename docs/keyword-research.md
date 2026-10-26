@@ -3547,3 +3547,12 @@ v133 에서 진행 중으로 남긴 #6 의 페이지 회차. .kr-mode 는 improv
 - 네이버 자동완성(keywords/ac-loss-recovery-2026-10-26.csv, 시드 5개 깊이 1): 손실 복구 계산기 · 원금 회복 계산기 · 손실률 계산기 · 주식 손실률 · 주식 손실 계산 · 최대 낙폭 · 최대낙폭(뜻) → tools.ts 동의어. 쓰지 않은 것: 국민연금 주식 손실·주식 손실 인증·주식 손실 세금(뉴스·커뮤니티·세금 주제, 이 도구 답 아님 — 세금은 해외주식 양도세 글 쪽).
 - 원문에서 건진 것: 없음(산술). 매도 비용 기본값은 넣지 않음 — 국내 세율은 rates/stock-trade-2026.json(확인 2026-10-22)을 쓰는 stock-breakeven 글로 보냄.
 - roberin 대조 6개 모두 같음(calc-benchmark 행).
+
+## 2026-10-26 improve 회차 — /guide/dsr/ 보강
+
+- 대상: `DSR 계산`(index-status 2026-10-24, '발견됨 - 현재 색인이 생성되지 않음'). 같은 대출 클러스터에서 색인된 글: loan-interest·prepayment-fee-calculator·retirement-pension-loan. 색인된 글 중 /guide/dsr/ 로 오는 링크는 0개였음(dsr-calculator·dsr-limit 둘 다 미색인).
+- ① 첫 답(ANSWER): 산식·예시(연소득 5천만원, 주담대 3억 4% 30년)·근거(은행업감독업무시행세칙 별표 18 제12호)는 이미 있음 — 원문 확인일(dsr-2026.json verifiedOn 2026-10-18)만 더함. 220자 테스트 통과.
+- ② 확인일 2026-10-18 — 6개월 안이라 원문 재확인 생략.
+- ③ 문맥 링크: loan-interest 'QA[2]' 뒤 문단에 '새 대출 한도는 한 해 원리금 ÷ 연소득 비율로 정해짐 → DSR 계산' 한 줄, prepayment-fee-calculator 마지막 QA 문단에 '마이너스통장·일시상환 대출이 DSR에 잡히는 법 → DSR 계산' 한 줄. 새 숫자는 넣지 않음.
+- ④ 겹침: dsr-limit·dsr-calculator 와 질문이 달라 합칠 후보 아님.
+- 안 쓴 것: 스트레스 DSR 가산금리(보도자료 시점 값 — 입력칸 유지), 은행 40% 한도를 링크 문장에 쓰지 않음(그 글들은 dsr rates 를 안 읽음).

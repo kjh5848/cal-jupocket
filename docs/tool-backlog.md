@@ -6,7 +6,7 @@
 
 현재: 보류 2 · 있음 33 · 가져옴 38 · 제외 1 · 할 일 358
 
-다음: 2026-10-26 new 회차가 #39 손실 원금 복구 계산기 /tools/loss-recovery/ 가져옴(범용, 링크허브 355). 다음 new 후보는 #43 물타기 계산기(평단가 — 이번 도구 FAQ 에서 원금 칸에 새 평균가를 넣으라고 안내했으니 만들면 서로 링크). 다음 회차는 improve.
+다음: 2026-10-26 improve 회차가 /guide/dsr/ 보강 — 한 줄 답에 별표 18 제12호 옆 원문 확인일(dsr-2026.json verifiedOn 2026-10-18), 색인된 loan-interest·prepayment-fee-calculator 에서 /guide/dsr/ 로 문맥 링크(그동안 색인된 글 중 이 글로 오는 링크 없음). .kr-mode → new. 다음 new 후보 #43 물타기 계산기(손실 복구 FAQ 와 서로 링크). 다음 improve 후보: deposit-interest(발견됨, 첫 답에 제129조·확인일 없음 — 색인된 parking-account-interest 에서 링크 없음).
 
 2026-10-25: 보관 브랜치 `wip/kr-20261022-1244`(zz-cmp.test.ts, console.log·as any 뿐인 연봉 대조용 임시 테스트)는 올리지 않고 `parked/kr-20261022-1244-zz-cmp` 로 이름만 바꿈(원격 없음) — 지울지는 사람이 정한다.
 
