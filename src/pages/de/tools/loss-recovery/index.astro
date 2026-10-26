@@ -1,0 +1,198 @@
+---
+/**
+ * Verlust-Aufhol-Rechner — 독일어판 여덟 번째 도구. 한국어판 /tools/loss-recovery/ 와 계산(lib/loss-recovery.ts)·스크립트를 같이 쓰고
+ * (문구는 scripts/loss-recovery.ts 의 DE 사전, 표기는 lib/de/loss-recovery.ts), 문장은 독일 자동완성으로 새로 썼다(번역 아님).
+ * 산술이라 rates 와 상관없다(조사표 독일 칸 같음). 팔 때 비용(세금·수수료)은 사용자가 넣는 %이고 독일 세율은 확인하지 않아 본문에 적지 않는다.
+ *
+ * 소제목은 독일 구글 자동완성에서 왔다(keywords/de-loss-recovery-2026-10-26.csv, hl de · gl de):
+ *   verlust prozent gewinn nötig / verlust ausgleichen rechner / kursverlust aufholen / kursverluste aussitzen / max drawdown berechnen
+ *   (kursverluste steuer·verrechnen 축은 허용 출처로 확인하지 않아 버림)
+ * 본문 숫자는 전부 아래 frontmatter 에서 lib 로 계산한다.
+ */
+import BaseHead from "../../../../components/BaseHead.astro";
+import AdSlot from "../../../../components/AdSlot.astro";
+import ClarityHead from "../../../../components/ClarityHead.astro";
+import GtagHead from "../../../../components/GtagHead.astro";
+import TrackLinks from "../../../../components/TrackLinks.astro";
+import AdSenseHead from "../../../../components/AdSenseHead.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import SiteFooter from "../../../../components/SiteFooter.astro";
+import { recovery, needFromLoss, recoveryMonths } from "../../../../lib/loss-recovery";
+import { eurDe, pctDe, formatMonthsDe, numDe } from "../../../../lib/de/loss-recovery";
+import { intDe } from "../../../../lib/de/date-format";
+import "../../../../styles/global.css";
+
+const title = "Verlust-Aufhol-Rechner — wie viel Prozent Gewinn nach einem Verlust nötig sind, Aufholdauer und Max Drawdown";
+const description =
+  "Verlust ausgleichen: Einsatz und aktuellen Wert eingeben — nötiger Gewinn in Prozent, fehlender Betrag, Aufholdauer je Jahresrendite, Max Drawdown aus Kursen.";
+
+const ex = recovery(10_000, 7_000);
+if (!ex.ok) throw new Error("loss-recovery 독일어판 예시가 계산되지 않음");
+const losses = [5, 10, 20, 25, 30, 40, 50, 60, 70, 80, 90];
+const rates = [3, 5, 7, 10];
+const presets = [10, 20, 30, 50, 70];
+const sample = "01.09.2026; 20,00\n02.09.2026; 18,60\n03.09.2026; 17,10\n04.09.2026; 17,90\n07.09.2026; 16,40\n08.09.2026; 17,20";
+---
+
+<html lang="de-DE">
+  <head>
+    <BaseHead title={title} description={description} />
+    <ClarityHead />
+    <GtagHead />
+    <AdSenseHead />
+  </head>
+  <body class="bg-texture">
+    <SiteHeader />
+    <main>
+      <h1>Verlust-Aufhol-Rechner</h1>
+      <p class="qa-lead">
+        Wer 30 % verloren hat, braucht <strong>{pctDe(ex.needPct)}</strong> Gewinn, um wieder beim Einsatz zu landen, und wer 50 %
+        verloren hat, braucht <strong>{pctDe(needFromLoss(50))}</strong>. Der Gewinn setzt auf dem geschrumpften Betrag auf: Bei einem
+        Verlust von L ist der nötige Gewinn L ÷ (1 − L), und er wächst mit jedem Prozentpunkt Verlust schneller. Tragen Sie Einsatz und
+        aktuellen Wert (oder die Verlustquote) ein — der Rechner zeigt den nötigen Gewinn, den fehlenden Betrag, den Wert inklusive
+        Verkaufskosten und die Aufholdauer je Jahresrendite. Mit Tageskursen berechnet er auch den Max Drawdown.
+      </p>
+
+      <div class="calc-card" data-two>
+        <div class="calc-input-wrap">
+          <label for="lr-mode">Rechenweg</label>
+          <select id="lr-mode" data-seg>
+            <option value="value" selected>Aus aktuellem Wert oder Verlustquote</option>
+            <option value="series">Aus Tageskursen</option>
+          </select>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-principal">Einsatz (investiertes Geld)</label>
+          <input type="text" inputmode="decimal" id="lr-principal" value={intDe(10_000)} autocomplete="off" />
+          <span class="unit">Euro</span>
+        </div>
+        <div class="calc-input-wrap lr-value">
+          <label for="lr-current">Aktueller Wert</label>
+          <input type="text" inputmode="decimal" id="lr-current" value={intDe(7_000)} autocomplete="off" />
+          <span class="unit">Euro</span>
+        </div>
+        <div class="calc-input-wrap lr-value">
+          <label for="lr-loss">Verlust in Prozent</label>
+          <input type="number" id="lr-loss" value="30" min="0" max="100" step="0.1" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="ux-presets lr-value" role="group" aria-label="Verlustquote wählen">
+          {presets.map((p) => <button type="button" data-loss={p}>−{p} %</button>)}
+        </div>
+        <p class="meta lr-value">Das Verhältnis bleibt gleich, wenn Sie Einstandskurs und aktuellen Kurs eintragen (Einstandskurs in das Feld Einsatz, aktueller Kurs in das Feld Wert).</p>
+        <div class="calc-input-wrap lr-series" hidden>
+          <label for="lr-closes">Datum; Schlusskurs (eine Zeile pro Tag, die erste Zeile ist der Kauftag)</label>
+          <textarea id="lr-closes" rows="7" spellcheck="false">{sample}</textarea>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-fee">Kosten beim Verkauf (% des Verkaufserlöses)</label>
+          <input type="number" id="lr-fee" value="0" min="0" max="50" step="0.01" inputmode="decimal" />
+          <span class="unit">%</span>
+        </div>
+        <div class="calc-input-wrap">
+          <label for="lr-rate">Jahresrendite für die Aufholdauer (Annahme)</label>
+          <input type="number" id="lr-rate" value="8" min="0.1" max="100" step="0.5" inputmode="decimal" data-step />
+          <span class="unit">%</span>
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="lr-hero">
+          <p class="label" id="lr-hero-label">Nötiger Gewinn bis zum Einsatz</p>
+          <p class="big" id="lr-hero">+{pctDe(ex.needPct)}</p>
+          <p class="meta" id="lr-note">Von {eurDe(7_000)} um {eurDe(ex.shortfall)} auf den Einsatz · {numDe(ex.needPct - 30)} Prozentpunkte mehr als die verlorenen 30 %</p>
+          <p class="meta" id="lr-err" role="alert"></p>
+        </div>
+        <div class="stat-row" data-receipt>
+          <div class="stat-chip"><span class="label">Gegenüber dem Einsatz</span><span class="value" id="lr-chg">−30 %</span></div>
+          <div class="stat-chip"><span class="label">Gewinn/Verlust</span><span class="value" id="lr-pnl">{eurDe(-3_000)}</span></div>
+          <div class="stat-chip"><span class="label">Bis zum Einsatz fehlen</span><span class="value" id="lr-short">{eurDe(ex.shortfall)}</span></div>
+          <div class="stat-chip"><span class="label">Aufholen mit 8 % pro Jahr</span><span class="value" id="lr-months">{formatMonthsDe(recoveryMonths(ex.needPct, 8))}</span></div>
+        </div>
+        <div class="stat-row lr-series" data-receipt hidden>
+          <div class="stat-chip"><span class="label">Max Drawdown</span><span class="value" id="lr-mdd">—</span></div>
+          <div class="stat-chip"><span class="label">Hoch → Tief</span><span class="value" id="lr-mdd-span">—</span></div>
+          <div class="stat-chip"><span class="label">Bis zum Höchstkurs</span><span class="value" id="lr-high">—</span></div>
+          <div class="stat-chip"><span class="label">Zum Vortag</span><span class="value" id="lr-day">—</span></div>
+          <div class="stat-chip"><span class="label">Durchschnitt pro Tag (einfach / Zinseszins)</span><span class="value" id="lr-avg">—</span></div>
+        </div>
+        <p class="meta" id="lr-nofee"></p>
+
+        <div class="actions">
+          <button id="btn-download" type="button">Als PNG speichern</button>
+          <button id="btn-share" type="button" class="secondary">Teilen</button>
+        </div>
+      </div>
+
+      <h2>Verlust in Prozent: Wie viel Gewinn ist nötig?</h2>
+      <ul>
+        <li><strong>Nötiger Gewinn</strong> — Einsatz ÷ aktueller Wert − 1. Als Verlustquote L geschrieben ist es L ÷ (1 − L). Aus 10 000 Euro werden 7 000 Euro: Die 3 000 Euro müssen auf 7 000 Euro verdient werden, also 3 000 ÷ 7 000 = {pctDe(ex.needPct)}.</li>
+        <li><strong>Verkaufskosten</strong> — Tragen Sie den Anteil f ein, der beim Verkauf abgeht, setzt der Rechner den Zielwert auf Einsatz ÷ (1 − f), damit nach Abzug wieder der Einsatz in der Hand bleibt. Die Höhe von Steuern und Gebühren hängt von Ihrem Fall ab; der Rechner nimmt nur den Prozentsatz, den Sie eintragen.</li>
+        <li><strong>Aufholdauer</strong> — Bei gleicher Rendite r in jedem Jahr dauert es ln(1 + nötiger Gewinn) ÷ ln(1 + r) Jahre; der Rechner rechnet das in Monate um und rundet auf den Monat auf, in dem der Einsatz zum ersten Mal erreicht wird. Ab mehr als 100 Jahren steht „Über 100 Jahre“. Echte Märkte schwanken von Jahr zu Jahr — das ist eine Rechnung, keine Prognose.</li>
+        <li><strong>Tageskurse</strong> — Gekauft wird zum Kurs der ersten Zeile, der Wert ist Einsatz × letzter Kurs ÷ erster Kurs. Der Max Drawdown ist der größte Rückgang von einem zuvor erreichten Höchstkurs bis zu einem späteren Tief; der Tagesdurchschnitt kommt einmal als einfacher Mittelwert und einmal als (letzter ÷ erster)<sup>1/Anzahl</sup> − 1.</li>
+      </ul>
+
+      <h2>Kursverlust aufholen: Tabelle nach Verlustquote</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Verlust</th><th>Nötiger Gewinn</th>{rates.map((r) => <th>Bei {r} % pro Jahr</th>)}</tr></thead>
+          <tbody>
+            {losses.map((l) => (
+              <tr>
+                <th scope="row">−{l} %</th>
+                <td>+{pctDe(needFromLoss(l))}</td>
+                {rates.map((r) => <td>{formatMonthsDe(recoveryMonths(needFromLoss(l), r))}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">Ohne Verkaufskosten gerechnet. Die Aufholdauer nimmt in jedem Jahr dieselbe Rendite an und ist eine Rechengröße.</p>
+
+      <h2>Max Drawdown berechnen</h2>
+      <p>
+        Wechseln Sie oben auf „Aus Tageskursen“ und fügen Sie Datum und Schlusskurs ein, zum Beispiel aus einer Tabelle. Datumsformate
+        wie 31.12.2026 und 2026-12-31 werden erkannt, bei den Kursen gilt das Komma als Dezimaltrennzeichen (1.234,56). Der Max Drawdown
+        ist der größte Verlust von einem Höchststand bis zum folgenden Tief — im Beispiel von 20,00 auf 16,40 sind das −18 %. Wie weit
+        es bis zum höchsten Kurs ist, zeigt die Zeile „Bis zum Höchstkurs“.
+      </p>
+
+      <details>
+        <summary>Warum sinkt das Geld bei −10 % und +10 % im Wechsel?</summary>
+        <p>
+          100 Euro verlieren 10 % und sind 90 Euro; steigen sie darauf um 10 %, sind es 99 Euro. Die 10 % Anstieg beziehen sich auf den
+          kleineren Betrag. Wiederholt sich das, schrumpft der Betrag jedes Mal um den Faktor (1 − x)(1 + x) = 1 − x², bei größeren
+          Ausschlägen also stärker. Deshalb liegt der Durchschnitt mit Zinseszins unter dem einfachen Mittelwert.
+        </p>
+      </details>
+
+      <details>
+        <summary>Kursverluste aussitzen: Was zeigt die Rechnung?</summary>
+        <p>
+          Der Rechner zeigt nur die Strecke bis zum Einsatz und wie lange sie bei einer angenommenen Rendite dauert. Ob Halten, Verkaufen
+          oder Umschichten besser ist, hängt von Anlage, Marktlage und Ihrer Steuersituation ab — das lässt sich nicht berechnen.
+          Bei gleicher angenommener Rendite dauert das Aufholen überall gleich lang; ein Unterschied entsteht erst durch Kosten, die Sie
+          oben eintragen können.
+        </p>
+      </details>
+
+      <details>
+        <summary>Senkt Nachkaufen den nötigen Gewinn?</summary>
+        <p>
+          Der durchschnittliche Einstandskurs sinkt, und damit auch der Gewinn bis zu diesem Durchschnitt. Das gesamte eingesetzte Geld
+          steht aber weiter im selben Risiko, und der Verlust in Euro bleibt. Tragen Sie darum den neuen Durchschnittskurs in das Feld
+          Einsatz und den aktuellen Kurs in das Feld Wert ein, um die Strecke neu zu sehen.
+        </p>
+      </details>
+
+      <p>
+        Weitere Rechner: <a href="/de/tools/compound/">Zinseszinsrechner</a> (mit monatlicher Sparrate) ·
+        <a href="/de/tools/percent/">Prozentrechner</a> (nur die Veränderung in Prozent).
+      </p>
+
+      <AdSlot label="loss-recovery-result" />
+    </main>
+    <SiteFooter />
+    <script src="../../../../scripts/loss-recovery.ts"></script>
+    <TrackLinks />
+    <script src="../../../../scripts/calc-ui.ts"></script>
+  </body>
+</html>

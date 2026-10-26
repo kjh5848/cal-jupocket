@@ -3,8 +3,10 @@
  * 평가액과 손실률 칸은 서로 맞춰 준다(마지막에 고친 칸이 기준).
  * 여러 언어판이 같은 계산을 쓰고 말·통화 표기만 다르다(pickLang). 영어 사전은 판의 currency·numberLocale(src/i18n/locales.ts)로
  * 'A$3,000' 처럼 적고 소수 둘째 자리까지 받는다. 한국어는 원 정수 단위 그대로.
+ * 독일어판(/de/tools/loss-recovery/)은 DE 사전 — 표기·종가 줄 읽기는 lib/de/loss-recovery('3 000,00 Euro'·'42,86 %'·'31.12.2026; 20,50', Intl 안 씀).
  */
 import { recovery, currentFromLoss, recoveryMonths, formatMonths, parseCloses, series, type RecoveryResult } from "../lib/loss-recovery";
+import { numDe, eurDe, readEurDe, formatMonthsDe, parseClosesDe } from "../lib/de/loss-recovery";
 import { formatWon } from "../lib/money";
 import { renderCard, downloadCard, shareCard } from "../lib/result-card";
 import { track, trackCalculatorUse } from "../lib/track";
@@ -29,6 +31,9 @@ const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
 
 const KO = {
   num: (el: HTMLInputElement) => Number(el.value.replace(/,/g, "")),
+  /** 퍼센트 기호 앞 */
+  pu: "%",
+  closes: parseCloses,
   fmt: (x: number) => x.toLocaleString("ko-KR", { maximumFractionDigits: 2 }),
   money: (x: number) => formatWon(x),
   zero: "0원",
@@ -66,6 +71,8 @@ const KO = {
 
 const EN: typeof KO = {
   num: (el) => parseFloat(el.value.replace(/[^0-9.]/g, "")) || 0,
+  pu: "%",
+  closes: parseCloses,
   fmt: (x) => x.toLocaleString(L.numberLocale, { maximumFractionDigits: 2 }),
   money: (x) => new Intl.NumberFormat(L.numberLocale, { style: "currency", currency: L.currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(x),
   zero: new Intl.NumberFormat(L.numberLocale, { style: "currency", currency: L.currency, minimumFractionDigits: 0 }).format(0),
@@ -108,10 +115,48 @@ const EN: typeof KO = {
   share: "Loss recovery result - jupocket.com",
 };
 
-const S = pickLang({ ko: KO, en: EN });
+const DE: typeof KO = {
+  num: (el) => readEurDe(el.value),
+  pu: " %",
+  closes: parseClosesDe,
+  fmt: numDe,
+  money: eurDe,
+  zero: "0,00 Euro",
+  inputMoney: (x) => numDe(Math.round(x * 100) / 100),
+  price: numDe,
+  months: formatMonthsDe,
+  alreadyShort: "Bereits erreicht",
+  rateLabel: (r) => `Aufholen mit ${r} % pro Jahr`,
+  wipedHero: "Nicht aufholbar",
+  wipedNote: "Bei einem Wert von 0 Euro führt kein noch so hoher Prozentsatz zurück zum Einsatz.",
+  aboveHero: "Einsatz bereits erreicht",
+  aboveNote: (base, cur, fee, principal) => `${base} ${cur} — ${fee ? `auch nach ${fee} % Verkaufskosten ` : ""}liegt das auf oder über dem Einsatz (${principal}).`,
+  needNote: (base, cur, short, extra) => `${base} ${cur}, bis zum Einsatz fehlen ${short}` + (extra ? ` · ${extra}` : ""),
+  needNoteExtra: (loss, more) => `${more} Prozentpunkte mehr als die verlorenen ${loss} %`,
+  noFeeAbove: (fee, target) => `Der Wert liegt über dem Einsatz, aber nach ${fee} % Verkaufskosten bliebe weniger übrig (Zielwert ${target}).`,
+  noFeeNeed: (need, fee, target) => `Ohne Kosten sind es +${need} % — da beim Verkauf ${fee} % abgehen, liegt der Zielwert bei ${target}.`,
+  lPrincipal: "Einsatz",
+  lVsPrincipal: "Gegenüber dem Einsatz",
+  lNeed: "Nötiger Gewinn bis zum Einsatz",
+  lNeedSeries: "Nötiger Gewinn bis zum Einsatz (vom letzten Kurs aus)",
+  lMdd: "Max Drawdown",
+  none: "Keiner",
+  atHigh: "Jetzt am Höchstkurs",
+  nowValue: "Aktueller Wert",
+  baseAt: (label) => `Wert am ${label}`,
+  nth: (i) => `Zeile ${i}`,
+  times: (n) => `${n} ${n === 1 ? "Schritt" : "Schritte"}`,
+  errPrincipal: "Bitte den Einsatz eintragen.",
+  errCurrent: "Bitte einen aktuellen Wert von 0 Euro oder mehr eintragen.",
+  errFee: "Verkaufskosten zwischen 0 und 100 % eintragen.",
+  errFew: "Bitte mindestens zwei Schlusskurse eintragen.",
+  cardTitle: "Verlust-Aufhol-Rechner: Ergebnis",
+  share: "Verlust-Aufhol-Rechner: Ergebnis - jupocket.com",
+};
+const S = pickLang({ ko: KO, en: EN, de: DE });
 const num = S.num;
 const fmt = S.fmt;
-const signed = (x: number) => (x > 0 ? `+${fmt(x)}%` : x < 0 ? `−${fmt(-x)}%` : "0%");
+const signed = (x: number) => (x > 0 ? `+${fmt(x)}${S.pu}` : x < 0 ? `−${fmt(-x)}${S.pu}` : `0${S.pu}`);
 const signedWon = (x: number) => (x < 0 ? `−${S.money(-x)}` : x > 0 ? `+${S.money(x)}` : S.zero);
 
 let lastLines: [string, string][] = [];
@@ -139,7 +184,7 @@ function showMain(r: Extract<RecoveryResult, { ok: true }>, feePct: number, rate
     set("lr-hero", S.aboveHero);
     set("lr-note", S.aboveNote(baseLabel, money(r.current), feePct > 0 ? fmt(feePct) : "", money(r.principal)));
   } else {
-    set("lr-hero", `+${fmt(r.needPct)}%`);
+    set("lr-hero", `+${fmt(r.needPct)}${S.pu}`);
     const loss = -r.changePct;
     set("lr-note", S.needNote(baseLabel, money(r.current), money(r.shortfall), loss > 0 ? S.needNoteExtra(fmt(loss), fmt(r.needPct - loss)) : ""));
   }
@@ -155,7 +200,7 @@ function showMain(r: Extract<RecoveryResult, { ok: true }>, feePct: number, rate
     [S.lPrincipal, money(r.principal)],
     [baseLabel, money(r.current)],
     [S.lVsPrincipal, signed(r.changePct)],
-    [S.lNeed, r.wiped ? S.wipedHero : r.above ? S.aboveHero : `+${fmt(r.needPct)}%`],
+    [S.lNeed, r.wiped ? S.wipedHero : r.above ? S.aboveHero : `+${fmt(r.needPct)}${S.pu}`],
   ];
 }
 
@@ -179,14 +224,14 @@ function compute(source?: "current" | "loss") {
     return showMain(r, feePct, ratePct, S.nowValue);
   }
 
-  const closes = parseCloses(closesEl.value);
+  const closes = S.closes(closesEl.value);
   const s = series(principal, closes, feePct);
   if (!s.ok) return clear({ principal: S.errPrincipal, few: S.errFew, fee: S.errFee }[s.reason]);
   const label = (i: number) => closes[i].date ?? S.nth(i + 1);
   showMain(s.rec, feePct, ratePct, S.baseAt(label(closes.length - 1)));
   set("lr-mdd", s.mddPct < 0 ? signed(s.mddPct) : S.none);
   set("lr-mdd-span", s.mddPct < 0 ? `${label(s.peakIdx)} → ${label(s.troughIdx)}` : "—");
-  set("lr-high", s.toHighPct > 0 ? `+${fmt(s.toHighPct)}% (${S.price(s.highest)})` : S.atHigh);
+  set("lr-high", s.toHighPct > 0 ? `+${fmt(s.toHighPct)}${S.pu} (${S.price(s.highest)})` : S.atHigh);
   set("lr-day", signed(s.dayPct));
   set("lr-avg", `${signed(s.avgSimplePct)} / ${signed(s.avgCompoundPct)} (${S.times(s.steps)})`);
   lastLines.push([S.lMdd, s.mddPct < 0 ? signed(s.mddPct) : S.none]);

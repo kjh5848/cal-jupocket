@@ -71,4 +71,13 @@ export const tools: LocaleTool[] = [
     icon: "chart",
     basis: "math",
   },
+  {
+    href: "/de/tools/loss-recovery/",
+    ko: "/tools/loss-recovery/",
+    name: "Verlust-Aufhol-Rechner",
+    blurb: "Wie viel Gewinn nach einem Verlust nötig ist: nötiger Prozentsatz, fehlender Betrag, Aufholdauer und Max Drawdown aus Kursen",
+    type: "money",
+    icon: "chart",
+    basis: "math",
+  },
 ];
