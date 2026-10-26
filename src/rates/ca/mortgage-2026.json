@@ -1,8 +1,8 @@
 {
   "country": "CA",
   "draft": true,
-  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(미확인이 남아 있음). 고정금리 주택담보대출 월 납입액은 '연 이자율 ÷ 2 를 반년 복리'로 환산한 월 이율로 계산하면 FCAC 예시 숫자가 전부 재현된다(월 복리로는 안 맞음). 다만 '반년 복리로 계산한다'는 문장 자체는 정부 원문에서 못 봤다 — Interest Act s.6 은 '연 또는 반년 단위, 선이자 아님' 표기만 요구한다. 변동금리의 복리 주기·보험료율 표(CMHC 등 보험사 사이트, 허용 출처 밖)는 미확인.",
-  "verifiedOn": "2026-10-21",
+  "note": "나라별 단계 초안 — 페이지에서 쓰지 않는다(미확인이 남아 있음). 고정금리 주택담보대출 월 납입액은 연 이자율 ÷ 2 를 반년 복리로 환산한 월 이율로 계산하면 FCAC 예시 숫자가 전부 재현된다(월 복리로는 안 맞음). 반년 복리 문장은 FCAC 정보상자 예시(고정·변동 둘 다)에서 확인(compoundingSource). 보험료율 표(CMHC 등 보험사 사이트, 허용 출처 밖)는 미확인.",
+  "verifiedOn": "2026-10-26",
   "sources": [
     {
       "label": "Interest Act (R.S.C. 1985, c. I-15) — current to 2026-09-30, last amended 2008-06-18",
@@ -37,7 +37,7 @@
     "compoundingPerYear": 2,
     "monthlyRate": "(1 + 연 이율 / 2)^(2/12) − 1",
     "payment": "원금 × 월 이율 ÷ (1 − (1 + 월 이율)^−개월 수)",
-    "status": "FCAC 예시로 재현 확인(아래 checks) — 규칙 문장은 원문 미확인",
+    "status": "FCAC 예시로 재현 확인(아래 checks) + 반년 복리 문장은 FCAC 정보상자 예시에서 확인(compoundingSource)",
     "checks": [
       {
         "principal": 300000,
@@ -198,10 +198,9 @@
     "regulation": "SOR/2012-281 s.5(1)(c) 25년 이하 · s.5(1.1) 첫 집 구매자가 있거나 신축이면 30년 이하(확인 2026-10-21)"
   },
   "notVerified": [
-    "고정금리 반년 복리 규칙을 정부 원문 문장으로 확인(지금은 FCAC 예시 재현만 — FCAC interest-on-mortgages(2024-02-23)·choose-mortgage(2025-10-15)에 복리 문장 없음, 2026-10-21)",
-    "변동금리 대출의 복리 주기",
     "보험료율 표(계약금 비율별 — 보험사 사이트, 허용 출처 밖)",
-    "2주·주 단위 납입 때 이자 계산 방식(나누는 식은 확인, 잔액·복리 처리는 원문 없음)"
+    "2주·주 단위 납입 때 이자 계산 방식(나누는 식은 확인, 잔액·복리 처리는 원문 없음)",
+    "변동금리 실제 계약의 복리 주기(FCAC 샘플은 반년 복리지만 가상 예시)"
   ],
   "paymentFrequency": {
     "source": "FCAC choose-mortgage (Page details 2025-10-15)",
@@ -216,5 +215,32 @@
     },
     "quote": "Accelerated payments allow you to make the equivalent of one extra monthly payment each year.",
     "note": "FCAC 는 월 납입액에서 나누는 식만 적었다 — 2주·주 단위 납입 때 이자를 어떻게 셈하는지(잔액·복리 환산)는 원문에 없어 미확인. 상환 기간 단축 숫자는 계산하지 않는다"
+  },
+  "compoundingSource": {
+    "verifiedOn": "2026-10-26",
+    "pages": [
+      {
+        "url": "https://www.canada.ca/en/financial-consumer-agency/services/industry/bulletins/information-box-examples/credit-agreement-fixed-mortgage.html",
+        "pageDetails": "2025-10-07",
+        "quote": "This interest is compounded twice per year but charged monthly.",
+        "rate": "fixed 5.60% per year"
+      },
+      {
+        "url": "https://www.canada.ca/en/financial-consumer-agency/services/industry/bulletins/information-box-examples/credit-variable-fixed-mortgage.html",
+        "pageDetails": "2025-10-07",
+        "quote": "This interest is compounded twice per year but charged monthly.",
+        "rate": "variable, prime + 1.00%"
+      }
+    ],
+    "caveat": "샘플(가상) 정보상자 예시이지 모든 대출에 적용되는 법 조문이 아님 — 계약서의 복리 주기가 우선. 페이지에서는 반년 복리를 \"FCAC 예시 기준 가정\"으로 밝힐 것.",
+    "paymentExample": {
+      "principal": 619000,
+      "rate": 0.056,
+      "amortizationYears": 20,
+      "payment": 4565.87,
+      "ourFormula": 4270.54,
+      "gap": 295.33,
+      "reason": "예시 납입액에 월 재산세 몫이 \"해당하는 경우\" 포함된다고 적혀 있고 금액은 없음 — 이 예시로는 공식 재현 불가(검증용으로 쓰지 않음)"
+    }
   }
 }
