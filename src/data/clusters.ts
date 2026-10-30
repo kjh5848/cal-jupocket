@@ -375,6 +375,10 @@ export const clusters: Cluster[] = [
       { href: "/guide/holding-tax/", title: "보유세 — 6월 1일에 집을 가진 사람이 내는 재산세와 종부세를 합친 말이고, 종부세에서 재산세 일부를 뺍니다", kind: "guide", icon: "home", year: 2026 },
       { href: "/guide/property-jongbu-double-tax/", title: "재산세 종부세 이중과세 — 종부세에서 같은 집 재산세 가운데 종부세 과세표준에 해당하는 몫을 뺍니다", kind: "guide", icon: "home", year: 2026 },
       { href: "/guide/holding-tax-calculator/", title: "보유세 계산기", kind: "calc", icon: "calculator", blurb: "주택별 공시가격 → 재산세·종부세·빼는 재산세액·한 해 보유세" },
+      { href: "/guide/moving-checklist/", title: "이사 체크리스트 — 이사 전·이삿날·14일 안에 할 일", kind: "guide", icon: "checklist" },
+      { href: "/guide/moving-lucky-day/", title: "손없는날 — 음력 9·10·19·20·29·30일, 11월은 8·17·18·27·28일", kind: "guide", icon: "calendar", year: 2026 },
+      { href: "/guide/move-in-report/", title: "전입신고 확정일자 — 전입신고 14일, 확정일자는 기한 없음", kind: "guide", icon: "home" },
+      { href: "/guide/packing-vs-half-packing/", title: "포장이사 반포장이사 차이 — 짐 양·시간·일손으로 고르기", kind: "guide", icon: "home" },
     ],
   },
   {
@@ -497,6 +501,10 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/packing-vs-half-packing/",
+  "/guide/move-in-report/",
+  "/guide/moving-checklist/",
+  "/guide/moving-lucky-day/",
   "/guide/prepay-defer-calculator/",
   "/guide/dividend-calculator/",
   "/guide/stock-return-calculator/",

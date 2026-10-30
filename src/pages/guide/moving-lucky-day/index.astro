@@ -1,0 +1,81 @@
+---
+/**
+ * "손없는날" — 이사 시리즈. (11월 손없는날·12월 손없는날·2027 손없는날·손없는날 달력·손없는날 뜻·손없는날 이사비용도 이 글)
+ * 근거: 한국천문연구원 음양력 변환으로 받은 음력 달 시작일·일수(rates: lunar-2026.json) → src/lib/moving.ts sonDays().
+ * 공휴일 표시는 kr-holidays-2026.json(관공서의 공휴일에 관한 규정). 이사 가격은 공식 출처가 없어 쓰지 않는다 — 견적 비교로 넘긴다.
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import AffiliateBox from "../../../components/AffiliateBox.astro";
+import lunar from "../../../rates/lunar-2026.json";
+import { sonDays, coveredMonths, type SonDay } from "../../../lib/moving";
+
+const fmt = (d: SonDay) => `${d.day}일(${d.weekday})`;
+const nov = sonDays(2026, 11);
+const dec = sonDays(2026, 12);
+const days = (xs: SonDay[]) => xs.map((d) => d.day).join("·");
+const months = coveredMonths().map((m) => ({ ...m, list: sonDays(m.year, m.month) }));
+const lunarOf = (xs: SonDay[]) => {
+  const by = new Map<number, number[]>();
+  for (const d of xs) by.set(d.lunar.month, [...(by.get(d.lunar.month) ?? []), d.lunar.day]);
+  return [...by].map(([mo, ds]) => `${mo}월 ${ds.join("·")}일`).join(", ");
+};
+const small = lunar.months.find((m) => m.days === 29)!;
+const smallSon = [9, 10, 19, 20, 29];
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts). 숫자는 moving.test.ts 가 sonDays() 와 대조한다.
+const title = "손없는날 — 음력 끝자리 9·0일이고, 2026년 11월은 8·17·18·27·28일, 12월은 7·8·17·18·27·28일입니다";
+const description =
+  "손없는날은 음력 날짜 끝자리가 9·0인 날(9·10·19·20·29·30일)을 이사·혼례에 좋다고 보는 민간 풍습입니다. 한국천문연구원 음양력 변환으로 2026년 11월부터 2027년 12월까지 달마다 손없는날을 양력 날짜와 요일로 정리했습니다.";
+
+const ANSWER = `손없는날은 음력으로 끝자리가 9·0인 날(9·10·19·20·29·30일)입니다. 2026년 11월은 ${days(nov)}일, 12월은 ${days(dec)}일입니다. 음력은 한국천문연구원 음양력 변환으로 확인했습니다. 법적 의미가 없는 풍습이라, 같은 조건으로 날짜만 바꿔 견적을 받아 보면 비교가 쉽습니다.`;
+
+const QA = [
+  { q: "손없는날은 무슨 뜻인가요?", a: `'손'은 날짜에 따라 방향을 옮겨 다니며 일을 방해한다고 여긴 귀신을 이르는 말이고, 음력 끝자리가 9·0인 날에는 손이 없다고 보는 민간 풍습입니다. 그래서 이사·혼례 날로 골라 왔습니다. 법이나 제도가 정한 날은 아닙니다.` },
+  { q: "2026년 11월 손없는날은 언제인가요?", a: `11월 ${nov.map(fmt).join(", ")}입니다. 음력으로는 ${lunarOf(nov)}에 해당합니다. 주말과 겹치는 날은 ${nov.filter((d) => d.offDay).map((d) => `${d.day}일`).join("·")}이고, 나머지는 평일입니다.` },
+  { q: "음력 30일이 없는 달도 있나요?", a: `있습니다. 음력 한 달은 29일(작은달)이거나 30일(큰달)이라, 작은달에는 30일이 없어 손없는날이 다섯 번입니다. 예를 들어 음력 ${small.lunarYear}년 ${small.lunarMonth}월은 29일까지라 ${smallSon.join("·")}일만 손없는날입니다.` },
+  { q: "손없는날에 이사하면 비용이 더 드나요?", a: `날짜별 이사 가격을 모은 공식 통계는 없어 얼마라고 말할 수 없습니다. 이사 비용은 업체가 날짜·짐 양·거리·층수를 보고 견적으로 정하므로, 같은 조건에서 손없는날과 다른 날을 각각 넣어 견적을 받아 비교하는 것이 확실합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={lunar.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <p>12월은 {dec.map(fmt).join(", ")}입니다. 달마다 전체 목록은 아래 표에 있습니다.</p>
+
+  <AdSlot />
+
+  <h2>달별 손없는날 (2026년 11월 ~ 2027년 12월)</h2>
+  <p>양력 날짜와 요일입니다. 굵은 날은 토·일요일이나 공휴일입니다. 음력은 한국천문연구원 음양력 변환에서 받은 달마다의 시작일과 일수로 옮겼고, 확인한 범위(음력 {lunar.months[0].lunarYear}년 {lunar.months[0].lunarMonth}월 ~ {lunar.months.at(-1)!.lunarYear}년 {lunar.months.at(-1)!.lunarMonth}월) 밖의 달은 싣지 않았습니다.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>양력 달</th><th>손없는날</th><th>평일만</th></tr></thead>
+      <tbody>
+        {months.map((m) => (
+          <tr>
+            <th scope="row">{m.year}년 {m.month}월</th>
+            <td>{m.list.map((d, i) => <>{i > 0 && ", "}{d.offDay ? <strong>{fmt(d)}</strong> : fmt(d)}</>)}</td>
+            <td>{m.list.filter((d) => !d.offDay).map((d) => `${d.day}일`).join(", ") || "없음"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>그래서 같은 '끝자리 0' 이라도 큰달의 30일만 손없는날로 들어갑니다. 위 표는 달마다 실제 일수를 반영했습니다.</p>
+
+  <h2>{QA[3].q}</h2>
+  <p class="qa-lead">{QA[3].a}</p>
+  <p>견적을 받을 때는 출발·도착 주소와 층수, 엘리베이터·사다리차 필요 여부, 큰 가구·가전 목록, 포장 범위를 똑같이 적어야 날짜에 따른 차이만 볼 수 있습니다. 포장 범위를 정하는 기준은 <a href="/guide/packing-vs-half-packing/">포장이사 반포장이사 차이</a>에, 날짜를 정한 다음 할 일은 <a href="/guide/moving-checklist/">이사 체크리스트</a>에 정리했습니다.</p>
+
+  <AffiliateBox id="moving-quote" />
+</GuideLayout>

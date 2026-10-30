@@ -10,10 +10,16 @@
 - 아직 실제 링크가 없어 다섯 항목(moving-quote · legal-registry · cleaning-movein · startup-consult · car-lease-quote) 모두 `active: false` — 화면에 아무것도 나오지 않는다.
 - 아래 목록은 **후보**다. 링크를 받은 뒤 사람이 글을 열어 문맥(본문 흐름·계산 결과 아래 등)을 보고 넣는다. 한 글에 상자 1개.
 
-## 배치 후보 (24곳)
+## 배치 후보 (28곳)
+
+맨 위 4곳(이사 시리즈, 2026-10-31)은 **이미 `<AffiliateBox id="moving-quote" />` 를 글 끝에 넣어 두었다** — 등록부에서 moving-quote 를 켜면 바로 보인다. 1순위.
 
 | 글 주소 | 붙일 category | 이유 |
 |---|---|---|
+| /guide/moving-checklist/ | moving (1순위, 상자 있음) | 이사 체크리스트 허브 — 이사를 앞둔 사람만 찾는 글, 이사 비용 절에서 견적으로 넘김 |
+| /guide/moving-lucky-day/ | moving (1순위, 상자 있음) | 손없는날(월 89,900) — 이삿날을 고르는 단계, 날짜별 견적 비교로 이어짐 |
+| /guide/packing-vs-half-packing/ | moving (1순위, 상자 있음) | 포장·반포장 고르기 = 견적 받기 직전 |
+| /guide/move-in-report/ | moving (1순위, 상자 있음) | 전입신고·확정일자 — 계약을 마치고 이사를 앞둔 세입자 |
 | /guide/brokerage-fee/ | moving | 중개보수 요율을 찾는 사람은 계약 직후 이사를 앞둔 사람 |
 | /guide/brokerage-fee-calculator/ | moving | 복비 계산 = 매매·전세 계약 단계, 다음 할 일이 이사 |
 | /guide/monthly-rent-brokerage-fee/ | cleaning | 월세 이사는 원룸·오피스텔이 많아 입주청소 수요가 바로 붙음 |
@@ -39,7 +45,7 @@
 | /guide/electric-car-tax/ | car-lease | 전기차 구매 고민 단계 — 전기차 리스·렌트 수요 |
 | /guide/electric-car-tax-calculator/ | car-lease | 전기차 세금 계산 = 차량 선택 단계 |
 
-전입신고·이사비용, 자동차 할부·소유 비용을 직접 다루는 글은 아직 없다. 생기면 각각 moving·cleaning, car-lease 1순위 후보로 추가한다.
+이사(전입신고·체크리스트·손없는날·포장 방식) 글은 2026-10-31 위 4곳으로 생겼다. 자동차 할부·소유 비용을 직접 다루는 글은 아직 없다 — 생기면 car-lease 1순위 후보로 추가한다.
 
 ## 네트워크 카테고리 판단표
 

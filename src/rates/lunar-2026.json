@@ -1,0 +1,30 @@
+{
+  "title": "음력 달의 시작일과 길이 (음력 2026년 9월 ~ 2027년 12월)",
+  "verifiedOn": "2026-10-31",
+  "range": { "from": "2026-10-11", "to": "2028-01-26" },
+  "sources": [
+    {
+      "name": "한국천문연구원 천문우주지식정보 음양력 변환 — 음력 각 달 1일의 양력 날짜와 그 달 일수(LUNC_EN_DD)",
+      "url": "https://astro.kasi.re.kr/life/pageView/8"
+    }
+  ],
+  "sourceNote": "천문연 음양력 변환 페이지가 부르는 조회(/life/lunc?yyyy=&mm=&dd=01)로 음력 각 달 1일의 양력 날짜와 일수를 받았다. 다음 달 1일이 앞 달 1일 + 일수와 모두 이어져 이 구간에 윤달이 없음을 확인했다(음력 2028년 1월 1일 = 양력 2028-01-27). 양력→음력 조회(/life/solc)로 2026-11-08(음 9.29)·2026-11-18(음 10.10)·2026-11-28(음 10.20)·2026-12-17(음 11.09)·2027-01-07(음 11.30)을 따로 대조했다.",
+  "months": [
+    { "lunarYear": 2026, "lunarMonth": 9, "leap": false, "solarStart": "2026-10-11", "days": 29 },
+    { "lunarYear": 2026, "lunarMonth": 10, "leap": false, "solarStart": "2026-11-09", "days": 30 },
+    { "lunarYear": 2026, "lunarMonth": 11, "leap": false, "solarStart": "2026-12-09", "days": 30 },
+    { "lunarYear": 2026, "lunarMonth": 12, "leap": false, "solarStart": "2027-01-08", "days": 30 },
+    { "lunarYear": 2027, "lunarMonth": 1, "leap": false, "solarStart": "2027-02-07", "days": 29 },
+    { "lunarYear": 2027, "lunarMonth": 2, "leap": false, "solarStart": "2027-03-08", "days": 30 },
+    { "lunarYear": 2027, "lunarMonth": 3, "leap": false, "solarStart": "2027-04-07", "days": 29 },
+    { "lunarYear": 2027, "lunarMonth": 4, "leap": false, "solarStart": "2027-05-06", "days": 30 },
+    { "lunarYear": 2027, "lunarMonth": 5, "leap": false, "solarStart": "2027-06-05", "days": 29 },
+    { "lunarYear": 2027, "lunarMonth": 6, "leap": false, "solarStart": "2027-07-04", "days": 29 },
+    { "lunarYear": 2027, "lunarMonth": 7, "leap": false, "solarStart": "2027-08-02", "days": 30 },
+    { "lunarYear": 2027, "lunarMonth": 8, "leap": false, "solarStart": "2027-09-01", "days": 29 },
+    { "lunarYear": 2027, "lunarMonth": 9, "leap": false, "solarStart": "2027-09-30", "days": 29 },
+    { "lunarYear": 2027, "lunarMonth": 10, "leap": false, "solarStart": "2027-10-29", "days": 30 },
+    { "lunarYear": 2027, "lunarMonth": 11, "leap": false, "solarStart": "2027-11-28", "days": 30 },
+    { "lunarYear": 2027, "lunarMonth": 12, "leap": false, "solarStart": "2027-12-28", "days": 30 }
+  ]
+}
