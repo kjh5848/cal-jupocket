@@ -22,7 +22,8 @@
  */
 
 export type AffiliateNetwork = "dbdbdeep" | "adlix" | "dbsense";
-export type AffiliateCategory = "moving" | "legal" | "cleaning";
+/** car-lease 는 자동차 리스·렌트만 — 타이어 렌탈은 주제 무관이라 넣지 않는다. */
+export type AffiliateCategory = "moving" | "legal" | "cleaning" | "startup" | "car-lease";
 
 export interface Affiliate {
   /** 글에서 부르는 이름. 바꾸면 그 id 를 쓰는 글도 같이 고쳐야 한다(테스트가 잡는다). */
@@ -77,6 +78,28 @@ export const affiliates: Affiliate[] = [
     active: false,
     title: "입주청소 견적 받아 보기",
     blurb: "평수와 날짜를 적으면 입주청소 업체 견적을 받아 볼 수 있습니다.",
+  },
+  {
+    id: "startup-consult",
+    network: "dbdbdeep",
+    advertiser: "(미정) 창업 상담",
+    category: "startup",
+    url: "",
+    issuedOn: "",
+    active: false,
+    title: "창업 준비, 상담 받아 보기",
+    blurb: "사업자등록·세금 신고·지원 제도를 창업 상담 업체에 물어볼 수 있습니다.",
+  },
+  {
+    id: "car-lease-quote",
+    network: "adlix",
+    advertiser: "(미정) 자동차 리스·렌트 견적",
+    category: "car-lease",
+    url: "",
+    issuedOn: "",
+    active: false,
+    title: "자동차 리스·장기렌트 견적 비교",
+    blurb: "차종과 기간을 고르면 리스·장기렌트 월 납입금을 비교해 볼 수 있습니다.",
   },
 ];
 
