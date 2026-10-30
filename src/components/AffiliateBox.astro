@@ -1,0 +1,85 @@
+---
+/**
+ * 제휴(CPA) 안내 상자 — `<AffiliateBox id="moving-quote" />`.
+ *
+ * 링크는 src/data/affiliates.ts 등록부에서만 가져온다. 등록부에 없거나
+ * 꺼져 있거나 만료됐으면 아무것도 그리지 않는다(빈 자리도 남기지 않음).
+ *
+ * "광고·제휴" 라벨은 공정위 추천·보증 심사지침의 경제적 이해관계 표시다.
+ * 지우거나 작게 숨기지 않는다.
+ */
+import { affiliateLink } from "../data/affiliates";
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+const ad = affiliateLink(id);
+---
+
+{
+  ad && (
+    <aside class="aff" aria-label="광고·제휴 안내">
+      <p class="aff-label">광고·제휴</p>
+      <p class="aff-title">{ad.title}</p>
+      <p class="aff-blurb">{ad.blurb}</p>
+      <a
+        class="aff-btn"
+        href={ad.url}
+        target="_blank"
+        rel="sponsored nofollow noopener"
+        data-affiliate-id={ad.id}
+      >
+        바로 가기
+      </a>
+    </aside>
+  )
+}
+
+<script>
+  import { track } from "../lib/track";
+  // id 만 보낸다 — 개인정보·입력값은 싣지 않는다.
+  document.addEventListener("click", (e) => {
+    const a = e.target instanceof Element ? e.target.closest("a[data-affiliate-id]") : null;
+    if (!a) return;
+    track("affiliate_click", { affiliate_id: a.getAttribute("data-affiliate-id") });
+  });
+</script>
+
+<style>
+  .aff {
+    margin: var(--s-5) 0;
+    padding: var(--s-4);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-md);
+  }
+  .aff-label {
+    margin: 0 0 var(--s-2);
+    font-size: var(--t-xs);
+    color: var(--muted);
+  }
+  .aff-title {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .aff-blurb {
+    margin: var(--s-1) 0 var(--s-3);
+    font-size: var(--t-sm);
+    color: var(--muted);
+  }
+  .aff-btn {
+    display: inline-block;
+    padding: var(--s-2) var(--s-4);
+    border: 1px solid var(--link);
+    border-radius: var(--r-sm);
+    color: var(--link);
+    font-size: var(--t-sm);
+    text-decoration: none;
+  }
+  .aff-btn:hover {
+    background: var(--accent-bg);
+  }
+</style>
