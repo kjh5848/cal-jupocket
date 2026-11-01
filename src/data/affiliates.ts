@@ -49,11 +49,13 @@ export const affiliates: Affiliate[] = [
   {
     id: "moving-quote",
     network: "dbdbdeep",
-    advertiser: "(미정) 이사 견적 비교",
+    // 디비디비딥 캠페인 '모두이사(신규)' — 캠페인명 'jupocket 이사글', 승인율 86%·등급별 최고 21,000원(2026-11-01 발급).
+    // 만료일 안내가 없어 expiresOn 은 비워 둔다. 링크가 바뀌면 이 url 한 줄만 고친다.
+    advertiser: "모두이사",
     category: "moving",
-    url: "",
-    issuedOn: "",
-    active: false,
+    url: "https://dbdbdeep.com/ma/link.php?lncd=S00280362TC06061977L",
+    issuedOn: "2026-11-01",
+    active: true,
     title: "이사 견적, 여러 업체 한 번에 받아 보기",
     blurb: "날짜·짐 양을 한 번 적으면 이사업체 견적을 비교해 볼 수 있습니다.",
   },
