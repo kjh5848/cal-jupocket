@@ -32,9 +32,10 @@ import {
   partsSubEs,
 } from "../../../../lib/es/sec-convert";
 
-const title = "Convertir segundos a minutos y horas — horas decimales y milisegundos";
+// 검색어 "135 segundos a minutos" "1440 segundos a horas" "10000 segundos a horas" 에 답을 먼저(나눗셈으로 확인)
+const title = "Segundos a minutos y horas: 135 s = 2 min 15 s, 10.000 s = 2 h 46 min 40 s";
 const description =
-  "Pasa segundos a minutos, horas, días o milisegundos a la vez, segundos a horas, minutos y segundos, y horas decimales a sexagesimales, con fórmulas de Excel.";
+  "135 segundos son 2 min 15 s (2,25 min); 1440 segundos, 24 minutos (0,4 h); 10.000 segundos, 2 h 46 min 40 s. También milisegundos y horas decimales.";
 
 const EX = "5400";
 const n0 = toNanos(EX, "s")!;
@@ -71,9 +72,10 @@ const MS1 = convertAll(toNanos("1", "ms")!);
   <body class="bg-texture">
     <SiteHeader />
     <main>
-      <h1>Convertir segundos a minutos, horas y días — también milisegundos y horas decimales</h1>
+      <h1>Convertir segundos a minutos y horas — ¿cuántos minutos son 135 segundos?</h1>
       <p>
-        Escribe una cantidad y elige su unidad: al momento ves el valor en milisegundos, segundos, minutos, horas y días, la
+        <strong>135 segundos = 2 minutos y 15 segundos</strong> (135 ÷ 60 = 2, resto 15); 1440 segundos son 24 minutos
+        (0,4 horas) y 10.000 segundos, 2 horas, 46 minutos y 40 segundos. Escribe una cantidad y elige su unidad: al momento ves el valor en milisegundos, segundos, minutos, horas y días, la
         forma «X horas, Y minutos y Z segundos» y el formato h:mm:ss. Las equivalencias son fijas: 1 minuto = 60 segundos,
         1 hora = {D(H1.s)} segundos y 1 día = {D(D1.s)} segundos. Puedes escribir los decimales con coma (1,5) o con punto (1.5).
       </p>

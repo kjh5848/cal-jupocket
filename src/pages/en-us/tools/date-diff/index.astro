@@ -21,9 +21,6 @@ import SiteFooter from "../../../../components/SiteFooter.astro";
 import "../../../../styles/global.css";
 import { toDay, span, shift, type Span } from "../../../../lib/date-calc";
 
-const title = "Date Calculator — Days Between Two Dates, Add or Subtract Days";
-const description =
-  "Count the days between two dates, or add and subtract days, weeks, months or years from a date. Include the end date, count weekdays, and copy Excel formulas.";
 
 /** 하루 번호 → 'Tue, October 20, 2026' (UTC 자정이라 timeZone UTC) */
 const labelEn = (d: number) =>
@@ -53,6 +50,14 @@ const jan31 = d("2027-01-31");
 const jan31plus1m = shift(jan31, 1, "month");
 const week = span(d("2026-10-19"), d("2026-10-23"), false);
 const weekI = span(d("2026-10-19"), d("2026-10-23"), true);
+
+// 검색어 "90 days from 7/22/26" "days between dates" 에 답을 먼저 — 날짜는 shift() 계산값
+const jul22 = d("2026-07-22");
+const jul22plus90 = shift(jul22, 90, "day");
+const longEn = (v: number) =>
+  new Date(v * 86_400_000).toLocaleDateString("en-US", { timeZone: "UTC", weekday: "long", year: "numeric", month: "long", day: "numeric" });
+const title = "Days Between Dates & 90 Days From a Date — US Date Calculator";
+const description = `90 days from 7/22/2026 is ${longEn(jul22plus90)}. US date calculator: count the days between two dates, add or subtract days, weeks or months.`;
 ---
 
 <html lang="en-US">
@@ -65,9 +70,9 @@ const weekI = span(d("2026-10-19"), d("2026-10-23"), true);
   <body class="bg-texture">
     <SiteHeader />
     <main>
-      <h1>Date Calculator</h1>
+      <h1>Date Calculator — Days Between Dates and Days From a Date</h1>
       <p>
-        Count the days between two dates, or move a date forward or back. Results update as soon as you change a date.
+        90 days from 7/22/2026 is <strong>{longEn(jul22plus90)}</strong>. Count the days between two dates, or move a date forward or back. Results update as soon as you change a date.
       </p>
 
       <div class="calc-card" data-two>

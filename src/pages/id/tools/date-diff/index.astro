@@ -23,9 +23,6 @@ import SiteFooter from "../../../../components/SiteFooter.astro";
 import "../../../../styles/global.css";
 import { toDay, span, shift, type Span } from "../../../../lib/date-calc";
 
-const title = "Kalkulator Tanggal — Hitung Hari dari Tanggal ke Tanggal & Hari Kerja";
-const description =
-  "Hitung jumlah hari antara dua tanggal, tambah atau mundurkan tanggal sekian hari, minggu, bulan, atau tahun, dan hitung hari kerja Senin–Jumat.";
 
 /** 하루 번호 → 'Rabu, 21 Oktober 2026' (UTC 자정이라 timeZone UTC) — scripts/date-diff.ts 의 ID 사전과 같은 꼴 */
 const labelId = (d: number) =>
@@ -57,6 +54,12 @@ const aug31 = d("2026-08-31");
 const aug31plus1m = shift(aug31, 1, "month");
 const longSpan = span(d("2024-02-15"), d(START), false);
 const nov = span(d("2026-11-01"), d("2026-11-30"), true);
+
+// 검색어 "30 hari setelah 30 september 2026" 에 답을 먼저 — 날짜는 shift() 계산값
+const sep30 = d("2026-09-30");
+const sep30plus30 = shift(sep30, 30, "day");
+const title = "30 Hari Setelah Tanggal Berapa? Kalkulator Tanggal & Hitung Hari antara Dua Tanggal";
+const description = `30 hari setelah 30 September 2026 adalah ${labelId(sep30plus30)}. Tambah atau kurangi hari, minggu, bulan dari tanggal, dan hitung hari antara dua tanggal.`;
 ---
 
 <html lang="id-ID">
@@ -69,9 +72,9 @@ const nov = span(d("2026-11-01"), d("2026-11-30"), true);
   <body class="bg-texture">
     <SiteHeader />
     <main>
-      <h1>Kalkulator Tanggal: Hitung Hari antara Dua Tanggal</h1>
+      <h1>Kalkulator Tanggal: 30 Hari Setelah Tanggal & Hari antara Dua Tanggal</h1>
       <p>
-        Masukkan dua tanggal untuk melihat selisihnya dalam hari, atau mulai dari satu tanggal lalu maju atau mundur sekian
+        <strong>30 hari setelah 30 September 2026 adalah {labelId(sep30plus30)}.</strong> Masukkan dua tanggal untuk melihat selisihnya dalam hari, atau mulai dari satu tanggal lalu maju atau mundur sekian
         hari, minggu, bulan, atau tahun. Hasilnya langsung berubah begitu tanggal diganti.
       </p>
 

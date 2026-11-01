@@ -23,9 +23,10 @@ import "../../../../styles/global.css";
 import { toNanos, partsToNanos, convertAll, clock, minSec, UNITS } from "../../../../lib/sec-convert";
 import { UNIT_NAME_ID, withUnitId, readableId } from "../../../../lib/id/sec-convert";
 
-const title = "Konversi Detik ke Menit dan Jam — 1 Jam Berapa Detik, Jam Desimal dan Milidetik";
+// 검색어 "2800 detik berapa menit" 에 답을 먼저(2800 ÷ 60 = 46 나머지 40, 145 ÷ 60 = 2 나머지 25 로 확인)
+const title = "2800 Detik Berapa Menit? 46 Menit 40 Detik — Konversi Detik ke Menit dan Jam";
 const description =
-  "Ubah detik, menit, jam, hari atau milidetik sekaligus, lihat 1 jam berapa detik, ubah jam kerja ke jam desimal, dan salin rumus Excel atau Python.";
+  "2800 detik = 46 menit 40 detik, 145 detik = 2 menit 25 detik. Ubah detik, menit, jam, hari dan milidetik sekaligus, plus jam desimal dan rumus Excel.";
 
 const EX = "5400";
 const n0 = toNanos(EX, "s")!;
@@ -63,9 +64,9 @@ const MS1 = convertAll(toNanos("1", "ms")!);
   <body class="bg-texture">
     <SiteHeader />
     <main>
-      <h1>Konversi detik ke menit dan jam — juga hari, milidetik dan jam desimal</h1>
+      <h1>Konversi detik ke menit dan jam — 2800 detik berapa menit?</h1>
       <p>
-        Ketik angka lalu pilih satuannya. Hasilnya langsung muncul dalam milidetik, detik, menit, jam dan hari, ditambah
+        <strong>2800 detik = 46 menit 40 detik</strong> (2800 ÷ 60 = 46 sisa 40), dan 145 detik = 2 menit 25 detik. Ketik angka lalu pilih satuannya. Hasilnya langsung muncul dalam milidetik, detik, menit, jam dan hari, ditambah
         bentuk "sekian jam sekian menit sekian detik" dan tampilan jam:menit:detik. Patokannya tetap: 1 menit = 60 detik,
         1 jam = {H1.s} detik, 1 hari = {D1.s} detik. Desimal ditulis dengan titik (1.5), koma hanya pemisah ribuan.
       </p>

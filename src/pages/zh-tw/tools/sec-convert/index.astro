@@ -23,9 +23,10 @@ import "../../../../styles/global.css";
 import { toNanos, partsToNanos, convertAll, clock, minSec, UNITS } from "../../../../lib/sec-convert";
 import { UNIT_NAME_ZH_HANT as U, withUnitZhHant as w, readableZhHant as r } from "../../../../lib/hk/sec-convert";
 
-const title = "時間換算器（台灣）— 秒換算分鐘、分鐘換算小時、秒轉時分秒";
+// 검색어 "735分鐘" "2400秒" 에 답을 먼저(735 ÷ 60 = 12 나머지 15, 2400 ÷ 60 = 40, 0.8 × 60 = 48 로 확인)
+const title = "分鐘換算小時・秒換算分鐘（台灣）— 735分鐘＝12小時15分、2400秒＝40分鐘";
 const description =
-  "輸入毫秒、秒、分鐘、小時或天，一次換算成其他單位、幾小時幾分幾秒與時:分:秒，附換算公式、時間換算表、小數點小時與 Excel 秒轉時分秒的寫法。";
+  "735分鐘是12小時15分鐘，2400秒是40分鐘，0.8小時是48分鐘。輸入毫秒、秒、分鐘、小時或天，一次換算成其他單位與時:分:秒，附換算公式、時間換算表與 Excel 寫法。";
 
 const EX = "3600";
 const n0 = toNanos(EX, "s")!;
@@ -61,9 +62,9 @@ const num = (s: string) => Number(s).toLocaleString("zh-TW");
   <body class="bg-texture">
     <SiteHeader />
     <main>
-      <h1>時間換算器：秒、分鐘、小時、天一次換算</h1>
+      <h1>時間換算器：735分鐘是幾小時？秒、分鐘、小時一次換算</h1>
       <p>
-        輸入數字、選好單位，就會同時列出毫秒、秒、分鐘、小時、天的數值，並寫成「幾小時幾分鐘幾秒」和「時:分:秒」。換算的比例是固定的：1 分鐘 =
+        <strong>735分鐘 = 12小時15分鐘</strong>（735 ÷ 60 = 12 餘 15），2400秒 = 40分鐘，0.8小時 = 48分鐘。輸入數字、選好單位，就會同時列出毫秒、秒、分鐘、小時、天的數值，並寫成「幾小時幾分鐘幾秒」和「時:分:秒」。換算的比例是固定的：1 分鐘 =
         60 秒、1 小時 = 3,600 秒、1 天 = 86,400 秒。
       </p>
 
