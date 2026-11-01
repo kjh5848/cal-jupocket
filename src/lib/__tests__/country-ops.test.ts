@@ -51,6 +51,8 @@ describe("내 파일 검사", () => {
     expect(classify("kr", "ko", "social/stats.json")).toBe("forbidden");
     expect(classify("kr", "ko", ".claude/agents/country-runner.md")).toBe("own");
     expect(classify("kr", "ko", ".claude/launch.json")).toBe("forbidden");
+    expect(classify("kr", "ko", "package.json")).toBe("own");
+    expect(classify("us", "en-us", "package.json")).toBe("forbidden");
     expect(classify("us", "en-us", ".claude/agents/country-runner.md")).toBe("forbidden");
   });
   it("공유 파일은 잠금을 잡았을 때만 통과", () => {
