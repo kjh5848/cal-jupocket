@@ -20,6 +20,7 @@
     "calcs": "node social/seo.mjs --calcs",
     "report": "node social/report.mjs",
     "seo:index": "node social/index-status.mjs",
+    "seo:gaps": "node social/ctr-gaps.mjs",
     "indexnow": "node social/indexnow.mjs"
   },
   "dependencies": {
