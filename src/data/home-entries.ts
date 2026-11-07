@@ -48,10 +48,11 @@ export const homeEntries: HomeEntry[] = [
     key: "support",
     title: "정부 지원",
     icon: "checklist",
+    // 2026-11-07: 정부 지원 도우미 첫 사업(HUG 전세)을 입구에 — 체크리스트 + 보증 계산기
     questions: [
+      { q: "전세대출, 언제 무엇을 해야 하나요?", href: "/guide/hug-jeonse-checklist/" },
       { q: "기초연금, 나도 받을 수 있나요?", href: "/guide/basic-pension/#basic-pension-criteria" },
-      { q: "자녀장려금은 얼마나 나오나요?", href: "/guide/child-incentive-amount/" },
     ],
-    calc: { label: "기초연금 모의계산", href: "/guide/basic-pension-calculator/" },
+    calc: { label: "HUG 전세보증 계산기", href: "/guide/hug-jeonse-guarantee-calculator/" },
   },
 ];
