@@ -10,6 +10,7 @@ import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import Callout from "../../../components/Callout.astro";
+import JeonseGlossary from "../../../components/JeonseGlossary.astro";
 import r from "../../../rates/hug-jeonse-2026.json";
 import { hugSchedule } from "../../../lib/hug-jeonse";
 import { toDay, fromDay } from "../../../lib/date-calc";
@@ -87,6 +88,8 @@ const QA = [
   <h2>{QA[2].q}</h2>
   <p class="qa-lead">{QA[2].a}</p>
   <p>보증금을 받기 전에 먼저 전출하면 보증 이행이 거절될 수 있습니다. 공식 안내: <a href={r.sources.accidentClaim} rel="noopener" target="_blank">HUG 보증사고 이행청구 서류</a> · <a href={r.sources.registryCheck} rel="noopener" target="_blank">HUG 안심전세포털 등기부등본 확인</a></p>
+
+  <JeonseGlossary />
 
   <script src="../../../scripts/hug-schedule.ts"></script>
 </GuideLayout>

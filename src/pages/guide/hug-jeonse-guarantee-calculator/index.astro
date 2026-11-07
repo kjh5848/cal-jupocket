@@ -11,6 +11,7 @@ import AnswerBox from "../../../components/AnswerBox.astro";
 import CalcCta from "../../../components/CalcCta.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import Callout from "../../../components/Callout.astro";
+import JeonseGlossary from "../../../components/JeonseGlossary.astro";
 import r from "../../../rates/hug-jeonse-2026.json";
 import { hugGuarantee } from "../../../lib/hug-jeonse";
 import { won } from "../../../lib/won";
@@ -107,6 +108,8 @@ const QA = [
   <h2>{QA[2].q}</h2>
   <p class="qa-lead">{QA[2].a}</p>
   <p>공식 안내: <a href={r.sources.returnGuarantee} rel="noopener" target="_blank">HUG 전세보증금반환보증 상품개요</a> · <a href={r.sources.loanGuarantee} rel="noopener" target="_blank">HUG 전세안심보증 상품개요</a></p>
+
+  <JeonseGlossary />
 
   <script src="../../../scripts/hug-guarantee.ts"></script>
 </GuideLayout>
