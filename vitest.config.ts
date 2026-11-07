@@ -1,2 +1,2 @@
 import { defineConfig } from "vitest/config";
-export default defineConfig({ test: { include: ["src/**/*.test.ts", "social/**/*.test.mjs"] } });
+export default defineConfig({ test: { include: ["src/**/*.test.ts", "social/**/*.test.mjs", "workers/**/*.test.ts"] } });

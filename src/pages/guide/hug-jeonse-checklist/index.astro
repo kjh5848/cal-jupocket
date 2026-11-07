@@ -4,7 +4,7 @@
  * (허그 전세대출 순서·전세 계약 체크리스트·전세사기 예방 등기부 확인·갱신거절 통지 기한·보증사고 이행청구도 이 글)
  * 날짜: src/lib/hug-jeonse.ts hugSchedule() — rates/hug-jeonse-2026.json deadlines.
  * 근거: HUG 상품개요·안심전세포털, 주택도시기금 버팀목 안내, 주택임대차보호법, 부동산 거래신고법(2026-11-07 확인).
- * 로그인 없이 동작 — 일정은 캘린더 파일(.ics)로 내려받는다. 저장·알림은 다음 단계(로그인).
+ * 로그인 없이 동작 — 일정은 캘린더 파일(.ics)로 내려받거나, 알림 받기(웹 푸시, api.jupocket.com)로 맡긴다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
@@ -68,7 +68,10 @@ const QA = [
       ))}
     </ol>
     <button type="button" class="hug-ics" id="hs-ics">이 일정을 내 캘린더에 넣기(.ics)</button>
-    <p class="meta">파일을 열면 휴대폰·PC 캘린더에 날짜가 추가됩니다. 이 사이트는 날짜를 저장하지 않습니다.</p>
+    <p class="meta">파일을 열면 휴대폰·PC 캘린더에 날짜가 추가됩니다. 파일은 이 브라우저 안에서 만들어집니다.</p>
+    <button type="button" class="hug-push" id="hs-push">일정 알림 받기 — 3일 전·하루 전·당일</button>
+    <p class="meta" id="hs-push-msg" aria-live="polite">누르면 할 일 날짜와 이 브라우저의 알림 주소를 주포켓 알림 서버에 저장합니다. 이름·연락처·금액은 받지 않고, 알림 끄기를 누르면 지웁니다. 아이폰은 홈 화면에 추가한 앱에서만 됩니다.</p>
+    <button type="button" class="hug-push-off" id="hs-push-off" hidden>알림 끄기</button>
   </div>
 
   <h2>{QA[0].q}</h2>
@@ -126,5 +129,34 @@ const QA = [
     border: 0;
     border-radius: var(--r-pill);
     cursor: pointer;
+  }
+  .hug-push {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 0.75rem;
+    font: inherit;
+    font-weight: 700;
+    color: var(--brand);
+    background: var(--surface);
+    border: 2px solid var(--brand);
+    border-radius: var(--r-pill);
+    cursor: pointer;
+  }
+  .hug-push:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+  .hug-push-off {
+    padding: 0;
+    font: inherit;
+    font-size: var(--t-sm);
+    color: var(--muted);
+    text-decoration: underline;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .hug-push-off[hidden] {
+    display: none;
   }
 </style>

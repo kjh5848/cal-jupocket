@@ -1,0 +1,16 @@
+{
+  // api.jupocket.com — 알림(웹 푸시) 서버. 사이트(cal-jupocket, 정적 파일)와 따로 올린다
+  //   올리기:   npx wrangler deploy -c workers/api/wrangler.jsonc
+  //   비밀값:   VAPID_PRIVATE (npx wrangler secret put VAPID_PRIVATE -c workers/api/wrangler.jsonc)
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "jupocket-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-06",
+  "routes": [{ "pattern": "api.jupocket.com", "custom_domain": true }],
+  "d1_databases": [{ "binding": "DB", "database_name": "jupocket-push", "database_id": "39827f6b-1bd3-47ba-8bf2-120b38b3dbde" }],
+  "triggers": { "crons": ["0 0 * * *"] },
+  "vars": {
+    "VAPID_PUBLIC": "BJxT2bnOGkEJ47wLWgt3garOFdSNX6JjzRnsPmTbLLWlzI9tBnctFLrMHyI5SWGyFRVYDxeaYw50jcN_fOUDwvE"
+  },
+  "observability": { "enabled": true }
+}

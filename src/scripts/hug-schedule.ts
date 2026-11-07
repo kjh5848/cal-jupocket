@@ -1,11 +1,13 @@
 /**
  * HUG 전세대출 체크리스트 일정 — /guide/hug-jeonse-checklist/.
  * 날짜는 src/lib/hug-jeonse.ts hugSchedule() 가 낸다. 여기서는 입력을 읽고 목록과 캘린더 파일(.ics)을 만든다.
- * 날짜는 이 브라우저 밖으로 보내지 않는다 — .ics 는 브라우저 안에서 만들어 내려받는다.
+ * .ics 는 브라우저 안에서 만들어 내려받는다(날짜가 밖으로 나가지 않는다).
+ * "알림 받기"를 누른 경우에만 할 일 key·날짜를 알림 서버(api.jupocket.com)로 보낸다 — scripts/push-reminders.ts
  */
 import { hugSchedule, type ScheduleItem } from "../lib/hug-jeonse";
 import { toDay, fromDay } from "../lib/date-calc";
 import { trackCalculatorUse } from "../lib/track";
+import { setupPush } from "./push-reminders";
 
 const reportUse = trackCalculatorUse("hug-jeonse-schedule");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -78,4 +80,7 @@ for (const el of [contract, start, moveIn, end]) {
   });
 }
 $("hs-ics").addEventListener("click", downloadIcs);
+setupPush($<HTMLButtonElement>("hs-push"), $("hs-push-msg"), $<HTMLButtonElement>("hs-push-off"), () =>
+  current.map((i) => ({ key: i.key, date: fromDay(i.day) })),
+);
 render();
