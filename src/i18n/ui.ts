@@ -77,7 +77,7 @@ const WORDS: Record<Lang, Words> = {
     reset: "처음 값으로",
     collectedStamp: "써봄",
     collected: "주머니에 담겼어요",
-    collectedLink: "도구 도감 보기",
+    collectedLink: "전체 계산기 보기",
     typeLabel: { tax: "세금", labor: "급여·근로", pension: "연금·보험", home: "집·차", inherit: "상속·증여", money: "돈·금융", date: "날짜·시간", media: "사진·문서", text: "텍스트·개발", unit: "단위·변환", health: "건강·운동", life: "생활·재미" },
     // 한국어 홈은 src/pages/index.astro 가 자기 문구를 쓴다(LocaleHome 을 쓰지 않음)
     homeTitle: "",

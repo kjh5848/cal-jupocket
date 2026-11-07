@@ -52,6 +52,11 @@ export const calcCta: Record<string, CalcCta> = {
     sub: "갚을 원금·약정 요율·남은 날로 중도상환수수료를 계산합니다.",
     label: "중도상환수수료 계산기",
   },
+  "/guide/hug-jeonse-guarantee-calculator/": {
+    q: "이 집, 전세보증 가입이 될까?",
+    sub: "공시가격·보증금·근저당으로 보증한도와 가입 가능 여부를 추산합니다.",
+    label: "HUG 전세보증 계산기",
+  },
   "/guide/parking-account-interest-calculator/": {
     q: "파킹통장에 두면 한 달에 이자가 얼마 붙을까?",
     sub: "잔액과 금리로 세금을 뗀 이자를 계산합니다.",
@@ -99,6 +104,12 @@ export const calcNext: Record<string, CalcCta & { href: string }> = {
     q: "모은 돈을 예금에 한 번에 넣으면 얼마가 붙을까?",
     sub: "원금·금리·기간으로 세금을 뗀 예금 이자를 계산합니다.",
     label: "예금 이자 계산기",
+  },
+  "/guide/hug-jeonse-guarantee-calculator/": {
+    href: "/guide/loan-calculator/",
+    q: "전세대출을 받으면 매달 이자는 얼마일까?",
+    sub: "대출 금액·기간·금리로 월 상환액과 총 이자를 계산합니다.",
+    label: "대출 이자 계산기",
   },
   "/guide/parking-account-interest-calculator/": {
     href: "/guide/deposit-interest-calculator/",

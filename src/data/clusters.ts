@@ -348,6 +348,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/parking-account-interest/", title: "파킹통장 이자 계산 — 매일 마감 잔액에 금리를 붙여 더하고, 받을 때 15.4%를 뗍니다", kind: "guide", icon: "chart" },
       { href: "/guide/parking-account-tax/", title: "파킹통장 세금 — 이자를 받을 때마다 15.4%를 떼고, 따로 신고할 일은 대부분 없습니다", kind: "guide", icon: "chart" },
       { href: "/guide/parking-account-interest-calculator/", title: "파킹통장 이자 계산기", kind: "calc", icon: "calculator", blurb: "날짜별 잔액·구간 금리 → 세전·세후 이자" },
+      // 정부 지원 도우미 첫 사업(2026-11-07) — HUG 전세보증
+      { href: "/guide/hug-jeonse-checklist/", title: "HUG 전세대출 체크리스트 — 계약일·잔금일·만료일을 넣으면 신고·보증·갱신 통지 날짜가 나옵니다", kind: "guide", icon: "checklist" },
+      { href: "/guide/hug-jeonse-guarantee-calculator/", title: "HUG 전세보증 가능 여부 계산기", kind: "calc", icon: "calculator", blurb: "공시가격·보증금·근저당 → 보증한도·가입 가능 여부(추산)" },
     ],
   },
   /*
@@ -392,6 +395,8 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/hug-jeonse-guarantee-calculator/",
+  "/guide/hug-jeonse-checklist/",
   "/guide/packing-vs-half-packing/",
   "/guide/move-in-report/",
   "/guide/moving-checklist/",

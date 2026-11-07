@@ -1,0 +1,130 @@
+---
+/**
+ * "HUG 전세대출 체크리스트" — 매물 확인부터 보증금 반환까지 할 일과 날짜(정부 지원 도우미 첫 사업).
+ * (허그 전세대출 순서·전세 계약 체크리스트·전세사기 예방 등기부 확인·갱신거절 통지 기한·보증사고 이행청구도 이 글)
+ * 날짜: src/lib/hug-jeonse.ts hugSchedule() — rates/hug-jeonse-2026.json deadlines.
+ * 근거: HUG 상품개요·안심전세포털, 주택도시기금 버팀목 안내, 주택임대차보호법, 부동산 거래신고법(2026-11-07 확인).
+ * 로그인 없이 동작 — 일정은 캘린더 파일(.ics)로 내려받는다. 저장·알림은 다음 단계(로그인).
+ */
+import GuideLayout from "../../../layouts/GuideLayout.astro";
+import AnswerBox from "../../../components/AnswerBox.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import Callout from "../../../components/Callout.astro";
+import r from "../../../rates/hug-jeonse-2026.json";
+import { hugSchedule } from "../../../lib/hug-jeonse";
+import { toDay, fromDay } from "../../../lib/date-calc";
+
+const D = r.deadlines;
+const G = r.guarantee;
+const d = (s: string) => toDay(s)!;
+const base = { contract: d("2026-11-10"), start: d("2026-12-20"), moveIn: d("2026-12-20"), end: d("2028-12-19") };
+const ex = hugSchedule(base);
+const at = (k: string) => fromDay(ex.find((i) => i.key === k)!.day);
+
+// 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts).
+const title = "HUG 전세대출 체크리스트 — 계약일·잔금일·만료일을 넣으면 신고·보증·갱신 통지 날짜가 나옵니다";
+const description =
+  "HUG 전세대출 체크리스트는 매물 확인부터 계약, 전입신고, 버팀목·전세안심보증 신청, 만료 전 갱신거절 통지, 보증금 반환까지 할 일을 순서대로 정리합니다. 계약일·잔금일·전입일·만료일을 넣으면 마감 날짜를 계산하고 캘린더 파일로 받을 수 있습니다.";
+
+const ANSWER = `HUG 전세대출은 계약일부터 ${D.leaseReportDays}일 안에 임대차 신고, 잔금일과 전입일 중 빠른 날부터 ${D.loanGuaranteeMonths}개월 안에 대출·보증 신청, 만료 ${D.renewalNoticeToMonths}개월 전까지 갱신거절 통지가 핵심 기한입니다. 2026년 12월 20일 입주라면 대출·보증 신청은 ${at("loan-guarantee")}까지입니다.`;
+
+const QA = [
+  { q: "매물을 볼 때 무엇을 확인하나요?", a: `등기부등본 갑구에서 맨 아래 소유자가 계약할 사람과 같은지, 압류·가압류·신탁·가등기가 없는지 보고, 을구에서 근저당 채권최고액을 봅니다. 보증금 + 근저당이 주택가격의 ${G.ltvLimitPct}% 안이어야 HUG 보증이 됩니다. 아파트가 아니면 건축물대장에 위반건축물 표시가 없는지도 봅니다(HUG 안심전세포털).` },
+  { q: "계약하고 나서 언제까지 무엇을 하나요?", a: `계약일부터 ${D.leaseReportDays}일 안에 임대차 신고를 하고(전입신고를 하면 신고한 것으로 봅니다), 잔금일에 등기부를 다시 확인한 뒤 전입신고와 확정일자를 받습니다. 대항력은 인도와 전입을 마친 다음 날부터 생깁니다(주택임대차보호법 제3조). 버팀목 대출과 전세안심보증은 잔금일과 전입일 중 빠른 날부터 ${D.loanGuaranteeMonths}개월 안에 신청합니다.` },
+  { q: "계약이 끝날 때는 무엇을 챙기나요?", a: `만료 ${D.renewalNoticeFromMonths}개월~${D.renewalNoticeToMonths}개월 전에 갱신을 요구하거나 갱신하지 않겠다고 알립니다. ${D.renewalNoticeToMonths}개월 전까지 알리지 않으면 같은 조건으로 갱신된 것으로 보고, HUG 보증금 청구에도 이 기한 안에 알린 증빙이 필요합니다. 만료 후 ${D.accidentAfterMonths}개월이 지나도 못 받으면 보증사고로 임차권등기명령을 거쳐 HUG에 이행청구합니다.` },
+];
+---
+
+<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
+  <h1>{title}</h1>
+  <AnswerBox text={ANSWER} />
+
+  <div class="calc-card">
+    <p class="meta">HUG·주택도시기금 안내와 주택임대차보호법·부동산 거래신고법의 기한으로 날짜를 계산합니다({r.verifiedOn} 확인). 은행·HUG 지사의 실제 처리 일정은 다를 수 있으니 마감 며칠 전에 움직이세요.</p>
+    <div class="calc-input-wrap">
+      <label for="hs-contract">계약일</label>
+      <input type="date" id="hs-contract" value={fromDay(base.contract)} min="2000-01-01" max="2099-12-31" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="hs-start">잔금일(임대차 시작)</label>
+      <input type="date" id="hs-start" value={fromDay(base.start)} min="2000-01-01" max="2099-12-31" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="hs-movein">전입일</label>
+      <input type="date" id="hs-movein" value={fromDay(base.moveIn)} min="2000-01-01" max="2099-12-31" />
+    </div>
+    <div class="calc-input-wrap">
+      <label for="hs-end">계약 만료일</label>
+      <input type="date" id="hs-end" value={fromDay(base.end)} min="2000-01-01" max="2099-12-31" />
+    </div>
+    <ol class="hug-steps" id="hs-list">
+      {ex.map((i) => (
+        <li>
+          <span class="hug-date">{fromDay(i.day)}</span>
+          <strong>{i.title}</strong>
+          <span class="hug-what">{i.what}</span>
+          <span class="hug-basis">근거 · {i.basis}</span>
+        </li>
+      ))}
+    </ol>
+    <button type="button" class="hug-ics" id="hs-ics">이 일정을 내 캘린더에 넣기(.ics)</button>
+    <p class="meta">파일을 열면 휴대폰·PC 캘린더에 날짜가 추가됩니다. 이 사이트는 날짜를 저장하지 않습니다.</p>
+  </div>
+
+  <h2>{QA[0].q}</h2>
+  <p class="qa-lead">{QA[0].a}</p>
+  <p>미납 국세·지방세와 임금채권은 등기부에 나오지 않습니다. 계약할 때 임대인에게 납세증명서와 확정일자 부여 현황을 보여 달라고 요청할 수 있습니다(주택임대차보호법 제3조의7). 이 집이 보증 기준 안에 드는지는 <a href="/guide/hug-jeonse-guarantee-calculator/">HUG 전세보증 가능 여부 계산기</a>로 먼저 가늠해 보세요.</p>
+
+  <h2>{QA[1].q}</h2>
+  <p class="qa-lead">{QA[1].a}</p>
+  <Callout icon="📄">보증 신청 서류는 신청일 기준 1개월 안에 발급한 것이어야 합니다 — 신분증, 확정일자부 계약서, 보증금 이체 증빙, 등기사항전부증명서, 주민등록등본, 전입세대확인서(방문 발급), 건축물대장(아파트 제외).</Callout>
+
+  <AdSlot />
+
+  <h2>{QA[2].q}</h2>
+  <p class="qa-lead">{QA[2].a}</p>
+  <p>보증금을 받기 전에 먼저 전출하면 보증 이행이 거절될 수 있습니다. 공식 안내: <a href={r.sources.accidentClaim} rel="noopener" target="_blank">HUG 보증사고 이행청구 서류</a> · <a href={r.sources.registryCheck} rel="noopener" target="_blank">HUG 안심전세포털 등기부등본 확인</a></p>
+
+  <script src="../../../scripts/hug-schedule.ts"></script>
+</GuideLayout>
+
+<style is:global>
+  .hug-steps {
+    list-style: none;
+    margin: 1rem 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .hug-steps li {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-md);
+    background: var(--surface);
+  }
+  .hug-date {
+    font-weight: 800;
+    color: var(--brand);
+    font-variant-numeric: tabular-nums;
+  }
+  .hug-what {
+    font-size: var(--t-sm);
+  }
+  .hug-basis {
+    font-size: var(--t-xs);
+    color: var(--muted);
+  }
+  .hug-ics {
+    width: 100%;
+    min-height: 48px;
+    font: inherit;
+    font-weight: 700;
+    color: var(--surface);
+    background: var(--brand);
+    border: 0;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+  }
+</style>

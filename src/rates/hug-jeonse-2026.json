@@ -1,0 +1,35 @@
+{
+  "verifiedOn": "2026-11-07",
+  "note": "HUG 전세보증금반환보증·전세안심보증 가입 조건과 전세 계약 일정의 법정·HUG 기한. 조사 문서 docs/research/2026-11-07-hug-jeonse.md. 보증료는 요율 범위만 확인했다(구간별 요율표 미확인) — 금액을 계산하지 않는다.",
+  "sources": {
+    "returnGuarantee": "https://www.khug.or.kr/hug/web/ig/dr/igdr000001.jsp",
+    "returnGuaranteeDocs": "https://www.khug.or.kr/hug/web/ig/dr/igdr000002.jsp",
+    "loanGuarantee": "https://www.khug.or.kr/hug/web/ig/dl/igdl000001.jsp",
+    "beotimmok": "https://nhuf.molit.go.kr/FP/FP05/FP0502/FP05020101.jsp",
+    "accidentClaim": "https://www.khug.or.kr/hug/web/ge/er/geer001100.jsp",
+    "registryCheck": "https://www.khug.or.kr/jeonse/web/s03/s030105.jsp",
+    "leaseProtectionAct": "https://www.law.go.kr/법령/주택임대차보호법",
+    "leaseReportAct": "https://www.law.go.kr/법령/부동산거래신고등에관한법률"
+  },
+  "guarantee": {
+    "depositCap": { "capital": 700000000, "other": 500000000 },
+    "ltvLimitPct": 90,
+    "seniorLimitPct": 60,
+    "seniorLimitMultiFamilyPct": 80,
+    "publicPriceMultiplierPct": 140,
+    "rentConversionPct": 6.5,
+    "minTermYears": 1,
+    "appraisalValidMonths": 6,
+    "premiumRateRangePct": { "min": 0.097, "max": 0.211 }
+  },
+  "deadlines": {
+    "leaseReportDays": 30,
+    "preLimitReviewDaysBefore": 14,
+    "loanGuaranteeMonths": 3,
+    "returnGuaranteeTermFraction": 0.5,
+    "renewalNoticeFromMonths": 6,
+    "renewalNoticeToMonths": 2,
+    "accidentAfterMonths": 1,
+    "terminationEffectMonths": 3
+  }
+}
