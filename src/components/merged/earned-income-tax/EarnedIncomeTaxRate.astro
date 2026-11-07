@@ -1,12 +1,10 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/earned-income-tax/#earned-income-tax-rate (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "근로소득세율" — 소득세율·과세표준 시리즈. (연봉별 근로소득세·실효세율·몇프로·2026도 이 글)
  * 근거: 소득세법 제47조(근로소득공제)·제50조(기본공제)·제51조의3·제52조(보험료 공제)·제55조(기본세율)·제59조(근로소득세액공제)·
  * 제59조의4 제9항(표준세액공제 13만원). 계산: income-tax-rate.ts earnedTaxByPay() = four-insurance payroll() + year-end-calc yearEnd().
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/income-tax-rate-2026.json";
 import y from "../../../rates/year-end-2026.json";
 import { earnedTaxByPay } from "../../../lib/income-tax-rate";
@@ -30,15 +28,10 @@ const QA = [
   { q: "근로소득세 실효세율은 왜 낮나요?", a: `과세표준이 총급여보다 훨씬 작기 때문입니다. 연봉 5천만원이면 근로소득공제 ${won(ex.earnedDeduction)}, 본인 기본공제 ${won(y.calc.basicDeductionPerHead.amount)}, 국민연금·건강·고용보험료를 빼 과세표준이 ${won(ex.base)}이고, 산출세액 ${won(ex.computedTax)}에서 근로소득세액공제 ${won(ex.earnedCredit)}을 또 뺍니다.` },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
   <div class="table-scroll">
     <table>
@@ -50,13 +43,9 @@ const QA = [
     4대보험은 연봉 ÷ 12를 월급으로 보고 2026년 요율로 계산했습니다 — <a href="/guide/four-insurance-calculator/">4대보험 계산기</a>.
     실제 매달 떼는 금액은 간이세액표라 이 월 평균과 다를 수 있습니다.
   </p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     내 공제를 넣어 보려면 <a href="/guide/year-end-calculator/">연말정산 계산기</a>, 세율표는{" "}
     <a href="/guide/income-tax-brackets/">소득세율표</a>에 있습니다.
   </p>
-</GuideLayout>

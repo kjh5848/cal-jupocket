@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "마이너스통장 이자 납부일" — 마이너스통장 이자 시리즈. (이자 납입 방법·내는법·이자 발생 시점도 이 글)
  * 법령 숫자 없음 — 결제일 전날까지의 일할 이자가 결제일에 청구된다. 금액은 overdraftInterest() 가 낸다(rates: overdraft-2026.json).
@@ -30,6 +31,7 @@ const QA = [
   { q: "결제일이 같아도 달마다 이자가 다른 이유는 뭔가요?", a: `한 회차의 날수가 달마다 다르기 때문입니다. 결제일이 말일이고 1,000만원 연 6%를 쓰고 있으면 28일인 회차는 ${won(feb.interest)}, 31일인 회차는 ${won(mar.interest)}입니다. 날수가 많은 회차일수록 이자도 많습니다.` },
   { q: "마이너스통장 이자를 안 내면 어떻게 되나요?", a: `약정한 날에 이자를 내지 못하면 연체가 되고, 약정 이자율에 연체가산율을 더한 지연배상금률이 붙습니다. 이자를 어떤 방법으로 빼 가는지, 연체가산율이 몇 %인지는 상품마다 다르니 본인 약정서의 결제 방법·지연배상금 조항을 확인하세요.` },
 ];
+import MinusAccountInterest from "../../../components/merged/minus-account-interest-payment/MinusAccountInterest.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -47,11 +49,14 @@ const QA = [
 
   <h2>{QA[2].q}</h2>
   <p class="qa-lead">{QA[2].a}</p>
-  <p>하루 이자가 어떻게 나오는지, 윤년에는 무엇이 달라지는지는 <a href="/guide/minus-account-interest/">마이너스통장 이자 계산</a>에 정리했습니다.</p>
+  <p>하루 이자가 어떻게 나오는지, 윤년에는 무엇이 달라지는지는 <a href="/guide/minus-account-interest-payment/#minus-account-interest">마이너스통장 이자 계산</a>에 정리했습니다.</p>
 
   <h2>마이너스통장 이자 시리즈</h2>
   <ul>
-    <li><a href={`/guide/${S.hub.slug}/`}>{S.hub.label}</a></li>
-    {S.items.filter((i) => i.slug !== "minus-account-interest-payment").map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    <li><a href={guideHref(S.hub.slug)}>{S.hub.label}</a></li>
+    {S.items.filter((i) => i.slug !== "minus-account-interest-payment").map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="minus-account-interest"><h2>마이너스통장 이자 계산</h2><MinusAccountInterest /></section>
 </GuideLayout>

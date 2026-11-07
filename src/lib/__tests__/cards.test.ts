@@ -282,7 +282,7 @@ describe("세트의 link 와 카드의 refNo 는 같은 곳을 가리킨다", ()
 
     const entry = entryByNo(cta.refNo);
     expect(entry, `허브에 ${cta.refNo}번이 없다`).toBeDefined();
-    expect(new URL(set.link).pathname).toBe(entry!.href);
+    expect(new URL(set.link).pathname).toBe(entry!.href.split("#")[0]); // 합친 글의 #섹션은 그 글로 본다(2026-11-07)
   });
 });
 

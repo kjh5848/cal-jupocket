@@ -12,6 +12,5 @@ export const oldAgePensionSeries: Series = {
   hub: { slug: "old-age-pension", keyword: "노령연금", label: "노령연금 — 자격·기준" },
   items: [
     { slug: "old-age-pension-age", keyword: "노령연금 나이", label: "노령연금 나이 — 출생연도별" },
-    { slug: "old-age-pension-vs-basic", keyword: "노령연금 기초연금 차이", label: "노령연금 기초연금 차이" },
   ],
 };

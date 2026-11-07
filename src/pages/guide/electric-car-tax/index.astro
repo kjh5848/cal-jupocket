@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "전기차 세금" — 전기차 세금 시리즈 허브. (전기차 자동차세·전기차 세금 기준·인상·개편·혜택도 이 글)
  * 근거: 지방세법 제127조 제1항 제3호·제3항, 제128조, 제150조 제7호, 제151조, 시행령 제123조 제2호,
@@ -69,7 +70,7 @@ import ElectricCarTaxExemption from "../../../components/merged/electric-car-tax
 
   <h2>전기차 세금 시리즈</h2>
   <ul>
-    {[S.hub, ...S.items].map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {[S.hub, ...S.items].map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 
   {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}

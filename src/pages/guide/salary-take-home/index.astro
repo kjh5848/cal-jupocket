@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "연봉 실수령액" — 실수령액 시리즈 허브. (2026 연봉 실수령액·연봉 실수령액표·1억 연봉 실수령액·연봉 3600/4000/5000도 이 글)
  * 근거: 소득세법 시행령 별표 2(근로소득 간이세액표)·제194조, 소득세법 제12조 제3호 러목, 지방세법 제103조의13, 4대보험 요율.
@@ -70,6 +71,6 @@ const QA = [
 
   <h2>실수령액 시리즈</h2>
   <ul>
-    {[S.hub, ...S.items].map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {[S.hub, ...S.items].map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

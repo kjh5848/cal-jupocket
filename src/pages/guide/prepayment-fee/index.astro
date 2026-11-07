@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "중도상환수수료 계산" — 중도상환수수료 시리즈 허브. (중도상환수수료 계산 방법·대출 중도상환수수료 계산방법도 이 글)
  * 근거: 금융소비자보호법 제20조 ① 4호 나목 1)(계약 성립일부터 3년), 산식은 은행 상품 안내 문구(KB국민은행 전세자금대출 등)의 해석.
@@ -62,7 +63,7 @@ import PrepaymentFee3Years from "../../../components/merged/prepayment-fee/Prepa
 
   <h2>중도상환수수료 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 
   {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}

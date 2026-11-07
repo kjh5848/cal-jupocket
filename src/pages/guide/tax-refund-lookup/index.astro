@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "세금 환급금 조회" — 세금 환급 시리즈 허브. (세금환급금 조회·미수령 환급금·종류·5년 시효·20만원 이하 충당·사기 문자도 이 글)
  * 근거: 국세기본법 제51조(결정·충당·30일 내 지급·20만원 이하 1년 미수령 충당), 제52조(가산금), 제54조(5년 시효, 안내로 중단 안 됨),
@@ -48,10 +49,10 @@ const QA = [
 
   <h2>{QA[3].q}</h2>
   <p class="qa-lead">{QA[3].a}</p>
-  <p>기한 후 신고 환급은 <a href="/guide/late-filing-refund/">기한후신고 환급</a>, 연말정산은 <a href="/guide/year-end-refund-date/">연말정산 환급금 지급일</a>에 있습니다.</p>
+  <p>기한 후 신고 환급은 <a href="/guide/late-filing-penalty/#late-filing-refund">기한후신고 환급</a>, 연말정산은 <a href="/guide/year-end-refund-date/">연말정산 환급금 지급일</a>에 있습니다.</p>
 
   <h2>세금 환급 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

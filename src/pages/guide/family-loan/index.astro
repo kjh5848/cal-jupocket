@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "가족간 차용증" — 가족간 차용증 시리즈 허브. (가족간 차용증 무이자·증여세·부모 자식 돈 빌리기·적정이자율도 이 글)
  * 근거: 상증법 제41조의4(금전 무상대출 등에 따른 이익의 증여)·제45조(재산 취득자금 등의 증여 추정), 시행령 제31조의4·제34조,
@@ -74,7 +75,7 @@ import FamilyLoanHowto from "../../../components/merged/family-loan/FamilyLoanHo
   <ul>{r.notVerified.map((n) => <li>{n}</li>)}</ul>
 
   <h2>가족간 차용증 시리즈</h2>
-  <ul>{[S.hub, ...S.items].map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}</ul>
+  <ul>{[S.hub, ...S.items].map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}</ul>
 
   {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
   <section id="family-loan-howto"><h2>차용증 쓰는법</h2><FamilyLoanHowto /></section>

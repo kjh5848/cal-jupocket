@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "대출이자 계산" — 대출이자 계산 시리즈 허브. (대출이자 계산방법·계산법·공식·1억 대출 이자·한 달 이자도 이 글)
  * 법령 숫자 없음 — 월 이자 = 남은 원금 × 연 이자율 ÷ 12. 금액은 loanSchedule() 이 낸다(rates: loan-2026.json).
@@ -51,6 +52,6 @@ const QA = [
 
   <h2>대출이자 계산 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

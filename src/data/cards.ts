@@ -588,7 +588,7 @@ export const cardSets: CardSet[] = [
   {
     slug: "late-filing-refund",
     cluster: "income",
-    link: "https://jupocket.com/guide/late-filing-refund/",
+    link: "https://jupocket.com/guide/late-filing-penalty/#late-filing-refund",
     cards: [
       {
         kind: "cover",

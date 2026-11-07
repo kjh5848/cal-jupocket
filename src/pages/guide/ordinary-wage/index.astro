@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "통상임금" — 통상임금 시리즈 허브. (통상임금 뜻·통상임금이란·통상임금 기준·통상임금 계산 방법·통상임금 계산법도 이 글)
  * 계산: src/lib/ordinary-wage.ts ordinaryWage() — 근로기준법 시행령 제6조 ①②③(rates: ordinary-wage-2026.json).
@@ -72,6 +73,6 @@ const QA = [
 
   <h2>통상임금 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

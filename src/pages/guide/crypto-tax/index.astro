@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "코인 과세" — 코인 세금 시리즈 허브. (코인 세금·가상자산 과세·비트코인 세금·기준·언제부터·해외거래소·신고·2027도 이 글)
  * 근거: 소득세법 제21조 제1항 제27호(기타소득), 제37조(필요경비·2026말 시가), 제64조의3 제2항(250만원·20%), 제70조 제2항(5월 신고),
@@ -56,7 +57,7 @@ import CryptoTaxDelay from "../../../components/merged/crypto-tax/CryptoTaxDelay
 
   <h2>코인 세금 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
   <p>미국 주식 같은 해외주식은 다른 세금입니다 — <a href="/guide/overseas-stock-tax/">해외주식 양도소득세</a>.</p>
 

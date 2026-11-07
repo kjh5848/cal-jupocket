@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "이사 체크리스트" — 이사 시리즈 허브. (이사 준비 체크리스트·이사 전 체크리스트·이사 시 해야 할 일·전세 이사 체크리스트·이사 비용도 이 글)
  * 근거: 주민등록법 제16조 ①·제17조·제40조 ④, 주택임대차보호법 제3조 ①·제3조의2 ②·제3조의3 ①·⑤,
@@ -80,7 +81,7 @@ const steps = [
 
   <h2>이사 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 
   <AffiliateBox id="moving-quote" />

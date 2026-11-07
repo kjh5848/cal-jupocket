@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "건강보험 피부양자" — 피부양자 시리즈 허브. (피부양자 뜻·범위·부모님·형제자매·자격 상실·탈락·11월도 이 글)
  * 근거: 국민건강보험법 제5조 제2항(범위), 제6조 제3항, 시행령 제41조(소득·반영 시기), 시행규칙 제2조·별표 1·별표 1의2. rates: health-dependent-2026.json
@@ -49,7 +50,7 @@ import HealthDependentRegistration from "../../../components/merged/health-depen
 
   <h2>피부양자 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 
   {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}

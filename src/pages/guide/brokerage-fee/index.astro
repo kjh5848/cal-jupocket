@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "중개보수 요율표" — 중개보수 시리즈 허브. (중개보수·부동산 중개보수 요율·중개보수 뜻·복비 뜻·부동산 중개수수료율·아파트 복비도 이 글)
  * 근거: 공인중개사법 시행규칙 제20조 ①·③·④, [별표 1]·[별표 2], 서울특별시 주택 중개보수 등에 관한 조례 [별표 1](rates: brokerage-fee-2026.json).
@@ -66,6 +67,6 @@ const QA = [
 
   <h2>중개보수 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

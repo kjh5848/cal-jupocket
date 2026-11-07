@@ -1,4 +1,5 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/tax-invoice-date/#tax-invoice-early-issue (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "세금계산서 발행 후 대금 지급 기한" — 마흔여덟 번째 글(48번). 세금계산서 축 다섯 번째.
  *
@@ -18,8 +19,6 @@
  * ⚠️ 조건을 못 맞췄을 때의 가산세는 쓰지 않는다. 제60조에 '공급시기 전' 발급을
  *    겨냥한 문구가 없었다. 찾지 못했다고 쓴다.
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/vat-2026.json";
 
 const title = "세금계산서 발행 후 대금 지급 기한 — 먼저 끊었다면 7일입니다";
@@ -29,10 +28,6 @@ const description =
 const E = r.taxInvoice.earlyIssue;
 const F = r.filing;
 ---
-
-<GuideLayout title={title} description={description} updated={r.verifiedOn}>
-  <h1>{title}</h1>
-
   <p>
     세금계산서를 끊었는데 거래처가 돈을 언제까지 줘야 하느냐는 질문입니다.
     결론부터 말하면 <strong>세법은 그 기한을 정하지 않습니다.</strong>
@@ -44,7 +39,7 @@ const F = r.filing;
     경우입니다.
   </p>
 
-  <h2>보통 순서라면 대금 날짜를 따지지 않습니다</h2>
+  <h3>보통 순서라면 대금 날짜를 따지지 않습니다</h3>
   <p>
     물건을 넘기거나 일을 끝낸 날이 공급시기이고, 세금계산서는 원칙적으로 그날
     발급합니다. 이 순서라면 대금을 다음 달에 받든 석 달 뒤에 받든
@@ -55,7 +50,7 @@ const F = r.filing;
     <a href="/guide/tax-invoice-date/">세금계산서 발행일자</a>에 정리했습니다.
   </p>
 
-  <h2>선발행 — 먼저 끊었다면 7일 안에 받아야 합니다</h2>
+  <h3>선발행 — 먼저 끊었다면 7일 안에 받아야 합니다</h3>
   <div class="callout warn">
     <p>
       ⚠️ {E.sevenDays.rule}. ({E.sevenDays.article})
@@ -67,10 +62,7 @@ const F = r.filing;
     대금 기한이 아니라 <strong>먼저 끊은 세금계산서가 성립하기 위한
     조건</strong>입니다.
   </p>
-
-  <AdSlot />
-
-  <h2>7일을 넘겨도 되는 두 경우</h2>
+  <h3>7일을 넘겨도 되는 두 경우</h3>
   <p>
     제17조 제3항이 예외를 둘 둡니다. 둘 중 하나면 7일이 지난 뒤에 대가를
     받아도 발급한 때를 공급시기로 봅니다.
@@ -91,13 +83,13 @@ const F = r.filing;
     없습니다.
   </p>
 
-  <h2>돈을 먼저 받았다면</h2>
+  <h3>돈을 먼저 받았다면</h3>
   <p>
     반대 순서도 조문에 있습니다 — {E.paidFirst.rule}({E.paidFirst.article}).
     계약금을 받고 그 금액만큼 세금계산서를 끊으면 그 날이 공급시기가 됩니다.
   </p>
 
-  <h2>조건을 못 맞추면</h2>
+  <h3>조건을 못 맞추면</h3>
   <p>
     {E.ifMissed}
   </p>
@@ -106,24 +98,3 @@ const F = r.filing;
     늦게 끊었을 때의 가산세 구조는 <a href="/guide/vat-penalty/">부가세
     가산세</a>에 있습니다.
   </p>
-
-  <h2>이 글에 없는 것</h2>
-  <ul>
-    <li>
-      <strong>조건을 못 맞춘 선발행에 붙는 가산세</strong> — 부가가치세법
-      제60조에서 찾지 못했습니다. 해석례는 읽지 않았습니다.
-    </li>
-    <li>
-      <strong>할부 등 제17조 제4항의 경우</strong> — 범위를 대통령령이 정하고,
-      그 조문은 읽지 않았습니다.
-    </li>
-    <li>
-      <strong>계약상 대금 지급 기한</strong> — 하도급처럼 다른 법이 지급
-      기한을 정하는 거래가 있지만, 세법 밖이라 다루지 않습니다.
-    </li>
-  </ul>
-  <p>
-    잘못 끊은 세금계산서를 고치는 방법은
-    <a href="/guide/tax-invoice-cancel/">세금계산서 발행 취소</a>에 있습니다.
-  </p>
-</GuideLayout>

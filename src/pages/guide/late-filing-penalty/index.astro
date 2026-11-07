@@ -56,6 +56,7 @@ const cliff = d31.total - d30.total;
 const srcNo = p.sources.find((s) => s.label.includes("제47조의2"))!;
 const srcRelief = p.sources.find((s) => s.label.includes("제48조"))!;
 const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
+import LateFilingRefund from "../../../components/merged/late-filing-penalty/LateFilingRefund.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={p.verifiedOn}>
@@ -284,4 +285,7 @@ const srcLate = p.sources.find((s) => s.label.includes("제27조의4"))!;
   <p>
     <a class="btn" href="/penalty/">가산세 계산기 열기</a>
   </p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="late-filing-refund"><h2>기한후신고 환급</h2><LateFilingRefund /></section>
 </GuideLayout>

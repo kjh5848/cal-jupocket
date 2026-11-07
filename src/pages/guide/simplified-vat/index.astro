@@ -30,6 +30,7 @@ const fmt = (n: number) => n.toLocaleString("ko-KR");
 
 const srcBasic = vat.sources.find((s) => s.url.includes("7693"))!;
 const srcLaw = vat.sources.find((s) => s.url.includes("제69조"))!;
+import SimplifiedVatFinalReturn from "../../../components/merged/simplified-vat/SimplifiedVatFinalReturn.astro";
 ---
 
 <GuideLayout title={title} description={description} updated="2026-08-21">
@@ -113,4 +114,7 @@ const srcLaw = vat.sources.find((s) => s.url.includes("제69조"))!;
   </p>
 
   <AdSlot label="guide-simplified-vat-bottom" />
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="simplified-vat-final-return"><h2>간이과세자 부가세 확정신고</h2><SimplifiedVatFinalReturn /></section>
 </GuideLayout>

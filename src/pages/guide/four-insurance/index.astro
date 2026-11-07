@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "4대보험" — 4대보험 시리즈 허브. (4대보험 종류·몇프로·세금·산재·누가 내나도 이 글)
  * 근거: 국민연금법 제88조·부칙 <법률 제20903호> 제4조, 국민건강보험법 제73조·제76조·시행령 제44조,
@@ -66,7 +67,7 @@ import FourInsuranceRate from "../../../components/merged/four-insurance/FourIns
 
   <h2>4대보험 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 
   {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}

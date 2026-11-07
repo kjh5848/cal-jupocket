@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "원천세" — 원천세·지급명세서 시리즈 허브. (원천세 신고·납부기한·반기납부·세율·가산세·0원 신고도 이 글)
  * 근거: 소득세법 제128조(다음 달 10일·반기), 제129조(원천징수세율), 시행령 제185조(이행상황신고서·0원 포함)·제186조(20명 이하·승인),
@@ -63,6 +64,6 @@ const QA = [
 
   <h2>원천세·지급명세서 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

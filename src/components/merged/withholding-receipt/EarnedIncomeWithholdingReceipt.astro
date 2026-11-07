@@ -1,11 +1,9 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/withholding-receipt/#earned-income-withholding-receipt (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "근로소득원천징수영수증" — 원천징수영수증 시리즈. (근로·갑근세 원천징수영수증도 이 글)
  * 근거: 소득세법 제143조(2월 말일·중도퇴사·일용·종된 근무지).
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import w from "../../../rates/withholding-receipt-2026.json";
 
 const E = w.earned;
@@ -23,12 +21,7 @@ const QA = [
   { q: "회사가 두 곳이면 원천징수영수증을 어디서 받나요?", a: "두 곳 모두에서 받습니다. 연말정산을 한 곳에서 합치려면 다른 회사(종된 근무지)에 영수증을 요청해 주된 근무지에 내야 하고, 요청을 받은 회사는 지체 없이 발급해야 합니다(제143조 제2항)." },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={w.verifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
   <table>
     <thead><tr><th>근로자</th><th>발급 기한</th></tr></thead>
@@ -39,19 +32,15 @@ const QA = [
     </tbody>
   </table>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
 
-  <h2>{QA[3].q}</h2>
+  <h3>{QA[3].q}</h3>
   <p class="qa-lead">{QA[3].a}</p>
   <p>
     영수증을 받았으면 어디를 봐야 하는지는 <a href="/guide/withholding-receipt/#withholding-receipt-read">원천징수영수증
     보는 법</a>, 연말정산 일정은 <a href="/guide/year-end-settlement/">연말정산 기간과
     순서</a>에 있습니다.
   </p>
-</GuideLayout>

@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "사업자등록" — 사업자등록 시리즈 허브. (사업자등록 신청·기한·서류·방법·홈택스·미등록 가산세도 이 글)
  * 근거: 부가가치세법 제8조 제1항·제2항(사업장마다 20일, 개업 전 가능, 다른 세무서도), 시행령 제11조(신청서·첨부서류·2일 발급),
@@ -55,7 +56,7 @@ import BusinessRegistrationChange from "../../../components/merged/business-regi
 
   <h2>사업자등록 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 
   {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}

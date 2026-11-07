@@ -26,6 +26,9 @@ const labelOf = (slug: string) => withholdingReceiptSeries.items.find((s) => s.s
 import WithholdingReceiptIssue from "../../../components/merged/withholding-receipt/WithholdingReceiptIssue.astro";
 import WithholdingReceiptRead from "../../../components/merged/withholding-receipt/WithholdingReceiptRead.astro";
 import WithholdingReceiptVsIncomeCertificate from "../../../components/merged/withholding-receipt/WithholdingReceiptVsIncomeCertificate.astro";
+import EarnedIncomeWithholdingReceipt from "../../../components/merged/withholding-receipt/EarnedIncomeWithholdingReceipt.astro";
+import BusinessIncomeWithholdingReceipt from "../../../components/merged/withholding-receipt/BusinessIncomeWithholdingReceipt.astro";
+import SeveranceWithholdingReceipt from "../../../components/merged/withholding-receipt/SeveranceWithholdingReceipt.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={w.verifiedOn} faq={QA}>
@@ -62,4 +65,9 @@ import WithholdingReceiptVsIncomeCertificate from "../../../components/merged/wi
   <section id="withholding-receipt-issue"><h2>원천징수영수증 발급</h2><WithholdingReceiptIssue /></section>
   <section id="withholding-receipt-read"><h2>원천징수영수증 보는법</h2><WithholdingReceiptRead /></section>
   <section id="withholding-receipt-vs-income-certificate"><h2>원천징수영수증 소득금액증명원 차이</h2><WithholdingReceiptVsIncomeCertificate /></section>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="earned-income-withholding-receipt"><h2>근로소득원천징수영수증</h2><EarnedIncomeWithholdingReceipt /></section>
+  <section id="business-income-withholding-receipt"><h2>사업소득 원천징수영수증</h2><BusinessIncomeWithholdingReceipt /></section>
+  <section id="severance-withholding-receipt"><h2>퇴직소득원천징수영수증</h2><SeveranceWithholdingReceipt /></section>
 </GuideLayout>

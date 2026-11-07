@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "실업급여" — 실업급여 시리즈 허브. (고용보험 실업급여·구직급여·얼마·하루 금액·상한액·하한액·2027 최저임금 역전도 이 글)
  * 근거: 고용보험법 제40조(180일·18개월), 제45조·제46조(기초일액 60%·최저 80%), 시행령 제68조(기초일액 상한 11만3,500원),
@@ -81,7 +82,7 @@ import UnemploymentBenefitPeriod from "../../../components/merged/unemployment-b
 
   <h2>실업급여 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 
   {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}

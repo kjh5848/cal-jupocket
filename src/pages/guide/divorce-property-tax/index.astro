@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "이혼 재산분할 세금" — 이혼 재산분할 세금 시리즈 허브. (이혼 재산분할 양도세·증여세·협의이혼·이혼소송 재산분할 세금·사실혼도 이 글)
  * 근거: 지방세법 제15조 제1항 제6호, 시행령 제28조의6 제2항 / 판례 — 대법원 2012두10901(양도 아님), 2001두4573(위자료는 양도),
@@ -71,6 +72,6 @@ const QA = [
 
   <h2>이혼 재산분할 세금 시리즈</h2>
   <ul>
-    {[S.hub, ...S.items].map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {[S.hub, ...S.items].map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "주민세" — 지방세 시리즈 허브. (주민세 개인분·사업소분·종업원분·납부기간·8월·금액·면제도 이 글)
  * 근거: 지방세법 제74조(세 가지), 제75조(납세의무자·제외), 제78조·제79조(개인분 1만원 이하 조례, 7월 1일 기준, 8월 16~31일 — local-tax-2026.json),
@@ -69,6 +70,6 @@ const QA = [
 
   <h2>지방세 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

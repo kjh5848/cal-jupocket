@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "소득세율표" — 소득세율·과세표준 시리즈 허브(링크허브 8번, 같은 주소를 시리즈 구조로 고쳐 썼다).
  * (종합소득세 세율 구간·누진세율·누진공제·2026·3.3%와의 차이도 이 글)
@@ -75,6 +76,6 @@ const QA = [
 
   <h2>소득세율·과세표준 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "재산세" — 재산세 시리즈 허브(35번 글, 같은 주소를 스니펫 구조로 고쳐 썼다). (재산세 부과기준·납부기간·7월·9월·세율·1세대1주택·감면도 이 글)
  * 근거: 지방세법 제107조(6월 1일 사실상 소유자), 제110조·시행령 제109조(공정시장가액비율, 1세대1주택 43~45%), 제111조·제111조의2(세율·특례),
@@ -73,7 +74,7 @@ import PropertyTaxPayment from "../../../components/merged/property-tax/Property
 
   <h2>재산세 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 
   {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}

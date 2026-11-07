@@ -15,7 +15,6 @@ export const incomeTaxRateSeries: Series = {
   cluster: "income",
   hub: { slug: "income-tax-brackets", keyword: "소득세율표", label: "소득세율표" },
   items: [
-    { slug: "earned-income-tax-rate", keyword: "근로소득세율", label: "근로소득세율" },
     { slug: "earned-income-tax", keyword: "근로소득세", label: "근로소득세" },
     { slug: "tax-base", keyword: "과세표준", label: "과세표준" },
     { slug: "comprehensive-tax-base", keyword: "종합소득세 과세표준", label: "종합소득세 과세표준" },

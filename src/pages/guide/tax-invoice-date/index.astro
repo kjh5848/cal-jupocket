@@ -31,6 +31,8 @@ const T = r.taxInvoice;
 const pct = (v: number) => `${(v * 100).toFixed(1).replace(/\.0$/, "")}%`;
 const 예시공급가액 = 10_000_000;
 const won = (n: number) => n.toLocaleString("ko-KR") + "원";
+import TaxInvoiceHow from "../../../components/merged/tax-invoice-date/TaxInvoiceHow.astro";
+import TaxInvoiceEarlyIssue from "../../../components/merged/tax-invoice-date/TaxInvoiceEarlyIssue.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn}>
@@ -52,7 +54,7 @@ const won = (n: number) => n.toLocaleString("ko-KR") + "원";
     물건을 넘긴 날, 용역을 끝낸 날이 기준입니다. 공급시기가 되기 전에 미리
     발급하는 것은 되지만 조건이 붙습니다(제2항) — 먼저 끊었다면 7일 안에
     대가를 받아야 그 날이 공급시기가 됩니다. 자세한 건
-    <a href="/guide/tax-invoice-early-issue/">세금계산서 발행 후 대금 지급 기한</a>에
+    <a href="/guide/tax-invoice-date/#tax-invoice-early-issue">세금계산서 발행 후 대금 지급 기한</a>에
     있습니다. 뒤로 미루는 쪽의 조건은 아래와 같습니다.
   </p>
 
@@ -214,4 +216,8 @@ const won = (n: number) => n.toLocaleString("ko-KR") + "원";
     신고 일정은 <a href="/guide/vat-filing/">부가세 신고</a>,
     한 해 전체는 <a href="/guide/tax-year/">한 해 동안 내는 세금</a>입니다.
   </p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="tax-invoice-how"><h2>세금계산서 발행방법</h2><TaxInvoiceHow /></section>
+  <section id="tax-invoice-early-issue"><h2>세금계산서 발행 후 대금 지급 기한</h2><TaxInvoiceEarlyIssue /></section>
 </GuideLayout>

@@ -1,12 +1,11 @@
 ---
+import { guideHref } from "../../../data/merged";
+/* 합친 글 섹션 — 원래 /guide/tax-invoice-date/#tax-invoice-how (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "세금계산서 발행방법" — 사업자 신고 시리즈 허브. (세금계산서 발행 방법·홈택스·기재사항·발행일·발행 시기도 이 글)
  * 근거: 부가가치세법 제32조 제1항(필요적 기재사항)·제2항·제3항(전자 발급·전송), 제34조(발급시기 — vat-2026.json),
  * 시행령 제68조 제5항(전자적 방법 — 국세청 시스템 등)·제7항(다음 날 전송), 제60조 제2항(가산세 — vat-penalty-2026.json).
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/business-filing-2026.json";
 import v from "../../../rates/vat-2026.json";
 import vp from "../../../rates/vat-penalty-2026.json";
@@ -32,34 +31,25 @@ const QA = [
   { q: "전자세금계산서는 발급만 하면 끝인가요?", a: `아닙니다. 발급과 별도로 발급일 다음 날까지 발급명세를 국세청에 전송해야 합니다(제32조 제3항, 시행령 제68조 제7항). 늦게 전송하면 공급가액의 ${pct(P.eTransmitLate)}, 끝내 전송하지 않으면 ${pct(P.eTransmitNone)}입니다. ${eokwon(amount)}짜리면 각각 ${won(Math.round(amount * P.eTransmitLate))}, ${won(Math.round(amount * P.eTransmitNone))}입니다.` },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
   <ol>{T.required.items.map((x) => <li>{x}</li>)}</ol>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
   <p>홈택스 화면의 메뉴 순서는 바뀔 수 있어 이 글에서는 법이 정한 발급 경로만 적었습니다. 의무 대상은 <a href="/guide/e-tax-invoice/">전자세금계산서 발행</a>에 있습니다.</p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     다음 달 10일의 조건은 <a href="/guide/tax-invoice-date/">세금계산서 발행일자</a>, 먼저 발급할 때는{" "}
-    <a href="/guide/tax-invoice-early-issue/">세금계산서 발행 후 대금 지급 기한</a>, 잘못 발급했다면{" "}
+    <a href="/guide/tax-invoice-date/#tax-invoice-early-issue">세금계산서 발행 후 대금 지급 기한</a>, 잘못 발급했다면{" "}
     <a href="/guide/tax-invoice-cancel/">세금계산서 발행 취소</a>에 있습니다.
   </p>
 
-  <h2>{QA[3].q}</h2>
+  <h3>{QA[3].q}</h3>
   <p class="qa-lead">{QA[3].a}</p>
 
-  <h2>사업자 신고 시리즈</h2>
+  <h3>사업자 신고 시리즈</h3>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
-</GuideLayout>

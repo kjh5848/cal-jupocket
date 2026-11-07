@@ -1,11 +1,10 @@
 ---
+import { guideHref } from "../../../data/merged";
+/* 합친 글 섹션 — 원래 /guide/minus-account-interest-payment/#minus-account-interest (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "마이너스통장 이자 계산" — 마이너스통장 이자 시리즈 허브. (계산 방식·계산 기준·이자 기준·이자 발생도 이 글)
  * 법령 숫자 없음 — 하루 이자 = 사용 금액 × 연 이자율 ÷ 그해 날수. 금액은 overdraftInterest() 가 낸다(rates: overdraft-2026.json).
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/overdraft-2026.json";
 import { overdraftInterest } from "../../../lib/overdraft";
 import { won } from "../../../lib/won";
@@ -30,26 +29,17 @@ const QA = [
   { q: "윤년에는 마이너스통장 이자가 더 나오나요?", a: `하루 이자는 오히려 조금 적습니다. 윤년에는 한 해를 366일로 나누기 때문입니다. 1,000만원 연 6%로 2027년 365일을 다 쓰면 ${won(y27.totalInterest)}, 2028년 366일이면 ${won(y28.totalInterest)}으로 1년 이자는 거의 같고, 2028년 하루 이자는 ${won(d28.totalInterest)}입니다.` },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
   <p>은행 여신거래약정서의 이자 계산 방법은 대개 "1년을 365일(윤년은 366일)로 보고 1일 단위로 계산"으로 적혀 있습니다. 쓰는 금액이 날마다 바뀌면 그날그날 잔액으로 계산하므로, 실제 청구액은 본인 통장의 일별 잔액과 약정서가 기준입니다. 금액·날수를 넣어 바로 보려면 <a href="/guide/minus-account-calculator/">마이너스통장 이자 계산기</a>를 쓰세요.</p>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>여기 금액은 결제일(말일)마다 그 회차 이자의 원 미만을 버리고 더한 값입니다. 결제일이 언제냐에 따라 회차가 어떻게 나뉘는지는 <a href="/guide/minus-account-interest-payment/">마이너스통장 이자 납부일</a>에 있습니다. 기간을 정해 원금을 나눠 갚는 대출이라면 <a href="/guide/loan-interest/">대출이자 계산</a>이 맞습니다.</p>
 
-  <h2>마이너스통장 이자 시리즈</h2>
+  <h3>마이너스통장 이자 시리즈</h3>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
-</GuideLayout>

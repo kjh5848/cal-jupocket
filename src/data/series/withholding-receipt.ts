@@ -12,8 +12,5 @@ export const withholdingReceiptSeries: Series = {
   cluster: "income",
   hub: { slug: "withholding-receipt", keyword: "원천징수영수증", label: "원천징수영수증" },
   items: [
-    { slug: "earned-income-withholding-receipt", keyword: "근로소득원천징수영수증", label: "근로소득 원천징수영수증" },
-    { slug: "business-income-withholding-receipt", keyword: "사업소득 원천징수영수증", label: "사업소득 원천징수영수증(3.3%)" },
-    { slug: "severance-withholding-receipt", keyword: "퇴직소득원천징수영수증", label: "퇴직소득 원천징수영수증" },
   ],
 };

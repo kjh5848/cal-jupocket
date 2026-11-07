@@ -16,7 +16,6 @@ export const withholdingTaxSeries: Series = {
   items: [
     { slug: "withholding-status-report", keyword: "원천징수이행상황신고서", label: "원천징수이행상황신고서" },
     { slug: "daily-worker-tax", keyword: "일용직 세금", label: "일용직 세금" },
-    { slug: "daily-worker-income-report", keyword: "일용직 소득신고", label: "일용직 소득신고" },
     { slug: "simplified-payment-statement", keyword: "간이지급명세서", label: "간이지급명세서" },
     { slug: "payment-statement", keyword: "지급명세서", label: "지급명세서" },
   ],

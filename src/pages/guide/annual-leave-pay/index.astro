@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "연차수당" — 연차 시리즈 허브. (연차수당 지급기준·계산법·계산·통상임금·지급일·퇴사시·미지급·소멸시효·사용촉진도 이 글)
  * 근거: 근로기준법 제60조(연차 발생·통상임금 또는 평균임금·1년 소멸), 제61조(사용 촉진 시 보상 의무 없음), 제36조(퇴직 14일 청산),
@@ -62,7 +63,7 @@ import AnnualLeaveDays from "../../../components/merged/annual-leave-pay/AnnualL
 
   <h2>연차 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
   <p>매주 받는 유급휴일 임금은 <a href="/guide/weekly-holiday-pay/">주휴수당</a>에 있습니다.</p>
 

@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "예금 단리 복리 차이" — 예금 이자 시리즈. (단리 복리 확인 방법·월복리 계산도 이 글)
  * 단리·월복리 식은 상품 약정(법령 아님). 세금은 소득세법 제129조 ① 1호·지방세법 제103조의13. 금액은 depositInterest() 가 낸다(rates: deposit-2026.json).
@@ -60,7 +61,7 @@ const QA = [
 
   <h2>예금 이자 시리즈</h2>
   <ul>
-    <li><a href={`/guide/${S.hub.slug}/`}>{S.hub.label}</a></li>
-    {S.items.filter((i) => i.slug !== "deposit-simple-compound").map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    <li><a href={guideHref(S.hub.slug)}>{S.hub.label}</a></li>
+    {S.items.filter((i) => i.slug !== "deposit-simple-compound").map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

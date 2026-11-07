@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "예금 이자 계산" — 예금 이자 시리즈 허브. (예금 이자 계산 방법·계산하는법·1억 예금 이자·정기예금 이자 세금도 이 글)
  * 근거: 소득세법 제129조 제1항 제1호(14%), 지방세법 제103조의13(10%), 국고금 관리법 제47조 ①(10원 미만 버림). 금액은 depositInterest() 가 낸다(rates: deposit-2026.json).
@@ -59,6 +60,6 @@ const QA = [
 
   <h2>예금 이자 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

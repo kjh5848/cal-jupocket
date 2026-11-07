@@ -11,7 +11,6 @@ export const vatFinalSeries: Series = {
   cluster: "vat",
   hub: { slug: "vat-final-return", keyword: "부가세 확정신고", label: "부가세 확정신고" },
   items: [
-    { slug: "simplified-vat-final-return", keyword: "간이과세자 부가세 확정신고", label: "간이과세자 부가세 확정신고" },
     { slug: "individual-vat-final-return", keyword: "개인사업자 부가세 확정신고", label: "개인사업자 부가세 확정신고" },
     { slug: "corporate-vat-final-return", keyword: "법인 부가세 확정신고", label: "법인 부가세 확정신고" },
     { slug: "vat-final-return-payment", keyword: "부가세 확정신고 납부", label: "부가세 확정신고 납부" },

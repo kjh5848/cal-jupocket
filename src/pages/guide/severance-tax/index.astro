@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "퇴직금 세금" — 퇴직금·퇴직연금 시리즈 허브. (퇴직소득세·세율·몇프로·16.5·계산방법·얼마나 떼나요도 이 글)
  * 근거: 소득세법 제14조 제6항·제48조(근속연수공제·환산급여공제 — img alt 대조)·제55조 제2항(÷12 × 근속연수)·제129조 제1항 제7호,
@@ -67,12 +68,12 @@ const QA = [
   <h2>{QA[3].q}</h2>
   <p class="qa-lead">{QA[3].a}</p>
   <p>
-    영수증은 <a href="/guide/severance-withholding-receipt/">퇴직소득 원천징수영수증</a>, 금액 확인은{" "}
+    영수증은 <a href="/guide/withholding-receipt/#severance-withholding-receipt">퇴직소득 원천징수영수증</a>, 금액 확인은{" "}
     <a href="/guide/severance-tax-calculator/">퇴직금 세금 계산기</a>를 쓰세요.
   </p>
 
   <h2>퇴직금·퇴직연금 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

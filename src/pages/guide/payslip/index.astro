@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "급여명세서" — 급여명세서 시리즈 허브. (임금명세서·급여명세서 양식·필수 기재사항·교부 의무·과태료·5인 미만·월급명세서도 이 글)
  * 근거: 근로기준법 제48조 제2항(임금명세서 교부), 시행령 제27조의2(기재사항 6가지), 제11조·시행령 제7조 별표 1(4명 이하에도 적용),
@@ -71,6 +72,6 @@ const QA = [
 
   <h2>급여명세서 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>

@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "기초연금" — 기초연금 시리즈 허브. (기초연금 나이·대상·자격·2026 금액·선정기준액·부부·국민연금 차이·지급일도 이 글)
  * 근거: 기초연금법 제3조(65세·선정기준액·하위 70%·직역연금 제외), 제5조~제8조(기준연금액·국민연금 연계·부부 20%), 제14조(신청한 달부터),
@@ -62,7 +63,7 @@ import BasicPensionCriteria from "../../../components/merged/basic-pension/Basic
 
   <h2>기초연금 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
   <p>국민연금 쪽 금액은 <a href="/guide/national-pension-estimate/">국민연금 예상수령액</a>에 있습니다.</p>
 

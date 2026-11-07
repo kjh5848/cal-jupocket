@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "노령연금" — 노령연금 시리즈 허브. (노령연금 기준·자격·수급자격·신청·10년 미만·일하면 감액·분할연금도 이 글)
  * 근거: 국민연금법 제13조·제50조·제61조·제63조·제63조의2·제64조·제77조·제115조, 부칙(법률 제8541호) 제8조,
@@ -34,6 +35,7 @@ const QA = [
   { q: "가입기간 10년을 못 채우면 어떻게 되나요?", a: `60세가 되면 낸 연금보험료에 이자를 더한 반환일시금을 청구할 수 있습니다(제77조). 연금으로 받고 싶으면 60세 이후 65세가 될 때까지 임의계속가입을 신청해 보험료를 더 내고 10년을 채울 수 있습니다(제13조).` },
   { q: "노령연금을 받으면서 일하면 깎이나요?", a: `사업소득·근로소득금액의 월평균이 A값(최근 3년 평균소득월액)을 넘으면 그 초과분이 ${manwon(E.brackets[0].from)} 이상일 때부터 깎입니다. 2025년 12월 개정으로 초과분 ${manwon(E.brackets[0].from)} 미만 구간의 감액은 없어졌고 2026년 6월 17일 시행, 2025년 소득부터 적용됩니다(제63조의2).` },
 ];
+import OldAgePensionVsBasic from "../../../components/merged/old-age-pension/OldAgePensionVsBasic.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -56,7 +58,7 @@ const QA = [
 
   <h2>{QA[2].q}</h2>
   <p class="qa-lead">{QA[2].a}</p>
-  <p>노령연금과 기초연금을 함께 받을 때 기초연금이 얼마나 줄어드는지는 <a href="/guide/old-age-pension-vs-basic/">노령연금 기초연금 차이</a>와 <a href="/guide/basic-pension/#basic-pension-amount">기초연금 금액</a>에 있습니다.</p>
+  <p>노령연금과 기초연금을 함께 받을 때 기초연금이 얼마나 줄어드는지는 <a href="/guide/old-age-pension/#old-age-pension-vs-basic">노령연금 기초연금 차이</a>와 <a href="/guide/basic-pension/#basic-pension-amount">기초연금 금액</a>에 있습니다.</p>
 
   <h2>{QA[3].q}</h2>
   <p class="qa-lead">{QA[3].a}</p>
@@ -79,5 +81,8 @@ const QA = [
   <ul>{r.notVerified.map((n) => <li>{n}</li>)}</ul>
 
   <h2>노령연금 시리즈</h2>
-  <ul>{[S.hub, ...S.items].map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}</ul>
+  <ul>{[S.hub, ...S.items].map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}</ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="old-age-pension-vs-basic"><h2>노령연금 기초연금 차이</h2><OldAgePensionVsBasic /></section>
 </GuideLayout>

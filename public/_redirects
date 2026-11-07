@@ -24,8 +24,8 @@
 /irp-account  /guide/irp-account/  301
 /late-filing-penalty/  /guide/late-filing-penalty/  301
 /late-filing-penalty  /guide/late-filing-penalty/  301
-/late-filing-refund/  /guide/late-filing-refund/  301
-/late-filing-refund  /guide/late-filing-refund/  301
+/late-filing-refund/  /guide/late-filing-penalty/#late-filing-refund  301
+/late-filing-refund  /guide/late-filing-penalty/#late-filing-refund  301
 /multiple-payers/  /guide/multiple-payers/  301
 /multiple-payers  /guide/multiple-payers/  301
 /national-pension-estimate/  /guide/national-pension-estimate/  301
@@ -84,8 +84,8 @@
 /tax-invoice-vs-statement/  /guide/tax-invoice-vs-statement/  301
 /tax-invoice-vs-statement  /guide/tax-invoice-vs-statement/  301
 
-/tax-invoice-early-issue/  /guide/tax-invoice-early-issue/  301
-/tax-invoice-early-issue  /guide/tax-invoice-early-issue/  301
+/tax-invoice-early-issue/  /guide/tax-invoice-date/#tax-invoice-early-issue  301
+/tax-invoice-early-issue  /guide/tax-invoice-date/#tax-invoice-early-issue  301
 
 /irp-tax-credit/  /guide/irp-tax-credit/  301
 /irp-tax-credit  /guide/irp-tax-credit/  301
@@ -147,8 +147,8 @@
 /vat-final-return-second-half/  /guide/vat-final-return/#vat-final-return-second-half  301
 /vat-final-return-second-half  /guide/vat-final-return/#vat-final-return-second-half  301
 
-/simplified-vat-final-return/  /guide/simplified-vat-final-return/  301
-/simplified-vat-final-return  /guide/simplified-vat-final-return/  301
+/simplified-vat-final-return/  /guide/simplified-vat/#simplified-vat-final-return  301
+/simplified-vat-final-return  /guide/simplified-vat/#simplified-vat-final-return  301
 
 /individual-vat-final-return/  /guide/individual-vat-final-return/  301
 /individual-vat-final-return  /guide/individual-vat-final-return/  301
@@ -192,14 +192,14 @@
 /withholding-receipt/  /guide/withholding-receipt/  301
 /withholding-receipt  /guide/withholding-receipt/  301
 
-/earned-income-withholding-receipt/  /guide/earned-income-withholding-receipt/  301
-/earned-income-withholding-receipt  /guide/earned-income-withholding-receipt/  301
+/earned-income-withholding-receipt/  /guide/withholding-receipt/#earned-income-withholding-receipt  301
+/earned-income-withholding-receipt  /guide/withholding-receipt/#earned-income-withholding-receipt  301
 
-/business-income-withholding-receipt/  /guide/business-income-withholding-receipt/  301
-/business-income-withholding-receipt  /guide/business-income-withholding-receipt/  301
+/business-income-withholding-receipt/  /guide/withholding-receipt/#business-income-withholding-receipt  301
+/business-income-withholding-receipt  /guide/withholding-receipt/#business-income-withholding-receipt  301
 
-/severance-withholding-receipt/  /guide/severance-withholding-receipt/  301
-/severance-withholding-receipt  /guide/severance-withholding-receipt/  301
+/severance-withholding-receipt/  /guide/withholding-receipt/#severance-withholding-receipt  301
+/severance-withholding-receipt  /guide/withholding-receipt/#severance-withholding-receipt  301
 
 /withholding-receipt-issue/  /guide/withholding-receipt/#withholding-receipt-issue  301
 /withholding-receipt-issue  /guide/withholding-receipt/#withholding-receipt-issue  301
@@ -498,8 +498,8 @@
 /pension-termination/  /guide/pension-termination/  301
 /pension-termination  /guide/pension-termination/  301
 
-/earned-income-tax-rate/  /guide/earned-income-tax-rate/  301
-/earned-income-tax-rate  /guide/earned-income-tax-rate/  301
+/earned-income-tax-rate/  /guide/earned-income-tax/#earned-income-tax-rate  301
+/earned-income-tax-rate  /guide/earned-income-tax/#earned-income-tax-rate  301
 
 /earned-income-tax/  /guide/earned-income-tax/  301
 /earned-income-tax  /guide/earned-income-tax/  301
@@ -516,8 +516,8 @@
 /business-income-tax/  /guide/business-income-tax/  301
 /business-income-tax  /guide/business-income-tax/  301
 
-/tax-invoice-how/  /guide/tax-invoice-how/  301
-/tax-invoice-how  /guide/tax-invoice-how/  301
+/tax-invoice-how/  /guide/tax-invoice-date/#tax-invoice-how  301
+/tax-invoice-how  /guide/tax-invoice-date/#tax-invoice-how  301
 
 /e-tax-invoice/  /guide/e-tax-invoice/  301
 /e-tax-invoice  /guide/e-tax-invoice/  301
@@ -540,8 +540,8 @@
 /daily-worker-tax/  /guide/daily-worker-tax/  301
 /daily-worker-tax  /guide/daily-worker-tax/  301
 
-/daily-worker-income-report/  /guide/daily-worker-income-report/  301
-/daily-worker-income-report  /guide/daily-worker-income-report/  301
+/daily-worker-income-report/  /guide/daily-worker-tax/#daily-worker-income-report  301
+/daily-worker-income-report  /guide/daily-worker-tax/#daily-worker-income-report  301
 
 /simplified-payment-statement/  /guide/simplified-payment-statement/  301
 /simplified-payment-statement  /guide/simplified-payment-statement/  301
@@ -787,8 +787,8 @@
 /old-age-pension-age/  /guide/old-age-pension-age/  301
 /old-age-pension-age  /guide/old-age-pension-age/  301
 
-/old-age-pension-vs-basic/  /guide/old-age-pension-vs-basic/  301
-/old-age-pension-vs-basic  /guide/old-age-pension-vs-basic/  301
+/old-age-pension-vs-basic/  /guide/old-age-pension/#old-age-pension-vs-basic  301
+/old-age-pension-vs-basic  /guide/old-age-pension/#old-age-pension-vs-basic  301
 
 /family-loan/  /guide/family-loan/  301
 /family-loan  /guide/family-loan/  301
@@ -826,8 +826,8 @@
 /loan-calculator/  /guide/loan-calculator/  301
 /loan-calculator  /guide/loan-calculator/  301
 
-/minus-account-interest/  /guide/minus-account-interest/  301
-/minus-account-interest  /guide/minus-account-interest/  301
+/minus-account-interest/  /guide/minus-account-interest-payment/#minus-account-interest  301
+/minus-account-interest  /guide/minus-account-interest-payment/#minus-account-interest  301
 
 /minus-account-interest-payment/  /guide/minus-account-interest-payment/  301
 /minus-account-interest-payment  /guide/minus-account-interest-payment/  301
@@ -1121,3 +1121,30 @@
 
 # 합치기 income-tax-refund-guide (2026-11-07)
 /guide/income-tax-refund-date/ /guide/income-tax-refund-guide/#income-tax-refund-date 301
+
+# 합치기 tax-invoice-date (2026-11-07)
+/guide/tax-invoice-how/ /guide/tax-invoice-date/#tax-invoice-how 301
+/guide/tax-invoice-early-issue/ /guide/tax-invoice-date/#tax-invoice-early-issue 301
+
+# 합치기 daily-worker-tax (2026-11-07)
+/guide/daily-worker-income-report/ /guide/daily-worker-tax/#daily-worker-income-report 301
+
+# 합치기 earned-income-tax (2026-11-07)
+/guide/earned-income-tax-rate/ /guide/earned-income-tax/#earned-income-tax-rate 301
+
+# 합치기 withholding-receipt (2026-11-07)
+/guide/earned-income-withholding-receipt/ /guide/withholding-receipt/#earned-income-withholding-receipt 301
+/guide/business-income-withholding-receipt/ /guide/withholding-receipt/#business-income-withholding-receipt 301
+/guide/severance-withholding-receipt/ /guide/withholding-receipt/#severance-withholding-receipt 301
+
+# 합치기 minus-account-interest-payment (2026-11-07)
+/guide/minus-account-interest/ /guide/minus-account-interest-payment/#minus-account-interest 301
+
+# 합치기 old-age-pension (2026-11-07)
+/guide/old-age-pension-vs-basic/ /guide/old-age-pension/#old-age-pension-vs-basic 301
+
+# 합치기 late-filing-penalty (2026-11-07)
+/guide/late-filing-refund/ /guide/late-filing-penalty/#late-filing-refund 301
+
+# 합치기 simplified-vat (2026-11-07)
+/guide/simplified-vat-final-return/ /guide/simplified-vat/#simplified-vat-final-return 301

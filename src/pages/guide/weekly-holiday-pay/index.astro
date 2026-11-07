@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "주휴수당" — 주휴수당 시리즈 허브. (주휴수당 뜻·이란·얼마·알바·5인 미만·2026·2027 최저시급 기준도 이 글)
  * 근거: 근로기준법 제55조 제1항, 시행령 제30조 제1항(개근), 제18조 제3항(주 15시간), 시행령 별표 1(4명 이하에도 적용),
@@ -64,7 +65,7 @@ import WeeklyHolidayPayCriteria from "../../../components/merged/weekly-holiday-
 
   <h2>주휴수당 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
   <p>쓰지 못한 연차를 돈으로 받는 것은 <a href="/guide/annual-leave-pay/">연차수당</a>입니다.</p>
 

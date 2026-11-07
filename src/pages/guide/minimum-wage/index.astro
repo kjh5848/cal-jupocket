@@ -1,4 +1,5 @@
 ---
+import { guideHref } from "../../../data/merged";
 /**
  * "최저임금" — 최저임금 시리즈 허브. (2026 최저임금·시급·월급·연봉·5인 미만·수습 90%·산입범위·위반 신고·벌칙도 이 글)
  * 근거: 2026·2027년 적용 최저임금 고시, 최저임금법 제3조(적용 범위)·제5조(수습)·제6조(산입범위·무효)·제7조·제28조(벌칙),
@@ -59,6 +60,6 @@ const QA = [
 
   <h2>최저임금 시리즈</h2>
   <ul>
-    {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
+    {S.items.map((i) => <li><a href={guideHref(i.slug)}>{i.label}</a></li>)}
   </ul>
 </GuideLayout>
