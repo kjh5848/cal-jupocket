@@ -15,21 +15,8 @@ export type { SeriesItem } from "./types";
 export const IRP_HUB = { slug: "irp-tax-credit", keyword: "irp 세액공제" };
 
 export const irpSeries: SeriesItem[] = [
-  { slug: "irp-tax-credit-eligibility", keyword: "irp 세액공제 조건", label: "IRP 세액공제 조건" },
-  { slug: "irp-tax-credit-limit", keyword: "irp 세액공제 한도", label: "IRP 세액공제 한도" },
-  { slug: "irp-tax-credit-9-million", keyword: "irp 세액공제 900만원", label: "IRP 세액공제 900만원" },
-  { slug: "irp-tax-credit-3-million", keyword: "irp 세액공제 300만원", label: "IRP 세액공제 300만원" },
-  { slug: "irp-tax-credit-rate", keyword: "irp 세액공제율", label: "IRP 세액공제율 12%·15%" },
   { slug: "irp-tax-credit-calculator", keyword: "irp 세액공제 계산", label: "IRP 세액공제 계산기" },
-  { slug: "irp-tax-credit-deadline", keyword: "irp 세액공제 언제까지", label: "IRP 세액공제 언제까지" },
-  { slug: "irp-tax-credit-deposit", keyword: "irp 세액공제 입금", label: "IRP 세액공제 입금" },
-  { slug: "irp-tax-credit-how-to-claim", keyword: "irp 세액공제 받는 법", label: "IRP 세액공제 받는 법" },
-  { slug: "irp-tax-credit-refund", keyword: "irp 세액공제 환급", label: "IRP 세액공제 환급" },
-  { slug: "irp-tax-credit-carryover", keyword: "irp 세액공제 이월", label: "IRP 세액공제 이월" },
   { slug: "irp-cancellation-tax", keyword: "irp 세액공제 해지", label: "IRP 세액공제 해지" },
-  { slug: "irp-tax-credit-downsides", keyword: "irp 세액공제 단점", label: "IRP 세액공제 단점" },
-  { slug: "personal-irp-tax-credit", keyword: "개인형 irp 세액공제", label: "개인형 IRP 세액공제" },
-  { slug: "irp-tax-credit-vs-deduction", keyword: "irp 세액공제 소득공제", label: "IRP 세액공제와 소득공제" },
 ];
 
 /** 연금저축과 같이 쓰는 경우는 기존 글이 받는다. */

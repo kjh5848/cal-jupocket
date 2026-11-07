@@ -1,4 +1,5 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/irp-tax-credit/#irp-tax-credit-vs-deduction (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "irp 세액공제 소득공제" — IRP 세액공제 시리즈.
  * 자동완성에 두 말이 붙어 뜨는 것은 헷갈려서다. IRP는 세액공제(소득세법 제59조의3)이고
@@ -6,9 +7,6 @@
  * 세액공제는 계산된 세금에서 '정해진 비율' 만큼 뺀다.
  * 세율표는 rates/2026.json 의 incomeTaxBrackets(소득세법 제55조, 이미 검증).
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import pa from "../../../rates/pension-account-2026.json";
 import rates from "../../../rates/2026.json";
 import { manwon, won } from "../../../lib/won";
@@ -33,15 +31,10 @@ const QA = [
   { q: "IRP 세액공제는 고소득자에게 불리한가요?", a: `상대적으로는 그렇습니다. 같은 ${manwon(amount)}이 소득공제였다면 최고 세율이 높은 사람일수록 많이 줄었겠지만, 세액공제는 15% 또는 12%로 고정입니다. 소득이 낮은 쪽이 오히려 15%를 받습니다.` },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
   <table>
     <thead>
@@ -53,10 +46,7 @@ const QA = [
       <tr><th scope="row">소득이 높을수록</th><td>효과가 커진다</td><td>비율이 같다(오히려 12%로 낮아진다)</td></tr>
     </tbody>
   </table>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     비교를 위해 {won(amount)}이 만약 소득공제였다면 얼마나 줄었을지를 세율
@@ -79,8 +69,7 @@ const QA = [
     가정한 단순 비교입니다.
   </p>
   <p>
-    공제율이 어떻게 갈리는지는 <a href="/guide/irp-tax-credit-rate/">IRP
+    공제율이 어떻게 갈리는지는 <a href="/guide/irp-tax-credit/#irp-tax-credit-rate">IRP
     세액공제율</a>, 세율표는 <a href="/guide/income-tax-brackets/">종합소득세 세율
     구간</a>에 있습니다.
   </p>
-</GuideLayout>

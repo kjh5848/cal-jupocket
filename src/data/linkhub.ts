@@ -74,21 +74,21 @@ export const hubEntries: HubEntry[] = [
   { no: 47, href: "/guide/tax-invoice-vs-statement/", label: "세금계산서와 계산서의 차이", kind: "guide" },
   { no: 48, href: "/guide/tax-invoice-early-issue/", label: "세금계산서 발행 후 대금 지급 기한", kind: "guide" },
   { no: 49, href: "/guide/irp-tax-credit/", label: "IRP 세액공제 조건과 한도", kind: "guide" },
-  { no: 50, href: "/guide/irp-tax-credit-eligibility/", label: "IRP 세액공제 조건", kind: "guide" },
-  { no: 51, href: "/guide/irp-tax-credit-limit/", label: "IRP 세액공제 한도", kind: "guide" },
-  { no: 52, href: "/guide/irp-tax-credit-9-million/", label: "IRP 세액공제 900만원", kind: "guide" },
-  { no: 53, href: "/guide/irp-tax-credit-3-million/", label: "IRP 세액공제 300만원", kind: "guide" },
-  { no: 54, href: "/guide/irp-tax-credit-rate/", label: "IRP 세액공제율 12%·15%", kind: "guide" },
+  { no: 50, href: "/guide/irp-tax-credit/#irp-tax-credit-eligibility", label: "IRP 세액공제 조건", kind: "guide" },
+  { no: 51, href: "/guide/irp-tax-credit/#irp-tax-credit-limit", label: "IRP 세액공제 한도", kind: "guide" },
+  { no: 52, href: "/guide/irp-tax-credit/#irp-tax-credit-9-million", label: "IRP 세액공제 900만원", kind: "guide" },
+  { no: 53, href: "/guide/irp-tax-credit/#irp-tax-credit-3-million", label: "IRP 세액공제 300만원", kind: "guide" },
+  { no: 54, href: "/guide/irp-tax-credit/#irp-tax-credit-rate", label: "IRP 세액공제율 12%·15%", kind: "guide" },
   { no: 55, href: "/guide/irp-tax-credit-calculator/", label: "IRP 세액공제 계산기", kind: "guide" },
-  { no: 56, href: "/guide/irp-tax-credit-deadline/", label: "IRP 세액공제 언제까지", kind: "guide" },
-  { no: 57, href: "/guide/irp-tax-credit-deposit/", label: "IRP 세액공제 입금", kind: "guide" },
-  { no: 58, href: "/guide/irp-tax-credit-how-to-claim/", label: "IRP 세액공제 받는 법", kind: "guide" },
-  { no: 59, href: "/guide/irp-tax-credit-refund/", label: "IRP 세액공제 환급", kind: "guide" },
-  { no: 60, href: "/guide/irp-tax-credit-carryover/", label: "IRP 세액공제 이월", kind: "guide" },
+  { no: 56, href: "/guide/irp-tax-credit/#irp-tax-credit-deadline", label: "IRP 세액공제 언제까지", kind: "guide" },
+  { no: 57, href: "/guide/irp-tax-credit/#irp-tax-credit-deposit", label: "IRP 세액공제 입금", kind: "guide" },
+  { no: 58, href: "/guide/irp-tax-credit/#irp-tax-credit-how-to-claim", label: "IRP 세액공제 받는 법", kind: "guide" },
+  { no: 59, href: "/guide/irp-tax-credit/#irp-tax-credit-refund", label: "IRP 세액공제 환급", kind: "guide" },
+  { no: 60, href: "/guide/irp-tax-credit/#irp-tax-credit-carryover", label: "IRP 세액공제 이월", kind: "guide" },
   { no: 61, href: "/guide/irp-cancellation-tax/", label: "IRP 세액공제 해지", kind: "guide" },
-  { no: 62, href: "/guide/irp-tax-credit-downsides/", label: "IRP 세액공제 단점", kind: "guide" },
-  { no: 63, href: "/guide/personal-irp-tax-credit/", label: "개인형 IRP 세액공제", kind: "guide" },
-  { no: 64, href: "/guide/irp-tax-credit-vs-deduction/", label: "IRP 세액공제와 소득공제", kind: "guide" },
+  { no: 62, href: "/guide/irp-tax-credit/#irp-tax-credit-downsides", label: "IRP 세액공제 단점", kind: "guide" },
+  { no: 63, href: "/guide/irp-tax-credit/#personal-irp-tax-credit", label: "개인형 IRP 세액공제", kind: "guide" },
+  { no: 64, href: "/guide/irp-tax-credit/#irp-tax-credit-vs-deduction", label: "IRP 세액공제와 소득공제", kind: "guide" },
   { no: 65, href: "/guide/vat-final-return/", label: "부가세 확정신고", kind: "guide" },
   { no: 66, href: "/guide/vat-final-return-period/", label: "부가세 확정신고 기간", kind: "guide" },
   { no: 67, href: "/guide/vat-final-return-first-half/", label: "1기 부가세 확정신고", kind: "guide" },
@@ -624,21 +624,21 @@ export const hubGroups: HubGroup[] = [
       "/guide/national-pension-estimate",
       "/guide/pension-savings-tax-credit",
       "/guide/irp-tax-credit",
-      "/guide/irp-tax-credit-eligibility",
-      "/guide/irp-tax-credit-limit",
-      "/guide/irp-tax-credit-9-million",
-      "/guide/irp-tax-credit-3-million",
-      "/guide/irp-tax-credit-rate",
+      
+      
+      
+      
+      
       "/guide/irp-tax-credit-calculator",
-      "/guide/irp-tax-credit-deadline",
-      "/guide/irp-tax-credit-deposit",
-      "/guide/irp-tax-credit-how-to-claim",
-      "/guide/irp-tax-credit-refund",
-      "/guide/irp-tax-credit-carryover",
+      
+      
+      
+      
+      
       "/guide/irp-cancellation-tax",
-      "/guide/irp-tax-credit-downsides",
-      "/guide/personal-irp-tax-credit",
-      "/guide/irp-tax-credit-vs-deduction",
+      
+      
+      
       "/guide/irp-account",
       "/guide/retirement-fund",
       "/guide/severance-to-freelance",

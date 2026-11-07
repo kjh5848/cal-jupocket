@@ -1,12 +1,10 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/irp-tax-credit/#irp-tax-credit-9-million (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "irp 세액공제 900만원" — IRP 세액공제 시리즈.
  * 반전: 900만원을 채워도 낼 세금이 그보다 적으면 다 못 받는다(제61조).
  * 못 받은 몫은 '공제받지 않은 납입액' 이 되어 이월 신청과 비과세 인출 쪽으로 간다.
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import pa from "../../../rates/pension-account-2026.json";
 import { won, manwon } from "../../../lib/won";
 import { pensionCredit, cappedByTax } from "../../../lib/pension-credit";
@@ -29,12 +27,7 @@ const QA = [
   { q: "IRP 900만원과 연금저축 600만원+IRP 300만원은 같은가요?", a: `공제 대상은 둘 다 ${manwon(pa.combinedLimit)}으로 같습니다. 연금저축만 ${manwon(pa.savingsOnlyLimit)}까지 세고 나머지를 IRP가 채우는 구조라, 어느 쪽으로 맞춰도 돌아오는 돈은 같습니다.` },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
   <table>
     <thead>
@@ -46,11 +39,11 @@ const QA = [
     </tbody>
   </table>
   <p>
-    어느 구간인지는 <a href="/guide/irp-tax-credit-rate/">IRP 세액공제율</a>에
+    어느 구간인지는 <a href="/guide/irp-tax-credit/#irp-tax-credit-rate">IRP 세액공제율</a>에
     정리했습니다.
   </p>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
   <p>
     예를 들어 그해 산출세액이 {won(exampleTax)}인 사람이라면, 15% 구간의
@@ -59,21 +52,17 @@ const QA = [
     것이고, 자녀·보험료·의료비 같은 다른 세액공제가 있으면 그만큼 자리가 더
     좁아집니다.
   </p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     {pa.creditCap.unusedTreatedAsNotCredited}. 이 문장 덕분에 못 쓴 공제가 그냥
-    증발하지 않습니다. 이어지는 이야기는 <a href="/guide/irp-tax-credit-carryover/">IRP
+    증발하지 않습니다. 이어지는 이야기는 <a href="/guide/irp-tax-credit/#irp-tax-credit-carryover">IRP
     세액공제 이월</a>에 있습니다.
   </p>
 
-  <h2>{QA[3].q}</h2>
+  <h3>{QA[3].q}</h3>
   <p class="qa-lead">{QA[3].a}</p>
   <p>
-    연금저축과 나누는 경우는 <a href="/guide/irp-tax-credit-3-million/">IRP
+    연금저축과 나누는 경우는 <a href="/guide/irp-tax-credit/#irp-tax-credit-3-million">IRP
     세액공제 300만원</a>에서 이어집니다.
   </p>
-</GuideLayout>

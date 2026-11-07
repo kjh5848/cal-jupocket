@@ -1,13 +1,11 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/irp-tax-credit/#irp-tax-credit-deadline (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "irp 세액공제 언제까지" — IRP 세액공제 시리즈.
  * 답은 12월 31일(소득세법 제5조 과세기간 + 제59조의3 '해당 과세기간' 납입액).
  * 반전: 지난해 몫을 올해 소급해 넣을 수 없다(시행령 제40조의2 제2항).
  * 구글 트렌드로 보면 이 검색이 1년 중 가장 많은 주가 12월 마지막 주다(v18).
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import pa from "../../../rates/pension-account-2026.json";
 import yearEnd from "../../../rates/year-end-2026.json";
 import { manwon } from "../../../lib/won";
@@ -25,12 +23,7 @@ const QA = [
   { q: "12월에 넣으면 언제 세금이 줄어드나요?", a: `직장인은 다음 해 연말정산 때입니다. 연말정산은 ${yearEnd.settlement.when}에 이뤄집니다. 사업소득자는 다음 해 5월 종합소득세 신고 때 반영합니다.` },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
   <div class="callout warn">
     <p>
@@ -39,29 +32,25 @@ const QA = [
     </p>
   </div>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
   <p>
     한도를 다 못 채웠다면 남은 만큼을 연말에 넣으면 됩니다. 연금저축을 이미
     {manwon(pa.savingsOnlyLimit)} 채웠다면 남은 칸은 IRP 300만원입니다 —{" "}
-    <a href="/guide/irp-tax-credit-3-million/">IRP 세액공제 300만원</a>.
+    <a href="/guide/irp-tax-credit/#irp-tax-credit-3-million">IRP 세액공제 300만원</a>.
   </p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     반대 방향의 길은 있습니다. 지난해에 한도를 넘겨 넣어 공제를 못 받은 돈이
     있다면, 올해 납입분으로 돌려 달라고 금융회사에 신청할 수 있습니다 —{" "}
-    <a href="/guide/irp-tax-credit-carryover/">IRP 세액공제 이월</a>.
+    <a href="/guide/irp-tax-credit/#irp-tax-credit-carryover">IRP 세액공제 이월</a>.
   </p>
 
-  <h2>{QA[3].q}</h2>
+  <h3>{QA[3].q}</h3>
   <p class="qa-lead">{QA[3].a}</p>
   <p>
     연말정산 일정은 <a href="/guide/year-end-settlement/">연말정산 기간과
-    순서</a>, 받는 절차는 <a href="/guide/irp-tax-credit-how-to-claim/">IRP 세액공제
+    순서</a>, 받는 절차는 <a href="/guide/irp-tax-credit/#irp-tax-credit-how-to-claim">IRP 세액공제
     받는 법</a>에 있습니다.
   </p>
-</GuideLayout>

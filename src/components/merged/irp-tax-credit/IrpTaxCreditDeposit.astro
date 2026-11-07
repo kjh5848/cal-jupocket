@@ -1,13 +1,11 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/irp-tax-credit/#irp-tax-credit-deposit (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "irp 세액공제 입금" — IRP 세액공제 시리즈.
  * 입금(납입)의 규칙: 연 1,800만원 한도, 여러 계좌 합산, 연금수령 개시 후 납입 불가,
  * 회사 DC 계좌에 본인이 추가로 넣은 돈도 퇴직연금계좌 납입(시행령 제40조의2).
  * 반전: 넣을 수 있는 돈과 공제받는 돈이 다르다. 퇴직금으로 들어온 돈은 입금해도 공제 X.
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import pa from "../../../rates/pension-account-2026.json";
 import { manwon } from "../../../lib/won";
 
@@ -24,19 +22,14 @@ const QA = [
   { q: "연금을 받기 시작한 뒤에도 입금할 수 있나요?", a: "안 됩니다. 연금수령 개시를 신청한 날 이후에는 연금보험료를 납입하지 않아야 연금계좌 납입액으로 봅니다(시행령 제40조의2 제2항 제2호)." },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
   <p>
     "연금계좌가 2개 이상인 경우에는 그 합계액"이라고 조문이 적어 두었습니다.
     IRP를 두 금융회사에 나눠 열어도, 연금저축과 IRP를 같이 써도 한도는 하나입니다.
   </p>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
   <table>
     <thead>
@@ -49,10 +42,7 @@ const QA = [
       <tr><th scope="row">ISA 만기 자금({pa.isaTransfer.window.days}일 안)</th><td>한도에 더해짐</td><td>10%·최대 300만원 추가</td></tr>
     </tbody>
   </table>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     시행령이 퇴직연금계좌로 정한 것은 넷입니다.
@@ -62,14 +52,13 @@ const QA = [
   </ul>
   <p>
     확정급여형(DB)은 이 목록에 없습니다. DB형 직장인이 공제를 받으려면 IRP를
-    따로 열어 넣어야 합니다 — <a href="/guide/personal-irp-tax-credit/">개인형
+    따로 열어 넣어야 합니다 — <a href="/guide/irp-tax-credit/#personal-irp-tax-credit">개인형
     IRP 세액공제</a>.
   </p>
 
-  <h2>{QA[3].q}</h2>
+  <h3>{QA[3].q}</h3>
   <p class="qa-lead">{QA[3].a}</p>
   <p>
-    언제까지 넣어야 그해 몫이 되는지는 <a href="/guide/irp-tax-credit-deadline/">IRP
+    언제까지 넣어야 그해 몫이 되는지는 <a href="/guide/irp-tax-credit/#irp-tax-credit-deadline">IRP
     세액공제 언제까지</a>에 있습니다.
   </p>
-</GuideLayout>

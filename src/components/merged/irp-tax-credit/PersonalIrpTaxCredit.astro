@@ -1,13 +1,11 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/irp-tax-credit/#personal-irp-tax-credit (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "개인형 irp 세액공제" — IRP 세액공제 시리즈.
  * 개인형 = IRP 자체의 이름(근로자퇴직급여 보장법 제2조 제10호). DB·DC와의 차이가 질문의 실체다.
  * 반전: 공제는 IRP만이 아니라 DC 계좌에 본인이 넣은 돈에도 된다(소득세법 시행령 제40조의2).
  * DB는 퇴직연금계좌 목록에 없다 — DB형 직장인은 IRP를 따로 열어야 한다.
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import pa from "../../../rates/pension-account-2026.json";
 import { manwon } from "../../../lib/won";
 
@@ -26,15 +24,10 @@ const QA = [
   { q: "DB형 직장인은 IRP 세액공제를 어떻게 받나요?", a: "IRP를 따로 열어 넣어야 합니다. 확정급여형(DB)은 시행령의 퇴직연금계좌 목록에 없습니다. DB 가입자가 자기 부담으로 IRP를 추가로 여는 길은 근로자퇴직급여 보장법 제24조가 열어 두었습니다." },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={pa.taxCreditVerifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
   <table>
     <thead>
@@ -47,23 +40,19 @@ const QA = [
     </tbody>
   </table>
   <p><small>정의: {L.definitions.article} · 세액공제 계좌: {pa.accounts.article}</small></p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     회사가 DC 계좌에 넣어 주는 부담금은 내가 넣은 돈이 아니므로 이 이야기와
     별개입니다. 공제는 내가 넣은 돈에 대해서만 생각하면 됩니다.
   </p>
 
-  <h2>{QA[3].q}</h2>
+  <h3>{QA[3].q}</h3>
   <p class="qa-lead">{QA[3].a}</p>
   <ol>
     {L.whoCanOpen.list.map((x) => <li>{x}</li>)}
   </ol>
   <p>
     두 번째가 DB·DC 직장인이 IRP를 더 여는 경우입니다. 공제 조건 전체는{" "}
-    <a href="/guide/irp-tax-credit-eligibility/">IRP 세액공제 조건</a>에 있습니다.
+    <a href="/guide/irp-tax-credit/#irp-tax-credit-eligibility">IRP 세액공제 조건</a>에 있습니다.
   </p>
-</GuideLayout>
