@@ -42,6 +42,12 @@ const altLinks = LOCALES.filter((l) => alt[l]).map((l) => ({ locale: l, lang: me
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <meta name="theme-color" content="#0b5cad" />
+<!-- 앱처럼 설치(PWA, 2026-11-07) — 앱 정보·아이폰 홈 화면 이름. 서비스 워커는 InstallApp 이 등록한다 -->
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="주포켓" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical.href} />

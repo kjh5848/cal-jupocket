@@ -1,0 +1,125 @@
+---
+/**
+ * "홈 화면에 추가" 막대(2026-11-07, PWA).
+ *
+ * - 크롬·엣지(안드로이드·PC): 브라우저가 설치 가능하다고 알려 주면(beforeinstallprompt) 버튼이 설치 창을 띄운다.
+ * - 아이폰·아이패드: 애플은 설치 창을 띄우는 기능을 주지 않는다 — 버튼을 누르면 "공유 → 홈 화면에 추가" 안내를 연다.
+ * - 이미 앱으로 열었으면(standalone) 아무것도 그리지 않는다. 닫으면 14일 동안 다시 띄우지 않는다.
+ *
+ * 자리는 헤더 바로 아래 흐름 속(고정 아님) — 화면 아래 고정 광고(앵커 광고)·계산 결과 막대와 겹치지 않게.
+ * 광고 옆에 버튼을 두면 잘못 누르게 되는 배치가 된다(애드센스 정책).
+ */
+---
+
+<div class="install-app" id="install-app" hidden>
+  <span class="install-app-icon" aria-hidden="true"><img src="/icon-192.png" alt="" width="28" height="28" /></span>
+  <span class="install-app-text">주포켓을 앱처럼 — 홈 화면에 추가하면 계산기를 한 번에 엽니다</span>
+  <button type="button" class="install-app-btn" id="install-app-btn">추가</button>
+  <button type="button" class="install-app-x" id="install-app-x" aria-label="닫기">×</button>
+</div>
+
+<div class="install-ios" id="install-ios" hidden role="dialog" aria-modal="true" aria-labelledby="install-ios-h">
+  <div class="install-ios-sheet">
+    <p class="install-ios-h" id="install-ios-h">아이폰에서 홈 화면에 추가하기</p>
+    <ol>
+      <li>화면 아래(아이패드는 위)의 <b>공유 버튼</b> <span class="install-ios-share" aria-hidden="true">⬆︎</span>을 누릅니다.</li>
+      <li>목록을 내려 <b>홈 화면에 추가</b>를 누릅니다.</li>
+      <li>오른쪽 위 <b>추가</b>를 누르면 홈 화면에 주포켓 아이콘이 생깁니다.</li>
+    </ol>
+    <p class="install-ios-note">사파리·크롬 모두 같은 방법입니다. 홈 화면 아이콘으로 열면 주소창 없이 앱처럼 열립니다.</p>
+    <button type="button" class="install-app-btn" id="install-ios-close">알겠어요</button>
+  </div>
+</div>
+
+<script src="../scripts/install-app.ts"></script>
+
+<style>
+  .install-app {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: min(42rem, calc(100% - 2rem));
+    margin: 0.5rem auto 0;
+    padding: 0.55rem 0.7rem;
+    background: var(--brand-wash);
+    border-radius: var(--r-md);
+    font-size: var(--t-sm);
+  }
+  .install-app[hidden] {
+    display: none;
+  }
+  .install-app-icon img {
+    display: block;
+    border-radius: var(--r-sm);
+  }
+  .install-app-text {
+    flex: 1;
+    min-width: 0;
+    color: var(--text);
+  }
+  .install-app-btn {
+    flex: none;
+    min-height: 40px;
+    padding: 0 1rem;
+    font: inherit;
+    font-weight: 700;
+    color: var(--surface);
+    background: var(--brand);
+    border: 0;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+  }
+  .install-app-x {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+  .install-ios {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    align-items: end;
+    background: rgb(0 0 0 / 0.45);
+  }
+  .install-ios[hidden] {
+    display: none;
+  }
+  .install-ios-sheet {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    background: var(--surface);
+    border-top-left-radius: var(--r-lg);
+    border-top-right-radius: var(--r-lg);
+  }
+  .install-ios-h {
+    margin: 0;
+    font-weight: 800;
+    font-size: var(--t-lg);
+  }
+  .install-ios ol {
+    margin: 0;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .install-ios-share {
+    display: inline-block;
+    padding: 0 0.3rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-xs);
+  }
+  .install-ios-note {
+    margin: 0;
+    font-size: var(--t-sm);
+    color: var(--muted);
+  }
+</style>
