@@ -146,7 +146,7 @@ describe("자녀세액공제 — 출생연도 범위", () => {
 });
 
 describe("자녀세액공제 글 — 제목·설명은 문자열이라 rates 와 대조한다", () => {
-  const src = readFileSync("src/pages/guide/year-end-child-tax-credit/index.astro", "utf-8");
+  const src = readFileSync("src/components/merged/year-end-income-deduction/YearEndChildTaxCredit.astro", "utf-8") /* 2026-11-07 합치기로 섹션 부품이 됐다 */;
   const head = (src.match(/^const title = "([^"]+)";/m)?.[1] ?? "") + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
   const B = y.calc.childTaxCredit.buchik;
   it("나이·출생연도", () => {

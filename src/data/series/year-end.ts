@@ -24,18 +24,8 @@ export const yearEndSeries: Series = {
   hub: { slug: "year-end-tax", keyword: "연말정산", label: "연말정산" },
   existing: [{ slug: "year-end-settlement", keyword: "연말정산 기간", label: "연말정산 기간과 순서" }],
   items: [
-    { slug: "year-end-simplified", keyword: "연말정산 간소화", label: "연말정산 간소화" },
     { slug: "year-end-calculator", keyword: "연말정산 계산기", label: "연말정산 계산기" },
     { slug: "year-end-income-deduction", keyword: "연말정산 소득공제", label: "연말정산 소득공제" },
-    { slug: "year-end-personal-deduction", keyword: "연말정산 인적공제", label: "연말정산 인적공제" },
-    { slug: "year-end-card-deduction", keyword: "연말정산 신용카드 공제", label: "연말정산 신용카드 공제" },
-    { slug: "year-end-rent-credit", keyword: "연말정산 월세 세액공제", label: "연말정산 월세 세액공제" },
     { slug: "year-end-refund-date", keyword: "연말정산 환급금 지급일", label: "연말정산 환급금 지급일" },
-    { slug: "year-end-refund-how", keyword: "연말정산 환급금 받는 법", label: "연말정산 환급금 받는 법" },
-    { slug: "year-end-refund-amount", keyword: "연말정산 환급금 얼마", label: "연말정산 환급금 얼마" },
-    { slug: "year-end-refund-unpaid", keyword: "연말정산 환급금 미지급", label: "연말정산 환급금 미지급" },
-    { slug: "year-end-extra-tax", keyword: "연말정산 세금 더 내는 경우", label: "연말정산 세금 더 내는 경우" },
-    { slug: "year-end-correction", keyword: "연말정산 경정청구", label: "연말정산 경정청구" },
-    { slug: "year-end-child-tax-credit", keyword: "연말정산 자녀세액공제", label: "연말정산 자녀세액공제" },
   ],
 };

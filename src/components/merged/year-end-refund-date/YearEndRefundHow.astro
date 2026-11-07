@@ -1,12 +1,10 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/year-end-refund-date/#year-end-refund-how (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "연말정산 환급금 받는 법" — 연말정산 시리즈. (받는법·신청·신청 방법·조회·조회 방법도 이 글)
  * 반전: 따로 신청하는 돈이 아니다. 공제신고서를 내면 회사가 정산해 급여로 준다(제137조·제140조).
  * 놓쳤으면 5월 신고 또는 경정청구(국세기본법 제45조의2 제5항).
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import y from "../../../rates/year-end-2026.json";
 
 const title = "연말정산 환급금 받는 법 — 따로 신청하지 않고, 공제신고서를 내면 급여로 들어옵니다";
@@ -22,29 +20,20 @@ const QA = [
   { q: "연말정산 때 공제를 빠뜨렸으면 환급을 못 받나요?", a: `받을 수 있습니다. 연말정산한 근로자는 연말정산세액의 납부기한이 지난 뒤 ${y.correction.years}년 안에 경정청구를 할 수 있습니다(국세기본법 제45조의2 제5항). 5월 종합소득세 신고로 바로잡는 방법도 있습니다.` },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     영수증에서 어디를 보는지는 <a href="/guide/withholding-receipt-read/">원천징수영수증
     보는 법</a>에 있습니다. 홈택스 조회 화면은 조문 밖이라 다루지 않습니다.
   </p>
 
-  <h2>{QA[3].q}</h2>
+  <h3>{QA[3].q}</h3>
   <p class="qa-lead">{QA[3].a}</p>
   <p>
-    절차는 <a href="/guide/year-end-correction/">연말정산 경정청구</a>에 있습니다.
+    절차는 <a href="/guide/year-end-settlement/#year-end-correction">연말정산 경정청구</a>에 있습니다.
   </p>
-</GuideLayout>

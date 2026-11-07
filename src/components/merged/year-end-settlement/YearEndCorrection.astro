@@ -1,12 +1,10 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/year-end-settlement/#year-end-correction (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "연말정산 경정청구" — 연말정산 시리즈.
  * 근거: 국세기본법 제45조의2 제1항·제3항·제5항 — 연말정산한 근로자도 준용, 5년은 '연말정산세액의 납부기한이
  * 지난 후' 부터, 원천징수영수증에 적힌 세액이 기준, 2개월 안에 통지.
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import y from "../../../rates/year-end-2026.json";
 
 const K = y.correction;
@@ -24,36 +22,21 @@ const QA = [
   { q: "연말정산 경정청구 결과는 언제 나오나요?", a: "세무서장은 청구를 받은 날부터 2개월 이내에 결정·경정하거나 이유 없다는 뜻을 통지해야 합니다(국세기본법 제45조의2 제3항). 환급이 결정되면 결정일부터 30일 안에 지급합니다(제51조 제6항)." },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
   <p>
     흔한 예가 부양가족을 빠뜨렸거나, 의료비·기부금 영수증을 늦게 받았거나, 연금저축·IRP
     납입 증명을 내지 않은 경우입니다.
   </p>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
 
-  <h2>{QA[3].q}</h2>
+  <h3>{QA[3].q}</h3>
   <p class="qa-lead">{QA[3].a}</p>
   <p>
     5월 종합소득세 신고 기간에 바로잡는 방법과 비교하려면{" "}
     <a href="/guide/late-filing-refund/">기한 지난 환급</a>을 보세요.
   </p>
-
-  <h2>이 글에 없는 것</h2>
-  <ul>
-    <li><strong>연말정산세액의 납부기한이 며칠인지</strong> — 원천징수세액 납부기한 조문은 이 글에서 읽지 않았습니다.</li>
-    <li><strong>경정청구서 서식과 홈택스 화면</strong></li>
-  </ul>
-</GuideLayout>

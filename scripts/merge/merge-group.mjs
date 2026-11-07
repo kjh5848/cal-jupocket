@@ -2,7 +2,8 @@
 /**
  * 쪼갠 글 합치기 — 한 묶음의 하위 글을 허브 글의 섹션 부품으로 옮긴다(2026-11-07).
  *
- *   node scripts/merge/merge-group.mjs <허브 slug> <하위 slug> [<하위 slug> ...]
+ *   node scripts/merge/merge-group.mjs [--append] <허브 slug> <하위 slug> [<하위 slug> ...]
+ *   --append: 허브 글 </GuideLayout> 바로 앞에 섹션을 자동으로 붙인다(제목 = 하위 글 제목의 앞부분)
  *
  * 하는 일(하위 글마다):
  *   1. src/pages/guide/<sib>/index.astro → src/components/merged/<hub>/<Sib>.astro
@@ -21,13 +22,15 @@
 import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-const [hub, ...sibs] = process.argv.slice(2);
+const argv = process.argv.slice(2);
+const APPEND = argv.includes("--append");
+const [hub, ...sibs] = argv.filter((a) => a !== "--append");
 if (!hub || !sibs.length) {
   console.error("사용: node scripts/merge/merge-group.mjs <허브 slug> <하위 slug> ...");
   process.exit(1);
 }
 const pascal = (s) => s.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join("").replace(/^(\d)/, "N$1");
-const read = (p) => readFileSync(p, "utf8");
+const read = (p) => readFileSync(p, "utf8").replace(/\r\n/g, "\n"); // CRLF 파일도 읽는다
 const write = (p, s) => writeFileSync(p, s);
 const walk = (d, out = []) => {
   for (const f of readdirSync(d)) {
@@ -68,9 +71,11 @@ for (const sib of sibs) {
   b = b.replace(/\s*<h3>이 글에 없는 것<\/h3>[\s\S]*?(?=\n\s*<h3|\s*$)/, "\n");
 
   const name = pascal(sib);
+  const oldTitle = fm.match(/^const title = "([^"]+)";/m)?.[1] ?? sib;
+  const short = oldTitle.split(/ — |, /)[0].trim();
   write(join(compDir, `${name}.astro`), `---\n${f}\n---\n${b.trimEnd()}\n`);
   rmSync(`src/pages/guide/${sib}`, { recursive: true });
-  made.push({ sib, name });
+  made.push({ sib, name, short });
 }
 
 /* 3. 리다이렉트 */
@@ -105,6 +110,18 @@ for (const p of walk("src")) {
   if (s !== before) write(p, s);
 }
 
+if (APPEND) {
+  const hp = `src/pages/guide/${hub}/index.astro`;
+  let h = read(hp);
+  const NL = "\n";
+  const imp = made.map(({ name }) => `import ${name} from "../../../components/merged/${hub}/${name}.astro";`).join(NL);
+  h = h.replace(/\n---\n/, NL + imp + NL + "---" + NL);
+  const secs = made.map(({ sib, name, short }) => `  <section id="${sib}"><h2>${short}</h2><${name} /></section>`).join(NL);
+  if (!h.includes("</GuideLayout>")) throw new Error("허브에 </GuideLayout> 없음");
+  h = h.replace(/\n?<\/GuideLayout>\s*$/, NL + NL + "  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}" + NL + secs + NL + "</GuideLayout>" + NL);
+  write(hp, h);
+  console.log(`✓ 허브에 섹션 ${made.length}개를 붙임`);
+}
 console.log(`✓ ${made.length}편을 ${compDir}/ 로 옮김. 허브(src/pages/guide/${hub}/index.astro)에 넣을 것:\n`);
 for (const { sib, name } of made) console.log(`import ${name} from "../../../components/merged/${hub}/${name}.astro";`);
 console.log("");

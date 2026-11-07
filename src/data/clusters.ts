@@ -94,20 +94,9 @@ export const clusters: Cluster[] = [
       { href: "/guide/withholding-receipt-issue/", title: "원천징수영수증 발급", kind: "guide", icon: "receipt" },
       { href: "/guide/withholding-receipt-read/", title: "원천징수영수증 보는 법", kind: "guide", icon: "receipt" },
       { href: "/guide/withholding-receipt-vs-income-certificate/", title: "원천징수영수증과 소득금액증명원의 차이", kind: "guide", icon: "receipt" },
-      { href: "/guide/year-end-tax/", title: "연말정산, 2월 급여에서 맞추는 일", kind: "guide", icon: "calendar", year: 2026 },
-      { href: "/guide/year-end-simplified/", title: "연말정산 간소화", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/year-end-calculator/", title: "연말정산 계산기", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/year-end-income-deduction/", title: "연말정산 소득공제와 세액공제", kind: "guide", icon: "calendar", year: 2026 },
-      { href: "/guide/year-end-personal-deduction/", title: "연말정산 인적공제, 1명당 150만원", kind: "guide", icon: "calendar", year: 2026 },
-      { href: "/guide/year-end-card-deduction/", title: "연말정산 신용카드 공제, 25%부터", kind: "guide", icon: "calendar", year: 2026 },
-      { href: "/guide/year-end-rent-credit/", title: "연말정산 월세 세액공제", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/year-end-refund-date/", title: "연말정산 환급금 지급일", kind: "guide", icon: "calendar", year: 2026 },
-      { href: "/guide/year-end-refund-how/", title: "연말정산 환급금 받는 법", kind: "guide", icon: "calendar", year: 2026 },
-      { href: "/guide/year-end-refund-amount/", title: "연말정산 환급금 얼마", kind: "guide", icon: "calendar", year: 2026 },
-      { href: "/guide/year-end-refund-unpaid/", title: "연말정산 환급금 미지급", kind: "guide", icon: "calendar", year: 2026 },
-      { href: "/guide/year-end-extra-tax/", title: "연말정산 세금 더 내는 경우", kind: "guide", icon: "calendar", year: 2026 },
-      { href: "/guide/year-end-correction/", title: "연말정산 경정청구, 5년 안에", kind: "guide", icon: "calendar", year: 2026 },
-      { href: "/guide/year-end-child-tax-credit/", title: "연말정산 자녀세액공제, 2017년생은 빠진다", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/child-incentive/", title: "자녀장려금, 18세 미만 자녀 1명당 최대 100만원", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/child-incentive-amount/", title: "자녀장려금 금액, 소득별로 계산", kind: "guide", icon: "calendar", year: 2026 },
       { href: "/guide/child-incentive-eligibility/", title: "자녀장려금 신청 조건, 총소득·재산·자녀", kind: "guide", icon: "calendar", year: 2026 },
@@ -719,21 +708,10 @@ export const recent: string[] = [
   "/guide/child-incentive-apply/",
   "/guide/child-incentive-eligibility/",
   "/guide/child-incentive-amount/",
-  "/guide/child-incentive/",
-  "/guide/year-end-child-tax-credit/",
-  "/guide/year-end-correction/",
-  "/guide/year-end-extra-tax/",
-  "/guide/year-end-refund-unpaid/",
-  "/guide/year-end-refund-amount/",
-  "/guide/year-end-refund-how/",
-  "/guide/year-end-refund-date/",
-  "/guide/year-end-rent-credit/",
-  "/guide/year-end-card-deduction/",
-  "/guide/year-end-personal-deduction/",
+  "/guide/child-incentive/",
+  "/guide/year-end-refund-date/",
   "/guide/year-end-income-deduction/",
   "/guide/year-end-calculator/",
-  "/guide/year-end-simplified/",
-  "/guide/year-end-tax/",
   "/guide/withholding-receipt-vs-income-certificate/",
   "/guide/withholding-receipt-read/",
   "/guide/withholding-receipt-issue/",
@@ -758,9 +736,9 @@ export const recent: string[] = [
   "/guide/vat-final-return-second-half/",
   "/guide/vat-final-return-first-half/",
   "/guide/vat-final-return-period/",
-  "/guide/vat-final-return/",
-  "/guide/irp-cancellation-tax/",
-  "/guide/irp-tax-credit-calculator/",
+  "/guide/vat-final-return/",
+  "/guide/irp-cancellation-tax/",
+  "/guide/irp-tax-credit-calculator/",
   "/guide/irp-tax-credit/",
   "/guide/tax-invoice-early-issue/",
   "/guide/tax-invoice-vs-statement/",

@@ -26,6 +26,10 @@ const QA = [
   { q: "소득공제와 세액공제는 무엇이 다른가요?", a: "소득공제는 과세표준을 줄여서 내 최고 세율만큼 효과가 나고, 세액공제는 산출세액에서 정해진 금액이나 비율을 그대로 뺍니다. 그래서 소득이 높을수록 소득공제의 효과가 커집니다." },
   { q: "소득공제 150만원이면 세금이 얼마 줄어드나요?", a: `과세표준이 얼마인지에 따라 다릅니다. 과세표준 3,000만원인 사람이라면 인적공제 1명(${won(per)})으로 소득세가 ${won(saved)} 줄어듭니다. 그 사람의 세율 구간이 15%이기 때문입니다.` },
 ];
+import YearEndCardDeduction from "../../../components/merged/year-end-income-deduction/YearEndCardDeduction.astro";
+import YearEndRentCredit from "../../../components/merged/year-end-income-deduction/YearEndRentCredit.astro";
+import YearEndPersonalDeduction from "../../../components/merged/year-end-income-deduction/YearEndPersonalDeduction.astro";
+import YearEndChildTaxCredit from "../../../components/merged/year-end-income-deduction/YearEndChildTaxCredit.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
@@ -54,8 +58,14 @@ const QA = [
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     내 숫자로 보려면 <a href="/guide/year-end-calculator/">연말정산 계산기</a>를
-    쓰세요. 인적공제는 <a href="/guide/year-end-personal-deduction/">연말정산
-    인적공제</a>, 신용카드는 <a href="/guide/year-end-card-deduction/">연말정산
+    쓰세요. 인적공제는 <a href="/guide/year-end-income-deduction/#year-end-personal-deduction">연말정산
+    인적공제</a>, 신용카드는 <a href="/guide/year-end-income-deduction/#year-end-card-deduction">연말정산
     신용카드 공제</a>에 있습니다.
   </p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="year-end-card-deduction"><h2>연말정산 신용카드 공제</h2><YearEndCardDeduction /></section>
+  <section id="year-end-rent-credit"><h2>연말정산 월세 세액공제</h2><YearEndRentCredit /></section>
+  <section id="year-end-personal-deduction"><h2>연말정산 인적공제</h2><YearEndPersonalDeduction /></section>
+  <section id="year-end-child-tax-credit"><h2>연말정산 자녀세액공제</h2><YearEndChildTaxCredit /></section>
 </GuideLayout>

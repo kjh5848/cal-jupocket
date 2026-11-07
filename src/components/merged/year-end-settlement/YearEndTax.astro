@@ -1,11 +1,9 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/year-end-settlement/#year-end-tax (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "연말정산" — 연말정산 시리즈 허브(src/data/series/year-end.ts). 뜻·하는법도 이 글.
  * 근거: 소득세법 제134조(매달 간이세액표), 제137조(2월분 급여 때 정산·환급), 제140조(공제신고서).
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import y from "../../../rates/year-end-2026.json";
 import { yearEndSeries } from "../../../data/series/year-end";
 import { seriesHref } from "../../../data/series/types";
@@ -25,28 +23,19 @@ const QA = [
 const more: Record<number, string> = { 1: "year-end-simplified", 3: "year-end-calculator" };
 const labelOf = (slug: string) => yearEndSeries.items.find((s) => s.slug === slug)?.label ?? slug;
 ---
-
-<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
   {QA.map((x, i) => (
     <>
-      <h2>{x.q}</h2>
+      <h3>{x.q}</h3>
       <p class="qa-lead">{x.a}</p>
-      {more[i] && <p>자세히 — <a href={seriesHref(more[i])}>{labelOf(more[i])}</a></p>}
+      {more[i] && <p>자세히 — <a href={more[i] === "year-end-simplified" ? "#year-end-simplified" : seriesHref(more[i])}>{labelOf(more[i])}</a></p>}
     </>
   ))}
-
-  <AdSlot />
-
   <p>매달 간이세액표로 얼마가 떼이는지는 <a href="/guide/take-home-calculator/">연봉 실수령액 계산기</a>로 볼 수 있습니다.</p>
 
-  <h2>연말정산, 질문별로 정리했습니다</h2>
+  <h3>연말정산, 질문별로 정리했습니다</h3>
   <ul>
     <li><a href={seriesHref("year-end-settlement")}>연말정산 기간과 순서</a></li>
     {yearEndSeries.items.map((s) => (
       <li><a href={seriesHref(s.slug)}>{s.label}</a></li>
     ))}
   </ul>
-</GuideLayout>

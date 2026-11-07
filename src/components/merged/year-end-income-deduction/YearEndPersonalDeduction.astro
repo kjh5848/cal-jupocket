@@ -1,12 +1,10 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/year-end-income-deduction/#year-end-personal-deduction (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "연말정산 인적공제" — 연말정산 시리즈.
  * 근거: 소득세법 제50조(1명 150만원·요건·한 사람만 공제), 제140조(공제신고서), 제137조 제3항.
  * 부양가족 요건의 자세한 사례는 /guide/family-deduction/ 이 받는다.
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import y from "../../../rates/year-end-2026.json";
 import { won } from "../../../lib/won";
 
@@ -25,25 +23,17 @@ const QA = [
   { q: "연말정산 인적공제는 자동으로 들어가나요?", a: "본인 몫만 들어갑니다. 공제신고서를 내지 않으면 기본공제 중 본인에 대한 분과 표준세액공제만 적용되므로(제137조 제3항), 가족을 넣으려면 2월분 급여를 받기 전까지 신고서를 내야 합니다." },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
   <p>
     고향에 따로 사시는 경우, 생일이 지난 경우 같은 사례는{" "}
     <a href="/guide/family-deduction/">인적공제, 부양가족 누구까지 넣을 수 있나</a>에
     정리했습니다.
   </p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     누가 넣는 게 유리한지는 두 사람의 세율 구간에 달려 있습니다. 소득공제는 세율이
@@ -51,6 +41,5 @@ const QA = [
     소득공제</a>.
   </p>
 
-  <h2>{QA[3].q}</h2>
+  <h3>{QA[3].q}</h3>
   <p class="qa-lead">{QA[3].a}</p>
-</GuideLayout>

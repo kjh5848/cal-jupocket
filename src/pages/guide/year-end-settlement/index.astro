@@ -34,6 +34,10 @@ const QA = [
   { q: "연말정산 서류를 안 내면 어떻게 되나요?", a: `${r.noFilingPenalty.applied} 적용됩니다(소득세법 제137조 제3항). 부양가족·의료비·신용카드·월세가 모두 빠지므로 대개 세금을 더 내게 됩니다.` },
   { q: "연말정산 후 2월 월급이 확 줄어든 이유는 무엇인가요?", a: `추가로 낼 세금을 2월 급여에서 한꺼번에 뗐기 때문입니다. 추가 납부세액이 10만원을 넘으면 회사가 ${r.installment.months} 나눠 뗄 수 있지만, '할 수 있다'라 회사가 정합니다(제137조 제4항).` },
 ];
+import YearEndTax from "../../../components/merged/year-end-settlement/YearEndTax.astro";
+import YearEndSimplified from "../../../components/merged/year-end-settlement/YearEndSimplified.astro";
+import YearEndExtraTax from "../../../components/merged/year-end-settlement/YearEndExtraTax.astro";
+import YearEndCorrection from "../../../components/merged/year-end-settlement/YearEndCorrection.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -44,7 +48,7 @@ const QA = [
     매달 월급에서 떼는 소득세는 <strong>어림값</strong>입니다. 근로소득
     간이세액표라는 표 하나로 떼기 때문에, 내가 부양가족이 몇인지 의료비를
     얼마 썼는지는 반영되어 있지 않습니다. 한 해가 끝나야 실제 세금이
-    정해지고, 그 차액을 맞추는 일이 <a href="/guide/year-end-tax/">연말정산</a>입니다.
+    정해지고, 그 차액을 맞추는 일이 <a href="/guide/year-end-settlement/#year-end-tax">연말정산</a>입니다.
   </p>
 
   <h2>{QA[0].q}</h2>
@@ -100,7 +104,7 @@ const QA = [
     적용합니다.
   </p>
   <p>
-    부양가족도, 의료비도, <a href="/guide/year-end-card-deduction/">신용카드 공제</a>도, 월세도 들어가지 않습니다. 세금이
+    부양가족도, 의료비도, <a href="/guide/year-end-income-deduction/#year-end-card-deduction">신용카드 공제</a>도, 월세도 들어가지 않습니다. 세금이
     0원이 되는 게 아니라 <strong>공제가 거의 없는 상태로 계산</strong>되는
     것이라, 대개 돈을 더 내게 됩니다.
   </p>
@@ -134,7 +138,7 @@ const QA = [
     3번에서 빼는 금액이 이미 뗀 세금보다 크면 <strong>환급</strong>입니다.
     조문은 "그 초과액을 근로자에게 환급하여야 한다"고 합니다 — 회사의
     재량이 아닙니다. 그래서 환급금은 따로 신청하지 않고 2월 급여와 함께 들어옵니다 —{" "}
-    <a href="/guide/year-end-refund-how/">연말정산 환급금 받는 법</a>에 조회와 놓쳤을 때를 정리했습니다.
+    <a href="/guide/year-end-refund-date/#year-end-refund-how">연말정산 환급금 받는 법</a>에 조회와 놓쳤을 때를 정리했습니다.
     내 총급여와 이미 뗀 세금으로 얼마쯤 돌려받을지는
     <a href="/guide/year-end-calculator/">연말정산 계산기</a>로 미리 어림해 볼 수 있습니다.
   </p>
@@ -144,7 +148,7 @@ const QA = [
     <a href="/guide/pension-savings-tax-credit/">연금저축·IRP 세액공제 한도</a>,{" "}
     <a href="/guide/income-tax-brackets/">종합소득세 세율 구간</a>. 어느 공제가 과세표준을 줄이고 어느 공제가 세금을 바로 줄이는지는{" "}
     <a href="/guide/year-end-income-deduction/">연말정산 소득공제와 세액공제</a>에 조문별로 나눠 두었습니다. 자녀가 있으면{" "}
-    <a href="/guide/year-end-child-tax-credit/">자녀세액공제 나이 기준과 금액</a>도 같이 보세요 — 2026년분은 2017년생이 빠집니다.
+    <a href="/guide/year-end-income-deduction/#year-end-child-tax-credit">자녀세액공제 나이 기준과 금액</a>도 같이 보세요 — 2026년분은 2017년생이 빠집니다.
   </p>
 
   <AdSlot />
@@ -190,7 +194,7 @@ const QA = [
       제도입니다. 회사가 지급명세서를 기한까지 냈다면 연말정산세액의
       납부기한이 지난 뒤 {r.correction.years}년 안에 청구할 수 있습니다
       ({r.correction.article}).{" "}
-      <a href="/guide/year-end-correction/">연말정산 경정청구</a>에 조건과
+      <a href="/guide/year-end-settlement/#year-end-correction">연말정산 경정청구</a>에 조건과
       처리 기간을 정리했습니다.
     </li>
   </ul>
@@ -217,4 +221,10 @@ const QA = [
     확인되는 대로 채웁니다. 한 해 전체 일정은{" "}
     <a href="/guide/tax-year/">한 해 동안 내는 세금</a>에 있습니다.
   </p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="year-end-tax"><h2>연말정산</h2><YearEndTax /></section>
+  <section id="year-end-simplified"><h2>연말정산 간소화</h2><YearEndSimplified /></section>
+  <section id="year-end-extra-tax"><h2>연말정산 세금 더 내는 경우</h2><YearEndExtraTax /></section>
+  <section id="year-end-correction"><h2>연말정산 경정청구</h2><YearEndCorrection /></section>
 </GuideLayout>

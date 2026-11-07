@@ -210,11 +210,11 @@
 /withholding-receipt-vs-income-certificate/  /guide/withholding-receipt-vs-income-certificate/  301
 /withholding-receipt-vs-income-certificate  /guide/withholding-receipt-vs-income-certificate/  301
 
-/year-end-tax/  /guide/year-end-tax/  301
-/year-end-tax  /guide/year-end-tax/  301
+/year-end-tax/  /guide/year-end-settlement/#year-end-tax  301
+/year-end-tax  /guide/year-end-settlement/#year-end-tax  301
 
-/year-end-simplified/  /guide/year-end-simplified/  301
-/year-end-simplified  /guide/year-end-simplified/  301
+/year-end-simplified/  /guide/year-end-settlement/#year-end-simplified  301
+/year-end-simplified  /guide/year-end-settlement/#year-end-simplified  301
 
 /year-end-calculator/  /guide/year-end-calculator/  301
 /year-end-calculator  /guide/year-end-calculator/  301
@@ -222,35 +222,35 @@
 /year-end-income-deduction/  /guide/year-end-income-deduction/  301
 /year-end-income-deduction  /guide/year-end-income-deduction/  301
 
-/year-end-personal-deduction/  /guide/year-end-personal-deduction/  301
-/year-end-personal-deduction  /guide/year-end-personal-deduction/  301
+/year-end-personal-deduction/  /guide/year-end-income-deduction/#year-end-personal-deduction  301
+/year-end-personal-deduction  /guide/year-end-income-deduction/#year-end-personal-deduction  301
 
-/year-end-card-deduction/  /guide/year-end-card-deduction/  301
-/year-end-card-deduction  /guide/year-end-card-deduction/  301
+/year-end-card-deduction/  /guide/year-end-income-deduction/#year-end-card-deduction  301
+/year-end-card-deduction  /guide/year-end-income-deduction/#year-end-card-deduction  301
 
-/year-end-rent-credit/  /guide/year-end-rent-credit/  301
-/year-end-rent-credit  /guide/year-end-rent-credit/  301
+/year-end-rent-credit/  /guide/year-end-income-deduction/#year-end-rent-credit  301
+/year-end-rent-credit  /guide/year-end-income-deduction/#year-end-rent-credit  301
 
 /year-end-refund-date/  /guide/year-end-refund-date/  301
 /year-end-refund-date  /guide/year-end-refund-date/  301
 
-/year-end-refund-how/  /guide/year-end-refund-how/  301
-/year-end-refund-how  /guide/year-end-refund-how/  301
+/year-end-refund-how/  /guide/year-end-refund-date/#year-end-refund-how  301
+/year-end-refund-how  /guide/year-end-refund-date/#year-end-refund-how  301
 
-/year-end-refund-amount/  /guide/year-end-refund-amount/  301
-/year-end-refund-amount  /guide/year-end-refund-amount/  301
+/year-end-refund-amount/  /guide/year-end-refund-date/#year-end-refund-amount  301
+/year-end-refund-amount  /guide/year-end-refund-date/#year-end-refund-amount  301
 
-/year-end-refund-unpaid/  /guide/year-end-refund-unpaid/  301
-/year-end-refund-unpaid  /guide/year-end-refund-unpaid/  301
+/year-end-refund-unpaid/  /guide/year-end-refund-date/#year-end-refund-unpaid  301
+/year-end-refund-unpaid  /guide/year-end-refund-date/#year-end-refund-unpaid  301
 
-/year-end-extra-tax/  /guide/year-end-extra-tax/  301
-/year-end-extra-tax  /guide/year-end-extra-tax/  301
+/year-end-extra-tax/  /guide/year-end-settlement/#year-end-extra-tax  301
+/year-end-extra-tax  /guide/year-end-settlement/#year-end-extra-tax  301
 
-/year-end-correction/  /guide/year-end-correction/  301
-/year-end-correction  /guide/year-end-correction/  301
+/year-end-correction/  /guide/year-end-settlement/#year-end-correction  301
+/year-end-correction  /guide/year-end-settlement/#year-end-correction  301
 
-/year-end-child-tax-credit/  /guide/year-end-child-tax-credit/  301
-/year-end-child-tax-credit  /guide/year-end-child-tax-credit/  301
+/year-end-child-tax-credit/  /guide/year-end-income-deduction/#year-end-child-tax-credit  301
+/year-end-child-tax-credit  /guide/year-end-income-deduction/#year-end-child-tax-credit  301
 
 /child-incentive/  /guide/child-incentive/  301
 /child-incentive  /guide/child-incentive/  301
@@ -976,3 +976,20 @@
 /guide/irp-tax-credit-downsides/ /guide/irp-tax-credit/#irp-tax-credit-downsides 301
 /guide/irp-tax-credit-vs-deduction/ /guide/irp-tax-credit/#irp-tax-credit-vs-deduction 301
 /guide/personal-irp-tax-credit/ /guide/irp-tax-credit/#personal-irp-tax-credit 301
+
+# 합치기 year-end-refund-date (2026-11-07)
+/guide/year-end-refund-amount/ /guide/year-end-refund-date/#year-end-refund-amount 301
+/guide/year-end-refund-how/ /guide/year-end-refund-date/#year-end-refund-how 301
+/guide/year-end-refund-unpaid/ /guide/year-end-refund-date/#year-end-refund-unpaid 301
+
+# 합치기 year-end-income-deduction (2026-11-07)
+/guide/year-end-card-deduction/ /guide/year-end-income-deduction/#year-end-card-deduction 301
+/guide/year-end-rent-credit/ /guide/year-end-income-deduction/#year-end-rent-credit 301
+/guide/year-end-personal-deduction/ /guide/year-end-income-deduction/#year-end-personal-deduction 301
+/guide/year-end-child-tax-credit/ /guide/year-end-income-deduction/#year-end-child-tax-credit 301
+
+# 합치기 year-end-settlement (2026-11-07)
+/guide/year-end-tax/ /guide/year-end-settlement/#year-end-tax 301
+/guide/year-end-simplified/ /guide/year-end-settlement/#year-end-simplified 301
+/guide/year-end-extra-tax/ /guide/year-end-settlement/#year-end-extra-tax 301
+/guide/year-end-correction/ /guide/year-end-settlement/#year-end-correction 301

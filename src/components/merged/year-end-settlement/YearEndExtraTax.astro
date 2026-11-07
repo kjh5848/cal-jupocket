@@ -1,11 +1,9 @@
 ---
+/* 합친 글 섹션 — 원래 /guide/year-end-settlement/#year-end-extra-tax (2026-11-07, scripts/merge/merge-group.mjs) */
 /**
  * "연말정산 세금 더 내는 경우" — 연말정산 시리즈. 10-12 사용자 화면의 구글 자동완성에서 왔다.
  * 근거: 소득세법 제137조 제1항(결정세액 − 이미 뗀 세금)·제3항(신고서 미제출)·제4항(10만원 초과 분납), 제134조(간이세액표 어림).
  */
-import GuideLayout from "../../../layouts/GuideLayout.astro";
-import AnswerBox from "../../../components/AnswerBox.astro";
-import AdSlot from "../../../components/AdSlot.astro";
 import y from "../../../rates/year-end-2026.json";
 import { won } from "../../../lib/won";
 
@@ -21,23 +19,14 @@ const QA = [
   { q: "연말정산 추가 세금을 나눠 낼 수 있나요?", a: `추가 납부세액이 ${won(y.installment.over)}을 넘으면 회사가 ${y.installment.months} 나눠 원천징수할 수 있습니다(제137조 제4항). 다만 '할 수 있다'라 회사가 정하므로 미리 요청해 두는 편이 낫습니다.` },
 ];
 ---
-
-<GuideLayout title={title} description={description} updated={y.verifiedOn} faq={QA}>
-  <h1>{title}</h1>
-  <AnswerBox text={ANSWER} />
-
-  <h2>{QA[0].q}</h2>
+  <h3>{QA[0].q}</h3>
   <p class="qa-lead">{QA[0].a}</p>
 
-  <h2>{QA[1].q}</h2>
+  <h3>{QA[1].q}</h3>
   <p class="qa-lead">{QA[1].a}</p>
-
-  <AdSlot />
-
-  <h2>{QA[2].q}</h2>
+  <h3>{QA[2].q}</h3>
   <p class="qa-lead">{QA[2].a}</p>
   <p>
     두 회사에서 급여를 받았다면 한 곳에서 합쳐 정산하는 길이 있습니다({y.twoEmployers.article}) —{" "}
     <a href="/guide/earned-income-withholding-receipt/">근로소득 원천징수영수증</a>.
   </p>
-</GuideLayout>
