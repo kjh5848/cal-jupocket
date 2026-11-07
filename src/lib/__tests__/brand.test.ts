@@ -37,11 +37,4 @@ describe("브랜드", () => {
     const png = readFileSync("public/icon-512.png");
     expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([512, 512]);
   });
-  it("카드뉴스 표지·CTA 로고는 3D 주머니(₩ 글자 아님)", () => {
-    const s = read("src/components/CardArtboard.astro");
-    expect(s).toContain('import BrandPocket from "./BrandPocket.astro"');
-    expect(s).toMatch(/class="cover-brand">\s*<BrandPocket/);
-    expect(s).toMatch(/class="cta-mark">\s*<BrandPocket/);
-    expect(s).not.toContain('<div class="mark">₩</div>');
-  });
 });

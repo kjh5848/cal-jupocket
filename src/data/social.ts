@@ -29,7 +29,7 @@ export const socials: SocialAccount[] = [
     label: "인스타그램",
     handle: `@${HANDLE}`,
     url: `https://www.instagram.com/${HANDLE}/`,
-    live: true,
+    live: false, // 2026-11-07 인스타 운영 중단 — 카드뉴스와 함께 사이트에서 링크를 내린다
   },
 ];
 

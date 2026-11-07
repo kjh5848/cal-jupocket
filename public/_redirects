@@ -1148,3 +1148,7 @@
 
 # 합치기 simplified-vat (2026-11-07)
 /guide/simplified-vat-final-return/ /guide/simplified-vat/#simplified-vat-final-return 301
+
+# 2026-11-07 인스타 카드뉴스 중단 — 카드 페이지(/cards/, /cards/<세트>/, /cards/<세트>/<번호>/)를 지우고 홈으로
+/cards/ / 301
+/cards/* / 301

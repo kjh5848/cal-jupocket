@@ -40,7 +40,6 @@ const links =
           match: (p: string) => p === "/" || calcPaths.has(p),
         },
         { href: "/#reads", label: T.navReads, match: (p: string) => p.startsWith("/guide/") },
-        { href: "/cards/", label: T.navCards, match: (p: string) => p.startsWith("/cards/") },
       ];
 const alt = alternatesFor(here);
 const others = LOCALES.filter((l) => l !== locale && alt[l]).map((l) => ({

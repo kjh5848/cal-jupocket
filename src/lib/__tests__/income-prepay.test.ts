@@ -129,36 +129,3 @@ describe("검증 기록", () => {
   });
 });
 
-describe("income-prepayment 카드 — 금액이 계산 함수와 같다", async () => {
-  const { cardSetBySlug } = await import("../../data/cards");
-  /** 카드 표기 — "155만 5천원" · "50만원" */
-  const cardWon = (v: number) => {
-    const man = Math.floor(v / 10_000);
-    const cheon = (v % 10_000) / 1_000;
-    return cheon ? `${man}만 ${cheon}천원` : `${man}만원`;
-  };
-  const set = cardSetBySlug("income-prepayment")!;
-
-  it("세트가 있고 33번 글을 가리킨다", () => {
-    expect(set).toBeDefined();
-    const cta = set.cards[set.cards.length - 1];
-    expect(cta.kind === "cta" && cta.refNo).toBe(33);
-  });
-
-  it("고지 금액 표의 금액이 noticeAmount 와 같다", () => {
-    const t = set.cards.find((c) => c.kind === "table")!;
-    const text = JSON.stringify(t);
-    for (const base of [900_000, 1_000_000, 1_555_000, 3_000_000]) {
-      const n = noticeAmount(base);
-      expect(text).toContain(cardWon(base));
-      expect(text).toContain(cardWon(n.amount));
-    }
-    expect(noticeAmount(900_000).collected).toBe(false);
-  });
-
-  it("표지의 30% 가 rates 와 같다", () => {
-    const cover = set.cards[0];
-    expect(cover.kind).toBe("cover");
-    expect(JSON.stringify(cover)).toContain(`${estimateFraction * 100}%`);
-  });
-});

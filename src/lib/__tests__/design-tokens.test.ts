@@ -9,7 +9,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 
 /** 1080×1350 아트보드는 웹 스케일과 좌표계가 다르다 — 자체 값을 쓴다. */
-const EXEMPT = ["src/components/CardArtboard.astro"];
+const EXEMPT: string[] = []; // 카드 아트보드는 2026-11-07 인스타 중단과 함께 지웠다
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
