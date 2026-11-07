@@ -36,7 +36,8 @@ describe("번호표", () => {
 describe("clusters 와의 정합", () => {
   it("허브의 모든 주소가 clusters 에 실제로 있다", () => {
     for (const e of hubEntries) {
-      expect(clusterHrefs).toContain(e.href);
+      // 합친 글의 섹션을 가리키는 번호(#deadline 등)는 그 글 주소로 본다(2026-11-07)
+      expect(clusterHrefs).toContain(e.href.split("#")[0]);
     }
   });
 
@@ -50,7 +51,7 @@ describe("clusters 와의 정합", () => {
     for (const e of hubEntries) {
       const link = clusters
         .flatMap((c) => c.links)
-        .find((l) => l.href === e.href);
+        .find((l) => l.href === e.href.split("#")[0]);
       expect(link?.kind).toBe(e.kind);
     }
   });

@@ -202,7 +202,7 @@ export const hubEntries: HubEntry[] = [
   { no: 175, href: "/guide/health-insurance-refund/", label: "건강보험 환급금", kind: "guide" },
   { no: 176, href: "/guide/severance-tax/", label: "퇴직금 세금(퇴직소득세)", kind: "guide" },
   { no: 177, href: "/guide/severance-tax-calculator/", label: "퇴직금 세금 계산기", kind: "guide" },
-  { no: 178, href: "/guide/severance-pay-deadline/", label: "퇴직금 지급기한", kind: "guide" },
+  { no: 178, href: "/guide/severance-pay/#deadline", label: "퇴직금 지급기한", kind: "guide" },
   { no: 179, href: "/guide/severance-interim-settlement/", label: "퇴직금 중간정산", kind: "guide" },
   { no: 180, href: "/guide/severance-irp/", label: "퇴직금 IRP·수령방법", kind: "guide" },
   { no: 181, href: "/guide/pension-receipt-method/", label: "퇴직연금 수령방법", kind: "guide" },
@@ -314,7 +314,7 @@ export const hubEntries: HubEntry[] = [
   { no: 287, href: "/guide/industrial-accident-leave-pay/", label: "산재 휴업급여 — 계산", kind: "guide" },
   { no: 288, href: "/guide/industrial-accident-disability/", label: "산재 장해등급 보상금", kind: "guide" },
   { no: 289, href: "/guide/severance-pay/", label: "퇴직금 — 계산 방법·평균임금", kind: "guide" },
-  { no: 290, href: "/guide/severance-pay-criteria/", label: "퇴직금 조건 — 1년·주 15시간", kind: "guide" },
+  { no: 290, href: "/guide/severance-pay/#criteria", label: "퇴직금 조건 — 1년·주 15시간", kind: "guide" },
   { no: 291, href: "/guide/severance-pay-calculator/", label: "퇴직금 계산기", kind: "calc" },
   { no: 292, href: "/guide/loan-interest/", label: "대출이자 계산 — 방법·공식", kind: "guide" },
   { no: 293, href: "/guide/loan-repayment-methods/", label: "원리금균등 원금균등 차이", kind: "guide" },
@@ -424,7 +424,7 @@ export const hubGroups: HubGroup[] = [
    * 여기(번호를 찾는 색인)에서는 성격대로 둔다.
    */
   { label: "한 해 전체", cluster: null, entries: inCluster(["/guide/tax-year"]) },
-  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/payslip", "/guide/payslip-issue", "/guide/wage-ledger", "/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator", "/guide/unemployment-benefit", "/guide/unemployment-benefit-criteria", "/guide/unemployment-benefit-calculator", "/guide/unemployment-benefit-apply", "/guide/unemployment-benefit-period", "/guide/parental-leave-pay", "/guide/parental-leave-pay-calculator", "/guide/parental-leave-pay-apply", "/guide/parental-leave-period", "/guide/maternity-leave-pay", "/guide/minimum-wage", "/guide/minimum-wage-2027", "/guide/minimum-wage-calculator", "/guide/salary-take-home", "/guide/monthly-take-home", "/guide/take-home-calculator", "/guide/industrial-accident", "/guide/industrial-accident-leave-pay", "/guide/industrial-accident-disability", "/guide/severance-pay/", "/guide/severance-pay-criteria", "/guide/severance-pay-calculator", "/guide/hourly-wage/", "/guide/hourly-wage-monthly", "/guide/hourly-wage-calculator", "/guide/overtime-pay/", "/guide/night-shift-pay", "/guide/overtime-pay-calculator", "/guide/ordinary-wage", "/guide/ordinary-hourly-wage", "/guide/ordinary-wage-calculator"]) },
+  { label: "급여·근로", cluster: "labor", entries: inCluster(["/guide/payslip", "/guide/payslip-issue", "/guide/wage-ledger", "/guide/weekly-holiday-pay", "/guide/weekly-holiday-pay-calculator", "/guide/weekly-holiday-pay-criteria", "/guide/annual-leave-pay", "/guide/annual-leave-days", "/guide/annual-leave-calculator", "/guide/unemployment-benefit", "/guide/unemployment-benefit-criteria", "/guide/unemployment-benefit-calculator", "/guide/unemployment-benefit-apply", "/guide/unemployment-benefit-period", "/guide/parental-leave-pay", "/guide/parental-leave-pay-calculator", "/guide/parental-leave-pay-apply", "/guide/parental-leave-period", "/guide/maternity-leave-pay", "/guide/minimum-wage", "/guide/minimum-wage-2027", "/guide/minimum-wage-calculator", "/guide/salary-take-home", "/guide/monthly-take-home", "/guide/take-home-calculator", "/guide/industrial-accident", "/guide/industrial-accident-leave-pay", "/guide/industrial-accident-disability", "/guide/severance-pay/", "/guide/severance-pay-calculator", "/guide/hourly-wage/", "/guide/hourly-wage-monthly", "/guide/hourly-wage-calculator", "/guide/overtime-pay/", "/guide/night-shift-pay", "/guide/overtime-pay-calculator", "/guide/ordinary-wage", "/guide/ordinary-hourly-wage", "/guide/ordinary-wage-calculator"]) },
   { label: "돈·금융", cluster: "money", entries: inCluster(["/guide/loan-interest", "/guide/loan-repayment-methods", "/guide/loan-calculator", "/guide/minus-account-interest", "/guide/minus-account-interest-payment", "/guide/minus-account-calculator", "/guide/deposit-interest", "/guide/deposit-simple-compound", "/guide/deposit-interest-calculator", "/guide/dsr", "/guide/dsr-limit", "/guide/dsr-calculator", "/guide/installment-savings-interest", "/guide/installment-savings-simple-compound", "/guide/installment-savings-calculator", "/guide/prepay-defer-calculator", "/guide/prepayment-fee/", "/guide/prepayment-fee-3-years", "/guide/prepayment-fee-calculator", "/guide/parking-account-interest/", "/guide/parking-account-tax", "/guide/parking-account-interest-calculator"]) },
   { label: "지방세 — 집·차", cluster: "localtax", entries: inCluster(["/guide/property-tax", "/guide/vehicle-tax", "/guide/acquisition-tax", "/guide/local-income-tax", "/guide/comprehensive-property-tax", "/guide/vehicle-tax-prepay", "/guide/vehicle-tax-prepay-period", "/guide/vehicle-tax-prepay-discount", "/guide/vehicle-tax-prepay-amount", "/guide/vehicle-tax-prepay-how", "/guide/vehicle-tax-prepay-refund", "/guide/jongbu-criteria", "/guide/jongbu-calculator", "/guide/jongbu-rate", "/guide/jongbu-payment", "/guide/jongbu-joint", "/guide/jongbu-multi-home", "/guide/jongbu-reform", "/guide/apartment-acquisition-tax", "/guide/real-estate-acquisition-tax", "/guide/officetel-acquisition-tax", "/guide/resident-tax", "/guide/property-tax-calc", "/guide/property-tax-payment", "/guide/property-tax-basis-date", "/guide/electric-car-tax", "/guide/electric-car-tax-exemption", "/guide/electric-car-tax-calculator", "/guide/brokerage-fee", "/guide/monthly-rent-brokerage-fee", "/guide/brokerage-fee-calculator", "/guide/holding-tax", "/guide/property-jongbu-double-tax", "/guide/holding-tax-calculator", "/guide/moving-lucky-day/", "/guide/moving-checklist/", "/guide/move-in-report/", "/guide/packing-vs-half-packing/"]) },
   {
@@ -655,7 +655,6 @@ export const hubGroups: HubGroup[] = [
       "/guide/health-insurance-refund",
       "/guide/severance-tax",
       "/guide/severance-tax-calculator",
-      "/guide/severance-pay-deadline",
       "/guide/severance-interim-settlement",
       "/guide/severance-irp",
       "/guide/pension-receipt-method",

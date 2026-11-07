@@ -14,7 +14,6 @@ export const severancePaySeries: Series = {
   cluster: "labor",
   hub: { slug: "severance-pay", keyword: "퇴직금", label: "퇴직금 — 계산 방법·평균임금" },
   items: [
-    { slug: "severance-pay-criteria", keyword: "퇴직금 조건", label: "퇴직금 조건 — 1년·주 15시간" },
     { slug: "severance-pay-calculator", keyword: "퇴직금 계산기", label: "퇴직금 계산기" },
   ],
 };

@@ -19,7 +19,6 @@ export const severanceSeries: Series = {
   hub: { slug: "severance-tax", keyword: "퇴직금 세금", label: "퇴직금 세금(퇴직소득세)" },
   items: [
     { slug: "severance-tax-calculator", keyword: "퇴직금 세금 계산기", label: "퇴직금 세금 계산기" },
-    { slug: "severance-pay-deadline", keyword: "퇴직금 지급기한", label: "퇴직금 지급기한" },
     { slug: "severance-interim-settlement", keyword: "퇴직금 중간정산", label: "퇴직금 중간정산" },
     { slug: "severance-irp", keyword: "퇴직금 IRP", label: "퇴직금 IRP·수령방법" },
     { slug: "pension-receipt-method", keyword: "퇴직연금 수령방법", label: "퇴직연금 수령방법" },

@@ -36,7 +36,8 @@ function rules(): Rule[] {
 
 /** dist 에 실제 페이지가 있는 경로인가. */
 function pageExists(path: string): boolean {
-  const clean = path.replace(/^\/|\/$/g, "");
+  // 합친 글의 섹션(#criteria)으로 보내는 규칙 — 페이지는 # 앞까지(2026-11-07)
+  const clean = path.split("#")[0].replace(/^\/|\/$/g, "");
   return existsSync(join(DIST, clean, "index.html"));
 }
 
