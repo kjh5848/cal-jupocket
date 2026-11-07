@@ -13,6 +13,5 @@ export const familyLoanSeries: Series = {
   hub: { slug: "family-loan", keyword: "가족간 차용증", label: "가족간 차용증 — 증여세 기준" },
   items: [
     { slug: "family-loan-interest", keyword: "가족간 차용증 이자율", label: "가족간 차용증 이자율 4.6% — 계산" },
-    { slug: "family-loan-howto", keyword: "차용증 쓰는법", label: "차용증 쓰는법 — 세금 때문에 적을 칸" },
   ],
 };

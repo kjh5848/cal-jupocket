@@ -33,6 +33,7 @@ const QA = [
   { q: "전기차 세금 감면은 언제 끝나나요?", a: `취득세 감면은 ${until(E.acquisition.until)}까지 취득한 차(지방세특례제한법 제66조 제4항), 개별소비세 감면은 ${until(E.excise.until)}까지 제조장이나 보세구역에서 반출된 차(조세특례제한법 제109조 제6항)에 적용됩니다. 2026년 10월 14일 확인한 법률 문언이고, 기한을 늘리려면 법 개정이 있어야 합니다.` },
   { q: "전기차 자동차세가 오른다는 말은 사실인가요?", a: `2026년 10월 14일 확인한 지방세법 원문(2026. 7. 1. 시행)은 전기차를 1대당 ${won(ev.base)}으로 정하고 있고, 무게나 차값으로 매기는 규정은 없습니다. 바뀌려면 지방세법 개정이 필요합니다. 다만 지방자치단체가 조례로 표준세율의 50%까지 더 올릴 수는 있습니다(제127조 제3항).` },
 ];
+import ElectricCarTaxExemption from "../../../components/merged/electric-car-tax/ElectricCarTaxExemption.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -58,7 +59,7 @@ const QA = [
 
   <h2>{QA[2].q}</h2>
   <p class="qa-lead">{QA[2].a}</p>
-  <p>감면 한도와 하이브리드·수소차 기한은 <a href="/guide/electric-car-tax-exemption/">전기차 세금 감면</a>, 차값별 취득세는 <a href="/guide/electric-car-tax-calculator/">전기차 세금 계산기</a>에 있습니다.</p>
+  <p>감면 한도와 하이브리드·수소차 기한은 <a href="/guide/electric-car-tax/#electric-car-tax-exemption">전기차 세금 감면</a>, 차값별 취득세는 <a href="/guide/electric-car-tax-calculator/">전기차 세금 계산기</a>에 있습니다.</p>
 
   <h2>{QA[3].q}</h2>
   <p class="qa-lead">{QA[3].a}</p>
@@ -70,4 +71,7 @@ const QA = [
   <ul>
     {[S.hub, ...S.items].map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="electric-car-tax-exemption"><h2>전기차 세금 감면</h2><ElectricCarTaxExemption /></section>
 </GuideLayout>

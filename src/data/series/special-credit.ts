@@ -29,10 +29,6 @@ export const educationCreditSeries: Series = {
   cluster: "income",
   hub: { slug: "education-credit", keyword: "교육비세액공제", label: "교육비 세액공제" },
   items: [
-    { slug: "education-credit-limit", keyword: "교육비 세액공제 한도", label: "교육비 세액공제 한도" },
-    { slug: "education-credit-income", keyword: "교육비세액공제 소득요건", label: "교육비 소득요건 폐지" },
-    { slug: "education-credit-academy", keyword: "교육비 세액공제 학원비", label: "교육비 세액공제 학원비" },
-    { slug: "education-credit-student-loan", keyword: "교육비 세액공제 학자금 대출", label: "교육비 학자금 대출" },
   ],
 };
 

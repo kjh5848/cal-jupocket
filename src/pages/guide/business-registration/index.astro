@@ -29,6 +29,7 @@ const QA = [
   { q: "사업자등록은 어디서 하나요?", a: `사업장 관할 세무서뿐 아니라 신청인이 편한 다른 세무서에 내도 관할 세무서에 신청한 것으로 보고(제8조 제2항), 국세정보통신망(홈택스) 제출도 됩니다(시행령 제11조 제1항). 사업장이 둘 이상이면 본점에서 사업자 단위로 한 번에 등록할 수도 있습니다(제8조 제3항).` },
   { q: "사업자등록을 늦게 하면 손해가 얼마인가요?", a: `미등록 가산세는 사업 개시일부터 등록 신청 전날까지 공급가액 합계의 ${pct(vp.registration.lateRegistration)}입니다. 그 사이 매출이 ${eokwon(sales)}이면 ${won(Math.round(sales * vp.registration.lateRegistration))}입니다. 남의 명의로 등록하거나 쓰면 ${pct(vp.registration.otherName)}입니다(제60조 제1항 제2호).` },
 ];
+import BusinessRegistrationChange from "../../../components/merged/business-registration/BusinessRegistrationChange.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -56,4 +57,7 @@ const QA = [
   <ul>
     {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="business-registration-change"><h2>사업자등록증 주소변경</h2><BusinessRegistrationChange /></section>
 </GuideLayout>

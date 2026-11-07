@@ -37,9 +37,7 @@ export const inheritanceSeries: Series = {
   hub: { slug: "inheritance-tax-guide", keyword: "상속세", label: "상속세" },
   existing: [{ slug: "inheritance-tax", keyword: "상속세 면제한도", label: "상속세 면제한도" }],
   items: [
-    { slug: "inheritance-tax-rate", keyword: "상속세 세율", label: "상속세 세율" },
     { slug: "inheritance-tax-reform", keyword: "상속세 개편", label: "상속세 개편" },
-    { slug: "inheritance-tax-filing", keyword: "상속세 신고", label: "상속세 신고" },
     { slug: "inheritance-child-deduction", keyword: "상속세 자녀공제", label: "상속세 자녀공제" },
     { slug: "inheritance-deduction-limit", keyword: "상속세 공제한도", label: "상속세 공제한도" },
   ],

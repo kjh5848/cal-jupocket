@@ -29,6 +29,10 @@ const QA = [
   { q: "2026년 법인세율은 얼마인가요?", a: `2026년 1월 1일 이후 시작하는 사업연도는 과세표준 2억원 이하 ${pct(B[0].rate)}, 200억원 이하 ${pct(B[1].rate)}, 3천억원 이하 ${pct(B[2].rate)}, 3천억원 초과 ${pct(B[3].rate)}입니다. 개정이유는 '구간별로 1퍼센트씩 인상'이라고 밝힙니다. 과세표준 ${eokwon(ex)}이면 ${won(corporateTax(ex))}으로 인상 전보다 ${won(corporateTax(ex) - corporateTaxBeforeRaise(ex))} 많습니다.` },
   { q: "법인세 신고·납부는 언제 하나요?", a: `사업연도 종료일이 속하는 달의 말일부터 ${F.months}개월 안입니다(성실신고확인서 제출 법인 ${F.monthsDiligent}개월). 12월 결산 법인은 다음 해 3월 31일입니다. 소득이 없거나 결손이어도 신고하고, 낼 세액이 ${eokwon(F.installmentOver)}을 넘으면 1개월(중소기업 2개월) 안에 나눠 낼 수 있습니다(제60조·제64조).` },
 ];
+import CorporateTaxBase from "../../../components/merged/corporate-tax/CorporateTaxBase.astro";
+import CorporateTaxDeadline from "../../../components/merged/corporate-tax/CorporateTaxDeadline.astro";
+import CorporateTaxPrepayment from "../../../components/merged/corporate-tax/CorporateTaxPrepayment.astro";
+import CorporateTaxRate from "../../../components/merged/corporate-tax/CorporateTaxRate.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -40,7 +44,7 @@ const QA = [
 
   <h2>{QA[1].q}</h2>
   <p class="qa-lead">{QA[1].a}</p>
-  <p>세율표와 금액별 비교는 <a href="/guide/corporate-tax-rate/">법인세율</a>에 있습니다.</p>
+  <p>세율표와 금액별 비교는 <a href="/guide/corporate-tax/#corporate-tax-rate">법인세율</a>에 있습니다.</p>
 
   <AdSlot />
 
@@ -52,4 +56,10 @@ const QA = [
   <ul>
     {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="corporate-tax-base"><h2>법인세 과세표준</h2><CorporateTaxBase /></section>
+  <section id="corporate-tax-deadline"><h2>법인세 신고기간</h2><CorporateTaxDeadline /></section>
+  <section id="corporate-tax-prepayment"><h2>법인세 중간예납</h2><CorporateTaxPrepayment /></section>
+  <section id="corporate-tax-rate"><h2>법인세율</h2><CorporateTaxRate /></section>
 </GuideLayout>

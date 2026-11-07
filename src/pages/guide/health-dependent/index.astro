@@ -25,6 +25,8 @@ const QA = [
   { q: "피부양자 소득·재산 기준은 얼마인가요?", a: `소득(이자·배당·사업·근로·연금·기타, 공적연금은 전액) 합계가 연 ${eokwon(I.limit)} 이하이고 사업소득이 없어야 합니다. 재산은 재산세 과세표준 합계 ${eokwon(P.base)} 이하이거나, ${eokwon(P.upper)} 이하이면서 소득 ${eokwon(P.upperIncome)} 이하여야 합니다(별표 1의2). 형제자매는 재산 ${eokwon(P.siblings)} 이하입니다.` },
   { q: "피부양자는 언제 탈락하나요?", a: `소득 기준은 1~10월에는 전전년도, 11~12월에는 전년도 소득 자료로 봅니다(연금은 전년도)(시행령 제41조 제3항). 그래서 새 소득 자료가 반영되는 11월에 기준을 넘으면 탈락할 수 있습니다. 공단이 요건 미충족을 확인한 날의 다음 날 자격을 잃고 지역가입자가 됩니다(시행규칙 제2조 제3항).` },
 ];
+import HealthDependentCriteria from "../../../components/merged/health-dependent/HealthDependentCriteria.astro";
+import HealthDependentRegistration from "../../../components/merged/health-dependent/HealthDependentRegistration.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -37,7 +39,7 @@ const QA = [
 
   <h2>{QA[1].q}</h2>
   <p class="qa-lead">{QA[1].a}</p>
-  <p>기혼자는 부부 모두 소득 기준을 채워야 합니다. 자세한 조건과 확인 방법은 <a href="/guide/health-dependent-criteria/">건강보험 피부양자 조건</a>에 있습니다.</p>
+  <p>기혼자는 부부 모두 소득 기준을 채워야 합니다. 자세한 조건과 확인 방법은 <a href="/guide/health-dependent/#health-dependent-criteria">건강보험 피부양자 조건</a>에 있습니다.</p>
 
   <AdSlot />
 
@@ -49,4 +51,8 @@ const QA = [
   <ul>
     {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="health-dependent-criteria"><h2>건강보험 피부양자 조건</h2><HealthDependentCriteria /></section>
+  <section id="health-dependent-registration"><h2>건강보험 피부양자 등록</h2><HealthDependentRegistration /></section>
 </GuideLayout>

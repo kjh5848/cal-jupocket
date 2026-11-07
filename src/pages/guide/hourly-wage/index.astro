@@ -29,6 +29,7 @@ const QA = [
   { q: "알바 시급은 주휴수당까지 얼마인가요?", a: `하루 5시간 주 4일(주 20시간)이면 2026년 최저시급으로 근무 ${won(part.weekBase)}에 주휴 ${part.holidayHours}시간 ${won(part.weekHoliday)}을 더해 주급 ${won(part.weekTotal)}, 월 약 ${won(part.monthly)}입니다. 하루 4시간 주 3일(주 12시간)은 주휴수당이 없어 주급 ${won(short.weekTotal)}, 월 약 ${won(short.monthly)}입니다.` },
   { q: "하루 8시간이나 주 40시간을 넘게 일하면요?", a: `넘는 시간은 소정근로가 아니라 연장근로입니다(근로기준법 제50조). 상시 5명 이상 사업장은 연장·야간·휴일근로에 가산임금을 더 줘야 해서(제56조) 시급 × 시간으로 끝나지 않습니다. 이 시리즈 계산은 소정근로와 주휴수당까지만 다룹니다.` },
 ];
+import HourlyWageMonthly from "../../../components/merged/hourly-wage/HourlyWageMonthly.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -37,7 +38,7 @@ const QA = [
 
   <h2>{QA[0].q}</h2>
   <p class="qa-lead">{QA[0].a}</p>
-  <p>주휴수당은 그 주에 정해진 날을 다 나와야 생깁니다(근로기준법 시행령 제30조). 결근한 주는 근무한 시간 임금만 받습니다. 주휴수당 조건은 <a href="/guide/weekly-holiday-pay-criteria/">주휴수당 조건</a>에 따로 있습니다.</p>
+  <p>주휴수당은 그 주에 정해진 날을 다 나와야 생깁니다(근로기준법 시행령 제30조). 결근한 주는 근무한 시간 임금만 받습니다. 주휴수당 조건은 <a href="/guide/weekly-holiday-pay/#weekly-holiday-pay-criteria">주휴수당 조건</a>에 따로 있습니다.</p>
 
   <h2>{QA[1].q}</h2>
   <p class="qa-lead">{QA[1].a}</p>
@@ -49,7 +50,7 @@ const QA = [
       </tbody>
     </table>
   </div>
-  <p>월급은 주휴시간을 넣은 1주 시간에 1년 평균 주 수(365 ÷ 7)를 곱하고 12로 나눈 시간으로 곱했습니다. 주 40시간만 최저임금 고시대로 209시간을 씁니다. 왜 209시간인지는 <a href="/guide/hourly-wage-monthly/">시급 월급 환산</a>에 있습니다.</p>
+  <p>월급은 주휴시간을 넣은 1주 시간에 1년 평균 주 수(365 ÷ 7)를 곱하고 12로 나눈 시간으로 곱했습니다. 주 40시간만 최저임금 고시대로 209시간을 씁니다. 왜 209시간인지는 <a href="/guide/hourly-wage/#hourly-wage-monthly">시급 월급 환산</a>에 있습니다.</p>
 
   <AdSlot />
 
@@ -61,4 +62,7 @@ const QA = [
   <ul>
     {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="hourly-wage-monthly"><h2>시급 월급 환산</h2><HourlyWageMonthly /></section>
 </GuideLayout>

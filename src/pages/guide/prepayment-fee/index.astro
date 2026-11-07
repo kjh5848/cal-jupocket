@@ -31,6 +31,7 @@ const QA = [
   { q: "갚는 시점에 따라 수수료가 얼마나 달라지나요?", a: `남은 날에 비례해 거의 직선으로 줄어듭니다. 1억원 1.2%면 실행 당일 ${won(prepaymentFee(base).fee)}에서 시작해 1년 반 뒤 절반쯤, ${LEGAL_YEARS}년이 되는 날 0원입니다. 아래 표는 같은 대출을 6개월마다 갚았을 때입니다.` },
   { q: "수수료율은 어디서 정하나요?", a: `법은 '언제까지 받을 수 있는지'만 정하고 요율은 정하지 않습니다. 요율은 상품·고정금리 여부·신청 경로마다 다르고, 대출 약정서와 상품설명서에 적혀 있습니다. 같은 은행 같은 상품에서도 금리 방식에 따라 요율이 다른 경우가 있습니다.` },
 ];
+import PrepaymentFee3Years from "../../../components/merged/prepayment-fee/PrepaymentFee3Years.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -57,10 +58,13 @@ const QA = [
 
   <h2>{QA[2].q}</h2>
   <p class="qa-lead">{QA[2].a}</p>
-  <p>{LEGAL_YEARS}년이 법으로 정해진 이유와 3년을 어디서부터 세는지는 <a href="/guide/prepayment-fee-3-years/">중도상환수수료 3년</a>에 있습니다. 남은 대출 이자는 <a href="/guide/loan-interest/">대출 이자 계산</a>에서 볼 수 있습니다.</p>
+  <p>{LEGAL_YEARS}년이 법으로 정해진 이유와 3년을 어디서부터 세는지는 <a href="/guide/prepayment-fee/#prepayment-fee-3-years">중도상환수수료 3년</a>에 있습니다. 남은 대출 이자는 <a href="/guide/loan-interest/">대출 이자 계산</a>에서 볼 수 있습니다.</p>
 
   <h2>중도상환수수료 시리즈</h2>
   <ul>
     {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="prepayment-fee-3-years"><h2>중도상환수수료 3년</h2><PrepaymentFee3Years /></section>
 </GuideLayout>

@@ -12,7 +12,6 @@ export const businessRegistrationSeries: Series = {
   hub: { slug: "business-registration", keyword: "사업자등록", label: "사업자등록 신청" },
   items: [
     { slug: "business-registration-certificate", keyword: "사업자등록증 발급", label: "사업자등록증 발급" },
-    { slug: "business-registration-change", keyword: "사업자등록증 주소변경", label: "사업자등록증 주소변경·재발급" },
     { slug: "individual-business-registration", keyword: "개인사업자 등록", label: "개인사업자·간이사업자 등록" },
     { slug: "corporate-business-registration", keyword: "법인사업자등록증 발급", label: "법인사업자등록증 발급" },
   ],

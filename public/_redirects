@@ -201,14 +201,14 @@
 /severance-withholding-receipt/  /guide/severance-withholding-receipt/  301
 /severance-withholding-receipt  /guide/severance-withholding-receipt/  301
 
-/withholding-receipt-issue/  /guide/withholding-receipt-issue/  301
-/withholding-receipt-issue  /guide/withholding-receipt-issue/  301
+/withholding-receipt-issue/  /guide/withholding-receipt/#withholding-receipt-issue  301
+/withholding-receipt-issue  /guide/withholding-receipt/#withholding-receipt-issue  301
 
-/withholding-receipt-read/  /guide/withholding-receipt-read/  301
-/withholding-receipt-read  /guide/withholding-receipt-read/  301
+/withholding-receipt-read/  /guide/withholding-receipt/#withholding-receipt-read  301
+/withholding-receipt-read  /guide/withholding-receipt/#withholding-receipt-read  301
 
-/withholding-receipt-vs-income-certificate/  /guide/withholding-receipt-vs-income-certificate/  301
-/withholding-receipt-vs-income-certificate  /guide/withholding-receipt-vs-income-certificate/  301
+/withholding-receipt-vs-income-certificate/  /guide/withholding-receipt/#withholding-receipt-vs-income-certificate  301
+/withholding-receipt-vs-income-certificate  /guide/withholding-receipt/#withholding-receipt-vs-income-certificate  301
 
 /year-end-tax/  /guide/year-end-settlement/#year-end-tax  301
 /year-end-tax  /guide/year-end-settlement/#year-end-tax  301
@@ -327,17 +327,17 @@
 /education-credit/  /guide/education-credit/  301
 /education-credit  /guide/education-credit/  301
 
-/education-credit-limit/  /guide/education-credit-limit/  301
-/education-credit-limit  /guide/education-credit-limit/  301
+/education-credit-limit/  /guide/education-credit/#education-credit-limit  301
+/education-credit-limit  /guide/education-credit/#education-credit-limit  301
 
-/education-credit-income/  /guide/education-credit-income/  301
-/education-credit-income  /guide/education-credit-income/  301
+/education-credit-income/  /guide/education-credit/#education-credit-income  301
+/education-credit-income  /guide/education-credit/#education-credit-income  301
 
-/education-credit-academy/  /guide/education-credit-academy/  301
-/education-credit-academy  /guide/education-credit-academy/  301
+/education-credit-academy/  /guide/education-credit/#education-credit-academy  301
+/education-credit-academy  /guide/education-credit/#education-credit-academy  301
 
-/education-credit-student-loan/  /guide/education-credit-student-loan/  301
-/education-credit-student-loan  /guide/education-credit-student-loan/  301
+/education-credit-student-loan/  /guide/education-credit/#education-credit-student-loan  301
+/education-credit-student-loan  /guide/education-credit/#education-credit-student-loan  301
 
 /donation-credit/  /guide/donation-credit/  301
 /donation-credit  /guide/donation-credit/  301
@@ -381,17 +381,17 @@
 /gift-tax-criteria/  /guide/gift-tax-criteria/  301
 /gift-tax-criteria  /guide/gift-tax-criteria/  301
 
-/inheritance-tax-guide/  /guide/inheritance-tax-guide/  301
-/inheritance-tax-guide  /guide/inheritance-tax-guide/  301
+/inheritance-tax-guide/  /guide/inheritance-tax/#inheritance-tax-guide  301
+/inheritance-tax-guide  /guide/inheritance-tax/#inheritance-tax-guide  301
 
-/inheritance-tax-rate/  /guide/inheritance-tax-rate/  301
-/inheritance-tax-rate  /guide/inheritance-tax-rate/  301
+/inheritance-tax-rate/  /guide/inheritance-tax/#inheritance-tax-rate  301
+/inheritance-tax-rate  /guide/inheritance-tax/#inheritance-tax-rate  301
 
 /inheritance-tax-reform/  /guide/inheritance-tax-reform/  301
 /inheritance-tax-reform  /guide/inheritance-tax-reform/  301
 
-/inheritance-tax-filing/  /guide/inheritance-tax-filing/  301
-/inheritance-tax-filing  /guide/inheritance-tax-filing/  301
+/inheritance-tax-filing/  /guide/inheritance-tax/#inheritance-tax-filing  301
+/inheritance-tax-filing  /guide/inheritance-tax/#inheritance-tax-filing  301
 
 /inheritance-child-deduction/  /guide/inheritance-child-deduction/  301
 /inheritance-child-deduction  /guide/inheritance-child-deduction/  301
@@ -444,8 +444,8 @@
 /four-insurance-calculator/  /guide/four-insurance-calculator/  301
 /four-insurance-calculator  /guide/four-insurance-calculator/  301
 
-/four-insurance-rate/  /guide/four-insurance-rate/  301
-/four-insurance-rate  /guide/four-insurance-rate/  301
+/four-insurance-rate/  /guide/four-insurance/#four-insurance-rate  301
+/four-insurance-rate  /guide/four-insurance/#four-insurance-rate  301
 
 /health-insurance-premium/  /guide/health-insurance-premium/  301
 /health-insurance-premium  /guide/health-insurance-premium/  301
@@ -459,8 +459,8 @@
 /employment-insurance-premium/  /guide/employment-insurance-premium/  301
 /employment-insurance-premium  /guide/employment-insurance-premium/  301
 
-/four-insurance-eligibility/  /guide/four-insurance-eligibility/  301
-/four-insurance-eligibility  /guide/four-insurance-eligibility/  301
+/four-insurance-eligibility/  /guide/four-insurance/#four-insurance-eligibility  301
+/four-insurance-eligibility  /guide/four-insurance/#four-insurance-eligibility  301
 
 /daily-worker-insurance/  /guide/daily-worker-insurance/  301
 /daily-worker-insurance  /guide/daily-worker-insurance/  301
@@ -558,8 +558,8 @@
 /income-tax-refund-guide/  /guide/income-tax-refund-guide/  301
 /income-tax-refund-guide  /guide/income-tax-refund-guide/  301
 
-/income-tax-refund-date/  /guide/income-tax-refund-date/  301
-/income-tax-refund-date  /guide/income-tax-refund-date/  301
+/income-tax-refund-date/  /guide/income-tax-refund-guide/#income-tax-refund-date  301
+/income-tax-refund-date  /guide/income-tax-refund-guide/#income-tax-refund-date  301
 
 
 /apartment-acquisition-tax/  /guide/apartment-acquisition-tax/  301
@@ -580,8 +580,8 @@
 /business-registration-certificate/  /guide/business-registration-certificate/  301
 /business-registration-certificate  /guide/business-registration-certificate/  301
 
-/business-registration-change/  /guide/business-registration-change/  301
-/business-registration-change  /guide/business-registration-change/  301
+/business-registration-change/  /guide/business-registration/#business-registration-change  301
+/business-registration-change  /guide/business-registration/#business-registration-change  301
 
 /individual-business-registration/  /guide/individual-business-registration/  301
 /individual-business-registration  /guide/individual-business-registration/  301
@@ -592,26 +592,26 @@
 /corporate-tax/  /guide/corporate-tax/  301
 /corporate-tax  /guide/corporate-tax/  301
 
-/corporate-tax-rate/  /guide/corporate-tax-rate/  301
-/corporate-tax-rate  /guide/corporate-tax-rate/  301
+/corporate-tax-rate/  /guide/corporate-tax/#corporate-tax-rate  301
+/corporate-tax-rate  /guide/corporate-tax/#corporate-tax-rate  301
 
-/corporate-tax-deadline/  /guide/corporate-tax-deadline/  301
-/corporate-tax-deadline  /guide/corporate-tax-deadline/  301
+/corporate-tax-deadline/  /guide/corporate-tax/#corporate-tax-deadline  301
+/corporate-tax-deadline  /guide/corporate-tax/#corporate-tax-deadline  301
 
-/corporate-tax-prepayment/  /guide/corporate-tax-prepayment/  301
-/corporate-tax-prepayment  /guide/corporate-tax-prepayment/  301
+/corporate-tax-prepayment/  /guide/corporate-tax/#corporate-tax-prepayment  301
+/corporate-tax-prepayment  /guide/corporate-tax/#corporate-tax-prepayment  301
 
-/corporate-tax-base/  /guide/corporate-tax-base/  301
-/corporate-tax-base  /guide/corporate-tax-base/  301
+/corporate-tax-base/  /guide/corporate-tax/#corporate-tax-base  301
+/corporate-tax-base  /guide/corporate-tax/#corporate-tax-base  301
 
-/property-tax-calc/  /guide/property-tax-calc/  301
-/property-tax-calc  /guide/property-tax-calc/  301
+/property-tax-calc/  /guide/property-tax/#property-tax-calc  301
+/property-tax-calc  /guide/property-tax/#property-tax-calc  301
 
-/property-tax-payment/  /guide/property-tax-payment/  301
-/property-tax-payment  /guide/property-tax-payment/  301
+/property-tax-payment/  /guide/property-tax/#property-tax-payment  301
+/property-tax-payment  /guide/property-tax/#property-tax-payment  301
 
-/property-tax-basis-date/  /guide/property-tax-basis-date/  301
-/property-tax-basis-date  /guide/property-tax-basis-date/  301
+/property-tax-basis-date/  /guide/property-tax/#property-tax-basis-date  301
+/property-tax-basis-date  /guide/property-tax/#property-tax-basis-date  301
 
 /lotto-tax/  /guide/lotto-tax/  301
 /lotto-tax  /guide/lotto-tax/  301
@@ -652,14 +652,14 @@
 /weekly-holiday-pay-calculator/  /guide/weekly-holiday-pay-calculator/  301
 /weekly-holiday-pay-calculator  /guide/weekly-holiday-pay-calculator/  301
 
-/weekly-holiday-pay-criteria/  /guide/weekly-holiday-pay-criteria/  301
-/weekly-holiday-pay-criteria  /guide/weekly-holiday-pay-criteria/  301
+/weekly-holiday-pay-criteria/  /guide/weekly-holiday-pay/#weekly-holiday-pay-criteria  301
+/weekly-holiday-pay-criteria  /guide/weekly-holiday-pay/#weekly-holiday-pay-criteria  301
 
 /annual-leave-pay/  /guide/annual-leave-pay/  301
 /annual-leave-pay  /guide/annual-leave-pay/  301
 
-/annual-leave-days/  /guide/annual-leave-days/  301
-/annual-leave-days  /guide/annual-leave-days/  301
+/annual-leave-days/  /guide/annual-leave-pay/#annual-leave-days  301
+/annual-leave-days  /guide/annual-leave-pay/#annual-leave-days  301
 
 /annual-leave-calculator/  /guide/annual-leave-calculator/  301
 /annual-leave-calculator  /guide/annual-leave-calculator/  301
@@ -667,17 +667,17 @@
 /unemployment-benefit/  /guide/unemployment-benefit/  301
 /unemployment-benefit  /guide/unemployment-benefit/  301
 
-/unemployment-benefit-criteria/  /guide/unemployment-benefit-criteria/  301
-/unemployment-benefit-criteria  /guide/unemployment-benefit-criteria/  301
+/unemployment-benefit-criteria/  /guide/unemployment-benefit/#unemployment-benefit-criteria  301
+/unemployment-benefit-criteria  /guide/unemployment-benefit/#unemployment-benefit-criteria  301
 
 /unemployment-benefit-calculator/  /guide/unemployment-benefit-calculator/  301
 /unemployment-benefit-calculator  /guide/unemployment-benefit-calculator/  301
 
-/unemployment-benefit-apply/  /guide/unemployment-benefit-apply/  301
-/unemployment-benefit-apply  /guide/unemployment-benefit-apply/  301
+/unemployment-benefit-apply/  /guide/unemployment-benefit/#unemployment-benefit-apply  301
+/unemployment-benefit-apply  /guide/unemployment-benefit/#unemployment-benefit-apply  301
 
-/unemployment-benefit-period/  /guide/unemployment-benefit-period/  301
-/unemployment-benefit-period  /guide/unemployment-benefit-period/  301
+/unemployment-benefit-period/  /guide/unemployment-benefit/#unemployment-benefit-period  301
+/unemployment-benefit-period  /guide/unemployment-benefit/#unemployment-benefit-period  301
 
 /basic-pension/  /guide/basic-pension/  301
 /basic-pension  /guide/basic-pension/  301
@@ -706,11 +706,11 @@
 /parental-leave-pay-calculator/  /guide/parental-leave-pay-calculator/  301
 /parental-leave-pay-calculator  /guide/parental-leave-pay-calculator/  301
 
-/parental-leave-pay-apply/  /guide/parental-leave-pay-apply/  301
-/parental-leave-pay-apply  /guide/parental-leave-pay-apply/  301
+/parental-leave-pay-apply/  /guide/parental-leave-pay/#parental-leave-pay-apply  301
+/parental-leave-pay-apply  /guide/parental-leave-pay/#parental-leave-pay-apply  301
 
-/parental-leave-period/  /guide/parental-leave-period/  301
-/parental-leave-period  /guide/parental-leave-period/  301
+/parental-leave-period/  /guide/parental-leave-pay/#parental-leave-period  301
+/parental-leave-period  /guide/parental-leave-pay/#parental-leave-period  301
 
 /maternity-leave-pay/  /guide/maternity-leave-pay/  301
 /maternity-leave-pay  /guide/maternity-leave-pay/  301
@@ -718,17 +718,17 @@
 /health-dependent/  /guide/health-dependent/  301
 /health-dependent  /guide/health-dependent/  301
 
-/health-dependent-criteria/  /guide/health-dependent-criteria/  301
-/health-dependent-criteria  /guide/health-dependent-criteria/  301
+/health-dependent-criteria/  /guide/health-dependent/#health-dependent-criteria  301
+/health-dependent-criteria  /guide/health-dependent/#health-dependent-criteria  301
 
-/health-dependent-registration/  /guide/health-dependent-registration/  301
-/health-dependent-registration  /guide/health-dependent-registration/  301
+/health-dependent-registration/  /guide/health-dependent/#health-dependent-registration  301
+/health-dependent-registration  /guide/health-dependent/#health-dependent-registration  301
 
 /crypto-tax/  /guide/crypto-tax/  301
 /crypto-tax  /guide/crypto-tax/  301
 
-/crypto-tax-delay/  /guide/crypto-tax-delay/  301
-/crypto-tax-delay  /guide/crypto-tax-delay/  301
+/crypto-tax-delay/  /guide/crypto-tax/#crypto-tax-delay  301
+/crypto-tax-delay  /guide/crypto-tax/#crypto-tax-delay  301
 
 /crypto-tax-calculator/  /guide/crypto-tax-calculator/  301
 /crypto-tax-calculator  /guide/crypto-tax-calculator/  301
@@ -757,8 +757,8 @@
 /electric-car-tax/  /guide/electric-car-tax/  301
 /electric-car-tax  /guide/electric-car-tax/  301
 
-/electric-car-tax-exemption/  /guide/electric-car-tax-exemption/  301
-/electric-car-tax-exemption  /guide/electric-car-tax-exemption/  301
+/electric-car-tax-exemption/  /guide/electric-car-tax/#electric-car-tax-exemption  301
+/electric-car-tax-exemption  /guide/electric-car-tax/#electric-car-tax-exemption  301
 
 /electric-car-tax-calculator/  /guide/electric-car-tax-calculator/  301
 /electric-car-tax-calculator  /guide/electric-car-tax-calculator/  301
@@ -796,8 +796,8 @@
 /family-loan-interest/  /guide/family-loan-interest/  301
 /family-loan-interest  /guide/family-loan-interest/  301
 
-/family-loan-howto/  /guide/family-loan-howto/  301
-/family-loan-howto  /guide/family-loan-howto/  301
+/family-loan-howto/  /guide/family-loan/#family-loan-howto  301
+/family-loan-howto  /guide/family-loan/#family-loan-howto  301
 
 /industrial-accident/  /guide/industrial-accident/  301
 /industrial-accident  /guide/industrial-accident/  301
@@ -847,8 +847,8 @@
 /hourly-wage/  /guide/hourly-wage/  301
 /hourly-wage  /guide/hourly-wage/  301
 
-/hourly-wage-monthly/  /guide/hourly-wage-monthly/  301
-/hourly-wage-monthly  /guide/hourly-wage-monthly/  301
+/hourly-wage-monthly/  /guide/hourly-wage/#hourly-wage-monthly  301
+/hourly-wage-monthly  /guide/hourly-wage/#hourly-wage-monthly  301
 
 /hourly-wage-calculator/  /guide/hourly-wage-calculator/  301
 /hourly-wage-calculator  /guide/hourly-wage-calculator/  301
@@ -892,8 +892,8 @@
 /daily-worker-insurance-calculator/  /guide/daily-worker-insurance-calculator/  301
 /daily-worker-insurance-calculator  /guide/daily-worker-insurance-calculator/  301
 
-/daily-worker-insurance-deduction/  /guide/daily-worker-insurance-deduction/  301
-/daily-worker-insurance-deduction  /guide/daily-worker-insurance-deduction/  301
+/daily-worker-insurance-deduction/  /guide/daily-worker-insurance/#daily-worker-insurance-deduction  301
+/daily-worker-insurance-deduction  /guide/daily-worker-insurance/#daily-worker-insurance-deduction  301
 
 /installment-savings-interest/  /guide/installment-savings-interest/  301
 /installment-savings-interest  /guide/installment-savings-interest/  301
@@ -910,8 +910,8 @@
 /prepayment-fee/  /guide/prepayment-fee/  301
 /prepayment-fee  /guide/prepayment-fee/  301
 
-/prepayment-fee-3-years/  /guide/prepayment-fee-3-years/  301
-/prepayment-fee-3-years  /guide/prepayment-fee-3-years/  301
+/prepayment-fee-3-years/  /guide/prepayment-fee/#prepayment-fee-3-years  301
+/prepayment-fee-3-years  /guide/prepayment-fee/#prepayment-fee-3-years  301
 
 /prepayment-fee-calculator/  /guide/prepayment-fee-calculator/  301
 /prepayment-fee-calculator  /guide/prepayment-fee-calculator/  301
@@ -1047,3 +1047,77 @@
 /guide/basic-pension-amount/ /guide/basic-pension/#basic-pension-amount 301
 /guide/basic-pension-apply/ /guide/basic-pension/#basic-pension-apply 301
 /guide/basic-pension-criteria/ /guide/basic-pension/#basic-pension-criteria 301
+
+# 합치기 corporate-tax (2026-11-07)
+/guide/corporate-tax-base/ /guide/corporate-tax/#corporate-tax-base 301
+/guide/corporate-tax-deadline/ /guide/corporate-tax/#corporate-tax-deadline 301
+/guide/corporate-tax-prepayment/ /guide/corporate-tax/#corporate-tax-prepayment 301
+/guide/corporate-tax-rate/ /guide/corporate-tax/#corporate-tax-rate 301
+
+# 합치기 daily-worker-insurance (2026-11-07)
+/guide/daily-worker-insurance-deduction/ /guide/daily-worker-insurance/#daily-worker-insurance-deduction 301
+
+# 합치기 education-credit (2026-11-07)
+/guide/education-credit-academy/ /guide/education-credit/#education-credit-academy 301
+/guide/education-credit-income/ /guide/education-credit/#education-credit-income 301
+/guide/education-credit-limit/ /guide/education-credit/#education-credit-limit 301
+/guide/education-credit-student-loan/ /guide/education-credit/#education-credit-student-loan 301
+
+# 합치기 inheritance-tax (2026-11-07)
+/guide/inheritance-tax-filing/ /guide/inheritance-tax/#inheritance-tax-filing 301
+/guide/inheritance-tax-guide/ /guide/inheritance-tax/#inheritance-tax-guide 301
+/guide/inheritance-tax-rate/ /guide/inheritance-tax/#inheritance-tax-rate 301
+
+# 합치기 unemployment-benefit (2026-11-07)
+/guide/unemployment-benefit-apply/ /guide/unemployment-benefit/#unemployment-benefit-apply 301
+/guide/unemployment-benefit-criteria/ /guide/unemployment-benefit/#unemployment-benefit-criteria 301
+/guide/unemployment-benefit-period/ /guide/unemployment-benefit/#unemployment-benefit-period 301
+
+# 합치기 four-insurance (2026-11-07)
+/guide/four-insurance-eligibility/ /guide/four-insurance/#four-insurance-eligibility 301
+/guide/four-insurance-rate/ /guide/four-insurance/#four-insurance-rate 301
+
+# 합치기 parental-leave-pay (2026-11-07)
+/guide/parental-leave-pay-apply/ /guide/parental-leave-pay/#parental-leave-pay-apply 301
+/guide/parental-leave-period/ /guide/parental-leave-pay/#parental-leave-period 301
+
+# 합치기 property-tax (2026-11-07)
+/guide/property-tax-basis-date/ /guide/property-tax/#property-tax-basis-date 301
+/guide/property-tax-calc/ /guide/property-tax/#property-tax-calc 301
+/guide/property-tax-payment/ /guide/property-tax/#property-tax-payment 301
+
+# 합치기 withholding-receipt (2026-11-07)
+/guide/withholding-receipt-issue/ /guide/withholding-receipt/#withholding-receipt-issue 301
+/guide/withholding-receipt-read/ /guide/withholding-receipt/#withholding-receipt-read 301
+/guide/withholding-receipt-vs-income-certificate/ /guide/withholding-receipt/#withholding-receipt-vs-income-certificate 301
+
+# 합치기 annual-leave-pay (2026-11-07)
+/guide/annual-leave-days/ /guide/annual-leave-pay/#annual-leave-days 301
+
+# 합치기 business-registration (2026-11-07)
+/guide/business-registration-change/ /guide/business-registration/#business-registration-change 301
+
+# 합치기 crypto-tax (2026-11-07)
+/guide/crypto-tax-delay/ /guide/crypto-tax/#crypto-tax-delay 301
+
+# 합치기 electric-car-tax (2026-11-07)
+/guide/electric-car-tax-exemption/ /guide/electric-car-tax/#electric-car-tax-exemption 301
+
+# 합치기 family-loan (2026-11-07)
+/guide/family-loan-howto/ /guide/family-loan/#family-loan-howto 301
+
+# 합치기 health-dependent (2026-11-07)
+/guide/health-dependent-criteria/ /guide/health-dependent/#health-dependent-criteria 301
+/guide/health-dependent-registration/ /guide/health-dependent/#health-dependent-registration 301
+
+# 합치기 hourly-wage (2026-11-07)
+/guide/hourly-wage-monthly/ /guide/hourly-wage/#hourly-wage-monthly 301
+
+# 합치기 prepayment-fee (2026-11-07)
+/guide/prepayment-fee-3-years/ /guide/prepayment-fee/#prepayment-fee-3-years 301
+
+# 합치기 weekly-holiday-pay (2026-11-07)
+/guide/weekly-holiday-pay-criteria/ /guide/weekly-holiday-pay/#weekly-holiday-pay-criteria 301
+
+# 합치기 income-tax-refund-guide (2026-11-07)
+/guide/income-tax-refund-date/ /guide/income-tax-refund-guide/#income-tax-refund-date 301

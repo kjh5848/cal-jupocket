@@ -99,13 +99,13 @@ const QA = [
       <tbody>{rows.map(({ m, x }) => <tr><th scope="row">{won(m)}</th><td>{won(x.average)}</td><td>{won(x.daily)}</td><td>{x.which}</td><td>{won(x.total)}</td></tr>)}</tbody>
     </table>
   </div>
-  <p>3개월 총일수를 92일로 둔 표입니다. 이직일에 따라 89~92일이라 평균임금이 조금 달라집니다. 받는 날수는 <a href="/guide/unemployment-benefit-period/">실업급여 수급기간</a>에 있습니다.</p>
+  <p>3개월 총일수를 92일로 둔 표입니다. 이직일에 따라 89~92일이라 평균임금이 조금 달라집니다. 받는 날수는 <a href="/guide/unemployment-benefit/#unemployment-benefit-period">실업급여 수급기간</a>에 있습니다.</p>
 
   <AdSlot />
 
   <h2>{QA[2].q}</h2>
   <p class="qa-lead">{QA[2].a}</p>
-  <p>이직일이 2027년이면 계산기는 2027년 최저임금으로 하한을 냅니다. 받을 수 있는지부터 보려면 <a href="/guide/unemployment-benefit-criteria/">실업급여 조건</a>을 보세요.</p>
+  <p>이직일이 2027년이면 계산기는 2027년 최저임금으로 하한을 냅니다. 받을 수 있는지부터 보려면 <a href="/guide/unemployment-benefit/#unemployment-benefit-criteria">실업급여 조건</a>을 보세요.</p>
 
   <script src="../../../scripts/unemployment.ts"></script>
 </GuideLayout>

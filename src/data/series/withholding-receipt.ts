@@ -15,8 +15,5 @@ export const withholdingReceiptSeries: Series = {
     { slug: "earned-income-withholding-receipt", keyword: "근로소득원천징수영수증", label: "근로소득 원천징수영수증" },
     { slug: "business-income-withholding-receipt", keyword: "사업소득 원천징수영수증", label: "사업소득 원천징수영수증(3.3%)" },
     { slug: "severance-withholding-receipt", keyword: "퇴직소득원천징수영수증", label: "퇴직소득 원천징수영수증" },
-    { slug: "withholding-receipt-issue", keyword: "원천징수영수증 발급", label: "원천징수영수증 발급" },
-    { slug: "withholding-receipt-read", keyword: "원천징수영수증 보는법", label: "원천징수영수증 보는 법" },
-    { slug: "withholding-receipt-vs-income-certificate", keyword: "원천징수영수증 소득금액증명원 차이", label: "원천징수영수증과 소득금액증명원" },
   ],
 };

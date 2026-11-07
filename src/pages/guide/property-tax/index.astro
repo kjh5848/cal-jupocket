@@ -34,6 +34,9 @@ const QA = [
   { q: "재산세 고지서가 계산보다 큰 이유는?", a: `고지서에는 재산세 본세 외에 지방교육세(본세의 20%)와, 지방의회가 정한 도시지역이면 도시지역분(과세표준의 0.14%, 조례로 0.23%까지)이 함께 붙습니다(제112조·제151조). 공시가격 ${eokwon(v)} 1세대 1주택이 도시지역이면 ${won(urban.total)}입니다.` },
   { q: "재산세를 줄이거나 미룰 수 있나요?", a: `1세대 1주택은 공정시장가액비율 특례(시행령 제109조)를 받고, 시가표준액 9억원 이하면 세율 특례(제111조의2)도 받습니다. 만 60세 이상이거나 5년 이상 보유한 1세대 1주택자는 소득·세액 요건을 갖추면 담보를 제공하고 납부를 유예받을 수 있습니다(제118조의2). 개별 감면(지방세특례제한법)은 이 글에서 다루지 않았습니다.` },
 ];
+import PropertyTaxBasisDate from "../../../components/merged/property-tax/PropertyTaxBasisDate.astro";
+import PropertyTaxCalc from "../../../components/merged/property-tax/PropertyTaxCalc.astro";
+import PropertyTaxPayment from "../../../components/merged/property-tax/PropertyTaxPayment.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={x.verifiedOn} faq={QA}>
@@ -56,7 +59,7 @@ const QA = [
       <tr><th scope="row">1세대 1주택(비율 {pct(one.ratio)})</th><td>{won(one.base)}</td><td>{won(one.propertyTax)}</td><td>{won(one.educationTax)}</td><td>{won(one.total)}</td></tr>
     </tbody>
   </table>
-  <p>공시가격별 표는 <a href="/guide/property-tax-calc/">재산세 계산</a>, 직접 계산은 <a href="/property-tax/">재산세 계산기</a>에 있습니다.</p>
+  <p>공시가격별 표는 <a href="/guide/property-tax/#property-tax-calc">재산세 계산</a>, 직접 계산은 <a href="/property-tax/">재산세 계산기</a>에 있습니다.</p>
   <p>공시가격 합계가 종부세 공제액을 넘는 집은 12월에 종부세가 따로 붙습니다 — 재산세와 다른 구간별 세율은 <a href="/guide/jongbu-rate/">종부세 세율</a>에 정리했습니다.</p>
 
   <AdSlot />
@@ -72,4 +75,9 @@ const QA = [
   <ul>
     {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="property-tax-basis-date"><h2>재산세 과세기준일</h2><PropertyTaxBasisDate /></section>
+  <section id="property-tax-calc"><h2>재산세 계산</h2><PropertyTaxCalc /></section>
+  <section id="property-tax-payment"><h2>재산세 납부방법</h2><PropertyTaxPayment /></section>
 </GuideLayout>

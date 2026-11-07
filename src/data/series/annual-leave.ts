@@ -10,7 +10,6 @@ export const annualLeaveSeries: Series = {
   cluster: "labor",
   hub: { slug: "annual-leave-pay", keyword: "연차수당", label: "연차수당 지급기준·계산법" },
   items: [
-    { slug: "annual-leave-days", keyword: "연차 발생기준", label: "연차 발생기준·근속별 일수" },
     { slug: "annual-leave-calculator", keyword: "연차 계산기", label: "연차 계산기" },
   ],
 };

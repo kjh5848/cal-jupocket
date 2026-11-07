@@ -11,6 +11,5 @@ export const weeklyHolidaySeries: Series = {
   hub: { slug: "weekly-holiday-pay", keyword: "주휴수당", label: "주휴수당 — 주 15시간·개근" },
   items: [
     { slug: "weekly-holiday-pay-calculator", keyword: "주휴수당 계산기", label: "주휴수당 계산기" },
-    { slug: "weekly-holiday-pay-criteria", keyword: "주휴수당 조건", label: "주휴수당 조건·지급기준" },
   ],
 };

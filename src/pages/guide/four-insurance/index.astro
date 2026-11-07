@@ -31,6 +31,8 @@ const QA = [
   { q: "4대보험은 회사도 내나요?", a: `냅니다. 국민연금·건강보험·장기요양은 본인과 사업주가 절반씩, 고용보험은 실업급여 몫을 절반씩 내고 사업주가 고용안정·직업능력개발 보험료(규모별 0.25~0.85%)를 더 냅니다. 산재보험료는 사업주가 전액 부담합니다(보험료징수법 제13조).` },
   { q: "4대보험은 세금인가요?", a: `세금이 아니라 각 사회보험법에 따른 보험료입니다. 월급에서 떼는 근로소득세·지방소득세와는 따로 계산되고, 기준도 다릅니다. 국민연금은 기준소득월액 상한(월 ${eokwon(pp.standardIncomeCeiling)})에서 멈추고, 건강보험료 상한은 전전년도 평균 보험료의 30배를 고려해 고시합니다.` },
 ];
+import FourInsuranceEligibility from "../../../components/merged/four-insurance/FourInsuranceEligibility.astro";
+import FourInsuranceRate from "../../../components/merged/four-insurance/FourInsuranceRate.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -66,4 +68,8 @@ const QA = [
   <ul>
     {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="four-insurance-eligibility"><h2>4대보험 가입조건</h2><FourInsuranceEligibility /></section>
+  <section id="four-insurance-rate"><h2>4대보험 요율</h2><FourInsuranceRate /></section>
 </GuideLayout>

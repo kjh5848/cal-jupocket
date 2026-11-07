@@ -23,15 +23,12 @@ export const fourInsuranceSeries: Series = {
   hub: { slug: "four-insurance", keyword: "4대보험", label: "4대보험" },
   items: [
     { slug: "four-insurance-calculator", keyword: "4대보험 계산기", label: "4대보험 계산기" },
-    { slug: "four-insurance-rate", keyword: "4대보험 요율", label: "4대보험 요율" },
     { slug: "health-insurance-premium", keyword: "건강보험료 계산", label: "건강보험료 계산" },
     { slug: "regional-health-insurance", keyword: "지역건강보험료 계산", label: "지역건강보험료 계산" },
     { slug: "long-term-care-premium", keyword: "장기요양보험료", label: "장기요양보험료" },
     { slug: "employment-insurance-premium", keyword: "고용보험료", label: "고용보험료" },
-    { slug: "four-insurance-eligibility", keyword: "4대보험 가입조건", label: "4대보험 가입조건" },
     { slug: "daily-worker-insurance", keyword: "일용직 4대보험", label: "일용직 4대보험" },
     { slug: "health-insurance-refund", keyword: "건강보험 환급금", label: "건강보험 환급금" },
     { slug: "daily-worker-insurance-calculator", keyword: "일용직 4대보험 계산기", label: "일용직 4대보험 계산기" },
-    { slug: "daily-worker-insurance-deduction", keyword: "일용직 4대보험 공제", label: "일용직 4대보험 공제 — 일당별 표" },
   ],
 };

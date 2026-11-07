@@ -10,9 +10,6 @@ export const unemploymentSeries: Series = {
   cluster: "labor",
   hub: { slug: "unemployment-benefit", keyword: "실업급여", label: "실업급여 — 조건·금액·기간" },
   items: [
-    { slug: "unemployment-benefit-criteria", keyword: "실업급여 조건", label: "실업급여 조건·자진퇴사 사유" },
     { slug: "unemployment-benefit-calculator", keyword: "실업급여 계산기", label: "실업급여 계산기" },
-    { slug: "unemployment-benefit-apply", keyword: "실업급여 신청방법", label: "실업급여 신청방법·실업인정" },
-    { slug: "unemployment-benefit-period", keyword: "실업급여 수급기간", label: "실업급여 수급기간·일수" },
   ],
 };

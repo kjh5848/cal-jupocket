@@ -28,6 +28,7 @@ const QA = [
   { q: "3.3% 프리랜서는 환급을 얼마나 받나요?", a: `연 총수입 ${eokwon(gross)}, 단순경비율 60%로 가정하고 본인 공제만 받으면 결정세액 ${won(ex.computedTax)}에 지방소득세 ${won(ex.localTax)}을 더한 ${won(ex.totalTax)}보다 미리 뗀 세금(3.3%) ${won(ex.prepaid)}이 많아 차이 ${won(ex.refund)}을 돌려받는 어림입니다. 업종별 경비율과 공제에 따라 달라집니다.` },
   { q: "환급 신고 기간을 놓쳤다면 어떻게 하나요?", a: `아예 신고하지 않았다면 세무서가 결정·통지하기 전까지 기한 후 신고를 할 수 있고(국세기본법 제45조의3), 신고는 했지만 환급을 덜 받았다면 법정신고기한 후 ${rf.correctionClaim.withinYears}년 안에 경정청구를 합니다(제45조의2). 경정청구에는 ${rf.correctionClaim.replyWithinMonths}개월 안에 답이 옵니다.` },
 ];
+import IncomeTaxRefundDate from "../../../components/merged/income-tax-refund-guide/IncomeTaxRefundDate.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -53,6 +54,9 @@ const QA = [
   <p class="qa-lead">{QA[3].a}</p>
   <p>
     기한 후 신고 환급은 <a href="/guide/late-filing-refund/">기한후신고 환급</a>, 들어오는 시기는{" "}
-    <a href="/guide/income-tax-refund-date/">종합소득세 환급일</a>에 있습니다.
+    <a href="/guide/income-tax-refund-guide/#income-tax-refund-date">종합소득세 환급일</a>에 있습니다.
   </p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="income-tax-refund-date"><h2>종합소득세 환급일</h2><IncomeTaxRefundDate /></section>
 </GuideLayout>

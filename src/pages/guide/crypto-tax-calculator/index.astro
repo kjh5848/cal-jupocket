@@ -100,7 +100,7 @@ const QA = [
     <thead><tr><th>1년 이익</th><th>과세 대상(−250만원)</th><th>세금(22%)</th></tr></thead>
     <tbody>{rows.map(({ g, x }) => <tr><th scope="row">{eokwon(g)}</th><td>{won(x.taxable)}</td><td>{won(x.total)}</td></tr>)}</tbody>
   </table>
-  <p>시행 시기와 유예 경과는 <a href="/guide/crypto-tax-delay/">가상자산 과세 유예</a>, 신고는 <a href="/guide/crypto-tax/">코인 과세</a>에 있습니다.</p>
+  <p>시행 시기와 유예 경과는 <a href="/guide/crypto-tax/#crypto-tax-delay">가상자산 과세 유예</a>, 신고는 <a href="/guide/crypto-tax/">코인 과세</a>에 있습니다.</p>
 
   <script src="../../../scripts/crypto-tax.ts"></script>
 </GuideLayout>

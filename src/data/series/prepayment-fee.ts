@@ -14,7 +14,6 @@ export const prepaymentFeeSeries: Series = {
   cluster: "money",
   hub: { slug: "prepayment-fee", keyword: "중도상환수수료 계산", label: "중도상환수수료 계산 — 방법·예시" },
   items: [
-    { slug: "prepayment-fee-3-years", keyword: "중도상환수수료 3년", label: "중도상환수수료 3년 — 언제부터 0원" },
     { slug: "prepayment-fee-calculator", keyword: "중도상환수수료 계산기", label: "중도상환수수료 계산기" },
   ],
 };

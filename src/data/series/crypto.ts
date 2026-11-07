@@ -10,7 +10,6 @@ export const cryptoSeries: Series = {
   cluster: "income",
   hub: { slug: "crypto-tax", keyword: "코인 과세", label: "코인 과세 — 2027년·250만원·22%" },
   items: [
-    { slug: "crypto-tax-delay", keyword: "가상자산 과세 유예", label: "가상자산 과세 유예" },
     { slug: "crypto-tax-calculator", keyword: "코인 세금 계산기", label: "코인 세금 계산기" },
   ],
 };

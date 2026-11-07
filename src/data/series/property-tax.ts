@@ -10,8 +10,5 @@ export const propertyTaxSeries: Series = {
   cluster: "localtax",
   hub: { slug: "property-tax", keyword: "재산세", label: "재산세 부과기준과 납부기간" },
   items: [
-    { slug: "property-tax-calc", keyword: "재산세 계산", label: "재산세 계산" },
-    { slug: "property-tax-payment", keyword: "재산세 납부방법", label: "재산세 납부방법·분할납부" },
-    { slug: "property-tax-basis-date", keyword: "재산세 과세기준일", label: "재산세 과세기준일" },
   ],
 };

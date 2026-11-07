@@ -10,9 +10,5 @@ export const corporateTaxSeries: Series = {
   cluster: "vat",
   hub: { slug: "corporate-tax", keyword: "법인세", label: "법인세" },
   items: [
-    { slug: "corporate-tax-rate", keyword: "법인세율", label: "법인세율" },
-    { slug: "corporate-tax-deadline", keyword: "법인세 신고기간", label: "법인세 신고기간" },
-    { slug: "corporate-tax-prepayment", keyword: "법인세 중간예납", label: "법인세 중간예납" },
-    { slug: "corporate-tax-base", keyword: "법인세 과세표준", label: "법인세 과세표준" },
   ],
 };

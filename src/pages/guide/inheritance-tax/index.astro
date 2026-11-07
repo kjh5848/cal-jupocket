@@ -75,6 +75,9 @@ const srcRate = r.sources.find((s) => s.label.includes("세율"))!;
 const srcDeduct = r.sources.find((s) => s.label.includes("상속공제"))!;
 const srcCredit = r.sources.find((s) => s.label.includes("세액공제"))!;
 const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한"))!;
+import InheritanceTaxFiling from "../../../components/merged/inheritance-tax/InheritanceTaxFiling.astro";
+import InheritanceTaxGuide from "../../../components/merged/inheritance-tax/InheritanceTaxGuide.astro";
+import InheritanceTaxRate from "../../../components/merged/inheritance-tax/InheritanceTaxRate.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -413,4 +416,9 @@ const srcDeadline = r.sources.find((s) => s.label.includes("신고납부기한")
   </p>
 
   <AdSlot label="guide-inheritance-tax-bottom" />
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="inheritance-tax-filing"><h2>상속세 신고</h2><InheritanceTaxFiling /></section>
+  <section id="inheritance-tax-guide"><h2>상속세</h2><InheritanceTaxGuide /></section>
+  <section id="inheritance-tax-rate"><h2>상속세 세율</h2><InheritanceTaxRate /></section>
 </GuideLayout>

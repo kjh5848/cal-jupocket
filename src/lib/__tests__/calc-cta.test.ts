@@ -24,7 +24,7 @@ describe("글 → 계산기 버튼 등록부", () => {
   it("글은 같은 묶음의 가장 가까운 계산기로 간다", () => {
     expect(ctaFor("/guide/loan-interest/")?.href).toBe("/guide/loan-calculator/");
     expect(ctaFor("/guide/dsr-limit/")?.href).toBe("/guide/dsr-calculator/");
-    expect(ctaFor("/guide/prepayment-fee-3-years")?.href).toBe("/guide/prepayment-fee-calculator/");
+    expect(ctaFor("/guide/prepayment-fee/")?.href).toBe("/guide/prepayment-fee-calculator/");
   });
 
   it("계산기 → 다음 단계: 출발·도착 모두 실제 계산기, 자기 자신으로 가지 않음, 문구 규칙 같음", () => {

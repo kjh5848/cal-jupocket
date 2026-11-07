@@ -33,6 +33,7 @@ const QA = [
   { q: "주휴수당은 얼마인가요?", a: `1일 소정근로시간 × 시급입니다. 주 5일 사업장이면 1일 소정근로시간 = 1주 소정근로시간 ÷ 5라(시행령 별표 2), 2026년 최저시급 기준 주 40시간 ${won(full.weekly)}, 주 20시간 ${won(half.weekly)}입니다. 하루 6시간씩 주 3일이면 6시간분이 아니라 18 ÷ 5 = ${weeklyHolidayPay(m26, 18).hours}시간분입니다.` },
   { q: "2027년 주휴수당은 얼마나 오르나요?", a: `2027년 최저임금이 시간급 ${won(m27)}으로 고시돼(고용노동부고시 제2026-60호) 주 40시간 주휴수당은 ${won(weeklyHolidayPay(m27, 40).weekly)}, 주 20시간은 ${won(weeklyHolidayPay(m27, 20).weekly)}이 됩니다. 2027년 1월 1일부터 12월 31일까지 모든 사업장에 같은 금액이 적용됩니다.` },
 ];
+import WeeklyHolidayPayCriteria from "../../../components/merged/weekly-holiday-pay/WeeklyHolidayPayCriteria.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -44,7 +45,7 @@ const QA = [
 
   <h2>{QA[1].q}</h2>
   <p class="qa-lead">{QA[1].a}</p>
-  <p>15시간은 한 주만 보지 않고 4주 동안을 평균합니다. 결근한 주에는 그 주의 주휴수당이 없고, 다음 주 개근하면 다시 생깁니다. 조건의 세부는 <a href="/guide/weekly-holiday-pay-criteria/">주휴수당 조건</a>에 있습니다.</p>
+  <p>15시간은 한 주만 보지 않고 4주 동안을 평균합니다. 결근한 주에는 그 주의 주휴수당이 없고, 다음 주 개근하면 다시 생깁니다. 조건의 세부는 <a href="/guide/weekly-holiday-pay/#weekly-holiday-pay-criteria">주휴수당 조건</a>에 있습니다.</p>
 
   <AdSlot />
 
@@ -66,4 +67,7 @@ const QA = [
     {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
   </ul>
   <p>쓰지 못한 연차를 돈으로 받는 것은 <a href="/guide/annual-leave-pay/">연차수당</a>입니다.</p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="weekly-holiday-pay-criteria"><h2>주휴수당 조건</h2><WeeklyHolidayPayCriteria /></section>
 </GuideLayout>

@@ -15,7 +15,6 @@ export const hourlyWageSeries: Series = {
   cluster: "labor",
   hub: { slug: "hourly-wage", keyword: "시급 계산", label: "시급 계산 — 일급·주급·월급" },
   items: [
-    { slug: "hourly-wage-monthly", keyword: "시급 월급", label: "시급 월급 환산 — 209시간" },
     { slug: "hourly-wage-calculator", keyword: "시급 계산기", label: "시급 계산기" },
   ],
 };

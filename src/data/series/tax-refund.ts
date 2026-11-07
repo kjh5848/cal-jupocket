@@ -14,6 +14,5 @@ export const taxRefundSeries: Series = {
   items: [
     { slug: "national-tax-refund", keyword: "국세환급금", label: "국세환급금" },
     { slug: "income-tax-refund-guide", keyword: "종합소득세 환급", label: "종합소득세 환급" },
-    { slug: "income-tax-refund-date", keyword: "종합소득세 환급일", label: "종합소득세 환급일" },
   ],
 };

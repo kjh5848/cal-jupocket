@@ -23,6 +23,9 @@ const QA = [
 ];
 const more: Record<number, string> = { 2: "withholding-receipt-issue" };
 const labelOf = (slug: string) => withholdingReceiptSeries.items.find((s) => s.slug === slug)?.label ?? slug;
+import WithholdingReceiptIssue from "../../../components/merged/withholding-receipt/WithholdingReceiptIssue.astro";
+import WithholdingReceiptRead from "../../../components/merged/withholding-receipt/WithholdingReceiptRead.astro";
+import WithholdingReceiptVsIncomeCertificate from "../../../components/merged/withholding-receipt/WithholdingReceiptVsIncomeCertificate.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={w.verifiedOn} faq={QA}>
@@ -54,4 +57,9 @@ const labelOf = (slug: string) => withholdingReceiptSeries.items.find((s) => s.s
       <li><a href={seriesHref(s.slug)}>{s.label}</a></li>
     ))}
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="withholding-receipt-issue"><h2>원천징수영수증 발급</h2><WithholdingReceiptIssue /></section>
+  <section id="withholding-receipt-read"><h2>원천징수영수증 보는법</h2><WithholdingReceiptRead /></section>
+  <section id="withholding-receipt-vs-income-certificate"><h2>원천징수영수증 소득금액증명원 차이</h2><WithholdingReceiptVsIncomeCertificate /></section>
 </GuideLayout>

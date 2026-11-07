@@ -10,7 +10,5 @@ export const healthDependentSeries: Series = {
   cluster: "retirement",
   hub: { slug: "health-dependent", keyword: "건강보험 피부양자", label: "건강보험 피부양자 — 2천만원·5억4천" },
   items: [
-    { slug: "health-dependent-criteria", keyword: "건강보험 피부양자 조건", label: "피부양자 조건·소득·재산" },
-    { slug: "health-dependent-registration", keyword: "건강보험 피부양자 등록", label: "피부양자 등록·90일·서류" },
   ],
 };

@@ -11,8 +11,6 @@ export const parentalLeaveSeries: Series = {
   hub: { slug: "parental-leave-pay", keyword: "육아휴직급여", label: "육아휴직급여 — 250·200·160만원" },
   items: [
     { slug: "parental-leave-pay-calculator", keyword: "육아휴직 급여 계산", label: "육아휴직 급여 계산" },
-    { slug: "parental-leave-pay-apply", keyword: "육아휴직급여 신청", label: "육아휴직급여 신청기간" },
-    { slug: "parental-leave-period", keyword: "육아휴직 기간", label: "육아휴직 기간·단기 육아휴직" },
     { slug: "maternity-leave-pay", keyword: "출산휴가급여", label: "출산휴가급여·상한 660만원" },
   ],
 };

@@ -11,7 +11,6 @@ export const electricCarSeries: Series = {
   cluster: "localtax",
   hub: { slug: "electric-car-tax", keyword: "전기차 세금", label: "전기차 세금 — 자동차세 13만원" },
   items: [
-    { slug: "electric-car-tax-exemption", keyword: "전기차 세금 감면", label: "전기차 세금 감면 — 2026년 말까지" },
     { slug: "electric-car-tax-calculator", keyword: "전기차 세금 계산기", label: "전기차 세금 계산기" },
   ],
 };
