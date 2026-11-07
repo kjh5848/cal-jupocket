@@ -7,6 +7,7 @@
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
+import CalcCta from "../../../components/CalcCta.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/prepayment-fee-2026.json";
 import { prepaymentFee, LEGAL_YEARS } from "../../../lib/prepayment-fee";
@@ -86,6 +87,9 @@ const QA = [
     <p class="meta" id="pf-formula">{won(base.amount)} × {base.ratePct}% × {ex.daysLeft.toLocaleString()}일 ÷ {ex.windowDays.toLocaleString()}일 = {won(ex.fee)}</p>
     <p class="meta" id="pf-warn" hidden></p>
   </div>
+
+  {/* 계산 결과를 본 다음 할 일 — 세 번째 페이지 */}
+  <CalcCta path={Astro.url.pathname} where="next" />
 
   <h2>{QA[0].q}</h2>
   <p class="qa-lead">{QA[0].a}</p>

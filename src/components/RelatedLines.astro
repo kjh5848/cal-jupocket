@@ -1,0 +1,62 @@
+---
+/**
+ * 글 끝 "관련 글" 3줄 — 카드 없이 제목만(2026-11-07).
+ *
+ * 사이드바·이어서 볼 글을 뺀 뒤, 구글이 발견만 하고 가져가지 않은 글(224편)로
+ * 가는 길을 최소한으로 남긴다. 고르는 규칙은 clusters.ts 의 nextReads 그대로.
+ */
+import { nextReads, displayTitle } from "../data/clusters";
+
+interface Props {
+  path: string;
+}
+const picks = nextReads(Astro.props.path, 3);
+---
+
+{
+  picks.length > 0 && (
+    <nav class="related-lines" aria-label="관련 글">
+      <p class="related-lines-h">관련 글</p>
+      <ul>
+        {picks.map((p) => (
+          <li>
+            <a href={p.link.href}>{displayTitle(p.link)}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .related-lines {
+    margin: 2.5rem 0 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+  }
+  .related-lines-h {
+    margin: 0 0 0.35rem;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .related-lines ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .related-lines a {
+    display: block;
+    padding: 0.5rem 0;
+    color: var(--text);
+    text-decoration: none;
+    line-height: 1.45;
+  }
+  .related-lines a:hover {
+    color: var(--link);
+  }
+  .related-lines a::before {
+    content: "→ ";
+    color: var(--muted);
+  }
+</style>

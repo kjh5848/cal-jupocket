@@ -7,6 +7,7 @@
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
+import CalcCta from "../../../components/CalcCta.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/installment-savings-2026.json";
 import { installmentSavings } from "../../../lib/installment-savings";
@@ -106,6 +107,9 @@ const QA = [
       <p class="meta">회차마다 원 미만을 버려 보여 주므로 합이 위 세전 이자와 몇 원 다를 수 있습니다.</p>
     </details>
   </div>
+
+  {/* 계산 결과를 본 다음 할 일 — 세 번째 페이지 */}
+  <CalcCta path={Astro.url.pathname} where="next" />
 
   <h2>{QA[0].q}</h2>
   <p class="qa-lead">{QA[0].a}</p>

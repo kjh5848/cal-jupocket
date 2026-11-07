@@ -8,6 +8,7 @@ import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import t from "../../../rates/withholding-table-2026.json";
+import labor from "../../../rates/labor-2026.json";
 import { takeHomeFromAnnual, MEAL_ALLOWANCE } from "../../../lib/take-home";
 import { payPerDay, workTimeFor, earnedFor } from "../../../lib/pay-per-day";
 import { won, manwon, eokwon } from "../../../lib/won";
@@ -37,6 +38,9 @@ const QA = [
   { q: "계산기 결과와 월급이 다를 수 있나요?", a: `다를 수 있습니다. 근로자가 신청하면 간이세액표 세액의 80%나 120%로 원천징수할 수 있고(소득세법 시행령 제194조), 건강보험료 상·하한과 달마다 바뀌는 상여·수당은 넣지 않았습니다. 장기요양보험료율은 2026년 11월 27일부터 반올림 방식이 바뀌어 몇 원 달라질 수 있습니다.` },
 ];
 const PRESETS = Object.fromEntries(Object.entries(calcPresets["/guide/take-home-calculator/"]).map(([k, v]) => [k, v.amounts]));
+// 맨 앞 "최저임금" 버튼 — 2026년 최저임금 월 환산액(209시간, 고용노동부고시 제2025-47호, rates/labor-2026.json). 연봉은 그 12배
+const MIN_MONTHLY = labor.minWage["2026"].monthly;
+const PRESETS_LEAD = { annual: { label: "최저임금", value: MIN_MONTHLY * 12 }, monthly: { label: "최저임금", value: MIN_MONTHLY } };
 ---
 
 <GuideLayout title={title} description={description} updated={t.verifiedOn} faq={QA}>
@@ -55,7 +59,7 @@ const PRESETS = Object.fromEntries(Object.entries(calcPresets["/guide/take-home-
     </div>
     <div class="calc-input-wrap">
       <label for="th-amount">금액</label>
-      <input type="text" inputmode="numeric" id="th-amount" data-won data-presets={JSON.stringify(PRESETS)} data-presets-by="th-mode" value="36,000,000" /><span class="unit">원</span>
+      <input type="text" inputmode="numeric" id="th-amount" data-won data-presets={JSON.stringify(PRESETS)} data-presets-lead={JSON.stringify(PRESETS_LEAD)} data-presets-by="th-mode" value="36,000,000" /><span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
       <label for="th-nontax">월 비과세(식대 등)</label>

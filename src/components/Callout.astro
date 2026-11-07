@@ -1,0 +1,42 @@
+---
+/**
+ * 본문 속 회색 요약 상자 — 문단 몇 개를 한 줄로 정리해 주는 자리.
+ * 참고: 뉴스레터형 글(Marketing PT)의 "💡 한 줄 정리" 상자.
+ *
+ * 쓰는 법: <Callout icon="💡">핵심 한두 문장</Callout>
+ * 버튼·링크를 넣지 않는다 — 누르는 건 CalcCta 하나로 모은다.
+ */
+interface Props {
+  icon?: string;
+}
+const { icon = "💡" } = Astro.props;
+---
+
+<aside class="callout">
+  <span class="callout-icon" aria-hidden="true">{icon}</span>
+  <div class="callout-body"><slot /></div>
+</aside>
+
+<style>
+  .callout {
+    display: flex;
+    gap: 0.75rem;
+    margin: 1.75rem 0;
+    padding: 1rem 1.15rem;
+    background: var(--accent-bg);
+    border-radius: var(--r-md);
+    font-size: var(--t-md);
+    line-height: 1.7;
+  }
+  .callout-icon {
+    flex: 0 0 auto;
+    font-size: 1.15em;
+    line-height: 1.5;
+  }
+  .callout-body {
+    min-width: 0;
+  }
+  .callout-body :global(p) {
+    margin: 0;
+  }
+</style>

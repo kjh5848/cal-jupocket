@@ -1,0 +1,112 @@
+---
+/**
+ * 글 → 계산기 버튼. 본문의 조용한 톤 안에서 유일하게 "눌러도 되는 물건"으로
+ * 보이게 둔다. 자리는 둘 — 한 줄 답 바로 아래(mid)와 본문 끝(end).
+ *
+ * 도착지는 data/calc-cta.ts 의 ctaFor 가 정한다. 버튼 문구는 도착지 이름을
+ * 그대로 말한다. 광고 칸(.ad-slot)에 붙이지 않는다 — 잘못 누르게 되는 배치는
+ * 애드센스 정책 위반이다.
+ */
+import { ctaFor, nextFor } from "../data/calc-cta";
+
+interface Props {
+  path: string;
+  /** top: 제목 바로 아래 · end: 본문 끝 · next: 계산기 결과 아래(다음 단계) */
+  where: "top" | "end" | "next";
+}
+const { path, where } = Astro.props;
+// 계산기 페이지는 글 → 계산기 버튼이 없으므로, 끝자리에도 다음 단계를 둔다
+const cta = where === "next" ? nextFor(path) : (ctaFor(path) ?? (where === "end" ? nextFor(path) : null));
+---
+
+{
+  cta && (
+    <aside class="calc-cta" data-cta={where} aria-label={`${cta.label}로 이동`}>
+      <div class="calc-cta-text">
+        <p class="calc-cta-q">{cta.q}</p>
+        <p class="calc-cta-sub">{cta.sub}</p>
+      </div>
+      <a class="calc-cta-btn" href={cta.href}>
+        <span>{cta.label} 열기</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </a>
+    </aside>
+  )
+}
+
+<style>
+  .calc-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    background: var(--brand-wash);
+    border: 1px solid color-mix(in srgb, var(--brand) 25%, transparent);
+    border-radius: var(--r-md);
+  }
+  .calc-cta-text {
+    flex: 1 1 16rem;
+    min-width: 0;
+  }
+  .calc-cta-q {
+    margin: 0;
+    font-size: var(--t-lg);
+    font-weight: 700;
+    color: var(--text);
+    text-wrap: balance;
+  }
+  .calc-cta-sub {
+    margin: 0.25rem 0 0;
+    font-size: var(--t-sm);
+    color: var(--muted);
+  }
+  .calc-cta-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 48px;
+    padding: 0 1.25rem;
+    background: var(--brand);
+    color: var(--surface);
+    font-weight: 700;
+    font-size: var(--t-md);
+    text-decoration: none;
+    border-radius: var(--r-pill);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), 0 4px 12px color-mix(in srgb, var(--brand) 30%, transparent);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .calc-cta-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.14), 0 8px 18px color-mix(in srgb, var(--brand) 35%, transparent);
+  }
+  .calc-cta-btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+  .calc-cta-btn:focus-visible {
+    outline: 3px solid var(--link);
+    outline-offset: 3px;
+  }
+  .calc-cta-btn svg {
+    width: 1.1em;
+    height: 1.1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  @media (max-width: 34rem) {
+    .calc-cta-btn {
+      width: 100%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .calc-cta-btn {
+      transition: none;
+    }
+  }
+</style>

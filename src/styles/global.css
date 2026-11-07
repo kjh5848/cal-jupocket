@@ -158,7 +158,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Roboto,
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   font-size: 1.0625rem;
   line-height: 1.7;
@@ -243,6 +243,74 @@ td {
 th {
   background: var(--accent-bg);
   font-weight: 600;
+}
+
+/*
+ * 휴대폰에서 넘치는 계산기 표 — scripts/table-fit.ts 가 data-fit 을 붙인다.
+ * cards: 행 8개 이하 → 행마다 카드(첫 칸 제목, 나머지 "머리글  값")
+ * sticky: 행이 많은 표(상환표 등) → 표 유지, 첫 열 고정
+ */
+table[data-fit="cards"],
+table[data-fit="cards"] tbody,
+table[data-fit="cards"] tr,
+table[data-fit="cards"] th,
+table[data-fit="cards"] td {
+  display: block;
+  width: auto;
+}
+table[data-fit="cards"] thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+table[data-fit="cards"] tbody {
+  display: grid;
+  gap: 0.6rem;
+}
+table[data-fit="cards"] tr {
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+table[data-fit="cards"] tr > :first-child {
+  border: 0;
+  background: var(--accent-bg);
+  font-weight: 700;
+  padding: 0.55rem 0.85rem;
+}
+table[data-fit="cards"] tr > :not(:first-child) {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  padding: 0.5rem 0.85rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+table[data-fit="cards"] tr > :not(:first-child)::before {
+  content: attr(data-label);
+  color: var(--muted);
+  font-size: var(--t-sm);
+  font-weight: 400;
+  text-align: left;
+}
+table[data-fit="sticky"] {
+  font-size: var(--t-sm);
+}
+table[data-fit="sticky"] tr > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: 1px 0 0 var(--rule);
+}
+table[data-fit="sticky"] thead tr > :first-child {
+  background: var(--accent-bg);
 }
 
 hr {
@@ -1395,19 +1463,17 @@ details[open] summary {
   font-size: 0.9375rem;
 }
 
-@media (min-width: 64rem) {
-  .guide-main {
-    max-width: calc(68ch + 2.5rem + 15rem);
-    display: grid;
-    grid-template-columns: minmax(0, 68ch) 15rem;
-    gap: 2.5rem;
-    align-items: start;
-  }
-  .guide-side {
-    position: sticky;
-    top: 1.5rem;
-    margin-top: 2rem; /* 본문 상단 여백과 시각적으로 맞춘다 */
-  }
+/* 글 화면은 사이드바 없는 한 칼럼(2026-11-07). 폭은 한 줄 40자 안팎 —
+   뉴스레터형 글(참고: Marketing PT)처럼 좁게 두고 문단 사이를 넉넉히 띄운다. */
+.guide-main {
+  max-width: 42rem;
+}
+.guide-body > p {
+  margin-block: 0 1.35em;
+}
+.guide-body p strong {
+  color: var(--text);
+  font-weight: 700;
 }
 
 @media print {
@@ -1705,6 +1771,237 @@ details[open] summary {
   font-size: 0.8125rem;
   color: var(--muted);
   line-height: 1.45;
+}
+
+/* ── 홈: 고민 입구 카드(2026-11-07) ─────────────────────────── */
+.home-entries {
+  margin: 0 0 2.5rem;
+}
+.entry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 0.75rem;
+}
+.entry-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem 1.1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+}
+.entry-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  font-size: var(--t-lg);
+  font-weight: 800;
+}
+.entry-icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--r-sm);
+  background: var(--brand-wash);
+  color: var(--brand);
+  flex: none;
+}
+.entry-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.entry-qs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.entry-qs a {
+  display: block;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--rule);
+  color: var(--text);
+  text-decoration: none;
+  font-size: var(--t-md);
+}
+.entry-qs a::after {
+  content: " ›";
+  color: var(--muted);
+}
+.entry-qs a:hover {
+  color: var(--link);
+}
+.entry-calc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: auto;
+  border-radius: var(--r-pill);
+  background: var(--brand);
+  color: var(--surface);
+  font-weight: 700;
+  text-decoration: none;
+}
+.entry-calc:hover {
+  filter: brightness(1.08);
+}
+
+/* ── 홈: 주제별 읽을거리 한 줄 목록 + 더 보기(2026-11-07) ───── */
+.post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  column-gap: 1.5rem;
+}
+.post-list a {
+  display: block;
+  padding: 0.6rem 0.25rem;
+  border-bottom: 1px solid var(--rule);
+  color: var(--text);
+  text-decoration: none;
+  line-height: 1.45;
+}
+.post-list a:hover {
+  color: var(--link);
+  background: var(--accent-bg);
+}
+/*
+ * 홈 계층 3단(2026-11-07 측정: 주제 제목 16.8px < 글 제목 17px 로 뒤집혀 있었고,
+ * '전체 보기' 버튼과 다음 구역 제목 사이가 0px 이었다)
+ *   1단 구역 제목  1.5rem / 800, 구역 사이 4rem
+ *   2단 주제 제목  1.125rem / 800, 위에 가는 선 + 2rem
+ *   3단 글 제목    0.97rem / 400
+ */
+.home .home-h {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0 0 1.25rem;
+}
+.home > section,
+.home-entries,
+#tools {
+  margin-bottom: 4rem;
+}
+.home-articles .cluster-block {
+  margin: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+.home-articles .cluster-block + .cluster-block {
+  margin-top: 2rem;
+}
+.home-articles .cluster-heading {
+  font-size: 1.125rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+}
+.post-list a {
+  font-size: 0.97rem;
+  font-weight: 400;
+  color: var(--text);
+}
+.post-more {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.post-more summary {
+  display: inline-block;
+  margin: 0.6rem 0 0;
+  padding: 0.35rem 0.25rem;
+  color: var(--link);
+  font-weight: 700;
+  font-size: var(--t-sm);
+  cursor: pointer;
+  list-style: none;
+}
+.post-more summary::-webkit-details-marker {
+  display: none;
+}
+.post-more summary::after {
+  content: " ▾";
+}
+.post-more[open] summary::after {
+  content: " ▴";
+}
+
+/* ── 홈: 한 줄 도구 목록(ToolCard compact) ───────────────────── */
+.tool-grid.tool-list {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: 0;
+  column-gap: 1.5rem;
+}
+.tool-card.tool-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.25rem;
+  min-height: 56px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  box-shadow: none;
+}
+.tool-card.tool-row[hidden] {
+  display: none;
+}
+.tool-card.tool-row:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--accent-bg);
+}
+.tool-row .tool-icon {
+  width: 2.1rem;
+  height: 2.1rem;
+}
+.tool-row .tool-body {
+  flex: 1;
+  gap: 0.05rem;
+}
+.tool-row .tool-title {
+  font-size: var(--t-md);
+}
+.tool-row .tool-blurb {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tool-chev {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tools-more {
+  display: block;
+  width: 100%;
+  margin: 0.9rem 0 0;
+  min-height: 44px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--link);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  cursor: pointer;
 }
 
 /* 2단 본문 */
@@ -2022,7 +2319,7 @@ details[open] summary {
 :root[data-theme="dark"] .tool-icon svg { color: color-mix(in srgb, var(--cm) 45%, #fff); }
 
 /* 테마 전환 버튼 — 헤더 오른쪽. 아이콘은 지금 상태(해·달·화면) */
-.theme-toggle { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-md); border: 0; background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--rule); cursor: pointer; transition-property: scale; transition-duration: var(--dur); }
+.theme-toggle { display: inline-grid; place-items: center; width: 40px; height: 40px; padding: 0; /* 공용 button 여백(0.6em 1.1em)이 40px 안에서 아이콘을 오른쪽으로 밀었다 */ border-radius: var(--r-md); border: 0; background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--rule); cursor: pointer; transition-property: scale; transition-duration: var(--dur); }
 .theme-toggle:active { scale: 0.96; }
 .theme-toggle:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
 .theme-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -2067,7 +2364,7 @@ details[open] summary {
 .ux-step .unit { display: none; }
 .ux-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .ux-presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 0.5rem 0 0; }
-.ux-presets button { font: inherit; font-size: 0.82rem; font-weight: 700; padding: 0.38rem 0.75rem; border: 0; border-radius: var(--r-pill); background: var(--brand-wash); color: var(--link); cursor: pointer; transition-property: scale; transition-duration: var(--dur); }
+.ux-presets button { font: inherit; font-size: 0.82rem; font-weight: 700; padding: 0.38rem 0.85rem; min-height: 40px; /* 손가락 터치 폭 — 34px 는 작았다 */ border: 0; border-radius: var(--r-pill); background: var(--brand-wash); color: var(--link); cursor: pointer; transition-property: scale; transition-duration: var(--dur); }
 .result-hero .meta { color: rgb(255 255 255 / 0.82); margin: 0.2rem 0 0; font-size: 0.875rem; }
 .ux-bar { display: flex; gap: 2px; height: 10px; margin: 0.9rem 0 0.45rem; border-radius: var(--r-pill); overflow: hidden; background: rgb(255 255 255 / 0.2); }
 .ux-bar i { display: block; height: 100%; background: var(--c); transition-property: flex-grow; transition-duration: 200ms; }
@@ -2086,12 +2383,22 @@ details[open] summary {
 .ux-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 1rem; }
 .ux-actions button { font: inherit; font-size: 0.92rem; font-weight: 700; padding: 0.7rem; border: 0; border-radius: var(--r-md); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--rule); color: var(--text); cursor: pointer; transition-property: scale; transition-duration: var(--dur); }
 .ux-actions button:first-child { background: var(--text); color: var(--surface); box-shadow: none; }
-@media (min-width: 900px) {
+/* 두 칸은 결과 칸이 450px 이상 나오는 폭부터 — 900px 에서는 391px 라 비교표가 잘렸다 */
+@media (min-width: 1024px) {
   .calc-card[data-two] { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 20px; align-items: start; }
   .calc-card[data-two] > .meta { grid-column: 1 / -1; }
+  .calc-card[data-two] > .ux-wide { grid-column: 1 / -1; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); }
   .calc-card[data-two] .ux-pair { grid-template-columns: 1fr; gap: 0; }
   .calc-card[data-two] .ux-presets button { padding: 0.32rem 0.6rem; }
-  .ux-results { position: sticky; top: 16px; }
+  /* 결과 칸을 따라다니게(sticky) 두면 아래 전체 폭 표(.ux-wide) 위에 겹친다 — 결과 칸이 짧아져 고정할 필요도 없다 */
+  .ux-results { position: static; }
+  /* 글 칼럼은 좁게(42rem) 두지만, 입력·결과 두 칸 계산기는 칼럼 밖으로 넓힌다 —
+     칼럼 안에 가두면 결과 칸이 280px 로 줄어 숫자·비교표가 잘린다(2026-11-07) */
+  .guide-body .calc-card[data-two] {
+    --calc-w: min(62rem, calc(100vw - 3rem));
+    width: var(--calc-w);
+    margin-inline: calc((100% - var(--calc-w)) / 2);
+  }
 }
 .ux-dock { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 50; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0.7rem 1rem; border-radius: var(--r-lg); background: linear-gradient(135deg, #1a73d6, #0b4f9e); color: #fff; box-shadow: 0 10px 30px -8px rgb(4 30 70 / 0.5); translate: 0 140%; transition-property: translate; transition-duration: 220ms; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
 .ux-dock.on { translate: 0 0; }

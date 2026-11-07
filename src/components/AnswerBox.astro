@@ -6,6 +6,8 @@
  * 가장 먼저 가져가는 자리가 제목 바로 아래 단락이라, 도입 문장 대신 답을 둔다.
  * 220자를 넘기지 않는다(snippet-structure.test.ts).
  */
+import CalcCta from "./CalcCta.astro";
+
 interface Props {
   text: string;
   label?: string;
@@ -13,6 +15,8 @@ interface Props {
 const { text, label = "한 줄 답" } = Astro.props;
 ---
 
+{/* 제목 바로 아래, 화면 첫 장 — 고민(질문) 한 줄과 계산기 버튼을 가장 먼저 둔다 */}
+<CalcCta path={Astro.url.pathname} where="top" />
 <div class="answer-box">
   <p class="answer-label">{label}</p>
   <p class="answer-text">{text}</p>

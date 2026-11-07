@@ -9,15 +9,26 @@ import { icons } from "../data/icons";
 
 interface Props {
   tool: Tool;
+  /** 한국 홈의 한 줄 목록(2026-11-07) — 번호·분류 배지 없이 아이콘·이름·설명만 */
+  compact?: boolean;
 }
-const { tool } = Astro.props;
+const { tool, compact = false } = Astro.props;
 const t = typeInfo(tool.type);
 const live = tool.status === "live";
 const no = live ? `No.${String(tool.no).padStart(3, "0")}` : "No.???";
 ---
 
 {
-  live ? (
+  compact && live ? (
+    <a class="tool-card tool-row" href={tool.href} data-type={tool.type} data-no={tool.no} style={`--cm:${t.color}`}>
+      <span class="tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[tool.icon] ?? icons.calculator} /></span>
+      <span class="tool-body">
+        <span class="tool-title">{tool.name}</span>
+        <span class="tool-blurb">{tool.blurb}</span>
+      </span>
+      <svg class="tool-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+    </a>
+  ) : live ? (
     <a class="tool-card" href={tool.href} data-type={tool.type} data-no={tool.no} style={`--cm:${t.color}`}>
       <span class="tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[tool.icon] ?? icons.calculator} /></span>
       <span class="tool-body">

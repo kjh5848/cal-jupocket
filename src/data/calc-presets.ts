@@ -11,8 +11,9 @@ export interface PresetSet {
 
 export const calcPresets: Record<string, Record<string, PresetSet>> = {
   "/guide/take-home-calculator/": {
-    annual: { amounts: [36_000_000, 40_000_000, 50_000_000, 100_000_000], source: "keywords/ac-pool-2026-10-14-all.csv", term: "연봉 실수령액" },
-    monthly: { amounts: [3_000_000, 4_000_000, 5_000_000], source: "keywords/ac-pool-2026-10-14-all.csv", term: "월급 실수령액" },
+    // 구글·네이버 자동완성 '연봉 3000/4500/6000/7000/8000 실수령액'·'세전 연봉 7000 실수령액'·'월급 250 만원 실수령액'(2026-11-07) — 버튼 4개로는 사이 금액을 넣기 불편하다는 사용자 의견
+    annual: { amounts: [30_000_000, 36_000_000, 40_000_000, 45_000_000, 50_000_000, 60_000_000, 70_000_000, 80_000_000, 100_000_000], source: "keywords/ac-take-home-2026-11-07.csv", term: "연봉" },
+    monthly: { amounts: [2_500_000, 3_000_000, 4_000_000, 5_000_000], source: "keywords/ac-take-home-2026-11-07.csv", term: "월급" },
   },
   "/freelancer-33/": {
     default: { amounts: [1_000_000, 2_000_000, 3_000_000], source: "keywords/ac-33-2026-10-17.csv", term: "3.3" },

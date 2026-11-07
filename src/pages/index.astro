@@ -22,6 +22,7 @@ import { TOOL_TYPES, typeInfo } from "../data/tool-types";
 import { clusters, clusterColor, recent, linkByHref, displayTitle } from "../data/clusters";
 import { icons } from "../data/icons";
 import { liveSocials } from "../data/social";
+import { homeEntries } from "../data/home-entries";
 import "../styles/global.css";
 
 const title = "주포켓 — 세금·급여부터 날짜·사진까지, 필요한 도구 모음";
@@ -123,15 +124,38 @@ const jsonLd = [
         </div>
       </section>
 
+      {/*
+        고민 입구(2026-11-07) — 첫 화면에서 "무엇이 고민이세요?"로 시작해 질문(글)이나 계산기로 바로 넘긴다.
+        설계: docs/superpowers/specs/2026-11-07-cta-redesign-design.md 4단계
+      */}
+      <section class="home-entries" aria-labelledby="entries-h">
+        <h2 id="entries-h" class="home-h">무엇이 고민이세요?</h2>
+        <div class="entry-grid">
+          {homeEntries.map((e) => (
+            <div class="entry-card" data-entry={e.key}>
+              <p class="entry-title">
+                <span class="entry-icon"><svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[e.icon]} /></span>
+                {e.title}
+              </p>
+              <ul class="entry-qs">
+                {e.questions.map((q) => <li><a href={q.href}>{q.q}</a></li>)}
+              </ul>
+              <a class="entry-calc" href={e.calc.href}>{e.calc.label} 열기 →</a>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section id="tools" aria-labelledby="tools-h">
-        <h2 id="tools-h" class="home-h">도구 도감</h2>
-        <div class="dex-progress" data-dex-progress hidden></div>
+        <h2 id="tools-h" class="home-h">전체 계산기·도구</h2>
         <div class="dex-types" role="group" aria-label="분류로 걸러 보기">
-          {TOOL_TYPES.map((t) => <button type="button" data-type={t.key} data-label={t.label} style={`--cm:${t.color}`} aria-pressed="false"><TypeIcon type={t.key} size={20} />{t.label}</button>)}
+          {TOOL_TYPES.filter((t) => tools.some((x) => x.type === t.key && x.status === "live")).map((t) => <button type="button" data-type={t.key} data-label={t.label} style={`--cm:${t.color}`} aria-pressed="false"><TypeIcon type={t.key} size={20} />{t.label}</button>)}
         </div>
-        <div class="tool-grid">
-          {tools.map((tool) => <ToolCard tool={tool} />)}
+        {/* 한 줄 목록 — 곧 담길 도구(점선 칸)는 홈에서 뺐다. 처음 12개만, 나머지는 '전체 보기' */}
+        <div class="tool-grid tool-list" data-first="12">
+          {tools.filter((tool) => tool.status === "live").map((tool) => <ToolCard tool={tool} compact />)}
         </div>
+        <button type="button" class="tools-more" data-tools-more aria-expanded="false">전체 {tools.filter((t) => t.status === "live").length}개 보기</button>
         <script src="../scripts/dex.ts"></script>
       </section>
 
@@ -147,20 +171,19 @@ const jsonLd = [
                 >
                   {s.title}
                 </p>
-                <div class="post-grid">
-                  {s.guides.map((g) => (
-                    <a
-                      class="post-card"
-                      href={g.href}
-                      style={`--cm:${s.color.mark};--cb:${s.color.bg};--ci:${s.color.ink}`}
-                    >
-                      <span class="post-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[g.icon]} />
-                      </span>
-                      <span class="post-title">{displayTitle(g)}</span>
-                    </a>
-                  ))}
-                </div>
+                {/* 주제마다 4편만 펼치고 나머지는 접는다(2026-11-07) — 303편 카드가 휴대폰 28화면이었다.
+                    접힌 글도 링크는 HTML 에 남겨 둔다(구글이 찾아가는 길) */}
+                <ul class="post-list">
+                  {s.guides.slice(0, 4).map((g) => <li><a href={g.href}>{displayTitle(g)}</a></li>)}
+                </ul>
+                {s.guides.length > 4 && (
+                  <details class="post-more">
+                    <summary>{s.title} 글 {s.guides.length - 4}편 더 보기</summary>
+                    <ul class="post-list">
+                      {s.guides.slice(4).map((g) => <li><a href={g.href}>{displayTitle(g)}</a></li>)}
+                    </ul>
+                  </details>
+                )}
               </section>
             ))
           }
@@ -188,27 +211,6 @@ const jsonLd = [
               계약금액을 넣으면 3.3% 실수령액이 바로 나옵니다.
             </p>
             <a class="btn" href="/freelancer-33/">3.3% 계산기 열기</a>
-          </div>
-
-          <div class="aside-box">
-            <p class="aside-title">카드뉴스</p>
-            <p class="aside-social-text">
-              세금 한 편을 카드 몇 장으로 정리합니다.
-              {
-                liveSocials.length > 0 && (
-                  <>
-                    새 카드는{" "}
-                    {liveSocials.map((s) => (
-                      <a href={s.url} rel="me noopener" target="_blank">
-                        {s.label} {s.handle}
-                      </a>
-                    ))}
-                    에 먼저 올라옵니다.
-                  </>
-                )
-              }
-            </p>
-            <a class="aside-social-link" href="/cards/">카드뉴스 모아보기 →</a>
           </div>
         </aside>
       </div>

@@ -7,7 +7,7 @@ import { usedSet } from "../lib/collect";
 const grid = document.querySelector<HTMLElement>("#tools .tool-grid");
 const bar = document.querySelector<HTMLElement>("[data-dex-progress]");
 const types = document.querySelector<HTMLElement>(".dex-types");
-if (grid && bar && types) {
+if (grid && types) {
   const cards = [...grid.querySelectorAll<HTMLElement>(".tool-card")];
   const live = cards.filter((c) => !c.classList.contains("dex-unseen"));
   const used = usedSet();
@@ -26,9 +26,20 @@ if (grid && bar && types) {
     const n = pool.filter((c) => c.classList.contains("dex-seen")).length;
     const label = type ? types.querySelector<HTMLElement>(`[data-type="${type}"]`)?.dataset.label ?? "" : "";
     const pct = pool.length ? Math.round((n / pool.length) * 100) : 0;
+    if (!bar) return;
     bar.innerHTML = `${type ? `${label} ` : '<span class="wide">내가 </span>'}써 본 도구 <b>${n} / ${pool.length}</b><span class="bar"><i style="width:${pct}%"></i></span>`;
     bar.hidden = used.size === 0 && !type;
   };
+  // 한 줄 목록은 처음에 몇 개만 — 분류를 고르면 그 분류는 다 보인다(2026-11-07)
+  const more = document.querySelector<HTMLButtonElement>("[data-tools-more]");
+  const FIRST = Number(grid.dataset.first || 0);
+  const fold = () => {
+    if (!FIRST || !more) return;
+    const open = cur !== null || more.getAttribute("aria-expanded") === "true";
+    live.forEach((c, i) => { if (cur === null) c.hidden = !open && i >= FIRST; });
+    more.hidden = cur !== null || open;
+  };
+  more?.addEventListener("click", () => { more.setAttribute("aria-expanded", "true"); fold(); });
   let cur: string | null = null;
   types.addEventListener("click", (e) => {
     const btn = (e.target as Element).closest<HTMLButtonElement>("button[data-type]");
@@ -38,6 +49,8 @@ if (grid && bar && types) {
     for (const b of types.querySelectorAll<HTMLButtonElement>("button")) b.setAttribute("aria-pressed", String(b.dataset.type === cur));
     for (const c of cards) c.hidden = cur !== null && c.dataset.type !== cur;
     paint(cur);
+    fold();
   });
   paint(null);
+  fold();
 }

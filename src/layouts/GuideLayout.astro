@@ -19,12 +19,10 @@ import AdSenseHead from "../components/AdSenseHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import Disclaimer from "../components/Disclaimer.astro";
-import RelatedContent from "../components/RelatedContent.astro";
-import NextReads from "../components/NextReads.astro";
-import ArticleThumb from "../components/ArticleThumb.astro";
+import CalcCta from "../components/CalcCta.astro";
+import RelatedLines from "../components/RelatedLines.astro";
 import ArticleMeta from "../components/ArticleMeta.astro";
 import ShareButtons from "../components/ShareButtons.astro";
-import Toc from "../components/Toc.astro";
 import { ogPathFor } from "../lib/og-pages";
 import { ORG_ID } from "../data/org";
 import "../styles/global.css";
@@ -107,18 +105,19 @@ const faqLd = faq?.length
     <SiteHeader />
     <main class="guide-main">
       <article class="guide-body">
-        <ArticleThumb path={path} title={title} />
+        {/*
+          본문만 남긴 한 칼럼(2026-11-07). 배너 썸네일·목차·사이드바(함께 보기)·
+          이어서 볼 글을 뺐다 — 모바일 첫 화면에 제목과 계산기 버튼(CalcCta top)이
+          바로 보이게. 다른 페이지로 넘기는 일은 본문 안 버튼이 맡는다.
+          설계: docs/superpowers/specs/2026-11-07-cta-redesign-design.md
+        */}
         <ArticleMeta path={path} updated={updated} />
-        <ShareButtons title={title} />
-        <Toc variant="inline" />
         <slot />
-        <NextReads path={path} />
+        <CalcCta path={path} where="end" />
+        <RelatedLines path={path} />
+        <ShareButtons title={title} />
         <Disclaimer variant="guide" />
       </article>
-      <div class="guide-side">
-        <Toc variant="side" />
-        <RelatedContent path={path} />
-      </div>
     </main>
     <SiteFooter />
       <TrackLinks />

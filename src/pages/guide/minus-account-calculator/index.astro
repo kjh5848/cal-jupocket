@@ -6,6 +6,7 @@
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
+import CalcCta from "../../../components/CalcCta.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import r from "../../../rates/overdraft-2026.json";
 import { overdraftInterest } from "../../../lib/overdraft";
@@ -97,6 +98,9 @@ const QA = [
       </table>
     </div>
   </div>
+
+  {/* 계산 결과를 본 다음 할 일 — 세 번째 페이지 */}
+  <CalcCta path={Astro.url.pathname} where="next" />
 
   <h2>{QA[0].q}</h2>
   <p class="qa-lead">{QA[0].a}</p>

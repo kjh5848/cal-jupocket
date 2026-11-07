@@ -56,7 +56,9 @@ const calcPaths = clusters.flatMap((c) =>
        * 90일치가 전부 (not set) 이었다. from · calculator 둘 다 등록돼 있다.
        */
       if (path && calcPaths.includes(path)) {
-        window.gtag("event", "calc_click", { from, calculator: path });
+        // cta: CalcCta 버튼에서 눌렀으면 top·end·next, 아니면 빈 값
+        const cta = a.closest("[data-cta]")?.getAttribute("data-cta") || undefined;
+        window.gtag("event", "calc_click", { from, calculator: path, cta });
       }
     },
     { passive: true },

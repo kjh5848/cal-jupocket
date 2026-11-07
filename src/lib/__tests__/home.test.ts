@@ -23,14 +23,19 @@ describe.skipIf(!built)("홈", () => {
     const { live, total } = toolCount();
     expect(hero).toContain(`도구 <b>${live}</b>개 담김 · <b>${total}</b>개 채우는 중`);
   });
-  it("도구 도감 — 공개 + 곧 담길 카드, 번호 3자리", () => {
-    expect(html).toContain('<h2 id="tools-h" class="home-h">도구 도감</h2>');
-    const cards = [...html.matchAll(/<a class="tool-card( dex-unseen)?"[^>]*data-type="[a-z]+"/g)];
-    expect(cards.length).toBe(liveTools.length + nextTools.length);
-    expect(cards.filter((c) => c[1]).length).toBe(nextTools.length);
-    for (const t of liveTools) expect(html, t.href).toContain(`No.${String(t.no).padStart(3, "0")}`);
+  // 2026-11-07 홈 개편: 도감 카드 → 한 줄 목록. 공개 도구만, 번호·곧 담길 칸 없음
+  it("전체 계산기·도구 — 공개 도구만 한 줄 목록, 번호 없음", () => {
+    expect(html).toContain('<h2 id="tools-h" class="home-h">전체 계산기·도구</h2>');
+    const rows = [...html.matchAll(/<a class="tool-card tool-row"[^>]*data-type="[a-z]+"/g)];
+    expect(rows.length).toBe(liveTools.length);
+    expect(html).not.toContain("dex-unseen");
+    expect(html).not.toMatch(/No\.\d{3}/);
   });
-  it("분류 버튼 12개", () => {
-    expect([...html.matchAll(/<button[^>]*data-type="[a-z]+"/g)].length).toBe(12);
+  it("분류 버튼은 공개 도구가 있는 분류만", () => {
+    const kinds = new Set(liveTools.map((t) => t.type));
+    expect([...html.matchAll(/<button[^>]*data-type="[a-z]+"/g)].length).toBe(kinds.size);
+  });
+  it("고민 입구 카드 4장", () => {
+    expect([...html.matchAll(/class="entry-card"/g)].length).toBe(4);
   });
 });

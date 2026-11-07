@@ -13,6 +13,7 @@
  *   .calc-card[data-two]               900px 이상 입력 왼쪽 · 결과 오른쪽
  */
 import { ui, pageLocale, formatMoney } from "../i18n/ui";
+import "./table-fit";
 import { readWon, shares } from "../lib/calc-ui";
 
 const num = (s: string | null | undefined) => Number(String(s ?? "").replace(/[^\d.-]/g, "")) || 0;
@@ -96,13 +97,19 @@ function enhance(card: HTMLElement) {
     box.setAttribute("role", "group");
     box.setAttribute("aria-label", T.presetsAria);
     (input.closest(".calc-input-wrap") ?? input).append(box);
+    // 맨 앞 버튼 — 법령 값(예: 최저임금)처럼 자동완성이 아니라 rates 에서 온 금액. 이름을 그대로 단다
+    let lead: Record<string, { label: string; value: number }> = {};
+    try { lead = JSON.parse(input.dataset.presetsLead || "{}"); } catch { /* 없음 */ }
+    const button = (text: string, v: number) => {
+      const b = h("button", "", text);
+      b.type = "button";
+      b.addEventListener("click", () => { input.value = v.toLocaleString(T.numberLocale); fire(input); });
+      return b;
+    };
     const paint = () => {
-      box.replaceChildren(...(sets[by?.value ?? "default"] ?? []).map((v) => {
-        const b = h("button", "", readWon(v, moneyUnit(input)).replace(/(원|円)$/, ""));
-        b.type = "button";
-        b.addEventListener("click", () => { input.value = v.toLocaleString(T.numberLocale); fire(input); });
-        return b;
-      }));
+      const key = by?.value ?? "default";
+      const first = lead[key] ? [button(lead[key].label, lead[key].value)] : [];
+      box.replaceChildren(...first, ...(sets[key] ?? []).map((v) => button(readWon(v, moneyUnit(input)).replace(/(원|円)$/, ""), v)));
     };
     by?.addEventListener("change", paint);
     paint();
@@ -245,8 +252,18 @@ function enhance(card: HTMLElement) {
     const kids = [...card.children] as HTMLElement[];
     const at = kids.indexOf(hero);
     kids.slice(0, at).filter((k) => !k.matches(".meta:first-child")).forEach((k) => inputs.append(k));
-    kids.slice(at).forEach((k) => results.append(k));
+    // 오른쪽 칸은 결과 숫자·요약·버튼까지만. 그 뒤(비교표·상환표 등)는 두 칸 아래 카드 전체 폭으로 —
+    // 전에는 표까지 오른쪽 칸에 몰아 넣어 왼쪽이 비고 표가 절반 폭에 갇혔다(2026-11-07)
+    const cut = kids.findIndex((k, i) => i >= at && k.classList.contains("ux-actions"));
+    const end = cut >= 0 ? cut + 1 : kids.length;
+    kids.slice(at, end).forEach((k) => results.append(k));
+    const rest = kids.slice(end);
     card.append(inputs, results);
+    if (rest.length) {
+      const wide = h("div", "ux-wide");
+      rest.forEach((k) => wide.append(k));
+      card.append(wide);
+    }
   }
 }
 

@@ -35,6 +35,9 @@ const altLinks = LOCALES.filter((l) => alt[l]).map((l) => ({ locale: l, lang: me
   try { var t = localStorage.getItem("jp-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- 본문 글꼴 Pretendard(OFL) — 쓰는 글자만 나눠 받는 동적 서브셋 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
