@@ -79,7 +79,10 @@ export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLBut
     if (isIOS && !standalone) {
       say("아이폰은 홈 화면에 추가한 주포켓 앱에서만 알림을 받을 수 있습니다. 홈 화면에 추가한 뒤 앱으로 열어 이 버튼을 다시 눌러 주세요.");
       const sheet = document.getElementById("install-ios");
-      if (sheet) sheet.hidden = false;
+      if (sheet) {
+        sheet.querySelectorAll<HTMLElement>("[data-guide]").forEach((el) => (el.hidden = el.dataset.guide !== "ios"));
+        sheet.hidden = false;
+      }
       return;
     }
     if (!supported) {
