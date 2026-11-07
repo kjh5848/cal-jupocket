@@ -8,6 +8,7 @@ import r from "../../rates/diligent-filer-2026.json";
 import { diligentSeries } from "../../data/series/diligent";
 import { diligentPenalty, diligentCostCredit, isDiligentTarget } from "../diligent-filer";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
 const percents = new Set([pct(r.costCredit.rate), pct(r.medicalEdu.rate), pct(r.penalty.rate), pct(r.penalty.revenueRate)]);
@@ -36,7 +37,7 @@ describe("성실신고 계산", () => {
 describe("성실신고 시리즈 제목·설명", () => {
   for (const s of [diligentSeries.hub, ...diligentSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

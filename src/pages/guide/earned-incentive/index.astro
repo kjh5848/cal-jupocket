@@ -36,6 +36,10 @@ const QA = [
 ];
 const more: Record<number, string> = { 1: "earned-incentive-eligibility", 2: "earned-incentive-apply" };
 const labelOf = (slug: string) => earnedIncentiveSeries.items.find((x) => x.slug === slug)?.label ?? slug;
+import EarnedIncentiveApply from "../../../components/merged/earned-incentive/EarnedIncentiveApply.astro";
+import EarnedIncentiveEligibility from "../../../components/merged/earned-incentive/EarnedIncentiveEligibility.astro";
+import EarnedIncentiveHalfYear from "../../../components/merged/earned-incentive/EarnedIncentiveHalfYear.astro";
+import EarnedIncentivePayDate from "../../../components/merged/earned-incentive/EarnedIncentivePayDate.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -85,4 +89,10 @@ const labelOf = (slug: string) => earnedIncentiveSeries.items.find((x) => x.slug
   <ul>
     <li><strong>시행령 별표 11 근로장려금산정표</strong> — 실제 금액은 총급여액 구간별 이 표로 정합니다. 읽지 않아, 이 시리즈의 금액은 법 조문 식으로 한 어림입니다.</li>
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="earned-incentive-apply"><h2>근로장려금 신청 기간</h2><EarnedIncentiveApply /></section>
+  <section id="earned-incentive-eligibility"><h2>근로장려금 대상</h2><EarnedIncentiveEligibility /></section>
+  <section id="earned-incentive-half-year"><h2>2026 근로장려금 상반기</h2><EarnedIncentiveHalfYear /></section>
+  <section id="earned-incentive-pay-date"><h2>근로장려금 지급일</h2><EarnedIncentivePayDate /></section>
 </GuideLayout>

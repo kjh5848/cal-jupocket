@@ -10,6 +10,7 @@ import it2 from "../../rates/income-tax-rate-2026.json";
 import { taxRefundSeries } from "../../data/series/tax-refund";
 import { incomeTaxRefundInterestStart } from "../tax-refund";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const start = incomeTaxRefundInterestStart(2027);
 const lastFree = new Date(start.getTime() - 86_400_000);
@@ -27,7 +28,7 @@ describe("세금 환급 시리즈 제목·설명", () => {
 
   for (const s of [taxRefundSeries.hub, ...taxRefundSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

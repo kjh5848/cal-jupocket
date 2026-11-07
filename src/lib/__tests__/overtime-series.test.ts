@@ -8,6 +8,7 @@ import r from "../../rates/overtime-2026.json";
 import { overtimeSeries } from "../../data/series/overtime";
 import { minWage } from "../labor";
 import { won } from "../won";
+import { guideSource } from "./guide-source";
 
 const P = r.premium;
 const pct = (v: number) => `${v * 100}%`;
@@ -35,7 +36,7 @@ describe("야근수당 시리즈 제목·설명", () => {
 
   for (const s of [overtimeSeries.hub, ...overtimeSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

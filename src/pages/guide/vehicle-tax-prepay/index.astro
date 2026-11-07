@@ -31,6 +31,11 @@ const QA = [
 ];
 const more: Record<number, string> = { 1: "vehicle-tax-prepay-discount", 2: "vehicle-tax-prepay-period", 3: "vehicle-tax-prepay-refund" };
 const labelOf = (slug: string) => vehiclePrepaySeries.items.find((s) => s.slug === slug)?.label ?? slug;
+import VehicleTaxPrepayAmount from "../../../components/merged/vehicle-tax-prepay/VehicleTaxPrepayAmount.astro";
+import VehicleTaxPrepayDiscount from "../../../components/merged/vehicle-tax-prepay/VehicleTaxPrepayDiscount.astro";
+import VehicleTaxPrepayHow from "../../../components/merged/vehicle-tax-prepay/VehicleTaxPrepayHow.astro";
+import VehicleTaxPrepayPeriod from "../../../components/merged/vehicle-tax-prepay/VehicleTaxPrepayPeriod.astro";
+import VehicleTaxPrepayRefund from "../../../components/merged/vehicle-tax-prepay/VehicleTaxPrepayRefund.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={lt.vehicleTax.prepayDiscount.verifiedOn} faq={QA}>
@@ -57,4 +62,11 @@ const labelOf = (slug: string) => vehiclePrepaySeries.items.find((s) => s.slug =
     연납하지 않을 때의 세액과 차령 감면은 <a href="/guide/vehicle-tax/">자동차세</a>와{" "}
     <a href="/vehicle-tax/">자동차세 계산기</a>에 있습니다.
   </p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="vehicle-tax-prepay-amount"><h2>자동차세 연납 금액</h2><VehicleTaxPrepayAmount /></section>
+  <section id="vehicle-tax-prepay-discount"><h2>자동차세 연납 할인율</h2><VehicleTaxPrepayDiscount /></section>
+  <section id="vehicle-tax-prepay-how"><h2>자동차세 연납 신청 방법</h2><VehicleTaxPrepayHow /></section>
+  <section id="vehicle-tax-prepay-period"><h2>자동차세 연납 기간</h2><VehicleTaxPrepayPeriod /></section>
+  <section id="vehicle-tax-prepay-refund"><h2>자동차세 연납 환급</h2><VehicleTaxPrepayRefund /></section>
 </GuideLayout>

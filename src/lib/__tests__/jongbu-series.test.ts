@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import r from "../../rates/comprehensive-property-2026.json";
 import { jongbuSeries } from "../../data/series/jongbu";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const pct = (v: number) => `${(v * 100).toFixed(1).replace(/\.0$/, "")}%`;
 const A = r.rates.upTo2Homes.brackets;
@@ -24,7 +25,7 @@ const other = new Set([
 describe("종부세 시리즈 제목·설명", () => {
   for (const s of [jongbuSeries.hub, ...jongbuSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const head = (src.match(/^const title = "([^"]+)";/m)?.[1] ?? "") + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(head.length).toBeGreaterThan(40);
       for (const m of head.matchAll(/[\d,]+억[\d,]*천?만원|[\d,]+억원|[\d,]+만원/g)) expect(money, m[0]).toContain(m[0]);
@@ -36,10 +37,10 @@ describe("종부세 시리즈 제목·설명", () => {
   }
 
   it("날짜", () => {
-    const pay = readFileSync("src/pages/guide/jongbu-payment/index.astro", "utf-8");
+    const pay = readFileSync(guideSource("jongbu-payment"), "utf-8");
     expect(r.payment.from).toBe("12월 1일");
     expect(pay).toContain("12월 1일부터 15일까지");
-    const reform = readFileSync("src/pages/guide/jongbu-reform/index.astro", "utf-8");
+    const reform = readFileSync(guideSource("jongbu-reform"), "utf-8");
     expect(r.oneHousehold.deemed.temporaryTwoHomes.from).toBe("2026-08-04");
     expect(reform).toContain("2026년 8월 4일 이후");
     expect(r.exclusionReport.period).toContain("9월 16일부터 9월 30일까지");

@@ -9,6 +9,7 @@ import lunar from "../../rates/lunar-2026.json";
 import holidays from "../../rates/kr-holidays-2026.json";
 import { toLunar, isSonDay, sonDays, coveredMonths, leaseReportRequired } from "../moving";
 import { movingSeries } from "../../data/series/moving";
+import { guideSource } from "./guide-source";
 
 describe("음력 표 — 천문연 음양력 변환 조회값", () => {
   it("달이 끊김 없이 이어진다(윤달 없음)", () => {
@@ -125,7 +126,7 @@ describe("이사 시리즈 제목·설명의 숫자", () => {
   ]);
   for (const s of [movingSeries.hub, ...movingSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title.replace(/\s/g, "")).toContain(s.keyword.replace(/\s/g, ""));

@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import labor from "../../rates/labor-2026.json";
 import { ordinaryWageSeries } from "../../data/series/ordinary-wage";
 import { basisHours } from "../ordinary-wage";
+import { guideSource } from "./guide-source";
 
 const allowed = new Set([`${labor.minWage.monthlyHours}시간`, `${labor.weeklyHoliday.maxWeeklyHours}시간`, "1일", "1주", "1년", "12", "6" /* 시행령 제6조 */]);
 
@@ -18,7 +19,7 @@ describe("통상임금 시리즈 제목·설명", () => {
 
   for (const s of [ordinaryWageSeries.hub, ...ordinaryWageSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

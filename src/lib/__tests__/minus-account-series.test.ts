@@ -6,6 +6,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/overdraft-2026.json";
 import { minusAccountSeries } from "../../data/series/minus-account";
+import { guideSource } from "./guide-source";
 
 describe("마이너스통장 이자 시리즈 제목·설명", () => {
   it("rates 에 일수 계산·단수 문장과 약정서 출처가 있다", () => {
@@ -16,7 +17,7 @@ describe("마이너스통장 이자 시리즈 제목·설명", () => {
 
   for (const s of [minusAccountSeries.hub, ...minusAccountSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

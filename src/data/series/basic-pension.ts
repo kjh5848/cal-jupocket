@@ -10,9 +10,6 @@ export const basicPensionSeries: Series = {
   cluster: "retirement",
   hub: { slug: "basic-pension", keyword: "기초연금", label: "기초연금 — 65세·월 349,700원" },
   items: [
-    { slug: "basic-pension-amount", keyword: "기초연금 금액", label: "기초연금 금액·부부·국민연금" },
-    { slug: "basic-pension-criteria", keyword: "기초연금 기준", label: "기초연금 기준·소득인정액" },
     { slug: "basic-pension-calculator", keyword: "기초연금 모의계산", label: "기초연금 모의계산" },
-    { slug: "basic-pension-apply", keyword: "기초연금 신청", label: "기초연금 신청·서류" },
   ],
 };

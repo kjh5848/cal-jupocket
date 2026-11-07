@@ -33,6 +33,11 @@ const more: Record<number, string> = {
   4: "vat-final-return-refund",
 };
 const labelOf = (slug: string) => vatFinalSeries.items.find((s) => s.slug === slug)?.label ?? slug;
+import VatFinalReturnFirstHalf from "../../../components/merged/vat-final-return/VatFinalReturnFirstHalf.astro";
+import VatFinalReturnSecondHalf from "../../../components/merged/vat-final-return/VatFinalReturnSecondHalf.astro";
+import VatFinalReturnPeriod from "../../../components/merged/vat-final-return/VatFinalReturnPeriod.astro";
+import VatFinalReturnHow from "../../../components/merged/vat-final-return/VatFinalReturnHow.astro";
+import VatFinalReturnRefund from "../../../components/merged/vat-final-return/VatFinalReturnRefund.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={vf.verifiedOn} faq={QA}>
@@ -60,4 +65,11 @@ const labelOf = (slug: string) => vatFinalSeries.items.find((s) => s.slug === sl
     예정고지는 <a href="/guide/vat-prepayment/">부가세 예정고지</a>, 가산세는{" "}
     <a href="/guide/vat-penalty/">부가세 가산세</a>에 있습니다.
   </p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="vat-final-return-first-half"><h2>1기 부가세 확정신고</h2><VatFinalReturnFirstHalf /></section>
+  <section id="vat-final-return-second-half"><h2>2기 부가세 확정신고</h2><VatFinalReturnSecondHalf /></section>
+  <section id="vat-final-return-period"><h2>부가세 확정신고 기간</h2><VatFinalReturnPeriod /></section>
+  <section id="vat-final-return-how"><h2>부가세 확정신고 방법</h2><VatFinalReturnHow /></section>
+  <section id="vat-final-return-refund"><h2>부가세 확정신고 환급</h2><VatFinalReturnRefund /></section>
 </GuideLayout>

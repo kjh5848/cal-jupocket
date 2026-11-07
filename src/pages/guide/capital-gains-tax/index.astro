@@ -29,6 +29,10 @@ const QA = [
   { q: "양도소득세는 언제 신고하나요?", a: `부동산은 양도일이 속하는 달의 말일부터 ${r.filing.preliminary.realEstateMonths}개월 안에 예정신고하고(제105조), 다음 해 5월에 확정신고합니다(제110조). 예정신고를 했으면 대개 확정신고는 생략합니다. 해외주식은 예정신고 없이 다음 해 5월에 신고합니다.` },
 ];
 const labelOf = (slug: string) => capitalGainsSeries.items.find((x) => x.slug === slug)?.label ?? slug;
+import CapitalGainsDeadline from "../../../components/merged/capital-gains-tax/CapitalGainsDeadline.astro";
+import CapitalGainsExemption from "../../../components/merged/capital-gains-tax/CapitalGainsExemption.astro";
+import CapitalGainsFiling from "../../../components/merged/capital-gains-tax/CapitalGainsFiling.astro";
+import CapitalGainsRate from "../../../components/merged/capital-gains-tax/CapitalGainsRate.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -70,4 +74,10 @@ const labelOf = (slug: string) => capitalGainsSeries.items.find((x) => x.slug ==
     양도소득세 개편안은 공포 전이라 다루지 않습니다. 2026년 10월 13일 현재 소득세법에 실린 2027년 9월 9일 시행 개정은
     법률 이름 변경뿐이라 계산에 영향이 없습니다.
   </p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="capital-gains-deadline"><h2>양도세 신고기간</h2><CapitalGainsDeadline /></section>
+  <section id="capital-gains-exemption"><h2>양도세 비과세 조건</h2><CapitalGainsExemption /></section>
+  <section id="capital-gains-filing"><h2>양도소득세 신고</h2><CapitalGainsFiling /></section>
+  <section id="capital-gains-rate"><h2>양도소득세 세율</h2><CapitalGainsRate /></section>
 </GuideLayout>

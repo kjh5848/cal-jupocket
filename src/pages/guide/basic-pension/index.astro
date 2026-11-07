@@ -28,6 +28,9 @@ const QA = [
   { q: "국민연금을 받으면 기초연금이 줄어드나요?", a: `국민연금 급여액이 기준연금액의 150%(${won(npsFullUpTo())}) 이하면 줄지 않습니다(제6조 제1항). 그보다 많으면 국민연금의 소득재분배 부분(A급여 기반)의 3분의 2만큼 줄 수 있지만, 기준연금액의 2분의 1인 ${won(npsFloor())}은 부가연금액으로 늘 남습니다(제5조 제5항).` },
   { q: "기초연금은 언제부터 받나요?", a: `신청한 날이 속하는 달부터 매월 받습니다(제14조 제1항). 65세가 돼도 신청하지 않으면 그 전 달 몫은 받지 못합니다. 시장·군수·구청장에게 신청하고, 접수일부터 30일(조사가 길면 60일) 안에 결과를 알려 줍니다(시행규칙 제8조).` },
 ];
+import BasicPensionAmount from "../../../components/merged/basic-pension/BasicPensionAmount.astro";
+import BasicPensionApply from "../../../components/merged/basic-pension/BasicPensionApply.astro";
+import BasicPensionCriteria from "../../../components/merged/basic-pension/BasicPensionCriteria.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -36,7 +39,7 @@ const QA = [
 
   <h2>{QA[0].q}</h2>
   <p class="qa-lead">{QA[0].a}</p>
-  <p>소득인정액은 실제 월 소득이 아니라 소득평가액과 재산을 소득으로 바꾼 금액을 더한 값입니다(제2조 제4호). 계산 방법은 <a href="/guide/basic-pension-criteria/">기초연금 기준</a>에 있습니다.</p>
+  <p>소득인정액은 실제 월 소득이 아니라 소득평가액과 재산을 소득으로 바꾼 금액을 더한 값입니다(제2조 제4호). 계산 방법은 <a href="/guide/basic-pension/#basic-pension-criteria">기초연금 기준</a>에 있습니다.</p>
 
   <h2>{QA[1].q}</h2>
   <p class="qa-lead">{QA[1].a}</p>
@@ -62,4 +65,9 @@ const QA = [
     {S.items.map((i) => <li><a href={`/guide/${i.slug}/`}>{i.label}</a></li>)}
   </ul>
   <p>국민연금 쪽 금액은 <a href="/guide/national-pension-estimate/">국민연금 예상수령액</a>에 있습니다.</p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="basic-pension-amount"><h2>기초연금 금액</h2><BasicPensionAmount /></section>
+  <section id="basic-pension-apply"><h2>기초연금 신청</h2><BasicPensionApply /></section>
+  <section id="basic-pension-criteria"><h2>기초연금 기준</h2><BasicPensionCriteria /></section>
 </GuideLayout>

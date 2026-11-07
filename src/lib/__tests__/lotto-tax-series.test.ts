@@ -8,6 +8,7 @@ import r from "../../rates/lottery-2026.json";
 import { lottoTaxSeries } from "../../data/series/lotto-tax";
 import { lotteryTax, lottoPage } from "../lottery-tax";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const pct = (v: number) => `${+(v * 100).toFixed(2)}%`;
 const percents = new Set([
@@ -80,7 +81,7 @@ describe("로또 세금 10원 미만 끝수 (roberin #5 대조 2026-10-18)", () 
 describe("로또세금 시리즈 제목·설명", () => {
   for (const s of [lottoTaxSeries.hub, ...lottoTaxSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

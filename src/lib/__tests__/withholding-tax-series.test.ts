@@ -8,6 +8,7 @@ import r from "../../rates/withholding-tax-2026.json";
 import it2 from "../../rates/income-tax-rate-2026.json";
 import { withholdingTaxSeries } from "../../data/series/withholding-tax";
 import { dailyWorkerTaxFreeMax } from "../withholding-tax";
+import { guideSource } from "./guide-source";
 
 const pct = (v: number) => `${+(v * 100).toFixed(3)}%`;
 const N = r.penalty;
@@ -33,7 +34,7 @@ describe("원천세 시리즈 제목·설명", () => {
 
   for (const s of [withholdingTaxSeries.hub, ...withholdingTaxSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

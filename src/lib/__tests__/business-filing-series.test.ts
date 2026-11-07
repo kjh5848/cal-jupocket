@@ -8,6 +8,7 @@ import r from "../../rates/business-filing-2026.json";
 import vp from "../../rates/vat-penalty-2026.json";
 import { businessFilingSeries } from "../../data/series/business-filing";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 const money = new Set([
@@ -28,7 +29,7 @@ describe("사업자 신고 시리즈 제목·설명", () => {
 
   for (const s of [businessFilingSeries.hub, ...businessFilingSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

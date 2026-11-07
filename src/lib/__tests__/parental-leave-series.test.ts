@@ -7,6 +7,7 @@ import r from "../../rates/parental-leave-2026.json";
 import { parentalLeaveSeries } from "../../data/series/parental-leave";
 import { schedule, monthlyPay, maternityPay, bandTotals } from "../parental-leave";
 import { eokwon, won } from "../won";
+import { guideSource } from "./guide-source";
 
 const P = r.pay;
 const M = r.maternity;
@@ -46,7 +47,7 @@ const counts = new Set(["1개월", `${P.applyWindowMonths}개월`, "3개월", "4
 describe("육아휴직 시리즈 제목·설명", () => {
   for (const s of [parentalLeaveSeries.hub, ...parentalLeaveSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

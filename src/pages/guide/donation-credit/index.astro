@@ -30,6 +30,11 @@ const QA = [
   { q: "고향사랑기부금도 기부금세액공제인가요?", a: `별도 공제입니다. 조세특례제한법 제58조에 따라 10만원까지는 기부금의 110분의 100, 20만원까지는 40%를 공제합니다. 10만원을 기부하면 ${won(hometownCredit(100_000))}을 돌려받고, 이 공제를 받은 금액은 소득세법 기부금 공제를 다시 받지 않습니다.` },
 ];
 const labelOf = (slug: string) => donationCreditSeries.items.find((x) => x.slug === slug)?.label ?? slug;
+import DonationCreditBusiness from "../../../components/merged/donation-credit/DonationCreditBusiness.astro";
+import DonationCreditLimit from "../../../components/merged/donation-credit/DonationCreditLimit.astro";
+import DonationCreditCarryover from "../../../components/merged/donation-credit/DonationCreditCarryover.astro";
+import DonationCreditRate from "../../../components/merged/donation-credit/DonationCreditRate.astro";
+import DonationCreditStandard from "../../../components/merged/donation-credit/DonationCreditStandard.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -69,4 +74,11 @@ const labelOf = (slug: string) => donationCreditSeries.items.find((x) => x.slug 
     기부금영수증 서식과 등록 방법은 시행령·화면 절차라 이 시리즈에서 다루지 않습니다. 의료비·교육비는{" "}
     <a href="/guide/medical-credit/">의료비세액공제</a>, <a href="/guide/education-credit/">교육비세액공제</a>에 있습니다.
   </p>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="donation-credit-business"><h2>기부금 세액공제 사업자</h2><DonationCreditBusiness /></section>
+  <section id="donation-credit-limit"><h2>기부금 세액공제 한도</h2><DonationCreditLimit /></section>
+  <section id="donation-credit-carryover"><h2>기부금 세액공제 이월</h2><DonationCreditCarryover /></section>
+  <section id="donation-credit-rate"><h2>기부금 세액공제율</h2><DonationCreditRate /></section>
+  <section id="donation-credit-standard"><h2>기부금세액공제 표준세액공제</h2><DonationCreditStandard /></section>
 </GuideLayout>

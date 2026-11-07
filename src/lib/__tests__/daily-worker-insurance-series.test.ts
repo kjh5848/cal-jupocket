@@ -6,6 +6,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/four-insurance-2026.json";
 import { dailyWorkerInsurance, dailyEligibility, dailyIncomeTax } from "../daily-worker-insurance";
+import { guideSource } from "./guide-source";
 
 const base = { monthOrMore: true, site: "general" as const, age: "under60" as const };
 
@@ -74,7 +75,7 @@ describe("roberin 대조(2026-10-19)", () => {
 
 describe("일용직 4대보험 공제 글 제목·설명", () => {
   it("숫자", () => {
-    const src = readFileSync("src/pages/guide/daily-worker-insurance-deduction/index.astro", "utf-8");
+    const src = readFileSync(guideSource("daily-worker-insurance-deduction"), "utf-8");
     const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
     const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
     expect(title).toContain("일용직 4대보험 공제");

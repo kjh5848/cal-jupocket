@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import r from "../../rates/gift-2026.json";
 import { computeGift, relationCap, taxFreeCeiling } from "../gift";
 import { eokwon, won } from "../won";
+import { guideSource } from "./guide-source";
 
 const adult = relationCap("ascendant");
 const minor = relationCap("ascendant", true);
@@ -26,7 +27,7 @@ const counts = new Set(["10년", `${r.marriageBirthDeduction.marriageWindowYears
 describe("자녀 증여 제목·설명", () => {
   for (const [slug, kw] of [["child-gift-limit", "자녀 증여 한도"], ["child-wedding-gift", "자녀 결혼자금 증여"]]) {
     it(slug, () => {
-      const src = readFileSync(`src/pages/guide/${slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(kw);

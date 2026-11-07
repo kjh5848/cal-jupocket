@@ -8,6 +8,7 @@ import bp from "../../rates/basic-pension-2026.json";
 import { oldAgePensionSeries } from "../../data/series/old-age-pension";
 import { coverageRate, pensionAges, rateAtStart, earningsReduction, startPlan } from "../old-age-pension";
 import { manwon } from "../won";
+import { guideSource } from "./guide-source";
 
 describe("노령연금 계산", () => {
   it("가입기간 — 10년 미만 0, 10년 50%, 1년마다 5%, 20년 이상 100%(제63조 ①)", () => {
@@ -71,7 +72,7 @@ describe("노령연금 시리즈 제목·설명", () => {
   });
   for (const s of [oldAgePensionSeries.hub, ...oldAgePensionSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

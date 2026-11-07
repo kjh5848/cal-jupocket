@@ -7,6 +7,7 @@ import r from "../../rates/electric-car-2026.json";
 import { electricCarSeries } from "../../data/series/electric-car";
 import { evAcquisitionTax, evFullExemptPrice, evVehicleTax, evPage } from "../electric-car";
 import { manwon } from "../won";
+import { guideSource } from "./guide-source";
 
 describe("전기차 세금 계산", () => {
   it("비영업용 자동차세 10만원 + 지방교육세 30% = 13만원, 영업용은 교육세 없음", () => {
@@ -61,7 +62,7 @@ const pcts = new Set([`${Math.round(r.acquisitionTax.rate * 100)}%`]);
 describe("전기차 세금 시리즈 제목·설명", () => {
   for (const s of [electricCarSeries.hub, ...electricCarSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import r from "../../rates/payslip-2026.json";
 import { payslipSeries } from "../../data/series/payslip";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const F = r.fines;
 const money = new Set([eokwon(F.payslipNotIssued[0]), eokwon(F.ledgerNotMade[0]), eokwon(F.max)]);
@@ -27,7 +28,7 @@ describe("급여명세서 rates", () => {
 describe("급여명세서 시리즈 제목·설명", () => {
   for (const s of [payslipSeries.hub, ...payslipSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

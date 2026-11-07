@@ -9,6 +9,7 @@
  * 허브(/guide/irp-tax-credit/)가 이 목록을 그대로 그리고,
  * snippet-structure.test.ts 가 이 목록의 글마다 구조를 대조한다.
  */
+import { guideHref } from "../merged";
 import type { Series, SeriesItem } from "./types";
 export type { SeriesItem } from "./types";
 
@@ -22,7 +23,7 @@ export const irpSeries: SeriesItem[] = [
 /** 연금저축과 같이 쓰는 경우는 기존 글이 받는다. */
 export const IRP_WITH_SAVINGS = { slug: "pension-savings-tax-credit", keyword: "연금저축 irp 세액공제" };
 
-export const irpHref = (slug: string) => `/guide/${slug}/`;
+export const irpHref = (slug: string) => guideHref(slug);
 
 export const irpSeriesDef: Series = {
   id: "irp-tax-credit",

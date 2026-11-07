@@ -90,6 +90,9 @@ const srcNts = r.sources.find((s) => s.label.includes("항목별"))!;
 const srcDeadline = r.sources.find((s) => s.label.includes("유의사항"))!;
 const srcFlow = r.sources.find((s) => s.label.includes("흐름도"))!;
 const srcLaw = r.sources.find((s) => s.label.includes("법령 원문"))!;
+import GiftTaxDeadline from "../../../components/merged/gift-tax/GiftTaxDeadline.astro";
+import GiftTaxGuide from "../../../components/merged/gift-tax/GiftTaxGuide.astro";
+import GiftTaxRate from "../../../components/merged/gift-tax/GiftTaxRate.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -461,4 +464,9 @@ const srcLaw = r.sources.find((s) => s.label.includes("법령 원문"))!;
   </p>
 
   <AdSlot label="guide-gift-tax-bottom" />
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="gift-tax-deadline"><h2>증여세 신고기한</h2><GiftTaxDeadline /></section>
+  <section id="gift-tax-guide"><h2>증여세</h2><GiftTaxGuide /></section>
+  <section id="gift-tax-rate"><h2>증여세 세율</h2><GiftTaxRate /></section>
 </GuideLayout>

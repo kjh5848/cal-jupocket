@@ -7,6 +7,7 @@ import r from "../../rates/labor-2026.json";
 import { minimumWageSeries } from "../../data/series/minimum-wage";
 import { checkMinWage, minimumMonthly, minimumWeekly, minWage, weeklyHolidayPay } from "../labor";
 import { won } from "../won";
+import { guideSource } from "./guide-source";
 
 describe("최저임금 계산", () => {
   it("주 40시간 월급 = 고시 월 환산액", () => {
@@ -55,7 +56,7 @@ describe("최저 주급 — 시행령 제5조 제1항 제2호(주급 ÷ 소정�
 describe("최저임금 시리즈 제목·설명", () => {
   for (const s of [minimumWageSeries.hub, ...minimumWageSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

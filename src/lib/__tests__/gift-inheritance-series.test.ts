@@ -9,6 +9,7 @@ import ih from "../../rates/inheritance-2026.json";
 import { giftSeries, inheritanceSeries } from "../../data/series/gift-inheritance";
 import { eokwon } from "../won";
 import { computeGift, taxFreeCeiling } from "../gift";
+import { guideSource } from "./guide-source";
 
 const item = (k: string) => g.relationDeduction.items.find((i) => i.key === k)!;
 const money = new Set([
@@ -27,7 +28,7 @@ const periods = new Set([`${g.deadline.months}개월`, `${ih.deadline.months}개
 describe("증여세·상속세 시리즈 제목·설명", () => {
   for (const s of [giftSeries, inheritanceSeries].flatMap((x) => [x.hub, ...x.items])) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const head = (src.match(/^const title = "([^"]+)";/m)?.[1] ?? "") + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(head.length).toBeGreaterThan(40);
       for (const m of head.matchAll(/[\d,]+억[\d,]*천?만원|[\d,]+억원|[\d,]+천만원|[\d,]+만원/g)) expect(money, m[0]).toContain(m[0]);

@@ -21,10 +21,6 @@ export const medicalCreditSeries: Series = {
   hub: { slug: "medical-credit", keyword: "의료비세액공제", label: "의료비 세액공제" },
   items: [
     { slug: "medical-credit-limit", keyword: "의료비 세액공제 한도", label: "의료비 세액공제 한도·계산" },
-    { slug: "medical-credit-eligibility", keyword: "의료비 세액공제 대상", label: "의료비 세액공제 대상" },
-    { slug: "medical-credit-pooling", keyword: "의료비 세액공제 몰아주기", label: "의료비 몰아주기" },
-    { slug: "medical-credit-insurance", keyword: "의료비 세액공제 실손보험", label: "의료비 세액공제 실손보험" },
-    { slug: "medical-credit-glasses", keyword: "의료비세액공제 안경", label: "의료비 안경·산후조리원" },
   ],
 };
 
@@ -45,12 +41,7 @@ export const donationCreditSeries: Series = {
   cluster: "income",
   hub: { slug: "donation-credit", keyword: "기부금세액공제", label: "기부금 세액공제" },
   items: [
-    { slug: "donation-credit-limit", keyword: "기부금 세액공제 한도", label: "기부금 세액공제 한도" },
-    { slug: "donation-credit-rate", keyword: "기부금 세액공제율", label: "기부금 세액공제율" },
     { slug: "hometown-donation-credit", keyword: "고향사랑기부금 세액공제", label: "고향사랑기부금 세액공제" },
     { slug: "religious-donation-credit", keyword: "종교 기부금 세액공제", label: "종교 기부금 세액공제" },
-    { slug: "donation-credit-carryover", keyword: "기부금 세액공제 이월", label: "기부금 세액공제 이월" },
-    { slug: "donation-credit-standard", keyword: "기부금세액공제 표준세액공제", label: "기부금과 표준세액공제" },
-    { slug: "donation-credit-business", keyword: "기부금 세액공제 사업자", label: "기부금 세액공제 사업자" },
   ],
 };

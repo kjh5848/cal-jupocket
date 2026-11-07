@@ -9,6 +9,7 @@ import tr from "../../rates/2026.json";
 import { capitalGainsSeries } from "../../data/series/capital-gains";
 import { overseasStockTax, preliminaryDue } from "../capital-gains";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const R = r.rates;
 const LT = r.longTermDeduction;
@@ -51,7 +52,7 @@ describe("양도소득세 시리즈 제목·설명", () => {
 
   for (const s of [capitalGainsSeries.hub, ...capitalGainsSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

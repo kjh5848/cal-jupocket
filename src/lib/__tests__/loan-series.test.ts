@@ -6,6 +6,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/loan-2026.json";
 import { loanSeries } from "../../data/series/loan";
+import { guideSource } from "./guide-source";
 
 describe("대출이자 계산 시리즈 제목·설명", () => {
   it("rates 에 세 방식·월 이자·단수 문장이 있다", () => {
@@ -16,7 +17,7 @@ describe("대출이자 계산 시리즈 제목·설명", () => {
 
   for (const s of [loanSeries.hub, ...loanSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

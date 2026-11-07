@@ -20,13 +20,9 @@ export const capitalGainsSeries: Series = {
   hub: { slug: "capital-gains-tax", keyword: "양도소득세", label: "양도소득세" },
   items: [
     { slug: "capital-gains-calculator", keyword: "양도세 계산기", label: "양도세 계산기" },
-    { slug: "capital-gains-rate", keyword: "양도소득세 세율", label: "양도소득세 세율" },
-    { slug: "capital-gains-exemption", keyword: "양도세 비과세 조건", label: "양도세 비과세 조건" },
     { slug: "long-term-holding-deduction", keyword: "장기보유특별공제", label: "장기보유특별공제" },
     { slug: "two-homes-capital-gains", keyword: "1가구2주택 양도소득세", label: "1가구2주택 양도소득세" },
     { slug: "multi-home-surcharge", keyword: "다주택자 양도세 중과", label: "다주택자 양도세 중과" },
-    { slug: "capital-gains-filing", keyword: "양도소득세 신고", label: "양도소득세 신고 방법" },
-    { slug: "capital-gains-deadline", keyword: "양도세 신고기간", label: "양도세 신고기간" },
     { slug: "overseas-stock-tax", keyword: "해외주식 양도소득세", label: "해외주식 양도소득세" },
     { slug: "stock-capital-gains", keyword: "주식 양도소득세", label: "주식 양도소득세" },
     { slug: "land-capital-gains-rate", keyword: "토지 양도소득세율", label: "토지 양도소득세율" },

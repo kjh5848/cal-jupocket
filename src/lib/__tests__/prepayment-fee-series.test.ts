@@ -7,6 +7,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/prepayment-fee-2026.json";
 import { prepaymentFeeSeries } from "../../data/series/prepayment-fee";
+import { guideSource } from "./guide-source";
 
 describe("중도상환수수료 시리즈 제목·설명", () => {
   it("3년은 rates 에서", () => {
@@ -15,7 +16,7 @@ describe("중도상환수수료 시리즈 제목·설명", () => {
 
   for (const s of [prepaymentFeeSeries.hub, ...prepaymentFeeSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

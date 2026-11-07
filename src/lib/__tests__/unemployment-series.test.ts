@@ -8,6 +8,7 @@ import r from "../../rates/unemployment-2026.json";
 import { unemploymentSeries } from "../../data/series/unemployment";
 import { unemploymentBenefit, dailyHoursBeforeLeaving, daysInLastThreeMonths, benefitDays } from "../unemployment";
 import { won } from "../won";
+import { guideSource } from "./guide-source";
 
 const D = r.days;
 const E = r.eligibility;
@@ -61,7 +62,7 @@ const counts = new Set([
 describe("실업급여 시리즈 제목·설명", () => {
   for (const s of [unemploymentSeries.hub, ...unemploymentSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

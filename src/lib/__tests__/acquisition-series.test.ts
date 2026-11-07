@@ -9,6 +9,7 @@ import x from "../../rates/acquisition-extra-2026.json";
 import { acquisitionSeries } from "../../data/series/acquisition";
 import { acquisitionTotal } from "../acquisition-total";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const A = r.acquisitionTax;
 const S = A.standard;
@@ -29,7 +30,7 @@ describe("취득세 시리즈 제목·설명", () => {
 
   for (const s of [acquisitionSeries.hub, ...acquisitionSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

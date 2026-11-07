@@ -17,8 +17,5 @@ export const childIncentiveSeries: Series = {
   hub: { slug: "child-incentive", keyword: "자녀장려금", label: "자녀장려금" },
   items: [
     { slug: "child-incentive-amount", keyword: "자녀장려금 금액", label: "자녀장려금 금액" },
-    { slug: "child-incentive-eligibility", keyword: "자녀장려금 신청 조건", label: "자녀장려금 신청 조건" },
-    { slug: "child-incentive-apply", keyword: "자녀장려금 신청 기간", label: "자녀장려금 신청 기간" },
-    { slug: "child-incentive-pay-date", keyword: "자녀장려금 지급일", label: "자녀장려금 지급일" },
   ],
 };

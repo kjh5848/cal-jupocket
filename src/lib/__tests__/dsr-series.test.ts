@@ -6,6 +6,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/dsr-2026.json";
 import { dsrSeries } from "../../data/series/dsr";
+import { guideSource } from "./guide-source";
 
 const eok = (n: number) => `${n / 100_000_000}억원`;
 const allowed = new Set([
@@ -26,7 +27,7 @@ describe("DSR 시리즈 제목·설명", () => {
 
   for (const s of [dsrSeries.hub, ...dsrSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

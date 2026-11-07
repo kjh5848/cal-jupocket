@@ -8,6 +8,7 @@ import r from "../../rates/divorce-2026.json";
 import { divorceSeries } from "../../data/series/divorce";
 import { divisionAcqTax, plainGiftAcqTax, divisionAcqPage } from "../divorce-tax";
 import { manwon, eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const A = r.acquisition;
 
@@ -56,7 +57,7 @@ const pcts = new Set([pct(A.rate), pct(A.baseRate), pct(A.heavyRate), pct((A.bas
 describe("이혼 재산분할 세금 시리즈 제목·설명", () => {
   for (const s of [divorceSeries.hub, ...divorceSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

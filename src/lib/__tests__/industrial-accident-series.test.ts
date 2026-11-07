@@ -9,6 +9,7 @@ import labor from "../../rates/labor-2026.json";
 import { industrialAccidentSeries } from "../../data/series/industrial-accident";
 import { leavePayDaily, bandRange, disabilityPay, LOW_CAP } from "../industrial-accident";
 import { won, manwon } from "../won";
+import { guideSource } from "./guide-source";
 
 describe("보상기준 금액", () => {
   it("2026 최고 268,299원 · 최저 82,560원 = 최저임금 시급 × 8(제36조 ⑦)", () => {
@@ -76,7 +77,7 @@ describe("휴업급여 나눠 보기 — 제52조·제54조 ②·별표 1 제1~3
 
 describe("휴업급여 글", () => {
   it("FAQ 가 단서 구간을 공단 확인으로 남긴다", () => {
-    const src = readFileSync("src/pages/guide/industrial-accident-leave-pay/index.astro", "utf-8");
+    const src = readFileSync(guideSource("industrial-accident-leave-pay"), "utf-8");
     expect(src).toContain("${won(bandLo)}~${won(bandHi)}은 상한과 겹쳐 공단 결정액을 확인하세요");
     expect(src).toContain('id="ia-grace"');
   });
@@ -130,7 +131,7 @@ describe("장해급여 나눠 보기 — 제36조 ⑦·제57조 ④·제70조 �
     }
   });
   it("FAQ 가 1~3급 4년분 선급 단서를 적는다", () => {
-    const src = readFileSync("src/pages/guide/industrial-accident-disability/index.astro", "utf-8");
+    const src = readFileSync(guideSource("industrial-accident-disability"), "utf-8");
     expect(src).toContain("1~3급은 1년분부터 4년분까지");
     expect(r.disability.advanceMaxYears).toEqual({ annuityOnly: 4, choice: 2 });
   });
@@ -144,7 +145,7 @@ const days = new Set(["1,474일분", "55일분"]);
 describe("산재 시리즈 제목·설명", () => {
   for (const s of [industrialAccidentSeries.hub, ...industrialAccidentSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

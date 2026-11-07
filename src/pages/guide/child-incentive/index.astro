@@ -36,6 +36,9 @@ const QA = [
 ];
 const more: Record<number, string> = { 1: "child-incentive-eligibility", 2: "child-incentive-amount", 3: "child-incentive-apply" };
 const labelOf = (slug: string) => childIncentiveSeries.items.find((x) => x.slug === slug)?.label ?? slug;
+import ChildIncentiveEligibility from "../../../components/merged/child-incentive/ChildIncentiveEligibility.astro";
+import ChildIncentiveApply from "../../../components/merged/child-incentive/ChildIncentiveApply.astro";
+import ChildIncentivePayDate from "../../../components/merged/child-incentive/ChildIncentivePayDate.astro";
 ---
 
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
@@ -78,4 +81,9 @@ const labelOf = (slug: string) => childIncentiveSeries.items.find((x) => x.slug 
     <li><strong>시행령 별표 11의2 자녀장려금산정표</strong> — 실제 금액은 총급여액 구간별 이 표로 정합니다. 읽지 않아, 이 시리즈의 금액은 법 조문 식으로 한 어림입니다.</li>
     <li><strong>근로장려금</strong> — 같은 법 제100조의2 이하의 별개 제도입니다. 이 시리즈는 자녀장려금만 다룹니다.</li>
   </ul>
+
+  {/* 합친 글(2026-11-07, scripts/merge/merge-group.mjs) */}
+  <section id="child-incentive-eligibility"><h2>자녀장려금 신청 조건</h2><ChildIncentiveEligibility /></section>
+  <section id="child-incentive-apply"><h2>자녀장려금 신청 기간</h2><ChildIncentiveApply /></section>
+  <section id="child-incentive-pay-date"><h2>자녀장려금 지급일</h2><ChildIncentivePayDate /></section>
 </GuideLayout>

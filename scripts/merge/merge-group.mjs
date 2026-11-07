@@ -40,6 +40,13 @@ const walk = (d, out = []) => {
   return out;
 };
 
+// 계산기 도구로 등록된 글(tools.ts)은 합치지 않는다 — 도구 목록·검색이 그 주소를 쓴다(2026-11-07 근로장려금 금액에서 걸림)
+const toolsSrc = readFileSync("src/data/tools.ts", "utf8");
+const asTool = sibs.filter((s) => toolsSrc.includes(`"/guide/${s}/"`));
+if (asTool.length) {
+  console.error(`✖ 도구로 등록된 글은 합치지 않는다: ${asTool.join(", ")}`);
+  process.exit(1);
+}
 const compDir = `src/components/merged/${hub}`;
 mkdirSync(compDir, { recursive: true });
 const made = [];

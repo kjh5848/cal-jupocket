@@ -18,10 +18,6 @@ export const earnedIncentiveSeries: Series = {
   cluster: "income",
   hub: { slug: "earned-incentive", keyword: "근로장려금", label: "근로장려금" },
   items: [
-    { slug: "earned-incentive-eligibility", keyword: "근로장려금 대상", label: "근로장려금 대상·조건" },
     { slug: "earned-incentive-amount", keyword: "근로장려금 금액", label: "근로장려금 금액" },
-    { slug: "earned-incentive-apply", keyword: "근로장려금 신청 기간", label: "근로장려금 신청 기간" },
-    { slug: "earned-incentive-half-year", keyword: "2026 근로장려금 상반기", label: "근로장려금 반기 신청" },
-    { slug: "earned-incentive-pay-date", keyword: "근로장려금 지급일", label: "근로장려금 지급일" },
   ],
 };

@@ -1,3 +1,4 @@
+import { guideHref } from "../merged";
 /**
  * 자동완성 키워드 시리즈 — 키워드 하나에 글 하나.
  * 시리즈마다 허브 글이 있고, snippet-structure.test.ts 가 모든 시리즈의 글을 대조한다.
@@ -20,4 +21,5 @@ export interface Series {
   existing?: SeriesItem[];
 }
 
-export const seriesHref = (slug: string) => `/guide/${slug}/`;
+/** 합친 글이면 허브의 #섹션(data/merged.ts) */
+export const seriesHref = (slug: string) => guideHref(slug);

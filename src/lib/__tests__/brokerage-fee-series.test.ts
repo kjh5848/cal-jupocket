@@ -6,6 +6,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import r from "../../rates/brokerage-fee-2026.json";
 import { brokerageFeeSeries } from "../../data/series/brokerage-fee";
+import { guideSource } from "./guide-source";
 
 const pct = (permille: number) => `${permille / 10}`;
 const sale = r.housing.sale.map((b) => b.permille);
@@ -39,7 +40,7 @@ describe("중개보수 시리즈 제목·설명", () => {
 
   for (const s of [brokerageFeeSeries.hub, ...brokerageFeeSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import r from "../../rates/customs-2026.json";
 import { customsSeries } from "../../data/series/customs";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const T = r.traveler;
 const D = r.direct;
@@ -25,7 +26,7 @@ describe("면세 기준", () => {
 describe("면세한도 시리즈 제목·설명", () => {
   for (const s of [customsSeries.hub, ...customsSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

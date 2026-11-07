@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { perChild, childIncentive, schedule, bandInfo } from "../child-incentive";
 import { iso } from "../tax-deadline";
 import r from "../../rates/child-incentive-2026.json";
+import { guideSource } from "./guide-source";
 
 /** 자녀장려금 — 조세특례제한법 제100조의29 ① 표와 손으로 대조한 값. */
 describe("1명당 금액(제100조의29 ①)", () => {
@@ -137,7 +138,7 @@ describe("글의 제목·설명 — 문자열이라 rates 와 대조한다", asy
   const slugs = [childIncentiveSeries.hub, ...childIncentiveSeries.items].map((x) => x.slug);
   for (const slug of slugs) {
     it(slug, () => {
-      const src = readFileSync(`src/pages/guide/${slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(slug), "utf-8");
       const head = (src.match(/^const title = "([^"]+)";/m)?.[1] ?? "") + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(head.length).toBeGreaterThan(40);
       for (const m of head.matchAll(/[\d,]+억[\d,]*천?만원|[\d,]+억원|[\d,]+천만원|[\d,]+만원/g)) expect(allowedMoney, m[0]).toContain(m[0]);
@@ -146,10 +147,10 @@ describe("글의 제목·설명 — 문자열이라 rates 와 대조한다", asy
   }
   it("신청·결정 날짜", () => {
     const s = schedule(r.year);
-    const apply = readFileSync("src/pages/guide/child-incentive-apply/index.astro", "utf-8");
+    const apply = readFileSync(guideSource("child-incentive-apply"), "utf-8");
     expect(apply).toContain(`${r.year + 1}년 5월 1일부터 5월 31일까지`);
     expect(iso(s.deadline)).toBe(`${r.year + 1}-05-31`);
-    const pay = readFileSync("src/pages/guide/child-incentive-pay-date/index.astro", "utf-8");
+    const pay = readFileSync(guideSource("child-incentive-pay-date"), "utf-8");
     expect(pay).toContain(`${r.year + 1}년 8월 31일까지 결정`);
     expect(iso(s.decideBy)).toBe(`${r.year + 1}-08-31`);
   });

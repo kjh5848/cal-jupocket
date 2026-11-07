@@ -12,6 +12,7 @@ import { businessRegistrationSeries } from "../../data/series/business-registrat
 import { corporateTaxSeries } from "../../data/series/corporate-tax";
 import { corporateDeadline, prepayDeadline } from "../corporate-tax";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 const md = (d: Date) => `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;
@@ -37,7 +38,7 @@ describe("사업자등록·법인세 시리즈 제목·설명", () => {
 
   for (const s of [businessRegistrationSeries.hub, ...businessRegistrationSeries.items, corporateTaxSeries.hub, ...corporateTaxSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

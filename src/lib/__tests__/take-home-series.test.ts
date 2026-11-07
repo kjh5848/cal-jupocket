@@ -7,6 +7,7 @@ import t from "../../rates/withholding-table-2026.json";
 import { takeHomeSeries } from "../../data/series/take-home";
 import { simplifiedTax, takeHome, takeHomeFromAnnual, annualDivisor, MEAL_ALLOWANCE } from "../take-home";
 import { manwon } from "../won";
+import { guideSource } from "./guide-source";
 
 describe("근로소득 간이세액표", () => {
   it("표는 770천원~10,000천원, 이음매 빈틈 없음, 가족이 늘면 세액이 줄거나 같다", () => {
@@ -79,7 +80,7 @@ const money = new Set([
 describe("실수령액 시리즈 제목·설명", () => {
   for (const s of [takeHomeSeries.hub, ...takeHomeSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

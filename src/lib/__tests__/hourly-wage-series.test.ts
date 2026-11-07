@@ -8,6 +8,7 @@ import r from "../../rates/labor-2026.json";
 import { hourlyWageSeries } from "../../data/series/hourly-wage";
 import { hourlyWagePay, minWage } from "../labor";
 import { won } from "../won";
+import { guideSource } from "./guide-source";
 
 const allowed = new Set([
   won(minWage(2026)),
@@ -31,7 +32,7 @@ describe("시급 계산 시리즈 제목·설명", () => {
 
   for (const s of [hourlyWageSeries.hub, ...hourlyWageSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

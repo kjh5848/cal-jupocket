@@ -49,7 +49,7 @@ export const homeEntries: HomeEntry[] = [
     title: "정부 지원",
     icon: "checklist",
     questions: [
-      { q: "기초연금, 나도 받을 수 있나요?", href: "/guide/basic-pension-criteria/" },
+      { q: "기초연금, 나도 받을 수 있나요?", href: "/guide/basic-pension/#basic-pension-criteria" },
       { q: "자녀장려금은 얼마나 나오나요?", href: "/guide/child-incentive-amount/" },
     ],
     calc: { label: "기초연금 모의계산", href: "/guide/basic-pension-calculator/" },

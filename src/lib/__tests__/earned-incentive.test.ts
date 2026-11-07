@@ -4,6 +4,7 @@ import { formulaAmount, earnedIncentive, firstHalf, halfYearSchedule, bandInfo, 
 import { iso } from "../tax-deadline";
 import { eokwon } from "../won";
 import r from "../../rates/earned-incentive-2026.json";
+import { guideSource } from "./guide-source";
 
 /** 근로장려금 — 조세특례제한법 제100조의5 ① 표와 손으로 대조한 값. */
 describe("법 식(제100조의5 ①)", () => {
@@ -112,7 +113,7 @@ describe("글의 제목·설명 — 문자열이라 rates 와 대조한다", asy
   const allowedOther = new Set([`${Math.round(r.reductions.late.rate * 100)}%`, `${Math.round(r.halfYear.firstHalfRate * 100)}%`, "6개월", "3개월", "30일", "15일", "70세", "18세"]);
   for (const s of [earnedIncentiveSeries.hub, ...earnedIncentiveSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const head = (src.match(/^const title = "([^"]+)";/m)?.[1] ?? "") + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(head.length).toBeGreaterThan(40);
       for (const m of head.matchAll(/[\d,]+억[\d,]*천?만원|[\d,]+천만원|[\d,]+만원/g)) expect(allowedMoney, m[0]).toContain(m[0]);

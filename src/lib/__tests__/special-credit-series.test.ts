@@ -9,6 +9,7 @@ import y from "../../rates/year-end-2026.json";
 import { medicalCreditSeries, educationCreditSeries, donationCreditSeries } from "../../data/series/special-credit";
 import { hometownCredit } from "../special-credit";
 import { eokwon, won } from "../won";
+import { guideSource } from "./guide-source";
 
 const M = r.medical, E = r.education, D = r.donation, L = D.generalLimit;
 const money = new Set([
@@ -25,7 +26,7 @@ const percents = new Set([
 describe("특별세액공제 시리즈 제목·설명", () => {
   for (const s of [medicalCreditSeries, educationCreditSeries, donationCreditSeries].flatMap((x) => [x.hub, ...x.items])) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const head = (src.match(/^const title = "([^"]+)";/m)?.[1] ?? "") + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(head.length).toBeGreaterThan(40);
       for (const m of head.matchAll(/[\d,]+천만원|[\d,]+만원|(?<![\d,])\d{1,3}(?:,\d{3})+원/g)) expect(money, m[0]).toContain(m[0]);

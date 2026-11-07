@@ -7,6 +7,7 @@ import r from "../../rates/stock-trade-2026.json";
 import { stockReturn, priceForReturn, feeOf, sellTaxes, MARKETS } from "../stock-return";
 import { readFileSync } from "node:fs";
 import { stockReturnSeries } from "../../data/series/stock-return";
+import { guideSource } from "./guide-source";
 
 describe("세율 — 증권거래세법 시행령 제5조 · 농어촌특별세법 제5조 ① 5호", () => {
   it("1만분의 단위", () => {
@@ -102,7 +103,7 @@ describe("주식 수익률 시리즈 제목·설명", () => {
   });
   for (const s of [stockReturnSeries.hub, ...stockReturnSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

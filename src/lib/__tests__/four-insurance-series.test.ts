@@ -9,6 +9,7 @@ import pp from "../../rates/pension-premium-2026.json";
 import { fourInsuranceSeries } from "../../data/series/four-insurance";
 import { pensionRate, careRatio, payroll, workerRateSum } from "../four-insurance";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const pct = (v: number) => `${+(v * 100).toFixed(4)}%`;
 const H = r.health;
@@ -44,7 +45,7 @@ describe("4대보험 시리즈 제목·설명", () => {
 
   for (const s of [fourInsuranceSeries.hub, ...fourInsuranceSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

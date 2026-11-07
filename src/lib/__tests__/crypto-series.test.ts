@@ -7,6 +7,7 @@ import r from "../../rates/crypto-2026.json";
 import { cryptoSeries } from "../../data/series/crypto";
 import { cryptoTax, cryptoPage } from "../crypto-tax";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 describe("코인 세금 계산", () => {
   it("250만원 이하 0원, 1천만원 이익 165만원", () => {
@@ -33,7 +34,7 @@ const money = new Set([eokwon(r.deduction), "1천만원", "6천만원", "4천만
 describe("코인 세금 시리즈 제목·설명", () => {
   for (const s of [cryptoSeries.hub, ...cryptoSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

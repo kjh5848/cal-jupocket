@@ -7,6 +7,7 @@ import r from "../../rates/health-dependent-2026.json";
 import { healthDependentSeries } from "../../data/series/health-dependent";
 import { checkDependent } from "../health-dependent";
 import { eokwon } from "../won";
+import { guideSource } from "./guide-source";
 
 const I = r.income;
 const P = r.property;
@@ -33,7 +34,7 @@ const money = new Set([eokwon(I.limit), eokwon(P.base), eokwon(P.upper), eokwon(
 describe("피부양자 시리즈 제목·설명", () => {
   for (const s of [healthDependentSeries.hub, ...healthDependentSeries.items]) {
     it(s.slug, () => {
-      const src = readFileSync(`src/pages/guide/${s.slug}/index.astro`, "utf-8");
+      const src = readFileSync(guideSource(s.slug), "utf-8");
       const title = src.match(/^const title = "([^"]+)";/m)?.[1] ?? "";
       const head = title + " " + (src.match(/const description =\s*"([^"]+)";/)?.[1] ?? "");
       expect(title).toContain(s.keyword);

@@ -14,10 +14,5 @@ export const vehiclePrepaySeries: Series = {
   cluster: "localtax",
   hub: { slug: "vehicle-tax-prepay", keyword: "자동차세 연납", label: "자동차세 연납" },
   items: [
-    { slug: "vehicle-tax-prepay-period", keyword: "자동차세 연납 기간", label: "자동차세 연납 기간" },
-    { slug: "vehicle-tax-prepay-discount", keyword: "자동차세 연납 할인율", label: "자동차세 연납 할인율" },
-    { slug: "vehicle-tax-prepay-amount", keyword: "자동차세 연납 금액", label: "자동차세 연납 금액" },
-    { slug: "vehicle-tax-prepay-how", keyword: "자동차세 연납 신청 방법", label: "자동차세 연납 신청 방법" },
-    { slug: "vehicle-tax-prepay-refund", keyword: "자동차세 연납 환급", label: "자동차세 연납 환급(차량 매각)" },
   ],
 };

@@ -16,7 +16,8 @@ describe("홈 고민 입구 카드", () => {
 
   it("모든 주소가 실제 페이지다", () => {
     for (const e of homeEntries) {
-      for (const href of [...e.questions.map((q) => q.href), e.calc.href]) expect(existsSync(page(href)), href).toBe(true);
+      // 합친 글의 섹션(#...)이면 그 글이 있으면 된다(2026-11-07)
+      for (const href of [...e.questions.map((q) => q.href), e.calc.href]) expect(existsSync(page(href.split("#")[0])), href).toBe(true);
     }
   });
 
