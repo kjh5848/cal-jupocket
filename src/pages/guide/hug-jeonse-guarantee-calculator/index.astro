@@ -4,7 +4,7 @@
  * (허그 전세보증 조건·전세보증금반환보증 가입 조건·전세안심보증 한도·보증한도 계산도 이 글, 계산기 포함)
  * 계산: src/lib/hug-jeonse.ts hugGuarantee() — 주택가격(공시가격 × 140% 또는 시세) × 90% − 선순위, 선순위 60%(다가구 80%) 선.
  * 근거: rates/hug-jeonse-2026.json (HUG 상품개요, 2026-11-07 확인). 결과는 추산 — 판정은 HUG 심사.
- * 보증료는 계산하지 않는다(요율 범위만 확인).
+ * 보증료: hugPremium() — 반환보증 구간별 요율표(2026-11-08 확인), 할인 하나·할증을 줄로 나눠 보여 준다.
  */
 import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
@@ -14,11 +14,13 @@ import Callout from "../../../components/Callout.astro";
 import JeonseGlossary from "../../../components/JeonseGlossary.astro";
 import HugChat from "../../../components/HugChat.astro";
 import r from "../../../rates/hug-jeonse-2026.json";
-import { hugGuarantee } from "../../../lib/hug-jeonse";
+import { hugGuarantee, hugPremium, DISCOUNT_LABEL } from "../../../lib/hug-jeonse";
 import { won } from "../../../lib/won";
 
 const G = r.guarantee;
+const P = r.premium;
 const ok = hugGuarantee({ type: "row", capital: true, deposit: 250_000_000, senior: 0, basis: "public", price: 200_000_000 });
+const okPrem = hugPremium({ type: "row", deposit: 250_000_000, seniorTotal: ok.seniorTotal, housePrice: ok.housePrice, days: 730 });
 const ng = hugGuarantee({ type: "row", capital: true, deposit: 250_000_000, senior: 50_000_000, basis: "public", price: 200_000_000 });
 
 // 제목·설명은 RSS·사이트맵 메타가 문자열로 읽는다(guide-meta.ts).
@@ -31,7 +33,7 @@ const ANSWER = `HUG 전세보증은 보증금 + 선순위채권이 주택가격�
 const QA = [
   { q: "HUG 전세보증 조건은 무엇인가요?", a: `보증금 + 선순위채권이 주택가격 × ${G.ltvLimitPct}% 안이고, 선순위채권이 주택가격의 ${G.seniorLimitPct}%(단독·다가구·다중은 다른 세입자 보증금을 더해 ${G.seniorLimitMultiFamilyPct}%) 안이어야 합니다. 보증금은 수도권 ${won(G.depositCap.capital)}, 그 외 ${won(G.depositCap.other)} 이하입니다(HUG 상품개요, ${r.verifiedOn} 확인).` },
   { q: "주택가격은 어떻게 정하나요?", a: `HUG가 정한 순서대로 정합니다. 감정평가서(${G.appraisalValidMonths}개월 이내)가 있으면 그 금액을 먼저 쓰고, 연립·다세대는 공동주택가격 × ${G.publicPriceMultiplierPct}%, 단독·다가구는 개별단독주택가격 × ${G.publicPriceMultiplierPct}%, 아파트·오피스텔은 시세(KB 등)를 먼저 봅니다. 계산기는 공시가격이면 × ${G.publicPriceMultiplierPct}%, 시세·감정가면 그대로 씁니다.` },
-  { q: "보증료는 얼마인가요?", a: `보증금 × 요율 × 계약기간 ÷ 365이고, 전세반환보증 요율은 연 ${G.premiumRateRangePct.min}~${G.premiumRateRangePct.max}%입니다. 보증금 구간·주택 유형·부채비율과 할인(소득·신혼 등)에 따라 달라져 이 계산기는 금액을 내지 않습니다. HUG 앱이나 위탁은행에서 확인하세요.` },
+  { q: "보증료는 얼마인가요?", a: `보증료는 세입자가 냅니다. 보증금 × 연 보증료율 × 계약일수 ÷ 365이고, 요율은 연 ${G.premiumRateRangePct.min}~${G.premiumRateRangePct.max}%에서 보증금 구간·아파트 여부·빚 비율(부채비율)로 정해집니다. 공시가격 2억원 빌라에 보증금 2억 5천만원, 2년이면 연 ${okPrem.ratePct}%가 붙어 약 ${won(okPrem.base)}입니다. 연소득 5천만원 이하면 ${P.discountPct.lowIncome}%, 신혼부부면 ${P.discountPct.newlywed}% 할인됩니다(HUG 상품개요, ${P.verifiedOn} 확인).` },
 ];
 ---
 
@@ -70,7 +72,7 @@ const QA = [
       <span class="unit">원</span>
     </div>
     <div class="calc-input-wrap">
-      <label for="hg-senior">선순위채권(근저당 채권최고액 등)</label>
+      <label for="hg-senior">집에 먼저 잡힌 빚 — 근저당 채권최고액(선순위채권)</label>
       <input type="text" inputmode="numeric" id="hg-senior" value="0" data-won />
       <span class="unit">원</span>
     </div>
@@ -78,6 +80,17 @@ const QA = [
       <label for="hg-others">나보다 앞선 다른 세입자 보증금 합계</label>
       <input type="text" inputmode="numeric" id="hg-others" value="0" data-won />
       <span class="unit">원</span>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="hg-term">계약기간</label>
+      <select id="hg-term" data-seg><option value="12">1년</option><option value="24" selected>2년</option></select>
+    </div>
+    <div class="calc-input-wrap">
+      <label for="hg-discount">보증료 할인(하나만)</label>
+      <select id="hg-discount">
+        <option value="none" selected>해당 없음</option>
+        {Object.entries(DISCOUNT_LABEL).map(([k, v]) => <option value={k}>{v} {P.discountPct[k as keyof typeof P.discountPct]}%</option>)}
+      </select>
     </div>
     <div class="result-hero" aria-live="polite" aria-atomic="true" data-dock="hg-hero">
       <p class="label">HUG 전세보증(추산)</p>
@@ -89,10 +102,13 @@ const QA = [
       <div class="stat-chip"><span class="label">{G.ltvLimitPct}% 선(보증금 + 선순위)</span><span class="value" id="hg-ltv">{won(ok.ltvLine)}</span></div>
       <div class="stat-chip"><span class="label">보증한도</span><span class="value" id="hg-limit">{won(ok.guaranteeLimit)}</span></div>
       <div class="stat-chip"><span class="label">보증되는 최대 보증금</span><span class="value" id="hg-max">{won(ok.maxDeposit)}</span></div>
+      <div class="stat-chip"><span class="label">보증료율(빚 비율 <span id="hg-debt">{okPrem.debtRatioPct}</span>%)</span><span class="value" id="hg-rate">연 {okPrem.ratePct}%</span></div>
+      <div class="stat-chip"><span class="label">내는 보증료(추산)</span><span class="value" id="hg-premium">{won(okPrem.total)}</span></div>
       <div class="stat-chip"><span class="label">선순위 한도</span><span class="value" id="hg-senior-line">{won(ok.seniorLine)}</span></div>
       <div class="stat-chip"><span class="label">보증금 상한</span><span class="value" id="hg-cap">{won(ok.depositCap)}</span></div>
     </div>
     <ul class="meta" id="hg-checks"></ul>
+    <p class="meta" id="hg-premium-note"></p>
   </div>
 
   <CalcCta path={Astro.url.pathname} where="next" />

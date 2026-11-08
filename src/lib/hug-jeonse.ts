@@ -5,13 +5,14 @@
  * 부동산 거래신고 등에 관한 법률). 조사: docs/research/2026-11-07-hug-jeonse.md
  *
  * 결과는 '판정'이 아니라 '추산'이다 — HUG 심사는 주택가격 적용 순서·서류·권리관계를 더 본다.
- * 보증료는 계산하지 않는다(구간별 요율표 미확인).
+ * 보증료: hugPremium() — 반환보증 구간별 요율표(2026-11-08 확인). 할인·할증 적용 순서는 원문에 없어 줄을 나눠 보여 준다.
  */
 import r from "../rates/hug-jeonse-2026.json";
 import { addMonths } from "./date-calc";
 
 const G = r.guarantee;
 const D = r.deadlines;
+const P = r.premium;
 
 export type HouseType = "apartment" | "officetel" | "row" | "multi";
 export type PriceBasis = "public" | "market";
@@ -77,6 +78,94 @@ export function hugGuarantee(x: GuaranteeInput): GuaranteeResult {
     maxDeposit: seniorOk ? Math.min(depositCap, guaranteeLimit) : 0,
   };
 }
+
+/* ── 보증료 ─────────────────────────────────────────── */
+
+export type PremiumDiscount = "none" | "lowIncome" | "multiChild" | "elderly" | "singleElderly" | "newlywed" | "singleParent" | "disabled";
+
+export interface PremiumInput {
+  type: HouseType;
+  deposit: number;
+  /** hugGuarantee() 의 seniorTotal · housePrice */
+  seniorTotal: number;
+  housePrice: number;
+  /** 보증기간(일). 2년 계약이면 730 */
+  days: number;
+  /** 사회배려계층 할인 하나(중복 불가) */
+  discount?: PremiumDiscount;
+  /** 전세안심보증이면 전세대출 금액(대출보증 부분 보증료) */
+  loan?: number;
+  /** 단독·다가구가 타전세계약확인서를 내는가 — 안 내면 그 구간 최고요율 */
+  othersConfirmed?: boolean;
+}
+
+export interface PremiumResult {
+  /** 부채비율(%) 소수 한 자리 — 표시용 */
+  debtRatioPct: number;
+  /** 0: 70% 이하, 1: 80% 이하, 2: 80% 초과 */
+  debtBand: 0 | 1 | 2;
+  /** 연 요율, 1/1000 % 단위 정수(154 = 연 0.154%) */
+  rateMilli: number;
+  ratePct: number;
+  /** 요율 × 보증금 × 기간 */
+  base: number;
+  surchargeApplied: boolean;
+  /** 할증 금액(base × 10%) */
+  surcharge: number;
+  discountPct: number;
+  /** (base + 할증) × 할인율 — 적용 순서는 추산 */
+  discountAmount: number;
+  /** 전세안심보증 대출보증 부분 */
+  loanPart: number;
+  /** 반환보증 부분 + 할증 − 할인 + 대출보증 부분 */
+  total: number;
+  /** 연말정산 세액공제 대상 보증금 한도 안인가 */
+  taxCreditOk: boolean;
+}
+
+export function hugPremium(x: PremiumInput): PremiumResult {
+  const T = P.rateTable;
+  const band = T.bandMaxWon.findIndex((m) => x.deposit <= m);
+  const row = band === -1 ? T.bandMaxWon.length : band;
+  const ltvLine = Math.floor((x.housePrice * G.ltvLimitPct) / 100);
+  const debt = x.seniorTotal + x.deposit;
+  // 나눗셈 대신 정수 교차곱 — 경계(정확히 70%·80%)에서 부동소수 오차를 피한다
+  const debtBand: 0 | 1 | 2 = debt * 100 <= ltvLine * T.debtRatioBandsPct[0] ? 0 : debt * 100 <= ltvLine * T.debtRatioBandsPct[1] ? 1 : 2;
+  const table = x.type === "apartment" ? T.rateMilliPct.apartment : T.rateMilliPct.other;
+  const maxRate = x.type === "multi" && x.othersConfirmed === false;
+  const rateMilli = table[row][maxRate ? 2 : debtBand];
+  const base = Math.floor((x.deposit * rateMilli * x.days) / (100_000 * 365));
+  const surchargeApplied = x.seniorTotal * 100 > ltvLine * P.surchargeSeniorShareOfLtvPct;
+  const surcharge = surchargeApplied ? Math.floor((base * P.surchargePct) / 100) : 0;
+  const discountPct = !x.discount || x.discount === "none" ? 0 : P.discountPct[x.discount];
+  const discountAmount = Math.floor(((base + surcharge) * discountPct) / 100);
+  const loanPart = x.loan ? Math.floor((x.loan * P.loanPartRateMilliPct * x.days) / (100_000 * 365)) : 0;
+  return {
+    debtRatioPct: ltvLine > 0 ? Math.round((debt * 1000) / ltvLine) / 10 : 0,
+    debtBand,
+    rateMilli,
+    ratePct: rateMilli / 1000,
+    base,
+    surchargeApplied,
+    surcharge,
+    discountPct,
+    discountAmount,
+    loanPart,
+    total: base + surcharge - discountAmount + loanPart,
+    taxCreditOk: x.deposit <= P.taxCreditDepositMax,
+  };
+}
+
+/** 할인 이름(사회배려계층) — 조건은 원문 그대로 */
+export const DISCOUNT_LABEL: Record<Exclude<PremiumDiscount, "none">, string> = {
+  lowIncome: `연소득(배우자 포함) ${P.lowIncomeMax / 10_000_000}천만원 이하`,
+  multiChild: `미성년 자녀 ${P.multiChildMin}명 이상`,
+  elderly: `만 ${P.elderlyAge}세 이상`,
+  singleElderly: `혼자 사는 만 ${P.elderlyAge}세 이상`,
+  newlywed: `신혼부부(혼인 ${P.newlywedMarriedYearsMax}년 이내, 합산 연소득 ${P.newlywedIncomeMax / 10_000_000}천만원 이하)`,
+  singleParent: "한부모가족",
+  disabled: "장애인 가구",
+};
 
 /* ── 일정 ─────────────────────────────────────────────── */
 

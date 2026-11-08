@@ -6,7 +6,13 @@
  * 가입 가능 여부는 값이 다 모이면 hugGuarantee() 가 계산한다. 대화는 이 탭의 메모리에만 있고 서버에 남지 않는다.
  * 광고(AdSlot) 옆에 두지 않는다.
  */
-const CHIPS = ["전세보증 가입 조건이 뭐예요?", "빌라도 반환보증 되나요?", "버팀목 대출 소득 기준은요?", "집주인이 보증금을 안 돌려줘요"];
+// 처음 화면은 "얼마나 아세요"부터 묻는다(2026-11-08 사용자: 처음 접하는 사람은 너무 몰라 아는 정도부터 봐야 한다).
+// 고른 뒤의 안내 문장과 추천 질문은 scripts/hug-chat.ts 의 LEVELS.
+const LEVELS = [
+  { id: "new", label: "처음 들어봐요" },
+  { id: "some", label: "조금 알아요" },
+  { id: "ready", label: "가입하려고 계산해 보는 중이에요" },
+];
 ---
 
 <section class="hug-chat" aria-labelledby="hug-chat-h">
@@ -16,15 +22,17 @@ const CHIPS = ["전세보증 가입 조건이 뭐예요?", "빌라도 반환보�
   </header>
   <div class="hc-log" id="hc-log" role="log" aria-live="polite">
     <div class="hc-msg hc-bot">
-      <p>안녕하세요. HUG 전세보증(반환보증·전세안심보증)과 버팀목 전세대출에 대해 물어보세요. 보증금·집값을 알려 주시면 반환보증 가입 조건에 맞는지도 계산해 드려요.</p>
+      <p>안녕하세요. 전세보증(흔히 '전세보증보험')과 버팀목 전세대출을 쉬운 말로 알려 드려요. 가입이 되는지, 보증료가 얼마인지도 계산해 드려요.</p>
+      <p>먼저 하나만 여쭤볼게요. 전세보증을 얼마나 알고 계세요?</p>
     </div>
   </div>
-  <div class="hc-chips" id="hc-chips">
-    {CHIPS.map((c) => <button type="button" data-q={c}>{c}</button>)}
+  <div class="hc-chips hc-levels" id="hc-levels">
+    {LEVELS.map((l) => <button type="button" data-level={l.id}>{l.label}</button>)}
   </div>
+  <div class="hc-chips" id="hc-chips" hidden></div>
   <form class="hc-form" id="hc-form">
     <label class="sr-only" for="hc-q">질문</label>
-    <textarea id="hc-q" rows="1" maxlength="500" enterkeyhint="send" placeholder="예: 수도권 빌라 보증금 2억인데 보증 될까요?"></textarea>
+    <textarea id="hc-q" rows="1" maxlength="500" enterkeyhint="send" placeholder="편하게 물어보세요. 예: 보증보험은 꼭 들어야 해요?"></textarea>
     <button type="submit" id="hc-go" aria-label="보내기">보내기</button>
   </form>
   <p class="hc-meta">HUG·주택도시기금·법령에서 JU포켓이 확인한 자료로만 답하고, 답마다 출처를 붙입니다. 답하지 못한 질문만 날짜와 함께 글감으로 저장하고 누가 물었는지는 저장하지 않습니다. 이름·주소·주민번호는 적지 마세요(<a href="/privacy/#ask-ai">개인정보 처리방침</a>).</p>
@@ -152,7 +160,12 @@ const CHIPS = ["전세보증 가입 조건이 뭐예요?", "빌라도 반환보�
   .hc-chips[hidden] {
     display: none;
   }
-  .hc-chips button {
+  .hc-chips.hc-levels :global(button) {
+    font-weight: 700;
+    color: var(--brand);
+    border-color: var(--brand);
+  }
+  .hc-chips :global(button) {
     min-height: 34px;
     padding: 0 0.75rem;
     font: inherit;

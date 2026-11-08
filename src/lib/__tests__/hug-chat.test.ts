@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cleanHistory, numbersGrounded, readModel, checkAnswer, sourcesFor, SYSTEM, type Msg } from "../hug-chat-core";
+import { cleanHistory, numbersGrounded, readModel, checkAnswer, sourcesFor, levelOf, LEVEL_HINT, SYSTEM, type Msg } from "../hug-chat-core";
 import { KB, eok } from "../hug-kb";
 import { hugGuarantee } from "../hug-jeonse";
 import { won } from "../won";
@@ -66,6 +66,12 @@ describe("readModel", () => {
   it("말하지 않은 금액이 들어오면 계산하지 않는다", () => {
     expect(readModel({ reply: "x", check: { ...base, price: 6e8 } }, h)?.check).toBeNull();
   });
+  it("집값을 근저당 칸에 넣으면 버리고 다시 시키게 표시한다", () => {
+    const h2 = [user("수도권 빌라, 보증금 2억, 공시가격 1억 8천, 근저당 없어요")];
+    const out = readModel({ reply: "x", check: { type: "row", capital: true, deposit: 2e8, senior: 1.8e8, basis: "public", price: 1.8e8 } }, h2);
+    expect(out?.check).toBeNull();
+    expect(out?.checkRejected).toBe(true);
+  });
   it("값이 빠지면 계산하지 않는다", () => {
     expect(readModel({ reply: "x", check: { ...base, type: undefined } }, h)?.check).toBeNull();
   });
@@ -81,11 +87,46 @@ describe("checkAnswer — 숫자는 hugGuarantee 그대로", () => {
     const a = checkAnswer(x);
     expect(g.ok).toBe(true);
     expect(a.text).toContain("맞는 것으로 추산");
-    expect(a.lines.find((l) => l.label.startsWith("이 조건에서"))?.value).toBe(won(g.maxDeposit));
+    expect(a.lines.find((l) => l.label.startsWith("이 집에서"))?.value).toBe(won(g.maxDeposit));
+  });
+  it("가입 조건에 맞으면 보증료를 붙인다 — 2년 기본, 할인 안내", () => {
+    const a = checkAnswer({ type: "row", capital: true, deposit: 2e8, senior: 0, basis: "public", price: 1.8e8 });
+    expect(a.lines.find((l) => l.label.startsWith("보증료(2년"))?.value).toBe(won(736_000));
+    expect(a.text).toContain("2년으로 계산");
+    expect(a.text).toContain("할인 대상이면");
+    expect(a.numbers).toContain(736_000);
+  });
+  it("할인을 말했으면 할인 줄과 합계", () => {
+    const a = checkAnswer({ type: "row", capital: true, deposit: 2e8, senior: 0, basis: "public", price: 1.8e8, discount: "newlywed", months: 12 });
+    expect(a.lines.some((l) => l.label.startsWith("할인 40%"))).toBe(true);
+    expect(a.lines.find((l) => l.label === "내는 보증료(추산)")?.value).toBe(won(368_000 - 147_200));
   });
   it("90% 초과면 이유를 말한다", () => {
     const a = checkAnswer({ type: "row", capital: true, deposit: 2e8, senior: 1e8, basis: "public", price: 2e8 });
     expect(a.text).toContain("90%를 넘어요");
+  });
+});
+
+describe("readModel — 보증료 선택 값", () => {
+  const h = [user("서울 아파트 보증금 3억, 시세 5억, 근저당 1억, 신혼이고 대출 2억이에요")];
+  const base = { type: "apartment", capital: true, deposit: 3e8, senior: 1e8, basis: "market", price: 5e8 };
+  it("할인 키·기간·말한 대출금만 받는다", () => {
+    expect(readModel({ reply: "x", check: { ...base, discount: "newlywed", months: 24, loan: 2e8 } }, h)?.check).toMatchObject({ discount: "newlywed", months: 24, loan: 2e8 });
+    const bad = readModel({ reply: "x", check: { ...base, discount: "vip", months: 7, loan: 1.5e8 } }, h)?.check;
+    expect(bad?.discount).toBeUndefined();
+    expect(bad?.months).toBeUndefined();
+    expect(bad?.loan).toBeUndefined();
+  });
+});
+
+describe("수준(얼마나 아세요)", () => {
+  it("알려진 값만 받는다", () => {
+    expect(levelOf("new")).toBe("new");
+    expect(levelOf("expert")).toBeNull();
+    expect(Object.keys(LEVEL_HINT)).toEqual(["new", "some", "ready"]);
+  });
+  it("쉬운 말 규칙이 SYSTEM 에 있다", () => {
+    expect(SYSTEM).toContain("집에 먼저 잡힌 빚");
   });
 });
 

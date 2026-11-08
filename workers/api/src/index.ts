@@ -157,7 +157,8 @@ export default {
     if (req.method === "POST" && pathname === "/push/subscribe") return subscribe(req, env, ctx);
     if (req.method === "POST" && pathname === "/push/unsubscribe") return unsubscribe(req, env);
     if (req.method === "POST" && pathname === "/api/hug-chat") {
-      const r = await hugChat(await readBody(req), env, { ip: req.headers.get("CF-Connecting-IP") ?? "", day: todayKst(), waitUntil: (p) => ctx.waitUntil(p) });
+      const debug = !!env.EVAL_KEY && req.headers.get("X-Eval-Key") === env.EVAL_KEY;
+      const r = await hugChat(await readBody(req), env, { ip: req.headers.get("CF-Connecting-IP") ?? "", day: todayKst(), waitUntil: (p) => ctx.waitUntil(p), debug });
       return json(req, r.body, r.status);
     }
     if (req.method === "POST" && pathname === "/api/chat/eval") {
