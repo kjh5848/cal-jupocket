@@ -39,38 +39,21 @@
 <script src="../scripts/hug-chat.ts"></script>
 
 <style>
+  /* 배치는 카카오톡 대화방, 색은 JU포켓 토큰(global.css) — 라이트·다크가 토큰으로 따라간다 */
   .hc-app {
-    --chat-bg: #bacee0;
-    --bubble: #ffffff;
-    --bubble-text: #191919;
-    --me: #fee500;
-    --me-text: #191919;
-    --bar: #ffffff;
-    --bar-line: #e3e6ea;
-    --sub: #4a5563;
+    --chat-bg: var(--bg);
+    --bubble: var(--surface);
+    --bubble-text: var(--text);
+    --me: var(--brand);
+    --me-text: var(--surface);
+    --bar: var(--surface);
+    --bar-line: var(--rule);
+    --sub: var(--muted);
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
     background: var(--chat-bg);
     color: var(--bubble-text);
-  }
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme="light"])) .hc-app {
-      --chat-bg: #1b222d;
-      --bubble: #2a323f;
-      --bubble-text: #eef1f5;
-      --bar: #232a35;
-      --bar-line: #343d4b;
-      --sub: #aab4c2;
-    }
-  }
-  :global(:root[data-theme="dark"]) .hc-app {
-    --chat-bg: #1b222d;
-    --bubble: #2a323f;
-    --bubble-text: #eef1f5;
-    --bar: #232a35;
-    --bar-line: #343d4b;
-    --sub: #aab4c2;
   }
   .sr-only {
     position: absolute;
@@ -132,8 +115,8 @@
     margin: 0.25rem auto 1rem;
     padding: 0.25rem 0.8rem;
     font-size: var(--t-xs);
-    color: #fff;
-    background: rgb(0 0 0 / 0.18);
+    color: var(--muted);
+    background: var(--surface-2);
     border-radius: var(--r-pill);
   }
 
@@ -169,7 +152,7 @@
     height: 2.5rem;
     font-size: 0.8rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--surface);
     background: var(--brand);
     border-radius: var(--r-lg);
   }
@@ -222,13 +205,13 @@
     font: inherit;
     text-align: left;
     color: var(--bubble-text);
-    background: color-mix(in srgb, var(--chat-bg) 22%, var(--bubble));
+    background: var(--surface-2);
     border: 0;
     border-radius: var(--r-md);
     cursor: pointer;
   }
   .hc-log :global(.hc-opts button:hover) {
-    background: color-mix(in srgb, var(--chat-bg) 40%, var(--bubble));
+    background: var(--brand-wash);
   }
   .hc-log :global(.hc-opts b) {
     font-weight: 700;
@@ -281,7 +264,7 @@
   }
   .hc-log :global(.hc-summary) {
     padding: 0.6rem 0.75rem;
-    background: color-mix(in srgb, var(--me) 28%, var(--bubble));
+    background: var(--brand-wash);
     border-radius: var(--r-md);
   }
   .hc-log :global(.hc-plan) {
