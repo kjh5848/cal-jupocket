@@ -12,7 +12,7 @@
  * GA4: hug_chat_stage · hug_plan_done · hug_guide(id) · hug_term · hug_chat_send · hug_chat_answer · hug_chat_error · hug_chat_reset
  */
 import { PUSH_API } from "../data/push";
-import { plan, nextItem, localAnswer, findTerm, GUIDES, HOUSE_GUIDES, CONTACT, type Guide, type PlanItem } from "../lib/jeonse-guide";
+import { plan, nextItem, localAnswer, findTerm, termsIn, GUIDES, HOUSE_GUIDES, CONTACT, type Guide, type PlanItem } from "../lib/jeonse-guide";
 import { toDay, fromDay, addMonths } from "../lib/date-calc";
 import { setupPush } from "./push-reminders";
 import { checkAnswer, sourcesFor, type CheckInput } from "../lib/hug-chat-core";
@@ -252,7 +252,10 @@ function explainQuiz(q: QuizQ, n: number) {
   if (q.plain) b.append(el("p", q.plain));
   for (const name of q.terms) {
     const t = findTerm(name);
-    if (t) b.append(el("p", t.t, "hc-sub"), el("p", t.d));
+    if (t) {
+      b.append(el("p", t.t, "hc-sub"), el("p", t.d));
+      if (t.ex) b.append(exEl(t.ex));
+    }
   }
   const src = q.src ? [q.src] : q.terms.map((x) => findTerm(x)).filter((t) => !!t).slice(0, 1).map((t) => ({ name: "원문", url: t!.src }));
   if (src.length) b.append(sourcesEl(src));
@@ -260,7 +263,8 @@ function explainQuiz(q: QuizQ, n: number) {
   remember(q.ask, b.textContent ?? "");
   track("hug_quiz_unknown", { id: q.id });
   scrollDown();
-  showChips([{ label: n + 1 < QUIZ.length ? "이해했어요, 다음" : "이해했어요", primary: true, run: () => (say("이해했어요"), askQuiz(n + 1)) }]);
+  const cont: Chip[] = [{ label: n + 1 < QUIZ.length ? "이해했어요, 다음" : "이해했어요", primary: true, run: () => (say("이해했어요"), askQuiz(n + 1)) }];
+  showChips([...cont, ...termChips(b.textContent ?? "", q.terms, cont)]);
 }
 function quizDone() {
   level = unknown.length >= 3 ? "new" : unknown.length >= 1 ? "some" : "ready";
@@ -351,15 +355,35 @@ function showGuide(g: Guide) {
   showChips(next);
 }
 
-function showTerm(name: string, fromUser?: string) {
+/**
+ * 설명 속에 또 다른 용어(예: 선순위채권 설명 속 "을구")가 나오면 그 뜻을 묻는 버튼을 단다.
+ * 누르면 뜻을 보여 주고, 하던 흐름의 버튼(next)으로 돌아온다.
+ */
+/** "예를 들면" 상자 */
+function exEl(text: string) {
+  const box = el("div", undefined, "hc-ex");
+  box.append(el("span", "예를 들면", "hc-ex-h"), el("p", text));
+  return box;
+}
+function termChips(text: string, exclude: string[], next: Chip[]): Chip[] {
+  return termsIn(text)
+    .filter((n) => !exclude.includes(n) && n !== "보증금")
+    .slice(0, 4)
+    .map((n) => ({ label: `'${n.split(/[(·]/)[0].trim()}' 뜻`, run: () => showTerm(n, undefined, next, [...exclude, n]) }));
+}
+function showTerm(name: string, fromUser?: string, next: Chip[] = [], seen: string[] = []) {
   const t = findTerm(name);
   if (!t) return;
-  if (!fromUser) say(`'${t.t.split("(")[0]}' 뜻이 뭐예요?`);
+  if (!fromUser) say(`'${t.t.split(/[(·]/)[0].trim()}' 뜻이 뭐예요?`);
   const b = bubble("bot");
-  b.append(el("p", t.t, "hc-sub"), el("p", t.d), sourcesEl([{ name: "원문", url: t.src }]));
+  b.append(el("p", t.t, "hc-sub"), el("p", t.d));
+  if (t.ex) b.append(exEl(t.ex));
+  b.append(sourcesEl([{ name: "원문", url: t.src }]));
   scrollDown();
   remember(fromUser ?? `${t.t} 뜻`, `${t.t}: ${t.d}`);
   track("hug_term");
+  const more = termChips(t.d, [...seen, t.t], next);
+  if (more.length || next.length) showChips([...next, ...more]);
 }
 
 /* ── 일정 짜기 ────────────────────────────────────────── */

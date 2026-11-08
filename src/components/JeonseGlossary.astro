@@ -31,6 +31,7 @@ const ld = {
               <dt>{x.t}</dt>
               <dd>
                 {x.d}{" "}
+                {x.ex && <span class="glossary-ex">예를 들면, {x.ex} </span>}
                 <a href={x.src} rel="noopener" target="_blank" class="glossary-src">
                   출처
                 </a>
@@ -73,6 +74,12 @@ const ld = {
   .glossary dd {
     margin: 0.25rem 0 0;
     line-height: 1.7;
+  }
+  .glossary-ex {
+    display: block;
+    margin: 0.3rem 0;
+    font-size: var(--t-sm);
+    color: var(--muted);
   }
   .glossary-src {
     font-size: var(--t-sm);

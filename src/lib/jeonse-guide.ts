@@ -224,7 +224,8 @@ export type LocalAnswer = { kind: "term"; term: Term } | { kind: "guide"; guide:
 /** 용어 뜻을 묻거나 상황을 말하면 자료에서 먼저 답한다. 없으면 null(→ AI) */
 export function localAnswer(q: string): LocalAnswer | null {
   const s = q.trim();
-  const asksMeaning = /뭐|뜻|무슨|의미|란\b|이란|가 뭔|이 뭔/.test(s);
+  // "보증금 못 받으면 뭐 해요?" 같은 상황 질문을 용어 질문으로 읽지 않게, '뭐 해·뭐부터'는 뺀다
+  const asksMeaning = /뭐|뜻|무슨|의미|란\b|이란|가 뭔|이 뭔/.test(s) && !/뭐\s*(?:해|하|를|부터)/.test(s);
   const terms = termNames.filter((x) => x.keys.some((k) => s.includes(k)));
   if (asksMeaning && terms.length) {
     // 가장 길게 맞은 이름(예: "전입세대확인서" 가 "전입신고" 보다 우선)

@@ -70,3 +70,25 @@ describe("글로 물을 때 — 자료에서 먼저", () => {
     for (const t of TERMS) expect(termsIn(t.t).length, t.t).toBeGreaterThan(0);
   });
 });
+
+describe("용어 — 예시와 아래 단어(2026-11-08)", () => {
+  it("모든 용어에 예를 들면이 있다", () => {
+    for (const t of TERMS) expect(t.ex, t.t).toBeTruthy();
+  });
+  it("설명 속 어려운 단어도 용어로 잡힌다(근저당 → 담보·을구·채권)", () => {
+    const g = TERMS.find((t) => t.t.startsWith("근저당"))!;
+    expect(termsIn(g.d)).toEqual(expect.arrayContaining(["담보", "을구"]));
+  });
+  it("기초 단어 뜻을 바로 답한다", () => {
+    expect(localAnswer("을구가 뭐야?")).toMatchObject({ kind: "term", term: { t: "을구" } });
+    expect(localAnswer("담보가 무슨 뜻이에요")).toMatchObject({ kind: "term", term: { t: "담보" } });
+  });
+  it("'뭐 해야' 상황 질문은 용어로 읽지 않는다", () => {
+    expect(localAnswer("보증금 못 받으면 뭐 해야 해요?")).not.toMatchObject({ kind: "term" });
+  });
+  it("보증한도 예시는 rates 로 계산한 값이다", () => {
+    const t = TERMS.find((x) => x.t === "보증한도")!;
+    expect(t.ex).toContain(`${r.guarantee.ltvLimitPct}%`);
+    expect(t.ex).toContain("2억 2,000만원");
+  });
+});
