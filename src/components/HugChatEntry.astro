@@ -1,0 +1,71 @@
+---
+/**
+ * 글 페이지 안의 "HUG 전세보증 AI와 대화하기" 입구 — 대화는 /jeonse-chat/ 전체 화면에서 한다.
+ * (2026-11-08: 글 안에 끼운 채팅은 좁고 안쪽 스크롤이 생겨 Claude·GPT 같은 별도 화면으로 옮김)
+ */
+const STARTS = [
+  { s: "calc", label: "보증 되는지 계산" },
+  { s: "contract", label: "계약 날짜로 일정 짜기" },
+  { s: "trouble", label: "집주인과 문제가 생겼어요" },
+];
+---
+
+<section class="hce" aria-labelledby="hce-h">
+  <p class="hce-h" id="hce-h">HUG 전세보증 AI와 대화하기</p>
+  <p class="hce-p">어디서부터 알아볼지 몰라도 괜찮아요. 아는 만큼 여쭤보고 용어 설명, 보증 가입·보증료 계산, 할 일 날짜와 알림까지 대화로 안내해요. 로그인은 필요 없어요.</p>
+  <a class="hce-go" href="/jeonse-chat/">대화 시작하기 →</a>
+  <div class="hce-chips">
+    {STARTS.map((x) => <a href={`/jeonse-chat/?s=${x.s}`}>{x.label}</a>)}
+  </div>
+</section>
+
+<style>
+  .hce {
+    display: grid;
+    gap: 0.7rem;
+    margin: 1.25rem 0;
+    padding: 1.1rem 1rem;
+    background: var(--accent-bg);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-lg);
+  }
+  .hce-h {
+    margin: 0;
+    font-size: var(--t-lg);
+    font-weight: 800;
+  }
+  .hce-p {
+    margin: 0;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+  .hce-go {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    min-height: 46px;
+    padding: 0 1.3rem;
+    font-weight: 700;
+    color: var(--surface);
+    text-decoration: none;
+    background: var(--brand);
+    border-radius: var(--r-pill);
+  }
+  .hce-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  .hce-chips a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 0 0.9rem;
+    font-size: var(--t-sm);
+    color: var(--text);
+    text-decoration: none;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-pill);
+  }
+</style>

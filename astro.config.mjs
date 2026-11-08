@@ -83,7 +83,8 @@ export default defineConfig({
         !page.includes("/oauth/") &&
         !ARTBOARD.test(page) &&
         !page.includes("/link/") &&
-        !page.includes("/design/"),
+        !page.includes("/design/") &&
+        !page.includes("/jeonse-chat/"),
       serialize(item) {
         const date = DATES[new URL(item.url).pathname];
         if (date) item.lastmod = new Date(`${date}T00:00:00Z`).toISOString();
