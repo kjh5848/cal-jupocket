@@ -1,6 +1,6 @@
 {
   "verifiedOn": "2026-11-07",
-  "note": "HUG 전세보증금반환보증·전세안심보증 가입 조건과 전세 계약 일정의 법정·HUG 기한. 조사 문서 docs/research/2026-11-07-hug-jeonse.md. 2026-11-08: 보증료 할인·할증, 전세안심보증 대출보증 한도, 버팀목 요건·한도·금리를 같은 조사 문서(출처 C·D)에서 옮김 — AI 상담(HUG 전세 대화) 근거. 2026-11-08: 반환보증 구간별 보증료율 표(전세반환보증·전세안심보증 상품개요 같은 표)와 할인 조건을 원문에서 옮김 — 보증료를 계산한다.",
+  "note": "HUG 전세보증금반환보증·전세안심보증 가입 조건과 전세 계약 일정의 법정·HUG 기한. 조사 문서 docs/research/2026-11-07-hug-jeonse.md. 2026-11-08: 보증료 할인·할증, 전세안심보증 대출보증 한도, 버팀목 요건·한도·금리를 같은 조사 문서(출처 C·D)에서 옮김 — AI 상담(HUG 전세 대화) 근거. 2026-11-08: 반환보증 구간별 보증료율 표(전세반환보증·전세안심보증 상품개요 같은 표)와 할인 조건을 원문에서 옮김 — 보증료를 계산한다. 2026-11-08: 집주인 연락 기록 조언 — 통신비밀보호법 제3조 제1항(공개되지 아니한 타인 간의 대화 녹음 금지, 2026-10-02 시행본)과 대법원 2006도4981(대화에 참여한 사람의 녹음은 위 조항 위반이 아님) 원문 확인.",
   "sources": {
     "returnGuarantee": "https://www.khug.or.kr/hug/web/ig/dr/igdr000001.jsp",
     "returnGuaranteeDocs": "https://www.khug.or.kr/hug/web/ig/dr/igdr000002.jsp",
@@ -11,7 +11,13 @@
     "leaseProtectionAct": "https://www.law.go.kr/법령/주택임대차보호법",
     "leaseReportAct": "https://www.law.go.kr/법령/부동산거래신고등에관한법률",
     "beotimmokSteps": "https://nhuf.molit.go.kr/FP/FP05/FP0502/FP05020102.jsp",
-    "accidentSteps": "https://www.khug.or.kr/hug/web/ge/er/geer001200.jsp"
+    "accidentSteps": "https://www.khug.or.kr/hug/web/ge/er/geer001200.jsp",
+    "commSecrecyAct": "https://www.law.go.kr/법령/통신비밀보호법/제3조",
+    "recordingPrecedent": "https://www.law.go.kr/판례/(2006도4981)",
+    "houseChoose": "https://www.khug.or.kr/jeonse/web/s03/s030101.jsp",
+    "houseSearch": "https://www.khug.or.kr/jeonse/web/s03/s030102.jsp",
+    "houseCheck": "https://www.khug.or.kr/jeonse/web/s03/s030103.jsp",
+    "housePrice": "https://www.khug.or.kr/jeonse/web/s03/s030104.jsp"
   },
   "guarantee": {
     "depositCap": {
@@ -153,5 +159,11 @@
     "ratePctMin": 2.5,
     "ratePctMax": 3.5
   },
-  "docsValidMonths": 1
+  "docsValidMonths": 1,
+  "houseHunting": {
+    "verifiedOn": "2026-11-08",
+    "avoidDepositOverPricePct": 80,
+    "minHousingAreaM2": 14,
+    "note": "HUG 전세사기예방센터 \"전세계약 체결 전 유의사항\" 4쪽(어떤 집에 살까·내 집은 어디에·이 집 괜찮을까·이 집 얼마예요). 보증금이 매매 시세의 80%를 넘으면 피하라는 HUG 권고, 최저주거기준 14㎡. 같은 쪽의 전월세전환율 2.75%는 2021년 값이라 쓰지 않는다(현행은 guarantee.rentConversionPct 와 별개)."
+  }
 }

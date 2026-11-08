@@ -7,58 +7,8 @@
  * 숫자는 rates(hug-jeonse-2026.json)에서만 꺼낸다 — 손으로 적지 않는다.
  */
 import r from "../rates/hug-jeonse-2026.json";
+import { TERM_GROUPS as groups } from "../data/jeonse-terms";
 
-const G = r.guarantee;
-const D = r.deadlines;
-const S = r.sources;
-
-interface Term {
-  t: string;
-  d: string;
-  src: string;
-}
-const groups: { h: string; terms: Term[] }[] = [
-  {
-    h: "보증·대출",
-    terms: [
-      { t: "전세보증금반환보증(전세반환보증)", d: "계약이 끝났는데 집주인이 보증금을 돌려주지 못하면 HUG(주택도시보증공사)가 대신 돌려주는 보증입니다. 세입자가 가입합니다.", src: S.returnGuarantee },
-      { t: "전세안심보증", d: "보증금 반환 보증에 전세대출 상환 보증을 묶은 상품입니다. 집주인이 돌려주지 못하면 HUG가 세입자에게 보증금을, 은행에 대출금을 대신 갚습니다.", src: S.loanGuarantee },
-      { t: "버팀목 전세자금", d: "주택도시기금이 빌려주는 전세대출입니다. 무주택 세대주이고 소득·자산 조건을 맞춰야 합니다. 대출의 담보로 HUG·HF 보증을 함께 씁니다.", src: S.beotimmok },
-      { t: "보증한도", d: `HUG가 보증해 줄 수 있는 최대 금액입니다. 주택가격의 ${G.ltvLimitPct}%에서 선순위채권을 뺀 금액입니다.`, src: S.returnGuarantee },
-      { t: "선순위채권", d: "내 보증금보다 먼저 돌려받을 권리가 있는 빚입니다. 대표적인 것이 등기부 을구의 근저당입니다.", src: S.returnGuarantee },
-      { t: "공시가격 × 140%", d: `감정평가서나 시세가 없을 때 HUG는 공시가격의 ${G.publicPriceMultiplierPct}%를 주택가격으로 봅니다. 공시가격은 부동산공시가격알리미(realtyprice.kr)에서 찾습니다.`, src: S.returnGuarantee },
-      { t: "사전한도심사", d: `계약 시작 ${D.preLimitReviewDaysBefore}일 전까지 안심전세앱에서 보증 한도를 미리 확인하는 절차입니다.`, src: S.returnGuarantee },
-    ],
-  },
-  {
-    h: "집 서류",
-    terms: [
-      { t: "등기사항전부증명서(등기부등본)", d: "집의 주인과 빚이 적힌 공적 장부입니다. 표제부(주소·면적), 갑구(소유자·압류·가압류·경매), 을구(근저당·전세권)로 나뉩니다.", src: S.registryCheck },
-      { t: "근저당 · 채권최고액", d: "집을 담보로 잡힌 빚입니다. 등기부 을구에 ‘채권최고액’으로 적혀 있고, 보증 계산에서는 선순위채권으로 들어갑니다.", src: S.registryCheck },
-      { t: "건축물대장", d: "건물의 용도·면적과 위반건축물 여부가 적힌 서류입니다. 아파트가 아니면 위반건축물일 때 보증을 받을 수 없습니다.", src: S.returnGuaranteeDocs },
-      { t: "전입세대확인서", d: "그 주소에 전입신고된 세대를 보여 주는 서류입니다. 주민센터에 가서 발급받습니다.", src: S.returnGuaranteeDocs },
-    ],
-  },
-  {
-    h: "내 권리",
-    terms: [
-      { t: "전입신고", d: "이사한 집 주소로 주민등록을 옮기는 신고입니다. 집에 들어가 살면서(인도) 전입신고를 하면 다음 날부터 대항력이 생깁니다.", src: S.leaseProtectionAct },
-      { t: "확정일자", d: "계약서에 받는 날짜 도장입니다. 전입신고·입주와 확정일자를 갖추면 우선변제권이 생깁니다. 전입신고 때 계약서를 내면 확정일자를 받은 것으로 봅니다.", src: S.leaseProtectionAct },
-      { t: "대항력", d: "집이 팔리거나 주인이 바뀌어도 새 주인에게 내 임대차 계약을 그대로 주장할 수 있는 힘입니다.", src: S.leaseProtectionAct },
-      { t: "우선변제권", d: "집이 경매·공매로 넘어갈 때 뒤 순위 채권자보다 먼저 보증금을 돌려받을 권리입니다.", src: S.leaseProtectionAct },
-      { t: "임대차 신고", d: `전월세 계약을 계약일부터 ${D.leaseReportDays}일 안에 신고하는 제도입니다. 전입신고를 하면 임대차 신고를 한 것으로 봅니다.`, src: S.leaseReportAct },
-    ],
-  },
-  {
-    h: "계약 끝날 때",
-    terms: [
-      { t: "계약갱신요구권", d: "세입자가 한 번, 2년 더 살겠다고 요구할 수 있는 권리입니다. 만료 6개월 전부터 2개월 전까지 요구합니다.", src: S.leaseProtectionAct },
-      { t: "묵시적 갱신", d: `집주인이 만료 ${D.renewalNoticeFromMonths}~${D.renewalNoticeToMonths}개월 전에, 세입자가 만료 ${D.renewalNoticeToMonths}개월 전까지 거절·변경을 알리지 않으면 같은 조건으로 계약이 자동 연장되는 것입니다. 이때 세입자는 언제든 해지를 알릴 수 있고 ${D.terminationEffectMonths}개월 뒤 효력이 생깁니다.`, src: S.leaseProtectionAct },
-      { t: "보증사고", d: `계약이 끝나고 ${D.accidentAfterMonths}개월이 지나도 보증금을 돌려받지 못한 상태입니다. 이때부터 HUG에 보증 이행을 청구합니다.`, src: S.accidentClaim },
-      { t: "임차권등기명령", d: "보증금을 못 받은 채 이사해야 할 때 법원 명령으로 등기부에 임차권을 남기는 절차입니다. 등기가 되면 이사해도 대항력·우선변제권이 유지됩니다. HUG 이행청구에도 필요합니다.", src: S.accidentClaim },
-    ],
-  },
-];
 
 const ld = {
   "@context": "https://schema.org",

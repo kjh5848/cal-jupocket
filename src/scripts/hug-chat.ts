@@ -1,10 +1,18 @@
 /**
- * HUG 전세 상담 — components/HugChat.astro 의 동작.
- * 대화는 이 탭 메모리에만 두고, 보낼 때마다 최근 대화를 서버에 함께 보낸다(서버는 저장하지 않는다).
- * 처음에는 "전세보증을 얼마나 아세요"를 묻고(LEVELS), 고른 수준을 서버에 함께 보내 답의 깊이를 맞춘다.
- * GA4: hug_chat_level(level) · hug_chat_send · hug_chat_answer(kind) · hug_chat_error · hug_chat_reset
+ * 전세 도우미 채팅 — components/HugChat.astro 의 동작(2026-11-08 개편).
+ *
+ * 1. 처음에 "지금 어느 단계세요?"를 묻는다(집 보는 중 / 계약함 / 살고 있음 / 문제가 생김)
+ * 2. 일정 짜기: 계약일 → 잔금일 → 전입일 → 계약기간을 하나씩 묻고, 날짜·요일·D-day 로 할 일을 보여 준다
+ *    (계산은 lib/jeonse-guide plan() → hugSchedule()). 일정은 이 브라우저에만 저장(jeonse-plan-store)
+ * 3. 상황 안내·집주인 연락 기록·용어 뜻은 lib/jeonse-guide 의 확인된 자료로 바로 답한다(AI 안 씀)
+ * 4. 그 밖의 글 질문만 AI(api.jupocket.com/api/hug-chat)로 보낸다 — 최근 대화를 함께 보내고 서버는 저장하지 않는다
+ *
+ * GA4: hug_chat_stage · hug_plan_done · hug_guide(id) · hug_term · hug_chat_send · hug_chat_answer · hug_chat_error · hug_chat_reset
  */
 import { PUSH_API } from "../data/push";
+import { plan, nextItem, localAnswer, findTerm, GUIDES, HOUSE_GUIDES, CONTACT, type Guide, type PlanItem } from "../lib/jeonse-guide";
+import { toDay, fromDay, addMonths } from "../lib/date-calc";
+import { loadPlan, savePlan, clearPlan, downloadIcs, type SavedPlan } from "./jeonse-plan-store";
 
 interface Msg {
   role: "user" | "assistant";
@@ -18,64 +26,25 @@ interface Res {
   note?: string;
   error?: string;
 }
+type Level = "new" | "some" | "ready";
 
 const log = document.getElementById("hc-log");
 const form = document.getElementById("hc-form") as HTMLFormElement | null;
 const input = document.getElementById("hc-q") as HTMLTextAreaElement | null;
 const go = document.getElementById("hc-go") as HTMLButtonElement | null;
 const chips = document.getElementById("hc-chips");
-const levels = document.getElementById("hc-levels");
 const reset = document.getElementById("hc-reset");
 const greeting = log?.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
 let history: Msg[] = [];
 let busy = false;
-type Level = "new" | "some" | "ready";
 let level: Level | null = null;
-
-// 수준을 고르면 바로 보이는 안내(서버를 거치지 않는다 — 숫자 없음)와 그 수준에 맞는 추천 질문
-const LEVELS: Record<Level, { reply: string; chips: string[] }> = {
-  new: {
-    reply: "괜찮아요, 처음부터 쉽게 설명할게요.\n전세보증보험은 계약이 끝났는데 집주인이 보증금을 못 돌려주면, HUG(주택도시보증공사)가 대신 돌려주는 보험이에요. 세입자가 보증료를 내고 직접 가입해요.\n지금 어떤 상황이세요?",
-    chips: ["집을 알아보는 중이에요", "계약을 했어요", "이미 살고 있어요", "제가 내야 하는 돈은 뭐예요?"],
-  },
-  some: {
-    reply: "좋아요. 궁금한 것부터 편하게 물어보세요. 어려운 말이 나오면 풀어서 설명할게요.",
-    chips: ["가입 조건이 뭐예요?", "보증료는 얼마나 내요?", "빌라도 되나요?", "버팀목 대출은 누가 받아요?"],
-  },
-  ready: {
-    reply: "바로 계산해 볼게요. 아는 만큼만 적어 주세요.\n· 집 종류(아파트·오피스텔·빌라·단독)\n· 수도권인지\n· 보증금\n· 집값(시세나 공시가격)\n· 집에 걸린 대출(근저당, 없으면 없다고)\n가입이 되는지와 보증료를 같이 알려 드려요.",
-    chips: ["수도권 빌라, 보증금 2억, 공시가격 1억 8천, 근저당 없어요", "보증료 할인은 누가 받아요?"],
-  },
-};
-
-function showChips(list: string[]) {
-  if (!chips) return;
-  chips.replaceChildren(
-    ...list.map((q) => {
-      const b = el("button", q);
-      b.type = "button";
-      b.addEventListener("click", () => send(q));
-      return b;
-    }),
-  );
-  chips.hidden = false;
-}
-
-function pickLevel(l: Level, label: string) {
-  if (busy) return;
-  level = l;
-  if (levels) levels.hidden = true;
-  if (reset) reset.hidden = false;
-  bubble("user", label);
-  bubble("bot", LEVELS[l].reply);
-  // 모델이 앞 대화로 알 수 있게 남긴다
-  history.push({ role: "user", content: label }, { role: "assistant", content: LEVELS[l].reply });
-  showChips(LEVELS[l].chips);
-  track("hug_chat_level", { level: l });
-}
 
 const track = (name: string, p: Record<string, unknown> = {}) => {
   if (typeof window.gtag === "function") window.gtag("event", name, p);
+};
+const todayDay = () => {
+  const n = new Date();
+  return toDay(`${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`)!;
 };
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string, cls?: string) {
@@ -84,39 +53,293 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string, cls?: 
   if (cls) e.className = cls;
   return e;
 }
-
 function scrollDown() {
   if (log) log.scrollTop = log.scrollHeight;
 }
-
-function bubble(who: "user" | "bot", text: string) {
+function bubble(who: "user" | "bot", text?: string) {
   const b = el("div", undefined, `hc-msg hc-${who}`);
-  b.append(el("p", text));
+  if (text) b.append(el("p", text));
   log?.append(b);
   scrollDown();
   return b;
 }
+function sourcesEl(list: { name: string; url: string }[]) {
+  const s = el("p", undefined, "hc-src");
+  s.append(el("span", "출처"));
+  for (const x of list) {
+    const a = el("a", x.name);
+    a.href = x.url;
+    a.target = "_blank";
+    a.rel = "noopener";
+    s.append(a);
+  }
+  return s;
+}
+/** 대화 기록(AI 맥락용)에 남긴다 — 사용자 말 + 보인 답 요약 */
+function remember(user: string, bot: string) {
+  history.push({ role: "user", content: user }, { role: "assistant", content: bot.slice(0, 500) });
+}
+
+/* ── 버튼(칩) ─────────────────────────────────────────── */
+
+interface Chip {
+  label: string;
+  run: () => void;
+  primary?: boolean;
+}
+function showChips(list: Chip[]) {
+  if (!chips) return;
+  chips.replaceChildren(
+    ...list.map((c) => {
+      const b = el("button", c.label);
+      b.type = "button";
+      if (c.primary) b.className = "hc-primary";
+      b.addEventListener("click", () => {
+        if (busy) return;
+        c.run();
+      });
+      return b;
+    }),
+  );
+  chips.hidden = !list.length;
+}
+const say = (label: string) => {
+  if (reset) reset.hidden = false;
+  bubble("user", label);
+};
+
+/* ── 단계 ─────────────────────────────────────────────── */
+
+const STAGES: { id: string; label: string; level: Level; run: () => void }[] = [
+  { id: "house", label: "🏠 집 보는 중이에요", level: "new", run: stageHouse },
+  { id: "contract", label: "✍️ 계약했어요(날짜가 정해졌어요)", level: "ready", run: () => startPlan() },
+  { id: "living", label: "🏡 이미 살고 있어요", level: "some", run: stageLiving },
+  { id: "trouble", label: "😟 집주인과 문제가 생겼어요", level: "some", run: stageTrouble },
+];
+
+function showStages() {
+  const saved = loadPlan();
+  showChips([
+    ...(saved ? [{ label: "📅 지난번 내 일정 다시 보기", primary: true, run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved)) }] : []),
+    ...STAGES.map((s) => ({
+      label: s.label,
+      run: () => {
+        level = s.level;
+        say(s.label);
+        track("hug_chat_stage", { stage: s.id });
+        s.run();
+      },
+    })),
+  ]);
+}
+
+function stageHouse() {
+  const text = "좋아요, 대부분 이 단계에서 시작해요. 집을 고르기 전·보러 갈 때·가격 볼 때 챙길 것을 HUG 전세사기예방센터 안내로 정리해 뒀어요. 궁금한 것부터 눌러 보세요.";
+  bubble("bot", text);
+  remember("집 보는 중이에요", text);
+  showChips([
+    ...HOUSE_GUIDES.map((g) => guideChip(g)),
+    guideChip(GUIDES.find((g) => g.id === "before-contract")!),
+    { label: "📅 계약 날짜가 정해지면 일정 짜기", run: () => (say("계약 날짜로 일정 짜기"), startPlan()) },
+  ]);
+}
+function stageLiving() {
+  const text = "살고 계시면 지금 챙길 건 두 가지예요. 보증 가입·갱신 통보 기한이 언제인지, 그리고 집주인과 주고받는 말을 기록으로 남기는 것이에요.";
+  bubble("bot", text);
+  remember("이미 살고 있어요", text);
+  showChips([
+    { label: "📅 내 계약 날짜로 할 일 보기", primary: true, run: () => (say("내 계약 날짜로 할 일 보기"), startPlan()) },
+    guideChip(GUIDES.find((g) => g.id === "renewal")!),
+    guideChip(CONTACT),
+  ]);
+}
+function stageTrouble() {
+  const text = "많이 답답하시죠. 순서대로 같이 볼게요. 어떤 상황인지 골라 주시거나 아래 칸에 적어 주세요.";
+  bubble("bot", text);
+  remember("집주인과 문제가 생겼어요", text);
+  showChips([guideChip(GUIDES.find((g) => g.id === "not-returned")!), guideChip(GUIDES.find((g) => g.id === "renewal")!), guideChip(CONTACT)]);
+}
+
+/* ── 상황 안내·용어 ───────────────────────────────────── */
+
+function guideChip(g: Guide): Chip {
+  return { label: g.ask, run: () => (say(g.ask), showGuide(g)) };
+}
+
+function showGuide(g: Guide) {
+  const b = bubble("bot");
+  const ol = el("ol", undefined, "hc-steps");
+  for (const s of g.steps) ol.append(el("li", s));
+  b.append(ol);
+  if (g.record?.length) {
+    b.append(el("p", "📝 기록 남기기", "hc-sub"));
+    const ul = el("ul", undefined, "hc-steps");
+    for (const s of g.record) ul.append(el("li", s));
+    b.append(ul);
+  }
+  b.append(sourcesEl(g.sources));
+  scrollDown();
+  remember(g.ask, [...g.steps, ...(g.record ?? [])].join(" "));
+  track("hug_guide", { id: g.id });
+  const next: Chip[] = [];
+  if (g.id !== CONTACT.id && g.record) next.push(guideChip(CONTACT));
+  if (HOUSE_GUIDES.includes(g)) next.push(...[...HOUSE_GUIDES, GUIDES.find((x) => x.id === "before-contract")!].filter((x) => x !== g).map(guideChip));
+  next.push({ label: "📅 일정 짜기", run: () => (say("일정 짜기"), startPlan()) }, { label: "처음으로", run: restart });
+  showChips(next);
+}
+
+function showTerm(name: string, fromUser?: string) {
+  const t = findTerm(name);
+  if (!t) return;
+  if (!fromUser) say(`'${t.t.split("(")[0]}' 뜻이 뭐예요?`);
+  const b = bubble("bot");
+  b.append(el("p", t.t, "hc-sub"), el("p", t.d), sourcesEl([{ name: "원문", url: t.src }]));
+  scrollDown();
+  remember(fromUser ?? `${t.t} 뜻`, `${t.t}: ${t.d}`);
+  track("hug_term");
+}
+
+/* ── 일정 짜기 ────────────────────────────────────────── */
+
+/** 말풍선 안 날짜 입력 하나 — 확인을 누르면 done(날짜) */
+function askDate(question: string, hint: string, done: (v: string) => void) {
+  const b = bubble("bot", question);
+  if (hint) b.append(el("p", hint, "hc-note"));
+  const row = el("div", undefined, "hc-date");
+  const d = el("input");
+  d.type = "date";
+  d.min = "2000-01-01";
+  d.max = "2099-12-31";
+  d.setAttribute("aria-label", question);
+  const ok = el("button", "확인");
+  ok.type = "button";
+  ok.addEventListener("click", () => {
+    if (!d.value || toDay(d.value) === null) return d.focus();
+    row.remove();
+    say(`${Number(d.value.slice(5, 7))}월 ${Number(d.value.slice(8, 10))}일`);
+    done(d.value);
+  });
+  row.append(d, ok);
+  b.append(row);
+  scrollDown();
+  showChips([]);
+}
+
+function startPlan() {
+  const p: Partial<SavedPlan> = {};
+  askDate("계약서를 쓴 날(또는 쓸 날)이 언제예요?", "아직 정해지지 않았다면 예정일을 넣어도 돼요. 나중에 바꿀 수 있어요.", (v) => {
+    p.contract = v;
+    askStart(p);
+  });
+}
+function askStart(p: Partial<SavedPlan>) {
+  askDate("잔금을 치르고 들어가는 날(잔금일)은요?", "", (s) => {
+    if (toDay(s)! < toDay(p.contract!)!) {
+      bubble("bot", "잔금일이 계약일보다 앞이에요. 다시 골라 주세요.");
+      return askStart(p);
+    }
+    p.start = s;
+    askMoveIn(p);
+  });
+}
+function askMoveIn(p: Partial<SavedPlan>) {
+  bubble("bot", "전입신고는 잔금일에 같이 하실 건가요? 같은 날 하는 게 가장 안전해요.");
+  showChips([
+    { label: "네, 같은 날 해요", primary: true, run: () => (say("네, 같은 날 해요"), (p.moveIn = p.start), askTerm(p)) },
+    { label: "다른 날이에요", run: () => (say("다른 날이에요"), askDate("전입신고하는 날은요?", "", (m) => ((p.moveIn = m), askTerm(p)))) },
+  ]);
+}
+function askTerm(p: Partial<SavedPlan>) {
+  bubble("bot", "계약 기간은요?");
+  const endAfter = (months: number) => fromDay(addMonths(toDay(p.start!)!, months) - 1);
+  showChips([
+    { label: "2년", primary: true, run: () => (say("2년"), finish({ ...p, end: endAfter(24) } as SavedPlan)) },
+    { label: "1년", run: () => (say("1년"), finish({ ...p, end: endAfter(12) } as SavedPlan)) },
+    { label: "만료일 직접 고르기", run: () => (say("만료일 직접 고르기"), askDate("계약이 끝나는 날은요?", "", (e) => finish({ ...p, end: e } as SavedPlan))) },
+  ]);
+}
+
+function finish(p: SavedPlan) {
+  if (toDay(p.end)! <= toDay(p.start)!) {
+    bubble("bot", "만료일이 잔금일보다 앞이에요. 처음부터 다시 넣어 주세요.");
+    return startPlan();
+  }
+  savePlan(p);
+  syncPageSchedule(p);
+  track("hug_plan_done");
+  showPlan(p);
+}
+
+function itemsOf(p: SavedPlan): PlanItem[] {
+  return plan({ contract: toDay(p.contract)!, start: toDay(p.start)!, moveIn: toDay(p.moveIn)!, end: toDay(p.end)! }, todayDay());
+}
+
+function showPlan(p: SavedPlan) {
+  const items = itemsOf(p);
+  const nxt = nextItem(items);
+  const b = bubble("bot", nxt ? `가장 먼저 할 일은 ${nxt.when} '${nxt.title}'이에요(${nxt.dday}). 전체 일정은 이래요.` : "모든 날짜가 지났어요. 아래는 지난 일정이에요.");
+  const ol = el("ol", undefined, "hc-plan");
+  for (const i of items) {
+    const li = el("li", undefined, i.past ? "hc-past" : i === nxt ? "hc-next" : undefined);
+    const head = el("p", undefined, "hc-plan-head");
+    head.append(el("b", i.when), el("span", i.dday, "hc-dday"));
+    li.append(head, el("p", i.title, "hc-plan-title"), el("p", i.what, "hc-plan-what"));
+    if (i.terms.length) {
+      const tr = el("p", undefined, "hc-terms");
+      for (const t of i.terms) {
+        const tb = el("button", `${t.split("(")[0]} 뜻`);
+        tb.type = "button";
+        tb.addEventListener("click", () => showTerm(t));
+        tr.append(tb);
+      }
+      li.append(tr);
+    }
+    li.append(el("p", `근거 · ${i.basis}`, "hc-note"));
+    ol.append(li);
+  }
+  b.append(ol);
+  scrollDown();
+  remember("내 전세 일정", items.map((i) => `${i.when} ${i.title}`).join(" / "));
+  const onChecklist = !!document.getElementById("hs-push");
+  showChips([
+    { label: "📆 내 캘린더에 넣기", primary: true, run: () => (say("내 캘린더에 넣기"), downloadIcs(items, "hug-chat-plan"), bubble("bot", "캘린더 파일을 내려받았어요. 열면 휴대폰·PC 캘린더에 날짜가 들어가고, 3일 전에 알려 줘요.")) },
+    onChecklist
+      ? { label: "🔔 알림 받기(3일 전·하루 전·당일)", run: () => (say("알림 받기"), pushOnPage()) }
+      : { label: "🔔 알림 받기", run: () => (location.href = "/guide/hug-jeonse-checklist/#hs-push") },
+    guideChip(CONTACT),
+    { label: "날짜 다시 넣기", run: () => (say("날짜 다시 넣기"), startPlan()) },
+    { label: "일정 지우기", run: () => (say("일정 지우기"), clearPlan(), bubble("bot", "이 브라우저에 저장된 일정을 지웠어요."), showStages()) },
+  ]);
+}
+
+/** 체크리스트 페이지면 아래 일정 칸을 같은 날짜로 채운다 */
+function syncPageSchedule(p: SavedPlan) {
+  const ids: [string, string][] = [["hs-contract", p.contract], ["hs-start", p.start], ["hs-movein", p.moveIn], ["hs-end", p.end]];
+  for (const [id, v] of ids) {
+    const i = document.getElementById(id) as HTMLInputElement | null;
+    if (!i) return;
+    i.value = v;
+  }
+  document.getElementById("hs-end")?.dispatchEvent(new Event("change"));
+}
+function pushOnPage() {
+  const btn = document.getElementById("hs-push") as HTMLButtonElement | null;
+  if (!btn) return;
+  btn.click(); // 같은 클릭 안에서 눌러야 알림 허용 창이 뜬다
+  bubble("bot", "알림 허용 창이 뜨면 '허용'을 눌러 주세요. 결과는 아래 일정 칸의 알림 안내에 나와요. 아이폰은 홈 화면에 추가한 앱에서만 돼요.");
+  btn.closest(".calc-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/* ── 글로 물을 때 ─────────────────────────────────────── */
 
 function botAnswer(r: Res) {
-  // 모델이 "· 항목"을 한 줄에 이어 쓰면 줄을 나눈다
   const b = bubble("bot", (r.text ?? "답을 만들지 못했어요.").replace(/\s+·\s+/g, "\n· "));
   if (r.lines?.length) {
     const dl = el("dl");
     for (const l of r.lines) dl.append(el("dt", l.label), el("dd", l.value));
     b.append(dl);
   }
-  if (r.sources?.length) {
-    const s = el("p", undefined, "hc-src");
-    s.append(el("span", "출처"));
-    for (const x of r.sources) {
-      const a = el("a", x.name);
-      a.href = x.url;
-      a.target = "_blank";
-      a.rel = "noopener";
-      s.append(a);
-    }
-    b.append(s);
-  }
+  if (r.sources?.length) b.append(sourcesEl(r.sources));
   if (r.note) b.append(el("p", r.note, "hc-note"));
   scrollDown();
 }
@@ -124,12 +347,21 @@ function botAnswer(r: Res) {
 async function send(q: string) {
   const text = q.trim().slice(0, 500);
   if (!text || busy || !go) return;
+  say(text);
+
+  // 1) 확인된 자료에서 먼저 찾는다(AI 를 부르지 않는다)
+  const local = localAnswer(text);
+  if (local?.kind === "term") return showTerm(local.term.t, text);
+  if (local?.kind === "guide") return showGuide(local.guide);
+  if (/일정|스케줄|언제까지|날짜/.test(text) && !/보증료|얼마/.test(text)) {
+    bubble("bot", "날짜를 하나씩 여쭤볼게요.");
+    return startPlan();
+  }
+
+  // 2) 그 밖의 질문은 AI
+  if (chips) chips.hidden = true;
   busy = true;
   go.disabled = true;
-  if (chips) chips.hidden = true;
-  if (levels) levels.hidden = true;
-  if (reset) reset.hidden = false;
-  bubble("user", text);
   history.push({ role: "user", content: text });
   const wait = bubble("bot", "답을 찾는 중…");
   wait.classList.add("hc-typing");
@@ -143,12 +375,12 @@ async function send(q: string) {
     const r = (await res.json().catch(() => ({ ok: false }))) as Res;
     wait.remove();
     if (res.status === 429) {
-      botAnswer({ ok: false, text: "오늘은 상담이 많아 AI가 잠시 쉬어요. 내일 오전 9시 뒤에 다시 물어봐 주세요. 가입 여부와 보증료는 HUG 보증 계산기 페이지에서 바로 계산할 수 있어요." });
+      botAnswer({ ok: false, text: "오늘은 상담이 많아 AI가 잠시 쉬어요. 일정 짜기·상황 안내·용어 버튼은 그대로 쓸 수 있어요. AI 질문은 내일 오전 9시 뒤에 다시 해 주세요." });
       history.pop();
+      showStages();
     } else if (!r.ok) throw new Error(String(res.status));
     else {
       botAnswer(r);
-      // 다음 질문의 맥락 — 표·출처 대신 문장과 표 값을 글로 넘긴다
       const linesTxt = r.lines?.map((l) => `${l.label}: ${l.value}`).join("\n");
       history.push({ role: "assistant", content: [r.text ?? "", linesTxt].filter(Boolean).join("\n").slice(0, 500) });
       track("hug_chat_answer", { kind: r.lines ? "check" : r.sources?.length ? "kb" : "fallback" });
@@ -164,12 +396,13 @@ async function send(q: string) {
   }
 }
 
+/* ── 입력·처음으로 ────────────────────────────────────── */
+
 function grow() {
   if (!input) return;
   input.style.height = "auto";
   input.style.height = `${Math.min(input.scrollHeight, 140)}px`;
 }
-
 form?.addEventListener("submit", (e) => {
   e.preventDefault();
   if (!input) return;
@@ -186,14 +419,15 @@ input?.addEventListener("keydown", (e) => {
     form?.requestSubmit();
   }
 });
-levels?.querySelectorAll<HTMLButtonElement>("[data-level]").forEach((b) => b.addEventListener("click", () => pickLevel(b.dataset.level as Level, b.textContent ?? "")));
-reset?.addEventListener("click", () => {
+
+function restart() {
   if (busy || !log) return;
   history = [];
   level = null;
   log.replaceChildren(...(greeting ? [greeting.cloneNode(true)] : []));
-  if (chips) chips.hidden = true;
-  if (levels) levels.hidden = false;
-  reset.hidden = true;
+  if (reset) reset.hidden = true;
+  showStages();
   track("hug_chat_reset");
-});
+}
+reset?.addEventListener("click", restart);
+showStages();

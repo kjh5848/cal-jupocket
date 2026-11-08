@@ -1,41 +1,31 @@
 ---
 /**
- * HUG 전세 상담 — 대화형 AI(2026-11-08 시범). HUG 체크리스트·보증 계산기 페이지의 답 상자 아래.
+ * 전세 도우미 채팅 — HUG 체크리스트·보증 계산기 페이지의 답 상자 아래(2026-11-08 개편).
  *
- * 서버 api.jupocket.com/api/hug-chat. 모델은 src/lib/hug-kb 자료만 보고 답하고, 근거 없는 숫자가 섞인 답은 서버가 버린다.
- * 가입 가능 여부는 값이 다 모이면 hugGuarantee() 가 계산한다. 대화는 이 탭의 메모리에만 있고 서버에 남지 않는다.
- * 광고(AdSlot) 옆에 두지 않는다.
+ * 처음에 "지금 어느 단계세요?"를 묻고(집 보는 중·계약함·살고 있음·문제), 일정 짜기·상황 안내·용어 뜻은
+ * AI 없이 확인된 자료(src/lib/jeonse-guide.ts)로 답한다. 그 밖의 글 질문만 AI(api.jupocket.com/api/hug-chat).
+ * 일정 날짜는 이 브라우저에만 저장된다(scripts/jeonse-plan-store.ts). 광고(AdSlot) 옆에 두지 않는다.
  */
-// 처음 화면은 "얼마나 아세요"부터 묻는다(2026-11-08 사용자: 처음 접하는 사람은 너무 몰라 아는 정도부터 봐야 한다).
-// 고른 뒤의 안내 문장과 추천 질문은 scripts/hug-chat.ts 의 LEVELS.
-const LEVELS = [
-  { id: "new", label: "처음 들어봐요" },
-  { id: "some", label: "조금 알아요" },
-  { id: "ready", label: "가입하려고 계산해 보는 중이에요" },
-];
 ---
 
 <section class="hug-chat" aria-labelledby="hug-chat-h">
   <header class="hc-head">
-    <p class="hc-title" id="hug-chat-h"><span aria-hidden="true">💬</span> HUG 전세 상담 <span class="hc-beta">AI 시범</span></p>
+    <p class="hc-title" id="hug-chat-h"><span aria-hidden="true">💬</span> 전세 도우미 <span class="hc-beta">시범</span></p>
     <button type="button" class="hc-reset" id="hc-reset" hidden>새 대화</button>
   </header>
   <div class="hc-log" id="hc-log" role="log" aria-live="polite">
     <div class="hc-msg hc-bot">
-      <p>안녕하세요. 전세보증(흔히 '전세보증보험')과 버팀목 전세대출을 쉬운 말로 알려 드려요. 가입이 되는지, 보증료가 얼마인지도 계산해 드려요.</p>
-      <p>먼저 하나만 여쭤볼게요. 전세보증을 얼마나 알고 계세요?</p>
+      <p>안녕하세요. 전세 집 고르기부터 계약, 전입신고, 보증 가입, 보증금 돌려받기까지 언제 무엇을 해야 하는지 날짜로 챙겨 드려요. 어려운 말은 풀어서 알려 드려요.</p>
+      <p>지금 어느 단계세요?</p>
     </div>
   </div>
-  <div class="hc-chips hc-levels" id="hc-levels">
-    {LEVELS.map((l) => <button type="button" data-level={l.id}>{l.label}</button>)}
-  </div>
-  <div class="hc-chips" id="hc-chips" hidden></div>
+  <div class="hc-chips" id="hc-chips"></div>
   <form class="hc-form" id="hc-form">
     <label class="sr-only" for="hc-q">질문</label>
-    <textarea id="hc-q" rows="1" maxlength="500" enterkeyhint="send" placeholder="편하게 물어보세요. 예: 보증보험은 꼭 들어야 해요?"></textarea>
+    <textarea id="hc-q" rows="1" maxlength="500" enterkeyhint="send" placeholder="편하게 적어 주세요. 예: 대항력이 뭐예요?"></textarea>
     <button type="submit" id="hc-go" aria-label="보내기">보내기</button>
   </form>
-  <p class="hc-meta">HUG·주택도시기금·법령에서 JU포켓이 확인한 자료로만 답하고, 답마다 출처를 붙입니다. 답하지 못한 질문만 날짜와 함께 글감으로 저장하고 누가 물었는지는 저장하지 않습니다. 이름·주소·주민번호는 적지 마세요(<a href="/privacy/#ask-ai">개인정보 처리방침</a>).</p>
+  <p class="hc-meta">HUG·주택도시기금·법령에서 JU포켓이 확인한 자료로만 답하고, 답마다 출처를 붙입니다. 일정 날짜는 이 브라우저에만 저장합니다. 글로 물은 질문은 AI가 답하고, 답하지 못한 질문만 날짜와 함께 글감으로 저장하며 누가 물었는지는 저장하지 않습니다. 이름·주소·주민번호는 적지 마세요(<a href="/privacy/#ask-ai">개인정보 처리방침</a>).</p>
 </section>
 
 <script src="../scripts/hug-chat.ts"></script>
@@ -160,10 +150,97 @@ const LEVELS = [
   .hc-chips[hidden] {
     display: none;
   }
-  .hc-chips.hc-levels :global(button) {
+  .hc-chips :global(button.hc-primary) {
     font-weight: 700;
     color: var(--brand);
     border-color: var(--brand);
+  }
+  .hc-chips:empty {
+    display: none;
+  }
+  .hc-log :global(.hc-sub) {
+    font-weight: 700;
+  }
+  .hc-log :global(.hc-steps) {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+  .hc-log :global(.hc-date) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .hc-log :global(.hc-date input) {
+    min-height: 40px;
+    padding: 0 0.6rem;
+    font: inherit;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-md);
+  }
+  .hc-log :global(.hc-date button),
+  .hc-log :global(.hc-terms button) {
+    min-height: 36px;
+    padding: 0 0.8rem;
+    font: inherit;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    color: var(--surface);
+    background: var(--brand);
+    border: 0;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+  }
+  .hc-log :global(.hc-terms) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .hc-log :global(.hc-terms button) {
+    min-height: 30px;
+    font-weight: 600;
+    color: var(--brand);
+    background: var(--brand-wash);
+  }
+  .hc-log :global(.hc-plan) {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .hc-log :global(.hc-plan li) {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-md);
+  }
+  .hc-log :global(.hc-plan li.hc-next) {
+    border-color: var(--brand);
+    box-shadow: inset 3px 0 0 var(--brand);
+  }
+  .hc-log :global(.hc-plan li.hc-past) {
+    opacity: 0.55;
+  }
+  .hc-log :global(.hc-plan-head) {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .hc-log :global(.hc-dday) {
+    font-weight: 700;
+    color: var(--brand);
+  }
+  .hc-log :global(.hc-plan-title) {
+    font-weight: 700;
+  }
+  .hc-log :global(.hc-plan-what) {
+    font-size: var(--t-sm);
   }
   .hc-chips :global(button) {
     min-height: 34px;
