@@ -7,6 +7,7 @@
  */
 import { hugSchedule, type ScheduleItem } from "../lib/hug-jeonse";
 import { toDay, fromDay } from "../lib/date-calc";
+import { plan, nextItem, findTerm } from "../lib/jeonse-guide";
 import { trackCalculatorUse } from "../lib/track";
 import { setupPush } from "./push-reminders";
 import { loadPlan, savePlan, downloadIcs } from "./jeonse-plan-store";
@@ -19,6 +20,10 @@ const moveIn = $<HTMLInputElement>("hs-movein");
 const end = $<HTMLInputElement>("hs-end");
 let current: ScheduleItem[] = [];
 let userChanged = false;
+const today = () => {
+  const n = new Date();
+  return toDay(`${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`)!;
+};
 
 function render() {
   const c = toDay(contract.value), s = toDay(start.value), m = toDay(moveIn.value), e = toDay(end.value);
@@ -32,16 +37,41 @@ function render() {
   }
   current = hugSchedule({ contract: c, start: s, moveIn: m, end: e });
   if (userChanged) savePlan({ contract: contract.value, start: start.value, moveIn: moveIn.value, end: end.value });
+  const items = plan({ contract: c, start: s, moveIn: m, end: e }, today());
+  const nxt = nextItem(items);
   list.replaceChildren(
-    ...current.map((i) => {
+    ...items.map((i) => {
       const li = document.createElement("li");
-      const parts: [string, string][] = [["hug-date", fromDay(i.day)], ["", i.title], ["hug-what", i.what], ["hug-basis", `근거 · ${i.basis}`]];
-      for (const [cls, text] of parts) {
-        const el = document.createElement(cls ? "span" : "strong");
-        if (cls) el.className = cls;
-        el.textContent = text;
-        li.append(el);
+      if (i.past) li.className = "hug-past";
+      else if (i === nxt) li.className = "hug-next";
+      const date = Object.assign(document.createElement("span"), { className: "hug-date", textContent: `${i.when} · ${i.dday}${i === nxt ? " · 다음 할 일" : ""}` });
+      const title = Object.assign(document.createElement("strong"), { textContent: i.title });
+      const what = Object.assign(document.createElement("span"), { className: "hug-what", textContent: i.what });
+      li.append(date, title, what);
+      if (i.terms.length) {
+        const row = Object.assign(document.createElement("span"), { className: "hug-terms" });
+        for (const t of i.terms) {
+          const b = Object.assign(document.createElement("button"), { type: "button", textContent: `${t.split("(")[0]} 뜻` });
+          b.setAttribute("aria-expanded", "false");
+          b.addEventListener("click", () => {
+            const open = li.querySelector(`[data-term="${CSS.escape(t)}"]`);
+            if (open) {
+              open.remove();
+              b.setAttribute("aria-expanded", "false");
+              return;
+            }
+            const def = findTerm(t);
+            if (!def) return;
+            const p = Object.assign(document.createElement("span"), { className: "hug-term-def", textContent: `${def.t} — ${def.d}` });
+            p.dataset.term = t;
+            row.after(p);
+            b.setAttribute("aria-expanded", "true");
+          });
+          row.append(b);
+        }
+        li.append(row);
       }
+      li.append(Object.assign(document.createElement("span"), { className: "hug-basis", textContent: `근거 · ${i.basis}` }));
       return li;
     }),
   );

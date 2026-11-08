@@ -42,7 +42,7 @@ const QA = [
   <AnswerBox text={ANSWER} />
   <HugChat />
 
-  <div class="calc-card">
+  <div class="calc-card" id="hs-card">
     <p class="meta">HUG·주택도시기금 안내와 주택임대차보호법·부동산 거래신고법의 기한으로 날짜를 계산합니다({r.verifiedOn} 확인). 은행·HUG 지사의 실제 처리 일정은 다를 수 있으니 마감 며칠 전에 움직이세요.</p>
     <div class="calc-input-wrap">
       <label for="hs-contract">계약일</label>
@@ -119,6 +119,38 @@ const QA = [
   }
   .hug-what {
     font-size: var(--t-sm);
+  }
+  .hug-steps li.hug-next {
+    border-color: var(--brand);
+    box-shadow: inset 4px 0 0 var(--brand);
+  }
+  .hug-steps li.hug-past {
+    opacity: 0.55;
+  }
+  .hug-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.25rem;
+  }
+  .hug-terms button {
+    min-height: 30px;
+    padding: 0 0.7rem;
+    font: inherit;
+    font-size: var(--t-xs);
+    font-weight: 600;
+    color: var(--brand);
+    background: var(--brand-wash);
+    border: 0;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+  }
+  .hug-term-def {
+    padding: 0.5rem 0.65rem;
+    font-size: var(--t-sm);
+    line-height: 1.6;
+    background: var(--accent-bg);
+    border-radius: var(--r-md);
   }
   .hug-basis {
     font-size: var(--t-xs);
