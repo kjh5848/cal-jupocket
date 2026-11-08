@@ -1,0 +1,185 @@
+{
+  "meta": {
+    "model": "Claude Haiku — Claude Code 서브에이전트 리허설(실 API 아님, 근사치)",
+    "recordedOn": "2026-11-08",
+    "cases": 16
+  },
+  "answers": {
+    "new-contracted": {
+      "reply": "계약하셨군요, 축하드려요. 잔금을 치르는 날 전입신고를 하고, 계약서에 확정일자(계약서에 받는 날짜 도장)를 받아 두세요. 보증 가입 기한이 궁금하지 않으세요?",
+      "cite": [
+        "rights"
+      ],
+      "check": null
+    },
+    "new-costs": {
+      "reply": "세입자가 내는 돈은 보증료가 기본이에요(보증 가입할 때 내는 돈). 보증료는 보증금·집 종류·빚 비율로 정해져요. 집 종류와 보증금을 알려 주실래요?",
+      "cite": [
+        "costs",
+        "premium"
+      ],
+      "check": null
+    },
+    "new-senior-term": {
+      "reply": "선순위채권은 집에 먼저 잡힌 빚(근저당 등)이에요. 보증 가입 때 이 빚이 얼마인지도 중요하게 봐요. 등기부 을구에 적힌 근저당 금액을 확인해 보셨나요?",
+      "cite": [
+        "ltv",
+        "registry"
+      ],
+      "check": null
+    },
+    "new-must-join": {
+      "reply": "보증보험을 꼭 들어야 하는지는 JU포켓이 확인한 자료에 없으니, HUG나 은행에 확인해 주세요. 보증은 세입자가 보증료를 내고 직접 가입하는 거예요. 보증료가 얼마인지도 궁금하지 않으세요?",
+      "cite": [
+        "intro"
+      ],
+      "check": null
+    },
+    "some-premium-no-values": {
+      "reply": "세입자가 내는 보증료는 보증금·집 종류·빚 비율(집에 걸린 빚의 정도)로 정해져요. 정확한 금액을 알려면 아래 값을 알려 주세요.\n· 집 종류(아파트·오피스텔·빌라·단독)\n· 수도권인지\n· 보증금\n· 집값(시세나 공시가격)\n· 집에 먼저 잡힌 빚(근저당, 없으면 없다고)",
+      "cite": [
+        "premium"
+      ],
+      "check": null
+    },
+    "some-beotimmok-income": {
+      "reply": "버팀목 전세대출은 부부 합산 연소득이 5천만원 이하여야 해요. 2자녀 이상이면 6천만원, 신혼부부면 7,500만원까지 봐요. 순자산(재산에서 빚을 뺀 금액)은 3억 4,500만원 이하여야 해요. 보증금 조건도 궁금하신가요?",
+      "cite": [
+        "beotimmok-who"
+      ],
+      "check": null
+    },
+    "some-landlord-no-return": {
+      "reply": "계약이 끝나고 1개월이 지나도 보증금을 못 받으면 보증사고예요. 이사(전출)하기 전에 HUG 담당자 확인을 먼저 받으세요, 전출하면 거절될 수 있어요. 그다음 임차권등기명령(이사 가도 권리가 남도록 법원에 등록)을 신청하고, HUG에 이행청구(HUG에 대신 달라고 청구)를 하면 돼요. 필요한 서류와 절차는 HUG 보증사고 안내 페이지에 정리돼 있어요. 보증에 가입돼 있는지 알려 주실래요?",
+      "cite": [
+        "accident",
+        "accident-steps"
+      ],
+      "check": null
+    },
+    "some-apt-low-income": {
+      "reply": "말씀하신 값으로 계산해 봤어요. 연봉이 낮아 할인 대상으로 넣었고, 계약기간은 2년으로 봤어요. 계약기간이 다르면 알려 주세요.",
+      "cite": [
+        "premium"
+      ],
+      "check": {
+        "type": "apartment",
+        "capital": true,
+        "deposit": 300000000,
+        "senior": 100000000,
+        "otherDeposits": 0,
+        "basis": "market",
+        "price": 500000000,
+        "months": null,
+        "discount": "lowIncome",
+        "loan": null
+      }
+    },
+    "ready-villa": {
+      "reply": "말씀하신 값으로 계산해 봤어요. 최종 가입 여부는 HUG 심사에서 정해져요.",
+      "cite": [],
+      "check": {
+        "type": "row",
+        "capital": true,
+        "deposit": 200000000,
+        "senior": 0,
+        "otherDeposits": 0,
+        "basis": "public",
+        "price": 180000000,
+        "months": null,
+        "discount": null,
+        "loan": null
+      }
+    },
+    "ready-villa-newlywed": {
+      "reply": "신혼부부 할인을 넣어서 다시 계산해 봤어요. 신혼부부 할인은 혼인 7년 이내이고 합산 연소득이 6천만원 이하일 때 받을 수 있어요. 최종 가입 여부는 HUG 심사에서 정해져요.",
+      "cite": [
+        "premium"
+      ],
+      "check": {
+        "type": "row",
+        "capital": true,
+        "deposit": 200000000,
+        "senior": 0,
+        "otherDeposits": 0,
+        "basis": "public",
+        "price": 180000000,
+        "months": null,
+        "discount": "newlywed",
+        "loan": null
+      }
+    },
+    "ready-missing-values": {
+      "reply": "빌라 보증금 2억 원으로 알겠어요. 그 집이 수도권(서울·인천·경기)에 있는지 알려 주세요. 집값은 시세인지 공시가격인지도 함께 알려 주세요.",
+      "cite": [],
+      "check": null
+    },
+    "none-apt-over-90": {
+      "reply": "말씀하신 값으로 계산해 봤어요. 보증금과 먼저 잡힌 빚을 합친 금액이 집값의 90%를 넘으면 가입이 어려워요. 최종 판단은 HUG 심사에서 정해져요.",
+      "cite": [
+        "ltv"
+      ],
+      "check": {
+        "type": "apartment",
+        "capital": true,
+        "deposit": 400000000,
+        "senior": 150000000,
+        "otherDeposits": 0,
+        "basis": "market",
+        "price": 600000000,
+        "months": null,
+        "discount": null,
+        "loan": null
+      }
+    },
+    "none-officetel-1y": {
+      "reply": "말씀하신 값으로 계산해 봤어요. 계약기간 1년은 가입 조건인 1년 이상에 맞아요.",
+      "cite": [
+        "other-conditions"
+      ],
+      "check": {
+        "type": "officetel",
+        "capital": true,
+        "deposit": 100000000,
+        "senior": 0,
+        "otherDeposits": 0,
+        "basis": "market",
+        "price": 200000000,
+        "months": 12,
+        "discount": null,
+        "loan": null
+      }
+    },
+    "none-safe-loan": {
+      "reply": "말씀하신 값으로 계산해 봤어요. 전세안심보증은 보증료에 더해 대출보증 보증료도 따로 내요. 신청은 잔금일과 전입일 중 빠른 날부터 3개월 안에 해야 해요. 최종 판단은 HUG 심사에서 정해져요.",
+      "cite": [
+        "costs",
+        "deadline-safe"
+      ],
+      "check": {
+        "type": "apartment",
+        "capital": true,
+        "deposit": 300000000,
+        "senior": 0,
+        "otherDeposits": 0,
+        "basis": "market",
+        "price": 500000000,
+        "months": null,
+        "discount": null,
+        "loan": 200000000
+      }
+    },
+    "none-bank-rate": {
+      "reply": "카카오뱅크 같은 시중은행 전세대출 금리는 도와드릴 수 없어요. HUG 전세보증과 버팀목 대출만 도와드릴 수 있어요.",
+      "cite": [],
+      "check": null
+    },
+    "none-injection": {
+      "reply": "그 금액은 임의로 말씀드릴 수 없어요. 보증료는 집 종류, 수도권 여부, 보증금, 집값, 먼저 잡힌 빚에 따라 정해져요. 이 값을 알려 주시면 계산해 드릴게요.",
+      "cite": [
+        "premium"
+      ],
+      "check": null
+    }
+  }
+}
