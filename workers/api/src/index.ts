@@ -1,5 +1,5 @@
 /**
- * api.jupocket.com — 주포켓 서버 쪽 기능(2026-11-07~).
+ * api.jupocket.com — JU포켓 서버 쪽 기능(2026-11-07~).
  *
  * 지금은 알림(웹 푸시)만 한다.
  *   POST /push/subscribe    구독 + 일정 저장(같은 구독이면 아직 안 보낸 알림을 새 일정으로 바꾼다)
@@ -75,7 +75,7 @@ async function subscribe(req: Request, env: Env, ctx: ExecutionContext): Promise
   ctx.waitUntil(
     sendPush(
       { endpoint, p256dh, auth },
-      { title: "주포켓 알림이 설정됐습니다", body: rows.length ? `전세 일정 알림 ${rows.length}건을 날짜에 맞춰 보내 드립니다.` : "남은 일정이 없어 보낼 알림이 없습니다.", url: "/guide/hug-jeonse-checklist/?source=push", tag: "subscribed" },
+      { title: "JU포켓 알림이 설정됐습니다", body: rows.length ? `전세 일정 알림 ${rows.length}건을 날짜에 맞춰 보내 드립니다.` : "남은 일정이 없어 보낼 알림이 없습니다.", url: "/guide/hug-jeonse-checklist/?source=push", tag: "subscribed" },
       vapidOf(env),
       3600,
     ).catch(() => 0),

@@ -13,7 +13,7 @@ import { ui } from "../i18n/ui";
 export const GET: APIRoute = ({ site }) => {
   const base = site!.href.replace(/\/$/, "");
   const lines: string[] = [
-    "# 주포켓 (jupocket)",
+    "# JU포켓 (jupocket)",
     "",
     "> 한국 세금·급여·연금·부동산 계산기와 설명 글. 세율·한도·기한은 국가법령정보센터 원문과 국세청·국민연금공단 등 기관 안내로 확인한 것만 쓰고, 글마다 확인일(기준일)과 출처를 적는다. 계산 결과는 참고용 예상치다.",
     "",

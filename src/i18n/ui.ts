@@ -51,8 +51,8 @@ interface Words {
 
 const WORDS: Record<Lang, Words> = {
   ko: {
-    brand: "주포켓",
-    homeLabel: "주포켓 홈",
+    brand: "JU포켓",
+    homeLabel: "JU포켓 홈",
     navLabel: "주요 메뉴",
     navTools: "도구",
     navReads: "읽을거리",
@@ -62,7 +62,7 @@ const WORDS: Record<Lang, Words> = {
     langMenu: "언어",
     footerNote:
       "이 사이트의 계산 결과는 참고용 예상치이며 법적 효력이 없습니다. 정확한 세액은 홈택스 또는 세무 전문가를 통해 확인하세요.",
-    footerCopy: "주포켓 계산기",
+    footerCopy: "JU포켓 계산기",
     privacy: "개인정보처리방침",
     themeLabel: { light: "라이트", dark: "다크", system: "기기 설정 따름" },
     themeAria: (cur, next) => `화면 테마: ${cur} (누르면 ${next})`,

@@ -1,23 +1,32 @@
 ---
 /**
- * "홈 화면에 추가" 막대(2026-11-07, PWA).
+ * "홈 화면에 추가" 팝업 — 휴대폰 전용(2026-11-07 헤더 아래 막대 → 2026-11-08 팝업).
  *
- * - 크롬·엣지(안드로이드·PC): 브라우저가 설치 가능하다고 알려 주면(beforeinstallprompt) 버튼이 설치 창을 띄운다.
- * - 아이폰·아이패드: 애플은 설치 창을 띄우는 기능을 주지 않는다 — 버튼을 누르면 "공유 → 홈 화면에 추가" 안내를 연다.
- * - 휴대폰인데 설치 창 신호가 없을 때(삼성 인터넷·카카오톡 등 앱 안 브라우저·신호 지연): 막대는 그대로 띄우고
- *   버튼이 브라우저 메뉴로 추가하는 안내(앱 안 브라우저면 "다른 브라우저로 열기")를 연다.
- * - 이미 앱으로 열었으면(standalone) 아무것도 그리지 않는다. 닫으면 14일 동안 다시 띄우지 않는다.
+ * 사용자 판단(2026-11-08): 흐름 속 막대는 눈에 안 띄어 누르지 않는다 — 화면 아래에서 올라오는 시트로 띄운다.
+ * - 크롬(안드로이드): 설치 신호(beforeinstallprompt)가 있으면 버튼이 설치 창을 바로 띄운다.
+ * - 아이폰·삼성 인터넷·카카오톡 등 앱 안 브라우저: 버튼이 브라우저별 "홈 화면에 추가" 안내를 연다.
+ * - 이미 앱으로 열었으면(standalone) 띄우지 않는다. "나중에"·바깥 누르기는 3일, ×는 14일 숨긴다.
  *
- * 자리는 헤더 바로 아래 흐름 속(고정 아님) — 화면 아래 고정 광고(앵커 광고)·계산 결과 막대와 겹치지 않게.
- * 광고 옆에 버튼을 두면 잘못 누르게 되는 배치가 된다(애드센스 정책).
+ * 구글은 검색에서 들어오자마자 본문을 가리는 팝업을 모바일 순위에서 불리하게 본다 — 그래서 글 페이지는
+ * 첫 화면에서 띄우지 않고 두 번째 페이지이거나 절반쯤 읽었을 때 띄운다. 홈은 1.5초 뒤.
+ * 화면 전체를 어둡게 덮는 시트라 광고 바로 옆에 버튼이 붙지 않는다(애드센스 잘못 누름 방지).
  */
 ---
 
-<div class="install-app" id="install-app" hidden>
-  <span class="install-app-icon" aria-hidden="true"><img src="/icon-192.png" alt="" width="28" height="28" /></span>
-  <span class="install-app-text">주포켓을 앱처럼 — 홈 화면에 추가하면 계산기를 한 번에 엽니다</span>
-  <button type="button" class="install-app-btn" id="install-app-btn">추가</button>
-  <button type="button" class="install-app-x" id="install-app-x" aria-label="닫기">×</button>
+<div class="install-pop" id="install-app" hidden role="dialog" aria-modal="true" aria-labelledby="install-pop-h">
+  <div class="install-pop-sheet">
+    <button type="button" class="install-pop-x" id="install-app-x" aria-label="닫기">×</button>
+    <img class="install-pop-icon" src="/icon-192.png" alt="" width="64" height="64" />
+    <p class="install-pop-h" id="install-pop-h">JU포켓을 앱으로 쓰세요</p>
+    <ul class="install-pop-list">
+      <li>홈 화면 아이콘 한 번으로 계산기를 엽니다</li>
+      <li>주소창 없이 앱처럼 넓게 보입니다</li>
+      <li>전세 일정 같은 알림을 받을 수 있습니다</li>
+      <li>앱스토어 설치·회원가입 없이 바로 추가됩니다</li>
+    </ul>
+    <button type="button" class="install-app-btn install-pop-main" id="install-app-btn">홈 화면에 추가하기</button>
+    <button type="button" class="install-pop-later" id="install-app-later">나중에</button>
+  </div>
 </div>
 
 <div class="install-ios" id="install-ios" hidden role="dialog" aria-modal="true" aria-label="홈 화면에 추가 안내">
@@ -27,7 +36,7 @@
       <ol>
         <li>화면 아래(아이패드는 위)의 <b>공유 버튼</b> <span class="install-ios-share" aria-hidden="true">⬆︎</span>을 누릅니다.</li>
         <li>목록을 내려 <b>홈 화면에 추가</b>를 누릅니다.</li>
-        <li>오른쪽 위 <b>추가</b>를 누르면 홈 화면에 주포켓 아이콘이 생깁니다.</li>
+        <li>오른쪽 위 <b>추가</b>를 누르면 홈 화면에 JU포켓 아이콘이 생깁니다.</li>
       </ol>
       <p class="install-ios-note">사파리·크롬 모두 같은 방법입니다. 홈 화면 아이콘으로 열면 주소창 없이 앱처럼 열립니다.</p>
     </div>
@@ -36,9 +45,9 @@
       <ol>
         <li>주소창 오른쪽의 <b>메뉴</b> <span class="install-ios-share" aria-hidden="true">⋮</span>(삼성 인터넷은 아래 <b>≡</b>)를 누릅니다.</li>
         <li><b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 누릅니다.</li>
-        <li><b>설치</b>(또는 <b>추가</b>)를 누르면 홈 화면에 주포켓 아이콘이 생깁니다.</li>
+        <li><b>설치</b>(또는 <b>추가</b>)를 누르면 홈 화면에 JU포켓 아이콘이 생깁니다.</li>
       </ol>
-      <p class="install-ios-note">이미 설치했다면 홈 화면의 주포켓 아이콘으로 열어 주세요.</p>
+      <p class="install-ios-note">이미 설치했다면 홈 화면의 JU포켓 아이콘으로 열어 주세요.</p>
     </div>
     <div data-guide="inapp" hidden>
       <p class="install-ios-h">다른 브라우저로 열어 주세요</p>
@@ -55,28 +64,99 @@
 <script src="../scripts/install-app.ts"></script>
 
 <style>
-  .install-app {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    width: min(42rem, calc(100% - 2rem));
-    margin: 0.5rem auto 0;
-    padding: 0.55rem 0.7rem;
-    background: var(--brand-wash);
-    border-radius: var(--r-md);
-    font-size: var(--t-sm);
+  .install-pop {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: grid;
+    align-items: end;
+    background: rgb(0 0 0 / 0.5);
+    animation: install-fade 200ms ease-out;
   }
-  .install-app[hidden] {
+  .install-pop[hidden] {
     display: none;
   }
-  .install-app-icon img {
-    display: block;
-    border-radius: var(--r-sm);
+  .install-pop-sheet {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.8rem;
+    width: min(32rem, 100%);
+    margin: 0 auto;
+    padding: 1.75rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    background: var(--surface);
+    border-top-left-radius: var(--r-lg);
+    border-top-right-radius: var(--r-lg);
+    text-align: center;
+    animation: install-up 280ms cubic-bezier(0.2, 0, 0, 1);
   }
-  .install-app-text {
-    flex: 1;
-    min-width: 0;
+  .install-pop-icon {
+    border-radius: var(--r-lg);
+    box-shadow: 0 6px 18px -6px rgb(10 30 70 / 0.45);
+  }
+  .install-pop-h {
+    margin: 0;
+    font-weight: 800;
+    font-size: var(--t-lg);
+  }
+  .install-pop-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.35rem;
+    font-size: var(--t-sm);
     color: var(--text);
+  }
+  .install-pop-list li::before {
+    content: "✓ ";
+    color: var(--brand);
+    font-weight: 800;
+  }
+  .install-pop-main {
+    width: 100%;
+    min-height: 52px;
+    font-size: 1.05rem;
+  }
+  .install-pop-later {
+    min-height: 40px;
+    padding: 0 1rem;
+    font: inherit;
+    font-size: var(--t-sm);
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+  .install-pop-x {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+  @keyframes install-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes install-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .install-pop,
+    .install-pop-sheet {
+      animation: none;
+    }
   }
   .install-app-btn {
     flex: none;
@@ -90,22 +170,10 @@
     border-radius: var(--r-pill);
     cursor: pointer;
   }
-  .install-app-x {
-    flex: none;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    font-size: 1.2rem;
-    line-height: 1;
-    color: var(--muted);
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-  }
   .install-ios {
     position: fixed;
     inset: 0;
-    z-index: 60;
+    z-index: 80;
     display: grid;
     align-items: end;
     background: rgb(0 0 0 / 0.45);

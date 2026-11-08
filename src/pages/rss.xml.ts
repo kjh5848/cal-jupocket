@@ -36,7 +36,7 @@ export function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>주포켓 — 세금 가이드</title>
+    <title>JU포켓 — 세금 가이드</title>
     <link>${SITE}/</link>
     <atom:link href="${SITE}/rss.xml" rel="self" type="application/rss+xml" />
     <description>조문 원문으로 확인한 세금 가이드. 직장인·사장님·자영업자·프리랜서.</description>

@@ -64,8 +64,8 @@ const jsonLd = {
   dateModified: updated,
   image: new URL(ogPathFor(path), Astro.site).href,
   // 운영자는 홈의 Organization(@id) 하나 — 숫자 확인 원칙은 그쪽 publishingPrinciples(/about/)
-  author: { "@type": "Organization", "@id": ORG_ID(siteUrl), name: "주포켓", url: siteUrl },
-  publisher: { "@type": "Organization", "@id": ORG_ID(siteUrl), name: "주포켓", url: siteUrl },
+  author: { "@type": "Organization", "@id": ORG_ID(siteUrl), name: "JU포켓", url: siteUrl },
+  publisher: { "@type": "Organization", "@id": ORG_ID(siteUrl), name: "JU포켓", url: siteUrl },
   isAccessibleForFree: true,
   citation: [
     { "@type": "Organization", name: "국세청", url: "https://www.nts.go.kr/" },

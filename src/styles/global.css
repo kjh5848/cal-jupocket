@@ -1607,7 +1607,7 @@ details[open] summary {
 .home-hero { margin: 0 0 1.5rem; padding: 2.75rem 0 1.25rem; }
 .home-hero-inner { max-width: 620px; margin: 0 auto; text-align: center; }
 .home-hero h1 { margin: 0 0 0.5rem; font-size: clamp(1.9rem, 5vw, 2.6rem); letter-spacing: -0.025em; text-wrap: balance; color: var(--text); }
-/* h1 첫 줄의 사이트 이름 — 구글 사이트 이름 신호와 홈 h1 을 '주포켓'으로 맞춘다(2026-10-15) */
+/* h1 첫 줄의 사이트 이름 — 구글 사이트 이름 신호와 홈 h1 을 'JU포켓'으로 맞춘다(2026-10-15) */
 .home-hero .hero-brand { display: block; margin-bottom: 0.35rem; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.12em; color: var(--brand); }
 .home-hero .hero-lede { margin: 0 0 1.4rem; color: var(--muted); }
 .hero-find { position: relative; text-align: left; }

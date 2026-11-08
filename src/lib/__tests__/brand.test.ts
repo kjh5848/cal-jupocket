@@ -19,8 +19,8 @@ describe("브랜드", () => {
   });
   it("홈 title·h1", () => {
     const s = read("src/pages/index.astro");
-    expect(s).toContain('const title = "주포켓 — 세금·급여부터 날짜·사진까지, 필요한 도구 모음";');
-    expect(s).toMatch(/<span class="hero-brand">주포켓<\/span> 뭐가 필요하세요\?/);
+    expect(s).toContain('const title = "JU포켓 — 세금·급여부터 날짜·사진까지, 필요한 도구 모음";');
+    expect(s).toMatch(/<span class="hero-brand">JU포켓<\/span> 뭐가 필요하세요\?/);
   });
   it("파비콘은 3D 주머니(bp- 그라데이션)", () => {
     expect(read("public/favicon.svg")).toMatch(/id="bp-base"/);

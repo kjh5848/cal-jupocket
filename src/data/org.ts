@@ -11,8 +11,8 @@ export function organization(siteUrl: string) {
   return {
     "@type": "Organization",
     "@id": ORG_ID(siteUrl),
-    name: "주포켓",
-    alternateName: "jupocket",
+    name: "JU포켓",
+    alternateName: ["주포켓", "jupocket", "JuPocket"],
     url: `${siteUrl}/`,
     logo: `${siteUrl}/icon-512.png`,
     /** 숫자를 어떻게 확인하는지 — /about/ */

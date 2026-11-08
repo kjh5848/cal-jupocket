@@ -26,9 +26,9 @@ import { liveSocials } from "../data/social";
 import { homeEntries } from "../data/home-entries";
 import "../styles/global.css";
 
-const title = "주포켓 — 세금·급여부터 날짜·사진까지, 필요한 도구 모음";
+const title = "JU포켓 — 세금·급여부터 날짜·사진까지, 필요한 도구 모음";
 const description =
-  "세금·급여 계산기부터 날짜·사진·문서 도구까지 주포켓에 담았습니다. 3.3% 원천징수·실수령액·부가세·상속세를 법 원문 기준으로 바로 계산하고, 얼마 내는지·아끼는 법까지 정리했습니다.";
+  "세금·급여 계산기부터 날짜·사진·문서 도구까지 JU포켓에 담았습니다. 3.3% 원천징수·실수령액·부가세·상속세를 법 원문 기준으로 바로 계산하고, 얼마 내는지·아끼는 법까지 정리했습니다.";
 
 const count = toolCount();
 /** 검색 스크립트가 읽는 도구 목록 — 필요한 칸만(번들에 클러스터 전체를 넣지 않는다) */
@@ -74,8 +74,8 @@ const jsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "주포켓",
-    alternateName: "jupocket",
+    name: "JU포켓",
+    alternateName: ["주포켓", "jupocket", "JuPocket"],
     url: `${siteUrl}/`,
     inLanguage: "ko",
     description,
@@ -99,7 +99,7 @@ const jsonLd = [
     <main class="home">
       <section class="home-hero">
         <div class="home-hero-inner">
-          <h1><span class="hero-brand">주포켓</span> 뭐가 필요하세요?</h1>
+          <h1><span class="hero-brand">JU포켓</span> 뭐가 필요하세요?</h1>
           <p class="hero-lede">세금·급여 계산부터 날짜·사진·문서까지, 담긴 도구에서 바로 찾아 쓰세요.</p>
           <div class="hero-find">
             <form class="hero-search" role="search" onsubmit="return false">

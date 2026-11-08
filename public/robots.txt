@@ -1,4 +1,4 @@
-# 주포켓 — https://jupocket.com
+# JU포켓 — https://jupocket.com
 #
 # 봇별 그룹(User-agent: GPTBot 등)을 일부러 만들지 않는다. 크롤러는 자기
 # 이름의 그룹이 있으면 User-agent: * 를 통째로 무시하기 때문에, 봇마다

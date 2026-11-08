@@ -46,14 +46,14 @@ const altLinks = LOCALES.filter((l) => alt[l]).map((l) => ({ locale: l, lang: me
 <link rel="manifest" href="/manifest.webmanifest" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-title" content="주포켓" />
+<meta name="apple-mobile-web-app-title" content="JU포켓" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical.href} />
 {altLinks.length > 1 && altLinks.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
 {altLinks.length > 1 && <link rel="alternate" hreflang="x-default" href={altLinks.find((a) => a.locale === "ko")!.href} />}
-{locale === "ko" && <link rel="alternate" type="application/rss+xml" title="주포켓 — 세금 가이드" href="/rss.xml" />}
+{locale === "ko" && <link rel="alternate" type="application/rss+xml" title="JU포켓 — 세금 가이드" href="/rss.xml" />}
 <meta property="og:type" content="website" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />

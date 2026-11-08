@@ -119,7 +119,7 @@ for (const c of clusters) {
 jobs.push({
   slug: "home",
   title: "복잡한 세금, 계산부터 판단까지",
-  clusterTitle: "주포켓",
+  clusterTitle: "JU포켓",
   color: clusterColor.vat,
   iconKey: "calculator",
 });
