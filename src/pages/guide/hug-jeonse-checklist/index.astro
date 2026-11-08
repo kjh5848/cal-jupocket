@@ -11,6 +11,7 @@ import AnswerBox from "../../../components/AnswerBox.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import Callout from "../../../components/Callout.astro";
 import JeonseGlossary from "../../../components/JeonseGlossary.astro";
+import HugChat from "../../../components/HugChat.astro";
 import r from "../../../rates/hug-jeonse-2026.json";
 import { hugSchedule } from "../../../lib/hug-jeonse";
 import { toDay, fromDay } from "../../../lib/date-calc";
@@ -39,6 +40,7 @@ const QA = [
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
+  <HugChat />
 
   <div class="calc-card">
     <p class="meta">HUG·주택도시기금 안내와 주택임대차보호법·부동산 거래신고법의 기한으로 날짜를 계산합니다({r.verifiedOn} 확인). 은행·HUG 지사의 실제 처리 일정은 다를 수 있으니 마감 며칠 전에 움직이세요.</p>

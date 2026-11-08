@@ -84,7 +84,7 @@ export function parseAmount(s: string, loanContext = true): number | undefined {
   return Math.round(total);
 }
 
-const AMOUNT_RE =
+export const AMOUNT_RE =
   /(\d[\d,]*(?:\.\d+)?\s*(?:억|천만|백만|십만|만|천|백)(?:\s*\d[\d,]*(?:\.\d+)?\s*(?:천만|백만|십만|만|천|백)?)*\s*원?|\d{5,}[\d,]*\s*원)/;
 
 function months(n: number, unit: string): number {
@@ -168,4 +168,10 @@ export function missing(q: LoanQuery): Missing[] {
 export function toInput(q: LoanQuery): Omit<LoanInput, "method"> & { method?: LoanMethod } | null {
   if (missing(q).length) return null;
   return { principal: q.principal!, ratePct: q.ratePct!, months: q.months!, method: q.method, graceMonths: q.method === "bullet" ? undefined : q.graceMonths };
+}
+
+/** 문장 속 금액 덩어리를 전부 원으로("보증금 3억, 근저당 1억 2천" → [3억, 1.2억]) */
+export function amountsIn(text: string): number[] {
+  const re = new RegExp(AMOUNT_RE.source, "g");
+  return [...normalize(text).matchAll(re)].map((m) => parseAmount(m[0])).filter((n): n is number => n !== undefined);
 }

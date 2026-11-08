@@ -1,7 +1,7 @@
 /**
  * api.jupocket.com — JU포켓 서버 쪽 기능(2026-11-07~).
  *
- *   POST /api/chat          대출 계산기 "AI에게 물어보기"(chat.ts) — 숫자는 계산 코드에서만 나온다
+ *   POST /api/hug-chat      HUG 전세 상담(hug-chat.ts) — 확인한 자료로만 답하고, 가입 여부 숫자는 계산 코드에서만 나온다
  *   POST /api/chat/eval     모델 비교용(EVAL_KEY 헤더가 맞을 때만) — 모델이 뽑은 값과 걸린 시간
  *   POST /push/subscribe    구독 + 일정 저장(같은 구독이면 아직 안 보낸 알림을 새 일정으로 바꾼다)
  *   POST /push/unsubscribe  구독과 알림을 지운다
@@ -12,7 +12,8 @@
  */
 import { sendPush, type Vapid } from "./webpush";
 import { expandReminders, validEndpoint, todayKst, addDays } from "./reminders";
-import { chat, extractWithModel } from "./chat";
+import { extractWithModel } from "./chat";
+import { hugChat } from "./hug-chat";
 
 export interface Env {
   DB: D1Database;
@@ -44,7 +45,7 @@ async function subId(endpoint: string): Promise<string> {
 const vapidOf = (env: Env): Vapid => ({ publicKey: env.VAPID_PUBLIC, privateKey: env.VAPID_PRIVATE, subject: SUBJECT });
 
 async function readBody(req: Request): Promise<Record<string, unknown> | null> {
-  if (Number(req.headers.get("Content-Length") ?? 0) > 16_384) return null;
+  if (Number(req.headers.get("Content-Length") ?? 0) > 32_768) return null;
   try {
     const b = await req.json();
     return b && typeof b === "object" ? (b as Record<string, unknown>) : null;
@@ -155,15 +156,8 @@ export default {
     if (pathname === "/health") return json(req, { ok: true });
     if (req.method === "POST" && pathname === "/push/subscribe") return subscribe(req, env, ctx);
     if (req.method === "POST" && pathname === "/push/unsubscribe") return unsubscribe(req, env);
-    if (req.method === "POST" && pathname === "/api/chat") {
-      const b = await readBody(req);
-      if (typeof b?.q !== "string") return json(req, { ok: false, error: "q" }, 400);
-      const r = await chat(b.q, env, {
-        ip: req.headers.get("CF-Connecting-IP") ?? "",
-        day: todayKst(),
-        page: typeof b.page === "string" ? b.page : "",
-        waitUntil: (p) => ctx.waitUntil(p),
-      });
+    if (req.method === "POST" && pathname === "/api/hug-chat") {
+      const r = await hugChat(await readBody(req), env, { ip: req.headers.get("CF-Connecting-IP") ?? "", day: todayKst(), waitUntil: (p) => ctx.waitUntil(p) });
       return json(req, r.body, r.status);
     }
     if (req.method === "POST" && pathname === "/api/chat/eval") {

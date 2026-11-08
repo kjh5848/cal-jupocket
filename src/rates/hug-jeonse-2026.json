@@ -1,6 +1,6 @@
 {
   "verifiedOn": "2026-11-07",
-  "note": "HUG 전세보증금반환보증·전세안심보증 가입 조건과 전세 계약 일정의 법정·HUG 기한. 조사 문서 docs/research/2026-11-07-hug-jeonse.md. 보증료는 요율 범위만 확인했다(구간별 요율표 미확인) — 금액을 계산하지 않는다.",
+  "note": "HUG 전세보증금반환보증·전세안심보증 가입 조건과 전세 계약 일정의 법정·HUG 기한. 조사 문서 docs/research/2026-11-07-hug-jeonse.md. 보증료는 요율 범위만 확인했다(구간별 요율표 미확인) — 금액을 계산하지 않는다. 2026-11-08: 보증료 할인·할증, 전세안심보증 대출보증 한도, 버팀목 요건·한도·금리를 같은 조사 문서(출처 C·D)에서 옮김 — AI 상담(HUG 전세 대화) 근거.",
   "sources": {
     "returnGuarantee": "https://www.khug.or.kr/hug/web/ig/dr/igdr000001.jsp",
     "returnGuaranteeDocs": "https://www.khug.or.kr/hug/web/ig/dr/igdr000002.jsp",
@@ -9,10 +9,15 @@
     "accidentClaim": "https://www.khug.or.kr/hug/web/ge/er/geer001100.jsp",
     "registryCheck": "https://www.khug.or.kr/jeonse/web/s03/s030105.jsp",
     "leaseProtectionAct": "https://www.law.go.kr/법령/주택임대차보호법",
-    "leaseReportAct": "https://www.law.go.kr/법령/부동산거래신고등에관한법률"
+    "leaseReportAct": "https://www.law.go.kr/법령/부동산거래신고등에관한법률",
+    "beotimmokSteps": "https://nhuf.molit.go.kr/FP/FP05/FP0502/FP05020102.jsp",
+    "accidentSteps": "https://www.khug.or.kr/hug/web/ge/er/geer001200.jsp"
   },
   "guarantee": {
-    "depositCap": { "capital": 700000000, "other": 500000000 },
+    "depositCap": {
+      "capital": 700000000,
+      "other": 500000000
+    },
     "ltvLimitPct": 90,
     "seniorLimitPct": 60,
     "seniorLimitMultiFamilyPct": 80,
@@ -20,7 +25,10 @@
     "rentConversionPct": 6.5,
     "minTermYears": 1,
     "appraisalValidMonths": 6,
-    "premiumRateRangePct": { "min": 0.097, "max": 0.211 }
+    "premiumRateRangePct": {
+      "min": 0.097,
+      "max": 0.211
+    }
   },
   "deadlines": {
     "leaseReportDays": 30,
@@ -31,5 +39,50 @@
     "renewalNoticeToMonths": 2,
     "accidentAfterMonths": 1,
     "terminationEffectMonths": 3
-  }
+  },
+  "premium": {
+    "surchargePct": 10,
+    "surchargeSeniorShareOfLtvPct": 50,
+    "discountPct": {
+      "lowIncome": 60,
+      "newlywed": 40,
+      "eContract": 3
+    },
+    "lowIncomeMax": 50000000,
+    "loanPartRatePct": 0.031,
+    "note": "반환보증 요율은 보증금 구간·아파트 여부·부채비율(70/80%)로 갈린다. 구간별 표는 미확인"
+  },
+  "loanGuaranteeLimit": {
+    "depositSharePct": 80,
+    "depositShareYouthNewlywedPct": 90,
+    "capCapital": 400000000,
+    "capOther": 320000000,
+    "capOneHouse": 200000000,
+    "capYouthNewlywedCapital": 450000000,
+    "capYouthNewlywedOther": 360000000,
+    "interestIncomePct": 40,
+    "ratioCapitalRegulatedPct": 80,
+    "ratioOtherPct": 90
+  },
+  "beotimmok": {
+    "downPaymentPct": 5,
+    "incomeMax": 50000000,
+    "incomeMaxTwoKids": 60000000,
+    "incomeMaxNewlywed": 75000000,
+    "netAssetMax": 345000000,
+    "areaMaxM2": 85,
+    "depositMaxCapital": 300000000,
+    "depositMaxOther": 200000000,
+    "depositMaxNewlywedCapital": 400000000,
+    "depositMaxNewlywedOther": 300000000,
+    "limitCapital": 120000000,
+    "limitOther": 80000000,
+    "limitNewlywedCapital": 250000000,
+    "limitNewlywedOther": 160000000,
+    "limitSharePct": 70,
+    "limitShareNewlywedPct": 80,
+    "ratePctMin": 2.5,
+    "ratePctMax": 3.5
+  },
+  "docsValidMonths": 1
 }

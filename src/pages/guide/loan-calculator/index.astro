@@ -8,7 +8,6 @@ import GuideLayout from "../../../layouts/GuideLayout.astro";
 import AnswerBox from "../../../components/AnswerBox.astro";
 import CalcCta from "../../../components/CalcCta.astro";
 import AdSlot from "../../../components/AdSlot.astro";
-import AskAi from "../../../components/AskAi.astro";
 import r from "../../../rates/loan-2026.json";
 import { loanSchedule, compareMethods } from "../../../lib/loan";
 import { calcPresets } from "../../../data/calc-presets";
@@ -38,8 +37,6 @@ const QA = [
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
-
-  <AskAi ids={{ principal: "ln-principal", months: "ln-months", rate: "ln-rate", method: "ln-method", grace: "ln-grace" }} />
 
   <div class="calc-card" data-two>
     <p class="meta">월 단위 약정 이자로 계산한 상환표입니다. 회차 이자·매달 원금은 원 미만을 버리고, 남은 원금은 마지막 회차에서 갚습니다(법령에 대출 이자 끝수 규정이 없어 약정을 따릅니다). 일수 계산·변동금리·중도상환·수수료는 넣지 않았습니다.</p>

@@ -12,6 +12,7 @@ import CalcCta from "../../../components/CalcCta.astro";
 import AdSlot from "../../../components/AdSlot.astro";
 import Callout from "../../../components/Callout.astro";
 import JeonseGlossary from "../../../components/JeonseGlossary.astro";
+import HugChat from "../../../components/HugChat.astro";
 import r from "../../../rates/hug-jeonse-2026.json";
 import { hugGuarantee } from "../../../lib/hug-jeonse";
 import { won } from "../../../lib/won";
@@ -37,6 +38,7 @@ const QA = [
 <GuideLayout title={title} description={description} updated={r.verifiedOn} faq={QA}>
   <h1>{title}</h1>
   <AnswerBox text={ANSWER} />
+  <HugChat />
 
   <div class="calc-card" data-two>
     <p class="meta">HUG 전세반환보증·전세안심보증 상품개요의 가입 조건으로 추산합니다({r.verifiedOn} 확인). 실제 심사는 주택가격 적용 순서·등기부 권리관계·위반건축물·서류를 함께 보므로 결과가 다를 수 있습니다. 판정이 아니라 미리 가늠해 보는 용도입니다.</p>

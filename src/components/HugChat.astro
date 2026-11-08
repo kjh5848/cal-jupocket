@@ -1,0 +1,205 @@
+---
+/**
+ * HUG 전세 상담 — 대화형 AI(2026-11-08 시범). HUG 체크리스트·보증 계산기 페이지의 답 상자 아래.
+ *
+ * 서버 api.jupocket.com/api/hug-chat. 모델은 src/lib/hug-kb 자료만 보고 답하고, 근거 없는 숫자가 섞인 답은 서버가 버린다.
+ * 가입 가능 여부는 값이 다 모이면 hugGuarantee() 가 계산한다. 대화는 이 탭의 메모리에만 있고 서버에 남지 않는다.
+ * 광고(AdSlot) 옆에 두지 않는다.
+ */
+const CHIPS = ["전세보증 가입 조건이 뭐예요?", "빌라도 반환보증 되나요?", "버팀목 대출 소득 기준은요?", "집주인이 보증금을 안 돌려줘요"];
+---
+
+<section class="hug-chat" aria-labelledby="hug-chat-h">
+  <header class="hc-head">
+    <p class="hc-title" id="hug-chat-h"><span aria-hidden="true">💬</span> HUG 전세 상담 <span class="hc-beta">AI 시범</span></p>
+    <button type="button" class="hc-reset" id="hc-reset" hidden>새 대화</button>
+  </header>
+  <div class="hc-log" id="hc-log" role="log" aria-live="polite">
+    <div class="hc-msg hc-bot">
+      <p>안녕하세요. HUG 전세보증(반환보증·전세안심보증)과 버팀목 전세대출에 대해 물어보세요. 보증금·집값을 알려 주시면 반환보증 가입 조건에 맞는지도 계산해 드려요.</p>
+    </div>
+  </div>
+  <div class="hc-chips" id="hc-chips">
+    {CHIPS.map((c) => <button type="button" data-q={c}>{c}</button>)}
+  </div>
+  <form class="hc-form" id="hc-form">
+    <label class="sr-only" for="hc-q">질문</label>
+    <textarea id="hc-q" rows="1" maxlength="500" enterkeyhint="send" placeholder="예: 수도권 빌라 보증금 2억인데 보증 될까요?"></textarea>
+    <button type="submit" id="hc-go" aria-label="보내기">보내기</button>
+  </form>
+  <p class="hc-meta">HUG·주택도시기금·법령에서 JU포켓이 확인한 자료로만 답하고, 답마다 출처를 붙입니다. 답하지 못한 질문만 날짜와 함께 글감으로 저장하고 누가 물었는지는 저장하지 않습니다. 이름·주소·주민번호는 적지 마세요(<a href="/privacy/#ask-ai">개인정보 처리방침</a>).</p>
+</section>
+
+<script src="../scripts/hug-chat.ts"></script>
+
+<style>
+  .hug-chat {
+    display: grid;
+    gap: 0.7rem;
+    margin: 1.25rem 0;
+    padding: 1rem;
+    background: var(--brand-wash);
+    border-radius: var(--r-lg);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .hc-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .hc-title {
+    margin: 0;
+    font-weight: 800;
+  }
+  .hc-beta {
+    margin-left: 0.25rem;
+    padding: 0.05rem 0.45rem;
+    font-size: var(--t-xs, 0.75rem);
+    font-weight: 700;
+    color: var(--brand);
+    background: var(--surface);
+    border-radius: var(--r-pill);
+  }
+  .hc-reset {
+    min-height: 32px;
+    padding: 0 0.75rem;
+    font: inherit;
+    font-size: var(--t-sm);
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-pill);
+    cursor: pointer;
+  }
+  .hc-log {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: min(60vh, 520px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.25rem 0.1rem;
+  }
+  .hc-log :global(.hc-msg) {
+    display: grid;
+    gap: 0.45rem;
+    max-width: 88%;
+    padding: 0.7rem 0.85rem;
+    line-height: 1.65;
+    border-radius: var(--r-lg);
+    overflow-wrap: anywhere;
+  }
+  .hc-log :global(.hc-msg p) {
+    margin: 0;
+    white-space: pre-line;
+  }
+  .hc-log :global(.hc-bot) {
+    align-self: flex-start;
+    background: var(--surface);
+    border-top-left-radius: 4px;
+  }
+  .hc-log :global(.hc-user) {
+    align-self: flex-end;
+    color: var(--surface);
+    background: var(--brand);
+    border-top-right-radius: 4px;
+  }
+  .hc-log :global(.hc-typing) {
+    color: var(--muted);
+  }
+  .hc-log :global(dl) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.25rem 1rem;
+    margin: 0;
+    font-size: var(--t-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .hc-log :global(dt) {
+    color: var(--muted);
+  }
+  .hc-log :global(dd) {
+    margin: 0;
+    font-weight: 700;
+    text-align: right;
+  }
+  .hc-log :global(.hc-src) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.6rem;
+    font-size: var(--t-sm);
+  }
+  .hc-log :global(.hc-src a) {
+    color: var(--brand);
+  }
+  .hc-log :global(.hc-note) {
+    font-size: var(--t-xs, 0.75rem);
+    color: var(--muted);
+  }
+  .hc-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .hc-chips[hidden] {
+    display: none;
+  }
+  .hc-chips button {
+    min-height: 34px;
+    padding: 0 0.75rem;
+    font: inherit;
+    font-size: var(--t-sm);
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-pill);
+    cursor: pointer;
+  }
+  .hc-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+  }
+  .hc-form textarea {
+    flex: 1;
+    min-width: 0;
+    min-height: 46px;
+    max-height: 140px;
+    padding: 0.7rem 0.85rem;
+    font: inherit;
+    line-height: 1.45;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-md);
+    resize: none;
+  }
+  .hc-form button {
+    flex: none;
+    min-height: 46px;
+    padding: 0 1rem;
+    font: inherit;
+    font-weight: 700;
+    color: var(--surface);
+    background: var(--brand);
+    border: 0;
+    border-radius: var(--r-md);
+    cursor: pointer;
+  }
+  .hc-form button:disabled {
+    opacity: 0.6;
+  }
+  .hc-meta {
+    margin: 0;
+    font-size: var(--t-sm);
+    color: var(--muted);
+  }
+</style>

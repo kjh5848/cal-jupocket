@@ -60,13 +60,13 @@ export async function extractWithModel(env: ChatEnv, q: string, model = env.CHAT
   return validQuery(j);
 }
 
-async function hashIp(ip: string, day: string): Promise<string> {
+export async function hashIp(ip: string, day: string): Promise<string> {
   const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${day}|${ip}|jupocket-chat`));
   return [...new Uint8Array(h)].slice(0, 12).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /** 오늘 이 키로 몇 번 왔나(+1). 하루 지난 줄은 지운다 */
-async function bump(env: ChatEnv, key: string, day: string): Promise<number> {
+export async function bump(env: ChatEnv, key: string, day: string): Promise<number> {
   const r = await env.DB.prepare("INSERT INTO chat_rate (key, day, n) VALUES (?1, ?2, 1) ON CONFLICT(key, day) DO UPDATE SET n = n + 1 RETURNING n")
     .bind(key, day)
     .first<{ n: number }>();
