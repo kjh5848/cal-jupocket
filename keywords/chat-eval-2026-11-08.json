@@ -1,0 +1,824 @@
+[
+  {
+    "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+    "correct": 2,
+    "of": 80,
+    "errors": 0,
+    "p50ms": 1901,
+    "p90ms": 2200,
+    "misses": [
+      {
+        "q": "3억 4.5% 30년 원리금균등이면 한 달에 얼마예요?",
+        "got": {},
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4.5,
+          "months": 360,
+          "method": "level"
+        }
+      },
+      {
+        "q": "2억 대출 금리 4% 20년이면 월 상환액",
+        "got": {},
+        "want": {
+          "principal": 200000000,
+          "ratePct": 4,
+          "months": 240
+        }
+      },
+      {
+        "q": "1억 5천 3.8% 10년 원금균등",
+        "got": {},
+        "want": {
+          "principal": 150000000,
+          "ratePct": 3.8,
+          "months": 120,
+          "method": "principal"
+        }
+      },
+      {
+        "q": "5천만원 5% 5년 만기일시 이자 얼마",
+        "got": {},
+        "want": {
+          "principal": 50000000,
+          "ratePct": 5,
+          "months": 60,
+          "method": "bullet"
+        }
+      },
+      {
+        "q": "3억5천 연 4.2% 30년",
+        "got": {},
+        "want": {
+          "principal": 350000000,
+          "ratePct": 4.2,
+          "months": 360
+        }
+      },
+      {
+        "q": "주담대 4억 30년 4.1프로 원리금균등 월 납입금",
+        "got": {},
+        "want": {
+          "principal": 400000000,
+          "ratePct": 4.1,
+          "months": 360,
+          "method": "level"
+        }
+      },
+      {
+        "q": "신용대출 3천만원 금리 6.5% 3년",
+        "got": {},
+        "want": {
+          "principal": 30000000,
+          "ratePct": 6.5,
+          "months": 36
+        }
+      },
+      {
+        "q": "전세대출 2억 4천 3.5% 2년 이자만 내면 매달 얼마",
+        "got": {},
+        "want": {
+          "principal": 240000000,
+          "ratePct": 3.5,
+          "months": 24,
+          "method": "bullet"
+        }
+      },
+      {
+        "q": "1억 원 4.5퍼센트 15년",
+        "got": {},
+        "want": {
+          "principal": 100000000,
+          "ratePct": 4.5,
+          "months": 180
+        }
+      },
+      {
+        "q": "대출 2억5000만원 이율 3.9% 기간 25년",
+        "got": {},
+        "want": {
+          "principal": 250000000,
+          "ratePct": 3.9,
+          "months": 300
+        }
+      },
+      {
+        "q": "7천만원 4% 36개월 원리금균등",
+        "got": {},
+        "want": {
+          "principal": 70000000,
+          "ratePct": 4,
+          "months": 36,
+          "method": "level"
+        }
+      },
+      {
+        "q": "1000만원 7% 12개월",
+        "got": {},
+        "want": {
+          "principal": 10000000,
+          "ratePct": 7,
+          "months": 12
+        }
+      },
+      {
+        "q": "5억 3.7% 40년 원리금 균등 상환",
+        "got": {},
+        "want": {
+          "principal": 500000000,
+          "ratePct": 3.7,
+          "months": 480,
+          "method": "level"
+        }
+      },
+      {
+        "q": "3억 4% 30년 원금 균등이면 첫 달 얼마",
+        "got": {},
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4,
+          "months": 360,
+          "method": "principal"
+        }
+      },
+      {
+        "q": "자동차 할부 3000만원 5.9% 60개월",
+        "got": {},
+        "want": {
+          "principal": 30000000,
+          "ratePct": 5.9,
+          "months": 60
+        }
+      }
+    ]
+  },
+  {
+    "model": "@cf/google/gemma-4-26b-a4b-it",
+    "correct": 2,
+    "of": 80,
+    "errors": 0,
+    "p50ms": 5734,
+    "p90ms": 6308,
+    "misses": [
+      {
+        "q": "3억 4.5% 30년 원리금균등이면 한 달에 얼마예요?",
+        "got": {},
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4.5,
+          "months": 360,
+          "method": "level"
+        }
+      },
+      {
+        "q": "2억 대출 금리 4% 20년이면 월 상환액",
+        "got": {},
+        "want": {
+          "principal": 200000000,
+          "ratePct": 4,
+          "months": 240
+        }
+      },
+      {
+        "q": "1억 5천 3.8% 10년 원금균등",
+        "got": {},
+        "want": {
+          "principal": 150000000,
+          "ratePct": 3.8,
+          "months": 120,
+          "method": "principal"
+        }
+      },
+      {
+        "q": "5천만원 5% 5년 만기일시 이자 얼마",
+        "got": {},
+        "want": {
+          "principal": 50000000,
+          "ratePct": 5,
+          "months": 60,
+          "method": "bullet"
+        }
+      },
+      {
+        "q": "3억5천 연 4.2% 30년",
+        "got": {},
+        "want": {
+          "principal": 350000000,
+          "ratePct": 4.2,
+          "months": 360
+        }
+      },
+      {
+        "q": "주담대 4억 30년 4.1프로 원리금균등 월 납입금",
+        "got": {},
+        "want": {
+          "principal": 400000000,
+          "ratePct": 4.1,
+          "months": 360,
+          "method": "level"
+        }
+      },
+      {
+        "q": "신용대출 3천만원 금리 6.5% 3년",
+        "got": {},
+        "want": {
+          "principal": 30000000,
+          "ratePct": 6.5,
+          "months": 36
+        }
+      },
+      {
+        "q": "전세대출 2억 4천 3.5% 2년 이자만 내면 매달 얼마",
+        "got": {},
+        "want": {
+          "principal": 240000000,
+          "ratePct": 3.5,
+          "months": 24,
+          "method": "bullet"
+        }
+      },
+      {
+        "q": "1억 원 4.5퍼센트 15년",
+        "got": {},
+        "want": {
+          "principal": 100000000,
+          "ratePct": 4.5,
+          "months": 180
+        }
+      },
+      {
+        "q": "대출 2억5000만원 이율 3.9% 기간 25년",
+        "got": {},
+        "want": {
+          "principal": 250000000,
+          "ratePct": 3.9,
+          "months": 300
+        }
+      },
+      {
+        "q": "7천만원 4% 36개월 원리금균등",
+        "got": {},
+        "want": {
+          "principal": 70000000,
+          "ratePct": 4,
+          "months": 36,
+          "method": "level"
+        }
+      },
+      {
+        "q": "1000만원 7% 12개월",
+        "got": {},
+        "want": {
+          "principal": 10000000,
+          "ratePct": 7,
+          "months": 12
+        }
+      },
+      {
+        "q": "5억 3.7% 40년 원리금 균등 상환",
+        "got": {},
+        "want": {
+          "principal": 500000000,
+          "ratePct": 3.7,
+          "months": 480,
+          "method": "level"
+        }
+      },
+      {
+        "q": "3억 4% 30년 원금 균등이면 첫 달 얼마",
+        "got": {},
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4,
+          "months": 360,
+          "method": "principal"
+        }
+      },
+      {
+        "q": "자동차 할부 3000만원 5.9% 60개월",
+        "got": {},
+        "want": {
+          "principal": 30000000,
+          "ratePct": 5.9,
+          "months": 60
+        }
+      }
+    ]
+  },
+  {
+    "model": "@cf/zai-org/glm-4.7-flash",
+    "correct": 2,
+    "of": 80,
+    "errors": 0,
+    "p50ms": 3536,
+    "p90ms": 6151,
+    "misses": [
+      {
+        "q": "3억 4.5% 30년 원리금균등이면 한 달에 얼마예요?",
+        "got": {},
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4.5,
+          "months": 360,
+          "method": "level"
+        }
+      },
+      {
+        "q": "2억 대출 금리 4% 20년이면 월 상환액",
+        "got": {},
+        "want": {
+          "principal": 200000000,
+          "ratePct": 4,
+          "months": 240
+        }
+      },
+      {
+        "q": "1억 5천 3.8% 10년 원금균등",
+        "got": {},
+        "want": {
+          "principal": 150000000,
+          "ratePct": 3.8,
+          "months": 120,
+          "method": "principal"
+        }
+      },
+      {
+        "q": "5천만원 5% 5년 만기일시 이자 얼마",
+        "got": {},
+        "want": {
+          "principal": 50000000,
+          "ratePct": 5,
+          "months": 60,
+          "method": "bullet"
+        }
+      },
+      {
+        "q": "3억5천 연 4.2% 30년",
+        "got": {},
+        "want": {
+          "principal": 350000000,
+          "ratePct": 4.2,
+          "months": 360
+        }
+      },
+      {
+        "q": "주담대 4억 30년 4.1프로 원리금균등 월 납입금",
+        "got": {},
+        "want": {
+          "principal": 400000000,
+          "ratePct": 4.1,
+          "months": 360,
+          "method": "level"
+        }
+      },
+      {
+        "q": "신용대출 3천만원 금리 6.5% 3년",
+        "got": {},
+        "want": {
+          "principal": 30000000,
+          "ratePct": 6.5,
+          "months": 36
+        }
+      },
+      {
+        "q": "전세대출 2억 4천 3.5% 2년 이자만 내면 매달 얼마",
+        "got": {},
+        "want": {
+          "principal": 240000000,
+          "ratePct": 3.5,
+          "months": 24,
+          "method": "bullet"
+        }
+      },
+      {
+        "q": "1억 원 4.5퍼센트 15년",
+        "got": {},
+        "want": {
+          "principal": 100000000,
+          "ratePct": 4.5,
+          "months": 180
+        }
+      },
+      {
+        "q": "대출 2억5000만원 이율 3.9% 기간 25년",
+        "got": {},
+        "want": {
+          "principal": 250000000,
+          "ratePct": 3.9,
+          "months": 300
+        }
+      },
+      {
+        "q": "7천만원 4% 36개월 원리금균등",
+        "got": {},
+        "want": {
+          "principal": 70000000,
+          "ratePct": 4,
+          "months": 36,
+          "method": "level"
+        }
+      },
+      {
+        "q": "1000만원 7% 12개월",
+        "got": {},
+        "want": {
+          "principal": 10000000,
+          "ratePct": 7,
+          "months": 12
+        }
+      },
+      {
+        "q": "5억 3.7% 40년 원리금 균등 상환",
+        "got": {},
+        "want": {
+          "principal": 500000000,
+          "ratePct": 3.7,
+          "months": 480,
+          "method": "level"
+        }
+      },
+      {
+        "q": "3억 4% 30년 원금 균등이면 첫 달 얼마",
+        "got": {},
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4,
+          "months": 360,
+          "method": "principal"
+        }
+      },
+      {
+        "q": "자동차 할부 3000만원 5.9% 60개월",
+        "got": {},
+        "want": {
+          "principal": 30000000,
+          "ratePct": 5.9,
+          "months": 60
+        }
+      }
+    ]
+  },
+  {
+    "model": "@cf/openai/gpt-oss-20b",
+    "correct": 66,
+    "of": 80,
+    "errors": 0,
+    "p50ms": 1329,
+    "p90ms": 2212,
+    "misses": [
+      {
+        "q": "전세대출 2억 4천 3.5% 2년 이자만 내면 매달 얼마",
+        "got": {},
+        "want": {
+          "principal": 240000000,
+          "ratePct": 3.5,
+          "months": 24,
+          "method": "bullet"
+        }
+      },
+      {
+        "q": "8천 4.3% 10년 원리금균등",
+        "got": {
+          "principal": 8000000,
+          "ratePct": 4.3,
+          "months": 120,
+          "method": "level"
+        },
+        "want": {
+          "principal": 80000000,
+          "ratePct": 4.3,
+          "months": 120,
+          "method": "level"
+        }
+      },
+      {
+        "q": "30년 동안 4.5%로 3억 빌리면 매달 얼마?",
+        "got": {},
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4.5,
+          "months": 360
+        }
+      },
+      {
+        "q": "금리 3.9%에 25년, 2억 7천 원리금균등",
+        "got": {},
+        "want": {
+          "principal": 270000000,
+          "ratePct": 3.9,
+          "months": 300,
+          "method": "level"
+        }
+      },
+      {
+        "q": "4.7% 3억 2천 30년",
+        "got": {},
+        "want": {
+          "principal": 320000000,
+          "ratePct": 4.7,
+          "months": 360
+        }
+      },
+      {
+        "q": "2억 3천5백만원 4.1% 30년",
+        "got": {},
+        "want": {
+          "principal": 235000000,
+          "ratePct": 4.1,
+          "months": 360
+        }
+      },
+      {
+        "q": "4억 5천만원 대출 4% 30년 원리금균등 총이자",
+        "got": {},
+        "want": {
+          "principal": 450000000,
+          "ratePct": 4,
+          "months": 360,
+          "method": "level"
+        }
+      },
+      {
+        "q": "만기일시상환이 뭐예요",
+        "got": {},
+        "want": {
+          "method": "bullet"
+        }
+      },
+      {
+        "q": "거치 1년 하면 이자 얼마나 늘어요",
+        "got": {},
+        "want": {
+          "graceMonths": 12
+        }
+      },
+      {
+        "q": "금리 0.5% 오르면 얼마 더 내요",
+        "got": {},
+        "want": {
+          "ratePct": 0.5
+        }
+      },
+      {
+        "q": "2억 대출 15년 vs 30년",
+        "got": {},
+        "want": {
+          "principal": 200000000,
+          "months": 180
+        }
+      },
+      {
+        "q": "이자만 내면 매달 얼마? 2억 4%",
+        "got": {
+          "principal": 200000000,
+          "ratePct": 4
+        },
+        "want": {
+          "principal": 200000000,
+          "ratePct": 4,
+          "method": "bullet"
+        }
+      },
+      {
+        "q": "삼억 사점오프로 삼십년",
+        "got": {},
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4.5,
+          "months": 360
+        }
+      },
+      {
+        "q": "1억 오천 4% 10년",
+        "got": {},
+        "want": {
+          "principal": 150000000,
+          "ratePct": 4,
+          "months": 120
+        }
+      }
+    ]
+  },
+  {
+    "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    "correct": 68,
+    "of": 80,
+    "errors": 0,
+    "p50ms": 743,
+    "p90ms": 1106,
+    "misses": [
+      {
+        "q": "2억 대출 금리 4% 20년이면 월 상환액",
+        "got": {
+          "principal": 200000000,
+          "ratePct": 4,
+          "months": 240,
+          "method": "level"
+        },
+        "want": {
+          "principal": 200000000,
+          "ratePct": 4,
+          "months": 240
+        }
+      },
+      {
+        "q": "8천 4.3% 10년 원리금균등",
+        "got": {
+          "ratePct": 4.3,
+          "months": 120,
+          "method": "level"
+        },
+        "want": {
+          "principal": 80000000,
+          "ratePct": 4.3,
+          "months": 120,
+          "method": "level"
+        }
+      },
+      {
+        "q": "30년 동안 4.5%로 3억 빌리면 매달 얼마?",
+        "got": {
+          "principal": 300000000,
+          "ratePct": 4.5,
+          "months": 360,
+          "method": "level"
+        },
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4.5,
+          "months": 360
+        }
+      },
+      {
+        "q": "3년 거치 27년 분할 3억 4%",
+        "got": {
+          "principal": 300000000,
+          "ratePct": 4,
+          "months": 360,
+          "method": "level",
+          "graceMonths": 36
+        },
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4,
+          "months": 360,
+          "graceMonths": 36
+        }
+      },
+      {
+        "q": "3억 30년이면 매달 얼마예요",
+        "got": {
+          "principal": 300000000,
+          "months": 360,
+          "method": "level"
+        },
+        "want": {
+          "principal": 300000000,
+          "months": 360
+        }
+      },
+      {
+        "q": "거치 1년 하면 이자 얼마나 늘어요",
+        "got": {},
+        "want": {
+          "graceMonths": 12
+        }
+      },
+      {
+        "q": "금리 0.5% 오르면 얼마 더 내요",
+        "got": {},
+        "want": {
+          "ratePct": 0.5
+        }
+      },
+      {
+        "q": "2억 대출 15년 vs 30년",
+        "got": {
+          "principal": 200000000
+        },
+        "want": {
+          "principal": 200000000,
+          "months": 180
+        }
+      },
+      {
+        "q": "6% 5년 차 할부",
+        "got": {
+          "ratePct": 6,
+          "months": 60,
+          "method": "level"
+        },
+        "want": {
+          "ratePct": 6,
+          "months": 60
+        }
+      },
+      {
+        "q": "삼억 사점오프로 삼십년",
+        "got": {
+          "principal": 350000000,
+          "months": 360
+        },
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4.5,
+          "months": 360
+        }
+      },
+      {
+        "q": "1억 오천 4% 10년",
+        "got": {
+          "principal": 105000000,
+          "ratePct": 4,
+          "months": 120
+        },
+        "want": {
+          "principal": 150000000,
+          "ratePct": 4,
+          "months": 120
+        }
+      },
+      {
+        "q": "제가 3억을 빌렸는데요 금리가 4.5%고 30년이에요 매달 얼마 내야 돼요?",
+        "got": {
+          "principal": 300000000,
+          "ratePct": 4.5,
+          "months": 360,
+          "method": "level"
+        },
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4.5,
+          "months": 360
+        }
+      }
+    ]
+  },
+  {
+    "model": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+    "correct": 74,
+    "of": 80,
+    "errors": 1,
+    "p50ms": 1483,
+    "p90ms": 2870,
+    "misses": [
+      {
+        "q": "3년 거치 27년 분할 3억 4%",
+        "got": {
+          "principal": 300000000,
+          "ratePct": 4,
+          "months": 300,
+          "graceMonths": 36
+        },
+        "want": {
+          "principal": 300000000,
+          "ratePct": 4,
+          "months": 360,
+          "graceMonths": 36
+        }
+      },
+      {
+        "q": "30년 만기 4.2% 대출",
+        "got": {
+          "ratePct": 4.2,
+          "months": 360,
+          "method": "bullet"
+        },
+        "want": {
+          "ratePct": 4.2,
+          "months": 360
+        }
+      },
+      {
+        "q": "거치 1년 하면 이자 얼마나 늘어요",
+        "got": {},
+        "want": {
+          "graceMonths": 12
+        }
+      },
+      {
+        "q": "2억 대출 15년 vs 30년",
+        "got": {
+          "principal": 200000000
+        },
+        "want": {
+          "principal": 200000000,
+          "months": 180
+        }
+      },
+      {
+        "q": "1억 오천 4% 10년",
+        "got": {
+          "principal": 105000000,
+          "ratePct": 4,
+          "months": 120
+        },
+        "want": {
+          "principal": 150000000,
+          "ratePct": 4,
+          "months": 120
+        }
+      }
+    ]
+  }
+]

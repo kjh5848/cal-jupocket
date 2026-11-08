@@ -21,3 +21,22 @@ CREATE TABLE IF NOT EXISTS reminders (
 
 CREATE INDEX IF NOT EXISTS reminders_due ON reminders (send_on, sent_at);
 CREATE INDEX IF NOT EXISTS reminders_sub ON reminders (sub_id);
+
+-- AI에게 물어보기(2026-11-08). 횟수 세기 — key 는 날짜를 섞은 IP 해시(IP 원문 없음), 매일 지운다
+CREATE TABLE IF NOT EXISTS chat_rate (
+  key TEXT NOT NULL,
+  day TEXT NOT NULL,
+  n INTEGER NOT NULL,
+  PRIMARY KEY (key, day)
+);
+
+-- 계산 못 한 질문(범위 밖·값 부족) — 다음 글감. 질문 문장과 날짜·페이지뿐, 누가 물었는지는 없다
+CREATE TABLE IF NOT EXISTS chat_questions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  asked_on TEXT NOT NULL,
+  page TEXT,
+  question TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  query_json TEXT
+);
+CREATE INDEX IF NOT EXISTS chat_questions_day ON chat_questions (asked_on);

@@ -1,7 +1,8 @@
 /**
  * api.jupocket.com — JU포켓 서버 쪽 기능(2026-11-07~).
  *
- * 지금은 알림(웹 푸시)만 한다.
+ *   POST /api/chat          대출 계산기 "AI에게 물어보기"(chat.ts) — 숫자는 계산 코드에서만 나온다
+ *   POST /api/chat/eval     모델 비교용(EVAL_KEY 헤더가 맞을 때만) — 모델이 뽑은 값과 걸린 시간
  *   POST /push/subscribe    구독 + 일정 저장(같은 구독이면 아직 안 보낸 알림을 새 일정으로 바꾼다)
  *   POST /push/unsubscribe  구독과 알림을 지운다
  *   GET  /health
@@ -11,11 +12,15 @@
  */
 import { sendPush, type Vapid } from "./webpush";
 import { expandReminders, validEndpoint, todayKst, addDays } from "./reminders";
+import { chat, extractWithModel } from "./chat";
 
 export interface Env {
   DB: D1Database;
   VAPID_PUBLIC: string;
   VAPID_PRIVATE: string;
+  AI: Ai;
+  CHAT_MODEL?: string;
+  EVAL_KEY?: string;
 }
 
 const ORIGINS = new Set(["https://jupocket.com", "https://www.jupocket.com", "http://localhost:4321"]);
@@ -136,6 +141,10 @@ export async function sendDue(env: Env, today = todayKst()): Promise<{ sent: num
   }
   // 오래된 기록 정리 — 보낸 지 30일 지난 알림, 놓친 지 오래된 알림
   await env.DB.prepare("DELETE FROM reminders WHERE send_on < ?1").bind(addDays(today, -30)).run();
+  // 질문 횟수 세기는 그날만 쓴다
+  await env.DB.prepare("DELETE FROM chat_rate WHERE day < ?1").bind(today).run();
+  // 글감으로 모은 질문은 180일만 둔다(개인정보 처리방침과 같은 기간)
+  await env.DB.prepare("DELETE FROM chat_questions WHERE asked_on < ?1").bind(addDays(today, -180)).run();
   return { sent, gone, failed };
 }
 
@@ -146,6 +155,29 @@ export default {
     if (pathname === "/health") return json(req, { ok: true });
     if (req.method === "POST" && pathname === "/push/subscribe") return subscribe(req, env, ctx);
     if (req.method === "POST" && pathname === "/push/unsubscribe") return unsubscribe(req, env);
+    if (req.method === "POST" && pathname === "/api/chat") {
+      const b = await readBody(req);
+      if (typeof b?.q !== "string") return json(req, { ok: false, error: "q" }, 400);
+      const r = await chat(b.q, env, {
+        ip: req.headers.get("CF-Connecting-IP") ?? "",
+        day: todayKst(),
+        page: typeof b.page === "string" ? b.page : "",
+        waitUntil: (p) => ctx.waitUntil(p),
+      });
+      return json(req, r.body, r.status);
+    }
+    if (req.method === "POST" && pathname === "/api/chat/eval") {
+      if (!env.EVAL_KEY || req.headers.get("X-Eval-Key") !== env.EVAL_KEY) return json(req, { ok: false }, 403);
+      const b = await readBody(req);
+      if (typeof b?.q !== "string" || typeof b?.model !== "string") return json(req, { ok: false }, 400);
+      const t0 = Date.now();
+      try {
+        const query = await extractWithModel(env, b.q, b.model);
+        return json(req, { ok: true, query, ms: Date.now() - t0 });
+      } catch (e) {
+        return json(req, { ok: false, error: String(e).slice(0, 200), ms: Date.now() - t0 });
+      }
+    }
     return json(req, { ok: false, error: "not found" }, 404);
   },
   async scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {

@@ -8,6 +8,7 @@
   "compatibility_date": "2026-08-06",
   "routes": [{ "pattern": "api.jupocket.com", "custom_domain": true }],
   "d1_databases": [{ "binding": "DB", "database_name": "jupocket-push", "database_id": "39827f6b-1bd3-47ba-8bf2-120b38b3dbde" }],
+  "ai": { "binding": "AI" },
   "triggers": { "crons": ["0 0 * * *"] },
   "vars": {
     "VAPID_PUBLIC": "BJxT2bnOGkEJ47wLWgt3garOFdSNX6JjzRnsPmTbLLWlzI9tBnctFLrMHyI5SWGyFRVYDxeaYw50jcN_fOUDwvE"
