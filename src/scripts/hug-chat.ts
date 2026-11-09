@@ -128,8 +128,27 @@ interface Chip {
   run: () => void;
   primary?: boolean;
 }
+/**
+ * 고르는 흐름(퀴즈·계산·일정)의 지나온 질문 — 잘못 눌렀을 때 '← 이전'으로 바로 앞 질문을 다시 묻는다.
+ * 질문을 띄우는 함수가 맨 앞에서 mark() 로 자기를 다시 부를 방법을 남긴다. 같은 질문을 다시 띄우면(입력 오류 등) 겹쳐 쌓지 않는다.
+ */
+let trail: { key: string; again: () => void }[] = [];
+function mark(key: string, again: () => void) {
+  if (trail[trail.length - 1]?.key === key) trail.pop();
+  trail.push({ key, again });
+}
+function goBack() {
+  trail.pop();
+  const prev = trail.pop();
+  if (!prev) return;
+  // 열려 있던 날짜·금액 입력칸은 닫는다 — 남겨 두면 지나간 질문에 답이 들어간다
+  log?.querySelectorAll(".hc-date").forEach((r) => r.remove());
+  say("← 이전");
+  prev.again();
+}
 function showChips(list: Chip[]) {
   if (!chips) return;
+  if (trail.length > 1) list = [...list, { label: "← 이전", run: goBack }];
   chips.replaceChildren(
     ...list.map((c) => {
       const b = el("button", c.label);
@@ -231,6 +250,7 @@ let known: string[] = [];
 let unknown: string[] = [];
 
 function startQuiz() {
+  trail = [];
   known = [];
   unknown = [];
   bubble("bot", "좋아요. 어디서부터 설명드릴지 정하려고 4가지만 짧게 여쭤볼게요. 모르셔도 괜찮아요, 바로 풀어 드릴게요.");
@@ -239,6 +259,10 @@ function startQuiz() {
 function askQuiz(n: number) {
   const q = QUIZ[n];
   if (!q) return quizDone();
+  mark(`quiz${n}`, () => askQuiz(n));
+  // 이전으로 돌아와 다시 답하면 앞서 고른 답은 지운다
+  known = known.filter((x) => x !== q.id);
+  unknown = unknown.filter((x) => x !== q.id);
   bubble("bot", q.ask);
   showChips([
     { label: "알아요", run: () => (say("알아요"), known.push(q.id), askQuiz(n + 1)) },
@@ -267,6 +291,7 @@ function explainQuiz(q: QuizQ, n: number) {
   showChips([...cont, ...termChips(b.textContent ?? "", q.terms, cont)]);
 }
 function quizDone() {
+  trail = [];
   level = unknown.length >= 3 ? "new" : unknown.length >= 1 ? "some" : "ready";
   track("hug_quiz_done", { level, unknown: unknown.length });
   const msg =
@@ -280,6 +305,7 @@ function quizDone() {
   askStage();
 }
 function askStage() {
+  trail = [];
   // 고를 것이 많으면 아래 칩(가로 스크롤)에 숨지 않게 말풍선 안에 버튼으로 보여 준다
   const b = bubble("bot", "지금 어느 단계세요? 고르시면 그 단계부터 안내해 드려요.");
   b.append(optsEl(STAGES.map((st) => ({ label: st.label, hint: STAGE_HINT[st.id], run: () => pickStage(st) }))));
@@ -296,6 +322,7 @@ function showStages() {
 }
 
 function stageHouse() {
+  trail = [];
   const text = "좋아요, 대부분 이 단계에서 시작해요. 집을 고르기 전·보러 갈 때·가격 볼 때 챙길 것을 HUG 전세사기예방센터 안내로 정리해 뒀어요. 궁금한 것부터 눌러 보세요.";
   bubble("bot", text);
   remember("집 보는 중이에요", text);
@@ -307,6 +334,7 @@ function stageHouse() {
   ]);
 }
 function stageLiving() {
+  trail = [];
   const text = "살고 계시면 지금 챙길 건 두 가지예요. 보증 가입·갱신 통보 기한이 언제인지, 그리고 집주인과 주고받는 말을 기록으로 남기는 것이에요.";
   bubble("bot", text);
   remember("이미 살고 있어요", text);
@@ -317,6 +345,7 @@ function stageLiving() {
   ]);
 }
 function stageTrouble() {
+  trail = [];
   const text = "많이 답답하시죠. 순서대로 같이 볼게요. 어떤 상황인지 골라 주시거나 아래 칸에 적어 주세요.";
   bubble("bot", text);
   remember("집주인과 문제가 생겼어요", text);
@@ -330,6 +359,7 @@ function guideChip(g: Guide): Chip {
 }
 
 function showGuide(g: Guide) {
+  trail = [];
   const b = bubble("bot");
   const ol = el("ol", undefined, "hc-steps");
   for (const s of g.steps) ol.append(el("li", s));
@@ -413,13 +443,19 @@ function askDate(question: string, hint: string, done: (v: string) => void) {
 }
 
 function startPlan() {
+  trail = [];
   const p: Partial<SavedPlan> = {};
+  askContract(p);
+}
+function askContract(p: Partial<SavedPlan>) {
+  mark("plan-contract", () => askContract(p));
   askDate("계약서를 쓴 날(또는 쓸 날)이 언제예요?", "아직 정해지지 않았다면 예정일을 넣어도 돼요. 나중에 바꿀 수 있어요.", (v) => {
     p.contract = v;
     askStart(p);
   });
 }
 function askStart(p: Partial<SavedPlan>) {
+  mark("plan-start", () => askStart(p));
   askDate("잔금을 치르고 들어가는 날(잔금일)은요?", "", (s) => {
     if (toDay(s)! < toDay(p.contract!)!) {
       bubble("bot", "잔금일이 계약일보다 앞이에요. 다시 골라 주세요.");
@@ -430,20 +466,30 @@ function askStart(p: Partial<SavedPlan>) {
   });
 }
 function askMoveIn(p: Partial<SavedPlan>) {
+  mark("plan-movein", () => askMoveIn(p));
   bubble("bot", "전입신고는 잔금일에 같이 하실 건가요? 같은 날 하는 게 가장 안전해요.");
   showChips([
     { label: "네, 같은 날 해요", primary: true, run: () => (say("네, 같은 날 해요"), (p.moveIn = p.start), askTerm(p)) },
-    { label: "다른 날이에요", run: () => (say("다른 날이에요"), askDate("전입신고하는 날은요?", "", (m) => ((p.moveIn = m), askTerm(p)))) },
+    { label: "다른 날이에요", run: () => (say("다른 날이에요"), askMoveInDate(p)) },
   ]);
 }
+function askMoveInDate(p: Partial<SavedPlan>) {
+  mark("plan-movein-date", () => askMoveInDate(p));
+  askDate("전입신고하는 날은요?", "", (m) => ((p.moveIn = m), askTerm(p)));
+}
 function askTerm(p: Partial<SavedPlan>) {
+  mark("plan-term", () => askTerm(p));
   bubble("bot", "계약 기간은요?");
   const endAfter = (months: number) => fromDay(addMonths(toDay(p.start!)!, months) - 1);
   showChips([
     { label: "2년", primary: true, run: () => (say("2년"), finish({ ...p, end: endAfter(24) } as SavedPlan)) },
     { label: "1년", run: () => (say("1년"), finish({ ...p, end: endAfter(12) } as SavedPlan)) },
-    { label: "만료일 직접 고르기", run: () => (say("만료일 직접 고를게요"), askDate("계약이 끝나는 날은요?", "", (e) => finish({ ...p, end: e } as SavedPlan))) },
+    { label: "만료일 직접 고르기", run: () => (say("만료일 직접 고를게요"), askEnd(p)) },
   ]);
+}
+function askEnd(p: Partial<SavedPlan>) {
+  mark("plan-end", () => askEnd(p));
+  askDate("계약이 끝나는 날은요?", "", (e) => finish({ ...p, end: e } as SavedPlan));
 }
 
 function finish(p: SavedPlan) {
@@ -461,6 +507,7 @@ function itemsOf(p: SavedPlan): PlanItem[] {
 }
 
 function showPlan(p: SavedPlan) {
+  mark("plan-result", () => showPlan(p));
   const items = itemsOf(p);
   const nxt = nextItem(items);
   const b = bubble("bot");
@@ -545,12 +592,15 @@ function askAmount(question: string, hint: string, done: (won: number) => void, 
 }
 
 function startCalc() {
+  trail = [];
   const x: Partial<CheckInput> = {};
+  mark("calc-type", startCalc);
   bubble("bot", "HUG 전세보증 가입이 되는지, 보증료는 얼마인지 계산해 볼게요. 몇 가지만 여쭤볼게요. 어떤 집이에요?");
   const types: [HouseType, string][] = [["apartment", "아파트"], ["officetel", "오피스텔"], ["row", "빌라(연립·다세대)"], ["multi", "단독·다가구"]];
   showChips(types.map(([t, l]) => ({ label: l, run: () => (say(l), (x.type = t), calcRegion(x)) })));
 }
 function calcRegion(x: Partial<CheckInput>) {
+  mark("calc-region", () => calcRegion(x));
   bubble("bot", "집이 수도권(서울·경기·인천)에 있나요? 보증금 상한이 달라요.");
   showChips([
     { label: "수도권이에요", run: () => (say("수도권이에요"), (x.capital = true), calcBasis(x)) },
@@ -558,24 +608,37 @@ function calcRegion(x: Partial<CheckInput>) {
   ]);
 }
 function calcBasis(x: Partial<CheckInput>) {
+  mark("calc-basis", () => calcBasis(x));
   const b = bubble("bot", "집값은 무엇으로 아세요? HUG는 아파트면 KB·부동산테크 시세를 먼저 보고, 빌라(연립·다세대)·단독주택은 공시가격 × 140%를 먼저 봐요(감정평가서가 있으면 그게 가장 먼저예요). 공시가격은 '부동산 공시가격 알리미'에서 주소로 찾을 수 있어요.");
   b.append(sourcesEl([{ name: "부동산 공시가격 알리미", url: "https://www.realtyprice.kr/" }]));
   showChips([
-    { label: "공시가격을 알아요", primary: true, run: () => (say("공시가격을 알아요"), (x.basis = "public"), askAmount("공시가격이 얼마예요?", "", (n) => ((x.price = n), calcDeposit(x)))) },
-    { label: "시세·감정가로 볼게요", run: () => (say("시세·감정가로 볼게요"), (x.basis = "market"), askAmount("시세(또는 감정가)가 얼마예요?", "KB시세·감정평가액처럼 HUG가 인정하는 값이어야 해요.", (n) => ((x.price = n), calcDeposit(x)))) },
+    { label: "공시가격을 알아요", primary: true, run: () => (say("공시가격을 알아요"), (x.basis = "public"), calcPrice(x)) },
+    { label: "시세·감정가로 볼게요", run: () => (say("시세·감정가로 볼게요"), (x.basis = "market"), calcPrice(x)) },
   ]);
 }
+function calcPrice(x: Partial<CheckInput>) {
+  mark("calc-price", () => calcPrice(x));
+  if (x.basis === "public") askAmount("공시가격이 얼마예요?", "", (n) => ((x.price = n), calcDeposit(x)));
+  else askAmount("시세(또는 감정가)가 얼마예요?", "KB시세·감정평가액처럼 HUG가 인정하는 값이어야 해요.", (n) => ((x.price = n), calcDeposit(x)));
+}
 function calcDeposit(x: Partial<CheckInput>) {
-  askAmount("전세 보증금은요?", "", (n) => {
-    x.deposit = n;
-    askAmount("집에 먼저 잡힌 빚(근저당 채권최고액)은요?", "등기부등본 을구에 적힌 채권최고액이에요. 없으면 아래 '없어요'를 눌러 주세요.", (s) => {
-      x.senior = s;
-      if (x.type === "multi") askAmount("나보다 먼저 들어온 다른 세입자들의 보증금 합계는요?", "단독·다가구는 이것도 먼저 잡힌 빚으로 봐요.", (o) => ((x.otherDeposits = o), calcTerm(x)), "없어요(나 혼자)");
-      else calcTerm(x);
-    }, "없어요");
-  });
+  mark("calc-deposit", () => calcDeposit(x));
+  askAmount("전세 보증금은요?", "", (n) => ((x.deposit = n), calcSenior(x)));
+}
+function calcSenior(x: Partial<CheckInput>) {
+  mark("calc-senior", () => calcSenior(x));
+  askAmount("집에 먼저 잡힌 빚(근저당 채권최고액)은요?", "등기부등본 을구에 적힌 채권최고액이에요. 없으면 아래 '없어요'를 눌러 주세요.", (s) => {
+    x.senior = s;
+    if (x.type === "multi") calcOthers(x);
+    else calcTerm(x);
+  }, "없어요");
+}
+function calcOthers(x: Partial<CheckInput>) {
+  mark("calc-others", () => calcOthers(x));
+  askAmount("나보다 먼저 들어온 다른 세입자들의 보증금 합계는요?", "단독·다가구는 이것도 먼저 잡힌 빚으로 봐요.", (o) => ((x.otherDeposits = o), calcTerm(x)), "없어요(나 혼자)");
 }
 function calcTerm(x: Partial<CheckInput>) {
+  mark("calc-term", () => calcTerm(x));
   bubble("bot", "보증 기간(계약 기간)은요?");
   showChips([
     { label: "2년", primary: true, run: () => (say("2년"), (x.months = 24), calcDiscount(x)) },
@@ -583,6 +646,7 @@ function calcTerm(x: Partial<CheckInput>) {
   ]);
 }
 function calcDiscount(x: Partial<CheckInput>) {
+  mark("calc-discount", () => calcDiscount(x));
   bubble("bot", "보증료 할인 대상인가요? 하나만 적용돼요.");
   const list = Object.entries(DISCOUNT_LABEL) as [Exclude<PremiumDiscount, "none">, string][];
   showChips([
@@ -591,6 +655,7 @@ function calcDiscount(x: Partial<CheckInput>) {
   ]);
 }
 function calcDone(x: CheckInput) {
+  mark("calc-result", () => calcDone(x));
   const r = checkAnswer(x);
   const b = bubble("bot", r.text);
   const dl = el("dl");
@@ -691,6 +756,7 @@ input?.addEventListener("keydown", (e) => {
 
 function restart() {
   if (busy || !log) return;
+  trail = [];
   history = [];
   level = null;
   log.replaceChildren();
