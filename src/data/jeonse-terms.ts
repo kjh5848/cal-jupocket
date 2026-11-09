@@ -53,13 +53,13 @@ export const TERM_GROUPS: { h: string; terms: Term[] }[] = [
   {
     h: "보증·대출",
     terms: [
-      { t: "전세보증금반환보증(전세반환보증)", d: "계약이 끝났는데 집주인이 보증금을 돌려주지 못하면 HUG(주택도시보증공사)가 대신 돌려주는 보증입니다. 세입자가 가입합니다.", ex: "2년 뒤 집주인이 \"돈이 없다\"며 보증금을 못 돌려주면 HUG에 청구해 대신 받습니다.", src: S.returnGuarantee },
-      { t: "전세안심보증", d: "보증금 반환 보증에 전세대출 상환 보증을 묶은 상품입니다. 집주인이 돌려주지 못하면 HUG가 세입자에게 보증금을, 은행에 대출금을 대신 갚습니다.", ex: "보증금 일부를 은행 대출로 냈다면, 사고가 났을 때 HUG가 은행 대출은 은행에 갚고 나머지는 세입자에게 돌려줍니다.", src: S.loanGuarantee },
-      { t: "버팀목 전세자금", d: "주택도시기금이 빌려주는 전세대출입니다. 무주택 세대주이고 소득·자산 조건을 맞춰야 합니다. 대출의 담보로 HUG·HF 보증을 함께 씁니다.", ex: "기금e든든 누리집이나 은행에서 신청하지만, 빌려주는 돈은 주택도시기금에서 나옵니다.", src: S.beotimmokSteps },
-      { t: "보증한도", d: `HUG가 보증해 줄 수 있는 최대 금액입니다. 주택가격의 ${G.ltvLimitPct}%에서 선순위채권을 뺀 금액입니다.`, ex: `집값이 ${won(exPrice)}이고 근저당이 ${won(exSenior)}이면, ${won(exPrice)}의 ${G.ltvLimitPct}%인 ${won(exLine)}에서 ${won(exSenior)}을 빼 ${won(exLine - exSenior)}까지 보증됩니다.`, src: S.returnGuarantee },
-      { t: "선순위채권", d: "내 보증금보다 먼저 돌려받을 권리가 있는 빚입니다. 대표적인 것이 등기부 을구(집에 잡힌 빚을 적는 칸)의 근저당입니다.", ex: "은행 근저당이 먼저 잡힌 집이 경매로 팔리면 판 돈을 순서대로 나눠, 은행이 먼저 가져가고 남은 돈에서 내 보증금을 받습니다.", src: S.returnGuarantee },
-      { t: "공시가격 × 140%", d: `감정평가서나 시세가 없을 때 HUG는 공시가격의 ${G.publicPriceMultiplierPct}%를 주택가격으로 봅니다. 공시가격은 부동산공시가격알리미(realtyprice.kr)에서 찾습니다.`, ex: `공시가격이 ${won(exPublic)}이면 HUG는 집값을 ${won((exPublic * G.publicPriceMultiplierPct) / 100)}으로 봅니다.`, src: S.returnGuarantee },
-      { t: "사전한도심사", d: `계약 시작 ${D.preLimitReviewDaysBefore}일 전까지 안심전세앱에서 보증 한도를 미리 확인하는 절차입니다.`, ex: `잔금일이 12월 20일이면 12월 ${20 - D.preLimitReviewDaysBefore}일까지 미리 한도를 확인해 둡니다.`, src: S.returnGuarantee },
+      { t: "전세보증금반환보증(전세반환보증)", d: "전세계약이 끝났을 때 집주인이 돌려줘야 하는 전세보증금의 반환을 HUG(주택도시보증공사)가 책임지는 보증입니다. 전세계약서상의 세입자가 신청하고, 계약기간의 절반이 지나기 전에 가입해야 합니다.", ex: "2년 뒤 집주인이 \"돈이 없다\"며 보증금을 못 돌려주면 HUG에 청구해 대신 받습니다.", src: S.returnGuarantee },
+      { t: "전세안심보증", d: "세입자에게는 전세보증금 반환(전세반환보증)을, 대출해 준 은행에는 전세대출의 원리금 상환(전세대출보증)을 HUG가 함께 책임지는 보증입니다. 전세대출을 받는 만 19세 이상 세입자가 은행에서 신청합니다.", ex: `전세대출을 받으면서 이 보증을 들면 보증금 반환 보증과 대출 보증을 한 번에 받습니다. 새 계약이면 잔금일과 전입신고일 중 빠른 날부터 ${D.loanGuaranteeMonths}개월 안에 신청하고, 집주인은 채권양도 통지를 받거나 승낙해 줘야 합니다.`, src: S.loanGuarantee },
+      { t: "버팀목 전세자금", d: "주택도시기금이 근로자·서민에게 빌려주는 전세대출입니다. 무주택 세대주이고 소득·자산 조건을 맞춰야 합니다. 대출과 별도로 HF·HUG 등의 보증도 기한 안에 신청해야 합니다.", ex: `기금e든든 누리집이나 은행에서 신청하지만, 빌려주는 돈은 주택도시기금에서 나옵니다. 잔금일과 전입일 중 빠른 날부터 ${r.beotimmok.applyMonths}개월 안에 신청합니다.`, src: S.beotimmok },
+      { t: "보증한도", d: `HUG가 보증해 줄 수 있는 최대 금액입니다. 주택가격의 ${G.ltvLimitPct}%에서 선순위채권 등을 뺀 금액입니다.`, ex: `집값이 ${won(exPrice)}이고 근저당이 ${won(exSenior)}이면, ${won(exPrice)}의 ${G.ltvLimitPct}%인 ${won(exLine)}에서 ${won(exSenior)}을 빼 ${won(exLine - exSenior)}까지 보증됩니다.`, src: S.returnGuarantee },
+      { t: "선순위채권", d: `내 전세보증금보다 먼저 돌려받을 권리(우선변제권)가 인정되는 담보채권입니다. 등기부 을구의 근저당 금액과 등기일자로 확인하고, 단독·다중·다가구주택은 나보다 앞선 다른 세입자들의 보증금 합계도 들어갑니다. 선순위채권이 주택가격의 ${G.seniorLimitPct}%를 넘으면 가입할 수 없습니다.`, ex: `을구에 은행 근저당이 ${won(exSenior)} 잡혀 있으면, HUG는 그 ${won(exSenior)}을 선순위채권으로 보고 보증한도에서 뺍니다.`, src: S.returnGuarantee },
+      { t: "공시가격 × 140%", d: `HUG가 주택가격을 정할 때 쓰는 기준 중 하나로, 국토교통부가 공시한 가격의 ${G.publicPriceMultiplierPct}%입니다. 연립·다세대·단독주택은 이것을 맨 먼저 쓰고, 아파트는 KB·부동산테크 시세가 없을 때 씁니다. 감정평가서가 있으면 감정평가가 가장 먼저입니다.`, ex: `공시가격이 ${won(exPublic)}이면 HUG는 집값을 ${won((exPublic * G.publicPriceMultiplierPct) / 100)}으로 봅니다. 아파트·연립·다세대 공시가격은 부동산공시가격알리미(realtyprice.kr)에서, 오피스텔 기준시가는 홈택스에서 찾습니다.`, src: S.returnGuarantee },
+      { t: "사전한도심사", d: `이사하기 전에 주택가격과 집주인이 보증 금지 대상인지 등을 미리 심사해 가입할 수 있는지 알려 주는 절차입니다. 계약한 날부터 계약 시작일 ${D.preLimitReviewDaysBefore}일 전까지 안심전세앱에서 신청하고, 이사한 뒤 본심사를 거쳐 보증서를 받습니다. 아파트·주거용 오피스텔·연립·다세대만 됩니다.`, ex: `계약 시작일이 12월 20일이면 12월 ${20 - D.preLimitReviewDaysBefore}일까지 사전한도심사를 신청합니다.`, src: S.returnGuarantee },
     ],
   },
   {
