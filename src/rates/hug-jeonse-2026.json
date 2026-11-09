@@ -181,6 +181,10 @@
     "ratePctMax": 3.5,
     "applyMonths": 3
   },
+  "registry": {
+    "maxClaimTypicalPct": 120,
+    "maxClaimTypicalSource": "https://www.khug.or.kr/jeonse/web/s03/s030105.jsp"
+  },
   "docsValidMonths": 1,
   "houseHunting": {
     "verifiedOn": "2026-11-08",
