@@ -205,7 +205,7 @@ export function checkAnswer(x: CheckInput): { text: string; lines: { label: stri
     !x.months && `계약기간은 ${term}으로 계산했어요(다르면 알려 주세요).`,
     !x.discount && `연소득 ${eok(P.lowIncomeMax)} 이하(${P.discountPct.lowIncome}% 할인)나 신혼부부(${P.discountPct.newlywed}% 할인)처럼 할인 대상이면 말씀해 주세요.`,
     p.taxCreditOk && "보증료는 연말정산 세액공제도 받을 수 있어요.",
-    multi && "단독·다가구는 다른 세입자 계약 확인서를 내지 않으면 가장 높은 요율이 붙어요.",
+    multi && "단독·다가구는 다른 세입자 계약 확인서를 내지 않으면 그 보증금 구간의 가장 높은 요율이 붙어요.",
     p.surchargeApplied && p.discountPct > 0 && "할증·할인을 어떤 순서로 적용하는지는 HUG 안내에 없어 추산이에요.",
   ].filter(Boolean);
   const text = `${head} 가입 조건(보증금 상한·집값 90%·먼저 잡힌 빚)은 맞는 것으로 추산돼요. 보증료는 ${term} 동안 약 ${won(p.total)}이에요. ${extra.join(" ")} 실제 가입과 금액은 HUG 심사로 정해져요.`;
@@ -226,4 +226,4 @@ export function sourcesFor(cite: string[]): { name: string; url: string }[] {
 }
 
 export const FALLBACK = "이 질문은 JU포켓이 확인한 HUG 자료로는 정확히 답하기 어려워요. HUG 전세반환보증 안내 페이지나 HUG 고객센터에서 확인해 주세요. 보증 조건·서류·기한·버팀목 요건처럼 자료에 있는 내용은 바로 답해 드릴게요.";
-export const NOTE = "AI 답변은 HUG·주택도시기금·법령 원문에서 JU포켓이 확인한 자료(2026-11-07 확인)만 근거로 합니다. 가입 여부·대출 승인은 HUG와 은행 심사로 정해집니다.";
+export const NOTE = "AI 답변은 HUG·주택도시기금·법령 원문에서 JU포켓이 확인한 자료(2026-11-09 원문 재대조)만 근거로 합니다. 가입 여부·대출 승인은 HUG와 은행 심사로 정해집니다.";

@@ -219,7 +219,7 @@ const QUIZ: QuizQ[] = [
     id: "hug",
     ask: "먼저 하나 여쭤볼게요. HUG(허그)가 어떤 곳인지 아세요?",
     terms: [],
-    plain: "HUG는 주택도시보증공사예요. 국토교통부 산하 공공기관이고, 전세 세입자에게는 '집주인이 보증금을 못 돌려주면 대신 돌려주는 보증'을 파는 곳으로 많이 알려져 있어요.",
+    plain: "HUG는 주택도시보증공사예요. 전세 세입자를 위해서는, 전세계약이 끝났을 때 집주인이 돌려줘야 할 보증금의 반환을 책임지는 보증(전세반환보증)을 운영해요. 세입자가 보증료를 내고 직접 가입해요.",
     src: { name: "HUG 전세보증금반환보증", url: "https://www.khug.or.kr/hug/web/ig/dr/igdr000001.jsp" },
     read: ["checklist"],
   },
@@ -558,7 +558,7 @@ function calcRegion(x: Partial<CheckInput>) {
   ]);
 }
 function calcBasis(x: Partial<CheckInput>) {
-  const b = bubble("bot", "집값은 무엇으로 아세요? HUG는 보통 공시가격 × 140%로 봐요. 공시가격은 '부동산 공시가격 알리미'에서 주소로 찾을 수 있어요.");
+  const b = bubble("bot", "집값은 무엇으로 아세요? HUG는 아파트면 KB·부동산테크 시세를 먼저 보고, 빌라(연립·다세대)·단독주택은 공시가격 × 140%를 먼저 봐요(감정평가서가 있으면 그게 가장 먼저예요). 공시가격은 '부동산 공시가격 알리미'에서 주소로 찾을 수 있어요.");
   b.append(sourcesEl([{ name: "부동산 공시가격 알리미", url: "https://www.realtyprice.kr/" }]));
   showChips([
     { label: "공시가격을 알아요", primary: true, run: () => (say("공시가격을 알아요"), (x.basis = "public"), askAmount("공시가격이 얼마예요?", "", (n) => ((x.price = n), calcDeposit(x)))) },
