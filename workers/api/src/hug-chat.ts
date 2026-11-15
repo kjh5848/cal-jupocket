@@ -8,6 +8,8 @@
 import { SYSTEM, LEVEL_HINT, levelOf, cleanHistory, readModel, numbersGrounded, checkAnswer, sourcesFor, relevantKb, FALLBACK, NOTE, type Msg } from "../../../src/lib/hug-chat-core";
 import { pickJson, bump, hashIp, DEFAULT_MODEL, type ChatEnv } from "./chat";
 
+const FORMAT_REMINDER = '[답 형식 — 다시 한 번] 산문으로 답하지 말고, 반드시 {"reply": "...", "cite": ["자료 id"], "check": null 또는 {...}} 모양의 JSON 하나로만 답한다. 앞뒤에 다른 글자를 쓰지 않는다. 숫자는 [자료]에 있는 것만 쓴다.';
+
 const PER_IP_DAY = 60;
 const MODEL_PER_DAY = 3000;
 
@@ -42,6 +44,9 @@ export async function hugChat(body: Record<string, unknown> | null, env: ChatEnv
   const near = relevantKb(question);
   const focus = near.length ? `\n\n이 질문과 가장 가까운 자료: ${near.map((id) => `[${id}]`).join(", ")}. 이 자료부터 읽고, 맞으면 그 내용으로 답하고 cite 에 넣어라.` : "";
   const system = `${level ? `${SYSTEM}\n\n${LEVEL_HINT[level]}` : SYSTEM}${focus}`;
+  // 이전 답이 산문으로 기록에 들어가면 모델이 그 꼴을 따라 첫 답을 늘 산문으로 냈다(2026-11-15 디버그로 확인).
+  // 모델에게 보낼 때만 이전 답을 JSON 모양으로 감싼다 — 검사(readModel·numbersGrounded)는 원래 history 로 한다
+  const shown = history.map((m) => (m.role === "assistant" ? { role: m.role, content: JSON.stringify({ reply: m.content, cite: [], check: null }) } : m));
 
   const ipKey = await hashIp(opts.ip, opts.day);
   if ((await bump(env, `ip:${ipKey}`, opts.day)) > PER_IP_DAY) return { status: 429, body: { ok: false, error: "rate" } };
@@ -51,11 +56,11 @@ export async function hugChat(body: Record<string, unknown> | null, env: ChatEnv
   const raws: unknown[] = [];
   let aiDown = false;
   // 한 번 어긋나면(형식·근거 없는 숫자) 한 번만 다시 시킨다
-  let nudge: string | undefined;
+  let nudge: string | undefined = FORMAT_REMINDER;
   for (let i = 0; i < 2; i++) {
     let m;
     try {
-      const raw = await runModel(env, system, history, nudge);
+      const raw = await runModel(env, system, shown, nudge);
       if (opts.debug) raws.push(raw);
       m = readModel(raw, history);
     } catch (e) {
