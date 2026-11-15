@@ -7,8 +7,8 @@
  *
  * 녹화된 답을 가짜 AI 가 돌려주면 hugChat 이 숫자 검사·계산·다시 시키기를 그대로 거친다(비용 0).
  */
-import { hugChat, type HugReply } from "../hug-chat";
-import { SYSTEM, LEVEL_HINT, levelOf, type Msg } from "../../../../src/lib/hug-chat-core";
+import { hugChat, promptFor, type HugReply } from "../hug-chat";
+import { levelOf, type Msg } from "../../../../src/lib/hug-chat-core";
 import cases from "./fixtures/hug-cases.json";
 
 export type Case = (typeof cases.cases)[number] & { after?: string; next?: string };
@@ -25,10 +25,9 @@ export function historyOf(c: Case): Msg[] {
   return h;
 }
 
-/** 모델이 실제로 받는 system 문장(서버와 같은 규칙으로 만든다) */
-export function systemOf(c: Case): string {
-  const level = levelOf(c.level);
-  return level ? `${SYSTEM}\n\n${LEVEL_HINT[level]}` : SYSTEM;
+/** 모델이 실제로 받는 system·대화·형식 지시 — 서버의 promptFor 를 그대로 쓴다 */
+export function promptOf(c: Case) {
+  return promptFor(historyOf(c), c.level);
 }
 
 /** 녹화된 답(들)을 차례로 돌려주는 가짜 Workers AI 로 hugChat 을 돌린다 */

@@ -33,13 +33,11 @@ async function runModel(env: ChatEnv, system: string, history: Msg[], nudge?: st
   return pickJson(raw) ?? { unparsed: raw.slice(0, 1500) };
 }
 
-export async function hugChat(body: Record<string, unknown> | null, env: ChatEnv, opts: { ip: string; day: string; waitUntil?: (p: Promise<unknown>) => void; debug?: boolean }): Promise<{ status: number; body: HugReply & { debug?: unknown[] } }> {
-  const history = cleanHistory(body?.messages);
-  if (!history) return { status: 400, body: { ok: false, error: "messages" } };
-  const page = typeof body?.page === "string" ? body.page.slice(0, 100) : "";
+/** 모델에게 실제로 보내는 system·대화 — 리허설(Haiku 녹화)도 이 함수로 같은 것을 만든다 */
+export function promptFor(history: Msg[], rawLevel: unknown): { system: string; shown: Msg[]; nudge: string } {
   const question = history[history.length - 1].content;
   // 첫 화면에서 고른 "얼마나 아세요" — 답의 깊이만 바꾼다
-  const level = levelOf(body?.level);
+  const level = levelOf(rawLevel);
   // 자료가 길어 작은 모델이 앞쪽 자료로만 답하기 쉬워서, 질문과 가까운 자료를 먼저 짚어 준다
   const near = relevantKb(question);
   const focus = near.length ? `\n\n이 질문과 가장 가까운 자료: ${near.map((id) => `[${id}]`).join(", ")}. 이 자료부터 읽고, 맞으면 그 내용으로 답하고 cite 에 넣어라.` : "";
@@ -47,6 +45,15 @@ export async function hugChat(body: Record<string, unknown> | null, env: ChatEnv
   // 이전 답이 산문으로 기록에 들어가면 모델이 그 꼴을 따라 첫 답을 늘 산문으로 냈다(2026-11-15 디버그로 확인).
   // 모델에게 보낼 때만 이전 답을 JSON 모양으로 감싼다 — 검사(readModel·numbersGrounded)는 원래 history 로 한다
   const shown = history.map((m) => (m.role === "assistant" ? { role: m.role, content: JSON.stringify({ reply: m.content, cite: [], check: null }) } : m));
+  return { system, shown, nudge: FORMAT_REMINDER };
+}
+
+export async function hugChat(body: Record<string, unknown> | null, env: ChatEnv, opts: { ip: string; day: string; waitUntil?: (p: Promise<unknown>) => void; debug?: boolean }): Promise<{ status: number; body: HugReply & { debug?: unknown[] } }> {
+  const history = cleanHistory(body?.messages);
+  if (!history) return { status: 400, body: { ok: false, error: "messages" } };
+  const page = typeof body?.page === "string" ? body.page.slice(0, 100) : "";
+  const question = history[history.length - 1].content;
+  const { system, shown } = promptFor(history, body?.level);
 
   const ipKey = await hashIp(opts.ip, opts.day);
   if ((await bump(env, `ip:${ipKey}`, opts.day)) > PER_IP_DAY) return { status: 429, body: { ok: false, error: "rate" } };

@@ -286,6 +286,94 @@
       "expect": {
         "kind": "kb"
       }
+    },
+    {
+      "id": "gone-landlord",
+      "level": "some",
+      "turns": [
+        "집주인이 연락이 안 되고 내용증명도 반송됐어요"
+      ],
+      "expect": {
+        "kind": "kb",
+        "contains": [
+          "공시송달"
+        ]
+      }
+    },
+    {
+      "id": "claim-move-out",
+      "level": null,
+      "turns": [
+        "임차권등기 하면 이사 나가도 돼요?"
+      ],
+      "expect": {
+        "kind": "kb",
+        "contains": [
+          "10영업일"
+        ]
+      }
+    },
+    {
+      "id": "claim-interest",
+      "level": null,
+      "turns": [
+        "HUG가 늦게 준 이자도 받을 수 있어요?"
+      ],
+      "expect": {
+        "kind": "kb",
+        "contains": [
+          "집주인"
+        ]
+      }
+    },
+    {
+      "id": "no-guarantee-auction",
+      "level": "some",
+      "turns": [
+        "보증보험 없는데 집이 경매로 넘어갔어요"
+      ],
+      "expect": {
+        "kind": "kb",
+        "contains": [
+          "배당"
+        ]
+      }
+    },
+    {
+      "id": "product-loan-only",
+      "level": "some",
+      "turns": [
+        "전세대출 받을 때 보증 들었는데 그걸로 보증금도 지켜지나요?"
+      ],
+      "expect": {
+        "kind": "kb"
+      }
+    },
+    {
+      "id": "rent-conversion-cap",
+      "level": null,
+      "turns": [
+        "반전세도 보증 가입되나요? 보증금 상한은 어떻게 봐요?"
+      ],
+      "expect": {
+        "kind": "kb",
+        "contains": [
+          "6.5%"
+        ]
+      }
+    },
+    {
+      "id": "lease-report-must",
+      "level": null,
+      "turns": [
+        "임대차 신고는 꼭 해야 돼요?"
+      ],
+      "expect": {
+        "kind": "kb",
+        "contains": [
+          "30일"
+        ]
+      }
     }
   ]
 }

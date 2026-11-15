@@ -8,7 +8,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { CASES, historyOf, systemOf, replay, shown, kindOf } from "../workers/api/src/__tests__/hug-rehearsal";
+import { CASES, historyOf, promptOf, replay, shown, kindOf } from "../workers/api/src/__tests__/hug-rehearsal";
 import { SYSTEM } from "../src/lib/hug-chat-core";
 
 const [mode, out] = process.argv.slice(2);
@@ -17,7 +17,11 @@ const REC = "workers/api/src/__tests__/fixtures/hug-recorded.json";
 if (mode === "bundle") {
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, "system.txt"), SYSTEM);
-  const items = CASES.map((c) => ({ id: c.id, extraSystem: systemOf(c).slice(SYSTEM.length).trim() || null, messages: historyOf(c) }));
+  // 모델에게는 system.txt + extraSystem 을 system 으로, messages 뒤에 finalSystem 을 붙여 준다(서버 promptFor 와 같다)
+  const items = CASES.map((c) => {
+    const p = promptOf(c);
+    return { id: c.id, extraSystem: p.system.slice(SYSTEM.length).trim() || null, messages: p.shown, finalSystem: p.nudge };
+  });
   fs.writeFileSync(path.join(out, "cases.json"), JSON.stringify(items, null, 2));
   console.log(`${items.length} cases → ${out}`);
 } else if (mode === "report") {

@@ -19,6 +19,9 @@ import { checkAnswer, sourcesFor, type CheckInput } from "../lib/hug-chat-core";
 import { amountsIn } from "../lib/loan-parse";
 import { DISCOUNT_LABEL, refusalChecks, type HouseType, type PremiumDiscount } from "../lib/hug-jeonse";
 import { eok } from "../lib/hug-kb";
+import { matchAnswer, ANSWERS_VERIFIED_ON } from "../lib/hug-answers";
+
+const BANK_NOTE = `미리 준비해 둔 답이에요. HUG·주택도시기금·법령 원문에서 JU포켓이 확인한 자료(${ANSWERS_VERIFIED_ON} 대조)로 썼어요. 가입 여부·대출 승인은 HUG와 은행 심사로 정해집니다.`;
 import { loadPlan, savePlan, clearPlan, downloadIcs, type SavedPlan } from "./jeonse-plan-store";
 
 interface Msg {
@@ -847,7 +850,17 @@ async function send(q: string) {
     return startPlan();
   }
 
-  // 2) 그 밖의 질문은 AI
+  // 2) 미리 확인한 답변 모음 — 자주 나오는 질문은 AI 를 부르지 않는다(즉시·사용량 0)
+  const banked = matchAnswer(text);
+  if (banked) {
+    const a = banked.answer;
+    botAnswer({ ok: true, text: a.a, sources: sourcesFor(a.cite), note: BANK_NOTE });
+    history.push({ role: "user", content: text }, { role: "assistant", content: a.a.slice(0, 500) });
+    track("hug_chat_answer", { kind: "bank", id: a.id });
+    return;
+  }
+
+  // 3) 그 밖의 질문은 AI
   if (chips) chips.hidden = true;
   busy = true;
   go.disabled = true;
