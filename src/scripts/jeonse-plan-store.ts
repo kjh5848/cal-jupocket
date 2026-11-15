@@ -55,7 +55,7 @@ export function downloadIcs(items: ScheduleItem[], from: string) {
       `DTSTART;VALUE=DATE:${icsDate(i.day)}`,
       `DTEND;VALUE=DATE:${icsDate(i.day + 1)}`,
       `SUMMARY:${esc(`[전세] ${i.title}`)}`,
-      `DESCRIPTION:${esc(`${i.what}\n근거: ${i.basis}\nhttps://jupocket.com/guide/hug-jeonse-checklist/`)}`,
+      `DESCRIPTION:${esc(`${i.what}${i.warn ? `\n⚠ ${i.warn}` : ""}\n근거: ${i.basis}\nhttps://jupocket.com/guide/hug-jeonse-checklist/`)}`,
       "BEGIN:VALARM", "TRIGGER:-P3D", "ACTION:DISPLAY", `DESCRIPTION:${esc(i.title)}`, "END:VALARM",
       "END:VEVENT",
     );

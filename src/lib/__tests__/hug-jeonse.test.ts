@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import r from "../../rates/hug-jeonse-2026.json";
-import { hugGuarantee, hugSchedule } from "../hug-jeonse";
+import { hugGuarantee, hugSchedule, refusalChecks, REFUSAL_CHECKS } from "../hug-jeonse";
 import { toDay, fromDay } from "../date-calc";
 
 const d = (s: string) => toDay(s)!;
@@ -71,5 +71,36 @@ describe("전세 일정", () => {
   it("계약일보다 앞선 기한은 뺀다(계약 직후 바로 시작하는 경우 사전한도심사)", () => {
     const t = hugSchedule({ contract: d("2026-12-15"), start: d("2026-12-20"), moveIn: d("2026-12-20"), end: d("2028-12-19") });
     expect(t.find((i) => i.key === "pre-limit")).toBeUndefined();
+  });
+});
+
+describe("일정의 '하면 안 되는 것' — 순서 실수로 돈을 잃는 날", () => {
+  const same = hugSchedule({ contract: d("2026-11-10"), start: d("2026-12-20"), moveIn: d("2026-12-20"), end: d("2028-12-19") });
+  const late = hugSchedule({ contract: d("2026-11-10"), start: d("2026-12-20"), moveIn: d("2026-12-23"), end: d("2028-12-19") });
+  const warn = (s: typeof same, k: string) => s.find((i) => i.key === k)?.warn ?? "";
+  it("전입·만기·갱신거절·보증사고에 경고가 붙는다", () => {
+    for (const k of ["move-in", "renewal-deadline", "end", "accident"]) expect(warn(same, k)).not.toBe("");
+  });
+  it("전입이 잔금일보다 늦으면 며칠 늦는지 말한다", () => {
+    expect(warn(late, "move-in")).toContain("3일 늦어요");
+    expect(warn(same, "move-in")).not.toContain("늦어요");
+  });
+  it("만기·보증사고 경고는 임차권등기 전 이사를 막는다", () => {
+    expect(warn(same, "end")).toContain("임차권등기");
+    expect(warn(same, "accident")).toContain("임차권등기");
+  });
+});
+
+describe("숫자가 맞아도 가입이 안 되는 경우 — HUG 상품개요 가입 조건", () => {
+  it("아파트는 위반건축물을, 단독·다가구는 전입세대확인서를 묻지 않는다", () => {
+    expect(refusalChecks("apartment").map((c) => c.key)).not.toContain("violation");
+    expect(refusalChecks("multi").map((c) => c.key)).not.toContain("others");
+    expect(refusalChecks("row")).toHaveLength(REFUSAL_CHECKS.length);
+  });
+  it("계약기간 하한은 요율 파일 값", () => {
+    expect(REFUSAL_CHECKS.find((c) => c.key === "contract")!.text).toContain(`${r.guarantee.minTermYears}년 미만`);
+  });
+  it("모든 항목에 확인할 곳과 근거가 있다", () => {
+    for (const c of REFUSAL_CHECKS) expect(c.where && c.basis).toBeTruthy();
   });
 });

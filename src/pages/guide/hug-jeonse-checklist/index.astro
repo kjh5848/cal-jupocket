@@ -66,6 +66,7 @@ const QA = [
           <span class="hug-date">{fromDay(i.day)}</span>
           <strong>{i.title}</strong>
           <span class="hug-what">{i.what}</span>
+          {i.warn && <span class="hug-warn">⚠ {i.warn}</span>}
           <span class="hug-basis">근거 · {i.basis}</span>
         </li>
       ))}
@@ -151,6 +152,12 @@ const QA = [
     line-height: 1.6;
     background: var(--accent-bg);
     border-radius: var(--r-md);
+  }
+  .hug-steps :global(.hug-warn) {
+    padding: 0.35rem 0.55rem;
+    font-size: var(--t-sm);
+    background: var(--accent-bg);
+    border-radius: var(--r-sm);
   }
   .hug-basis {
     font-size: var(--t-xs);

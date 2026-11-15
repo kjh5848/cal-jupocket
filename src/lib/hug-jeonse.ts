@@ -183,6 +183,8 @@ export interface ScheduleItem {
   title: string;
   what: string;
   basis: string;
+  /** 이 날 하면 안 되는 것 — 유튜브 사례(docs/research/2026-11-15-jeonse-youtube-cases.md)에서 돈을 잃은 순서 실수. 근거는 basis 와 같다 */
+  warn?: string;
 }
 
 /** 날짜 순으로 정렬된 할 일. 계약일보다 앞서는 항목(이미 지난 사전한도심사 등)은 뺀다. */
@@ -193,13 +195,45 @@ export function hugSchedule(x: ScheduleInput): ScheduleItem[] {
   const items: ScheduleItem[] = [
     { key: "lease-report", day: x.contract + D.leaseReportDays, title: "임대차 신고 마감", what: `신고 대상 계약(대통령령으로 정한 금액 초과)이면 계약일부터 ${D.leaseReportDays}일 안에 집주인과 함께 주택 소재지 관청에 신고합니다(읍·면·동에 맡긴 곳은 주민센터). 전입신고를 하면 신고한 것으로 봅니다.`, basis: "부동산 거래신고 등에 관한 법률 제6조의2·제6조의5" },
     { key: "pre-limit", day: x.start - D.preLimitReviewDaysBefore, title: "HUG 사전한도심사 마감", what: `계약 시작 ${D.preLimitReviewDaysBefore}일 전까지 안심전세앱에서 신청합니다(아파트·오피스텔·연립·다세대).`, basis: "HUG 전세반환보증 상품개요" },
-    { key: "move-in", day: x.moveIn, title: "전입신고·확정일자", what: "잔금일에 등기부를 한 번 더 떼 보고, 전입신고와 확정일자를 받습니다. 대항력은 인도와 전입을 마친 다음 날부터 생깁니다.", basis: "주택임대차보호법 제3조·제3조의2" },
+    { key: "move-in", day: x.moveIn, title: "전입신고·확정일자", what: "잔금일에 등기부를 한 번 더 떼 보고, 전입신고와 확정일자를 받습니다. 대항력은 인도와 전입을 마친 다음 날부터 생깁니다.", basis: "주택임대차보호법 제3조·제3조의2", warn: x.moveIn > x.start ? `전입이 잔금일보다 ${x.moveIn - x.start}일 늦어요. 대항력은 전입 다음 날부터 생겨서, 그 전에 등기된 근저당·소유권 이전은 내 보증금보다 앞서요. 가능하면 잔금일에 전입하세요.` : "전입신고를 다음 날로 미루지 마세요. 대항력은 전입 다음 날부터 생겨서, 그 전에 등기된 근저당·소유권 이전은 내 보증금보다 앞서요." },
     { key: "loan-guarantee", day: addMonths(early, D.loanGuaranteeMonths), title: "버팀목 대출·전세안심보증 신청 마감", what: `잔금일과 전입일 중 빠른 날부터 ${D.loanGuaranteeMonths}개월 안에 신청합니다.`, basis: "HUG 전세안심보증 상품개요, 주택도시기금 버팀목 안내" },
     { key: "return-guarantee", day: late + half, title: "전세반환보증 가입 마감(추산)", what: "잔금일과 전입일 중 늦은 날부터 계약기간의 절반이 지나기 전에 가입합니다.", basis: "HUG 전세반환보증 상품개요" },
     { key: "renewal-open", day: addMonths(x.end, -D.renewalNoticeFromMonths), title: "갱신·이사 의사 알리기 시작", what: `만료 ${D.renewalNoticeFromMonths}개월 전부터 갱신을 요구하거나 갱신하지 않겠다고 알릴 수 있습니다.`, basis: "주택임대차보호법 제6조·제6조의3" },
-    { key: "renewal-deadline", day: addMonths(x.end, -D.renewalNoticeToMonths), title: "갱신거절 통지 마감 — 증빙 보관", what: `만료 ${D.renewalNoticeToMonths}개월 전까지 알리지 않으면 같은 조건으로 갱신된 것으로 봅니다. HUG 보증금 청구에는 이 기한 안에 알렸다는 증빙(내용증명 도달, 답장이 있는 문자 등)이 필요합니다.`, basis: "주택임대차보호법 제6조, HUG 보증사고 이행청구 안내" },
-    { key: "end", day: x.end, title: "계약 만료", what: "보증금을 돌려받는 날입니다. 받기 전에 전출하면 대항력을 잃을 수 있으니, 꼭 이사해야 하면 임차권등기를 먼저 마칩니다.", basis: "주택임대차보호법 제3조·제3조의3" },
-    { key: "accident", day: addMonths(x.end, D.accidentAfterMonths), title: "보증사고 — 이행청구 준비", what: `만료 후 ${D.accidentAfterMonths}개월까지 정당한 사유 없이 못 받으면 보증사고입니다. 임차권등기명령을 마친 뒤 HUG에 이행청구합니다(결정문으로 청구할 수 있지만 지급 전에 등기가 끝나야 합니다).`, basis: "HUG 보증사고 이행청구 안내, 주택임대차보호법 제3조의3" },
+    { key: "renewal-deadline", day: addMonths(x.end, -D.renewalNoticeToMonths), title: "갱신거절 통지 마감 — 증빙 보관", what: `만료 ${D.renewalNoticeToMonths}개월 전까지 알리지 않으면 같은 조건으로 갱신된 것으로 봅니다. HUG 보증금 청구에는 이 기한 안에 알렸다는 증빙(내용증명 도달, 답장이 있는 문자 등)이 필요합니다.`, basis: "주택임대차보호법 제6조, HUG 보증사고 이행청구 안내", warn: "말로만 알리지 마세요. 내용증명 도달이나 집주인 답장이 있는 문자처럼, 기한 안에 닿았다는 증빙이 있어야 HUG에 청구할 수 있어요." },
+    { key: "end", day: x.end, title: "계약 만료", what: "보증금을 돌려받는 날입니다. 받기 전에 전출하면 대항력을 잃을 수 있으니, 꼭 이사해야 하면 임차권등기를 먼저 마칩니다.", basis: "주택임대차보호법 제3조·제3조의3", warn: "보증금을 다 받기 전에 전출·이사하지 마세요. 꼭 이사해야 하면 임차권등기가 등기부에 올라간 것을 확인한 뒤에 하세요." },
+    { key: "accident", day: addMonths(x.end, D.accidentAfterMonths), title: "보증사고 — 이행청구 준비", what: `만료 후 ${D.accidentAfterMonths}개월까지 정당한 사유 없이 못 받으면 보증사고입니다. 임차권등기명령을 마친 뒤 HUG에 이행청구합니다(결정문으로 청구할 수 있지만 지급 전에 등기가 끝나야 합니다).`, basis: "HUG 보증사고 이행청구 안내, 주택임대차보호법 제3조의3", warn: "임차권등기가 끝나기 전에는 이사하지 마세요. HUG 담당자 확인 전에 전출하면 청구가 거절될 수 있어요." },
   ];
   return items.filter((i) => i.day >= x.contract).sort((a, b) => a.day - b.day);
+}
+
+/* ── 숫자가 맞아도 가입이 안 되는 경우 ─────────────────── */
+
+export interface RefusalCheck {
+  key: string;
+  /** 해당되면 가입이 안 되는 것 */
+  text: string;
+  /** 어디서 확인하나 */
+  where: string;
+  basis: string;
+  /** 이 집 종류에는 묻지 않는다 */
+  skip?: HouseType[];
+}
+
+/**
+ * HUG 전세반환보증 상품개요(igdr000001) 가입 조건 중 숫자가 아닌 것 + 안심전세포털 신탁 안내.
+ * 계산(hugGuarantee)이 "된다"고 해도 이 중 하나면 가입이 거절된다 — 계산 결과 뒤에 묻는다.
+ */
+export const REFUSAL_CHECKS: RefusalCheck[] = [
+  { key: "neighborhood", text: "건축물 용도가 근린생활시설(주택이 아님)", where: "건축물대장·등기부 표제부", basis: "HUG 전세반환보증 상품개요" },
+  { key: "violation", text: "건축물대장에 위반건축물 표시", where: "건축물대장(정부24)", basis: "HUG 전세반환보증 상품개요", skip: ["apartment"] },
+  { key: "seizure", text: "등기부 갑구에 경매신청·압류·가압류·가처분·가등기", where: "등기부등본 갑구", basis: "HUG 전세반환보증 상품개요" },
+  { key: "trust", text: "등기부 갑구에 신탁 — 신탁회사 동의 없이는 임대차계약을 할 수 없어요", where: "등기부등본 갑구", basis: "HUG 안심전세포털 등기부등본 확인" },
+  { key: "owner", text: "건물이나 땅 주인이 계약하는 집주인과 다름", where: "등기부등본(단독·다가구는 건물·토지 둘 다)", basis: "HUG 전세반환보증 상품개요" },
+  { key: "others", text: "전입세대확인서에 다른 세대가 있음", where: "전입세대확인서(주민센터 방문 발급)", basis: "HUG 전세반환보증 상품개요", skip: ["multi"] },
+  { key: "contract", text: `계약기간이 ${G.minTermYears}년 미만이거나 공인중개사 날인이 없는 계약서`, where: "계약서", basis: "HUG 전세반환보증 상품개요" },
+  { key: "assign", text: "계약서에 보증금 반환채권 양도 금지 특약", where: "계약서 특약", basis: "HUG 전세반환보증 상품개요" },
+];
+
+export function refusalChecks(type: HouseType): RefusalCheck[] {
+  return REFUSAL_CHECKS.filter((c) => !c.skip?.includes(type));
 }

@@ -17,7 +17,7 @@ import { toDay, fromDay, addMonths } from "../lib/date-calc";
 import { setupPush } from "./push-reminders";
 import { checkAnswer, sourcesFor, type CheckInput } from "../lib/hug-chat-core";
 import { amountsIn } from "../lib/loan-parse";
-import { DISCOUNT_LABEL, type HouseType, type PremiumDiscount } from "../lib/hug-jeonse";
+import { DISCOUNT_LABEL, refusalChecks, type HouseType, type PremiumDiscount } from "../lib/hug-jeonse";
 import { eok } from "../lib/hug-kb";
 import { loadPlan, savePlan, clearPlan, downloadIcs, type SavedPlan } from "./jeonse-plan-store";
 
@@ -519,6 +519,7 @@ function showPlan(p: SavedPlan) {
   for (const i of items) {
     const li = el("li", undefined, i.past ? "hc-past" : i === nxt ? "hc-next" : undefined);
     li.append(el("b", `${i.when} · ${i.dday}`), el("span", i.title));
+    if (i.warn && !i.past) li.append(el("span", `⚠ ${i.warn}`, "hc-warn"));
     ol.append(li);
   }
   b.append(ol, relatedEl(["checklist"]), el("p", "용어가 어려우면 아래 칸에 \"대항력이 뭐예요?\"처럼 물어보세요.", "hc-note"));
@@ -665,6 +666,30 @@ function calcDone(x: CheckInput) {
   remember("보증 가입 계산", `${r.text}\n${r.lines.map((l) => `${l.label}: ${l.value}`).join("\n")}`);
   track("hug_chat_calc");
   scrollDown();
+  if (r.ok) return askRefusal(x);
+  calcNext();
+}
+
+/** 숫자가 맞아도 가입이 안 되는 경우 — 계산이 "된다"고 한 뒤에 보여 주고 묻는다 */
+function askRefusal(x: CheckInput) {
+  mark("calc-refusal", () => askRefusal(x));
+  const b = bubble("bot", "숫자로는 가입이 돼요. 그런데 숫자가 맞아도 아래 중 하나라도 해당되면 HUG가 가입을 받지 않아요. 해당되는 게 있나요?");
+  const ul = el("ul", undefined, "hc-checks");
+  for (const c of refusalChecks(x.type)) {
+    const li = el("li");
+    li.append(el("span", c.text), el("small", `확인: ${c.where}`));
+    ul.append(li);
+  }
+  b.append(ul, sourcesEl(sourcesFor(["other-conditions", "registry"])));
+  scrollDown();
+  showChips([
+    { label: "없어요(확인했어요)", primary: true, run: () => (say("없어요(확인했어요)"), track("hug_refusal", { a: "none" }), bubble("bot", "좋아요. 잔금일에 등기부를 한 번 더 떼어 그사이 바뀐 게 없는지만 보세요."), calcNext()) },
+    { label: "하나라도 있어요", run: () => (say("하나라도 있어요"), track("hug_refusal", { a: "yes" }), bubble("bot", "그 집은 보증 가입이 거절될 수 있어요. 아직 계약 전이면 계약을 다시 생각하거나, '보증 가입이 안 되면 계약금을 돌려준다'는 특약을 집주인과 상의해 보세요. 이미 계약했다면 HUG 지사나 위탁은행에 가입이 되는지 먼저 물어보세요."), calcNext()) },
+    { label: "아직 몰라요", run: () => (say("아직 몰라요"), track("hug_refusal", { a: "unknown" }), bubble("bot", "등기부등본은 인터넷등기소, 건축물대장은 정부24에서 뗄 수 있어요. 전입세대확인서는 주민센터에서 발급해요. 어디를 봐야 하는지는 아래 '계약 전 확인' 안내에 정리해 두었어요."), calcNext()) },
+  ]);
+}
+
+function calcNext() {
   showChips([
     { label: "이 집으로 일정 짜기", primary: true, run: () => (say("일정 짜기"), startPlan()) },
     { label: "다른 금액으로 다시", run: () => (say("다른 금액으로 다시 계산"), startCalc()) },

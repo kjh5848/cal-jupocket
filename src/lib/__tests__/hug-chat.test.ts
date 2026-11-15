@@ -86,6 +86,7 @@ describe("checkAnswer — 숫자는 hugGuarantee 그대로", () => {
     const g = hugGuarantee(x);
     const a = checkAnswer(x);
     expect(g.ok).toBe(true);
+    expect(a.ok).toBe(true);
     expect(a.text).toContain("맞는 것으로 추산");
     expect(a.lines.find((l) => l.label.startsWith("이 집에서"))?.value).toBe(won(g.maxDeposit));
   });
@@ -104,6 +105,7 @@ describe("checkAnswer — 숫자는 hugGuarantee 그대로", () => {
   it("90% 초과면 이유를 말한다", () => {
     const a = checkAnswer({ type: "row", capital: true, deposit: 2e8, senior: 1e8, basis: "public", price: 2e8 });
     expect(a.text).toContain("90%를 넘어요");
+    expect(a.ok).toBe(false);
   });
 });
 

@@ -48,6 +48,7 @@ function render() {
       const title = Object.assign(document.createElement("strong"), { textContent: i.title });
       const what = Object.assign(document.createElement("span"), { className: "hug-what", textContent: i.what });
       li.append(date, title, what);
+      if (i.warn && !i.past) li.append(Object.assign(document.createElement("span"), { className: "hug-warn", textContent: `⚠ ${i.warn}` }));
       if (i.terms.length) {
         const row = Object.assign(document.createElement("span"), { className: "hug-terms" });
         for (const t of i.terms) {

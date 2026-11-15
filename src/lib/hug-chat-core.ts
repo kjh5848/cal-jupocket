@@ -160,7 +160,7 @@ const P = r.premium;
 const pct = (milli: number) => `연 ${milli / 1000}%`;
 
 /** 가입 가능 여부 + 보증료 — 숫자는 전부 hugGuarantee()·hugPremium() 결과 */
-export function checkAnswer(x: CheckInput): { text: string; lines: { label: string; value: string }[]; numbers: number[] } {
+export function checkAnswer(x: CheckInput): { ok: boolean; text: string; lines: { label: string; value: string }[]; numbers: number[] } {
   const g = hugGuarantee(x);
   const multi = x.type === "multi";
   const lines = [
@@ -175,7 +175,7 @@ export function checkAnswer(x: CheckInput): { text: string; lines: { label: stri
   const fails = [!g.depositOk && "보증금이 상한을 넘어요", !g.ltvOk && "보증금 + 집에 먼저 잡힌 빚이 집값의 90%를 넘어요", !g.seniorOk && "집에 먼저 잡힌 빚이 한도를 넘어요"].filter(Boolean);
   const head = `${x.capital ? "수도권" : "수도권 밖"} ${TYPE_NAME[x.type]}, 보증금 ${eok(x.deposit)} 기준으로`;
   if (!g.ok) {
-    return { text: `${head} 지금 조건으로는 가입이 어려울 것으로 추산돼요 — ${fails.join(", ")}. 그래서 보증료도 계산하지 않았어요. 실제 판단은 HUG 심사로 정해져요.`, lines, numbers };
+    return { ok: false, text: `${head} 지금 조건으로는 가입이 어려울 것으로 추산돼요 — ${fails.join(", ")}. 그래서 보증료도 계산하지 않았어요. 실제 판단은 HUG 심사로 정해져요.`, lines, numbers };
   }
   const months = x.months ?? 24;
   const days = Math.round((months * 365) / 12);
@@ -209,7 +209,7 @@ export function checkAnswer(x: CheckInput): { text: string; lines: { label: stri
     p.surchargeApplied && p.discountPct > 0 && "할증·할인을 어떤 순서로 적용하는지는 HUG 안내에 없어 추산이에요.",
   ].filter(Boolean);
   const text = `${head} 가입 조건(보증금 상한·집값 90%·먼저 잡힌 빚)은 맞는 것으로 추산돼요. 보증료는 ${term} 동안 약 ${won(p.total)}이에요. ${extra.join(" ")} 실제 가입과 금액은 HUG 심사로 정해져요.`;
-  return { text, lines, numbers };
+  return { ok: true, text, lines, numbers };
 }
 
 /** 인용 id → 출처 링크(같은 페이지는 한 번만) */

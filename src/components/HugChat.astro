@@ -288,6 +288,25 @@
   .hc-log :global(.hc-plan li.hc-past) {
     opacity: 0.5;
   }
+  .hc-log :global(.hc-warn) {
+    margin-top: 0.2rem;
+    padding: 0.35rem 0.55rem;
+    font-size: var(--t-sm);
+    line-height: 1.5;
+    background: var(--accent-bg);
+    border-radius: var(--r-sm);
+  }
+  .hc-log :global(.hc-checks) {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0.4rem 0;
+    padding-left: 1.1rem;
+  }
+  .hc-log :global(.hc-checks small) {
+    display: block;
+    font-size: var(--t-xs);
+    color: var(--muted);
+  }
   .hc-log :global(.hc-plan b) {
     font-size: var(--t-sm);
     color: var(--sub);
