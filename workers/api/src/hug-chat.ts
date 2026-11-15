@@ -5,7 +5,7 @@
  * 모델은 src/lib/hug-kb 자료만 보고 답하고, src/lib/hug-chat-core 가 답의 숫자·인용·계산값을 검사한다.
  * 답하지 못한 질문만 글감으로 chat_questions 에 남긴다(IP 없음).
  */
-import { SYSTEM, LEVEL_HINT, levelOf, cleanHistory, readModel, numbersGrounded, checkAnswer, sourcesFor, FALLBACK, NOTE, type Msg } from "../../../src/lib/hug-chat-core";
+import { SYSTEM, LEVEL_HINT, levelOf, cleanHistory, readModel, numbersGrounded, checkAnswer, sourcesFor, relevantKb, FALLBACK, NOTE, type Msg } from "../../../src/lib/hug-chat-core";
 import { pickJson, bump, hashIp, DEFAULT_MODEL, type ChatEnv } from "./chat";
 
 const PER_IP_DAY = 60;
@@ -38,7 +38,10 @@ export async function hugChat(body: Record<string, unknown> | null, env: ChatEnv
   const question = history[history.length - 1].content;
   // 첫 화면에서 고른 "얼마나 아세요" — 답의 깊이만 바꾼다
   const level = levelOf(body?.level);
-  const system = level ? `${SYSTEM}\n\n${LEVEL_HINT[level]}` : SYSTEM;
+  // 자료가 길어 작은 모델이 앞쪽 자료로만 답하기 쉬워서, 질문과 가까운 자료를 먼저 짚어 준다
+  const near = relevantKb(question);
+  const focus = near.length ? `\n\n이 질문과 가장 가까운 자료: ${near.map((id) => `[${id}]`).join(", ")}. 이 자료부터 읽고, 맞으면 그 내용으로 답하고 cite 에 넣어라.` : "";
+  const system = `${level ? `${SYSTEM}\n\n${LEVEL_HINT[level]}` : SYSTEM}${focus}`;
 
   const ipKey = await hashIp(opts.ip, opts.day);
   if ((await bump(env, `ip:${ipKey}`, opts.day)) > PER_IP_DAY) return { status: 429, body: { ok: false, error: "rate" } };

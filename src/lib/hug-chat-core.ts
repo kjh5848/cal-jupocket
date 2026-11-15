@@ -35,7 +35,7 @@ export function cleanHistory(x: unknown): Msg[] | null {
 
 export const SYSTEM = `너는 JU포켓(jupocket.com)의 "HUG 전세 상담" 도우미다. 한국어 존댓말(~요)로, 짧고 쉽게 답한다.
 
-다루는 것: HUG 전세보증금반환보증, 전세안심보증, 버팀목 전세대출, 그와 관련된 전세 계약 절차(집 찾기·집 보러 가기·시세 확인, 등기부 확인, 전입신고·확정일자, 갱신·만료, 보증사고, 집주인과 연락할 때 기록 남기기).
+다루는 것: HUG 전세보증금반환보증, 전세안심보증, 버팀목 전세대출, 그와 관련된 전세 계약 절차(집 찾기·집 보러 가기·시세 확인, 등기부 확인, 전입신고·확정일자, 갱신·만료, 보증사고, 집주인과 연락할 때 기록 남기기, 반전세의 보증금 상한 환산, 집주인 연락두절과 공시송달, HUG 이행청구·명도, 보증이 없거나 거절됐을 때 절차의 큰 줄기, 반환보증과 대출보증의 차이). 법 절차는 자료에 있는 큰 줄기만 말하고, 내 사건에 맞는 판단은 대한법률구조공단 상담을 권한다.
 그 밖의 질문(다른 대출, 시중은행 금리, 세금, 투자, 법률 분쟁 판단 등)은 "HUG 전세보증과 버팀목 대출만 도와드릴 수 있어요"라고 답한다.
 
 규칙
@@ -79,6 +79,31 @@ export function levelOf(x: unknown): Level | null {
 }
 
 const KB_IDS = new Set(KB.map((k) => k.id));
+
+/**
+ * 질문과 가장 가까운 자료 id — 질문의 두 글자 조각이 자료 제목·본문에 얼마나 나오나로 센다(제목은 3배).
+ * 자료가 길어지면서 작은 모델이 늘 앞쪽 자료(상품 소개)로만 답해서, 가까운 자료를 먼저 짚어 준다.
+ */
+export function relevantKb(question: string, n = 3): string[] {
+  const q = question.replace(/[^가-힣A-Za-z0-9]/g, "");
+  const grams = new Set<string>();
+  for (let i = 0; i + 2 <= q.length; i++) grams.add(q.slice(i, i + 2));
+  const STOP = new Set(["어요", "해요", "하면", "어떻", "떻게", "게해", "나요", "인가", "가요", "세요", "는데", "있어", "어야", "해야", "되면", "보증", "전세", "보증금"]);
+  const score = (k: (typeof KB)[number]) => {
+    let s = 0;
+    for (const g of grams) {
+      if (STOP.has(g)) continue;
+      if (k.title.includes(g)) s += 3;
+      if (k.text.includes(g)) s += 1;
+    }
+    return s;
+  };
+  return KB.map((k) => ({ id: k.id, s: score(k) }))
+    .filter((x) => x.s > 0)
+    .sort((a, b) => b.s - a.s)
+    .slice(0, n)
+    .map((x) => x.id);
+}
 const KB_NUMS = new Set(numbersIn(KB.map((k) => `${k.title} ${k.text}`).join(" ")));
 const KB_AMOUNTS = new Set(KB.flatMap((k) => amountsIn(k.text)));
 
