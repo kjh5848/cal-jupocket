@@ -104,6 +104,18 @@ describe("문제 상황 안내 — 연락두절·청구·보증 없음·보증 �
     expect(localAnswer("대출 보증이랑 반환보증 차이")).toMatchObject({ kind: "guide", guide: { id: "product-kind" } });
     expect(localAnswer("통화 녹음해도 되나요?")).toMatchObject({ kind: "guide", guide: { id: "contact" } });
   });
+  it("예방 질문은 '보증 없음' 안내로 새지 않는다(집 보는 중인 사람이 대부분)", () => {
+    expect(localAnswer("전세사기 안 당하려면 뭘 봐야 해요?")).not.toMatchObject({ guide: { id: "no-guarantee" } });
+    expect(localAnswer("전세사기 안 당하려면 어떻게 해요")).toMatchObject({ kind: "guide", guide: { id: "before-contract" } });
+    expect(localAnswer("보증보험 안 되는 집 계약해도 돼요?")).not.toMatchObject({ guide: { id: "no-guarantee" } });
+    expect(localAnswer("경매 이력 있는 집 괜찮아요?")).not.toMatchObject({ guide: { id: "no-guarantee" } });
+    expect(localAnswer("깡통전세인지 어떻게 알아요")).toMatchObject({ kind: "guide", guide: { id: "house-price" } });
+  });
+  it("보증이 있는 사람의 경매는 HUG 청구 안내, 없는 사람은 '보증 없음' 안내", () => {
+    expect(localAnswer("HUG 보증 들었는데 집이 경매로 넘어갔어요")).toMatchObject({ kind: "guide", guide: { id: "after-accident" } });
+    expect(localAnswer("보증보험 없는데 경매 넘어갔어요")).toMatchObject({ kind: "guide", guide: { id: "no-guarantee" } });
+    expect(localAnswer("전세사기 당했어요")).toMatchObject({ kind: "guide", guide: { id: "no-guarantee" } });
+  });
   const text = (id: string) => GUIDES.find((g) => g.id === id)!.steps.join(" ");
   it("숫자는 요율 파일 값", () => {
     expect(text("landlord-gone")).toContain(`${r.legal.publicNoticeEffectWeeks}주`);

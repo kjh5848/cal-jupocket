@@ -8,7 +8,7 @@
  * 보증료: hugPremium() — 반환보증 구간별 요율표(2026-11-08 확인). 할인·할증 적용 순서는 원문에 없어 줄을 나눠 보여 준다.
  */
 import r from "../rates/hug-jeonse-2026.json";
-import { addMonths, isBusinessDay } from "./date-calc";
+import { addMonths, isBusinessDay, holidayCovered, holidayRange } from "./date-calc";
 
 const G = r.guarantee;
 const D = r.deadlines;
@@ -231,7 +231,7 @@ export function hugSchedule(x: ScheduleInput): ScheduleItem[] {
     { key: "loan-guarantee", day: addMonths(early, D.loanGuaranteeMonths), title: "버팀목 대출·전세안심보증 신청 마감", what: `잔금일과 전입일 중 빠른 날부터 ${D.loanGuaranteeMonths}개월 안에 신청합니다.`, basis: "HUG 전세안심보증 상품개요, 주택도시기금 버팀목 안내" },
     { key: "return-guarantee", day: late + half, title: "전세반환보증 가입 마감(추산)", what: "잔금일과 전입일 중 늦은 날부터 계약기간의 절반이 지나기 전에 가입합니다.", basis: "HUG 전세반환보증 상품개요" },
     { key: "renewal-open", day: addMonths(x.end, -D.renewalNoticeFromMonths), title: "갱신·이사 의사 알리기 시작", what: `만료 ${D.renewalNoticeFromMonths}개월 전부터 갱신을 요구하거나 갱신하지 않겠다고 알릴 수 있습니다.`, basis: "주택임대차보호법 제6조·제6조의3" },
-    { key: "renewal-deadline", day: renewalDeadline(x.end), title: "갱신거절 통지 마감 — 증빙 보관", what: `만료 ${D.renewalNoticeToMonths}개월 전까지 알리지 않으면 같은 조건으로 갱신된 것으로 봅니다. HUG는 이 날까지 통지가 집주인에게 '도달'해야 보증금을 청구할 수 있다고 안내합니다(그날이 토요일·공휴일이면 직전 평일). 증빙은 도달 기록이 있는 내용증명, 집주인 답장이 있는 문자·카톡, 공인속기사 녹취록 중 하나입니다.`, basis: "주택임대차보호법 제6조, HUG 계약종료(해지) 안내", warn: `보내는 날이 아니라 닿는 날이 기준이에요. 집주인이 연락을 안 받으면 법원 공시송달까지 가야 하는데 HUG 안내로 보통 ${r.claim.publicNoticeTypicalMonths.min}~${r.claim.publicNoticeTypicalMonths.max}개월 걸려요. 연락이 불안하면 이보다 훨씬 일찍 보내세요.` },
+    { key: "renewal-deadline", day: renewalDeadline(x.end), title: "갱신거절 통지 마감 — 증빙 보관", what: `만료 ${D.renewalNoticeToMonths}개월 전까지 알리지 않으면 같은 조건으로 갱신된 것으로 봅니다. HUG는 이 날까지 통지가 집주인에게 '도달'해야 보증금을 청구할 수 있다고 안내합니다(그날이 토요일·공휴일이면 직전 평일). 증빙은 도달 기록이 있는 내용증명, 집주인 답장이 있는 문자·카톡, 공인속기사 녹취록 중 하나입니다.${holidayCovered(renewalDeadline(x.end)) ? "" : ` (공휴일 목록이 ${holidayRange.to.slice(0, 4)}년까지라 이 날짜는 주말만 반영했어요. 공휴일이면 그 전 평일로 당기세요.)`}`, basis: "주택임대차보호법 제6조, HUG 계약종료(해지) 안내", warn: `보내는 날이 아니라 닿는 날이 기준이에요. 집주인이 연락을 안 받으면 법원 공시송달까지 가야 하는데 HUG 안내로 보통 ${r.claim.publicNoticeTypicalMonths.min}~${r.claim.publicNoticeTypicalMonths.max}개월 걸려요. 연락이 불안하면 이보다 훨씬 일찍 보내세요.` },
     { key: "end", day: x.end, title: "계약 만료", what: "보증금을 돌려받는 날입니다. 받기 전에 전출하면 대항력을 잃을 수 있으니, 꼭 이사해야 하면 임차권등기를 먼저 마칩니다.", basis: "주택임대차보호법 제3조·제3조의3", warn: "보증금을 다 받기 전에 전출·이사하지 마세요. 꼭 이사해야 하면 임차권등기가 등기부에 올라간 것을 확인한 뒤에 하세요." },
     { key: "accident", day: addMonths(x.end, D.accidentAfterMonths), title: "보증사고 — 이행청구 준비", what: `만료 후 ${D.accidentAfterMonths}개월까지 정당한 사유 없이 못 받으면 보증사고입니다. 임차권등기명령을 마친 뒤 HUG에 이행청구합니다(결정문으로 청구할 수 있지만 지급 전에 등기가 끝나야 합니다).`, basis: "HUG 보증사고 이행청구 안내, 주택임대차보호법 제3조의3", warn: "임차권등기가 끝나기 전에는 이사하지 마세요. HUG 담당자 확인 전에 전출하면 청구가 거절될 수 있어요." },
   ];
