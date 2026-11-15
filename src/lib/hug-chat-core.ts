@@ -7,7 +7,7 @@
  */
 import { KB, kbPrompt, numbersIn, eok } from "./hug-kb";
 import { amountsIn } from "./loan-parse";
-import { hugGuarantee, hugPremium, DISCOUNT_LABEL, type GuaranteeInput, type HouseType, type PremiumDiscount } from "./hug-jeonse";
+import { hugGuarantee, hugPremium, loanGuaranteeRatioPct, DISCOUNT_LABEL, type GuaranteeInput, type HouseType, type PremiumDiscount } from "./hug-jeonse";
 import r from "../rates/hug-jeonse-2026.json";
 import { won } from "./won";
 
@@ -107,6 +107,8 @@ export interface CheckInput extends GuaranteeInput {
   discount?: PremiumDiscount;
   /** 전세안심보증 대출금(원) */
   loan?: number;
+  /** 단독·다가구: 다른 세입자 계약 확인서를 내는가 — false 면 그 구간 최고요율 */
+  othersConfirmed?: boolean;
 }
 
 export interface ModelOut {
@@ -169,17 +171,18 @@ export function checkAnswer(x: CheckInput): { ok: boolean; text: string; lines: 
     { label: "내 보증금 + 집에 먼저 잡힌 빚", value: won(x.deposit + g.seniorTotal) },
     { label: multi ? `집 빚 + 먼저 들어온 세입자 보증금 한도(집값의 ${r.guarantee.seniorLimitMultiFamilyPct}%)` : `집에 먼저 잡힌 빚 한도(집값의 ${r.guarantee.seniorLimitPct}%)`, value: won(g.seniorLine) },
     { label: `보증금 상한(${x.capital ? "수도권" : "수도권 밖"})`, value: eok(g.depositCap) },
+    ...(x.monthlyRent ? [{ label: `상한과 비교한 보증금(월세 ${won(x.monthlyRent)} × 12 ÷ 전환율 ${r.guarantee.rentConversionPct}% 더함)`, value: won(g.capDeposit) }] : []),
     { label: "이 집에서 보증되는 최대 보증금", value: won(g.maxDeposit) },
   ];
-  const numbers = [g.housePrice, g.ltvLine, g.seniorLine, g.depositCap, g.maxDeposit, x.deposit + g.seniorTotal];
-  const fails = [!g.depositOk && "보증금이 상한을 넘어요", !g.ltvOk && "보증금 + 집에 먼저 잡힌 빚이 집값의 90%를 넘어요", !g.seniorOk && "집에 먼저 잡힌 빚이 한도를 넘어요"].filter(Boolean);
+  const numbers = [g.housePrice, g.ltvLine, g.seniorLine, g.depositCap, g.maxDeposit, x.deposit + g.seniorTotal, g.capDeposit, ...(x.monthlyRent ? [x.monthlyRent, r.guarantee.rentConversionPct] : [])];
+  const fails = [!g.depositOk && (x.monthlyRent ? "월세를 보증금으로 환산하면 상한을 넘어요" : "보증금이 상한을 넘어요"), !g.ltvOk && "보증금 + 집에 먼저 잡힌 빚이 집값의 90%를 넘어요", !g.seniorOk && "집에 먼저 잡힌 빚이 한도를 넘어요"].filter(Boolean);
   const head = `${x.capital ? "수도권" : "수도권 밖"} ${TYPE_NAME[x.type]}, 보증금 ${eok(x.deposit)} 기준으로`;
   if (!g.ok) {
     return { ok: false, text: `${head} 지금 조건으로는 가입이 어려울 것으로 추산돼요 — ${fails.join(", ")}. 그래서 보증료도 계산하지 않았어요. 실제 판단은 HUG 심사로 정해져요.`, lines, numbers };
   }
   const months = x.months ?? 24;
   const days = Math.round((months * 365) / 12);
-  const p = hugPremium({ type: x.type, deposit: x.deposit, seniorTotal: g.seniorTotal, housePrice: g.housePrice, days, discount: x.discount, loan: x.loan });
+  const p = hugPremium({ type: x.type, deposit: x.deposit, seniorTotal: g.seniorTotal, housePrice: g.housePrice, days, discount: x.discount, loan: x.loan, capital: x.capital, othersConfirmed: x.othersConfirmed });
   const term = months % 12 === 0 ? `${months / 12}년` : `${months}개월`;
   const adjusted = p.surchargeApplied || p.discountPct > 0 || p.loanPart > 0;
   lines.push(
@@ -197,15 +200,18 @@ export function checkAnswer(x: CheckInput): { ok: boolean; text: string; lines: 
     numbers.push(p.discountAmount);
   }
   if (p.loanPart) {
-    lines.push({ label: `대출보증 부분(전세안심보증, 대출 ${eok(x.loan ?? 0)} × ${pct(P.loanPartRateMilliPct)})`, value: `+${won(p.loanPart)}` });
-    numbers.push(p.loanPart);
+    const ratio = loanGuaranteeRatioPct(x.capital);
+    lines.push({ label: `대출보증 부분(전세안심보증, 대출 ${eok(x.loan ?? 0)} × 보증비율 ${ratio}% × ${pct(P.loanPartRateMilliPct)})`, value: `+${won(p.loanPart)}` });
+    numbers.push(p.loanPart, ratio);
   }
   if (adjusted) lines.push({ label: "내는 보증료(추산)", value: won(p.total) });
   const extra = [
     !x.months && `계약기간은 ${term}으로 계산했어요(다르면 알려 주세요).`,
     !x.discount && `연소득 ${eok(P.lowIncomeMax)} 이하(${P.discountPct.lowIncome}% 할인)나 신혼부부(${P.discountPct.newlywed}% 할인)처럼 할인 대상이면 말씀해 주세요.`,
     p.taxCreditOk && "보증료는 연말정산 세액공제도 받을 수 있어요.",
-    multi && "단독·다가구는 다른 세입자 계약 확인서를 내지 않으면 그 보증금 구간의 가장 높은 요율이 붙어요.",
+    multi && x.othersConfirmed === undefined && "단독·다가구는 다른 세입자 계약 확인서를 내지 않으면 그 보증금 구간의 가장 높은 요율이 붙어요.",
+    multi && x.othersConfirmed === false && "다른 세입자 계약 확인서를 내지 않는 것으로 보고 그 구간의 가장 높은 요율로 계산했어요.",
+    !!x.loan && "전세대출이 있으면 은행이 질권이나 채권양도 통지를 걸어 둔 경우가 많은데, 그러면 반환보증만 따로는 못 들어요(SGI서울보증 보증부 대출은 예외). 위 금액은 대출과 반환보증을 함께 드는 전세안심보증 기준이에요.",
     p.surchargeApplied && p.discountPct > 0 && "할증·할인을 어떤 순서로 적용하는지는 HUG 안내에 없어 추산이에요.",
   ].filter(Boolean);
   const text = `${head} 가입 조건(보증금 상한·집값 90%·먼저 잡힌 빚)은 맞는 것으로 추산돼요. 보증료는 ${term} 동안 약 ${won(p.total)}이에요. ${extra.join(" ")} 실제 가입과 금액은 HUG 심사로 정해져요.`;

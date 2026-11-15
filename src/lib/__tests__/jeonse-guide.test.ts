@@ -92,3 +92,33 @@ describe("용어 — 예시와 아래 단어(2026-11-08)", () => {
     expect(t.ex).toContain("2억 2,000만원");
   });
 });
+
+describe("문제 상황 안내 — 연락두절·청구·보증 없음·보증 종류(2026-11-15 HUG·law.go.kr 원문)", () => {
+  it("글로 물으면 맞는 안내로 간다(첫 일치 순서)", () => {
+    expect(localAnswer("집주인이 연락이 안 돼요")).toMatchObject({ kind: "guide", guide: { id: "landlord-gone" } });
+    expect(localAnswer("내용증명이 반송됐어요")).toMatchObject({ kind: "guide", guide: { id: "landlord-gone" } });
+    expect(localAnswer("보증금 못 받았어요")).toMatchObject({ kind: "guide", guide: { id: "not-returned" } });
+    expect(localAnswer("HUG에 이행청구 서류 뭐 내요")).toMatchObject({ kind: "guide", guide: { id: "after-accident" } });
+    expect(localAnswer("보증보험이 없는데 경매 넘어갔어요")).toMatchObject({ kind: "guide", guide: { id: "no-guarantee" } });
+    expect(localAnswer("전세사기 피해자 신청")).toMatchObject({ kind: "guide", guide: { id: "no-guarantee" } });
+    expect(localAnswer("대출 보증이랑 반환보증 차이")).toMatchObject({ kind: "guide", guide: { id: "product-kind" } });
+    expect(localAnswer("통화 녹음해도 되나요?")).toMatchObject({ kind: "guide", guide: { id: "contact" } });
+  });
+  const text = (id: string) => GUIDES.find((g) => g.id === id)!.steps.join(" ");
+  it("숫자는 요율 파일 값", () => {
+    expect(text("landlord-gone")).toContain(`${r.legal.publicNoticeEffectWeeks}주`);
+    expect(text("landlord-gone")).toContain(`${r.claim.publicNoticeTypicalMonths.min}~${r.claim.publicNoticeTypicalMonths.max}개월`);
+    expect(text("after-accident")).toContain(`${r.claim.moveOutNoticeBusinessDays}영업일`);
+    expect(text("after-accident")).toContain(r.claim.callCenter);
+    expect(text("no-guarantee")).toContain(`연 ${r.legal.lawsuitInterestPct}%`);
+    expect(text("no-guarantee")).toContain(`전화 ${r.legal.legalAidPhone}`);
+    expect(text("no-guarantee")).toContain("2027년 5월 31일");
+    expect(text("renewal")).toContain(`${r.claim.endConfirmWithinMonths}개월 안에`);
+  });
+  it("공시송달 시작 시점은 법이 아니라 권장이라고 밝힌다", () => {
+    expect(text("landlord-gone")).toContain("JU포켓 권장");
+  });
+  it("지연이자는 HUG가 주지 않는다(보상하지 않는 채무 2호)", () => {
+    expect(text("after-accident")).toContain("HUG가 주지 않아요");
+  });
+});

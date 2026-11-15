@@ -133,9 +133,85 @@ interface Chip {
  * 질문을 띄우는 함수가 맨 앞에서 mark() 로 자기를 다시 부를 방법을 남긴다. 같은 질문을 다시 띄우면(입력 오류 등) 겹쳐 쌓지 않는다.
  */
 let trail: { key: string; again: () => void }[] = [];
-function mark(key: string, again: () => void) {
+/** state 를 주면(계산·일정 중간) 진행 상태를 이 브라우저에 남긴다 — 보고 돌아와도 이어서 할 수 있게 */
+function mark(key: string, again: () => void, state?: object) {
   if (trail[trail.length - 1]?.key === key) trail.pop();
   trail.push({ key, again });
+  if (state) saveResume(key, state);
+}
+
+/* ── 하던 계산·일정 이어하기 ────────────────────────────
+ * 답할 때마다 {멈춘 질문, 지금까지 답, 시각}을 localStorage 에만 저장한다(서버로 안 보냄).
+ * 다시 들어오면 첫 인사 대신 "하던 게 있어요" 카드. 끝내거나 '처음부터'를 누르면 지운다. 하루 지나면 버린다.
+ */
+const RESUME_KEY = "jp-jeonse-resume";
+const RESUME_TTL_MS = 24 * 60 * 60 * 1000;
+interface Resume {
+  key: string;
+  state: Record<string, unknown>;
+  at: number;
+}
+function saveResume(key: string, state: object) {
+  try {
+    localStorage.setItem(RESUME_KEY, JSON.stringify({ key, state: state as Record<string, unknown>, at: Date.now() } satisfies Resume));
+  } catch {
+    /* 저장이 막힌 브라우저 — 이어하기만 안 될 뿐 */
+  }
+}
+function clearResume() {
+  try {
+    localStorage.removeItem(RESUME_KEY);
+  } catch {
+    /* 무시 */
+  }
+}
+function loadResume(): Resume | null {
+  try {
+    const r = JSON.parse(localStorage.getItem(RESUME_KEY) ?? "null") as Resume | null;
+    if (!r || typeof r.key !== "string" || typeof r.at !== "number" || !r.state) return null;
+    if (Date.now() - r.at > RESUME_TTL_MS || !(r.key in RESUME_AT)) {
+      clearResume();
+      return null;
+    }
+    return r;
+  } catch {
+    return null;
+  }
+}
+/** 멈춘 질문 key → 그 질문을 다시 띄우는 함수 */
+const RESUME_AT: Record<string, { what: string; run: (s: Record<string, unknown>) => void }> = {
+  "calc-region": { what: "보증 계산 — 지역", run: (s) => calcRegion(s as Partial<CheckInput>) },
+  "calc-basis": { what: "보증 계산 — 집값 기준", run: (s) => calcBasis(s as Partial<CheckInput>) },
+  "calc-price": { what: "보증 계산 — 집값 입력", run: (s) => calcPrice(s as Partial<CheckInput>) },
+  "calc-deposit": { what: "보증 계산 — 보증금", run: (s) => calcDeposit(s as Partial<CheckInput>) },
+  "calc-rent": { what: "보증 계산 — 월세", run: (s) => calcRent(s as Partial<CheckInput>) },
+  "calc-rent-amount": { what: "보증 계산 — 월세 금액", run: (s) => calcRentAmount(s as Partial<CheckInput>) },
+  "calc-senior": { what: "보증 계산 — 근저당", run: (s) => calcSenior(s as Partial<CheckInput>) },
+  "calc-others": { what: "보증 계산 — 다른 세입자 보증금", run: (s) => calcOthers(s as Partial<CheckInput>) },
+  "calc-others-doc": { what: "보증 계산 — 다른 세입자 서류", run: (s) => calcOthersDoc(s as Partial<CheckInput>) },
+  "calc-term": { what: "보증 계산 — 기간", run: (s) => calcTerm(s as Partial<CheckInput>) },
+  "calc-discount": { what: "보증 계산 — 할인", run: (s) => calcDiscount(s as Partial<CheckInput>) },
+  "calc-loan": { what: "보증 계산 — 전세대출", run: (s) => calcLoan(s as Partial<CheckInput>) },
+  "calc-loan-amount": { what: "보증 계산 — 대출 금액", run: (s) => calcLoanAmount(s as Partial<CheckInput>) },
+  "plan-start": { what: "일정 짜기 — 잔금일", run: (s) => askStart(s as Partial<SavedPlan>) },
+  "plan-movein": { what: "일정 짜기 — 전입일", run: (s) => askMoveIn(s as Partial<SavedPlan>) },
+  "plan-movein-date": { what: "일정 짜기 — 전입일", run: (s) => askMoveInDate(s as Partial<SavedPlan>) },
+  "plan-term": { what: "일정 짜기 — 계약 기간", run: (s) => askTerm(s as Partial<SavedPlan>) },
+  "plan-end": { what: "일정 짜기 — 만료일", run: (s) => askEnd(s as Partial<SavedPlan>) },
+};
+/** 다시 들어왔을 때 첫 인사 대신 보여 주는 카드 */
+function offerResume(r: Resume) {
+  const at = RESUME_AT[r.key];
+  const mins = Math.max(1, Math.round((Date.now() - r.at) / 60000));
+  const ago = mins < 60 ? `${mins}분 전` : `${Math.round(mins / 60)}시간 전`;
+  const b = bubble("bot", "하던 게 있어요. 이어서 할까요?");
+  const dl = el("dl");
+  dl.append(el("dt", "멈춘 곳"), el("dd", at.what), el("dt", "저장"), el("dd", ago));
+  b.append(dl, el("p", "진행 상태는 이 브라우저에만 저장돼요. 하루가 지나면 지워져요.", "hc-note"));
+  showChips([
+    { label: "이어서 하기", primary: true, run: () => (say("이어서 하기"), track("hug_resume", { a: "yes", at: r.key }), (trail = []), at.run(r.state)) },
+    { label: "처음부터 새로", run: () => (track("hug_resume", { a: "no" }), clearResume(), restart()) },
+  ]);
 }
 function goBack() {
   trail.pop();
@@ -341,6 +417,7 @@ function stageLiving() {
   showChips([
     { label: "내 계약 날짜로 할 일 보기", primary: true, run: () => (say("내 계약 날짜로 할 일 보기"), startPlan()) },
     guideChip(GUIDES.find((g) => g.id === "renewal")!),
+    guideChip(GUIDES.find((g) => g.id === "product-kind")!),
     guideChip(CONTACT),
   ]);
 }
@@ -349,7 +426,8 @@ function stageTrouble() {
   const text = "많이 답답하시죠. 순서대로 같이 볼게요. 어떤 상황인지 골라 주시거나 아래 칸에 적어 주세요.";
   bubble("bot", text);
   remember("집주인과 문제가 생겼어요", text);
-  showChips([guideChip(GUIDES.find((g) => g.id === "not-returned")!), guideChip(GUIDES.find((g) => g.id === "renewal")!), guideChip(CONTACT)]);
+  const g = (id: string) => guideChip(GUIDES.find((x) => x.id === id)!);
+  showChips([g("not-returned"), g("landlord-gone"), g("after-accident"), g("no-guarantee"), g("product-kind"), g("renewal"), guideChip(CONTACT)]);
 }
 
 /* ── 상황 안내·용어 ───────────────────────────────────── */
@@ -377,6 +455,9 @@ function showGuide(g: Guide) {
   const next: Chip[] = [];
   if (g.id !== CONTACT.id && g.record) next.push(guideChip(CONTACT));
   if (HOUSE_GUIDES.includes(g)) next.push(...[...HOUSE_GUIDES, GUIDES.find((x) => x.id === "before-contract")!].filter((x) => x !== g).map(guideChip));
+  // 문제 상황 안내끼리는 서로 이어 준다(연락두절 → 청구 → 보증 없을 때)
+  const trouble = ["not-returned", "landlord-gone", "after-accident", "no-guarantee", "product-kind"];
+  if (trouble.includes(g.id)) next.push(...trouble.filter((id) => id !== g.id).map((id) => guideChip(GUIDES.find((x) => x.id === id)!)));
   next.push(
     { label: "보증 계산", run: () => (say("보증 되는지 계산해 볼래요"), startCalc()) },
     { label: "일정 짜기", run: () => (say("일정 짜기"), startPlan()) },
@@ -455,7 +536,7 @@ function askContract(p: Partial<SavedPlan>) {
   });
 }
 function askStart(p: Partial<SavedPlan>) {
-  mark("plan-start", () => askStart(p));
+  mark("plan-start", () => askStart(p), p);
   askDate("잔금을 치르고 들어가는 날(잔금일)은요?", "", (s) => {
     if (toDay(s)! < toDay(p.contract!)!) {
       bubble("bot", "잔금일이 계약일보다 앞이에요. 다시 골라 주세요.");
@@ -466,7 +547,7 @@ function askStart(p: Partial<SavedPlan>) {
   });
 }
 function askMoveIn(p: Partial<SavedPlan>) {
-  mark("plan-movein", () => askMoveIn(p));
+  mark("plan-movein", () => askMoveIn(p), p);
   bubble("bot", "전입신고는 잔금일에 같이 하실 건가요? 같은 날 하는 게 가장 안전해요.");
   showChips([
     { label: "네, 같은 날 해요", primary: true, run: () => (say("네, 같은 날 해요"), (p.moveIn = p.start), askTerm(p)) },
@@ -474,11 +555,11 @@ function askMoveIn(p: Partial<SavedPlan>) {
   ]);
 }
 function askMoveInDate(p: Partial<SavedPlan>) {
-  mark("plan-movein-date", () => askMoveInDate(p));
+  mark("plan-movein-date", () => askMoveInDate(p), p);
   askDate("전입신고하는 날은요?", "", (m) => ((p.moveIn = m), askTerm(p)));
 }
 function askTerm(p: Partial<SavedPlan>) {
-  mark("plan-term", () => askTerm(p));
+  mark("plan-term", () => askTerm(p), p);
   bubble("bot", "계약 기간은요?");
   const endAfter = (months: number) => fromDay(addMonths(toDay(p.start!)!, months) - 1);
   showChips([
@@ -488,7 +569,7 @@ function askTerm(p: Partial<SavedPlan>) {
   ]);
 }
 function askEnd(p: Partial<SavedPlan>) {
-  mark("plan-end", () => askEnd(p));
+  mark("plan-end", () => askEnd(p), p);
   askDate("계약이 끝나는 날은요?", "", (e) => finish({ ...p, end: e } as SavedPlan));
 }
 
@@ -498,6 +579,7 @@ function finish(p: SavedPlan) {
     return startPlan();
   }
   savePlan(p);
+  clearResume();
   track("hug_plan_done");
   showPlan(p);
 }
@@ -554,14 +636,15 @@ function offerPush(items: PlanItem[]) {
 /* ── 보증 가입·보증료 계산(계산기를 대화로) ─────────────── */
 
 /** 금액 하나를 묻는다 — "3억 5천"처럼 적으면 원으로 읽는다. zero 가 있으면 "없어요" 버튼 */
-function askAmount(question: string, hint: string, done: (won: number) => void, zero?: string) {
+/** min·example: 월세처럼 작은 금액을 받을 때(기본은 100만원 이상, "3억 5천") */
+function askAmount(question: string, hint: string, done: (won: number) => void, zero?: string, min = 1_000_000, example = "3억 5천") {
   const b = bubble("bot", question);
   if (hint) b.append(el("p", hint, "hc-note"));
   const row = el("div", undefined, "hc-date");
   const i = el("input");
   i.type = "text";
   i.inputMode = "text";
-  i.placeholder = "예: 3억 5천";
+  i.placeholder = `예: ${example}`;
   i.setAttribute("aria-label", question);
   const ok = el("button", "확인");
   ok.type = "button";
@@ -569,8 +652,8 @@ function askAmount(question: string, hint: string, done: (won: number) => void, 
   const submit = () => {
     const raw = i.value.trim();
     const n = amountsIn(/[억만천원]/.test(raw) ? raw : `${raw}만원`)[0];
-    if (!n || n < 1_000_000) {
-      err.textContent = "금액을 '3억 5천', '2억'처럼 적어 주세요.";
+    if (!n || n < min) {
+      err.textContent = `금액을 '${example}'처럼 적어 주세요.`;
       return i.focus();
     }
     row.remove();
@@ -601,7 +684,7 @@ function startCalc() {
   showChips(types.map(([t, l]) => ({ label: l, run: () => (say(l), (x.type = t), calcRegion(x)) })));
 }
 function calcRegion(x: Partial<CheckInput>) {
-  mark("calc-region", () => calcRegion(x));
+  mark("calc-region", () => calcRegion(x), x);
   bubble("bot", "집이 수도권(서울·경기·인천)에 있나요? 보증금 상한이 달라요.");
   showChips([
     { label: "수도권이에요", run: () => (say("수도권이에요"), (x.capital = true), calcBasis(x)) },
@@ -609,7 +692,7 @@ function calcRegion(x: Partial<CheckInput>) {
   ]);
 }
 function calcBasis(x: Partial<CheckInput>) {
-  mark("calc-basis", () => calcBasis(x));
+  mark("calc-basis", () => calcBasis(x), x);
   const b = bubble("bot", "집값은 무엇으로 아세요? HUG는 아파트면 KB·부동산테크 시세를 먼저 보고, 빌라(연립·다세대)·단독주택은 공시가격 × 140%를 먼저 봐요(감정평가서가 있으면 그게 가장 먼저예요). 공시가격은 '부동산 공시가격 알리미'에서 주소로 찾을 수 있어요.");
   b.append(sourcesEl([{ name: "부동산 공시가격 알리미", url: "https://www.realtyprice.kr/" }]));
   showChips([
@@ -618,16 +701,29 @@ function calcBasis(x: Partial<CheckInput>) {
   ]);
 }
 function calcPrice(x: Partial<CheckInput>) {
-  mark("calc-price", () => calcPrice(x));
+  mark("calc-price", () => calcPrice(x), x);
   if (x.basis === "public") askAmount("공시가격이 얼마예요?", "", (n) => ((x.price = n), calcDeposit(x)));
   else askAmount("시세(또는 감정가)가 얼마예요?", "KB시세·감정평가액처럼 HUG가 인정하는 값이어야 해요.", (n) => ((x.price = n), calcDeposit(x)));
 }
 function calcDeposit(x: Partial<CheckInput>) {
-  mark("calc-deposit", () => calcDeposit(x));
-  askAmount("전세 보증금은요?", "", (n) => ((x.deposit = n), calcSenior(x)));
+  mark("calc-deposit", () => calcDeposit(x), x);
+  askAmount("전세 보증금은요?", "", (n) => ((x.deposit = n), calcRent(x)));
+}
+/** 보증부 월세(반전세) — HUG는 월세를 전월세전환율로 보증금에 더해 상한을 본다 */
+function calcRent(x: Partial<CheckInput>) {
+  mark("calc-rent", () => calcRent(x), x);
+  bubble("bot", "월세도 내나요(반전세)? 월세가 있으면 HUG는 그만큼을 보증금으로 환산해서 상한(수도권 7억·그 외 5억)을 봐요.");
+  showChips([
+    { label: "아니요, 전세예요", primary: true, run: () => (say("아니요, 전세예요"), (x.monthlyRent = 0), calcSenior(x)) },
+    { label: "월세도 있어요", run: () => (say("월세도 있어요"), calcRentAmount(x)) },
+  ]);
+}
+function calcRentAmount(x: Partial<CheckInput>) {
+  mark("calc-rent-amount", () => calcRentAmount(x), x);
+  askAmount("한 달 월세는 얼마예요?", "", (n) => ((x.monthlyRent = n), calcSenior(x)), undefined, 10_000, "50만");
 }
 function calcSenior(x: Partial<CheckInput>) {
-  mark("calc-senior", () => calcSenior(x));
+  mark("calc-senior", () => calcSenior(x), x);
   askAmount("집에 먼저 잡힌 빚(근저당 채권최고액)은요?", "등기부등본 을구에 적힌 채권최고액이에요. 없으면 아래 '없어요'를 눌러 주세요.", (s) => {
     x.senior = s;
     if (x.type === "multi") calcOthers(x);
@@ -635,11 +731,21 @@ function calcSenior(x: Partial<CheckInput>) {
   }, "없어요");
 }
 function calcOthers(x: Partial<CheckInput>) {
-  mark("calc-others", () => calcOthers(x));
-  askAmount("나보다 먼저 들어온 다른 세입자들의 보증금 합계는요?", "단독·다가구는 이것도 먼저 잡힌 빚으로 봐요.", (o) => ((x.otherDeposits = o), calcTerm(x)), "없어요(나 혼자)");
+  mark("calc-others", () => calcOthers(x), x);
+  askAmount("나보다 먼저 들어온 다른 세입자들의 보증금 합계는요?", "단독·다가구는 이것도 먼저 잡힌 빚으로 봐요.", (o) => ((x.otherDeposits = o), calcOthersDoc(x)), "없어요(나 혼자)");
+}
+/** 단독·다가구: 다른 세입자 계약 확인서를 못 내면 그 구간 최고요율 */
+function calcOthersDoc(x: Partial<CheckInput>) {
+  mark("calc-others-doc", () => calcOthersDoc(x), x);
+  bubble("bot", "다른 세입자들의 계약 내용을 확인하는 서류(타 전월세계약 확인서·확정일자 부여현황)를 낼 수 있나요? 못 내면 보증료가 그 구간에서 가장 높은 요율이 돼요.");
+  showChips([
+    { label: "낼 수 있어요", primary: true, run: () => (say("낼 수 있어요"), (x.othersConfirmed = true), calcTerm(x)) },
+    { label: "못 내요", run: () => (say("못 내요"), (x.othersConfirmed = false), calcTerm(x)) },
+    { label: "모르겠어요", run: () => (say("모르겠어요"), calcTerm(x)) },
+  ]);
 }
 function calcTerm(x: Partial<CheckInput>) {
-  mark("calc-term", () => calcTerm(x));
+  mark("calc-term", () => calcTerm(x), x);
   bubble("bot", "보증 기간(계약 기간)은요?");
   showChips([
     { label: "2년", primary: true, run: () => (say("2년"), (x.months = 24), calcDiscount(x)) },
@@ -647,16 +753,30 @@ function calcTerm(x: Partial<CheckInput>) {
   ]);
 }
 function calcDiscount(x: Partial<CheckInput>) {
-  mark("calc-discount", () => calcDiscount(x));
+  mark("calc-discount", () => calcDiscount(x), x);
   bubble("bot", "보증료 할인 대상인가요? 하나만 적용돼요.");
   const list = Object.entries(DISCOUNT_LABEL) as [Exclude<PremiumDiscount, "none">, string][];
   showChips([
-    { label: "해당 없음", primary: true, run: () => (say("해당 없음"), (x.discount = "none"), calcDone(x as CheckInput)) },
-    ...list.map(([k, l]) => ({ label: l, run: () => (say(l), (x.discount = k), calcDone(x as CheckInput)) })),
+    { label: "해당 없음", primary: true, run: () => (say("해당 없음"), (x.discount = "none"), calcLoan(x)) },
+    ...list.map(([k, l]) => ({ label: l, run: () => (say(l), (x.discount = k), calcLoan(x)) })),
   ]);
+}
+/** 전세대출 — 있으면 전세안심보증(반환보증 + 대출보증) 기준으로 보증료를 더한다 */
+function calcLoan(x: Partial<CheckInput>) {
+  mark("calc-loan", () => calcLoan(x), x);
+  bubble("bot", "전세대출을 받나요? 대출이 있으면 반환보증만 따로 못 드는 경우가 많아서, 대출과 함께 드는 전세안심보증 기준으로 계산할게요.");
+  showChips([
+    { label: "대출 없어요", primary: true, run: () => (say("대출 없어요"), (x.loan = 0), calcDone(x as CheckInput)) },
+    { label: "대출 받아요", run: () => (say("대출 받아요"), calcLoanAmount(x)) },
+  ]);
+}
+function calcLoanAmount(x: Partial<CheckInput>) {
+  mark("calc-loan-amount", () => calcLoanAmount(x), x);
+  askAmount("전세대출 금액은요?", "은행에서 받는(받을) 대출 원금이에요.", (n) => ((x.loan = n), calcDone(x as CheckInput)));
 }
 function calcDone(x: CheckInput) {
   mark("calc-result", () => calcDone(x));
+  clearResume();
   const r = checkAnswer(x);
   const b = bubble("bot", r.text);
   const dl = el("dl");
@@ -781,6 +901,7 @@ input?.addEventListener("keydown", (e) => {
 
 function restart() {
   if (busy || !log) return;
+  clearResume();
   trail = [];
   history = [];
   level = null;
@@ -791,10 +912,13 @@ function restart() {
   track("hug_chat_reset");
 }
 reset?.addEventListener("click", restart);
-greet();
 
 // 글 페이지 입구에서 단계를 골라 들어오면(?s=house) 바로 그 단계로
 const entry = new URLSearchParams(location.search).get("s");
+// 하던 계산·일정이 있으면 첫 인사 대신 이어하기 카드(입구에서 단계를 골라 온 경우는 그 단계가 먼저)
+const resumeAtStart = entry ? null : loadResume();
+if (resumeAtStart) offerResume(resumeAtStart);
+else greet();
 const first = STAGES.find((x) => x.id === entry);
 const savedAtStart = loadPlan();
 if (first) pickStage(first);

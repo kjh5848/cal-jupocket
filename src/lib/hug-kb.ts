@@ -6,6 +6,7 @@
  * 서버(workers/api/src/hug-chat.ts)는 모델 답에 이 자료·질문에 없는 숫자가 있으면 답을 버린다.
  */
 import r from "../rates/hug-jeonse-2026.json";
+import { LANDLORD_GONE, AFTER_ACCIDENT, NO_GUARANTEE, PRODUCT_KIND, type Guide } from "./jeonse-guide";
 
 const G = r.guarantee;
 const D = r.deadlines;
@@ -71,6 +72,9 @@ export const KB: KbItem[] = [
   { id: "house-find", title: "집 찾는 법(HUG 전세사기예방센터)", text: "보러 다니기 전에 기준을 글로 써 둔다(크기·형태, 시간대별 통근 시간, 소음·밤길, 노후도, 포기할 것과 못 버릴 것의 순서). 예산은 한 달 주거비(월세·대출 이자·관리비·공과금·교통비)로 보고 상한을 정한다. 전세대출을 받을 거면 대출 상품을 먼저 알아보고 대출이 되는 집을 찾는다. 부동산 앱은 시세 확인용으로만 쓰고 실제 집은 그 매물을 맡은 중개사무소에서 확인한다. 중개사무소에 '전세보증금반환보증에 가입되는 집'을 보여 달라고 말한다. 공공임대는 마이홈(myhome.go.kr)·LH 청약(apply.lh.or.kr)에서 본다.", src: S.houseSearch, srcName: "HUG 전세사기예방센터" },
   { id: "house-visit", title: "집 보러 갈 때 확인할 것(HUG 전세사기예방센터)", text: `사진·메모 준비, 가능하면 동행(한 명은 설명 메모, 한 명은 점검), 동·호수 기록. 맑은 날 낮 채광, 수압·배수·역류, 벽·천장·장판의 누수·결로·곰팡이, 방음(벽 두드려 보기), 냉난방·이중창, 환기·배수구 냄새, 도어락·CCTV·방범창·가스 배관 방범 덮개, 콘센트·가스 호스, 소방시설, 최저주거기준(${r.houseHunting.minHousingAreaM2}㎡) 이하인지, 건축물대장(정부24)으로 위반건축물인지 확인.`, src: S.houseCheck, srcName: "HUG 전세사기예방센터" },
   { id: "house-market", title: "집 가격이 적당한지(HUG 전세사기예방센터)", text: `보증금이 매매 시세의 ${r.houseHunting.avoidDepositOverPricePct}%를 넘으면 피하는 게 좋다(깡통전세 — 집값이 내려가면 보증금을 돌려받기 어려울 수 있다). 매매 시세는 국토교통부 실거래가 공개시스템, KB시세, 부동산테크, 부동산공시가격알리미, 등기부의 매매가로 확인한다. 같은 건물·같은 동네 비슷한 집의 전월세와도 비교한다.`, src: S.housePrice, srcName: "HUG 전세사기예방센터" },
+  { id: "rent-conversion", title: "반전세(보증부 월세)의 보증금 상한", text: `월세가 있으면 HUG는 '전월세전환율 적용 전세보증금' = 보증금 + (월세 × 12) ÷ 전월세전환율(${G.rentConversionPct}%)로 보증금 상한(수도권 ${eok(G.depositCap.capital)}, 그 외 ${eok(G.depositCap.other)})을 본다.`, src: S.rentConversionNotice, srcName: "HUG 전월세전환율 공지" },
+  // 상황 안내(jeonse-guide)를 그대로 자료로 — 채팅 버튼과 AI 답이 같은 문장을 쓰게
+  ...[LANDLORD_GONE, AFTER_ACCIDENT, NO_GUARANTEE, PRODUCT_KIND].map((g: Guide): KbItem => ({ id: g.id, title: g.ask, text: g.steps.join(" "), src: g.sources[0].url, srcName: g.sources[0].name })),
 ];
 
 /** 모델에게 주는 자료 덩어리 */

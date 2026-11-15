@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import r from "../../rates/hug-jeonse-2026.json";
-import { hugGuarantee, hugSchedule, refusalChecks, REFUSAL_CHECKS } from "../hug-jeonse";
+import { hugGuarantee, hugSchedule, refusalChecks, REFUSAL_CHECKS, convertedDeposit, renewalDeadline } from "../hug-jeonse";
 import { toDay, fromDay } from "../date-calc";
 
 const d = (s: string) => toDay(s)!;
@@ -64,7 +64,7 @@ describe("전세 일정", () => {
     expect(at("pre-limit")).toBe("2026-12-06");
     expect(at("loan-guarantee")).toBe("2027-03-20");
     expect(at("renewal-open")).toBe("2028-06-19");
-    expect(at("renewal-deadline")).toBe("2028-10-19");
+    expect(at("renewal-deadline")).toBe("2028-10-18"); // HUG 예시처럼 2개월 전 날의 전날(2028-10-18 수요일)
     expect(at("accident")).toBe("2029-01-19");
     expect(s.map((i) => i.day)).toEqual([...s.map((i) => i.day)].sort((a, b) => a - b));
   });
@@ -102,5 +102,30 @@ describe("숫자가 맞아도 가입이 안 되는 경우 — HUG 상품개요 �
   });
   it("모든 항목에 확인할 곳과 근거가 있다", () => {
     for (const c of REFUSAL_CHECKS) expect(c.where && c.basis).toBeTruthy();
+  });
+});
+
+describe("반전세 — 전월세전환율 환산 보증금으로 상한을 본다(HUG 공지 2026-06-24)", () => {
+  it("보증금 + 월세 × 12 ÷ 6.5%", () => {
+    expect(r.guarantee.rentConversionPct).toBe(6.5);
+    // 월 65만원 × 12 = 780만원 ÷ 6.5% = 1억2천만원
+    expect(convertedDeposit(600_000_000, 650_000)).toBe(720_000_000);
+    expect(convertedDeposit(300_000_000)).toBe(300_000_000);
+  });
+  it("수도권 보증금 6억 + 월 65만원 → 환산 7.2억으로 상한 초과", () => {
+    const x = hugGuarantee({ type: "apartment", capital: true, deposit: 600_000_000, monthlyRent: 650_000, senior: 0, basis: "market", price: 2_000_000_000 });
+    expect(x.capDeposit).toBe(720_000_000);
+    expect(x.depositOk).toBe(false);
+    expect(x.maxDeposit).toBe(700_000_000 - 120_000_000);
+  });
+});
+
+describe("갱신거절 통지 마감 — 토·일·공휴일이면 직전 평일(HUG 계약종료 안내)", () => {
+  it("HUG 예시: 만료 2024-07-10 → 2024-05-09까지", () => {
+    expect(renewalDeadline(d("2024-07-10"))).toBe(d("2024-05-10") - 1);
+  });
+  it("2개월 전이 토요일이면 금요일로", () => {
+    // 만료 2028-11-17 → 2028-09-16(토) → 2028-09-15(금)
+    expect(renewalDeadline(d("2028-11-17"))).toBe(d("2028-09-15"));
   });
 });

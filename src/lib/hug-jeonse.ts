@@ -8,7 +8,7 @@
  * 보증료: hugPremium() — 반환보증 구간별 요율표(2026-11-08 확인). 할인·할증 적용 순서는 원문에 없어 줄을 나눠 보여 준다.
  */
 import r from "../rates/hug-jeonse-2026.json";
-import { addMonths } from "./date-calc";
+import { addMonths, isBusinessDay } from "./date-calc";
 
 const G = r.guarantee;
 const D = r.deadlines;
@@ -29,6 +29,13 @@ export interface GuaranteeInput {
   /** 가격 기준 — public: 공시가격(× 140%), market: 시세·감정가 그대로 */
   basis: PriceBasis;
   price: number;
+  /** 보증부 월세면 월세(원). 보증금 상한은 전월세전환율로 환산한 보증금으로 본다(HUG 공지 2026-06-24) */
+  monthlyRent?: number;
+}
+
+/** 전월세전환율 적용 전세보증금 = 보증금 + (월세 × 12) ÷ 전환율 — 보증금 상한 판단용 */
+export function convertedDeposit(deposit: number, monthlyRent = 0): number {
+  return deposit + Math.floor((monthlyRent * 12 * 1000) / (G.rentConversionPct * 10));
 }
 
 export interface GuaranteeResult {
@@ -41,6 +48,8 @@ export interface GuaranteeResult {
   /** 선순위로 보는 금액(다가구 등은 다른 세입자 보증금 포함) */
   seniorTotal: number;
   depositCap: number;
+  /** 상한과 비교한 보증금(월세가 있으면 환산 보증금, 없으면 보증금 그대로) */
+  capDeposit: number;
   depositOk: boolean;
   ltvOk: boolean;
   seniorOk: boolean;
@@ -60,7 +69,8 @@ export function hugGuarantee(x: GuaranteeInput): GuaranteeResult {
   const ltvLine = floorWon((housePrice * G.ltvLimitPct) / 100);
   const seniorLine = floorWon((housePrice * (multi ? G.seniorLimitMultiFamilyPct : G.seniorLimitPct)) / 100);
   const depositCap = x.capital ? G.depositCap.capital : G.depositCap.other;
-  const depositOk = x.deposit <= depositCap;
+  const capDeposit = convertedDeposit(x.deposit, x.monthlyRent);
+  const depositOk = capDeposit <= depositCap;
   const ltvOk = x.deposit + seniorTotal <= ltvLine;
   const seniorOk = seniorTotal <= seniorLine;
   const guaranteeLimit = Math.max(0, ltvLine - seniorTotal);
@@ -70,16 +80,23 @@ export function hugGuarantee(x: GuaranteeInput): GuaranteeResult {
     seniorLine,
     seniorTotal,
     depositCap,
+    capDeposit,
     depositOk,
     ltvOk,
     seniorOk,
     ok: depositOk && ltvOk && seniorOk,
     guaranteeLimit,
-    maxDeposit: seniorOk ? Math.min(depositCap, guaranteeLimit) : 0,
+    // 월세가 있으면 상한에서 월세 환산분을 뺀 만큼만 보증금으로 넣을 수 있다
+    maxDeposit: seniorOk ? Math.max(0, Math.min(depositCap - (capDeposit - x.deposit), guaranteeLimit)) : 0,
   };
 }
 
 /* ── 보증료 ─────────────────────────────────────────── */
+
+/** 전세안심보증 대출보증 보증비율 — 수도권·규제지역 80%, 그 외 90%(규제지역 여부는 묻지 않아 수도권 여부로 가른다) */
+export function loanGuaranteeRatioPct(capital: boolean): number {
+  return capital ? r.loanGuaranteeLimit.ratioCapitalRegulatedPct : r.loanGuaranteeLimit.ratioOtherPct;
+}
 
 export type PremiumDiscount = "none" | "lowIncome" | "multiChild" | "elderly" | "singleElderly" | "newlywed" | "singleParent" | "disabled";
 
@@ -95,6 +112,8 @@ export interface PremiumInput {
   discount?: PremiumDiscount;
   /** 전세안심보증이면 전세대출 금액(대출보증 부분 보증료) */
   loan?: number;
+  /** 대출보증 보증비율을 고르는 데 쓴다 — 수도권(·규제지역) 80%, 그 외 90%. 없으면 수도권으로 본다 */
+  capital?: boolean;
   /** 단독·다가구가 타전세계약확인서를 내는가 — 안 내면 그 구간 최고요율 */
   othersConfirmed?: boolean;
 }
@@ -139,7 +158,9 @@ export function hugPremium(x: PremiumInput): PremiumResult {
   const surcharge = surchargeApplied ? Math.floor((base * P.surchargePct) / 100) : 0;
   const discountPct = !x.discount || x.discount === "none" ? 0 : P.discountPct[x.discount];
   const discountAmount = Math.floor(((base + surcharge) * discountPct) / 100);
-  const loanPart = x.loan ? Math.floor((x.loan * P.loanPartRateMilliPct * x.days) / (100_000 * 365)) : 0;
+  // 대출보증 보증료 = 대출보증금액 × 0.031% × 기간 — 대출보증금액은 대출금 × 보증비율(HUG 전세안심보증 상품개요)
+  const loanGuaranteed = x.loan ? Math.floor((x.loan * loanGuaranteeRatioPct(x.capital ?? true)) / 100) : 0;
+  const loanPart = loanGuaranteed ? Math.floor((loanGuaranteed * P.loanPartRateMilliPct * x.days) / (100_000 * 365)) : 0;
   return {
     debtRatioPct: ltvLine > 0 ? Math.round((debt * 1000) / ltvLine) / 10 : 0,
     debtBand,
@@ -187,6 +208,17 @@ export interface ScheduleItem {
   warn?: string;
 }
 
+/**
+ * 갱신거절 통지가 집주인에게 닿아야 하는 마지막 날 — 만료 2개월 전, 그날이 토요일·공휴일이면 직전 평일
+ * (HUG 계약종료(해지) 안내 geer004001). 일요일도 업무일이 아니라 같이 당긴다.
+ */
+export function renewalDeadline(end: number): number {
+  // HUG 예시: 만료 2024-07-10 → 2024-05-09까지 도달(2개월 전 날의 전날). 법 문구보다 하루 이른 HUG 기준을 따른다
+  let d = addMonths(end, -D.renewalNoticeToMonths) - 1;
+  if (r.claim.renewalNoticeShiftToPrevWeekday) while (!isBusinessDay(d)) d -= 1;
+  return d;
+}
+
 /** 날짜 순으로 정렬된 할 일. 계약일보다 앞서는 항목(이미 지난 사전한도심사 등)은 뺀다. */
 export function hugSchedule(x: ScheduleInput): ScheduleItem[] {
   const early = Math.min(x.start, x.moveIn);
@@ -199,7 +231,7 @@ export function hugSchedule(x: ScheduleInput): ScheduleItem[] {
     { key: "loan-guarantee", day: addMonths(early, D.loanGuaranteeMonths), title: "버팀목 대출·전세안심보증 신청 마감", what: `잔금일과 전입일 중 빠른 날부터 ${D.loanGuaranteeMonths}개월 안에 신청합니다.`, basis: "HUG 전세안심보증 상품개요, 주택도시기금 버팀목 안내" },
     { key: "return-guarantee", day: late + half, title: "전세반환보증 가입 마감(추산)", what: "잔금일과 전입일 중 늦은 날부터 계약기간의 절반이 지나기 전에 가입합니다.", basis: "HUG 전세반환보증 상품개요" },
     { key: "renewal-open", day: addMonths(x.end, -D.renewalNoticeFromMonths), title: "갱신·이사 의사 알리기 시작", what: `만료 ${D.renewalNoticeFromMonths}개월 전부터 갱신을 요구하거나 갱신하지 않겠다고 알릴 수 있습니다.`, basis: "주택임대차보호법 제6조·제6조의3" },
-    { key: "renewal-deadline", day: addMonths(x.end, -D.renewalNoticeToMonths), title: "갱신거절 통지 마감 — 증빙 보관", what: `만료 ${D.renewalNoticeToMonths}개월 전까지 알리지 않으면 같은 조건으로 갱신된 것으로 봅니다. HUG 보증금 청구에는 이 기한 안에 알렸다는 증빙(내용증명 도달, 답장이 있는 문자 등)이 필요합니다.`, basis: "주택임대차보호법 제6조, HUG 보증사고 이행청구 안내", warn: "말로만 알리지 마세요. 내용증명 도달이나 집주인 답장이 있는 문자처럼, 기한 안에 닿았다는 증빙이 있어야 HUG에 청구할 수 있어요." },
+    { key: "renewal-deadline", day: renewalDeadline(x.end), title: "갱신거절 통지 마감 — 증빙 보관", what: `만료 ${D.renewalNoticeToMonths}개월 전까지 알리지 않으면 같은 조건으로 갱신된 것으로 봅니다. HUG는 이 날까지 통지가 집주인에게 '도달'해야 보증금을 청구할 수 있다고 안내합니다(그날이 토요일·공휴일이면 직전 평일). 증빙은 도달 기록이 있는 내용증명, 집주인 답장이 있는 문자·카톡, 공인속기사 녹취록 중 하나입니다.`, basis: "주택임대차보호법 제6조, HUG 계약종료(해지) 안내", warn: `보내는 날이 아니라 닿는 날이 기준이에요. 집주인이 연락을 안 받으면 법원 공시송달까지 가야 하는데 HUG 안내로 보통 ${r.claim.publicNoticeTypicalMonths.min}~${r.claim.publicNoticeTypicalMonths.max}개월 걸려요. 연락이 불안하면 이보다 훨씬 일찍 보내세요.` },
     { key: "end", day: x.end, title: "계약 만료", what: "보증금을 돌려받는 날입니다. 받기 전에 전출하면 대항력을 잃을 수 있으니, 꼭 이사해야 하면 임차권등기를 먼저 마칩니다.", basis: "주택임대차보호법 제3조·제3조의3", warn: "보증금을 다 받기 전에 전출·이사하지 마세요. 꼭 이사해야 하면 임차권등기가 등기부에 올라간 것을 확인한 뒤에 하세요." },
     { key: "accident", day: addMonths(x.end, D.accidentAfterMonths), title: "보증사고 — 이행청구 준비", what: `만료 후 ${D.accidentAfterMonths}개월까지 정당한 사유 없이 못 받으면 보증사고입니다. 임차권등기명령을 마친 뒤 HUG에 이행청구합니다(결정문으로 청구할 수 있지만 지급 전에 등기가 끝나야 합니다).`, basis: "HUG 보증사고 이행청구 안내, 주택임대차보호법 제3조의3", warn: "임차권등기가 끝나기 전에는 이사하지 마세요. HUG 담당자 확인 전에 전출하면 청구가 거절될 수 있어요." },
   ];
@@ -230,8 +262,10 @@ export const REFUSAL_CHECKS: RefusalCheck[] = [
   { key: "trust", text: "등기부 갑구에 신탁 — 신탁회사 동의 없이는 임대차계약을 할 수 없어요", where: "등기부등본 갑구", basis: "HUG 안심전세포털 등기부등본 확인" },
   { key: "owner", text: "건물이나 땅 주인이 계약하는 집주인과 다름", where: "등기부등본(단독·다가구는 건물·토지 둘 다)", basis: "HUG 전세반환보증 상품개요" },
   { key: "others", text: "전입세대확인서에 다른 세대가 있음", where: "전입세대확인서(주민센터 방문 발급)", basis: "HUG 전세반환보증 상품개요", skip: ["multi"] },
-  { key: "contract", text: `계약기간이 ${G.minTermYears}년 미만이거나 공인중개사 날인이 없는 계약서`, where: "계약서", basis: "HUG 전세반환보증 상품개요" },
+  { key: "contract", text: `계약기간이 ${G.minTermYears}년 미만이거나 공인중개사 날인이 없는 계약서(갱신 계약은 처음 계약서에 중개사 날인이 있으면 괜찮아요)`, where: "계약서", basis: "HUG 전세반환보증 상품개요" },
   { key: "assign", text: "계약서에 보증금 반환채권 양도 금지 특약", where: "계약서 특약", basis: "HUG 전세반환보증 상품개요" },
+  { key: "loan-pledge", text: "은행이 질권 설정이나 채권양도 통지를 해 둔 전세대출을 받음(SGI서울보증 보증부 대출은 예외) — 이때는 반환보증만 따로는 못 들고, 대출과 함께 드는 전세안심보증을 알아봐요", where: "대출받은 은행", basis: "HUG 전세반환보증 상품개요" },
+  { key: "landlord", text: "집주인이 HUG 보증금지 대상이거나, 보증금을 안 돌려준 임대인으로 신용정보기관에 등록돼 있음", where: "HUG 지사·위탁은행 상담", basis: "HUG 전세반환보증 상품개요" },
 ];
 
 export function refusalChecks(type: HouseType): RefusalCheck[] {

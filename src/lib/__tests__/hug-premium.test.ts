@@ -74,8 +74,14 @@ describe("hugPremium — 요율표", () => {
     const p = prem({ type: "apartment", capital: true, deposit: 3e8, senior: 1e8, basis: "market", price: 5e8 }, 730, { discount: "lowIncome", loan: 2e8 });
     expect(p.discountPct).toBe(60);
     expect(p.discountAmount).toBe(554_400);
-    expect(p.loanPart).toBe(124_000); // 2억 × 0.031% × 2년
-    expect(p.total).toBe(924_000 - 554_400 + 124_000);
+    // 대출보증금액 = 2억 × 보증비율 80%(수도권) = 1.6억 → × 0.031% × 2년
+    expect(p.loanPart).toBe(99_200);
+    expect(p.total).toBe(924_000 - 554_400 + 99_200);
+  });
+
+  it("수도권 밖은 보증비율 90%", () => {
+    const p = prem({ type: "apartment", capital: false, deposit: 3e8, senior: 1e8, basis: "market", price: 5e8 }, 730, { loan: 2e8, capital: false });
+    expect(p.loanPart).toBe(111_600); // 2억 × 90% × 0.031% × 2년
   });
 
   it("단독·다가구가 다른 세입자 계약 확인서를 안 내면 그 구간 최고요율", () => {

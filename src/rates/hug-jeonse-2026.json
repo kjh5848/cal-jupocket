@@ -38,7 +38,25 @@
     "leaseRenewal": "https://www.law.go.kr/법령/주택임대차보호법/제6조",
     "leaseRenewalRight": "https://www.law.go.kr/법령/주택임대차보호법/제6조의3",
     "leaseReportArt": "https://www.law.go.kr/법령/부동산거래신고등에관한법률/제6조의2",
-    "dictClaim": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=%EC%B1%84%EA%B6%8C"
+    "dictClaim": "https://stdict.korean.go.kr/search/searchResult.do?searchKeyword=%EC%B1%84%EA%B6%8C",
+    "rentConversionNotice": "https://khug.or.kr/hug/web/cs/no/csno000001.jsp?id=16&mode=S&currentPage=1&articleId=37801",
+    "claimTermination": "https://www.khug.or.kr/hug/web/ge/er/geer004001.jsp",
+    "claimMoveOut": "https://www.khug.or.kr/hug/web/ge/er/geer004000.jsp",
+    "claimExclusions": "https://www.khug.or.kr/hug/web/ge/er/geer001300.jsp",
+    "guaranteeLookup": "https://www.khug.or.kr/hug/web/ig/ov/igov000001.jsp",
+    "civilPublicNotice": "https://www.law.go.kr/법령/민법/제113조",
+    "publicNoticeEffect": "https://www.law.go.kr/법령/민사소송법/제196조",
+    "civilInterest": "https://www.law.go.kr/법령/민법/제379조",
+    "lawsuitInterest": "https://www.law.go.kr/법령/소송촉진등에관한특례법/제3조",
+    "lawsuitInterestRate": "https://www.law.go.kr/법령/소송촉진등에관한특례법제3조제1항본문의법정이율에관한규정",
+    "paymentOrderObjection": "https://www.law.go.kr/법령/민사소송법/제470조",
+    "auctionDividendDeadline": "https://www.law.go.kr/법령/민사집행법/제84조",
+    "auctionDividendClaim": "https://www.law.go.kr/법령/민사집행법/제88조",
+    "auctionDividendWho": "https://www.law.go.kr/법령/민사집행법/제148조",
+    "smallDeposit": "https://www.law.go.kr/법령/주택임대차보호법/제8조",
+    "fraudVictimAct": "https://www.law.go.kr/법령/전세사기피해자지원및주거안정에관한특별법",
+    "residentCopy": "https://www.law.go.kr/법령/주민등록법시행령/제47조",
+    "legalAid": "https://www.klac.or.kr/"
   },
   "guarantee": {
     "depositCap": {
@@ -55,7 +73,8 @@
     "premiumRateRangePct": {
       "min": 0.097,
       "max": 0.211
-    }
+    },
+    "rentConversionFormula": "전세보증금 + (월세 × 12) ÷ 전월세전환율 — 보증금 상한(수도권 7억·그 외 5억) 판단에 쓴다"
   },
   "deadlines": {
     "leaseReportDays": 30,
@@ -191,5 +210,31 @@
     "avoidDepositOverPricePct": 80,
     "minHousingAreaM2": 14,
     "note": "HUG 전세사기예방센터 \"전세계약 체결 전 유의사항\" 4쪽(어떤 집에 살까·내 집은 어디에·이 집 괜찮을까·이 집 얼마예요). 보증금이 매매 시세의 80%를 넘으면 피하라는 HUG 권고, 최저주거기준 14㎡. 같은 쪽의 전월세전환율 2.75%는 2021년 값이라 쓰지 않는다(현행은 guarantee.rentConversionPct 와 별개)."
+  },
+  "claim": {
+    "verifiedOn": "2026-11-15",
+    "note": "HUG 보증이행 안내(geer001100 사고·제출서류, geer001200 이행절차, geer001300 보상하지 않는 채무, geer004001 계약종료(해지) 안내, geer004000 주택명도 안내)를 브라우저로 열어 옮김. 전월세전환 산식은 공지(2026-06-24) '전세보증 관련 전월세전환율 변경 사전 안내'.",
+    "renewalNoticeShiftToPrevWeekday": true,
+    "publicNoticeTypicalMonths": {
+      "min": 2,
+      "max": 3
+    },
+    "endConfirmWithinMonths": 2,
+    "sealCertValidMonths": 3,
+    "moveOutNoticeBusinessDays": 10,
+    "subrogationWithinMonths": 1,
+    "callCenter": "1566-9009"
+  },
+  "legal": {
+    "verifiedOn": "2026-11-15",
+    "note": "law.go.kr 원문 대조(민법 제113조·제379조, 민사소송법 제194~196조·제462조·제470조·제472조, 소송촉진법 제3조와 법정이율 규정, 민사집행법 제84조·제88조·제148조, 주택임대차보호법 제3조의3·제8조, 전세사기피해자법 제3조·제12조·부칙, 주민등록법 제29조·시행령 제47조·별표 2). 소액임차인 최우선변제 금액은 지역·담보설정일 부칙에 따라 갈려 숫자를 옮기지 않고 링크만 단다.",
+    "publicNoticeEffectWeeks": 2,
+    "civilInterestPct": 5,
+    "lawsuitInterestPct": 12,
+    "paymentOrderObjectionWeeks": 2,
+    "fraudActValidUntil": "2027-05-31",
+    "fraudActFirstContractBy": "2025-05-31",
+    "fraudActDepositMax": 500000000,
+    "legalAidPhone": "132"
   }
 }
