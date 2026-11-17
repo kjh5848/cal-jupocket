@@ -50,6 +50,23 @@ const dot = (id: string | null) =>
         </p>
       </header>
 
+      {/* 쇼츠·릴스가 "프로필 링크 맨 위"라고 가리키는 자리. 번호표(linkhub.ts)
+          밖에 둔다 — 번호는 카드용이고, 이 칸은 영상이 위치로 찾게 한다. */}
+      <section class="hub-ai" aria-label="AI 도구">
+        <p class="hub-glabel">
+          <span class="hub-dot" style={`--d:${BRAND}`} aria-hidden="true" />
+          AI 도구
+        </p>
+        <a class="hub-ai-card" href="/jeonse-chat/">
+          <span class="hub-ai-badge">AI</span>
+          <span class="hub-ai-text">
+            <strong>HUG 전세 도우미</strong>
+            <span>계약 날짜를 넣으면 할 일을 날짜별로 · 무료</span>
+          </span>
+          <span class="hub-ai-go" aria-hidden="true">→</span>
+        </a>
+      </section>
+
       <p class="hub-hint">스레드에서 본 번호를 아래에서 찾으세요</p>
 
       {
@@ -106,6 +123,55 @@ const dot = (id: string | null) =>
     font-size: 0.92rem;
     line-height: 1.6;
     color: var(--muted);
+  }
+
+  .hub-ai {
+    margin-top: 1.8rem;
+  }
+  .hub-ai-card {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-height: 76px;
+    padding: 0.9rem 1.1rem;
+    border-radius: var(--r-lg);
+    background: #0b5cad;
+    color: #fff;
+    text-decoration: none;
+    box-shadow: var(--shadow-1);
+    transition: transform 0.12s ease;
+  }
+  .hub-ai-card:active {
+    transform: scale(0.985);
+  }
+  .hub-ai-badge {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.8rem;
+    background: rgb(255 255 255 / 0.18);
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+  .hub-ai-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    line-height: 1.35;
+  }
+  .hub-ai-text strong {
+    font-size: 1.05rem;
+  }
+  .hub-ai-text span {
+    font-size: 0.82rem;
+    opacity: 0.85;
+  }
+  .hub-ai-go {
+    font-size: 1.2rem;
+    font-weight: 700;
   }
 
   .hub-hint {
