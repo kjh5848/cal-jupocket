@@ -22,12 +22,14 @@ export interface HugReply {
   error?: string;
 }
 
-async function runModel(env: ChatEnv, system: string, history: Msg[], nudge?: string): Promise<unknown> {
+async function runModel(env: ChatEnv, system: string, history: Msg[], nudge?: string, meter?: unknown[]): Promise<unknown> {
   const out = (await env.AI.run((env.CHAT_MODEL || DEFAULT_MODEL) as Parameters<Ai["run"]>[0], {
     messages: [{ role: "system", content: system }, ...history, ...(nudge ? [{ role: "system", content: nudge }] : [])],
     max_tokens: 700,
     temperature: 0.1,
-  } as never)) as { response?: unknown; choices?: { message?: { content?: string } }[] };
+  } as never)) as { response?: unknown; choices?: { message?: { content?: string } }[]; usage?: unknown };
+  // 디버그(평가 키) 때만 토큰 사용량을 돌려준다 — 하루 무료 한도(뉴런)를 재는 데 쓴다
+  if (meter) meter.push({ usage: out?.usage ?? null });
   if (out?.response && typeof out.response === "object") return out.response;
   const raw = typeof out?.response === "string" ? out.response : (out?.choices?.[0]?.message?.content ?? "");
   return pickJson(raw) ?? { unparsed: raw.slice(0, 1500) };
@@ -67,7 +69,7 @@ export async function hugChat(body: Record<string, unknown> | null, env: ChatEnv
   for (let i = 0; i < 2; i++) {
     let m;
     try {
-      const raw = await runModel(env, system, shown, nudge);
+      const raw = await runModel(env, system, shown, nudge, opts.debug ? raws : undefined);
       if (opts.debug) raws.push(raw);
       m = readModel(raw, history);
     } catch (e) {
