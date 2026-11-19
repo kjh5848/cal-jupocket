@@ -145,6 +145,14 @@ export const CLOSINGS = [
   { key: "like", text: "숫자 근거는 댓글에서 볼 수 있어요. 도움이 됐다면 좋아요 부탁드려요." },
 ];
 
+/**
+ * 세금 글이 아닌 홍보 글(2026-11-19 전세 도우미)은 frontmatter `closing:` 으로 마무리를 고른다.
+ * 번호로 돌리면 "세금 이야기 매일 올립니다"가 전세 글에 붙는다.
+ */
+export const EXTRA_CLOSINGS = [
+  { key: "tool", text: "내 계약 날짜로 할 일은 댓글 링크에서 바로 정리해 볼 수 있어요." },
+];
+
 /** 지어낸 사례라는 표시. 마무리 줄 앞에 붙여 한 줄로 합친다. */
 export const FICTION_MARK = "※ 가상 사례입니다.";
 
@@ -160,7 +168,8 @@ export function closingFor(file, meta) {
   if (no === null) return null;
   const n = Number(no);
   if (!Number.isFinite(n)) return null;
-  const pick = CLOSINGS[n % CLOSINGS.length];
+  const chosen = meta.closing ? [...CLOSINGS, ...EXTRA_CLOSINGS].find((c) => c.key === meta.closing) : null;
+  const pick = chosen ?? CLOSINGS[n % CLOSINGS.length];
   const fiction = String(meta.fiction ?? "").toLowerCase() === "true";
   return {
     key: pick.key,

@@ -8,6 +8,7 @@
 import { describe, it, expect } from "vitest";
 import {
   CLOSINGS,
+  EXTRA_CLOSINGS,
   FICTION_MARK,
   closingFor,
   withClosing,
@@ -101,5 +102,22 @@ describe("인스타 2주 정지", () => {
   it("왜 멈췄는지가 코드에 남아 있다", () => {
     // 이유가 없으면 재개일에 아무도 이게 뭐였는지 모른다.
     expect(IG_PAUSE_REASON).toBeTruthy();
+  });
+});
+
+describe("closing: 로 고르는 마무리(홍보 글, 2026-11-19)", () => {
+  it("추가 마무리도 URL 이 없고 댓글을 가리킨다", () => {
+    for (const c of EXTRA_CLOSINGS) {
+      expect(findBodyLink(c.text), c.key).toBeNull();
+      expect(c.text, c.key).toMatch(/댓글/);
+    }
+  });
+  it("closing 키가 번호 순환보다 먼저다", () => {
+    const c = closingFor("090-x.md", { ref: "/jeonse-chat/", closing: "tool" });
+    expect(c?.key).toBe("tool");
+  });
+  it("모르는 키면 번호 순환으로 돌아간다", () => {
+    const c = closingFor("090-x.md", { ref: "/jeonse-chat/", closing: "nope" });
+    expect(c?.key).toBe(CLOSINGS[90 % CLOSINGS.length].key);
   });
 });
