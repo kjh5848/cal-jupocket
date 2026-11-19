@@ -21,6 +21,7 @@
     "indexnow": "node social/indexnow.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.10.0",
     "@astrojs/sitemap": "^3.0.0",
     "astro": "^7.0.0"
   },
