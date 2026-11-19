@@ -1,5 +1,7 @@
 ---
 at: "07:30"
+images:
+  - /promo/threads/text-reply.png
 ref: /jeonse-chat/
 closing: tool
 fiction: true

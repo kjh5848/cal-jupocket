@@ -1,5 +1,7 @@
 ---
 at: "18:00"
+images:
+  - /promo/threads/plan.png
 ref: /jeonse-chat/
 closing: tool
 fiction: true

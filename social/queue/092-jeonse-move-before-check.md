@@ -1,5 +1,7 @@
 ---
 at: "12:30"
+images:
+  - /promo/threads/move-out.png
 ref: /jeonse-chat/
 closing: tool
 fiction: true

@@ -78,6 +78,11 @@ export function resolveImages(meta) {
   return list.map(resolveImage).filter(Boolean);
 }
 
+/** 영상 한 편(frontmatter `video:`). 상대경로면 공개 URL 로. 스레드 VIDEO 컨테이너로 나간다(2026-11-19). */
+export function resolveVideo(meta) {
+  return meta?.video ? resolveImage(meta.video) : null;
+}
+
 /**
  * 링크 카드는 텍스트 전용 글에만 붙는다(문서). 이미지가 있으면 link는 버린다 —
  * 둘 다 보내면 API가 거절하므로 여기서 미리 정리한다.
@@ -86,7 +91,7 @@ export function resolveImages(meta) {
  * 기본이고, link 는 그렇게 하지 않을 때만 쓴다.
  */
 export function resolveLink(meta) {
-  const hasImage = Boolean(meta.image) || (Array.isArray(meta.images) && meta.images.length > 0);
+  const hasImage = Boolean(meta.image) || Boolean(meta.video) || (Array.isArray(meta.images) && meta.images.length > 0);
   return !hasImage && meta.link ? meta.link : null;
 }
 

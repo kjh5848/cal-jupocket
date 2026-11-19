@@ -38,6 +38,7 @@ import {
   withClosing,
   resolveLink,
   resolveImages,
+  resolveVideo,
   textLength,
   parseArgs,
   isDue,
@@ -147,13 +148,52 @@ async function assertImages(urls) {
 }
 
 /**
+ * 게시 전에 영상이 실제로 열리는지 본다(이미지와 같은 이유 — 메타 서버가 URL 을 직접 가져간다).
+ * 스레드 영상은 MP4·MOV, 1GB 이하.
+ */
+async function assertVideo(u) {
+  let head;
+  try {
+    head = await fetch(u, { method: "HEAD" });
+  } catch (e) {
+    console.error(`
+✖ 영상에 접근할 수 없습니다: ${u}
+  ${e.message}
+`);
+    process.exit(1);
+  }
+  if (!head.ok) {
+    console.error(`
+✖ 영상 접근 불가 (${head.status}): ${u}
+  배포가 끝났는지 확인하세요.
+`);
+    process.exit(1);
+  }
+  const type = head.headers.get("content-type") ?? "";
+  if (!/mp4|quicktime/.test(type)) {
+    console.error(`
+✖ 스레드 영상은 MP4·MOV 만 받습니다. ${u} 는 ${type}
+`);
+    process.exit(1);
+  }
+  const size = Number(head.headers.get("content-length") ?? 0);
+  if (size > 1024 * 1024 * 1024) {
+    console.error(`
+✖ 1GB 를 넘습니다: ${u}
+`);
+    process.exit(1);
+  }
+  console.log(`· 영상 확인 ✓ (${(size / 1048576).toFixed(1)}MB)`);
+}
+
+/**
  * 낱장 컨테이너가 준비될 때까지 기다린다.
  *
  * 캐러셀로 묶기 전에 각 장이 FINISHED 여야 한다. 바로 되는 경우가
  * 대부분이지만 이미지를 막 배포한 직후에는 Threads 가 아직 받아오는 중일
  * 수 있고, 그때 묶으면 "Invalid parameter" 로 떨어진다.
  */
-async function waitReady(id, token, tries = 10) {
+async function waitReady(id, token, tries = 10, gap = 2000) {
   for (let i = 0; i < tries; i++) {
     const s = await callJson(
       `${API}/${id}?` +
@@ -163,7 +203,7 @@ async function waitReady(id, token, tries = 10) {
     if (s.status === "ERROR") {
       throw new Error(`컨테이너 ${id} 처리 실패: ${s.error_message ?? "(사유 없음)"}`);
     }
-    await sleep(2000);
+    await sleep(gap);
   }
   throw new Error(`컨테이너 ${id} 가 준비되지 않았습니다`);
 }
@@ -323,6 +363,13 @@ const { meta, text: body } = parsePost(readFileSync(join(QUEUE_DIR, file), "utf8
 const closing = closingFor(file, meta);
 const text = withClosing(body, closing);
 const images = resolveImages(meta);
+const video = resolveVideo(meta);
+if (video && images.length) {
+  console.error(`
+✖ ${file}: video 와 images 를 같이 쓸 수 없습니다(스레드 글 하나에 하나).
+`);
+  process.exit(1);
+}
 const linkAttachment = resolveLink(meta);
 const reply = resolveReply(meta, { platform: "threads", file });
 const len = textLength(text);
@@ -411,7 +458,19 @@ if (images.length > CAROUSEL_MAX_ITEMS) {
   process.exit(1);
 }
 
-if (images.length === 0) {
+if (video) {
+  await assertVideo(video);
+  const c = await post(`${userId}/threads`, {
+    media_type: "VIDEO",
+    video_url: video,
+    text,
+    access_token: token,
+  });
+  // 영상은 메타 서버가 받아 변환하는 데 시간이 걸린다 — FINISHED 전에 게시하면 실패한다. 5초 × 60 = 5분까지 기다린다
+  console.log("· 영상 처리 대기…");
+  await waitReady(c.id, token, 60, 5000);
+  containerId = c.id;
+} else if (images.length === 0) {
   const params = { media_type: "TEXT", text, access_token: token };
   if (linkAttachment) params.link_attachment = linkAttachment;
   const c = await post(`${userId}/threads`, params);
@@ -448,7 +507,7 @@ if (images.length === 0) {
   containerId = carousel.id;
 }
 
-const kind =
+const kind = video ? "영상" :
   images.length === 0 ? "텍스트" : images.length === 1 ? "이미지" : `캐러셀 ${images.length}장`;
 console.log(`· 컨테이너 ✓ id=${containerId} (${kind})`);
 
