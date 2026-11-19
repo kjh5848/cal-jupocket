@@ -37,7 +37,7 @@ function rules(): Rule[] {
 /** dist 에 실제 페이지가 있는 경로인가. */
 function pageExists(path: string): boolean {
   // 합친 글의 섹션(#criteria)으로 보내는 규칙 — 페이지는 # 앞까지(2026-11-07)
-  const clean = path.split("#")[0].replace(/^\/|\/$/g, "");
+  const clean = path.split("#")[0].split("?")[0].replace(/^\/|\/$/g, "");
   return existsSync(join(DIST, clean, "index.html"));
 }
 
@@ -45,8 +45,10 @@ const list = rules();
 const built = existsSync(DIST);
 
 describe.skipIf(list.length === 0)("_redirects", () => {
-  it("모든 규칙이 301 이다", () => {
-    expect(list.filter((r) => r.code !== "301")).toEqual([]);
+  it("모든 규칙이 301 이다 (홍보용 짧은 주소만 302)", () => {
+    // 2026-11-19 홍보 짧은 주소(/jeonse)는 utm 을 붙여 넘기는 302 다 — 색인용 옛 주소가 아니라서. 표는 docs/promo-links.md
+    const promo = (r: Rule) => r.code === "302" && r.to.includes("utm_campaign=");
+    expect(list.filter((r) => r.code !== "301" && !promo(r))).toEqual([]);
   });
 
   it("출발지가 중복되지 않는다", () => {

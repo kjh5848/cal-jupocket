@@ -1156,3 +1156,8 @@
 # 2026-11-07 인스타 카드뉴스 중단 — 카드 페이지(/cards/, /cards/<세트>/, /cards/<세트>/<번호>/)를 지우고 홈으로
 /cards/ / 301
 /cards/* / 301
+
+# 2026-11-19 전세 도우미 홍보 — 영상 화면에 띄우는 짧은 주소. 손으로 쳐서 들어온 사람도 영상에서 왔다고 GA4 에 남는다.
+# 표는 docs/promo-links.md. 302 로 둔다(검색 색인용 주소가 아니고, 나중에 utm 을 바꿀 수 있게).
+/jeonse  /jeonse-chat/?utm_source=shorts&utm_medium=video&utm_campaign=jeonse-chat  302
+/jeonse/  /jeonse-chat/?utm_source=shorts&utm_medium=video&utm_campaign=jeonse-chat  302
