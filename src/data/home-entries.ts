@@ -53,6 +53,6 @@ export const homeEntries: HomeEntry[] = [
       { q: "전세대출, 언제 무엇을 해야 하나요?", href: "/guide/hug-jeonse-checklist/" },
       { q: "기초연금, 나도 받을 수 있나요?", href: "/guide/basic-pension/#basic-pension-criteria" },
     ],
-    calc: { label: "HUG 전세보증 계산기", href: "/guide/hug-jeonse-guarantee-calculator/" },
+    calc: { label: "전세 도우미", href: "/jeonse-chat/" },
   },
 ];

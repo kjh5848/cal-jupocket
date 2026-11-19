@@ -130,6 +130,24 @@ const jsonLd = [
         고민 입구(2026-11-07) — 첫 화면에서 "무엇이 고민이세요?"로 시작해 질문(글)이나 계산기로 바로 넘긴다.
         설계: docs/superpowers/specs/2026-11-07-cta-redesign-design.md 4단계
       */}
+      {/* 전세 도우미(2026-11-19) — 홍보 시작에 맞춰 첫 화면 고민 입구 바로 위에 둔다. 홍보 링크가 홈으로 와도 한 번에 넘어간다. */}
+      <section class="home-feature" aria-label="전세 도우미">
+        <a class="feature-card" href="/jeonse-chat/">
+          <span class="feature-badge">AI</span>
+          <span class="feature-text">
+            <strong>JU포켓 전세 도우미</strong>
+            <span>계약일·잔금일을 넣으면 할 일을 날짜별로 정리해요 · 무료 · 로그인 없이</span>
+          </span>
+          <span class="feature-go" aria-hidden="true">→</span>
+        </a>
+        <nav class="feature-starts" aria-label="전세 도우미 바로 시작">
+          <a href="/jeonse-chat/?s=contract">계약 날짜로 일정 짜기</a>
+          <a href="/jeonse-chat/?s=calc">보증 되는지 계산</a>
+          <a href="/jeonse-chat/?s=trouble">집주인과 문제가 생겼어요</a>
+        </nav>
+        <p class="feature-note">HUG 공식 서비스가 아닌 JU포켓의 비공식 안내예요.</p>
+      </section>
+
       <section class="home-entries" aria-labelledby="entries-h">
         <h2 id="entries-h" class="home-h">무엇이 고민이세요?</h2>
         <div class="entry-grid">
