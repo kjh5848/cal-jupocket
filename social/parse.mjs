@@ -315,6 +315,17 @@ export function findBodyLink(text) {
 export const DUE_GRACE_MIN = 90;
 
 /**
+ * `on: 2026-11-21` — 그 날짜(로컬) 전에는 올리지 않는다(2026-11-19). 슬롯이 하루치뿐이라
+ * 같은 시각 글이 쌓이면 다음 실행에 연달아 나가서, 날짜로 하루씩 미룬다. 없으면 제한 없음.
+ */
+export function onReached(on, now = new Date()) {
+  if (!on) return true;
+  const m = String(on).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return false;
+  return now >= new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+/**
  * 지금이 예약 시각 직후인가.
  *
  * "지났으면 무조건 올린다" 로 만들면 안 된다. 저녁에 처음 돌리는 순간

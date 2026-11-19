@@ -42,6 +42,7 @@ import {
   textLength,
   parseArgs,
   isDue,
+  onReached,
   findBodyLink,
   resolveReply,
   TEXT_WARN,
@@ -257,6 +258,10 @@ function atOf(f) {
   const { meta } = parsePost(readFileSync(join(QUEUE_DIR, f), "utf8"));
   return meta.at ?? null;
 }
+function onOf(f) {
+  const { meta } = parsePost(readFileSync(join(QUEUE_DIR, f), "utf8"));
+  return meta.on ?? null;
+}
 
 /**
  * --reply-missing: 본문은 나갔는데 답글이 안 붙은 글에 답글만 붙인다.
@@ -333,7 +338,7 @@ if (pickFile) {
   file = pickFile;
 } else if (dueOnly) {
   const now = new Date();
-  file = queue.filter((f) => !posted.has(f) && isDue(atOf(f), now))[0];
+  file = queue.filter((f) => !posted.has(f) && onReached(onOf(f), now) && isDue(atOf(f), now))[0];
   if (!file) {
     const waiting = queue.filter((f) => !posted.has(f) && atOf(f));
     console.log(

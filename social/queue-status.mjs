@@ -17,6 +17,7 @@ import {
   parsePost,
   parseAt,
   isDue,
+  onReached,
   findBodyLink,
   closingFor,
   withClosing,
@@ -123,6 +124,9 @@ const rows = files.map((f) => {
   } else if (at === null) {
     state = "· 예약없음";
     when = "";
+  } else if (!onReached(meta.on, now)) {
+    state = "  날짜대기";
+    when = String(meta.on);
   } else if (isDue(meta.at, now)) {
     state = "→ 지금";
     when = "";

@@ -121,3 +121,15 @@ describe("closing: 로 고르는 마무리(홍보 글, 2026-11-19)", () => {
     expect(c?.key).toBe(CLOSINGS[90 % CLOSINGS.length].key);
   });
 });
+
+describe("on: 날짜 예약(2026-11-19)", async () => {
+  const { onReached } = await import("../parse.mjs");
+  it("날짜 전에는 안 되고 그날 0시부터 된다", () => {
+    expect(onReached("2026-11-21", new Date(2026, 10, 20, 23, 59))).toBe(false);
+    expect(onReached("2026-11-21", new Date(2026, 10, 21, 0, 0))).toBe(true);
+  });
+  it("없으면 제한 없음, 틀린 형식이면 안 올린다", () => {
+    expect(onReached(undefined)).toBe(true);
+    expect(onReached("11/21")).toBe(false);
+  });
+});
