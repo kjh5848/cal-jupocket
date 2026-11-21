@@ -351,6 +351,7 @@ export const clusters: Cluster[] = [
       // 정부 지원 도우미 첫 사업(2026-11-07) — HUG 전세보증
       { href: "/guide/hug-jeonse-checklist/", title: "HUG 전세대출 체크리스트 — 계약일·잔금일·만료일을 넣으면 신고·보증·갱신 통지 날짜가 나옵니다", kind: "guide", icon: "checklist" },
       { href: "/guide/hug-jeonse-guarantee-calculator/", title: "HUG 전세보증 가능 여부 계산기", kind: "calc", icon: "calculator", blurb: "공시가격·보증금·근저당 → 보증한도·가입 가능 여부(추산)" },
+      { href: "/guide/jeonse-special-clauses/", title: "전세 계약서 특약 문구 — 표준계약서에 인쇄된 6가지와 넣으면 안 되는 것", kind: "guide", icon: "checklist" },
     ],
   },
   /*
@@ -395,6 +396,7 @@ export const clusters: Cluster[] = [
  * 글을 추가하면 맨 앞에 href를 넣는다.
  */
 export const recent: string[] = [
+  "/guide/jeonse-special-clauses/",
   "/guide/hug-jeonse-guarantee-calculator/",
   "/guide/hug-jeonse-checklist/",
   "/guide/packing-vs-half-packing/",
