@@ -43,18 +43,23 @@ export function foldDays(rows: StatRow[]): { day: string; users: number; active:
 
 export async function adminStats(env: { DB: D1Database }, today: string) {
   const from = new Date(Date.parse(`${today}T00:00:00Z`) - 59 * 86_400_000).toISOString().slice(0, 10);
-  const [stats, questions, subs] = await Promise.all([
+  const [stats, questions, subs, kinds, first] = await Promise.all([
     env.DB.prepare("SELECT day, name, key, n FROM chat_stats WHERE day >= ?1").bind(from).all<StatRow>(),
-    // 우리가 시험하며 남긴 줄(page 가 eval·test)은 뺀다
-    env.DB.prepare("SELECT asked_on, page, kind, question, query_json FROM chat_questions WHERE asked_on >= ?1 AND page NOT IN ('eval', 'test') ORDER BY id DESC LIMIT 300")
+    // 우리가 시험하며 남긴 줄(page 가 eval·test)과 계산기 채팅 질문(kind 가 hug- 가 아닌 것)은 뺀다
+    env.DB.prepare("SELECT asked_on, page, kind, question, query_json FROM chat_questions WHERE asked_on >= ?1 AND page NOT IN ('eval', 'test') AND kind LIKE 'hug-%' ORDER BY id DESC LIMIT 300")
       .bind(from)
       .all<{ asked_on: string; page: string; kind: string; question: string; query_json: string }>(),
     env.DB.prepare("SELECT (SELECT COUNT(*) FROM subscriptions) AS subs, (SELECT COUNT(*) FROM reminders WHERE sent_at IS NULL) AS pending").first<{ subs: number; pending: number }>(),
+    // 300건 제한과 무관한 kind 별 전체 건수
+    env.DB.prepare("SELECT kind, COUNT(*) AS n FROM chat_questions WHERE asked_on >= ?1 AND page NOT IN ('eval', 'test') AND kind LIKE 'hug-%' GROUP BY kind").bind(from).all<{ kind: string; n: number }>(),
+    env.DB.prepare("SELECT MIN(day) AS d FROM chat_stats").first<{ d: string | null }>(),
   ]);
+  const counts: Record<string, number> = {};
+  for (const r of kinds.results) counts[r.kind] = r.n;
   const keys: Record<string, Record<string, number>> = {};
   for (const r of stats.results) {
     if (!r.key || r.name === "users" || r.name === "active") continue;
     (keys[r.name] ??= {})[r.key] = (keys[r.name][r.key] ?? 0) + r.n;
   }
-  return { ok: true, today, from, days: foldDays(stats.results), keys, questions: questions.results, push: subs ?? { subs: 0, pending: 0 } };
+  return { ok: true, today, from, since: first?.d ?? null, counts, days: foldDays(stats.results), keys, questions: questions.results, push: subs ?? { subs: 0, pending: 0 } };
 }
