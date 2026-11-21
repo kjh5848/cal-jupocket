@@ -1286,7 +1286,8 @@ function askPlanFeedback(host: HTMLElement) {
 /* ── 보내기 ───────────────────────────────────────────── */
 
 /** 고정 주소 — 날짜·금액을 쿼리나 해시에 싣지 않는다 */
-const SHARE_URL = "https://jupocket.com/jeonse-chat/?s=contract&utm_source=share&utm_medium=referral&utm_campaign=jeonse-chat";
+// 보내는 글에는 짧은 주소를 쓴다 — public/_redirects 의 /j 가 ?s=contract 와 UTM(utm_source=share)을 붙여 넘긴다
+const SHARE_URL = "https://jupocket.com/j";
 type ShareKind = "dates" | "nodate" | "intro";
 /**
  * 보낼 글 — 누를 때만 만든다(결과가 뜰 때 만들어 두거나 저장하지 않는다). 날짜는 계약일·잔금일·가장 먼저 할 일 하나뿐.

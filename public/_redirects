@@ -1163,3 +1163,5 @@
 # 표는 docs/promo-links.md. 302 로 둔다(검색 색인용 주소가 아니고, 나중에 utm 을 바꿀 수 있게).
 /jeonse  /jeonse-chat/?utm_source=shorts&utm_medium=video&utm_campaign=jeonse-chat  302
 /jeonse/  /jeonse-chat/?utm_source=shorts&utm_medium=video&utm_campaign=jeonse-chat  302
+/j  /jeonse-chat/?s=contract&utm_source=share&utm_medium=referral&utm_campaign=jeonse-chat  302
+/j/  /jeonse-chat/?s=contract&utm_source=share&utm_medium=referral&utm_campaign=jeonse-chat  302
