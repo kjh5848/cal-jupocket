@@ -260,6 +260,7 @@ const labelsJson = JSON.stringify(labels).replace(/</g, "\\u003c");
 
     <script>
       import { PUSH_API } from "../../data/push";
+      import { matchAnswer } from "../../lib/hug-answers";
 
       interface Day { day: string; users: number; active: number; events: Record<string, number> }
       interface Q { asked_on: string; page: string; kind: string; question: string; query_json: string }
@@ -328,9 +329,11 @@ const labelsJson = JSON.stringify(labels).replace(/</g, "\\u003c");
         "hug-check": "계산해 줌",
         "hug-nocite": "근거 없이 답함",
         "hug-fallback": "답 못 함",
+        // 그때는 못 답했지만 지금 같은 질문이 오면 준비한 답이 나가는 것(화면에서 다시 대 본다)
+        "hug-fixed": "그 뒤 답을 준비함",
       };
       const FIX = ["hug-fallback", "hug-nocite"];
-      const DONE = ["hug-bank", "hug-ok", "hug-check"];
+      const DONE = ["hug-bank", "hug-ok", "hug-check", "hug-fixed"];
       type Filter = "fix" | "done" | "all";
 
       /* ── 작은 도구 ─────────────────────────────────────────── */
@@ -555,6 +558,13 @@ const labelsJson = JSON.stringify(labels).replace(/</g, "\\u003c");
           for (const [k, n] of Object.entries(s.counts)) if (k.startsWith("hug-")) counts[k] = n;
         } else {
           for (const q of qs) counts[q.kind] = (counts[q.kind] ?? 0) + 1;
+        }
+        // 손볼 질문 가운데 지금은 준비한 답이 있는 것을 가려 낸다 — 이미 고친 것을 다시 고치지 않게
+        for (const q of qs) {
+          if (!FIX.includes(q.kind) || !matchAnswer(q.question)) continue;
+          counts[q.kind] = Math.max(0, (counts[q.kind] ?? 0) - 1);
+          counts["hug-fixed"] = (counts["hug-fixed"] ?? 0) + 1;
+          q.kind = "hug-fixed";
         }
         qv.list = qs;
         qv.counts = counts;
