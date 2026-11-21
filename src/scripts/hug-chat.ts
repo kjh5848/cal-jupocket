@@ -1297,17 +1297,22 @@ function shareText(kind: ShareKind): { kind: ShareKind; title: string; text: str
   const saved = kind === "dates" ? loadPlan() : null;
   if (saved) {
     const today = todayDay();
-    const nxt = nextItem(itemsOf(saved));
+    // 앞으로 할 일만, 가까운 순서로 3개(하나만 남으면 4개째까지) — 전부 넣으면 메신저에서 긴 글로 접힌다
+    const todo = itemsOf(saved).filter((i) => !i.past);
+    const show = todo.slice(0, todo.length === 4 ? 4 : 3);
+    const rest = todo.length - show.length;
     return {
       kind: "dates",
       title: "전세 계약 할 일, 날짜순으로 정리했어요",
       text: [
-        "전세 계약 할 일을 날짜순으로 정리했어요.",
-        `계약일 ${dateText(toDay(saved.contract)!, today)} · 잔금일 ${dateText(toDay(saved.start)!, today)}`,
-        ...(nxt ? [`가장 먼저 할 일: ${nxt.when} ${nxt.title}`] : []),
-        "JU포켓 전세 도우미에 계약일·잔금일을 넣으면 할 일이 날짜순으로 나와요. 로그인은 필요 없어요.",
-        "HUG 공식 서비스가 아닌 JU포켓의 비공식 안내예요. 실제 기한은 HUG·은행에 확인하세요.",
+        "우리 전세 계약 할 일을 날짜순으로 뽑아 봤어요.",
+        `계약일 ${dateText(toDay(saved.contract)!, today)} · 잔금일 ${dateText(toDay(saved.start)!, today)} 기준이에요.`,
+        "",
+        ...show.map((i) => `· ${i.when} ${i.dday} ${i.title}`),
+        `${rest > 0 ? `그 밖에 ${rest}개는 계약일·잔금일을 넣으면 나와요. ` : ""}무료고 로그인은 없어요.`,
         SHARE_URL,
+        "",
+        "HUG 공식 서비스는 아니고 JU포켓의 비공식 안내예요. 실제 기한은 HUG·은행에 확인해 보세요.",
       ].join("\n"),
     };
   }
@@ -1315,9 +1320,11 @@ function shareText(kind: ShareKind): { kind: ShareKind; title: string; text: str
     kind: kind === "nodate" ? "nodate" : "intro",
     title: "전세 계약 날짜로 할 일 뽑기 — JU포켓 전세 도우미(비공식)",
     text: [
-      "전세 계약일·잔금일을 넣으면 할 일이 날짜순으로 나오는 곳이에요. 보증 가입이 되는지도 계산해 줘요. 로그인은 필요 없어요.",
-      "HUG 공식 서비스가 아닌 JU포켓의 비공식 안내예요.",
+      "전세 계약 준비, 이걸로 같이 챙겨 봐요.",
+      "계약일·잔금일을 넣으면 할 일이 날짜순으로 나오고, 보증 가입이 되는지도 계산해 줘요.",
+      "무료고 로그인은 없어요.",
       SHARE_URL,
+      "HUG 공식 서비스는 아니고 JU포켓의 비공식 안내예요.",
     ].join("\n"),
   };
 }
@@ -1359,8 +1366,8 @@ function shareOpenBtn(label: string, cls: string, start: "dates" | "intro") {
 
 /** 누르면 도우미 말풍선이 하나 붙고 보낼 글을 미리 보여 준다 — 누르기 전에는 만들지도 보내지도 않는다 */
 function openShare(start: "dates" | "intro") {
-  const b = bubble("bot", "같이 계약하는 사람에게 보낼 글이에요. 보내기 전에 읽어 보세요.");
   const canDates = start === "dates" && !!loadPlan();
+  const b = bubble("bot", `같이 계약하는 사람에게 그대로 붙여 넣을 글이에요.${canDates ? " 계약일·잔금일이 맞는지 보고 보내세요." : ""}`);
   let cur = shareText(canDates ? "dates" : "intro");
   const box = el("div", undefined, "hc-share-text");
   box.tabIndex = 0;
@@ -1385,7 +1392,7 @@ function openShare(start: "dates" | "intro") {
   b.append(box);
 
   if (canDates) {
-    const tog = pickBtn("날짜 빼고 보내기", "hc-pick", (t) => {
+    const tog = pickBtn("날짜 빼고 소개만 보내기", "hc-pick", (t) => {
       const on = t.getAttribute("aria-pressed") !== "true";
       t.setAttribute("aria-pressed", String(on));
       cur = shareText(on ? "nodate" : "dates");
@@ -1403,7 +1410,7 @@ function openShare(start: "dates" | "intro") {
     const ok = await copyText(s.text);
     if (ok) {
       sent("copy", s);
-      msg.textContent = "글을 복사했어요. 메신저에 붙여 넣어 보내세요.";
+      msg.textContent = "복사했어요. 카카오톡이나 문자에 붙여 넣으세요.";
     } else {
       msg.textContent = "복사하지 못했어요. 위 글을 길게 눌러 직접 복사해 주세요.";
       selectAll();
@@ -1427,7 +1434,7 @@ function openShare(start: "dates" | "intro") {
           const ok = await copyText(s.text);
           if (ok) {
             sent("copy", s);
-            msg.textContent = "글을 복사했어요. 메신저에 붙여 넣어 보내세요.";
+            msg.textContent = "복사했어요. 카카오톡이나 문자에 붙여 넣으세요.";
           } else {
             msg.textContent = "복사하지 못했어요. 위 글을 길게 눌러 직접 복사해 주세요.";
             selectAll();
