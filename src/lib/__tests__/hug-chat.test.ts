@@ -137,3 +137,22 @@ describe("sourcesFor", () => {
     expect(sourcesFor(["ltv", "deposit-cap", "beotimmok-who"]).map((s) => s.name)).toEqual(["HUG 전세반환보증 안내", "주택도시기금 버팀목 안내"]);
   });
 });
+
+describe("짧은 계산 흐름 — 묻지 않은 값은 기본값으로 먼저 계산", () => {
+  // 전세 도우미는 월세·기간·할인·대출을 결과 뒤로 미루고 월세 없음·2년·할인 없음·대출 없음으로 먼저 계산한다.
+  // 그 기본값을 직접 넘긴 것과 아예 비운 것이 같은 숫자를 내야 "기준을 밝힌 한 줄"이 사실이 된다.
+  const base = { type: "apartment" as const, capital: true, deposit: 300_000_000, senior: 100_000_000, basis: "market" as const, price: 800_000_000 };
+  it("명시한 기본값과 비운 값의 표가 같다", () => {
+    const blank = checkAnswer(base);
+    const given = checkAnswer({ ...base, monthlyRent: 0, months: 24, discount: "none", loan: 0 });
+    expect(given.ok).toBe(blank.ok);
+    expect(given.lines).toEqual(blank.lines);
+    expect(given.numbers).toEqual(blank.numbers);
+  });
+  it("월세가 있으면 상한 비교가 달라질 수 있다 — 그래서 결과에 '월세 없음 기준'을 밝힌다", () => {
+    const rent = checkAnswer({ ...base, deposit: 690_000_000, senior: 0, price: 1_500_000_000, monthlyRent: 1_000_000, months: 24, discount: "none", loan: 0 });
+    const none = checkAnswer({ ...base, deposit: 690_000_000, senior: 0, price: 1_500_000_000, monthlyRent: 0, months: 24, discount: "none", loan: 0 });
+    expect(none.ok).toBe(true);
+    expect(rent.ok).toBe(false);
+  });
+});

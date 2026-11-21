@@ -291,6 +291,32 @@
     line-height: 1.45;
     color: var(--sub);
   }
+  /* 지나간 말풍선의 고르기 버튼 — 눌리지 않고, 고른 것은 안쪽 테두리로 남는다 */
+  .hc-log :global(.hc-opts button:disabled) {
+    color: var(--muted);
+    cursor: default;
+  }
+  .hc-log :global(.hc-opts button:disabled:hover) {
+    background: var(--surface-2);
+  }
+  .hc-log :global(.hc-opts button.hc-opt-minor:disabled:hover) {
+    background: transparent;
+  }
+  .hc-log :global(.hc-opts button.hc-opt-main:disabled:not([aria-pressed="true"])),
+  .hc-log :global(.hc-opts button.hc-opt-main:disabled:not([aria-pressed="true"]):hover) {
+    color: var(--muted);
+    background: var(--surface-2);
+  }
+  .hc-log :global(.hc-opts button.hc-opt-main:disabled[aria-pressed="true"]) {
+    color: var(--me-text);
+  }
+  .hc-log :global(.hc-opts button[aria-pressed="true"]:disabled) {
+    color: var(--bubble-text);
+    box-shadow: inset 0 0 0 2px var(--brand);
+  }
+  .hc-log :global(.hc-opts button.hc-opt-main[aria-pressed="true"]:disabled) {
+    color: var(--me-text);
+  }
   .hc-log :global(.hc-date) {
     display: flex;
     flex-wrap: wrap;
@@ -348,10 +374,76 @@
     border-radius: var(--r-pill);
     cursor: pointer;
   }
+  /* 일정 결과 — 위에서 아래로: 넣은 날짜(작게) · 가장 먼저 할 일(가장 크게) · 그다음 할 일(접힘) */
+  .hc-log :global(.hc-dates) {
+    display: grid;
+    gap: 0.2rem;
+  }
+  .hc-log :global(.hc-dates ul) {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .hc-log :global(.hc-dates li) {
+    display: grid;
+    grid-template-columns: 4.2rem minmax(0, 1fr) auto;
+    column-gap: 0.5rem;
+    align-items: center;
+    min-height: 2.25rem;
+    border-top: 1px solid var(--bar-line);
+    font-size: var(--t-sm);
+  }
+  .hc-log :global(.hc-dates li:first-child) {
+    border-top: 0;
+  }
+  .hc-log :global(.hc-dk) {
+    color: var(--sub);
+  }
+  .hc-log :global(.hc-dv) {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  /* 글자 버튼 — 보이는 높이는 줄에 맞추고 누르는 자리는 44px */
+  .hc-log :global(.hc-mini) {
+    min-height: 44px;
+    margin-block: -0.4rem;
+    padding: 0 0.6rem;
+    font: inherit;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    color: var(--link);
+    background: transparent;
+    border: 0;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+  }
+  .hc-log :global(.hc-dates-more) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.25rem;
+    margin-left: -0.6rem;
+  }
+  .hc-log :global(.hc-dates-more .hc-mini:last-child) {
+    color: var(--sub);
+    font-weight: 400;
+  }
   .hc-log :global(.hc-summary) {
-    padding: 0.6rem 0.75rem;
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.7rem 0.8rem;
     background: var(--brand-wash);
     border-radius: var(--r-md);
+  }
+  .hc-log :global(.hc-first-when) {
+    font-size: var(--t-sm);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .hc-log :global(.hc-first-title) {
+    font-size: var(--t-lg);
+    font-weight: 800;
+    line-height: 1.35;
   }
   .hc-log :global(.hc-plan) {
     display: grid;
@@ -361,19 +453,101 @@
   }
   .hc-log :global(.hc-plan li) {
     display: grid;
-    gap: 0.05rem;
-    padding: 0.5rem 0;
     border-top: 1px solid var(--bar-line);
   }
   .hc-log :global(.hc-plan li:first-child) {
     border-top: 0;
   }
-  .hc-log :global(.hc-plan li.hc-next b) {
-    color: var(--brand);
+  /* 전역 details(테두리 상자·바깥 여백)는 글 속 접이식용 — 대화 안에서는 줄로만 쓴다 */
+  .hc-log :global(.hc-item details),
+  .hc-log :global(.hc-pastbox) {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
   }
-  /* 지난 일 — 투명도(0.5)는 대비가 3:1 안팎으로 떨어진다. 흐린 글자색 토큰으로 가라앉힌다 */
-  .hc-log :global(.hc-plan li.hc-past) {
+  .hc-log :global(.hc-item details[open] > summary),
+  .hc-log :global(.hc-pastbox[open] > summary) {
+    margin-bottom: 0;
+  }
+  .hc-log :global(.hc-item summary),
+  .hc-log :global(.hc-pastbox > summary) {
+    font-size: var(--t-md);
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    min-height: 44px;
+    padding: 0.35rem 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  .hc-log :global(.hc-item summary::-webkit-details-marker),
+  .hc-log :global(.hc-pastbox > summary::-webkit-details-marker) {
+    display: none;
+  }
+  .hc-log :global(.hc-item summary::after),
+  .hc-log :global(.hc-pastbox > summary::after) {
+    content: "";
+    flex: none;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-right: 0.2rem;
+    border-right: 2px solid var(--sub);
+    border-bottom: 2px solid var(--sub);
+    transform: rotate(45deg);
+    transition: transform 150ms ease-out;
+  }
+  .hc-log :global(details[open] > summary::after) {
+    transform: rotate(-135deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hc-log :global(.hc-item summary::after),
+    .hc-log :global(.hc-pastbox > summary::after) {
+      transition: none;
+    }
+  }
+  .hc-log :global(.hc-sum-t) {
+    display: grid;
+    gap: 0.05rem;
+    min-width: 0;
+  }
+  .hc-log :global(.hc-sum-t span) {
+    font-weight: 600;
+  }
+  .hc-log :global(.hc-what) {
+    padding-bottom: 0.25rem;
+  }
+  .hc-log :global(.hc-item details > .hc-note) {
+    padding-bottom: 0.5rem;
+  }
+  .hc-log :global(.hc-item .hc-warn) {
+    margin-bottom: 0.5rem;
+  }
+  /* 지난 일은 흐리게 두지 않고 접는다. 펴면 흐린 글자색 토큰(투명도 0.5는 대비가 3:1 안팎이라 쓰지 않는다) */
+  .hc-log :global(.hc-pastbox) {
     color: var(--muted);
+    border-top: 1px solid var(--bar-line);
+  }
+  .hc-log :global(.hc-pastbox > summary) {
+    font-size: var(--t-sm);
+  }
+  .hc-log :global(.hc-acts) {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .hc-log :global(.hc-act.hc-act-sub) {
+    color: var(--bubble-text);
+    background: var(--surface-2);
+  }
+  /* 계산 결과의 가정 한 줄 — 작은 회색이 아니라 본문 글자색으로 읽히게 */
+  .hc-log :global(.hc-assume) {
+    padding: 0.4rem 0.6rem;
+    font-size: var(--t-sm);
+    line-height: 1.5;
+    background: var(--surface-2);
+    border-radius: var(--r-sm);
   }
   .hc-log :global(.hc-warn) {
     margin-top: 0.2rem;

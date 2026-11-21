@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { plan, nextItem, dateText, termsIn, localAnswer, GUIDES, HOUSE_GUIDES, CONTACT } from "../jeonse-guide";
+import { plan, nextItem, haeyo, dateText, termsIn, localAnswer, GUIDES, HOUSE_GUIDES, CONTACT } from "../jeonse-guide";
 import { TERMS } from "../../data/jeonse-terms";
 import { toDay } from "../date-calc";
 import r from "../../rates/hug-jeonse-2026.json";
@@ -29,6 +29,30 @@ describe("내 일정 — 날짜·요일·D-day", () => {
     const moveIn = plan(x, d("2026-11-08")).find((i) => i.key === "move-in")!;
     expect(moveIn.terms).toEqual(expect.arrayContaining(["전입신고", "확정일자", "대항력"]));
     expect(termsIn("근저당이 있어요")).toContain("근저당 · 채권최고액");
+  });
+});
+
+describe("일정 설명 말끝 — 채팅에서만 해요체", () => {
+  // 공휴일 목록 밖 날짜(2099)까지 넣어 what 의 모든 분기를 본다
+  const inputs = [
+    { contract: d("2026-11-10"), start: d("2026-12-20"), moveIn: d("2026-12-20"), end: d("2028-12-19") },
+    { contract: d("2096-11-10"), start: d("2096-12-20"), moveIn: d("2096-12-22"), end: d("2098-12-19") },
+  ];
+  it("합니다체가 하나도 남지 않고 숫자·낱말은 그대로다", () => {
+    for (const x of inputs)
+      for (const i of plan(x, d("2026-11-08"))) {
+        const c = haeyo(i.what);
+        expect(c, i.key).not.toMatch(/니다/);
+        expect(c.match(/\d+/g), i.key).toEqual(i.what.match(/\d+/g));
+      }
+  });
+  it("자주 나오는 말끝", () => {
+    expect(haeyo("신고합니다(읍·면·동). 봅니다.")).toBe("신고해요(읍·면·동). 봐요.");
+    expect(haeyo("받습니다. 생깁니다. 있습니다. 마칩니다.")).toBe("받아요. 생겨요. 있어요. 마쳐요.");
+    expect(haeyo("하나입니다. 날입니다. 보증사고입니다.")).toBe("하나예요. 날이에요. 보증사고예요.");
+  });
+  it("글 본문이 쓰는 원문(hugSchedule)은 합니다체 그대로다", () => {
+    expect(plan(inputs[0], d("2026-11-08")).some((i) => /합니다|입니다/.test(i.what))).toBe(true);
   });
 });
 

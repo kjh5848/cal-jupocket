@@ -60,6 +60,21 @@ export function plan(x: ScheduleInput, today: number): PlanItem[] {
   }));
 }
 
+/**
+ * 일정 항목 설명(what)의 말끝만 해요체로 — 대화(전세 도우미)에서만 쓴다.
+ * what 은 체크리스트 글(합니다체 본문)도 그대로 쓰므로 hug-jeonse.ts 의 원문은 두고, 숫자·낱말은 건드리지 않고 말끝만 바꾼다.
+ */
+export function haeyo(s: string): string {
+  return s
+    .replace(/생깁니다/g, "생겨요")
+    .replace(/마칩니다/g, "마쳐요")
+    .replace(/봅니다/g, "봐요")
+    .replace(/받습니다/g, "받아요")
+    .replace(/있습니다/g, "있어요")
+    .replace(/합니다/g, "해요")
+    .replace(/([가-힣])입니다/g, (_, c: string) => ((c.charCodeAt(0) - 0xac00) % 28 ? `${c}이에요` : `${c}예요`));
+}
+
 /** 오늘 이후 가장 가까운 할 일 */
 export function nextItem(items: PlanItem[]): PlanItem | undefined {
   return items.find((i) => !i.past);

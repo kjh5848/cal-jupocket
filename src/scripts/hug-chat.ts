@@ -4,15 +4,17 @@
  * 화면: 내 말은 오른쪽 말풍선, 도우미 답은 왼쪽 본문. 페이지가 스크롤되고 입력창은 아래에 붙는다.
  *
  * 1. 첫 인사에서 "하려는 일"을 고른다(계약 날짜로 할 일 뽑기 / 보증 계산 / 보증금을 못 받음 / 집 보는 중 · 작게: 처음이에요 / 살고 있음)
- * 2. 일정 짜기: 계약일 → 잔금일 → 전입일 → 계약기간을 하나씩 묻고, 날짜·요일·D-day 로 할 일을 보여 준다
- *    (계산은 lib/jeonse-guide plan() → hugSchedule()). 일정은 이 브라우저에만 저장(jeonse-plan-store)
+ * 2. 일정 짜기: 계약일 → 잔금일 두 가지만 묻고(전입일은 잔금일과 같은 날, 계약기간은 2년으로 먼저 계산) 결과에서 전입일·기간을 고친다.
+ *    날짜·요일·D-day 로 할 일을 보여 준다(계산은 lib/jeonse-guide plan() → hugSchedule()). 일정은 이 브라우저에만 저장(jeonse-plan-store)
  * 3. 상황 안내·집주인 연락 기록·용어 뜻은 lib/jeonse-guide 의 확인된 자료로 바로 답한다(AI 안 씀)
  * 4. 그 밖의 글 질문만 AI(api.jupocket.com/api/hug-chat)로 보낸다 — 최근 대화를 함께 보내고 서버는 저장하지 않는다
  *
- * GA4: hug_chat_stage · hug_plan_done · hug_guide(id) · hug_term · hug_chat_send · hug_chat_answer · hug_chat_error · hug_chat_reset
+ * 3-1. 보증 계산: 집·보증금·근저당까지만 묻고 가입 여부를 먼저 보여 준다. 월세·기간·할인·대출은 결과 뒤 "보증료 정확히 보기"에서 이어서 묻는다
+ *
+ * GA4: hug_chat_stage · hug_plan_done · hug_plan_edit · hug_chat_calc · hug_calc_more · hug_guide(id) · hug_term · hug_chat_send · hug_chat_answer · hug_chat_error · hug_chat_limit · hug_input_error · hug_chat_reset
  */
 import { PUSH_API } from "../data/push";
-import { plan, nextItem, localAnswer, findTerm, termsIn, GUIDES, HOUSE_GUIDES, CONTACT, type Guide, type PlanItem } from "../lib/jeonse-guide";
+import { plan, nextItem, haeyo, dateText, localAnswer, findTerm, termsIn, GUIDES, HOUSE_GUIDES, CONTACT, type Guide, type PlanItem } from "../lib/jeonse-guide";
 import { toDay, fromDay, addMonths } from "../lib/date-calc";
 import { setupPush } from "./push-reminders";
 import { checkAnswer, sourcesFor, type CheckInput } from "../lib/hug-chat-core";
@@ -93,6 +95,8 @@ function bubble(who: "user" | "bot", text?: string) {
     // 낭독기가 누구 말인지 알게 숨은 이름을 붙인다(도우미 쪽은 보이는 이름 "전세 도우미"가 있다)
     const u = el("div", undefined, "hc-user");
     u.append(el("span", "내 말: ", "sr-only"), text ?? "");
+    // 사람이 말했으면 앞 말풍선의 고르기 버튼은 지나간 것 — 눌리지 않게 잠그고 고른 것은 표시로 남는다
+    log?.querySelectorAll<HTMLButtonElement>(".hc-opts button:not(:disabled)").forEach((b) => (b.disabled = true));
     log?.append(u);
     scrollDown();
     return u;
@@ -308,7 +312,11 @@ function optsEl(list: Opt[]) {
     o.type = "button";
     if (c.kind) o.className = `hc-opt-${c.kind}`;
     o.append(el("b", c.label), el("small", c.hint));
-    o.addEventListener("click", () => !busy && c.run());
+    o.addEventListener("click", () => {
+      if (busy) return;
+      o.setAttribute("aria-pressed", "true");
+      c.run();
+    });
     box.append(o);
   }
   return box;
@@ -565,11 +573,14 @@ function errLine(field: HTMLInputElement) {
 }
 const mdText = (v: string) => `${Number(v.slice(5, 7))}월 ${Number(v.slice(8, 10))}일`;
 
+/** 열려 있는 날짜·금액 입력칸을 닫는다 — 남겨 두면 지나간 질문에 답이 들어간다 */
+const closeInputs = () => log?.querySelectorAll(".hc-date, .hc-err, .hc-unit").forEach((r) => r.remove());
+
 /**
  * 말풍선 안 날짜 입력 하나 — 확인을 누르면 done(날짜).
- * min: 이 날짜 앞은 고를 수 없다 · check: 틀리면 오류 문구를 돌려준다(칸은 그대로 두고 그 자리에서 다시 고른다)
+ * min: 이 날짜 앞은 고를 수 없다 · check: 틀리면 오류 문구를 돌려준다(칸은 그대로 두고 그 자리에서 다시 고른다) · okLabel: 확인 버튼 이름
  */
-function askDate(question: string, hint: string, done: (v: string) => void, opts: { min?: string; check?: (v: string) => string | undefined } = {}) {
+function askDate(question: string, hint: string, done: (v: string) => void, opts: { min?: string; check?: (v: string) => string | undefined; okLabel?: string } = {}) {
   const b = bubble("bot", question);
   if (hint) b.append(el("p", hint, "hc-note"));
   const row = el("div", undefined, "hc-date");
@@ -578,14 +589,14 @@ function askDate(question: string, hint: string, done: (v: string) => void, opts
   d.min = opts.min ?? "2000-01-01";
   d.max = "2099-12-31";
   d.setAttribute("aria-label", question);
-  const ok = el("button", "확인");
+  const ok = el("button", opts.okLabel ?? "확인");
   ok.type = "button";
   const e = errLine(d);
   d.addEventListener("input", e.clear);
   ok.addEventListener("click", () => {
-    if (!d.value || toDay(d.value) === null) return e.show("날짜를 골라 주세요.");
+    if (!d.value || toDay(d.value) === null) return (track("hug_input_error", { id: "date-empty" }), e.show("날짜를 골라 주세요."));
     const bad = opts.check?.(d.value);
-    if (bad) return e.show(bad);
+    if (bad) return (track("hug_input_error", { id: "date-order" }), e.show(bad));
     row.remove();
     e.err.remove();
     say(`${Number(d.value.slice(0, 4))}년 ${mdText(d.value)}`);
@@ -597,6 +608,13 @@ function askDate(question: string, hint: string, done: (v: string) => void, opts
   showChips([]);
 }
 
+/** 잔금일부터 months 개월 뒤 하루 전 — 계약 만료일 */
+const endAfter = (start: string, months: number) => fromDay(addMonths(toDay(start)!, months) - 1);
+
+/**
+ * 일정 짜기 — 질문은 둘(계약일·잔금일). 전입일은 잔금일과 같은 날, 계약 기간은 2년으로 먼저 계산해 결과를 보여 주고,
+ * 결과의 '바꾸기'에서 전입일·기간을 고친다. 저장 모양(계약·잔금·전입·만료 네 날짜)은 그대로다.
+ */
 function startPlan() {
   trail = [];
   const p: Partial<SavedPlan> = {};
@@ -604,26 +622,25 @@ function startPlan() {
 }
 function askContract(p: Partial<SavedPlan>) {
   mark("plan-contract", () => askContract(p));
-  askDate("계약서를 쓴 날(또는 쓸 날)이 언제예요?", "아직 정해지지 않았다면 예정일을 넣어도 돼요. 나중에 바꿀 수 있어요.", (v) => {
+  askDate("1/2 계약서 쓰는 날이 언제예요? 이미 썼다면 쓴 날을 넣어 주세요.", "정해지지 않았다면 예정일로 넣어도 돼요. 결과에서 바꿀 수 있어요.", (v) => {
     p.contract = v;
     askStart(p);
-  });
+  }, { okLabel: "다음" });
 }
 function askStart(p: Partial<SavedPlan>) {
   mark("plan-start", () => askStart(p), p);
   askDate(
-    "잔금을 치르고 들어가는 날(잔금일)은요?",
-    "",
-    (s) => {
-      p.start = s;
-      askMoveIn(p);
-    },
+    "2/2 잔금을 치르고 이사 들어가는 날은요?",
+    "전입신고는 잔금일과 같은 날, 계약 기간은 2년으로 먼저 계산해요. 결과에서 바꿀 수 있어요.",
+    (s) => finish({ contract: p.contract!, start: s, moveIn: s, end: endAfter(s, 24) }),
     {
       min: p.contract,
       check: (s) => (toDay(s)! < toDay(p.contract!)! ? `잔금일이 계약일(${mdText(p.contract!)})보다 빨라요. 계약일과 같거나 그 뒤로 골라 주세요.` : undefined),
+      okLabel: "할 일 보기",
     },
   );
 }
+/* 아래 넷(전입일·기간 묻기)은 예전 4문항 흐름 — 하루 안에 저장된 이어하기(plan-movein·plan-term 등)가 이어받는다 */
 function askMoveIn(p: Partial<SavedPlan>) {
   mark("plan-movein", () => askMoveIn(p), p);
   bubble("bot", "전입신고는 잔금일에 같이 하실 건가요? 같은 날 하는 게 가장 안전해요.");
@@ -639,10 +656,9 @@ function askMoveInDate(p: Partial<SavedPlan>) {
 function askTerm(p: Partial<SavedPlan>) {
   mark("plan-term", () => askTerm(p), p);
   bubble("bot", "계약 기간은요?");
-  const endAfter = (months: number) => fromDay(addMonths(toDay(p.start!)!, months) - 1);
   showChips([
-    { label: "2년", primary: true, run: () => (say("2년"), finish({ ...p, end: endAfter(24) } as SavedPlan)) },
-    { label: "1년", run: () => (say("1년"), finish({ ...p, end: endAfter(12) } as SavedPlan)) },
+    { label: "2년", primary: true, run: () => (say("2년"), finish({ ...p, end: endAfter(p.start!, 24) } as SavedPlan)) },
+    { label: "1년", run: () => (say("1년"), finish({ ...p, end: endAfter(p.start!, 12) } as SavedPlan)) },
     { label: "만료일 직접 고르기", run: () => (say("만료일 직접 고를게요"), askEnd(p)) },
   ]);
 }
@@ -666,49 +682,159 @@ function finish(p: SavedPlan) {
   showPlan(p);
 }
 
-function itemsOf(p: SavedPlan): PlanItem[] {
-  return plan({ contract: toDay(p.contract)!, start: toDay(p.start)!, moveIn: toDay(p.moveIn)!, end: toDay(p.end)! }, todayDay());
+/* ── 결과에서 전입일·기간 고치기 — 그 질문 하나만 다시 묻고 결과로 돌아온다(plan_done 은 다시 세지 않는다) ── */
+
+function applyEdit(id: "movein" | "term", next: SavedPlan) {
+  savePlan(next);
+  track("hug_plan_edit", { id });
+  trail.pop(); // 고치는 질문 자리를 걷고 결과를 다시 띄운다
+  showPlan(next);
+}
+function editMoveIn(p: SavedPlan) {
+  mark("plan-edit-movein", () => editMoveIn(p));
+  askDate("전입신고하는 날은요?", "잔금일과 같은 날이면 아래 버튼을 눌러 주세요.", (m) => applyEdit("movein", { ...p, moveIn: m }), {
+    min: p.contract,
+    check: (m) => (toDay(m)! < toDay(p.contract)! ? `전입일이 계약일(${mdText(p.contract)})보다 빨라요. 계약일과 같거나 그 뒤로 골라 주세요.` : undefined),
+  });
+  showChips([{ label: "잔금일과 같은 날", primary: true, run: () => (closeInputs(), say("잔금일과 같은 날"), applyEdit("movein", { ...p, moveIn: p.start })) }]);
+}
+function editTerm(p: SavedPlan) {
+  mark("plan-edit-term", () => editTerm(p));
+  bubble("bot", "계약 기간은요?");
+  showChips([
+    { label: "2년", primary: true, run: () => (say("2년"), applyEdit("term", { ...p, end: endAfter(p.start, 24) })) },
+    { label: "1년", run: () => (say("1년"), applyEdit("term", { ...p, end: endAfter(p.start, 12) })) },
+    { label: "만료일 직접 고르기", run: () => (say("만료일 직접 고를게요"), editEnd(p)) },
+  ]);
+}
+function editEnd(p: SavedPlan) {
+  mark("plan-edit-end", () => editEnd(p));
+  askDate("계약이 끝나는 날은요?", "", (e) => applyEdit("term", { ...p, end: e }), {
+    min: fromDay(toDay(p.start)! + 1),
+    check: (e) => (toDay(e)! <= toDay(p.start)! ? `만료일은 잔금일(${mdText(p.start)}) 뒤여야 해요. 만료일만 다시 골라 주세요.` : undefined),
+  });
 }
 
-/** againFirst: 입구 링크(?s=contract)로 왔는데 저장된 일정이 있어 먼저 보여 줄 때 — '날짜 다시 넣기'를 앞쪽에 둔다 */
-function showPlan(p: SavedPlan, againFirst = false) {
-  mark("plan-result", () => showPlan(p, againFirst));
+/** 체크리스트 글은 합니다체라 원문(hug-jeonse.ts)은 두고, 대화에서만 말끝을 해요체로 보인다 */
+function itemsOf(p: SavedPlan): PlanItem[] {
+  return plan({ contract: toDay(p.contract)!, start: toDay(p.start)!, moveIn: toDay(p.moveIn)!, end: toDay(p.end)! }, todayDay()).map((i) => ({ ...i, what: haeyo(i.what) }));
+}
+
+const warnEl = (text: string) => {
+  // 글리프(⚠) 대신 글자 — 낭독기마다 다르게 읽거나 건너뛴다
+  const w = el("span", undefined, "hc-warn");
+  w.append(el("strong", "주의"), ` ${text}`);
+  return w;
+};
+const miniBtn = (label: string, run: () => void, aria?: string) => {
+  const bt = el("button", label, "hc-mini");
+  bt.type = "button";
+  if (aria) bt.setAttribute("aria-label", aria);
+  bt.addEventListener("click", () => !busy && run());
+  return bt;
+};
+
+/** 넣은 날짜와 가정 — 전입일·기간은 줄마다 '바꾸기'. 저장된 값에서 가정을 읽으므로 예전에 저장한 일정에도 맞다 */
+function datesEl(p: SavedPlan) {
+  const today = todayDay();
+  const box = el("div", undefined, "hc-dates");
+  box.append(el("p", "이 날짜로 계산했어요", "hc-sub"));
+  const ul = el("ul");
+  const row = (label: string, value: string, edit?: () => void) => {
+    const li = el("li");
+    li.append(el("span", label, "hc-dk"), el("span", value, "hc-dv"));
+    if (edit) li.append(miniBtn("바꾸기", () => (say(`${label} 바꾸기`), edit()), `${label} 바꾸기`));
+    ul.append(li);
+  };
+  const s = toDay(p.start)!;
+  const e = toDay(p.end)!;
+  const sameDay = p.moveIn === p.start;
+  const months = [24, 12].find((m) => e === addMonths(s, m) - 1);
+  row("계약일", dateText(toDay(p.contract)!, today));
+  row("잔금일", dateText(s, today));
+  row("전입신고", sameDay ? "잔금일과 같은 날" : dateText(toDay(p.moveIn)!, today), () => editMoveIn(loadPlan() ?? p));
+  row("계약 기간", `${months ? `${months / 12}년 · ` : ""}만료 ${dateText(e, today)}`, () => editTerm(loadPlan() ?? p));
+  box.append(ul);
+  const assumed = sameDay && months === 24 ? "전입일은 잔금일과 같은 날, 기간은 2년으로" : sameDay ? "전입일은 잔금일과 같은 날로" : months === 24 ? "기간은 2년으로" : "";
+  if (assumed) box.append(el("p", `${assumed} 계산했어요. 다르면 위의 '바꾸기'를 눌러 주세요.`, "hc-note"));
+  const more = el("div", undefined, "hc-dates-more");
+  more.append(
+    miniBtn("날짜 다시 넣기", () => (say("날짜 다시 넣기"), startPlan())),
+    miniBtn("저장된 날짜 지우기", () => {
+      const cur = loadPlan() ?? p;
+      say("저장된 날짜 지우기");
+      clearPlan();
+      const b = bubble("bot", "이 브라우저에 저장된 날짜를 지웠어요.");
+      b.append(miniBtn("되돌리기", () => (say("되돌리기"), savePlan(cur), showPlan(cur))));
+      showStages();
+    }),
+  );
+  box.append(more);
+  return box;
+}
+
+/** 할 일 한 줄 — 날짜·제목만 보이고 누르면 무엇을 어디서 하는지(what)와 근거(basis)가 펴진다. 경고는 접지 않는다 */
+function itemEl(i: PlanItem) {
+  const li = el("li", undefined, "hc-item");
+  const det = el("details");
+  const sm = el("summary");
+  const head = el("span", undefined, "hc-sum-t");
+  head.append(el("b", `${i.when} · ${i.dday}`), el("span", i.title));
+  sm.append(head);
+  det.append(sm, el("p", i.what, "hc-what"), el("p", `근거 · ${i.basis}`, "hc-note"));
+  li.append(det);
+  if (i.warn && !i.past) li.append(warnEl(i.warn));
+  return li;
+}
+
+function showPlan(p: SavedPlan) {
+  mark("plan-result", () => showPlan(p));
   const items = itemsOf(p);
   const nxt = nextItem(items);
+  const past = items.filter((i) => i.past);
+  const later = items.filter((i) => !i.past && i !== nxt);
   const b = bubble("bot");
-  const sum = el("div", undefined, "hc-summary");
-  sum.append(el("p", nxt ? "가장 먼저 할 일" : "모든 날짜가 지났어요", "hc-sub"));
-  if (nxt) sum.append(el("p", `${nxt.when} · ${nxt.dday}\n${nxt.title}`));
-  b.append(sum, el("p", `할 일 ${items.length}가지를 날짜 순서로 정리했어요.`));
-  const ol = el("ol", undefined, "hc-plan");
-  for (const i of items) {
-    const li = el("li", undefined, i.past ? "hc-past" : i === nxt ? "hc-next" : undefined);
-    li.append(el("b", `${i.when} · ${i.dday}`), el("span", i.title));
-    if (i.warn && !i.past) {
-      // 글리프(⚠) 대신 글자 — 낭독기마다 다르게 읽거나 건너뛴다
-      const w = el("span", undefined, "hc-warn");
-      w.append(el("strong", "주의"), ` ${i.warn}`);
-      li.append(w);
-    }
-    ol.append(li);
+  b.append(datesEl(p));
+  if (nxt) {
+    const sum = el("div", undefined, "hc-summary");
+    sum.append(el("p", "가장 먼저 할 일", "hc-sub"), el("p", `${nxt.when} · ${nxt.dday}`, "hc-first-when"), el("p", nxt.title, "hc-first-title"), el("p", nxt.what));
+    if (nxt.warn) sum.append(warnEl(nxt.warn));
+    sum.append(el("p", `근거 · ${nxt.basis}`, "hc-note"));
+    b.append(sum, el("p", past.length ? `남은 할 일 ${items.length - past.length}가지예요. 지난 일 ${past.length}가지는 아래에 접어 뒀어요.` : `할 일 ${items.length}가지를 날짜 순서로 정리했어요.`));
+  } else {
+    b.append(el("p", "넣은 날짜의 할 일이 모두 지났어요. 날짜를 잘못 넣었다면 위에서 바꾸거나 다시 넣어 주세요. 보증금을 아직 못 받았다면 아래를 눌러 주세요."));
   }
+  if (later.length) {
+    b.append(el("p", "그다음 할 일", "hc-sub"));
+    const ol = el("ol", undefined, "hc-plan");
+    for (const i of later) ol.append(itemEl(i));
+    b.append(ol);
+  }
+  if (past.length) {
+    const det = el("details", undefined, "hc-pastbox");
+    det.append(el("summary", `지난 일 ${past.length}개 보기`));
+    const ol = el("ol", undefined, "hc-plan");
+    for (const i of past) ol.append(itemEl(i));
+    det.append(ol);
+    b.append(det);
+  }
+  const acts = el("div", undefined, "hc-acts");
+  const pushBtn = el("button", "날짜 전에 알림 받기", "hc-act");
+  pushBtn.type = "button";
+  pushBtn.addEventListener("click", () => !busy && (say("알림 받을래요"), offerPush(items)));
+  const icsBtn = el("button", "캘린더에 넣기", "hc-act hc-act-sub");
+  icsBtn.type = "button";
+  icsBtn.addEventListener("click", () => !busy && (downloadIcs(items, "hug-chat-plan"), bubble("bot", "캘린더 파일을 내려받았어요. 내려받은 파일을 열면 휴대폰 캘린더에 할 일이 들어가요.")));
+  acts.append(pushBtn, icsBtn);
   b.append(
-    ol,
+    acts,
     el("p", "JU포켓이 법령·HUG 안내로 계산한 날짜예요. HUG가 정해 준 일정이 아니니 실제 기한은 HUG·은행에 확인하세요.", "hc-note"),
     relatedEl(["checklist"]),
     el("p", "용어가 어려우면 아래 칸에 \"대항력이 뭐예요?\"처럼 물어보세요.", "hc-note"),
   );
   remember("내 전세 일정", items.map((i) => `${i.when} ${i.title}`).join(" / "));
   scrollDown();
-  const again: Chip = { label: "날짜 다시 넣기", run: () => (say("날짜 다시 넣기"), startPlan()) };
-  showChips([
-    { label: "알림 받기", primary: true, run: () => (say("알림 받을래요"), offerPush(items)) },
-    ...(againFirst ? [again] : []),
-    { label: "내 캘린더에 넣기", run: () => (downloadIcs(items, "hug-chat-plan"), bubble("bot", "캘린더 파일(.ics)을 내려받았어요. 열면 휴대폰·PC 캘린더에 날짜가 들어가요.")) },
-    guideChip(CONTACT),
-    ...(againFirst ? [] : [again]),
-    { label: "일정 지우기", run: () => (say("일정 지우기"), clearPlan(), bubble("bot", "이 브라우저에 저장된 일정을 지웠어요."), showStages()) },
-  ]);
+  showChips([...(nxt ? [] : [{ label: stageOf("trouble").label, primary: true, run: () => pickStage(stageOf("trouble")) }]), guideChip(CONTACT), { label: "보증 계산", run: () => (say("보증 되는지 계산해 볼래요"), startCalc()) }, { label: "처음으로", run: restart }]);
 }
 
 /** 대화 안에서 바로 알림을 켠다 — 로그인 없이 이 브라우저의 웹 푸시로 */
@@ -754,9 +880,10 @@ function askAmount(question: string, hint: string, done: (won: number) => void, 
   const submit = () => {
     const raw = i.value.trim();
     const n = amountsIn(/[억만천원]/.test(raw) ? raw : `${raw}만원`)[0];
-    if (!n) return e.show(`금액을 못 읽었어요. '${example}'이나 '${plain}'(만 원 단위)처럼 적어 주세요.`);
-    if (n < min) return e.show(`${readText(n)}으로 읽었어요. 만 원 단위로 적어 주세요. ${example}이면 '${example}'이나 '${plain}'.`);
+    if (!n) return (track("hug_input_error", { id: "amount-unread" }), e.show(`금액을 못 읽었어요. '${example}'이나 '${plain}'(만 원 단위)처럼 적어 주세요.`));
+    if (n < min) return (track("hug_input_error", { id: "amount-small" }), e.show(`${readText(n)}으로 읽었어요. 만 원 단위로 적어 주세요. ${example}이면 '${example}'이나 '${plain}'.`));
     if (n > max && asked !== raw) {
+      track("hug_input_error", { id: "amount-big" });
       asked = raw;
       ok.textContent = "이 금액이 맞아요";
       return e.show(`${readText(n)}으로 읽었어요. 맞나요? 원 단위로 적었다면 끝에 '원'을 붙이거나 '${example}'처럼 적어 주세요.`);
@@ -794,127 +921,155 @@ function readText(n: number): string {
   return `${n.toLocaleString("ko-KR")}원`;
 }
 
+/**
+ * 계산 상태. more: 결과를 본 뒤 '보증료 정확히 보기'로 월세·기간·할인·대출을 이어 묻는 중이다.
+ * 이어하기에도 함께 저장되므로, 이어서 끝내도 처음 결과(hug_chat_calc)가 아니라 hug_calc_more 로 센다.
+ */
+type Calc = Partial<CheckInput> & { more?: boolean };
+
+/** 몇 번째 질문인지 — 집 종류를 고른 뒤에야 전체 수를 안다(단독·다가구는 다른 세입자 질문 둘이 더 있다) */
+const qn = (x: Calc, n: number) => `${n}/${x.type === "multi" ? 8 : 6} `;
+/** 이어 묻는 중(월세·기간·할인·대출)일 때만 번호를 붙이고, 언제든 지금까지 값으로 계산하게 한다 */
+const moreNo = (x: Calc, n: number) => (x.more ? `${n}/4 ` : "");
+const skipChip = (x: Calc): Chip[] => (x.more ? [{ label: "이대로 계산하기", run: () => (say("이대로 계산하기"), calcDone(x)) }] : []);
+
 function startCalc() {
   trail = [];
-  const x: Partial<CheckInput> = {};
+  const x: Calc = {};
   mark("calc-type", startCalc);
-  bubble("bot", "HUG 전세보증 가입이 되는지, 보증료는 얼마인지 계산해 볼게요. 몇 가지만 여쭤볼게요. 어떤 집이에요?");
+  bubble("bot", `${qn(x, 1)}이 집이 HUG 전세보증에 가입되는지, 보증료가 얼마쯤인지 계산해요. 어떤 집이에요?`);
   const types: [HouseType, string][] = [["apartment", "아파트"], ["officetel", "오피스텔"], ["row", "빌라(연립·다세대)"], ["multi", "단독·다가구"]];
   showChips(types.map(([t, l]) => ({ label: l, run: () => (say(l), (x.type = t), calcRegion(x)) })));
 }
-function calcRegion(x: Partial<CheckInput>) {
+function calcRegion(x: Calc) {
   mark("calc-region", () => calcRegion(x), x);
-  bubble("bot", "집이 수도권(서울·경기·인천)에 있나요? 보증금 상한이 달라요.");
+  bubble("bot", `${qn(x, 2)}집이 수도권(서울·경기·인천)에 있나요? 보증금 상한이 달라요.`);
   showChips([
     { label: "수도권이에요", run: () => (say("수도권이에요"), (x.capital = true), calcBasis(x)) },
     { label: "수도권 밖이에요", run: () => (say("수도권 밖이에요"), (x.capital = false), calcBasis(x)) },
   ]);
 }
-function calcBasis(x: Partial<CheckInput>) {
+function calcBasis(x: Calc) {
   mark("calc-basis", () => calcBasis(x), x);
-  const b = bubble("bot", "집값은 무엇으로 아세요? HUG는 아파트면 KB·부동산테크 시세를 먼저 보고, 빌라(연립·다세대)·단독주택은 공시가격 × 140%를 먼저 봐요(감정평가서가 있으면 그게 가장 먼저예요). 공시가격은 '부동산 공시가격 알리미'에서 주소로 찾을 수 있어요.");
+  const b = bubble("bot", `${qn(x, 3)}집값은 무엇으로 아세요? HUG는 아파트면 KB·부동산테크 시세를 먼저 보고, 빌라(연립·다세대)·단독주택은 공시가격 × 140%를 먼저 봐요(감정평가서가 있으면 그게 가장 먼저예요). 공시가격은 '부동산 공시가격 알리미'에서 주소로 찾을 수 있어요.`);
   b.append(sourcesEl([{ name: "부동산 공시가격 알리미", url: "https://www.realtyprice.kr/" }]));
   showChips([
     { label: "공시가격을 알아요", primary: true, run: () => (say("공시가격을 알아요"), (x.basis = "public"), calcPrice(x)) },
     { label: "시세·감정가로 볼게요", run: () => (say("시세·감정가로 볼게요"), (x.basis = "market"), calcPrice(x)) },
   ]);
 }
-function calcPrice(x: Partial<CheckInput>) {
+function calcPrice(x: Calc) {
   mark("calc-price", () => calcPrice(x), x);
-  if (x.basis === "public") askAmount("공시가격이 얼마예요?", "", (n) => ((x.price = n), calcDeposit(x)));
-  else askAmount("시세(또는 감정가)가 얼마예요?", "KB시세·감정평가액처럼 HUG가 인정하는 값이어야 해요.", (n) => ((x.price = n), calcDeposit(x)));
+  if (x.basis === "public") askAmount(`${qn(x, 4)}공시가격이 얼마예요?`, "", (n) => ((x.price = n), calcDeposit(x)));
+  else askAmount(`${qn(x, 4)}시세(또는 감정가)가 얼마예요?`, "KB시세·감정평가액처럼 HUG가 인정하는 값이어야 해요.", (n) => ((x.price = n), calcDeposit(x)));
 }
-function calcDeposit(x: Partial<CheckInput>) {
+function calcDeposit(x: Calc) {
   mark("calc-deposit", () => calcDeposit(x), x);
-  askAmount("전세 보증금은요?", "", (n) => ((x.deposit = n), calcRent(x)));
+  // 월세·기간·할인·대출은 결과 뒤로 미룬다 — 근저당까지만 묻고 가입 여부부터 보여 준다
+  askAmount(`${qn(x, 5)}전세 보증금은요?`, "", (n) => ((x.deposit = n), calcSenior(x)));
 }
+/** 월세 다음 — 근저당을 아직 안 물었으면(예전 순서로 저장된 이어하기) 그것부터, 아니면 기간으로 */
+const afterRent = (x: Calc) => (x.senior === undefined ? calcSenior(x) : calcTerm(x));
 /** 보증부 월세(반전세) — HUG는 월세를 전월세전환율로 보증금에 더해 상한을 본다 */
-function calcRent(x: Partial<CheckInput>) {
+function calcRent(x: Calc) {
   mark("calc-rent", () => calcRent(x), x);
-  bubble("bot", "월세도 내나요(반전세)? 월세가 있으면 HUG는 그만큼을 보증금으로 환산해서 상한(수도권 7억·그 외 5억)을 봐요.");
+  bubble("bot", `${moreNo(x, 1)}월세도 내나요(반전세)? 월세가 있으면 HUG는 그만큼을 보증금으로 환산해서 상한(수도권 7억·그 외 5억)을 봐요.`);
   showChips([
-    { label: "아니요, 전세예요", primary: true, run: () => (say("아니요, 전세예요"), (x.monthlyRent = 0), calcSenior(x)) },
+    { label: "아니요, 전세예요", primary: true, run: () => (say("아니요, 전세예요"), (x.monthlyRent = 0), afterRent(x)) },
     { label: "월세도 있어요", run: () => (say("월세도 있어요"), calcRentAmount(x)) },
+    ...skipChip(x),
   ]);
 }
-function calcRentAmount(x: Partial<CheckInput>) {
+function calcRentAmount(x: Calc) {
   mark("calc-rent-amount", () => calcRentAmount(x), x);
-  askAmount("한 달 월세는 얼마예요?", "", (n) => ((x.monthlyRent = n), calcSenior(x)), undefined, 10_000, "50만", "50", 10_000_000);
+  askAmount("한 달 월세는 얼마예요?", "", (n) => ((x.monthlyRent = n), afterRent(x)), undefined, 10_000, "50만", "50", 10_000_000);
 }
-function calcSenior(x: Partial<CheckInput>) {
+function calcSenior(x: Calc) {
   mark("calc-senior", () => calcSenior(x), x);
-  askAmount("집에 먼저 잡힌 빚(근저당 채권최고액)은요?", "등기부등본 을구에 적힌 채권최고액이에요. 없으면 아래 '없어요'를 눌러 주세요.", (s) => {
+  askAmount(`${qn(x, 6)}집에 먼저 잡힌 빚(근저당 채권최고액)은요?`, "등기부등본 을구에 적힌 채권최고액이에요. 없으면 아래 '없어요'를 눌러 주세요.", (s) => {
     x.senior = s;
     if (x.type === "multi") calcOthers(x);
-    else calcTerm(x);
+    else calcDone(x);
   }, "없어요");
 }
-function calcOthers(x: Partial<CheckInput>) {
+function calcOthers(x: Calc) {
   mark("calc-others", () => calcOthers(x), x);
-  askAmount("나보다 먼저 들어온 다른 세입자들의 보증금 합계는요?", "단독·다가구는 이것도 먼저 잡힌 빚으로 봐요.", (o) => ((x.otherDeposits = o), calcOthersDoc(x)), "없어요(나 혼자)");
+  askAmount(`${qn(x, 7)}나보다 먼저 들어온 다른 세입자들의 보증금 합계는요?`, "단독·다가구는 이것도 먼저 잡힌 빚으로 봐요.", (o) => ((x.otherDeposits = o), calcOthersDoc(x)), "없어요(나 혼자)");
 }
 /** 단독·다가구: 다른 세입자 계약 확인서를 못 내면 그 구간 최고요율 */
-function calcOthersDoc(x: Partial<CheckInput>) {
+function calcOthersDoc(x: Calc) {
   mark("calc-others-doc", () => calcOthersDoc(x), x);
-  bubble("bot", "다른 세입자들의 계약 내용을 확인하는 서류(타 전월세계약 확인서·확정일자 부여현황)를 낼 수 있나요? 못 내면 보증료가 그 구간에서 가장 높은 요율이 돼요.");
+  bubble("bot", `${qn(x, 8)}다른 세입자들의 계약 내용을 확인하는 서류(타 전월세계약 확인서·확정일자 부여현황)를 낼 수 있나요? 못 내면 보증료가 그 구간에서 가장 높은 요율이 돼요.`);
   showChips([
-    { label: "낼 수 있어요", primary: true, run: () => (say("낼 수 있어요"), (x.othersConfirmed = true), calcTerm(x)) },
-    { label: "못 내요", run: () => (say("못 내요"), (x.othersConfirmed = false), calcTerm(x)) },
-    { label: "모르겠어요", run: () => (say("모르겠어요"), calcTerm(x)) },
+    { label: "낼 수 있어요", primary: true, run: () => (say("낼 수 있어요"), (x.othersConfirmed = true), calcDone(x)) },
+    { label: "못 내요", run: () => (say("못 내요"), (x.othersConfirmed = false), calcDone(x)) },
+    { label: "모르겠어요", run: () => (say("모르겠어요"), calcDone(x)) },
   ]);
 }
-function calcTerm(x: Partial<CheckInput>) {
+function calcTerm(x: Calc) {
   mark("calc-term", () => calcTerm(x), x);
-  bubble("bot", "보증 기간(계약 기간)은요?");
+  bubble("bot", `${moreNo(x, 2)}보증 기간(계약 기간)은요?`);
   showChips([
     { label: "2년", primary: true, run: () => (say("2년"), (x.months = 24), calcDiscount(x)) },
     { label: "1년", run: () => (say("1년"), (x.months = 12), calcDiscount(x)) },
+    ...skipChip(x),
   ]);
 }
-function calcDiscount(x: Partial<CheckInput>) {
+function calcDiscount(x: Calc) {
   mark("calc-discount", () => calcDiscount(x), x);
-  bubble("bot", "보증료 할인 대상인가요? 하나만 적용돼요.");
+  bubble("bot", `${moreNo(x, 3)}보증료 할인 대상인가요? 하나만 적용돼요.`);
   const list = Object.entries(DISCOUNT_LABEL) as [Exclude<PremiumDiscount, "none">, string][];
   showChips([
     { label: "해당 없음", primary: true, run: () => (say("해당 없음"), (x.discount = "none"), calcLoan(x)) },
     ...list.map(([k, l]) => ({ label: l, run: () => (say(l), (x.discount = k), calcLoan(x)) })),
+    ...skipChip(x),
   ]);
 }
 /** 전세대출 — 있으면 전세안심보증(반환보증 + 대출보증) 기준으로 보증료를 더한다 */
-function calcLoan(x: Partial<CheckInput>) {
+function calcLoan(x: Calc) {
   mark("calc-loan", () => calcLoan(x), x);
-  bubble("bot", "전세대출을 받나요? 대출이 있으면 반환보증만 따로 못 드는 경우가 많아서, 대출과 함께 드는 전세안심보증 기준으로 계산할게요.");
+  bubble("bot", `${moreNo(x, 4)}전세대출을 받나요? 대출이 있으면 반환보증만 따로 못 드는 경우가 많아서, 대출과 함께 드는 전세안심보증 기준으로 계산할게요.`);
   showChips([
-    { label: "대출 없어요", primary: true, run: () => (say("대출 없어요"), (x.loan = 0), calcDone(x as CheckInput)) },
+    { label: "대출 없어요", primary: true, run: () => (say("대출 없어요"), (x.loan = 0), calcDone(x)) },
     { label: "대출 받아요", run: () => (say("대출 받아요"), calcLoanAmount(x)) },
+    ...skipChip(x),
   ]);
 }
-function calcLoanAmount(x: Partial<CheckInput>) {
+function calcLoanAmount(x: Calc) {
   mark("calc-loan-amount", () => calcLoanAmount(x), x);
-  askAmount("전세대출 금액은요?", "은행에서 받는(받을) 대출 원금이에요.", (n) => ((x.loan = n), calcDone(x as CheckInput)));
+  askAmount("전세대출 금액은요?", "은행에서 받는(받을) 대출 원금이에요.", (n) => ((x.loan = n), calcDone(x)));
 }
-function calcDone(x: CheckInput) {
-  mark("calc-result", () => calcDone(x));
+/**
+ * 결과. 묻지 않은 값(월세·기간·할인·대출)은 월세 없음·2년·할인 없음·대출 없음으로 계산하고 그 가정을 한 줄로 밝힌다.
+ * again: '← 이전'으로 결과를 다시 띄우는 것 — 횟수를 다시 세지 않는다.
+ */
+function calcDone(x: Calc, again = false) {
+  mark("calc-result", () => calcDone(x, true));
   clearResume();
-  const r = checkAnswer(x);
+  const { more, ...asked } = x;
+  const r = checkAnswer({ ...(asked as CheckInput), monthlyRent: x.monthlyRent ?? 0, months: x.months ?? 24, discount: x.discount ?? "none", loan: x.loan ?? 0 });
   const b = bubble("bot", r.text);
   const dl = el("dl");
   for (const l of r.lines) dl.append(el("dt", l.label), el("dd", l.value));
-  b.append(dl, sourcesEl(sourcesFor(["ltv", "deposit-cap", "premium"])), relatedEl(["calc", "checklist", "dsr"]));
+  b.append(dl);
+  const assumed = [x.monthlyRent === undefined && "월세 없음(전세)", x.months === undefined && "2년", x.discount === undefined && "할인 없음", x.loan === undefined && "전세대출 없음"].filter(Boolean);
+  if (r.ok && assumed.length) b.append(el("p", `${assumed.join("·")} 기준으로 먼저 계산했어요. 월세가 있으면 가입 여부도 달라질 수 있어요.${more ? "" : " 아래 확인을 마치면 '보증료 정확히 보기'로 바꿀 수 있어요."}`, "hc-assume"));
+  b.append(sourcesEl(sourcesFor(["ltv", "deposit-cap", "premium"])), relatedEl(["calc", "checklist", "dsr"]));
   b.append(el("p", "추산이에요. 실제 가입과 금액은 HUG 심사로 정해져요.", "hc-note"));
   remember("보증 가입 계산", `${r.text}\n${r.lines.map((l) => `${l.label}: ${l.value}`).join("\n")}`);
-  track("hug_chat_calc");
+  // 처음 결과는 hug_chat_calc, 이어 물어 다시 낸 결과는 hug_calc_more — 끝까지 한 일로 세는 hug_chat_calc 는 한 번만
+  if (!again) track(more ? "hug_calc_more" : "hug_chat_calc");
   scrollDown();
-  if (r.ok) return askRefusal(x);
-  calcNext();
+  if (r.ok && !more) return askRefusal(x);
+  calcNext(x, r.ok);
 }
 
 /** 숫자가 맞아도 가입이 안 되는 경우 — 계산이 "된다"고 한 뒤에 보여 주고 묻는다 */
-function askRefusal(x: CheckInput) {
+function askRefusal(x: Calc) {
   mark("calc-refusal", () => askRefusal(x));
   const b = bubble("bot", "숫자로는 가입이 돼요. 그런데 숫자가 맞아도 아래 중 하나라도 해당되면 HUG가 가입을 받지 않아요. 해당되는 게 있나요?");
   const ul = el("ul", undefined, "hc-checks");
-  for (const c of refusalChecks(x.type)) {
+  for (const c of refusalChecks(x.type!)) {
     const li = el("li");
     li.append(el("span", c.text), el("small", `확인: ${c.where}`));
     ul.append(li);
@@ -922,15 +1077,18 @@ function askRefusal(x: CheckInput) {
   b.append(ul, sourcesEl(sourcesFor(["other-conditions", "registry"])));
   scrollDown();
   showChips([
-    { label: "없어요(확인했어요)", primary: true, run: () => (say("없어요(확인했어요)"), track("hug_refusal", { a: "none" }), bubble("bot", "좋아요. 잔금일에 등기부를 한 번 더 떼어 그사이 바뀐 게 없는지만 보세요."), calcNext()) },
-    { label: "하나라도 있어요", run: () => (say("하나라도 있어요"), track("hug_refusal", { a: "yes" }), bubble("bot", "그 집은 보증 가입이 거절될 수 있어요. 아직 계약 전이면 계약을 다시 생각하거나, '보증 가입이 안 되면 계약금을 돌려준다'는 특약을 집주인과 상의해 보세요. 이미 계약했다면 HUG 지사나 위탁은행에 가입이 되는지 먼저 물어보세요."), calcNext()) },
-    { label: "아직 몰라요", run: () => (say("아직 몰라요"), track("hug_refusal", { a: "unknown" }), bubble("bot", "등기부등본은 인터넷등기소, 건축물대장은 정부24에서 뗄 수 있어요. 전입세대확인서는 주민센터에서 발급해요. 어디를 봐야 하는지는 아래 '계약 전 확인' 안내에 정리해 두었어요."), calcNext()) },
+    { label: "없어요(확인했어요)", primary: true, run: () => (say("없어요(확인했어요)"), track("hug_refusal", { a: "none" }), bubble("bot", "좋아요. 잔금일에 등기부를 한 번 더 떼어 그사이 바뀐 게 없는지만 보세요."), calcNext(x, true)) },
+    { label: "하나라도 있어요", run: () => (say("하나라도 있어요"), track("hug_refusal", { a: "yes" }), bubble("bot", "그 집은 보증 가입이 거절될 수 있어요. 아직 계약 전이면 계약을 다시 생각하거나, '보증 가입이 안 되면 계약금을 돌려준다'는 특약을 집주인과 상의해 보세요. 이미 계약했다면 HUG 지사나 위탁은행에 가입이 되는지 먼저 물어보세요."), calcNext(x, true)) },
+    { label: "아직 몰라요", run: () => (say("아직 몰라요"), track("hug_refusal", { a: "unknown" }), bubble("bot", "등기부등본은 인터넷등기소, 건축물대장은 정부24에서 뗄 수 있어요. 전입세대확인서는 주민센터에서 발급해요. 어디를 봐야 하는지는 아래 '계약 전 확인' 안내에 정리해 두었어요."), calcNext(x, true)) },
   ]);
 }
 
-function calcNext() {
+/** ok: 가입이 되는 결과 — 가정한 값이 남아 있으면 '보증료 정확히 보기'를 준다(정확히 보려는 사람만 이어서 답한다) */
+function calcNext(x: Calc, ok: boolean) {
+  const more = ok && !x.more && [x.monthlyRent, x.months, x.discount, x.loan].some((v) => v === undefined);
   showChips([
-    { label: "이 집으로 일정 짜기", primary: true, run: () => (say("일정 짜기"), startPlan()) },
+    ...(more ? [{ label: "보증료 정확히 보기", primary: true, run: () => (say("보증료 정확히 보기"), (x.more = true), calcRent(x)) }] : []),
+    { label: "이 집으로 일정 짜기", primary: !more, run: () => (say("일정 짜기"), startPlan()) },
     { label: "다른 금액으로 다시", run: () => (say("다른 금액으로 다시 계산"), startCalc()) },
     guideChip(GUIDES.find((g) => g.id === "before-contract")!),
     { label: "처음으로", run: restart },
@@ -1040,6 +1198,7 @@ async function askAi(text: string) {
     wait.closest(".hc-bot")?.remove(); // 말풍선만 지우면 프로필·이름 줄이 빈 채로 남는다
     if (res.status === 429) {
       const kind = r.error === "rate" || r.error === "busy" ? r.error : "ai";
+      track("hug_chat_limit", { id: kind });
       const b = botAnswer({ ok: false, text: LIMIT_TEXT[kind] }, true);
       // 자정까지 안 풀리는 한도에는 다시 보내기를 주지 않는다
       if (kind === "ai") b.append(retryBtn(text));
@@ -1104,7 +1263,7 @@ else greet(!!first || entry === "plan");
 if (first?.id === "contract" && savedAtStart) {
   // 이미 만든 일정이 있는데 말없이 새로 묻지 않는다 — 먼저 보여 주고 '날짜 다시 넣기'를 앞에 둔다
   bubble("bot", "이 브라우저에 저장된 일정이 있어서 먼저 보여 드려요. 날짜를 새로 넣으려면 아래 '날짜 다시 넣기'를 눌러 주세요.");
-  showPlan(savedAtStart, true);
+  showPlan(savedAtStart);
 } else if (first) {
   // 사용자가 누른 게 아니라 주소(?s=)가 고른 것 — "쓴 사람"으로 세지 않는다
   quiet = true;
