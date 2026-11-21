@@ -17,7 +17,7 @@ export function cleanEvent(b: Record<string, unknown> | null): StatEvent | null 
   const k = typeof b.k === "string" && /^[\w.-]{0,40}$/.test(b.k) ? b.k : "";
   const page = typeof b.page === "string" && /^\/[\w\-/]{0,80}$/.test(b.page) ? b.page : "";
   // 질문 문장은 미리 준비한 답으로 답했을 때만 받는다(그 밖의 글 질문은 /api/hug-chat 이 남긴다)
-  const q = b.n === "hug_chat_answer" && k && typeof b.q === "string" && b.q.trim() ? b.q.trim().slice(0, 500) : undefined;
+  const q = b.n === "hug_chat_answer" && k && typeof b.q === "string" && b.q.trim() && !b.q.includes("�") ? b.q.trim().slice(0, 500) : undefined;
   return { n: b.n, k, page, ...(q ? { q } : {}) };
 }
 

@@ -32,3 +32,11 @@ describe("날짜별로 접기", () => {
     expect(d[1]).toEqual({ day: "2026-11-21", users: 3, active: 2, events: { hug_guide: 5 } });
   });
 });
+
+describe("깨진 글자", () => {
+  it("글자가 깨져 온 질문 문장은 받지 않는다(이벤트 횟수는 센다)", () => {
+    const ev = cleanEvent({ n: "hug_chat_answer", k: "bank", q: "\uFFFD\uFFFD 반송되면 어떻게 해요?" });
+    expect(ev?.n).toBe("hug_chat_answer");
+    expect(ev?.q).toBeUndefined();
+  });
+});

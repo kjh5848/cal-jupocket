@@ -144,10 +144,13 @@ export async function hugChat(body: Record<string, unknown> | null, env: HugEnv,
   const answered = reply && (reply.lines || reply.sources?.length);
   // 글로 적은 질문은 답했든 못 했든 남긴다(2026-11-21) — 무엇을 묻는지 보고 답변 모음·글감을 고친다. IP·기기 정보는 없다
   const kind = !reply ? "hug-fallback" : reply.lines ? "hug-check" : answered ? "hug-ok" : "hug-nocite";
-  const save = env.DB.prepare("INSERT INTO chat_questions (asked_on, page, question, kind, query_json) VALUES (?1, ?2, ?3, ?4, ?5)")
-    .bind(opts.day, page, question, kind, "{}")
-    .run()
-    .catch(() => {});
+  // 글자가 깨져 온 질문(UTF-8 이 아닌 채로 보낸 것 — 브라우저가 아니라 터미널 시험)은 남기지 않는다. 읽을 수 없어 쓸모가 없다
+  const save = question.includes("�")
+    ? Promise.resolve()
+    : env.DB.prepare("INSERT INTO chat_questions (asked_on, page, question, kind, query_json) VALUES (?1, ?2, ?3, ?4, ?5)")
+        .bind(opts.day, page, question, kind, "{}")
+        .run()
+        .catch(() => {});
   if (opts.waitUntil) opts.waitUntil(save);
   else await save;
   const out = reply ?? { ok: true, text: FALLBACK };
