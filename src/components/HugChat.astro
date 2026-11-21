@@ -541,6 +541,209 @@
     color: var(--bubble-text);
     background: var(--surface-2);
   }
+  /* 알림 > 캘린더 > 보내기 — 가장 약한 버튼은 채움 없이 가는 테두리만 */
+  .hc-log :global(.hc-act.hc-act-ghost) {
+    color: var(--link);
+    font-weight: 600;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--bar-line);
+  }
+  /* 계산 결과 맨 아래의 글자 버튼 */
+  .hc-log :global(.hc-share-link) {
+    justify-self: start;
+    min-height: 44px;
+    margin-left: -0.3rem;
+    padding: 0.3rem 0.3rem;
+    font: inherit;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    text-align: left;
+    color: var(--link);
+    background: transparent;
+    border: 0;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+  }
+
+  /* 도움이 됐나요 — 결과 본문 아래 가는 선으로 나눈 한 줄. 두 버튼은 같은 크기·같은 무게, 건너뛰기가 가장 약하다 */
+  .hc-log :global(.hc-fb) {
+    display: grid;
+    gap: 0.5rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--bar-line);
+  }
+  .hc-log :global(.hc-fb-q) {
+    font-size: var(--t-sm);
+    font-weight: 700;
+  }
+  .hc-log :global(.hc-fb-btns) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+  .hc-log :global(.hc-fb-btn),
+  .hc-log :global(.hc-pick) {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    padding: 0.3rem 0.8rem;
+    font: inherit;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--bubble-text);
+    background: var(--surface-2);
+    border: 0;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+  }
+  .hc-log :global(.hc-pick) {
+    justify-content: flex-start;
+    justify-self: start;
+    font-weight: 500;
+    text-align: left;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--bar-line);
+    border-radius: var(--r-pill);
+  }
+  /* 눌린 것은 색만이 아니라 안쪽 테두리·체크·굵기로 남는다. 안 눌린 쪽은 잠기면 흐려진다 */
+  .hc-log :global(.hc-fb-btn[aria-pressed="true"]),
+  .hc-log :global(.hc-pick[aria-pressed="true"]) {
+    font-weight: 800;
+    color: var(--bubble-text);
+    background: var(--brand-wash);
+    box-shadow: inset 0 0 0 2px var(--brand);
+  }
+  .hc-log :global(.hc-fb-btn[aria-pressed="true"])::before,
+  .hc-log :global(.hc-pick[aria-pressed="true"])::before {
+    content: "";
+    flex: none;
+    width: 0.3rem;
+    height: 0.6rem;
+    margin-top: -0.15rem;
+    border-right: 2px solid var(--brand);
+    border-bottom: 2px solid var(--brand);
+    transform: rotate(45deg);
+  }
+  .hc-log :global(.hc-fb-btn[aria-disabled="true"]:not([aria-pressed="true"])) {
+    color: var(--muted);
+    cursor: default;
+  }
+  .hc-log :global(.hc-fb-btn[aria-disabled="true"]),
+  .hc-log :global(.hc-pick[aria-disabled="true"]) {
+    cursor: default;
+  }
+  .hc-log :global(.hc-fb-skip) {
+    justify-self: start;
+    min-height: 44px;
+    margin-left: -0.3rem;
+    padding: 0 0.6rem;
+    font: inherit;
+    font-size: var(--t-sm);
+    color: var(--sub);
+    background: transparent;
+    border: 0;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+  }
+  .hc-log :global(.hc-fb-after) {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .hc-log :global(.hc-fb-after:empty) {
+    display: none;
+  }
+  .hc-log :global(.hc-fb-after > *) {
+    animation: hc-in 180ms ease-out;
+  }
+  .hc-log :global(.hc-fb-after .hc-act) {
+    justify-self: start;
+  }
+  .hc-log :global(.hc-fb-note) {
+    font-size: var(--t-sm);
+    line-height: 1.55;
+    color: var(--sub);
+  }
+  .hc-log :global(.hc-fb-note:empty) {
+    display: none;
+  }
+  .hc-log :global(.hc-fb-chips) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  /* 작은 쪽(AI 답·준비한 답) — 글자는 작게, 누르는 자리는 그대로 44px. 버튼은 반씩 나누지 않고 내용 폭 */
+  .hc-log :global(.hc-fb-sm) {
+    gap: 0.2rem;
+    padding-top: 0.5rem;
+  }
+  .hc-log :global(.hc-fb-sm .hc-fb-q) {
+    font-size: var(--t-xs);
+    font-weight: 600;
+    color: var(--sub);
+  }
+  .hc-log :global(.hc-fb-sm .hc-fb-btns) {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .hc-log :global(.hc-fb-sm .hc-fb-btn) {
+    font-size: var(--t-xs);
+    font-weight: 500;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--bar-line);
+    border-radius: var(--r-pill);
+  }
+  .hc-log :global(.hc-fb-sm .hc-fb-btn[aria-pressed="true"]) {
+    font-weight: 700;
+    background: var(--brand-wash);
+    box-shadow: inset 0 0 0 2px var(--brand);
+  }
+  @keyframes hc-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hc-log :global(.hc-fb-after > *) {
+      animation: none;
+    }
+  }
+
+  /* 보낼 글 미리 보기 — 본문 글자로, 눌러서 전체 선택·길게 눌러 복사 */
+  .hc-log :global(.hc-share-text) {
+    padding: 0.65rem 0.8rem;
+    font-size: var(--t-sm);
+    line-height: 1.65;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    user-select: all;
+    background: var(--surface-2);
+    border-radius: var(--r-sm);
+  }
+  .hc-log :global(.hc-share-text:focus-visible),
+  .hc-log :global(.hc-body[tabindex="-1"]:focus) {
+    outline: 3px solid var(--link);
+    outline-offset: 2px;
+  }
+  .hc-log :global(.hc-body[tabindex="-1"]:focus:not(:focus-visible)) {
+    outline: none;
+  }
+  .hc-log :global(.hc-share-btns) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .hc-log :global(.hc-share-btns .hc-act) {
+    flex: 1 1 8rem;
+  }
+  .hc-log :global(.hc-act[aria-disabled="true"]) {
+    opacity: 0.6;
+    cursor: default;
+  }
   /* 계산 결과의 가정 한 줄 — 작은 회색이 아니라 본문 글자색으로 읽히게 */
   .hc-log :global(.hc-assume) {
     padding: 0.4rem 0.6rem;

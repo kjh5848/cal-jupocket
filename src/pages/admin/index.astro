@@ -109,6 +109,9 @@ const labelsJson = JSON.stringify(labels).replace(/</g, "\\u003c");
             <div id="adm-k-guide"></div>
             <h3>끝까지 한 일</h3>
             <ul class="adm-rows" id="adm-k-done"></ul>
+            <h3>도움이 됐나 / 보냈나</h3>
+            <ul class="adm-rows" id="adm-k-fb"></ul>
+            <p class="adm-note" id="adm-k-fb-note"></p>
             <details class="adm-gap">
               <summary>그 밖의 기록 보기</summary>
               <div class="adm-fold" id="adm-k-etc"></div>
@@ -292,11 +295,11 @@ const labelsJson = JSON.stringify(labels).replace(/</g, "\\u003c");
 
       // 첫 갈래 — 원본: src/scripts/hug-chat.ts 의 STAGES[].label (export 되지 않아 여기 둔다. 그쪽을 고치면 여기도 고친다)
       const STAGE: Record<string, string> = {
-        house: "집 보는 중이에요",
-        contract: "계약했어요(날짜가 정해졌어요)",
-        calc: "보증 가입 되는지·보증료 계산",
+        house: "아직 집 보는 중이에요",
+        contract: "계약 날짜로 할 일 뽑기",
+        calc: "이 집, 보증 가입 되는지 계산",
         living: "이미 살고 있어요",
-        trouble: "집주인과 문제가 생겼어요",
+        trouble: "보증금을 못 받고 있어요",
       };
       // 수준 확인 문항 — 원본: hug-chat.ts 의 QUIZ. 질문 문장이 길어 짧은 이름을 쓴다(설계서 5-2)
       const QUIZ: Record<string, string> = {
@@ -310,8 +313,32 @@ const labelsJson = JSON.stringify(labels).replace(/</g, "\\u003c");
       const REFUSAL: Record<string, string> = { none: "없어요(확인했어요)", yes: "하나라도 있어요", unknown: "아직 몰라요" };
       // 원본: hug-chat.ts 의 이어하기 버튼 문구
       const RESUME: Record<string, string> = { yes: "이어서 하기", no: "처음부터 새로" };
+            // 도움이 됐나요 — 원본: hug-chat.ts 의 WHY_PLAN·WHY_ANSWER(이유 칩 문구)
+      const WHY_PLAN: Record<string, string> = { date: "날짜가 내 계약과 달라요", case: "내 상황이 빠져 있어요", hard: "읽기 어려워요", wrong: "틀린 것 같아요", other: "그 밖의 이유" };
+      const WHY_ANSWER: Record<string, string> = { wrong: "틀린 것 같아요", miss: "물은 것과 달라요", hard: "어려워요", more: "더 알고 싶어요", other: "그 밖의 이유" };
+      const SLOT: Record<string, string> = { plan: "일정", ai: "AI 답", bank: "준비한 답" };
+      const WHY: Record<string, string> = {};
+      for (const [k, t] of Object.entries(WHY_PLAN)) WHY[`plan-${k}`] = `${SLOT.plan} · ${t}`;
+      for (const slot of ["ai", "bank"]) for (const [k, t] of Object.entries(WHY_ANSWER)) WHY[`${slot}-${k}`] = `${SLOT[slot]} · ${t}`;
+      // 보낸 방법 — 원본: hug-chat.ts 의 openShare. 방법-내용
+      const SHARE_HOW: Record<string, string> = { native: "보내기 창", copy: "글 복사" };
+      const SHARE_WHAT: Record<string, string> = { dates: "날짜 포함", nodate: "날짜 뺌", intro: "소개만" };
+      const SHARE: Record<string, string> = {};
+      for (const [h, ht] of Object.entries(SHARE_HOW)) for (const [w, wt] of Object.entries(SHARE_WHAT)) SHARE[`${h}-${w}`] = `${ht} — ${wt}`;
+      // 흐름을 고친 뒤 새로 생긴 기록
+      const EDIT: Record<string, string> = { movein: "결과에서 전입신고 날짜를 고침", term: "결과에서 계약 기간을 고침" };
+      const INPUT_ERROR: Record<string, string> = {
+        "date-empty": "날짜를 고르지 않고 눌렀어요",
+        "date-order": "날짜 순서가 틀렸어요",
+        "amount-unread": "금액을 읽지 못했어요",
+        "amount-small": "금액이 너무 작게 읽혔어요",
+        "amount-big": "금액이 너무 크게 읽혔어요(되물음)",
+      };
+      const LIMIT: Record<string, string> = { rate: "한 사람의 하루 질문 한도", busy: "전체 하루 한도 마감", ai: "AI 서버가 쉬는 중" };
       // 키 없이 횟수만 오는 것
       const SINGLE: Record<string, string> = {
+        hug_plan_ics: "캘린더 파일 받기",
+        hug_calc_more: "보증료 정확히 보기 끝냄",
         hug_term: "용어 풀이",
         hug_chat_send: "AI에게 글 보내기",
         hug_chat_error: "AI 답 받기 실패",
@@ -320,7 +347,8 @@ const labelsJson = JSON.stringify(labels).replace(/</g, "\\u003c");
       /** 이 화면이 어딘가에서 쓰거나, 일부러 안 쓰는(hug_chat_answer — 구역 2가 대신한다) 이벤트 */
       const KNOWN = new Set([
         "hug_open", "hug_chat_stage", "hug_guide", "hug_plan_done", "hug_chat_calc", "hug_chat_answer",
-        "hug_quiz_unknown", "hug_quiz_done", "hug_refusal", "hug_resume", ...Object.keys(SINGLE),
+        "hug_quiz_unknown", "hug_quiz_done", "hug_refusal", "hug_resume",
+        "hug_feedback", "hug_feedback_why", "hug_share", "hug_plan_edit", "hug_input_error", "hug_chat_limit", ...Object.keys(SINGLE),
       ]);
 
       const KIND: Record<string, string> = {
@@ -644,6 +672,51 @@ const labelsJson = JSON.stringify(labels).replace(/</g, "\\u003c");
           done("보증 계산", keys.hug_chat_stage?.calc ?? 0, ev("hug_chat_calc")),
         );
 
+        // 4. 도움이 됐나 / 보냈나 — 있다/없다와 이유 1위만 본다(비율·% 없음). bank-<답 id>-up|down 은 접두·접미로 합산한다
+        const fb = keys.hug_feedback ?? {};
+        const bankDown: Record<string, number> = {};
+        let bankUp = 0, bankDownAll = 0;
+        for (const [k, n] of Object.entries(fb)) {
+          const m = /^bank-(.+)-(up|down)$/.exec(k);
+          if (!m) continue;
+          if (m[2] === "up") bankUp += n;
+          else {
+            bankDownAll += n;
+            bankDown[m[1]] = (bankDown[m[1]] ?? 0) + n;
+          }
+        }
+        const pair = (name: string, up: number, down: number) => {
+          const li = el("li");
+          const n = el("span", `도움 됐어요 ${num(up)} · 아쉬워요 ${num(down)}`, "adm-row-n");
+          n.setAttribute("aria-label", `도움 됐어요 ${num(up)}, 아쉬워요 ${num(down)}`);
+          li.append(el("span", name, "adm-row-name"), n);
+          return li;
+        };
+        const single = (name: string, n: number) => {
+          const li = el("li");
+          const c = el("span", undefined, "adm-row-n");
+          if (n > 0) c.append(num(n), el("small", "번"));
+          else {
+            c.textContent = "아직 0";
+            c.classList.add("adm-zero");
+          }
+          li.append(el("span", name, "adm-row-name"), c);
+          return li;
+        };
+        const fbKnown = new Set(["plan-up", "plan-down", "ai-up", "ai-down"]);
+        const fbOther = Object.entries(fb).filter(([k]) => !fbKnown.has(k) && !/^bank-.+-(up|down)$/.test(k)).reduce((t, [, n]) => t + n, 0);
+        $("adm-k-fb").replaceChildren(
+          pair("일정 결과", fb["plan-up"] ?? 0, fb["plan-down"] ?? 0),
+          pair("AI 답", fb["ai-up"] ?? 0, fb["ai-down"] ?? 0),
+          pair("준비한 답", bankUp, bankDownAll),
+          single("같이 계약하는 사람에게 보냄", total(keys.hug_share)),
+        );
+        const fbNote = $("adm-k-fb-note");
+        fbNote.replaceChildren(
+          "숫자가 작아 비율은 보지 않아요. 일정 결과는 캘린더·알림까지 간 사람과 다시 온 사람만 눌러서 아쉬움이 적게 잡혀요.",
+          ...(fbOther ? [` 이름이 아직 없는 응답 ${num(fbOther)}번`] : []),
+        );
+
         // 그 밖의 기록(접힘)
         const etc = $("adm-k-etc");
         etc.replaceChildren();
@@ -657,9 +730,19 @@ const labelsJson = JSON.stringify(labels).replace(/</g, "\\u003c");
         group("수준 확인 결과", keys.hug_quiz_done, LEVEL);
         group("거절 사유 답", keys.hug_refusal, REFUSAL);
         group("이어하기", keys.hug_resume, RESUME);
+        group("아쉬웠던 이유", keys.hug_feedback_why, WHY);
+        group("보낸 방법", keys.hug_share, SHARE);
+        // 준비한 답 중 아쉬워요가 많은 것 — 많은 순 5개
+        const weak = Object.entries(bankDown).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, n]) => ({ name: NAMES.answers[id] ?? "이름이 아직 없는 답", n }));
+        if (weak.length) etc.append(el("h4", "아쉬워요가 많은 준비한 답"), rows(weak));
+        group("결과에서 고친 것", keys.hug_plan_edit, EDIT);
+        group("입력이 막힌 곳", keys.hug_input_error, INPUT_ERROR);
+        group("질문 한도에 걸림", keys.hug_chat_limit, LIMIT);
         // 입구 — 첫 갈래와 같은 이름 + "바로가기로 들어옴". 키가 없으면 주소로 바로 들어온 것
         const doors: Record<string, string> = { "": "주소로 바로 들어옴" };
         for (const [k, name] of Object.entries(STAGE)) doors[k] = `${name} — 바로가기로 들어옴`;
+        doors.plan = "저장된 내 일정 보기 — 바로가기로 들어옴";
+        doors["contract-share"] = `${STAGE.contract} — 공유받은 링크로 들어옴`;
         group("들어온 길", keys.hug_open, doors);
         const singles = Object.entries(SINGLE).map(([k, name]) => ({ name, n: ev(k) })).filter((i) => i.n > 0);
         if (singles.length) etc.append(el("h4", "그 밖의 횟수"), rows(singles));

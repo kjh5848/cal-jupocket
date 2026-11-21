@@ -57,8 +57,13 @@ if (standalone) {
   let allowed = isHome || views >= 2;
   let shown = false;
 
+  // 전세 도우미(/jeonse-chat/)는 일정 결과가 나오기 전과 평가를 묻는 동안에는 미룬다 — 날짜 칸·평가 줄을 전면 팝업이 덮지 않게.
+  // 풀어 주는 쪽은 scripts/hug-chat.ts(documentElement.dataset.hcInstall = "ok" + "hc-install" 이벤트)
+  const onChat = location.pathname.startsWith("/jeonse-chat");
+  const held = () => onChat && document.documentElement.dataset.hcInstall !== "ok";
+
   const open = () => {
-    if (shown || !ready || !allowed || dismissedRecently()) return;
+    if (shown || !ready || !allowed || dismissedRecently() || held()) return;
     shown = true;
     setTimeout(() => {
       pop.hidden = false;
@@ -92,6 +97,7 @@ if (standalone) {
     addEventListener("scroll", onScroll, { passive: true });
   }
 
+  window.addEventListener("hc-install", open);
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault(); // 브라우저 기본 띠 대신 우리 팝업으로
     deferred = e as typeof deferred;

@@ -82,8 +82,11 @@ const TEXT = {
   },
 };
 
-/** 버튼·안내문·끄기 버튼을 묶는다. items() 는 지금 화면의 일정. voice: 글(formal)·대화(chat) 말투 */
-export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLButtonElement, items: () => PushItem[], voice: keyof typeof TEXT = "formal") {
+/**
+ * 버튼·안내문·끄기 버튼을 묶는다. items() 는 지금 화면의 일정. voice: 글(formal)·대화(chat) 말투.
+ * onOn: 알림이 실제로 켜졌을 때(맞춘 알림이 1건 이상) 한 번 불린다 — 전세 도우미가 그 직후에 도움이 됐는지 묻는다
+ */
+export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLButtonElement, items: () => PushItem[], voice: keyof typeof TEXT = "formal", onOn?: () => void) {
   const T = TEXT[voice];
   const label = btn.textContent ?? "";
   const say = (t: string) => (msg.textContent = t);
@@ -140,6 +143,13 @@ export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLBut
       showOn(true);
       say(r.count ? T.done(r.count, r.next) : T.none);
       track("push_subscribe", { items: r.count });
+      if (r.count) {
+        try {
+          onOn?.();
+        } catch {
+          /* 부르는 쪽 문제로 "알림을 맞추지 못했어요"가 뜨면 안 된다 */
+        }
+      }
     } catch {
       say(T.error);
       track("push_error");

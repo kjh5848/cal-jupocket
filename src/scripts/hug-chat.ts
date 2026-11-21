@@ -11,7 +11,11 @@
  *
  * 3-1. 보증 계산: 집·보증금·근저당까지만 묻고 가입 여부를 먼저 보여 준다. 월세·기간·할인·대출은 결과 뒤 "보증료 정확히 보기"에서 이어서 묻는다
  *
- * GA4: hug_chat_stage · hug_plan_done · hug_plan_edit · hug_chat_calc · hug_calc_more · hug_guide(id) · hug_term · hug_chat_send · hug_chat_answer · hug_chat_error · hug_chat_limit · hug_input_error · hug_chat_reset
+ * 4. 도움이 됐나요(일정 결과·AI 답·준비한 답)와 "같이 계약하는 사람에게 보내기". 기기에는 답했는지만 남기고(jp-jeonse-fb), 글은 받지 않는다.
+ *    docs/design/jeonse-feedback-share-ux.md. 평가·공유 버튼은 .hc-opts 가 아니고 누를 때 say() 를 부르지 않는다.
+ *
+ * GA4: hug_chat_stage · hug_plan_done · hug_plan_edit · hug_plan_ics · hug_chat_calc · hug_calc_more · hug_guide(id) · hug_term · hug_chat_send · hug_chat_answer · hug_chat_error · hug_chat_limit · hug_input_error · hug_chat_reset
+ *      · hug_feedback(id=자리-up|down) · hug_feedback_why(id=자리-이유) · hug_share(id=방법-내용)
  */
 import { PUSH_API } from "../data/push";
 import { plan, nextItem, haeyo, dateText, localAnswer, findTerm, termsIn, GUIDES, HOUSE_GUIDES, CONTACT, type Guide, type PlanItem } from "../lib/jeonse-guide";
@@ -49,6 +53,9 @@ const reset = document.getElementById("hc-reset");
 let history: Msg[] = [];
 let busy = false;
 let level: Level | null = null;
+// 설치 팝업 보류 — 일정 결과가 나오고 평가 줄이 답을 받기 전까지는 "hold"(install-app.ts 가 읽는다)
+document.documentElement.dataset.hcInstall = "hold";
+let planSeen = false;
 
 /**
  * GA4 와 함께 우리 서버에도 횟수만 센다(관리자 화면 /admin/). 보내는 것은 이벤트 이름과 버튼 키뿐이고,
@@ -326,9 +333,10 @@ const stageOpt = (id: string, kind?: Opt["kind"]): Opt => ({ label: stageOf(id).
  * 첫 인사 — "하려는 일"로 고르게 한다. 가장 큰 버튼은 '계약 날짜로 할 일 뽑기' 하나, '처음이에요'·'이미 살고 있어요'는 작게.
  * short: 주소(?s=)가 갈래를 이미 고른 경우 — 버튼 묶음 없이 비공식 고지 한 줄만 하고 바로 그 흐름으로 간다.
  */
-function greet(short = false) {
+function greet(short = false, fromShare = false) {
   if (short) {
-    bubble("bot", "HUG가 아니라 JU포켓이 만든 비공식 안내예요. 전세 계약 날짜로 할 일을 뽑고, 보증 가입이 되는지 계산해 드려요.");
+    // 공유받은 사람: 빈 날짜 칸을 보고 헷갈리지 않게 같은 말풍선 두 번째 줄로 알린다
+    bubble("bot", `HUG가 아니라 JU포켓이 만든 비공식 안내예요. 전세 계약 날짜로 할 일을 뽑고, 보증 가입이 되는지 계산해 드려요.${fromShare ? "\n보낸 사람의 날짜는 이 링크에 들어 있지 않아요. 내 계약일·잔금일을 넣어 주세요." : ""}`);
     return;
   }
   const saved = loadPlan();
@@ -336,7 +344,7 @@ function greet(short = false) {
   const b = bubble("bot", "전세 계약 날짜를 넣으면 할 일을 날짜순으로 뽑아 드려요.\nHUG가 아니라 JU포켓이 만든 비공식 안내예요. 무엇부터 할까요?");
   b.append(
     optsEl([
-      ...(saved ? [{ label: "지난번 내 일정 다시 보기", hint: nxt ? `${nxt.when} · ${nxt.dday} ${nxt.title}` : "이 브라우저에 저장된 날짜로", run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved)) }] : []),
+      ...(saved ? [{ label: "지난번 내 일정 다시 보기", hint: nxt ? `${nxt.when} · ${nxt.dday} ${nxt.title}` : "이 브라우저에 저장된 날짜로", run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved, { returning: true })) }] : []),
       stageOpt("contract", "main"),
       stageOpt("calc"),
       stageOpt("trouble"),
@@ -436,13 +444,13 @@ function askStage() {
   const b = bubble("bot", "지금 어느 단계세요? 고르시면 그 단계부터 안내해 드려요.");
   b.append(optsEl(STAGES.map((st) => ({ label: st.label, hint: STAGE_HINT[st.id], run: () => pickStage(st) }))));
   const saved = loadPlan();
-  showChips(saved ? [{ label: "지난번 내 일정 다시 보기", run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved)) }] : []);
+  showChips(saved ? [{ label: "지난번 내 일정 다시 보기", run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved, { returning: true })) }] : []);
 }
 
 function showStages() {
   const saved = loadPlan();
   showChips([
-    ...(saved ? [{ label: "지난번 내 일정 다시 보기", primary: true, run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved)) }] : []),
+    ...(saved ? [{ label: "지난번 내 일정 다시 보기", primary: true, run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved, { returning: true })) }] : []),
     ...STAGES.map((s) => ({ label: s.label, run: () => pickStage(s) })),
   ]);
 }
@@ -787,7 +795,8 @@ function itemEl(i: PlanItem) {
   return li;
 }
 
-function showPlan(p: SavedPlan) {
+/** returning: 저장된 일정을 다시 열었다 — 이때만(답한 적이 없으면) 결과 맨 아래에서 도움이 됐나 묻는다 */
+function showPlan(p: SavedPlan, opts: { returning?: boolean } = {}) {
   mark("plan-result", () => showPlan(p));
   const items = itemsOf(p);
   const nxt = nextItem(items);
@@ -824,8 +833,16 @@ function showPlan(p: SavedPlan) {
   pushBtn.addEventListener("click", () => !busy && (say("알림 받을래요"), offerPush(items)));
   const icsBtn = el("button", "캘린더에 넣기", "hc-act hc-act-sub");
   icsBtn.type = "button";
-  icsBtn.addEventListener("click", () => !busy && (downloadIcs(items, "hug-chat-plan"), bubble("bot", "캘린더 파일을 내려받았어요. 내려받은 파일을 열면 휴대폰 캘린더에 할 일이 들어가요.")));
-  acts.append(pushBtn, icsBtn);
+  icsBtn.addEventListener("click", () => {
+    if (busy) return;
+    downloadIcs(items, "hug-chat-plan");
+    track("hug_plan_ics");
+    const done = bubble("bot", "캘린더 파일을 내려받았어요. 내려받은 파일을 열면 휴대폰 캘린더에 할 일이 들어가요.");
+    // 들고 나간 직후가 물어볼 때다 — 이 확인 말풍선 맨 아래에 붙인다(새 말풍선을 만들지 않는다)
+    if (nxt) askPlanFeedback(done);
+  });
+  // 가장 약한 버튼: 알림 > 캘린더 > 보내기. 보낼 날짜가 없으면(모두 지남) 소개만 보낸다
+  acts.append(pushBtn, icsBtn, shareOpenBtn("같이 계약하는 사람에게 보내기", "hc-act hc-act-ghost", nxt ? "dates" : "intro"));
   b.append(
     acts,
     el("p", "JU포켓이 법령·HUG 안내로 계산한 날짜예요. HUG가 정해 준 일정이 아니니 실제 기한은 HUG·은행에 확인하세요.", "hc-note"),
@@ -833,6 +850,9 @@ function showPlan(p: SavedPlan) {
     el("p", "용어가 어려우면 아래 칸에 \"대항력이 뭐예요?\"처럼 물어보세요.", "hc-note"),
   );
   remember("내 전세 일정", items.map((i) => `${i.when} ${i.title}`).join(" / "));
+  if (opts.returning && nxt) askPlanFeedback(b);
+  planSeen = true;
+  syncInstall();
   scrollDown();
   showChips([...(nxt ? [] : [{ label: stageOf("trouble").label, primary: true, run: () => pickStage(stageOf("trouble")) }]), guideChip(CONTACT), { label: "보증 계산", run: () => (say("보증 되는지 계산해 볼래요"), startCalc()) }, { label: "처음으로", run: restart }]);
 }
@@ -849,7 +869,8 @@ function offerPush(items: PlanItem[]) {
   off.type = "button";
   off.hidden = true;
   b.append(btn, msg, off);
-  setupPush(btn, msg, off, () => items.map((i) => ({ key: i.key, date: fromDay(i.day) })), "chat");
+  // 알림이 켜진 직후(성공 문구가 뜬 뒤)에 이 말풍선 맨 아래에서 묻는다
+  setupPush(btn, msg, off, () => items.map((i) => ({ key: i.key, date: fromDay(i.day) })), "chat", () => nextItem(items) && askPlanFeedback(b));
   scrollDown();
 }
 
@@ -1056,6 +1077,8 @@ function calcDone(x: Calc, again = false) {
   if (r.ok && assumed.length) b.append(el("p", `${assumed.join("·")} 기준으로 먼저 계산했어요. 월세가 있으면 가입 여부도 달라질 수 있어요.${more ? "" : " 아래 확인을 마치면 '보증료 정확히 보기'로 바꿀 수 있어요."}`, "hc-assume"));
   b.append(sourcesEl(sourcesFor(["ltv", "deposit-cap", "premium"])), relatedEl(["calc", "checklist", "dsr"]));
   b.append(el("p", "추산이에요. 실제 가입과 금액은 HUG 심사로 정해져요.", "hc-note"));
+  // 계산 결과에는 평가를 묻지 않는다(나쁜 소식 직후). 보내는 글은 소개뿐이고 금액·가입 결과는 담지 않는다
+  b.append(shareOpenBtn("같이 계약하는 사람에게 도우미 소개 보내기", "hc-share-link", "intro"));
   remember("보증 가입 계산", `${r.text}\n${r.lines.map((l) => `${l.label}: ${l.value}`).join("\n")}`);
   // 처음 결과는 hug_chat_calc, 이어 물어 다시 낸 결과는 hug_calc_more — 끝까지 한 일로 세는 hug_chat_calc 는 한 번만
   if (!again) track(more ? "hug_calc_more" : "hug_chat_calc");
@@ -1095,10 +1118,338 @@ function calcNext(x: Calc, ok: boolean) {
   ]);
 }
 
+/* ── 도움이 됐나요 · 같이 계약하는 사람에게 보내기 ─────────────
+ * 기기에는 답했는지만 남긴다(jp-jeonse-fb: {"plan":"up|down|skip","shared":1}). 날짜·질문·글은 담지 않는다.
+ * 서버로는 횟수만(track): hug_feedback / hug_feedback_why / hug_share — 키에 자리와 방향을 한꺼번에 싣는다.
+ * 이 버튼들은 .hc-opts 가 아니고 누를 때 say() 를 부르지 않는다(지나간 버튼 잠금·"내 말" 말풍선이 붙는다).
+ * 눌린 버튼은 disabled 가 아니라 aria-disabled 로 잠가 초점이 사라지지 않게 한다.
+ */
+const FB_KEY = "jp-jeonse-fb";
+interface Fb {
+  plan?: "up" | "down" | "skip";
+  shared?: 1;
+}
+/** 저장이 막힌 브라우저는 이 페이지가 열려 있는 동안만 기억한다 */
+let fbMem: Fb = {};
+function fbLoad(): Fb {
+  let v: Fb = {};
+  try {
+    const x = JSON.parse(localStorage.getItem(FB_KEY) ?? "null") as Fb | null;
+    if (x && typeof x === "object") v = { ...(x.plan === "up" || x.plan === "down" || x.plan === "skip" ? { plan: x.plan } : {}), ...(x.shared === 1 ? { shared: 1 as const } : {}) };
+  } catch {
+    /* 무시 */
+  }
+  return { ...v, ...fbMem };
+}
+function fbSave(patch: Fb) {
+  fbMem = { ...fbMem, ...patch };
+  try {
+    localStorage.setItem(FB_KEY, JSON.stringify(fbLoad()));
+  } catch {
+    /* 저장이 막혀도 화면은 그대로 */
+  }
+}
+
+/** 설치 팝업을 풀어도 되는가 — 일정 결과가 나왔고, 답을 기다리는 평가 줄이 없을 때 */
+function syncInstall() {
+  const open = !!log?.querySelector('.hc-fb[data-slot="plan"]:not([data-done])');
+  const ok = planSeen && !open;
+  const d = document.documentElement.dataset;
+  const was = d.hcInstall;
+  d.hcInstall = ok ? "ok" : "hold";
+  if (ok && was !== "ok") window.dispatchEvent(new Event("hc-install"));
+}
+
+type Slot = "plan" | "ai" | "bank";
+const WHY_PLAN: [string, string, string?][] = [
+  ["date", "날짜가 내 계약과 달라요", "전입신고 날짜와 계약 기간은 결과 위의 '바꾸기'에서 고칠 수 있어요."],
+  ["case", "내 상황이 빠져 있어요"],
+  ["hard", "읽기 어려워요", "용어는 아래 칸에 '대항력이 뭐예요?'처럼 물어보세요."],
+  ["wrong", "틀린 것 같아요", "실제 기한은 HUG·은행에 확인해 주세요."],
+  ["other", "그 밖의 이유"],
+];
+const WHY_ANSWER: [string, string, string?][] = [
+  ["wrong", "틀린 것 같아요"],
+  ["miss", "물은 것과 달라요"],
+  ["hard", "어려워요"],
+  ["more", "더 알고 싶어요"],
+  ["other", "그 밖의 이유"],
+];
+const FB_THANKS = "알려 줘서 고마워요. 고칠 때 참고할게요.";
+const isLocked = (b: HTMLElement) => b.getAttribute("aria-disabled") === "true";
+
+/** 누르면 run — 잠긴 버튼의 클릭은 무시한다. 눌렸는지는 aria-pressed 로 알린다 */
+function pickBtn(label: string, cls: string, run: (b: HTMLButtonElement) => void) {
+  const b = el("button", label, cls);
+  b.type = "button";
+  b.setAttribute("aria-pressed", "false");
+  b.addEventListener("click", () => !isLocked(b) && run(b));
+  return b;
+}
+
+/**
+ * "이 일정이 도움이 됐나요?" / "이 답이 도움이 됐나요?" 한 줄. 말풍선 안에만 둔다(아래 막대에는 올리지 않는다).
+ * 한 줄은 한 번만 눌리고, 이유 칩은 하나씩 한 번만 센다. bankId: 준비한 답의 id(키에만 쓴다)
+ */
+function feedbackEl(slot: Slot, bankId?: string) {
+  const plan = slot === "plan";
+  const box = el("div", undefined, plan ? "hc-fb" : "hc-fb hc-fb-sm");
+  box.dataset.slot = slot;
+  const q = el("p", plan ? "이 일정이 도움이 됐나요?" : "이 답이 도움이 됐나요?", "hc-fb-q");
+  q.id = `hc-fbq-${++fieldSeq}`;
+  const row = el("div", undefined, "hc-fb-btns");
+  row.setAttribute("role", "group");
+  row.setAttribute("aria-labelledby", q.id);
+  const after = el("div", undefined, "hc-fb-after");
+  after.setAttribute("role", "status");
+  /** 서버 키(영문 소문자·숫자·-·_·. 40자 이내): bank-<답 id>-up 처럼 한 키에 자리와 방향을 싣는다 */
+  const keyOf = (tail: string) => (slot === "bank" ? `bank-${(bankId ?? "").replace(/[^\w.-]/g, "").slice(0, 30)}-${tail}` : `${slot}-${tail}`);
+  const done = () => {
+    box.dataset.done = "1";
+    syncInstall();
+  };
+
+  const showWhy = () => {
+    after.append(el("p", "아쉬운 점을 골라 주세요. 안 골라도 괜찮아요.", "hc-fb-note"));
+    const chipsRow = el("div", undefined, "hc-fb-chips");
+    chipsRow.setAttribute("role", "group");
+    chipsRow.setAttribute("aria-label", "아쉬운 점");
+    const note = el("p", undefined, "hc-fb-note");
+    for (const [key, label, extra] of plan ? WHY_PLAN : WHY_ANSWER) {
+      chipsRow.append(
+        pickBtn(label, "hc-pick", (b) => {
+          b.setAttribute("aria-disabled", "true");
+          b.setAttribute("aria-pressed", "true");
+          track("hug_feedback_why", { id: `${slot}-${key}`, at: slot, why: key });
+          note.textContent = extra ?? FB_THANKS;
+        }),
+      );
+    }
+    after.append(chipsRow, note);
+  };
+  const showThanks = () => {
+    if (!plan || fbLoad().shared) return after.append(el("p", "고마워요."));
+    // 같은 말풍선에 같은 이름의 버튼이 이미 있으면 글로만 가리킨다
+    if (box.parentElement?.querySelector(".hc-share-open")) after.append(el("p", "고마워요. 같이 계약하는 사람이 있다면 위의 '같이 계약하는 사람에게 보내기'를 누르면 돼요."));
+    else after.append(el("p", "고마워요. 같이 계약하는 사람이 있다면 이 일정을 보내 보세요."), shareOpenBtn("같이 계약하는 사람에게 보내기", "hc-act hc-act-sub", "dates"));
+  };
+
+  const btns: HTMLButtonElement[] = [];
+  let skip: HTMLButtonElement | null = null;
+  const answer = (a: "up" | "down", pressed: HTMLButtonElement) => {
+    if (box.dataset.answered) return;
+    box.dataset.answered = "1";
+    btns.forEach((x) => x.setAttribute("aria-disabled", "true"));
+    pressed.setAttribute("aria-pressed", "true");
+    skip?.remove();
+    track("hug_feedback", { id: keyOf(a), a, at: slot });
+    if (plan) fbSave({ plan: a });
+    if (a === "up") showThanks();
+    else showWhy();
+    done();
+  };
+  btns.push(pickBtn("도움 됐어요", "hc-fb-btn", (b) => answer("up", b)), pickBtn("아쉬워요", "hc-fb-btn", (b) => answer("down", b)));
+  row.append(...btns);
+  box.append(q, row);
+  if (plan) {
+    // "묻지 마세요"의 뜻 — 줄이 사라지고, 이 브라우저에서는 다시 묻지 않는다. 세지 않는다
+    skip = el("button", "건너뛰기", "hc-fb-skip");
+    skip.type = "button";
+    skip.addEventListener("click", () => {
+      if (box.dataset.answered) return;
+      box.dataset.answered = "1";
+      fbSave({ plan: "skip" });
+      const host = box.parentElement;
+      box.remove();
+      syncInstall();
+      // 초점이 사라지지 않게 말풍선으로 돌려 놓는다
+      if (host) {
+        host.tabIndex = -1;
+        host.focus({ preventScroll: true });
+      }
+    });
+    box.append(skip);
+  }
+  box.append(after);
+  return box;
+}
+
+/** 일정 결과 평가 줄 — 이미 답했거나 건너뛴 브라우저, 또는 답을 기다리는 줄이 화면에 있으면 새로 만들지 않는다 */
+function askPlanFeedback(host: HTMLElement) {
+  if (fbLoad().plan) return;
+  if (log?.querySelector('.hc-fb[data-slot="plan"]:not([data-done])')) return;
+  host.append(feedbackEl("plan"));
+  syncInstall();
+  scrollDown();
+}
+
+/* ── 보내기 ───────────────────────────────────────────── */
+
+/** 고정 주소 — 날짜·금액을 쿼리나 해시에 싣지 않는다 */
+const SHARE_URL = "https://jupocket.com/jeonse-chat/?s=contract&utm_source=share&utm_medium=referral&utm_campaign=jeonse-chat";
+type ShareKind = "dates" | "nodate" | "intro";
+/**
+ * 보낼 글 — 누를 때만 만든다(결과가 뜰 때 만들어 두거나 저장하지 않는다). 날짜는 계약일·잔금일·가장 먼저 할 일 하나뿐.
+ * 제목·할 일 문장은 hug-jeonse 원문 제목 그대로. 저장된 일정을 못 읽으면 소개 글로 돌아간다.
+ */
+function shareText(kind: ShareKind): { kind: ShareKind; title: string; text: string } {
+  const saved = kind === "dates" ? loadPlan() : null;
+  if (saved) {
+    const today = todayDay();
+    const nxt = nextItem(itemsOf(saved));
+    return {
+      kind: "dates",
+      title: "전세 계약 할 일, 날짜순으로 정리했어요",
+      text: [
+        "전세 계약 할 일을 날짜순으로 정리했어요.",
+        `계약일 ${dateText(toDay(saved.contract)!, today)} · 잔금일 ${dateText(toDay(saved.start)!, today)}`,
+        ...(nxt ? [`가장 먼저 할 일: ${nxt.when} ${nxt.title}`] : []),
+        "JU포켓 전세 도우미에 계약일·잔금일을 넣으면 할 일이 날짜순으로 나와요. 로그인은 필요 없어요.",
+        "HUG 공식 서비스가 아닌 JU포켓의 비공식 안내예요. 실제 기한은 HUG·은행에 확인하세요.",
+        SHARE_URL,
+      ].join("\n"),
+    };
+  }
+  return {
+    kind: kind === "nodate" ? "nodate" : "intro",
+    title: "전세 계약 날짜로 할 일 뽑기 — JU포켓 전세 도우미(비공식)",
+    text: [
+      "전세 계약일·잔금일을 넣으면 할 일이 날짜순으로 나오는 곳이에요. 보증 가입이 되는지도 계산해 줘요. 로그인은 필요 없어요.",
+      "HUG 공식 서비스가 아닌 JU포켓의 비공식 안내예요.",
+      SHARE_URL,
+    ].join("\n"),
+  };
+}
+
+/** 클립보드에 쓴다 — 누른 그 자리(클릭 핸들러)에서 불러야 한다. 안 되면 옛 방식, 그래도 안 되면 false */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    /* 아래 옛 방식으로 */
+  }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.append(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+/** 보내기 말풍선을 여는 버튼. start: dates=내 날짜 포함(기본) · intro=소개만 */
+function shareOpenBtn(label: string, cls: string, start: "dates" | "intro") {
+  const bt = el("button", label, `${cls} hc-share-open`);
+  bt.type = "button";
+  bt.addEventListener("click", () => !busy && openShare(start));
+  return bt;
+}
+
+/** 누르면 도우미 말풍선이 하나 붙고 보낼 글을 미리 보여 준다 — 누르기 전에는 만들지도 보내지도 않는다 */
+function openShare(start: "dates" | "intro") {
+  const b = bubble("bot", "같이 계약하는 사람에게 보낼 글이에요. 보내기 전에 읽어 보세요.");
+  const canDates = start === "dates" && !!loadPlan();
+  let cur = shareText(canDates ? "dates" : "intro");
+  const box = el("div", undefined, "hc-share-text");
+  box.tabIndex = 0;
+  box.setAttribute("role", "group");
+  box.setAttribute("aria-label", "보낼 글");
+  box.textContent = cur.text;
+  const selectAll = () => {
+    const sel = getSelection();
+    if (!sel) return;
+    const r = document.createRange();
+    r.selectNodeContents(box);
+    sel.removeAllRanges();
+    sel.addRange(r);
+  };
+  box.addEventListener("click", selectAll);
+  const msg = el("p", undefined, "hc-fb-note");
+  msg.setAttribute("role", "status");
+  const sent = (how: "native" | "copy", s: { kind: ShareKind }) => {
+    track("hug_share", { id: `${how}-${s.kind}`, a: how, at: s.kind });
+    fbSave({ shared: 1 });
+  };
+  b.append(box);
+
+  if (canDates) {
+    const tog = pickBtn("날짜 빼고 보내기", "hc-pick", (t) => {
+      const on = t.getAttribute("aria-pressed") !== "true";
+      t.setAttribute("aria-pressed", String(on));
+      cur = shareText(on ? "nodate" : "dates");
+      box.textContent = cur.text;
+      msg.textContent = "";
+    });
+    b.append(tog);
+  }
+
+  const btns = el("div", undefined, "hc-share-btns");
+  const copy = el("button", "글 복사하기");
+  copy.type = "button";
+  copy.addEventListener("click", async () => {
+    const s = cur;
+    const ok = await copyText(s.text);
+    if (ok) {
+      sent("copy", s);
+      msg.textContent = "글을 복사했어요. 메신저에 붙여 넣어 보내세요.";
+    } else {
+      msg.textContent = "복사하지 못했어요. 위 글을 길게 눌러 직접 복사해 주세요.";
+      selectAll();
+    }
+  });
+  if (typeof navigator.share === "function") {
+    const send = el("button", "보내기", "hc-act");
+    send.type = "button";
+    send.addEventListener("click", async () => {
+      if (isLocked(send)) return;
+      send.setAttribute("aria-disabled", "true");
+      const s = cur;
+      try {
+        // url 은 따로 주지 않는다 — 링크는 글 맨 끝줄(받는 앱에 따라 링크가 둘 붙거나 제목이 빠지는 것을 피한다)
+        await navigator.share({ title: s.title, text: s.text });
+        sent("native", s);
+        msg.textContent = "보내기를 마쳤어요. 받는 사람은 링크에서 자기 계약일·잔금일을 넣으면 돼요.";
+      } catch (e) {
+        // 사용자가 공유 창을 닫은 것(AbortError)은 조용히 — 세지도 말하지도 않는다. 그 밖의 오류는 복사로
+        if (!(e instanceof Error && e.name === "AbortError")) {
+          const ok = await copyText(s.text);
+          if (ok) {
+            sent("copy", s);
+            msg.textContent = "글을 복사했어요. 메신저에 붙여 넣어 보내세요.";
+          } else {
+            msg.textContent = "복사하지 못했어요. 위 글을 길게 눌러 직접 복사해 주세요.";
+            selectAll();
+          }
+        }
+      } finally {
+        send.removeAttribute("aria-disabled");
+      }
+    });
+    copy.className = "hc-act hc-act-sub";
+    btns.append(send, copy);
+  } else {
+    copy.className = "hc-act";
+    btns.append(copy);
+  }
+  b.append(btns, msg, el("p", "이 글은 이 기기에서 만들어요. 위 버튼을 누르기 전에는 어디로도 나가지 않아요.", "hc-note"));
+  scrollDown();
+}
+
 /* ── 글로 물을 때 ─────────────────────────────────────── */
 
 /** bare: 오류·한도 안내 — 답이 아니므로 관련 글 상자를 붙이지 않는다. 말풍선을 돌려준다(다시 보내기 버튼을 달 수 있게) */
-function botAnswer(r: Res, bare = false) {
+function botAnswer(r: Res, bare = false, fb?: { slot: "ai" | "bank"; id?: string }) {
   const b = bubble("bot", (r.text ?? "답을 만들지 못했어요.").replace(/\s+·\s+/g, "\n· "));
   if (r.lines?.length) {
     const dl = el("dl");
@@ -1108,6 +1459,7 @@ function botAnswer(r: Res, bare = false) {
   if (r.sources?.length) b.append(sourcesEl(r.sources));
   if (!bare) b.append(relatedEl(r.lines?.length ? ["calc", "checklist"] : ["checklist", "calc"]));
   if (r.note) b.append(el("p", r.note, "hc-note"));
+  if (fb && !bare) b.append(feedbackEl(fb.slot, fb.id));
   scrollDown();
   return b;
 }
@@ -1122,7 +1474,7 @@ function chipsBack() {
   }
   const saved = loadPlan();
   showChips([
-    saved ? { label: "지난번 내 일정 다시 보기", run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved)) } : { label: "일정 짜기", run: () => (say("일정 짜기"), startPlan()) },
+    saved ? { label: "지난번 내 일정 다시 보기", run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved, { returning: true })) } : { label: "일정 짜기", run: () => (say("일정 짜기"), startPlan()) },
     { label: "보증 계산", run: () => (say("보증 되는지 계산해 볼래요"), startCalc()) },
     { label: "처음으로", run: restart },
   ]);
@@ -1168,7 +1520,7 @@ async function send(q: string) {
   const banked = matchAnswer(text);
   if (banked) {
     const a = banked.answer;
-    botAnswer({ ok: true, text: a.a, sources: sourcesFor(a.cite), note: BANK_NOTE });
+    botAnswer({ ok: true, text: a.a, sources: sourcesFor(a.cite), note: BANK_NOTE }, false, { slot: "bank", id: a.id });
     history.push({ role: "user", content: text }, { role: "assistant", content: a.a.slice(0, 500) });
     track("hug_chat_answer", { kind: "bank", id: a.id }, text);
     chipsBack();
@@ -1205,7 +1557,8 @@ async function askAi(text: string) {
       history.pop();
     } else if (!r.ok) throw new Error(String(res.status));
     else {
-      botAnswer(r);
+      // 근거나 계산 줄이 있는 답에만 엄지를 붙인다 — 답을 못 한 글에는 붙이지 않는다
+      botAnswer(r, false, r.lines || r.sources?.length ? { slot: "ai" } : undefined);
       const linesTxt = r.lines?.map((l) => `${l.label}: ${l.value}`).join("\n");
       history.push({ role: "assistant", content: [r.text ?? "", linesTxt].filter(Boolean).join("\n").slice(0, 500) });
       track("hug_chat_answer", { kind: r.lines ? "check" : r.sources?.length ? "kb" : "fallback" });
@@ -1247,23 +1600,26 @@ function restart() {
   showChips([]);
   greet();
   window.scrollTo({ top: 0 });
+  syncInstall();
   track("hug_chat_reset");
 }
 reset?.addEventListener("click", restart);
 
 // 글 페이지 입구에서 단계를 골라 들어오면(?s=house) 바로 그 단계로. ?s=plan 은 저장된 내 일정 보기
 const entry = new URLSearchParams(location.search).get("s");
+// 공유 링크(utm_source=share)로 연 사람 — 서버에는 hug_open 의 키 contract-share 로만 구별해 센다
+const fromShare = new URLSearchParams(location.search).get("utm_source") === "share";
 const first = STAGES.find((x) => x.id === entry);
 const savedAtStart = loadPlan();
 // 하던 계산·일정이 있으면 첫 인사 대신 이어하기 카드(입구에서 단계를 골라 온 경우는 그 단계가 먼저)
 const resumeAtStart = entry ? null : loadResume();
 if (resumeAtStart) offerResume(resumeAtStart);
 // 주소가 갈래를 골라 줬으면 버튼 묶음 없이 한 줄 소개만 하고 바로 그 흐름으로
-else greet(!!first || entry === "plan");
+else greet(!!first || entry === "plan", first?.id === "contract" && !savedAtStart && fromShare);
 if (first?.id === "contract" && savedAtStart) {
   // 이미 만든 일정이 있는데 말없이 새로 묻지 않는다 — 먼저 보여 주고 '날짜 다시 넣기'를 앞에 둔다
   bubble("bot", "이 브라우저에 저장된 일정이 있어서 먼저 보여 드려요. 날짜를 새로 넣으려면 아래 '날짜 다시 넣기'를 눌러 주세요.");
-  showPlan(savedAtStart);
+  showPlan(savedAtStart, { returning: true });
 } else if (first) {
   // 사용자가 누른 게 아니라 주소(?s=)가 고른 것 — "쓴 사람"으로 세지 않는다
   quiet = true;
@@ -1271,7 +1627,7 @@ if (first?.id === "contract" && savedAtStart) {
   quiet = false;
 } else if (entry === "plan" && savedAtStart) {
   say("지난번 내 일정 다시 보기");
-  showPlan(savedAtStart);
+  showPlan(savedAtStart, { returning: true });
 } else if (entry === "plan") {
   // 저장된 일정이 없는 첫 방문 — 일정 짜기 시작으로 잇는다
   const b = bubble("bot", "저장된 일정이 없어요. 이 브라우저에서 만든 일정만 다시 볼 수 있어요. 날짜를 넣어 새로 만들까요?");
@@ -1283,4 +1639,4 @@ if (first?.id === "contract" && savedAtStart) {
   ]);
 }
 // 화면을 연 횟수(관리자 화면의 "연 사람"). 무엇을 눌렀는지는 위 track 이 따로 센다
-track("hug_open", entry ? { id: entry } : {});
+track("hug_open", entry ? { id: entry === "contract" && fromShare ? "contract-share" : entry } : {});
