@@ -84,6 +84,7 @@ export default defineConfig({
         !ARTBOARD.test(page) &&
         !page.includes("/link/") &&
         !page.includes("/design/") &&
+        !page.includes("/admin/") &&
         !page.includes("/jeonse-chat/"),
       serialize(item) {
         const date = DATES[new URL(item.url).pathname];

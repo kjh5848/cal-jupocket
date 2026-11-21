@@ -40,3 +40,12 @@ CREATE TABLE IF NOT EXISTS chat_questions (
   query_json TEXT
 );
 CREATE INDEX IF NOT EXISTS chat_questions_day ON chat_questions (asked_on);
+
+-- 전세 도우미 사용 집계(2026-11-21). 날짜·이벤트 이름·버튼 키별 횟수뿐 — 누가 눌렀는지는 없다
+CREATE TABLE IF NOT EXISTS chat_stats (
+  day TEXT NOT NULL,
+  name TEXT NOT NULL,
+  key TEXT NOT NULL DEFAULT '',
+  n INTEGER NOT NULL,
+  PRIMARY KEY (day, name, key)
+);

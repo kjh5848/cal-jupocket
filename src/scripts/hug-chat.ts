@@ -48,8 +48,18 @@ let history: Msg[] = [];
 let busy = false;
 let level: Level | null = null;
 
-const track = (name: string, p: Record<string, unknown> = {}) => {
+/**
+ * GA4 와 함께 우리 서버에도 횟수만 센다(관리자 화면 /admin/). 보내는 것은 이벤트 이름과 버튼 키뿐이고,
+ * q 는 미리 준비한 답으로 답한 글 질문일 때만 넣는다 — GA4 로는 보내지 않는다.
+ */
+const track = (name: string, p: Record<string, unknown> = {}, q?: string) => {
   if (typeof window.gtag === "function") window.gtag("event", name, p);
+  try {
+    const k = String(p.id ?? p.stage ?? p.kind ?? p.a ?? p.level ?? p.at ?? "").slice(0, 40);
+    navigator.sendBeacon(`${PUSH_API}/api/ev`, JSON.stringify({ n: name, k, page: location.pathname, ...(q ? { q: q.slice(0, 500) } : {}) }));
+  } catch {
+    /* 집계는 실패해도 화면에 영향이 없다 */
+  }
 };
 const todayDay = () => {
   const n = new Date();
@@ -856,7 +866,7 @@ async function send(q: string) {
     const a = banked.answer;
     botAnswer({ ok: true, text: a.a, sources: sourcesFor(a.cite), note: BANK_NOTE });
     history.push({ role: "user", content: text }, { role: "assistant", content: a.a.slice(0, 500) });
-    track("hug_chat_answer", { kind: "bank", id: a.id });
+    track("hug_chat_answer", { kind: "bank", id: a.id }, text);
     return;
   }
 
@@ -939,3 +949,5 @@ else if (entry === "plan" && savedAtStart) {
   say("지난번 내 일정 다시 보기");
   showPlan(savedAtStart);
 }
+// 화면을 연 횟수(관리자 화면의 "연 사람"). 무엇을 눌렀는지는 위 track 이 따로 센다
+track("hug_open", entry ? { id: entry } : {});

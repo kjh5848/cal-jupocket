@@ -3,7 +3,7 @@
  *
  * 몸통: { messages: [{role, content}…], page, level? }. level(new|some|ready)은 첫 화면의 "얼마나 아세요" 선택. 대화는 서버에 남지 않고 매번 클라이언트가 최근 대화를 보낸다.
  * 모델은 src/lib/hug-kb 자료만 보고 답하고, src/lib/hug-chat-core 가 답의 숫자·인용·계산값을 검사한다.
- * 답하지 못한 질문만 글감으로 chat_questions 에 남긴다(IP 없음).
+ * 글로 적은 질문은 chat_questions 에 남긴다(IP 없음, 180일). kind 로 답했는지 가린다.
  */
 import { SYSTEM, LEVEL_HINT, levelOf, cleanHistory, readModel, numbersGrounded, checkAnswer, sourcesFor, relevantKb, FALLBACK, NOTE, type Msg } from "../../../src/lib/hug-chat-core";
 import Anthropic from "@anthropic-ai/sdk";
@@ -142,14 +142,14 @@ export async function hugChat(body: Record<string, unknown> | null, env: HugEnv,
 
   if (!reply && aiDown) return { status: 429, body: { ok: false, error: "ai", ...(opts.debug ? { debug: raws } : {}) } };
   const answered = reply && (reply.lines || reply.sources?.length);
-  if (!answered) {
-    const save = env.DB.prepare("INSERT INTO chat_questions (asked_on, page, question, kind, query_json) VALUES (?1, ?2, ?3, ?4, ?5)")
-      .bind(opts.day, page, question, reply ? "hug-nocite" : "hug-fallback", "{}")
-      .run()
-      .catch(() => {});
-    if (opts.waitUntil) opts.waitUntil(save);
-    else await save;
-  }
+  // 글로 적은 질문은 답했든 못 했든 남긴다(2026-11-21) — 무엇을 묻는지 보고 답변 모음·글감을 고친다. IP·기기 정보는 없다
+  const kind = !reply ? "hug-fallback" : reply.lines ? "hug-check" : answered ? "hug-ok" : "hug-nocite";
+  const save = env.DB.prepare("INSERT INTO chat_questions (asked_on, page, question, kind, query_json) VALUES (?1, ?2, ?3, ?4, ?5)")
+    .bind(opts.day, page, question, kind, "{}")
+    .run()
+    .catch(() => {});
+  if (opts.waitUntil) opts.waitUntil(save);
+  else await save;
   const out = reply ?? { ok: true, text: FALLBACK };
   return { status: 200, body: opts.debug ? { ...out, debug: raws } : out };
 }

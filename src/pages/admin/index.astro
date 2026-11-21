@@ -1,0 +1,241 @@
+---
+/**
+ * 관리자 화면 — 전세 도우미를 누가 얼마나 쓰는지, 무엇을 묻는지 본다(2026-11-21).
+ *
+ * 이 페이지 자체에는 아무 숫자도 없다. 열쇠(ADMIN_KEY)를 넣으면 api.jupocket.com/admin/stats 에서
+ * 받아 와 그린다. 열쇠는 이 브라우저(localStorage)에만 둔다.
+ *
+ * 내부용이라 noindex + 사이트맵 제외 + robots.txt Disallow.
+ * 질문 문장은 사용자가 적은 글이라 textContent 로만 넣는다(innerHTML 금지).
+ */
+import BaseHead from "../../components/BaseHead.astro";
+import "../../styles/global.css";
+
+const title = "관리자 — JU포켓";
+const description = "전세 도우미 사용 현황과 사용자가 적은 질문.";
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <BaseHead title={title} description={description} />
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body>
+    <main class="adm">
+      <header class="adm-top">
+        <h1>전세 도우미 사용 현황</h1>
+        <p class="adm-sub" id="adm-range">열쇠를 넣으면 최근 60일을 보여 줘요.</p>
+      </header>
+
+      <form class="adm-key" id="adm-key">
+        <label for="adm-k">관리자 열쇠</label>
+        <input id="adm-k" type="password" autocomplete="off" placeholder="cal/.env 의 ADMIN_KEY" />
+        <button type="submit">열기</button>
+        <button type="button" id="adm-out" hidden>열쇠 지우기</button>
+      </form>
+      <p class="adm-msg" id="adm-msg" role="status"></p>
+
+      <div id="adm-body" hidden>
+        <section>
+          <h2>한눈에</h2>
+          <div class="adm-tiles" id="adm-tiles"></div>
+        </section>
+
+        <section>
+          <h2>날짜별</h2>
+          <p class="adm-note">연 사람은 화면을 연 사람, 쓴 사람은 버튼을 누르거나 글을 보낸 사람이에요. 같은 사람이 다른 날 오면 다시 세요.</p>
+          <div class="adm-scroll"><table id="adm-days"></table></div>
+        </section>
+
+        <section>
+          <h2>무엇을 눌렀나 (60일 합계)</h2>
+          <div class="adm-cols" id="adm-keys"></div>
+        </section>
+
+        <section>
+          <h2>글로 적은 질문</h2>
+          <p class="adm-note">최근 300건. 이름·전화번호가 섞여 있을 수 있으니 밖으로 옮기지 마세요.</p>
+          <div class="adm-filter" id="adm-filter"></div>
+          <div class="adm-scroll"><table id="adm-q"></table></div>
+        </section>
+      </div>
+    </main>
+
+    <style>
+      .adm { max-width: 60rem; margin: 0 auto; padding-block: 2rem 4rem; padding-inline: 1rem; display: grid; gap: 1.5rem; }
+      .adm h1 { font-size: 1.5rem; margin: 0; }
+      .adm h2 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+      .adm-sub, .adm-note, .adm-msg { color: var(--muted); font-size: 0.9rem; margin: 0.25rem 0 0.5rem; }
+      .adm-key { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+      .adm-key input { flex: 1 1 14rem; min-width: 0; padding: 0.6rem 0.75rem; border: 1px solid var(--rule); border-radius: var(--r-md); background: var(--surface); color: var(--text); font: inherit; }
+      .adm-key button, .adm-filter button { padding: 0.6rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--r-md); background: var(--surface); color: var(--text); font: inherit; cursor: pointer; }
+      .adm-key button[type="submit"], .adm-filter button[aria-pressed="true"] { background: var(--brand); color: var(--bg); border-color: var(--brand); }
+      .adm-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.75rem; }
+      .adm-tile { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-md); padding: 0.9rem 1rem; }
+      .adm-tile b { display: block; font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+      .adm-tile span { color: var(--muted); font-size: 0.85rem; }
+      .adm-scroll { overflow-x: auto; }
+      .adm table { border-collapse: collapse; width: 100%; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+      .adm th, .adm td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+      .adm th { color: var(--muted); font-weight: 600; white-space: nowrap; }
+      .adm td.num, .adm th.num { text-align: right; }
+      .adm td.q { min-width: 16rem; word-break: break-word; }
+      .adm-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; }
+      .adm-cols h3 { font-size: 0.95rem; margin: 0 0 0.25rem; }
+      .adm-filter { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+      .adm-filter button { padding: 0.35rem 0.7rem; font-size: 0.85rem; border-radius: var(--r-pill); }
+    </style>
+
+    <script>
+      import { PUSH_API } from "../../data/push";
+
+      interface Day { day: string; users: number; active: number; events: Record<string, number> }
+      interface Q { asked_on: string; page: string; kind: string; question: string; query_json: string }
+      interface Stats { ok: boolean; today: string; from: string; days: Day[]; keys: Record<string, Record<string, number>>; questions: Q[]; push: { subs: number; pending: number } }
+
+      const KEY = "jp-admin-key";
+      const $ = (id: string) => document.getElementById(id)!;
+      const form = $("adm-key") as HTMLFormElement;
+      const input = $("adm-k") as HTMLInputElement;
+      const msg = $("adm-msg");
+      const out = $("adm-out");
+
+      // 이벤트 이름을 사람이 읽는 말로
+      const EVENT: Record<string, string> = {
+        hug_open: "화면 열기",
+        hug_chat_stage: "첫 갈래 고르기",
+        hug_guide: "상황 안내 보기",
+        hug_term: "용어 풀이",
+        hug_plan_done: "일정 짜기 끝",
+        hug_chat_calc: "보증 계산 끝",
+        hug_chat_send: "AI에게 글 보내기",
+        hug_chat_answer: "글 질문에 답함",
+        hug_quiz_done: "수준 확인 끝",
+        hug_quiz_unknown: "모르는 용어",
+        hug_refusal: "거절 사유 확인",
+        hug_resume: "이어하기",
+        hug_chat_reset: "새 대화",
+      };
+      const KIND: Record<string, string> = {
+        "hug-bank": "준비한 답",
+        "hug-ok": "AI가 자료로 답함",
+        "hug-check": "AI가 계산함",
+        "hug-nocite": "근거 없이 답함",
+        "hug-fallback": "답 못 함",
+      };
+      // 날짜별 표에 세울 열
+      const COLS = ["hug_chat_stage", "hug_guide", "hug_term", "hug_plan_done", "hug_chat_calc", "hug_chat_send"];
+
+      const el = (tag: string, text?: string | number, cls?: string) => {
+        const e = document.createElement(tag);
+        if (text !== undefined) e.textContent = String(text);
+        if (cls) e.className = cls;
+        return e;
+      };
+      const row = (cells: [string | number, string?][], tag = "td") => {
+        const tr = document.createElement("tr");
+        for (const [t, c] of cells) tr.append(el(tag, t, c));
+        return tr;
+      };
+      const sum = (days: Day[], f: (d: Day) => number) => days.reduce((t, d) => t + f(d), 0);
+
+      function tile(n: number | string, label: string) {
+        const d = el("div", undefined, "adm-tile");
+        d.append(el("b", n), el("span", label));
+        return d;
+      }
+
+      function draw(s: Stats) {
+        $("adm-range").textContent = `${s.from} ~ ${s.today} (한국 날짜)`;
+        const last7 = s.days.filter((d) => d.day > new Date(Date.parse(`${s.today}T00:00:00Z`) - 7 * 86_400_000).toISOString().slice(0, 10));
+        const todayRow = s.days.find((d) => d.day === s.today);
+        $("adm-tiles").replaceChildren(
+          tile(todayRow?.users ?? 0, "오늘 연 사람"),
+          tile(todayRow?.active ?? 0, "오늘 쓴 사람"),
+          tile(sum(last7, (d) => d.users), "최근 7일 연 사람"),
+          tile(sum(last7, (d) => d.active), "최근 7일 쓴 사람"),
+          tile(sum(last7, (d) => d.events.hug_plan_done ?? 0), "7일 일정 짜기"),
+          tile(sum(last7, (d) => d.events.hug_chat_calc ?? 0), "7일 보증 계산"),
+          tile(s.questions.length, "60일 글 질문"),
+          tile(s.push.subs, "알림 구독"),
+        );
+
+        const days = $("adm-days");
+        days.replaceChildren(row([["날짜"], ["연 사람", "num"], ["쓴 사람", "num"], ...COLS.map((c): [string, string] => [EVENT[c], "num"])], "th"));
+        if (!s.days.length) days.append(row([["아직 기록이 없어요. 집계는 2026-11-21 배포 뒤부터 쌓여요."]]));
+        for (const d of s.days) days.append(row([[d.day], [d.users, "num"], [d.active, "num"], ...COLS.map((c): [number, string] => [d.events[c] ?? 0, "num"])]));
+
+        const keys = $("adm-keys");
+        keys.replaceChildren();
+        for (const [name, m] of Object.entries(s.keys).sort((a, b) => (EVENT[a[0]] ?? a[0]).localeCompare(EVENT[b[0]] ?? b[0], "ko"))) {
+          const box = el("div");
+          box.append(el("h3", EVENT[name] ?? name));
+          const t = document.createElement("table");
+          for (const [k, n] of Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 12)) t.append(row([[k], [n, "num"]]));
+          box.append(t);
+          keys.append(box);
+        }
+        if (!keys.children.length) keys.append(el("p", "아직 기록이 없어요.", "adm-note"));
+
+        drawQuestions(s.questions, "");
+      }
+
+      function drawQuestions(list: Q[], kind: string) {
+        const counts: Record<string, number> = {};
+        for (const q of list) counts[q.kind] = (counts[q.kind] ?? 0) + 1;
+        const filter = $("adm-filter");
+        filter.replaceChildren();
+        for (const [k, label] of [["", `전체 ${list.length}`], ...Object.entries(counts).map(([k, n]): [string, string] => [k, `${KIND[k] ?? k} ${n}`])]) {
+          const b = el("button", label) as HTMLButtonElement;
+          b.type = "button";
+          b.setAttribute("aria-pressed", String(k === kind));
+          b.addEventListener("click", () => drawQuestions(list, k));
+          filter.append(b);
+        }
+        const t = $("adm-q");
+        t.replaceChildren(row([["날짜"], ["결과"], ["질문"]], "th"));
+        const shown = list.filter((q) => !kind || q.kind === kind);
+        if (!shown.length) t.append(row([["아직 질문이 없어요."]]));
+        for (const q of shown) t.append(row([[q.asked_on], [KIND[q.kind] ?? q.kind], [q.question, "q"]]));
+      }
+
+      async function load(key: string) {
+        msg.textContent = "불러오는 중…";
+        try {
+          const res = await fetch(`${PUSH_API}/admin/stats`, { headers: { "X-Admin-Key": key } });
+          if (res.status === 403) {
+            localStorage.removeItem(KEY);
+            msg.textContent = "열쇠가 맞지 않아요.";
+            return;
+          }
+          const s = (await res.json()) as Stats;
+          if (!s.ok) throw new Error("bad");
+          localStorage.setItem(KEY, key);
+          msg.textContent = "";
+          out.hidden = false;
+          $("adm-body").hidden = false;
+          draw(s);
+        } catch {
+          msg.textContent = "서버에서 받아 오지 못했어요. 잠시 뒤 다시 열어 주세요.";
+        }
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (input.value.trim()) load(input.value.trim());
+      });
+      out.addEventListener("click", () => {
+        localStorage.removeItem(KEY);
+        location.reload();
+      });
+      let saved: string | null = null;
+      try {
+        saved = localStorage.getItem(KEY);
+      } catch {
+        /* 저장소를 못 쓰면 매번 넣는다 */
+      }
+      if (saved) load(saved);
+    </script>
+  </body>
+</html>

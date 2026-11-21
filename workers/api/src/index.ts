@@ -5,6 +5,8 @@
  *   POST /api/chat/eval     모델 비교용(EVAL_KEY 헤더가 맞을 때만) — 모델이 뽑은 값과 걸린 시간
  *   POST /push/subscribe    구독 + 일정 저장(같은 구독이면 아직 안 보낸 알림을 새 일정으로 바꾼다)
  *   POST /push/unsubscribe  구독과 알림을 지운다
+ *   POST /api/ev            전세 도우미 사용 집계(stats.ts) — 이벤트 이름·버튼 키별 횟수, 미리 준비한 답으로 답한 질문 문장
+ *   GET  /admin/stats       관리자 화면용 집계(ADMIN_KEY 헤더가 맞을 때만)
  *   GET  /health
  *   예약 작업(매일 00:00 UTC = 09:00 KST) 오늘 보낼 알림을 보낸다
  *
@@ -14,6 +16,8 @@ import { sendPush, type Vapid } from "./webpush";
 import { expandReminders, validEndpoint, todayKst, addDays } from "./reminders";
 import { extractWithModel } from "./chat";
 import { hugChat } from "./hug-chat";
+import { hashIp, bump } from "./chat";
+import { cleanEvent, adminStats } from "./stats";
 
 export interface Env {
   DB: D1Database;
@@ -22,6 +26,8 @@ export interface Env {
   AI: Ai;
   CHAT_MODEL?: string;
   EVAL_KEY?: string;
+  /** 관리자 화면(/admin/) 열쇠 — 없으면 /admin/stats 는 늘 403 */
+  ADMIN_KEY?: string;
 }
 
 const ORIGINS = new Set(["https://jupocket.com", "https://www.jupocket.com", "http://localhost:4321"]);
@@ -30,7 +36,7 @@ const SUBJECT = "https://jupocket.com";
 function cors(req: Request): Record<string, string> {
   const o = req.headers.get("Origin") ?? "";
   return ORIGINS.has(o)
-    ? { "Access-Control-Allow-Origin": o, "Access-Control-Allow-Methods": "POST, GET, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400", Vary: "Origin" }
+    ? { "Access-Control-Allow-Origin": o, "Access-Control-Allow-Methods": "POST, GET, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, X-Admin-Key", "Access-Control-Max-Age": "86400", Vary: "Origin" }
     : {};
 }
 
@@ -40,6 +46,23 @@ const json = (req: Request, data: unknown, status = 200) =>
 async function subId(endpoint: string): Promise<string> {
   const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(endpoint));
   return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** 이벤트 한 건을 센다. 사람 수는 날짜와 섞은 IP 해시가 그날 처음 보일 때만 +1(해시는 다음 날 지운다) */
+async function record(env: Env, ev: NonNullable<ReturnType<typeof cleanEvent>>, ip: string): Promise<void> {
+  const day = todayKst();
+  const ipKey = await hashIp(ip, day);
+  if ((await bump(env, `ev:${ipKey}`, day)) > 400) return;
+  const inc = (name: string, key = "") =>
+    env.DB.prepare("INSERT INTO chat_stats (day, name, key, n) VALUES (?1, ?2, ?3, 1) ON CONFLICT(day, name, key) DO UPDATE SET n = n + 1").bind(day, name, key).run();
+  await inc(ev.n, ev.k);
+  if ((await bump(env, `u:${ipKey}`, day)) === 1) await inc("users");
+  if (ev.n !== "hug_open" && (await bump(env, `a:${ipKey}`, day)) === 1) await inc("active");
+  if (ev.q) {
+    await env.DB.prepare("INSERT INTO chat_questions (asked_on, page, question, kind, query_json) VALUES (?1, ?2, ?3, ?4, ?5)")
+      .bind(day, ev.page, ev.q, "hug-bank", JSON.stringify({ id: ev.k }))
+      .run();
+  }
 }
 
 const vapidOf = (env: Env): Vapid => ({ publicKey: env.VAPID_PUBLIC, privateKey: env.VAPID_PRIVATE, subject: SUBJECT });
@@ -146,6 +169,8 @@ export async function sendDue(env: Env, today = todayKst()): Promise<{ sent: num
   await env.DB.prepare("DELETE FROM chat_rate WHERE day < ?1").bind(today).run();
   // 글감으로 모은 질문은 180일만 둔다(개인정보 처리방침과 같은 기간)
   await env.DB.prepare("DELETE FROM chat_questions WHERE asked_on < ?1").bind(addDays(today, -180)).run();
+  // 사용 집계는 횟수뿐이라 400일 둔다(작년 같은 달과 견주려고)
+  await env.DB.prepare("DELETE FROM chat_stats WHERE day < ?1").bind(addDays(today, -400)).run();
   return { sent, gone, failed };
 }
 
@@ -160,6 +185,17 @@ export default {
       const debug = !!env.EVAL_KEY && req.headers.get("X-Eval-Key") === env.EVAL_KEY;
       const r = await hugChat(await readBody(req), env, { ip: req.headers.get("CF-Connecting-IP") ?? "", day: todayKst(), waitUntil: (p) => ctx.waitUntil(p), debug });
       return json(req, r.body, r.status);
+    }
+    if (req.method === "POST" && pathname === "/api/ev") {
+      const ev = cleanEvent(await readBody(req));
+      if (!ev) return json(req, { ok: false }, 400);
+      ctx.waitUntil(record(env, ev, req.headers.get("CF-Connecting-IP") ?? "").catch(() => {}));
+      return json(req, { ok: true });
+    }
+    if (req.method === "GET" && pathname === "/admin/stats") {
+      const k = req.headers.get("X-Admin-Key") ?? "";
+      if (!env.ADMIN_KEY || k.length !== env.ADMIN_KEY.length || k !== env.ADMIN_KEY) return json(req, { ok: false }, 403);
+      return json(req, await adminStats(env, todayKst()));
     }
     if (req.method === "POST" && pathname === "/api/chat/eval") {
       if (!env.EVAL_KEY || req.headers.get("X-Eval-Key") !== env.EVAL_KEY) return json(req, { ok: false }, 403);
