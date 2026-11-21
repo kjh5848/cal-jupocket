@@ -1,21 +1,21 @@
 ---
 /**
- * 글 페이지 안의 "HUG 전세보증 AI와 대화하기" 입구 — 대화는 /jeonse-chat/ 전체 화면에서 한다.
+ * 글 페이지 안의 전세 도우미 입구(주 버튼은 계약 날짜로 할 일 뽑기 — ?s=contract) — 대화는 /jeonse-chat/ 전체 화면에서 한다.
  * (2026-11-08: 글 안에 끼운 채팅은 좁고 안쪽 스크롤이 생겨 Claude·GPT 같은 별도 화면으로 옮김)
  */
 const STARTS = [
-  { s: "calc", label: "보증 되는지 계산" },
-  { s: "contract", label: "계약 날짜로 일정 짜기" },
-  { s: "trouble", label: "집주인과 문제가 생겼어요" },
+  { href: "/jeonse-chat/?s=calc", label: "보증 되는지 계산" },
+  { href: "/jeonse-chat/?s=trouble", label: "보증금을 못 받고 있어요" },
+  { href: "/jeonse-chat/", label: "다른 것부터 물어보기" },
 ];
 ---
 
 <section class="hce" aria-labelledby="hce-h">
-  <p class="hce-h" id="hce-h">JU포켓 전세 도우미와 대화하기</p>
-  <p class="hce-p">어디서부터 알아볼지 몰라도 괜찮아요. 아는 만큼 여쭤보고 용어 설명, 보증 가입·보증료 계산, 할 일 날짜와 알림까지 대화로 안내해요. 로그인은 필요 없어요. HUG가 아닌 JU포켓이 만든 비공식 안내예요.</p>
-  <a class="hce-go" href="/jeonse-chat/">대화 시작하기 →</a>
+  <p class="hce-h" id="hce-h">계약 날짜로 할 일 뽑기 <span class="hce-by">JU포켓 전세 도우미</span></p>
+  <p class="hce-p">계약일과 잔금일만 넣으면 전입신고·보증 가입 기한이 날짜순으로 나와요. 로그인 없이 써요. HUG가 아닌 JU포켓이 만든 비공식 안내예요.</p>
+  <a class="hce-go" href="/jeonse-chat/?s=contract">날짜 넣고 할 일 보기 →</a>
   <div class="hce-chips">
-    {STARTS.map((x) => <a href={`/jeonse-chat/?s=${x.s}`}>{x.label}</a>)}
+    {STARTS.map((x) => <a href={x.href}>{x.label}</a>)}
   </div>
 </section>
 
@@ -33,6 +33,13 @@ const STARTS = [
     margin: 0;
     font-size: var(--t-lg);
     font-weight: 800;
+  }
+  .hce-by {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    color: var(--muted);
   }
   .hce-p {
     margin: 0;
@@ -59,7 +66,7 @@ const STARTS = [
   .hce-chips a {
     display: inline-flex;
     align-items: center;
-    min-height: 38px;
+    min-height: 44px;
     padding: 0 0.9rem;
     font-size: var(--t-sm);
     color: var(--text);

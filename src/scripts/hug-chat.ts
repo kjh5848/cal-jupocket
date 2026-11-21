@@ -3,7 +3,7 @@
  *
  * 화면: 내 말은 오른쪽 말풍선, 도우미 답은 왼쪽 본문. 페이지가 스크롤되고 입력창은 아래에 붙는다.
  *
- * 1. 처음에 "지금 어느 단계세요?"를 묻는다(집 보는 중 / 계약함 / 살고 있음 / 문제가 생김)
+ * 1. 첫 인사에서 "하려는 일"을 고른다(계약 날짜로 할 일 뽑기 / 보증 계산 / 보증금을 못 받음 / 집 보는 중 · 작게: 처음이에요 / 살고 있음)
  * 2. 일정 짜기: 계약일 → 잔금일 → 전입일 → 계약기간을 하나씩 묻고, 날짜·요일·D-day 로 할 일을 보여 준다
  *    (계산은 lib/jeonse-guide plan() → hugSchedule()). 일정은 이 브라우저에만 저장(jeonse-plan-store)
  * 3. 상황 안내·집주인 연락 기록·용어 뜻은 lib/jeonse-guide 의 확인된 자료로 바로 답한다(AI 안 씀)
@@ -52,8 +52,18 @@ let level: Level | null = null;
  * GA4 와 함께 우리 서버에도 횟수만 센다(관리자 화면 /admin/). 보내는 것은 이벤트 이름과 버튼 키뿐이고,
  * q 는 미리 준비한 답으로 답한 글 질문일 때만 넣는다 — GA4 로는 보내지 않는다.
  */
+let quiet = false;
+const isSelf = (() => {
+  try {
+    return localStorage.getItem("jp-admin-self") === "1";
+  } catch {
+    return false;
+  }
+})();
 const track = (name: string, p: Record<string, unknown> = {}, q?: string) => {
   if (typeof window.gtag === "function") window.gtag("event", name, p);
+  // 관리자 화면을 연 브라우저(운영자 본인)와, 입구 링크가 대신 골라 준 갈래는 세지 않는다
+  if (quiet || isSelf) return;
   try {
     const k = String(p.id ?? p.stage ?? p.kind ?? p.a ?? p.level ?? p.at ?? "").slice(0, 40);
     navigator.sendBeacon(`${PUSH_API}/api/ev`, JSON.stringify({ n: name, k, page: location.pathname, ...(q ? { q: q.slice(0, 500) } : {}) }));
@@ -80,7 +90,9 @@ function scrollDown() {
 function bubble(who: "user" | "bot", text?: string) {
   if (reset) reset.hidden = false;
   if (who === "user") {
-    const u = el("div", text, "hc-user");
+    // 낭독기가 누구 말인지 알게 숨은 이름을 붙인다(도우미 쪽은 보이는 이름 "전세 도우미"가 있다)
+    const u = el("div", undefined, "hc-user");
+    u.append(el("span", "내 말: ", "sr-only"), text ?? "");
     log?.append(u);
     scrollDown();
     return u;
@@ -223,7 +235,7 @@ function offerResume(r: Resume) {
   b.append(dl, el("p", "진행 상태는 이 브라우저에만 저장돼요. 하루가 지나면 지워져요.", "hc-note"));
   showChips([
     { label: "이어서 하기", primary: true, run: () => (say("이어서 하기"), track("hug_resume", { a: "yes", at: r.key }), (trail = []), at.run(r.state)) },
-    { label: "처음부터 새로", run: () => (track("hug_resume", { a: "no" }), clearResume(), restart()) },
+    { label: "처음으로", run: () => (track("hug_resume", { a: "no" }), clearResume(), restart()) },
   ]);
 }
 function goBack() {
@@ -231,13 +243,14 @@ function goBack() {
   const prev = trail.pop();
   if (!prev) return;
   // 열려 있던 날짜·금액 입력칸은 닫는다 — 남겨 두면 지나간 질문에 답이 들어간다
-  log?.querySelectorAll(".hc-date").forEach((r) => r.remove());
+  log?.querySelectorAll(".hc-date, .hc-err, .hc-unit").forEach((r) => r.remove());
   say("← 이전");
   prev.again();
 }
 function showChips(list: Chip[]) {
   if (!chips) return;
-  if (trail.length > 1) list = [...list, { label: "← 이전", run: goBack }];
+  // '← 이전'은 맨 앞 — 버튼이 많아 옆으로 넘어가도 늘 보인다
+  if (trail.length > 1) list = [{ label: "← 이전", run: goBack }, ...list];
   chips.replaceChildren(
     ...list.map((c) => {
       const b = el("button", c.label);
@@ -259,20 +272,21 @@ const say = (label: string) => {
 /* ── 단계 ─────────────────────────────────────────────── */
 
 const STAGES: { id: string; label: string; level: Level; run: () => void }[] = [
-  { id: "house", label: "집 보는 중이에요", level: "new", run: stageHouse },
-  { id: "contract", label: "계약했어요(날짜가 정해졌어요)", level: "ready", run: () => startPlan() },
-  { id: "calc", label: "보증 가입 되는지·보증료 계산", level: "some", run: () => startCalc() },
+  { id: "house", label: "아직 집 보는 중이에요", level: "new", run: stageHouse },
+  { id: "contract", label: "계약 날짜로 할 일 뽑기", level: "ready", run: () => startPlan() },
+  { id: "calc", label: "이 집, 보증 가입 되는지 계산", level: "some", run: () => startCalc() },
   { id: "living", label: "이미 살고 있어요", level: "some", run: stageLiving },
-  { id: "trouble", label: "집주인과 문제가 생겼어요", level: "some", run: stageTrouble },
+  { id: "trouble", label: "보증금을 못 받고 있어요", level: "some", run: stageTrouble },
 ];
 
 const STAGE_HINT: Record<string, string> = {
-  house: "집 찾는 법·보러 갈 때 볼 것·가격 확인",
-  contract: "계약일·잔금일로 할 일 날짜 짜기",
-  calc: "집값·보증금·근저당으로 가입 여부·보증료 추산",
+  house: "보러 갈 때 볼 것·가격 확인",
+  contract: "계약일·잔금일을 넣으면 날짜순으로 나와요",
+  calc: "집값·보증금·근저당으로 보증료까지",
   living: "보증 가입·갱신 통보 기한 확인",
-  trouble: "보증금을 못 받을 때·연락 기록 남기기",
+  trouble: "지금 할 일 순서와 연락 기록",
 };
+const stageOf = (id: string) => STAGES.find((s) => s.id === id)!;
 function pickStage(s: (typeof STAGES)[number]) {
   level = level ?? s.level;
   say(s.label);
@@ -283,6 +297,8 @@ interface Opt {
   label: string;
   hint: string;
   run: () => void;
+  /** main: 이 말풍선의 주인공 하나(가장 크게) · minor: 작게 */
+  kind?: "main" | "minor";
 }
 /** 말풍선 안의 고르기 버튼(카카오 챗봇 버튼처럼) */
 function optsEl(list: Opt[]) {
@@ -290,22 +306,35 @@ function optsEl(list: Opt[]) {
   for (const c of list) {
     const o = el("button");
     o.type = "button";
+    if (c.kind) o.className = `hc-opt-${c.kind}`;
     o.append(el("b", c.label), el("small", c.hint));
     o.addEventListener("click", () => !busy && c.run());
     box.append(o);
   }
   return box;
 }
-/** 첫 인사 — 처음부터 단계를 늘어놓지 않고 "어떤 상황인지"만 묻는다 */
-function greet() {
+const stageOpt = (id: string, kind?: Opt["kind"]): Opt => ({ label: stageOf(id).label, hint: STAGE_HINT[id], kind, run: () => pickStage(stageOf(id)) });
+/**
+ * 첫 인사 — "하려는 일"로 고르게 한다. 가장 큰 버튼은 '계약 날짜로 할 일 뽑기' 하나, '처음이에요'·'이미 살고 있어요'는 작게.
+ * short: 주소(?s=)가 갈래를 이미 고른 경우 — 버튼 묶음 없이 비공식 고지 한 줄만 하고 바로 그 흐름으로 간다.
+ */
+function greet(short = false) {
+  if (short) {
+    bubble("bot", "HUG가 아니라 JU포켓이 만든 비공식 안내예요. 전세 계약 날짜로 할 일을 뽑고, 보증 가입이 되는지 계산해 드려요.");
+    return;
+  }
   const saved = loadPlan();
-  const b = bubble("bot", "안녕하세요. HUG 전세보증을 대화로 같이 알아봐요.\n어디서부터 도와드릴까요?");
+  const nxt = saved ? nextItem(itemsOf(saved)) : undefined;
+  const b = bubble("bot", "전세 계약 날짜를 넣으면 할 일을 날짜순으로 뽑아 드려요.\nHUG가 아니라 JU포켓이 만든 비공식 안내예요. 무엇부터 할까요?");
   b.append(
     optsEl([
-      ...(saved ? [{ label: "지난번 내 일정 다시 보기", hint: "이 브라우저에 저장된 날짜로", run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved)) }] : []),
-      { label: "처음이에요", hint: "전세보증이 뭔지부터 차근차근", run: () => (say("처음이에요"), startQuiz()) },
-      { label: "알아보는 중이에요", hint: "집 보는 중·계약 앞뒤로 할 일과 계산", run: () => (say("알아보는 중이에요"), (level = "some"), askStage()) },
-      { label: "문제가 생겼는데 뭘 해야 할지 모르겠어요", hint: "보증금을 못 받을 때·집주인 연락", run: () => (say("문제가 생겼는데 뭘 해야 할지 모르겠어요"), (level = "some"), stageTrouble()) },
+      ...(saved ? [{ label: "지난번 내 일정 다시 보기", hint: nxt ? `${nxt.when} · ${nxt.dday} ${nxt.title}` : "이 브라우저에 저장된 날짜로", run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved)) }] : []),
+      stageOpt("contract", "main"),
+      stageOpt("calc"),
+      stageOpt("trouble"),
+      stageOpt("house"),
+      { label: "전세보증이 처음이에요", hint: "용어 4가지부터 짧게", kind: "minor", run: () => (say("전세보증이 처음이에요"), startQuiz()) },
+      stageOpt("living", "minor"),
     ]),
   );
   if (reset) reset.hidden = true;
@@ -438,7 +467,7 @@ function stageTrouble() {
   trail = [];
   const text = "많이 답답하시죠. 순서대로 같이 볼게요. 어떤 상황인지 골라 주시거나 아래 칸에 적어 주세요.";
   bubble("bot", text);
-  remember("집주인과 문제가 생겼어요", text);
+  remember("보증금을 못 받고 있어요", text);
   const g = (id: string) => guideChip(GUIDES.find((x) => x.id === id)!);
   showChips([g("not-returned"), g("landlord-gone"), g("after-accident"), g("no-guarantee"), g("product-kind"), g("renewal"), guideChip(CONTACT)]);
 }
@@ -512,26 +541,58 @@ function showTerm(name: string, fromUser?: string, next: Chip[] = [], seen: stri
 
 /* ── 일정 짜기 ────────────────────────────────────────── */
 
-/** 말풍선 안 날짜 입력 하나 — 확인을 누르면 done(날짜) */
-function askDate(question: string, hint: string, done: (v: string) => void) {
+let fieldSeq = 0;
+/** 입력칸 밑 오류 줄 — 칸과 이어서 읽히게 aria-describedby 로 묶는다 */
+function errLine(field: HTMLInputElement) {
+  const err = el("p", undefined, "hc-err");
+  err.id = `hc-err-${++fieldSeq}`;
+  err.hidden = true;
+  field.setAttribute("aria-describedby", err.id);
+  return {
+    err,
+    show(t: string) {
+      err.textContent = t;
+      err.hidden = false;
+      field.setAttribute("aria-invalid", "true");
+      field.focus();
+      scrollDown();
+    },
+    clear() {
+      err.hidden = true;
+      field.removeAttribute("aria-invalid");
+    },
+  };
+}
+const mdText = (v: string) => `${Number(v.slice(5, 7))}월 ${Number(v.slice(8, 10))}일`;
+
+/**
+ * 말풍선 안 날짜 입력 하나 — 확인을 누르면 done(날짜).
+ * min: 이 날짜 앞은 고를 수 없다 · check: 틀리면 오류 문구를 돌려준다(칸은 그대로 두고 그 자리에서 다시 고른다)
+ */
+function askDate(question: string, hint: string, done: (v: string) => void, opts: { min?: string; check?: (v: string) => string | undefined } = {}) {
   const b = bubble("bot", question);
   if (hint) b.append(el("p", hint, "hc-note"));
   const row = el("div", undefined, "hc-date");
   const d = el("input");
   d.type = "date";
-  d.min = "2000-01-01";
+  d.min = opts.min ?? "2000-01-01";
   d.max = "2099-12-31";
   d.setAttribute("aria-label", question);
   const ok = el("button", "확인");
   ok.type = "button";
+  const e = errLine(d);
+  d.addEventListener("input", e.clear);
   ok.addEventListener("click", () => {
-    if (!d.value || toDay(d.value) === null) return d.focus();
+    if (!d.value || toDay(d.value) === null) return e.show("날짜를 골라 주세요.");
+    const bad = opts.check?.(d.value);
+    if (bad) return e.show(bad);
     row.remove();
-    say(`${Number(d.value.slice(0, 4))}년 ${Number(d.value.slice(5, 7))}월 ${Number(d.value.slice(8, 10))}일`);
+    e.err.remove();
+    say(`${Number(d.value.slice(0, 4))}년 ${mdText(d.value)}`);
     done(d.value);
   });
   row.append(d, ok);
-  b.append(row);
+  b.append(row, e.err);
   scrollDown();
   showChips([]);
 }
@@ -550,14 +611,18 @@ function askContract(p: Partial<SavedPlan>) {
 }
 function askStart(p: Partial<SavedPlan>) {
   mark("plan-start", () => askStart(p), p);
-  askDate("잔금을 치르고 들어가는 날(잔금일)은요?", "", (s) => {
-    if (toDay(s)! < toDay(p.contract!)!) {
-      bubble("bot", "잔금일이 계약일보다 앞이에요. 다시 골라 주세요.");
-      return askStart(p);
-    }
-    p.start = s;
-    askMoveIn(p);
-  });
+  askDate(
+    "잔금을 치르고 들어가는 날(잔금일)은요?",
+    "",
+    (s) => {
+      p.start = s;
+      askMoveIn(p);
+    },
+    {
+      min: p.contract,
+      check: (s) => (toDay(s)! < toDay(p.contract!)! ? `잔금일이 계약일(${mdText(p.contract!)})보다 빨라요. 계약일과 같거나 그 뒤로 골라 주세요.` : undefined),
+    },
+  );
 }
 function askMoveIn(p: Partial<SavedPlan>) {
   mark("plan-movein", () => askMoveIn(p), p);
@@ -583,13 +648,17 @@ function askTerm(p: Partial<SavedPlan>) {
 }
 function askEnd(p: Partial<SavedPlan>) {
   mark("plan-end", () => askEnd(p), p);
-  askDate("계약이 끝나는 날은요?", "", (e) => finish({ ...p, end: e } as SavedPlan));
+  askDate("계약이 끝나는 날은요?", "", (e) => finish({ ...p, end: e } as SavedPlan), {
+    min: fromDay(toDay(p.start!)! + 1),
+    check: (e) => (toDay(e)! <= toDay(p.start!)! ? `만료일은 잔금일(${mdText(p.start!)}) 뒤여야 해요. 만료일만 다시 골라 주세요.` : undefined),
+  });
 }
 
 function finish(p: SavedPlan) {
   if (toDay(p.end)! <= toDay(p.start)!) {
-    bubble("bot", "만료일이 잔금일보다 앞이에요. 처음부터 다시 넣어 주세요.");
-    return startPlan();
+    // 틀린 것은 만료일 하나 — 앞의 세 답은 그대로 두고 만료일만 다시 묻는다
+    bubble("bot", "만료일이 잔금일보다 빨라요. 만료일만 다시 골라 주세요.");
+    return askEnd(p);
   }
   savePlan(p);
   clearResume();
@@ -601,8 +670,9 @@ function itemsOf(p: SavedPlan): PlanItem[] {
   return plan({ contract: toDay(p.contract)!, start: toDay(p.start)!, moveIn: toDay(p.moveIn)!, end: toDay(p.end)! }, todayDay());
 }
 
-function showPlan(p: SavedPlan) {
-  mark("plan-result", () => showPlan(p));
+/** againFirst: 입구 링크(?s=contract)로 왔는데 저장된 일정이 있어 먼저 보여 줄 때 — '날짜 다시 넣기'를 앞쪽에 둔다 */
+function showPlan(p: SavedPlan, againFirst = false) {
+  mark("plan-result", () => showPlan(p, againFirst));
   const items = itemsOf(p);
   const nxt = nextItem(items);
   const b = bubble("bot");
@@ -614,18 +684,29 @@ function showPlan(p: SavedPlan) {
   for (const i of items) {
     const li = el("li", undefined, i.past ? "hc-past" : i === nxt ? "hc-next" : undefined);
     li.append(el("b", `${i.when} · ${i.dday}`), el("span", i.title));
-    if (i.warn && !i.past) li.append(el("span", `⚠ ${i.warn}`, "hc-warn"));
+    if (i.warn && !i.past) {
+      // 글리프(⚠) 대신 글자 — 낭독기마다 다르게 읽거나 건너뛴다
+      const w = el("span", undefined, "hc-warn");
+      w.append(el("strong", "주의"), ` ${i.warn}`);
+      li.append(w);
+    }
     ol.append(li);
   }
-  b.append(ol, relatedEl(["checklist"]), el("p", "용어가 어려우면 아래 칸에 \"대항력이 뭐예요?\"처럼 물어보세요.", "hc-note"));
+  b.append(
+    ol,
+    el("p", "JU포켓이 법령·HUG 안내로 계산한 날짜예요. HUG가 정해 준 일정이 아니니 실제 기한은 HUG·은행에 확인하세요.", "hc-note"),
+    relatedEl(["checklist"]),
+    el("p", "용어가 어려우면 아래 칸에 \"대항력이 뭐예요?\"처럼 물어보세요.", "hc-note"),
+  );
   remember("내 전세 일정", items.map((i) => `${i.when} ${i.title}`).join(" / "));
   scrollDown();
+  const again: Chip = { label: "날짜 다시 넣기", run: () => (say("날짜 다시 넣기"), startPlan()) };
   showChips([
     { label: "알림 받기", primary: true, run: () => (say("알림 받을래요"), offerPush(items)) },
+    ...(againFirst ? [again] : []),
     { label: "내 캘린더에 넣기", run: () => (downloadIcs(items, "hug-chat-plan"), bubble("bot", "캘린더 파일(.ics)을 내려받았어요. 열면 휴대폰·PC 캘린더에 날짜가 들어가요.")) },
-    { label: "자세한 일정 표", run: () => (location.href = "/guide/hug-jeonse-checklist/#hs-card") },
     guideChip(CONTACT),
-    { label: "날짜 다시 넣기", run: () => (say("날짜 다시 넣기"), startPlan()) },
+    ...(againFirst ? [] : [again]),
     { label: "일정 지우기", run: () => (say("일정 지우기"), clearPlan(), bubble("bot", "이 브라우저에 저장된 일정을 지웠어요."), showStages()) },
   ]);
 }
@@ -642,15 +723,19 @@ function offerPush(items: PlanItem[]) {
   off.type = "button";
   off.hidden = true;
   b.append(btn, msg, off);
-  setupPush(btn, msg, off, () => items.map((i) => ({ key: i.key, date: fromDay(i.day) })));
+  setupPush(btn, msg, off, () => items.map((i) => ({ key: i.key, date: fromDay(i.day) })), "chat");
   scrollDown();
 }
 
 /* ── 보증 가입·보증료 계산(계산기를 대화로) ─────────────── */
 
 /** 금액 하나를 묻는다 — "3억 5천"처럼 적으면 원으로 읽는다. zero 가 있으면 "없어요" 버튼 */
-/** min·example: 월세처럼 작은 금액을 받을 때(기본은 100만원 이상, "3억 5천") */
-function askAmount(question: string, hint: string, done: (won: number) => void, zero?: string, min = 1_000_000, example = "3억 5천") {
+/**
+ * min·example·plain: 월세처럼 작은 금액을 받을 때(기본은 100만원 이상, "3억 5천", 숫자만 적는 예 "35000").
+ * max: 이보다 크면 계산하기 전에 읽은 값을 보여 주고 한 번 되묻는다(원 단위로 적은 350000000 을 3조 5,000억으로 읽는 일을 막는다).
+ * 여기서 하는 일은 입력을 거르는 것뿐이다 — 읽는 법(amountsIn)과 계산은 그대로다.
+ */
+function askAmount(question: string, hint: string, done: (won: number) => void, zero?: string, min = 1_000_000, example = "3억 5천", plain = "35000", max = 10_000_000_000) {
   const b = bubble("bot", question);
   if (hint) b.append(el("p", hint, "hc-note"));
   const row = el("div", undefined, "hc-date");
@@ -661,31 +746,52 @@ function askAmount(question: string, hint: string, done: (won: number) => void, 
   i.setAttribute("aria-label", question);
   const ok = el("button", "확인");
   ok.type = "button";
-  const err = el("p", undefined, "hc-note");
+  const unit = el("p", "숫자만 적으면 만 원 단위로 읽어요.", "hc-note hc-unit");
+  const e = errLine(i);
+  /** 너무 커서 되물은 값 — 고치지 않고 한 번 더 누르면 그대로 받는다 */
+  let asked = "";
+  const close = () => (row.remove(), unit.remove(), e.err.remove());
   const submit = () => {
     const raw = i.value.trim();
     const n = amountsIn(/[억만천원]/.test(raw) ? raw : `${raw}만원`)[0];
-    if (!n || n < min) {
-      err.textContent = `금액을 '${example}'처럼 적어 주세요.`;
-      return i.focus();
+    if (!n) return e.show(`금액을 못 읽었어요. '${example}'이나 '${plain}'(만 원 단위)처럼 적어 주세요.`);
+    if (n < min) return e.show(`${readText(n)}으로 읽었어요. 만 원 단위로 적어 주세요. ${example}이면 '${example}'이나 '${plain}'.`);
+    if (n > max && asked !== raw) {
+      asked = raw;
+      ok.textContent = "이 금액이 맞아요";
+      return e.show(`${readText(n)}으로 읽었어요. 맞나요? 원 단위로 적었다면 끝에 '원'을 붙이거나 '${example}'처럼 적어 주세요.`);
     }
-    row.remove();
-    err.remove();
+    close();
     showChips([]);
-    say(eok(n));
+    say(n > max ? readText(n) : eok(n));
     done(n);
   };
   ok.addEventListener("click", submit);
-  i.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.isComposing) {
-      e.preventDefault();
+  i.addEventListener("input", () => {
+    e.clear();
+    asked = "";
+    ok.textContent = "확인";
+  });
+  i.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter" && !ev.isComposing) {
+      ev.preventDefault();
       submit();
     }
   });
   row.append(i, ok);
-  b.append(row, err);
+  b.append(row, unit, e.err);
   scrollDown();
-  showChips(zero ? [{ label: zero, run: () => (row.remove(), err.remove(), say(zero), done(0)) }] : []);
+  showChips(zero ? [{ label: zero, run: () => (close(), say(zero), done(0)) }] : []);
+}
+/** 읽은 금액을 되짚어 말할 때 — 만 원 아래와 조 단위까지 그대로 보여 준다(eok 은 만 원 단위로 반올림한다) */
+function readText(n: number): string {
+  if (n >= 1e12) {
+    const jo = Math.floor(n / 1e12);
+    const e = Math.round((n % 1e12) / 1e8);
+    return e ? `${jo.toLocaleString("ko-KR")}조 ${e.toLocaleString("ko-KR")}억 원` : `${jo.toLocaleString("ko-KR")}조 원`;
+  }
+  if (n >= 1e4 && n % 1e4 === 0) return eok(n);
+  return `${n.toLocaleString("ko-KR")}원`;
 }
 
 function startCalc() {
@@ -733,7 +839,7 @@ function calcRent(x: Partial<CheckInput>) {
 }
 function calcRentAmount(x: Partial<CheckInput>) {
   mark("calc-rent-amount", () => calcRentAmount(x), x);
-  askAmount("한 달 월세는 얼마예요?", "", (n) => ((x.monthlyRent = n), calcSenior(x)), undefined, 10_000, "50만");
+  askAmount("한 달 월세는 얼마예요?", "", (n) => ((x.monthlyRent = n), calcSenior(x)), undefined, 10_000, "50만", "50", 10_000_000);
 }
 function calcSenior(x: Partial<CheckInput>) {
   mark("calc-senior", () => calcSenior(x), x);
@@ -833,7 +939,8 @@ function calcNext() {
 
 /* ── 글로 물을 때 ─────────────────────────────────────── */
 
-function botAnswer(r: Res) {
+/** bare: 오류·한도 안내 — 답이 아니므로 관련 글 상자를 붙이지 않는다. 말풍선을 돌려준다(다시 보내기 버튼을 달 수 있게) */
+function botAnswer(r: Res, bare = false) {
   const b = bubble("bot", (r.text ?? "답을 만들지 못했어요.").replace(/\s+·\s+/g, "\n· "));
   if (r.lines?.length) {
     const dl = el("dl");
@@ -841,10 +948,49 @@ function botAnswer(r: Res) {
     b.append(dl);
   }
   if (r.sources?.length) b.append(sourcesEl(r.sources));
-  b.append(relatedEl(r.lines?.length ? ["calc", "checklist"] : ["checklist", "calc"]));
+  if (!bare) b.append(relatedEl(r.lines?.length ? ["calc", "checklist"] : ["checklist", "calc"]));
   if (r.note) b.append(el("p", r.note, "hc-note"));
   scrollDown();
+  return b;
 }
+
+/** 글 질문에 답한 뒤 아래 버튼 줄을 다시 띄운다 — 하던 흐름의 버튼이 있으면 그대로, 없으면 다음에 할 만한 일 셋 */
+function chipsBack() {
+  if (!chips) return;
+  if (chips.childElementCount) {
+    chips.hidden = false;
+    scrollDown(); // 버튼 줄이 다시 생기면 아래 막대가 높아져 마지막 말풍선을 가린다
+    return;
+  }
+  const saved = loadPlan();
+  showChips([
+    saved ? { label: "지난번 내 일정 다시 보기", run: () => (say("지난번 내 일정 다시 보기"), showPlan(saved)) } : { label: "일정 짜기", run: () => (say("일정 짜기"), startPlan()) },
+    { label: "보증 계산", run: () => (say("보증 되는지 계산해 볼래요"), startCalc()) },
+    { label: "처음으로", run: restart },
+  ]);
+  scrollDown();
+}
+/** 방금 질문을 그대로 다시 보낸다 — 질문 말풍선은 위에 남아 있으므로 오류 말풍선만 걷고 다시 묻는다 */
+function retryBtn(text: string) {
+  const b = el("button", "다시 보내기", "hc-act hc-act-inline");
+  b.type = "button";
+  b.addEventListener("click", () => {
+    if (busy) return;
+    b.closest(".hc-bot")?.remove();
+    askAi(text);
+  });
+  return b;
+}
+/**
+ * 서버가 429 로 돌려주는 세 경우(workers/api/src/hug-chat.ts).
+ * rate(한 사람 하루 한도)·busy(전체 하루 한도)는 한국 시간 자정에 풀린다.
+ * ai(AI 서버가 쉬는 중)는 무료 사용량 소진일 수도 장애일 수도 있어 시각을 말하지 않는다.
+ */
+const LIMIT_TEXT: Record<string, string> = {
+  rate: "오늘 물어볼 수 있는 횟수를 다 썼어요. 자정이 지나면 다시 물어볼 수 있어요. 일정 짜기·보증 계산·용어 버튼은 계속 쓸 수 있어요.",
+  busy: "오늘은 질문이 많이 몰려 AI 답변이 마감됐어요. 자정이 지나면 다시 돼요. 버튼으로 하는 안내는 그대로 쓸 수 있어요.",
+  ai: "지금은 AI 답변을 쓸 수 없어요. 잠시 뒤 다시 물어봐 주세요. 그동안 일정 짜기·보증 계산·용어 버튼은 그대로 쓸 수 있어요.",
+};
 
 async function send(q: string) {
   const text = q.trim().slice(0, 500);
@@ -867,10 +1013,16 @@ async function send(q: string) {
     botAnswer({ ok: true, text: a.a, sources: sourcesFor(a.cite), note: BANK_NOTE });
     history.push({ role: "user", content: text }, { role: "assistant", content: a.a.slice(0, 500) });
     track("hug_chat_answer", { kind: "bank", id: a.id }, text);
+    chipsBack();
     return;
   }
 
   // 3) 그 밖의 질문은 AI
+  return askAi(text);
+}
+
+async function askAi(text: string) {
+  if (busy || !go) return;
   if (chips) chips.hidden = true;
   busy = true;
   go.disabled = true;
@@ -885,11 +1037,13 @@ async function send(q: string) {
       body: JSON.stringify({ messages: history.slice(-12), page: location.pathname, level }),
     });
     const r = (await res.json().catch(() => ({ ok: false }))) as Res;
-    wait.remove();
+    wait.closest(".hc-bot")?.remove(); // 말풍선만 지우면 프로필·이름 줄이 빈 채로 남는다
     if (res.status === 429) {
-      botAnswer({ ok: false, text: "오늘은 상담이 많아 AI가 잠시 쉬어요. 일정 짜기·상황 안내·용어 버튼은 그대로 쓸 수 있어요. AI 질문은 내일 오전 9시 뒤에 다시 해 주세요." });
+      const kind = r.error === "rate" || r.error === "busy" ? r.error : "ai";
+      const b = botAnswer({ ok: false, text: LIMIT_TEXT[kind] }, true);
+      // 자정까지 안 풀리는 한도에는 다시 보내기를 주지 않는다
+      if (kind === "ai") b.append(retryBtn(text));
       history.pop();
-      showStages();
     } else if (!r.ok) throw new Error(String(res.status));
     else {
       botAnswer(r);
@@ -898,13 +1052,15 @@ async function send(q: string) {
       track("hug_chat_answer", { kind: r.lines ? "check" : r.sources?.length ? "kb" : "fallback" });
     }
   } catch {
-    wait.remove();
+    wait.closest(".hc-bot")?.remove(); // 말풍선만 지우면 프로필·이름 줄이 빈 채로 남는다
     history.pop();
-    botAnswer({ ok: false, text: "지금은 답을 받지 못했어요. 잠시 뒤 다시 보내 주세요." });
+    botAnswer({ ok: false, text: "답을 받아 오지 못했어요. 인터넷 연결을 확인하고 다시 보내 주세요." }, true).append(retryBtn(text));
+    scrollDown();
     track("hug_chat_error");
   } finally {
     busy = false;
     go.disabled = false;
+    chipsBack();
   }
 }
 
@@ -936,18 +1092,36 @@ function restart() {
 }
 reset?.addEventListener("click", restart);
 
-// 글 페이지 입구에서 단계를 골라 들어오면(?s=house) 바로 그 단계로
+// 글 페이지 입구에서 단계를 골라 들어오면(?s=house) 바로 그 단계로. ?s=plan 은 저장된 내 일정 보기
 const entry = new URLSearchParams(location.search).get("s");
+const first = STAGES.find((x) => x.id === entry);
+const savedAtStart = loadPlan();
 // 하던 계산·일정이 있으면 첫 인사 대신 이어하기 카드(입구에서 단계를 골라 온 경우는 그 단계가 먼저)
 const resumeAtStart = entry ? null : loadResume();
 if (resumeAtStart) offerResume(resumeAtStart);
-else greet();
-const first = STAGES.find((x) => x.id === entry);
-const savedAtStart = loadPlan();
-if (first) pickStage(first);
-else if (entry === "plan" && savedAtStart) {
+// 주소가 갈래를 골라 줬으면 버튼 묶음 없이 한 줄 소개만 하고 바로 그 흐름으로
+else greet(!!first || entry === "plan");
+if (first?.id === "contract" && savedAtStart) {
+  // 이미 만든 일정이 있는데 말없이 새로 묻지 않는다 — 먼저 보여 주고 '날짜 다시 넣기'를 앞에 둔다
+  bubble("bot", "이 브라우저에 저장된 일정이 있어서 먼저 보여 드려요. 날짜를 새로 넣으려면 아래 '날짜 다시 넣기'를 눌러 주세요.");
+  showPlan(savedAtStart, true);
+} else if (first) {
+  // 사용자가 누른 게 아니라 주소(?s=)가 고른 것 — "쓴 사람"으로 세지 않는다
+  quiet = true;
+  pickStage(first);
+  quiet = false;
+} else if (entry === "plan" && savedAtStart) {
   say("지난번 내 일정 다시 보기");
   showPlan(savedAtStart);
+} else if (entry === "plan") {
+  // 저장된 일정이 없는 첫 방문 — 일정 짜기 시작으로 잇는다
+  const b = bubble("bot", "저장된 일정이 없어요. 이 브라우저에서 만든 일정만 다시 볼 수 있어요. 날짜를 넣어 새로 만들까요?");
+  b.append(optsEl([{ label: "날짜 넣기", hint: STAGE_HINT.contract, kind: "main", run: () => pickStage(stageOf("contract")) }]));
+  showChips([
+    { label: "보증 계산", run: () => pickStage(stageOf("calc")) },
+    { label: stageOf("trouble").label, run: () => pickStage(stageOf("trouble")) },
+    { label: "처음으로", run: restart },
+  ]);
 }
 // 화면을 연 횟수(관리자 화면의 "연 사람"). 무엇을 눌렀는지는 위 track 이 따로 센다
 track("hug_open", entry ? { id: entry } : {});

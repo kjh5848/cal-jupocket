@@ -53,8 +53,38 @@ const setFlag = (on: boolean) => {
   }
 };
 
-/** 버튼·안내문·끄기 버튼을 묶는다. items() 는 지금 화면의 일정 */
-export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLButtonElement, items: () => PushItem[]) {
+/**
+ * 안내 문구 — 체크리스트 글(합니다체)과 전세 도우미 대화(해요체)가 같이 쓴다. 내용은 같고 말끝만 다르다.
+ * 대화 화면에는 "위의 캘린더 파일"이 없으므로 버튼 이름("내 캘린더에 넣기")으로 가리킨다.
+ */
+const TEXT = {
+  formal: {
+    on: "알림이 켜져 있습니다. 날짜를 바꿨다면 아래 버튼으로 다시 맞추세요.",
+    ios: "아이폰은 홈 화면에 추가한 JU포켓 앱에서만 알림을 받을 수 있습니다. 홈 화면에 추가한 뒤 앱으로 열어 이 버튼을 다시 눌러 주세요.",
+    unsupported: "이 브라우저는 알림을 지원하지 않습니다. 위의 캘린더 파일(.ics)로 일정을 넣어 주세요.",
+    empty: "날짜를 먼저 모두 넣어 주세요.",
+    denied: "알림이 차단되어 있습니다. 브라우저 설정 → 사이트 설정 → 알림에서 jupocket.com 을 허용한 뒤 다시 눌러 주세요.",
+    done: (count: number, next?: string | null) => `알림 ${count}건을 맞췄습니다. 첫 알림은 ${next} 오전 9시쯤 옵니다. 확인 알림이 방금 갔을 거예요.`,
+    none: "남은 일정이 없어 보낼 알림이 없습니다.",
+    error: "알림을 맞추지 못했습니다. 잠시 뒤 다시 눌러 주세요. 계속 안 되면 캘린더 파일(.ics)을 쓰세요.",
+    off: "알림을 끄고 저장된 날짜를 지웠습니다.",
+  },
+  chat: {
+    on: "알림이 켜져 있어요. 날짜를 바꿨다면 아래 버튼으로 다시 맞춰 주세요.",
+    ios: "아이폰은 홈 화면에 추가한 JU포켓에서만 알림을 받을 수 있어요. 추가한 뒤 그 아이콘으로 열어 이 버튼을 다시 눌러 주세요.",
+    unsupported: "이 브라우저에서는 알림을 보낼 수 없어요. 대신 아래 '내 캘린더에 넣기'를 써 주세요.",
+    empty: "날짜를 먼저 모두 넣어 주세요.",
+    denied: "이 브라우저에서 jupocket.com 알림이 막혀 있어요. 브라우저 설정 → 사이트 설정 → 알림에서 허용한 뒤 다시 눌러 주세요.",
+    done: (count: number, next?: string | null) => `알림 ${count}건을 맞췄어요. 첫 알림은 ${next} 오전 9시쯤 와요. 방금 확인 알림을 하나 보냈어요.`,
+    none: "남은 일정이 없어 보낼 알림이 없어요.",
+    error: "알림을 맞추지 못했어요. 잠시 뒤 다시 눌러 주세요. 계속 안 되면 아래 '내 캘린더에 넣기'를 써 주세요.",
+    off: "알림을 껐어요. 서버에 저장된 날짜도 지웠어요.",
+  },
+};
+
+/** 버튼·안내문·끄기 버튼을 묶는다. items() 는 지금 화면의 일정. voice: 글(formal)·대화(chat) 말투 */
+export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLButtonElement, items: () => PushItem[], voice: keyof typeof TEXT = "formal") {
+  const T = TEXT[voice];
   const label = btn.textContent ?? "";
   const say = (t: string) => (msg.textContent = t);
   const showOn = (on: boolean) => {
@@ -68,7 +98,7 @@ export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLBut
       .then((s) => {
         if (s) {
           showOn(true);
-          say("알림이 켜져 있습니다. 날짜를 바꿨다면 아래 버튼으로 다시 맞추세요.");
+          say(T.on);
         } else setFlag(false);
       })
       .catch(() => {});
@@ -77,7 +107,7 @@ export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLBut
   btn.addEventListener("click", async () => {
     track("push_click");
     if (isIOS && !standalone) {
-      say("아이폰은 홈 화면에 추가한 JU포켓 앱에서만 알림을 받을 수 있습니다. 홈 화면에 추가한 뒤 앱으로 열어 이 버튼을 다시 눌러 주세요.");
+      say(T.ios);
       const sheet = document.getElementById("install-ios");
       if (sheet) {
         sheet.querySelectorAll<HTMLElement>("[data-guide]").forEach((el) => (el.hidden = el.dataset.guide !== "ios"));
@@ -86,19 +116,19 @@ export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLBut
       return;
     }
     if (!supported) {
-      say("이 브라우저는 알림을 지원하지 않습니다. 위의 캘린더 파일(.ics)로 일정을 넣어 주세요.");
+      say(T.unsupported);
       return;
     }
     const list = items();
     if (!list.length) {
-      say("날짜를 먼저 모두 넣어 주세요.");
+      say(T.empty);
       return;
     }
     btn.disabled = true;
     try {
       const perm = await Notification.requestPermission();
       if (perm !== "granted") {
-        say("알림이 차단되어 있습니다. 브라우저 설정 → 사이트 설정 → 알림에서 jupocket.com 을 허용한 뒤 다시 눌러 주세요.");
+        say(T.denied);
         track("push_denied");
         return;
       }
@@ -108,10 +138,10 @@ export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLBut
       const r = await post("/push/subscribe", { subscription: sub.toJSON(), items: list, platform: isIOS ? "ios" : /Android/.test(navigator.userAgent) ? "android" : "desktop" });
       setFlag(true);
       showOn(true);
-      say(r.count ? `알림 ${r.count}건을 맞췄습니다. 첫 알림은 ${r.next} 오전 9시쯤 옵니다. 확인 알림이 방금 갔을 거예요.` : "남은 일정이 없어 보낼 알림이 없습니다.");
+      say(r.count ? T.done(r.count, r.next) : T.none);
       track("push_subscribe", { items: r.count });
     } catch {
-      say("알림을 맞추지 못했습니다. 잠시 뒤 다시 눌러 주세요. 계속 안 되면 캘린더 파일(.ics)을 쓰세요.");
+      say(T.error);
       track("push_error");
     } finally {
       btn.disabled = false;
@@ -129,7 +159,7 @@ export function setupPush(btn: HTMLButtonElement, msg: HTMLElement, off: HTMLBut
       }
       setFlag(false);
       showOn(false);
-      say("알림을 끄고 저장된 날짜를 지웠습니다.");
+      say(T.off);
       track("push_unsubscribe");
     } finally {
       off.disabled = false;

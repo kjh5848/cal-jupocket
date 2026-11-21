@@ -5,7 +5,8 @@
  * 레이아웃은 카카오톡 대화방 느낌(사용자 요청 2026-11-08): 위 막대 / 회청색 대화 배경 /
  * 도우미는 왼쪽 프로필 + 이름 + 흰 말풍선, 내 말은 오른쪽 노란 말풍선 / 아래 흰 입력 막대.
  * 이모지는 쓰지 않는다. 대화는 페이지가 그대로 스크롤된다(안쪽 스크롤 상자 없음).
- * 첫 인사는 "처음이에요 / 알아보는 중이에요 / 문제가 생겼어요" 세 갈래만 묻는다(scripts/hug-chat.ts greet).
+ * 첫 인사는 "하려는 일"을 고르게 한다 — 가장 큰 버튼은 "계약 날짜로 할 일 뽑기" 하나(scripts/hug-chat.ts greet).
+ * 비공식 고지("HUG 아님 · 비공식 안내")는 위 막대에 붙어 스크롤해도 남는다(docs/design/jeonse-chat-ux.md S2).
  * 상황 안내·용어·일정·보증 계산은 AI 없이 확인된 자료로, 그 밖의 글 질문만 AI(api.jupocket.com/api/hug-chat).
  * 일정 날짜는 이 브라우저에만 저장된다. 광고를 넣지 않는다.
  */
@@ -13,26 +14,29 @@
 
 <div class="hc-app">
   <header class="hc-top">
-    <a class="hc-back" href="/guide/hug-jeonse-checklist/" aria-label="전세 체크리스트로 돌아가기">
+    <a class="hc-back" href="/guide/hug-jeonse-checklist/" aria-label="전세 체크리스트 글 보기">
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
     </a>
-    <h1 class="hc-title">JU포켓 전세 도우미</h1>
-    <button type="button" class="hc-new" id="hc-reset" hidden>새 대화</button>
+    <div class="hc-head">
+      <h1 class="hc-title">JU포켓 전세 도우미</h1>
+      <p class="hc-tag">HUG 아님 · 비공식 안내</p>
+    </div>
+    <button type="button" class="hc-new" id="hc-reset" hidden>처음으로</button>
   </header>
 
   <main class="hc-main">
-    <p class="hc-day">HUG·주택도시기금·법령에서 확인한 자료로 답해요<br />JU포켓이 만든 비공식 안내예요. 보증 가입과 지급은 HUG 심사로 정해져요</p>
-    <div class="hc-log" id="hc-log" aria-live="polite"></div>
+    <p class="hc-day">HUG·주택도시기금·법령 원문을 JU포켓이 확인해 답해요</p>
+    <div class="hc-log" id="hc-log" role="log" aria-live="polite" aria-label="전세 도우미와 나눈 대화"></div>
   </main>
 
   <div class="hc-dock">
     <div class="hc-chips" id="hc-chips" hidden></div>
     <form class="hc-form" id="hc-form">
-      <label class="sr-only" for="hc-q">질문</label>
-      <input type="text" id="hc-q" maxlength="500" enterkeyhint="send" autocomplete="off" placeholder="메시지 입력" />
+      <label class="sr-only" for="hc-q">전세 도우미에게 질문 적기</label>
+      <input type="text" id="hc-q" maxlength="500" enterkeyhint="send" autocomplete="off" placeholder="궁금한 걸 적어 보세요. 예: 대항력이 뭐예요?" />
       <button type="submit" id="hc-go">전송</button>
     </form>
-    <p class="hc-meta">일정은 이 브라우저에만 저장돼요. 자료에 없는 질문은 AI가 답해요 · <a href="/privacy/#ask-ai">개인정보</a></p>
+    <p class="hc-meta">날짜는 이 브라우저에만 저장돼요. 적은 질문은 이름 없이 보관되니 주소·이름은 적지 마세요 · <a href="/privacy/#ask-ai">개인정보</a></p>
   </div>
 </div>
 
@@ -55,7 +59,8 @@
     background: var(--chat-bg);
     color: var(--bubble-text);
   }
-  .sr-only {
+  .sr-only,
+  .hc-log :global(.sr-only) {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -71,23 +76,45 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.4rem 0.75rem 0.4rem 0.35rem;
+    padding: 0.4rem 0.75rem 0.4rem 0.25rem;
     background: var(--chat-bg);
   }
   .hc-back {
+    flex: none;
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     color: var(--bubble-text);
+    border-radius: var(--r-sm);
+  }
+  .hc-head {
+    flex: 1;
+    display: grid;
+    justify-items: start;
+    gap: 0.2rem;
+    min-width: 0;
   }
   .hc-title {
-    flex: 1;
     margin: 0;
     font-size: 1.05rem;
     font-weight: 700;
+    line-height: 1.25;
+  }
+  /* 비공식 고지 — 막대가 화면 위에 붙어 있어 어느 상태에서도 남는다. 경고색은 쓰지 않고 본문 글자색으로만 띄운다 */
+  .hc-tag {
+    margin: 0;
+    padding: 0.1rem 0.5rem;
+    font-size: var(--t-xs);
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--bubble-text);
+    background: var(--bubble);
+    border-radius: var(--r-pill);
   }
   .hc-new {
+    position: relative;
+    flex: none;
     min-height: 32px;
     padding: 0 0.8rem;
     font: inherit;
@@ -97,6 +124,12 @@
     border: 0;
     border-radius: var(--r-pill);
     cursor: pointer;
+  }
+  /* 보이는 크기는 32px, 누르는 자리는 44px */
+  .hc-new::after {
+    content: "";
+    position: absolute;
+    inset: -6px 0;
   }
   .hc-new[hidden] {
     display: none;
@@ -115,6 +148,7 @@
     margin: 0.25rem auto 1rem;
     padding: 0.25rem 0.8rem;
     font-size: var(--t-xs);
+    text-align: center;
     color: var(--muted);
     background: var(--surface-2);
     border-radius: var(--r-pill);
@@ -200,18 +234,54 @@
   }
   .hc-log :global(.hc-opts button) {
     display: grid;
+    align-content: center;
     gap: 0.1rem;
+    min-height: 44px;
     padding: 0.6rem 0.8rem;
     font: inherit;
     text-align: left;
     color: var(--bubble-text);
     background: var(--surface-2);
     border: 0;
-    border-radius: var(--r-md);
+    border-radius: var(--r-sm);
     cursor: pointer;
   }
   .hc-log :global(.hc-opts button:hover) {
     background: var(--brand-wash);
+  }
+  /* 이 말풍선의 주인공 하나 — 크기·굵기·색으로만 앞세운다 */
+  .hc-log :global(.hc-opts button.hc-opt-main),
+  .hc-log :global(.hc-opts button.hc-opt-main:hover) {
+    padding: 0.8rem 0.9rem;
+    color: var(--me-text);
+    background: var(--me);
+  }
+  .hc-log :global(.hc-opt-main b) {
+    font-size: var(--t-lg);
+    font-weight: 800;
+  }
+  .hc-log :global(.hc-opts .hc-opt-main small) {
+    color: inherit;
+  }
+  /* 작게 두는 갈래 — 배경 없이 한 줄 */
+  .hc-log :global(.hc-opts button.hc-opt-minor) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    align-content: center;
+    gap: 0 0.5rem;
+    padding: 0.3rem 0.8rem;
+    background: transparent;
+  }
+  .hc-log :global(.hc-opts button.hc-opt-minor:hover) {
+    background: var(--surface-2);
+  }
+  .hc-log :global(.hc-opt-minor b) {
+    font-size: var(--t-sm);
+    font-weight: 600;
+  }
+  .hc-log :global(.hc-opts .hc-opt-minor small) {
+    font-size: var(--t-xs);
   }
   .hc-log :global(.hc-opts b) {
     font-weight: 700;
@@ -250,9 +320,25 @@
     border-radius: var(--r-md);
     cursor: pointer;
   }
+  .hc-log :global(.hc-act-inline) {
+    justify-self: start;
+  }
+  .hc-log :global(.hc-date input[aria-invalid="true"]) {
+    border-color: var(--chart-loss);
+  }
+  /* 입력 오류 — 색만으로 알리지 않게 굵기도 올린다 */
+  .hc-log :global(.hc-err) {
+    font-size: var(--t-sm);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--chart-loss);
+  }
+  .hc-log :global(.hc-err[hidden]) {
+    display: none;
+  }
   .hc-log :global(.hc-act-off) {
     justify-self: start;
-    min-height: 34px;
+    min-height: 44px;
     padding: 0 0.8rem;
     font: inherit;
     font-size: var(--t-sm);
@@ -285,8 +371,9 @@
   .hc-log :global(.hc-plan li.hc-next b) {
     color: var(--brand);
   }
+  /* 지난 일 — 투명도(0.5)는 대비가 3:1 안팎으로 떨어진다. 흐린 글자색 토큰으로 가라앉힌다 */
   .hc-log :global(.hc-plan li.hc-past) {
-    opacity: 0.5;
+    color: var(--muted);
   }
   .hc-log :global(.hc-warn) {
     margin-top: 0.2rem;
@@ -295,6 +382,9 @@
     line-height: 1.5;
     background: var(--accent-bg);
     border-radius: var(--r-sm);
+  }
+  .hc-log :global(.hc-warn strong) {
+    font-weight: 800;
   }
   .hc-log :global(.hc-checks) {
     display: grid;
@@ -398,7 +488,7 @@
   }
   .hc-chips :global(button) {
     flex: none;
-    min-height: 36px;
+    min-height: 44px;
     padding: 0 0.9rem;
     font: inherit;
     font-size: var(--t-sm);
@@ -423,10 +513,20 @@
     background: var(--bar);
     border-top: 1px solid var(--bar-line);
   }
+  /* 입력칸은 테두리가 없어 초점 고리 대신 막대 윗선을 브랜드색 2px 로 바꿔 알린다 */
+  .hc-form:focus-within {
+    border-top-color: var(--brand);
+    box-shadow: inset 0 1px 0 var(--brand);
+  }
+  .hc-form input::placeholder {
+    color: var(--sub);
+    opacity: 1;
+  }
   .hc-form input {
     flex: 1;
     min-width: 0;
-    min-height: 40px;
+    min-height: 44px;
+    text-overflow: ellipsis;
     padding: 0;
     font: inherit;
     font-size: max(16px, 1rem);
@@ -437,7 +537,7 @@
   }
   .hc-form button {
     flex: none;
-    min-height: 36px;
+    min-height: 44px;
     padding: 0 0.95rem;
     font: inherit;
     font-size: var(--t-sm);
@@ -460,5 +560,13 @@
   }
   .hc-meta a {
     color: inherit;
+  }
+
+  /* 초점 표시 — 버튼은 global.css 의 고리(3px --link)를 그대로 받고, 링크와 날짜·금액 칸도 같은 고리로 맞춘다.
+     눌렀을 때 들어가는 느낌(scale 0.96)도 global.css 의 button:active 가 맡는다 */
+  .hc-app :global(a:focus-visible),
+  .hc-log :global(.hc-date input:focus-visible) {
+    outline: 3px solid var(--link);
+    outline-offset: 2px;
   }
 </style>
