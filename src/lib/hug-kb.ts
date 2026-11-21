@@ -14,6 +14,8 @@ const S = r.sources;
 const P = r.premium;
 const L = r.loanGuaranteeLimit;
 const B = r.beotimmok;
+/** 표준계약서 개정일을 "2023년 10월 6일" 꼴로 */
+const LEASE_REV = r.standardLease.revisedOn.replace(/^(\d+)-0?(\d+)-0?(\d+)$/, "$1년 $2월 $3일");
 
 /** 1억 단위면 "7억원", 천만 단위면 "1억 2천만원" */
 export function eok(n: number): string {
@@ -72,6 +74,7 @@ export const KB: KbItem[] = [
   { id: "house-find", title: "집 찾는 법(HUG 전세사기예방센터)", text: "보러 다니기 전에 기준을 글로 써 둔다(크기·형태, 시간대별 통근 시간, 소음·밤길, 노후도, 포기할 것과 못 버릴 것의 순서). 예산은 한 달 주거비(월세·대출 이자·관리비·공과금·교통비)로 보고 상한을 정한다. 전세대출을 받을 거면 대출 상품을 먼저 알아보고 대출이 되는 집을 찾는다. 부동산 앱은 시세 확인용으로만 쓰고 실제 집은 그 매물을 맡은 중개사무소에서 확인한다. 중개사무소에 '전세보증금반환보증에 가입되는 집'을 보여 달라고 말한다. 공공임대는 마이홈(myhome.go.kr)·LH 청약(apply.lh.or.kr)에서 본다.", src: S.houseSearch, srcName: "HUG 전세사기예방센터" },
   { id: "house-visit", title: "집 보러 갈 때 확인할 것(HUG 전세사기예방센터)", text: `사진·메모 준비, 가능하면 동행(한 명은 설명 메모, 한 명은 점검), 동·호수 기록. 맑은 날 낮 채광, 수압·배수·역류, 벽·천장·장판의 누수·결로·곰팡이, 방음(벽 두드려 보기), 냉난방·이중창, 환기·배수구 냄새, 도어락·CCTV·방범창·가스 배관 방범 덮개, 콘센트·가스 호스, 소방시설, 최저주거기준(${r.houseHunting.minHousingAreaM2}㎡) 이하인지, 건축물대장(정부24)으로 위반건축물인지 확인.`, src: S.houseCheck, srcName: "HUG 전세사기예방센터" },
   { id: "house-market", title: "집 가격이 적당한지(HUG 전세사기예방센터)", text: `보증금이 매매 시세의 ${r.houseHunting.avoidDepositOverPricePct}%를 넘으면 피하는 게 좋다(깡통전세 — 집값이 내려가면 보증금을 돌려받기 어려울 수 있다). 매매 시세는 국토교통부 실거래가 공개시스템, KB시세, 부동산테크, 부동산공시가격알리미, 등기부의 매매가로 확인한다. 같은 건물·같은 동네 비슷한 집의 전월세와도 비교한다.`, src: S.housePrice, srcName: "HUG 전세사기예방센터" },
+  { id: "special-clauses", title: "특약은 뭐라고 넣나 — 표준계약서에 인쇄된 특약", text: `법무부 주택임대차표준계약서(${LEASE_REV} 개정본)의 [특약사항]에는 문구가 인쇄돼 있다. ① "주택을 인도받은 임차인은 ○○년 ○○월 ○○일까지 주민등록(전입신고)과 주택임대차계약서상 확정일자를 받기로 하고, 임대인은 위 약정일자의 다음날까지 임차주택에 저당권 등 담보권을 설정할 수 없다." ② 임대인이 이를 어겨 담보권을 설정하면 임차인은 계약을 해제 또는 해지할 수 있고 임대인은 손해를 배상한다. ③ 임대인이 사전에 고지하지 않은 선순위 임대차 정보가 있거나 미납·체납 국세·지방세가 ○○원을 넘는 것을 확인하면, 임대차기간이 시작하는 날까지 계약금을 포기하지 않고 계약을 해제할 수 있다. 그 밖에 분쟁조정위원회 조정 신청 동의 여부, 철거·재건축 계획, 상세주소 소유자 동의 여부 칸이 있고, 3쪽의 '기타' 칸에 직접 쓴다. HUG 전세사기예방센터는 집 볼 때 구두로 약속한 내용(수리·도배 등)과 돈에 관한 내용은 특약으로 적고, 선순위 근저당을 말소하기로 했으면 이행하지 않을 때 계약이 무효라는 내용까지 쓰고, 임차인 잘못 없이 전세보증금반환보증에 가입하지 못하면 계약을 취소하고 보증금을 돌려준다는 특약을 쓰라고 안내한다. 특약을 어기지 않았는지 입주 직후 등기부를 다시 확인한다. 임대인은 계약할 때 확정일자 부여일·보증금 정보와 납세증명서를 제시해야 하고 열람 동의로 대신할 수 있다(주택임대차보호법 제3조의7). 법에 어긋나는 약정으로 임차인에게 불리한 것은 효력이 없다(제10조). HUG 반환보증은 반환채권 양도금지 특약이 있으면 가입할 수 없다. 이 내용은 법률 자문이 아니다. 문구는 공인중개사나 대한법률구조공단(${r.legal.legalAidPhone})에 확인한다.`, src: S.standardLease, srcName: "법무부 주택임대차표준계약서" },
   { id: "rent-conversion", title: "반전세(보증부 월세)의 보증금 상한", text: `월세가 있으면 HUG는 '전월세전환율 적용 전세보증금' = 보증금 + (월세 × 12) ÷ 전월세전환율(${G.rentConversionPct}%)로 보증금 상한(수도권 ${eok(G.depositCap.capital)}, 그 외 ${eok(G.depositCap.other)})을 본다.`, src: S.rentConversionNotice, srcName: "HUG 전월세전환율 공지" },
   // 상황 안내(jeonse-guide)를 그대로 자료로 — 채팅 버튼과 AI 답이 같은 문장을 쓰게
   ...[LANDLORD_GONE, AFTER_ACCIDENT, NO_GUARANTEE, PRODUCT_KIND].map((g: Guide): KbItem => ({ id: g.id, title: g.ask, text: g.steps.join(" "), src: g.sources[0].url, srcName: g.sources[0].name })),

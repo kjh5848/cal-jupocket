@@ -56,7 +56,9 @@
     "smallDeposit": "https://www.law.go.kr/법령/주택임대차보호법/제8조",
     "fraudVictimAct": "https://www.law.go.kr/법령/전세사기피해자지원및주거안정에관한특별법",
     "residentCopy": "https://www.law.go.kr/법령/주민등록법시행령/제47조",
-    "legalAid": "https://www.klac.or.kr/"
+    "legalAid": "https://www.klac.or.kr/",
+    "standardLease": "https://www.moj.go.kr/moj/163/subview.do",
+    "specialClausesHug": "https://www.khug.or.kr/jeonse/web/s03/s030206.jsp"
   },
   "guarantee": {
     "depositCap": {
@@ -236,5 +238,11 @@
     "fraudActFirstContractBy": "2025-05-31",
     "fraudActDepositMax": 500000000,
     "legalAidPhone": "132"
+  },
+  "standardLease": {
+    "verifiedOn": "2026-11-22",
+    "revisedOn": "2023-10-06",
+    "file": "https://www.moj.go.kr/sites/moj/download/20231006_01.pdf",
+    "note": "법무부 주택임대차표준계약서(원본게시용 PDF) 2쪽 [특약사항]에 인쇄된 문구와 HUG 전세사기예방센터 '특약사항 작성' 안내. 조사 기록은 docs/research/jeonse-special-clauses.md. HUG 쪽은 예문이 아니라 취지 안내라 문장을 만들어 주지 않는다."
   }
 }
