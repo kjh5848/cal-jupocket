@@ -18,6 +18,8 @@ import {
   noticeAmount as incomeNotice,
   maxInstallment,
 } from "../income-prepay";
+import { lateFilingRelief } from "../penalty";
+import { compute as pensionPremium } from "../pension-premium";
 
 describe("스토리 001 — 1년 차이로 갈린 증여세", () => {
   /*
@@ -162,5 +164,47 @@ describe("스토리 009 — 1,500만원 고지서를 나눠 낸다", () => {
 
   it("정확히 1천만원이면 나눌 수 없다", () => {
     expect(maxInstallment(10_000_000)).toBe(0);
+  });
+});
+
+describe("스토리 010 — 5월 신고를 놓쳤고 12월 1일이 마지막 날", () => {
+  /*
+   * 2026년 5월 31일은 일요일이라 종합소득세 신고 기한은 6월 1일이다.
+   * 기한 후 6개월이 되는 12월 1일까지 무신고가산세가 20% 깎이고,
+   * 12월 2일부터는 감면이 없다. (성실신고확인 대상자는 기한이 6월 30일이라 다르다.)
+   */
+  it("2026년 5월 31일은 일요일이다", () => {
+    expect(new Date(Date.UTC(2026, 4, 31)).getUTCDay()).toBe(0);
+  });
+
+  it("12월 1일 신고는 20% 감면이고 그날이 구간의 끝이다", () => {
+    expect(lateFilingRelief("2026-06-01", "2026-12-01")).toEqual({
+      relief: 0.2,
+      until: "2026-12-01",
+    });
+  });
+
+  it("12월 2일 신고는 감면이 0이다", () => {
+    expect(lateFilingRelief("2026-06-01", "2026-12-02").relief).toBe(0);
+  });
+});
+
+describe("스토리 011 — 소득세 중간예납 고지서가 오지 않았다", () => {
+  /* 작년 종합소득세 90만원 → 절반 45만원 → 50만원 미만이라 징수하지 않는다. */
+  it("작년 90만원이면 45만원이라 걷지 않는다", () => {
+    const r = incomeNotice(900_000);
+    expect(r.amount).toBe(450_000);
+    expect(r.collected).toBe(false);
+  });
+});
+
+describe("스토리 012 — 월 700만원과 1,000만원의 국민연금", () => {
+  /* 기준소득월액 상한 659만원을 넘으면 보험료는 월 626,050원으로 같다. */
+  it("700만원도 1,000만원도 월 626,050원이다", () => {
+    for (const income of [7_000_000, 10_000_000]) {
+      const r = pensionPremium(income);
+      expect(r.standardIncome).toBe(6_590_000);
+      expect(r.monthly).toBe(626_050);
+    }
   });
 });
