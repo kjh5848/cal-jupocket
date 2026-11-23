@@ -18,7 +18,7 @@ import {
   noticeAmount as incomeNotice,
   maxInstallment,
 } from "../income-prepay";
-import { lateFilingRelief } from "../penalty";
+import { lateFilingRelief, computeLateFiling } from "../penalty";
 import { compute as pensionPremium } from "../pension-premium";
 
 describe("스토리 001 — 1년 차이로 갈린 증여세", () => {
@@ -206,5 +206,26 @@ describe("스토리 012 — 월 700만원과 1,000만원의 국민연금", () =>
       expect(r.standardIncome).toBe(6_590_000);
       expect(r.monthly).toBe(626_050);
     }
+  });
+});
+
+describe("스토리 013 — 신고일을 하루 옮기면 4만원이 갈린다", () => {
+  /*
+   * 세금 100만원, 기한 2026-06-01. 7월 1일 신고는 감면 50% 구간의 마지막 날이고
+   * 7월 2일부터 30% 구간이다. 가산세 합계가 106,380원 → 146,600원.
+   * (납부지연 일수는 기한 다음 날부터 납부일 전날까지 — 7월 1일 29일, 7월 2일 30일.)
+   */
+  const at = (filedOn: string) =>
+    computeLateFiling({ tax: 1_000_000, deadline: "2026-06-01", filedOn });
+
+  it("7월 1일 신고면 가산세 106,380원", () => {
+    expect(at("2026-07-01").reliefRate).toBe(0.5);
+    expect(at("2026-07-01").total).toBe(106_380);
+  });
+
+  it("7월 2일 신고면 가산세 146,600원 — 하루에 40,220원", () => {
+    expect(at("2026-07-02").reliefRate).toBe(0.3);
+    expect(at("2026-07-02").total).toBe(146_600);
+    expect(at("2026-07-02").total - at("2026-07-01").total).toBe(40_220);
   });
 });
