@@ -20,6 +20,8 @@ import {
 } from "../income-prepay";
 import { lateFilingRelief, computeLateFiling } from "../penalty";
 import { compute as pensionPremium } from "../pension-premium";
+import { hugSchedule } from "../hug-jeonse";
+import { toDay, fromDay } from "../date-calc";
 
 describe("스토리 001 — 1년 차이로 갈린 증여세", () => {
   /*
@@ -227,5 +229,31 @@ describe("스토리 013 — 신고일을 하루 옮기면 4만원이 갈린다",
     expect(at("2026-07-02").reliefRate).toBe(0.3);
     expect(at("2026-07-02").total).toBe(146_600);
     expect(at("2026-07-02").total - at("2026-07-01").total).toBe(40_220);
+  });
+});
+
+describe("스토리 014 — 잔금 1월 15일, 2년 전세 계약의 날짜", () => {
+  /*
+   * 계약 2026-12-05 · 잔금·전입 2027-01-15 · 만료 2029-01-14.
+   * 할 일은 9개, 반환보증 가입 마감(추산)은 2028-01-15, 갱신거절 통지 마감은 2028-11-13.
+   */
+  const s = hugSchedule({
+    contract: toDay("2026-12-05")!,
+    start: toDay("2027-01-15")!,
+    moveIn: toDay("2027-01-15")!,
+    end: toDay("2029-01-14")!,
+  });
+  const dayOf = (key: string) => fromDay(s.find((i) => i.key === key)!.day);
+
+  it("할 일은 아홉 개다", () => {
+    expect(s).toHaveLength(9);
+  });
+
+  it("보증보험 가입 마감은 이듬해 1월 15일이다", () => {
+    expect(dayOf("return-guarantee")).toBe("2028-01-15");
+  });
+
+  it("갱신거절 통지는 11월 14일이 아니라 11월 13일까지다", () => {
+    expect(dayOf("renewal-deadline")).toBe("2028-11-13");
   });
 });

@@ -2,7 +2,7 @@
 at: "09:00"
 on: 2026-11-30
 ref: /jeonse-chat/
-closing: save_b
+closing: tool_b
 reply: 계약일과 만기일을 넣으면 이 날짜들이 내 달력 기준으로 나와. JU포켓 전세 도우미(HUG 공식 아님, 비공식 안내, 무료)
 ---
 전세 살면서 놓치면 돈이 걸리는 날짜 4개.
