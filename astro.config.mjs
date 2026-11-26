@@ -3,6 +3,7 @@ import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { isSearchExcluded } from "./src/lib/search-exclude.mjs";
 
 /**
  * 사이트맵에서 뺄 경로.
@@ -85,7 +86,8 @@ export default defineConfig({
         !page.includes("/link/") &&
         !page.includes("/design/") &&
         !page.includes("/admin/") &&
-        !page.includes("/jeonse-chat/"),
+        !page.includes("/jeonse-chat/") &&
+        !isSearchExcluded(page),
       serialize(item) {
         const date = DATES[new URL(item.url).pathname];
         if (date) item.lastmod = new Date(`${date}T00:00:00Z`).toISOString();

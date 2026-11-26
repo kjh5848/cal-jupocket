@@ -11,6 +11,7 @@ import { ogPathFor } from "../lib/og-pages";
 import { ui, localeOf, LOCALES } from "../i18n/ui";
 import { meta } from "../i18n/locales";
 import { alternatesFor } from "../i18n/alternates";
+import { isSearchExcluded } from "../lib/search-exclude.mjs";
 
 interface Props {
   title: string;
@@ -26,7 +27,9 @@ const ogImage = new URL(ogPathFor(Astro.url.pathname), Astro.site);
 const locale = localeOf(Astro.url.pathname);
 const T = ui(locale);
 const alt = alternatesFor(Astro.url.pathname);
-const altLinks = LOCALES.filter((l) => alt[l]).map((l) => ({ locale: l, lang: meta(l).hreflang, href: new URL(alt[l]!, Astro.site).href }));
+// 검색에서 뺀 나라판 도구(lib/search-exclude.mjs)는 noindex 를 달고, 서로를 가리키는 hreflang 에서도 뺀다
+const excluded = isSearchExcluded(Astro.url.pathname);
+const altLinks = (excluded ? [] : LOCALES.filter((l) => alt[l] && !isSearchExcluded(alt[l]!))).map((l) => ({ locale: l, lang: meta(l).hreflang, href: new URL(alt[l]!, Astro.site).href }));
 ---
 
 <meta charset="utf-8" />
@@ -51,6 +54,7 @@ const altLinks = LOCALES.filter((l) => alt[l]).map((l) => ({ locale: l, lang: me
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical.href} />
+{excluded && <meta name="robots" content="noindex, follow" />}
 {altLinks.length > 1 && altLinks.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
 {altLinks.length > 1 && <link rel="alternate" hreflang="x-default" href={altLinks.find((a) => a.locale === "ko")!.href} />}
 {locale === "ko" && <link rel="alternate" type="application/rss+xml" title="JU포켓 — 세금 가이드" href="/rss.xml" />}
