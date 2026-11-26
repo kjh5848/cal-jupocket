@@ -1,6 +1,6 @@
 ---
 at: "12:30"
-on: 2026-11-26
+on: 2026-11-30
 video: /promo/jeonse-premium.mp4
 ref: /jeonse-chat/
 closing: save_b

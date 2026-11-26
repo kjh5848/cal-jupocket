@@ -1,6 +1,6 @@
 ---
 at: "09:00"
-on: 2026-11-26
+on: 2026-11-27
 ref: /jeonse-chat/
 closing: tool_b
 reply: 질문을 그냥 말하듯 써도 돼. 준비한 답에 없으면 AI가 HUG 안내를 근거로 답해. JU포켓 전세 도우미(HUG 공식 아님, 비공식 안내, 무료)

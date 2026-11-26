@@ -1,6 +1,6 @@
 ---
 at: "09:00"
-on: 2026-11-29
+on: 2026-12-03
 ref: /jeonse-chat/
 closing: tool_b
 reply: 급하면 여기서 바로 물어봐도 돼. JU포켓 전세 도우미(HUG 공식 아님, 비공식 안내, 무료)
