@@ -22,7 +22,18 @@ import {
   NAVER_ENABLED,
 } from "../data/analytics";
 
+/**
+ * 실제 사이트(jupocket.com)가 아니면 보내지 않는다.
+ *
+ * 2026-11-27 에 확인해 보니 최근 28일 전세 도우미 이벤트 약 90건 가운데 85건이
+ * 개발용 주소(localhost:4321)에서 연 화면이었다. 그 숫자를 사용 실적으로 읽고 있었다.
+ * 그래서 호스트가 다르면 GA 공식 끄기 값(ga-disable-<ID>)을 config 보다 먼저 켠다.
+ * window.gtag 는 그대로 둔다 — 없애면 이벤트를 부르는 코드가 터진다.
+ */
+const ON_SITE = `(location.hostname === "jupocket.com" || location.hostname === "www.jupocket.com")`;
+
 const boot = `
+if (!${ON_SITE}) window[${JSON.stringify(`ga-disable-${GA4_MEASUREMENT_ID}`)}] = true;
 window.dataLayer = window.dataLayer || [];
 function gtag(){ dataLayer.push(arguments); }
 window.gtag = gtag;
@@ -65,7 +76,7 @@ const naverBoot = `if(!window.wcs_add) window.wcs_add = {}; wcs_add["wa"] = ${JS
         is:inline
         async
         src="https://wcs.pstatic.net/wcslog.js"
-        onload="window.wcs && wcs_do();"
+        onload={`${ON_SITE} && window.wcs && wcs_do();`}
       />
     </>
   )

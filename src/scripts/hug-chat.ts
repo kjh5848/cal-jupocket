@@ -72,7 +72,8 @@ const isSelf = (() => {
 const track = (name: string, p: Record<string, unknown> = {}, q?: string) => {
   if (typeof window.gtag === "function") window.gtag("event", name, p);
   // 관리자 화면을 연 브라우저(운영자 본인)와, 입구 링크가 대신 골라 준 갈래는 세지 않는다
-  if (quiet || isSelf) return;
+  // 개발용 주소에서 연 화면도 세지 않는다(2026-11-27 — 집계 대부분이 localhost 였다)
+  if (quiet || isSelf || !/^(www\.)?jupocket\.com$/.test(location.hostname)) return;
   try {
     const k = String(p.id ?? p.stage ?? p.kind ?? p.a ?? p.level ?? p.at ?? "").slice(0, 40);
     navigator.sendBeacon(`${PUSH_API}/api/ev`, JSON.stringify({ n: name, k, page: location.pathname, ...(q ? { q: q.slice(0, 500) } : {}) }));
